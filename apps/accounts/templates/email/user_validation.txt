@@ -1,0 +1,10 @@
+Thank you for registering with us!
+
+We just need to validate that this is your
+email address.
+
+
+Follow this link with your browser to
+validate your email:
+
+{{ url }}

@@ -1,0 +1,17 @@
+database:
+  image: postgres
+  environment:
+    - POSTGRES_USER=care_adopt_backend
+    - POSTGRES_PASSWORD=care_adopt_backend
+backend:
+  build: .
+  command: bash /care_adopt_backend/server/django_devserver.sh
+  volumes:
+  - .:/care_adopt_backend
+  links:
+  - database
+  ports:
+  - "8000:8000"
+  environment:
+    DB_HOST: database
+    PYTHONUNBUFFERED: 1

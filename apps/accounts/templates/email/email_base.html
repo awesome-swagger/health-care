@@ -1,0 +1,84 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<body bgcolor="{{ settings.EMAIL.BG_COLOR }}" style="margin: 0;padding: 0;{{ settings.EMAIL.FONT_CSS }};-webkit-font-smoothing: antialiased;-webkit-text-size-adjust: none;height: 100%;width: 100%!important;">
+
+    <!-- HEADER -->
+    <table class="head-wrap" bgcolor="{{ settings.EMAIL.HEADER_COLOR }}" style="margin: 0;padding: 0;{{ settings.EMAIL.FONT_CSS }};width: 100%;">
+        <tr style="margin: 0;padding: 0;{{ settings.EMAIL.FONT_CSS }};">
+            <td style="margin: 0;padding: 0;{{ settings.EMAIL.FONT_CSS }};"></td>
+            <td class="header container" style="margin: 0 auto!important;padding: 0;{{ settings.EMAIL.FONT_CSS }};display: block!important;max-width: 600px!important;clear: both!important;">
+
+                <div class="content" style="margin: 0 auto;padding: 15px;{{ settings.EMAIL.FONT_CSS }};max-width: 600px;display: block;">
+                    <table bgcolor="{{ settings.EMAIL.HEADER_COLOR }}" style="margin: 0;padding: 0;{{ settings.EMAIL.FONT_CSS }};width: 100%;">
+                        <tr style="margin: 0;padding: 0;{{ settings.EMAIL.FONT_CSS }};">
+                            <td bgcolor="{{ settings.EMAIL.HEADER_COLOR }}" style="margin: 0;padding: 0;{{ settings.EMAIL.FONT_CSS }};"><img style="margin: 0;padding: 0;{{ settings.EMAIL.FONT_CSS }};max-width: 100%;" alt="{{ settings.EMAIL.LOGO_ALT }}" src="{{ settings.EMAIL.LOGO_URL }}">
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+            </td>
+            <td style="margin: 0;padding: 0;{{ settings.EMAIL.FONT_CSS }};"></td>
+        </tr>
+    </table>
+    <!-- /HEADER -->
+
+
+    <!-- BODY -->
+    <table class="body-wrap" bgcolor="{{ settings.EMAIL.BG_COLOR }}" style="margin: 0;padding: 0;{{ settings.EMAIL.FONT_CSS }};width: 100%;">
+        <tr style="margin: 0;padding: 0;{{ settings.EMAIL.FONT_CSS }};">
+            <td style="margin: 0;padding: 0;{{ settings.EMAIL.FONT_CSS }};"></td>
+            <td class="container" bgcolor="{{ settings.EMAIL.CONTENT_COLOR }}" style="margin: 0 auto!important;padding: 0;{{ settings.EMAIL.FONT_CSS }};display: block!important;max-width: 600px!important;clear: both!important;">
+
+                <div class="content" style="margin: 0 auto;padding: 15px;{{ settings.EMAIL.FONT_CSS }};max-width: 600px;display: block;">
+                    <table style="margin: 0;padding: 0;{{ settings.EMAIL.FONT_CSS }};width: 100%;">
+                        <tr style="margin: 0;padding: 0;{{ settings.EMAIL.FONT_CSS }};">
+                            <td style="margin: 0;padding: 0;{{ settings.EMAIL.FONT_CSS }};">
+                                {% block content %}{% endblock %}
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <!-- /content -->
+
+            </td>
+            <td style="margin: 0;padding: 0;{{ settings.EMAIL.FONT_CSS }};"></td>
+        </tr>
+    </table>
+    <!-- /BODY -->
+
+    <!-- FOOTER -->
+    <table class="footer-wrap" style="margin: 0;padding: 0;{{ settings.EMAIL.FONT_CSS }};width: 100%;clear: both!important;">
+        <tr style="margin: 0;padding: 0;{{ settings.EMAIL.FONT_CSS }};">
+            <td style="margin: 0;padding: 0;{{ settings.EMAIL.FONT_CSS }};"></td>
+            <td class="container" style="margin: 0 auto!important;padding: 0;{{ settings.EMAIL.FONT_CSS }};display: block!important;max-width: 600px!important;clear: both!important;">
+
+                <!-- content -->
+                <div class="content" style="margin: 0 auto;padding: 15px;{{ settings.EMAIL.FONT_CSS }};max-width: 600px;display: block;">
+                    <table style="margin: 0;padding: 0;{{ settings.EMAIL.FONT_CSS }};width: 100%;">
+                        <tr style="margin: 0;padding: 0;{{ settings.EMAIL.FONT_CSS }};">
+                            <td align="center" style="margin: 0;padding: 0;{{ settings.EMAIL.FONT_CSS }};">
+                                {% block unsubscribe %}
+                                <p style="margin: 0;padding: 0;{{ settings.EMAIL.FONT_CSS }};margin-bottom: 10px;font-weight: normal;font-size: 14px;line-height: 1.6;">
+                                    <a href="{{ settings.EMAIL.TERMS_URL }}" style="margin: 0;padding: 0;{{ settings.EMAIL.FONT_CSS }};color: #2BA6CB;">Terms</a> |
+                                    <a href="{{ settings.EMAIL.PRIVACY_URL }}" style="margin: 0;padding: 0;{{ settings.EMAIL.FONT_CSS }};color: #2BA6CB;">Privacy</a> |
+                                    <a href="{{ settings.EMAIL.UNSUBSCRIBE_URL }}" style="margin: 0;padding: 0;{{ settings.EMAIL.FONT_CSS }};color: #2BA6CB;">
+                                        <unsubscribe style="margin: 0;padding: 0;{{ settings.EMAIL.FONT_CSS }};">Unsubscribe</unsubscribe>
+                                    </a>
+                                </p>
+                                {% endblock %}
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <!-- /content -->
+
+            </td>
+            <td style="margin: 0;padding: 0;{{ settings.EMAIL.FONT_CSS }};"></td>
+        </tr>
+    </table>
+    <!-- /FOOTER -->
+
+</body>
+
+</html>

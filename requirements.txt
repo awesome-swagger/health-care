@@ -1,0 +1,13 @@
+# Core libs                                                                                        
+pillow
+psycopg2
+django>=1.10,<1.11
+django-cors-headers
+djangorestframework<3.5
+django-widget-tweaks==1.4.1
+social-auth-app-django
+python-social-auth<=0.2.21
+requests==2.8.1
+
+# Dev tools                                                                                        
+django-extensions                                                                                  
