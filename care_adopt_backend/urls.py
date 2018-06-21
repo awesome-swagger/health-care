@@ -12,9 +12,9 @@ from apps.accounts.views import UserViewSet
 from apps.accounts.views import ObtainAuthToken, social_auth, \
     RequestPasswordChange, ResetPassword, ValidateUserView
 
-admin.site.site_title = admin.site.index_title = "care_adopt_backend backend"
-admin.site.site_header = mark_safe('<img src="{img}" alt="{alt}"/>'.format(
-    img=settings.STATIC_URL + 'admin/img/logo-140x60.png',
+admin.site.site_title = admin.site.index_title = "CareAdopt Backend"
+admin.site.site_header = mark_safe('<img src="{img}" alt="{alt}"/> {alt}'.format(
+    img=settings.STATIC_URL + 'favicon.ico',
     alt=admin.site.site_title,
 ))
 

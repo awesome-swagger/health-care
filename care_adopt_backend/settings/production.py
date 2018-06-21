@@ -41,6 +41,8 @@ INSTALLED_APPS = (
     'social.apps.django_app.default',
     'apps.landing',
     'apps.accounts',
+    'apps.core',
+    'apps.patients',
 )
 
 # Domain configuration
@@ -157,7 +159,7 @@ MANAGERS = ADMINS = (
 
 IZENI = {
     'ADMIN': {
-        'SITE_TITLE': "care_adopt_backend backend",
+        'SITE_TITLE': "CareAdopt Backend",
     }
 }
 

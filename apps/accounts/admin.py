@@ -54,6 +54,9 @@ def accounts_admin_cleanup(admin_site=None):
     return admin_site
 
 
+accounts_admin_cleanup(admin.site)
+
+
 class UserChangeForm(SettingsUserForAdmin,
                      forms.ModelForm):
     """A form for updating users. Includes all the fields on
