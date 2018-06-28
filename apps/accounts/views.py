@@ -18,8 +18,10 @@ from rest_framework.exceptions import ValidationError
 from social.apps.django_app.utils import psa
 from social.exceptions import AuthCanceled
 
-from .permissions import BaseUserPermission
-from .serializers import UserSerializer, CreateUserSerializer
+from apps.accounts.permissions import BaseUserPermission
+from apps.accounts.serializers import UserSerializer, CreateUserSerializer
+from apps.core.models import ProviderProfile
+from apps.patients.models import PatientProfile
 
 
 class GenericErrorResponse(Response):
@@ -168,10 +170,21 @@ class ObtainAuthToken(OriginalObtain):
             response.status_code = 401
             return response
         token, created = Token.objects.get_or_create(user=user)
-        return Response({
+        res = {
             'token': token.key,
             'id': user.id
-        })
+        }
+        try:
+            provider_profile = ProviderProfile.objects.get(user__id=user.id)
+            res.update({'provider': provider_profile.id})
+        except ProviderProfile.DoesNotExist:
+            pass
+        try:
+            patient_profile = PatientProfile.objects.get(user__id=user.id)
+            res.update({'patient': patient_profile.id})
+        except PatientProfile.DoesNotExist:
+            pass
+        return Response(res)
 
 
 class ObtainUnvalidatedAuthToken(ObtainAuthToken):

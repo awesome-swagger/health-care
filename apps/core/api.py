@@ -1,4 +1,4 @@
-from rest_framework import serializers, viewsets, permissions
+from rest_framework import serializers, viewsets, permissions, mixins
 from apps.core.models import (
     Organization, Facility, ProviderProfile, ProviderTitle, ProviderRole,
     ProviderSpecialty, Diagnosis)

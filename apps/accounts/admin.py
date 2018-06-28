@@ -46,11 +46,11 @@ def accounts_admin_cleanup(admin_site=None):
     except NotRegistered:
         pass
     # if DRF is installed, we don't need to see tokens in the admin
-    try:
-        from rest_framework.authtoken.models import Token
-        admin.site.unregister(Token)
-    except NotRegistered:
-        pass
+    # try:
+    #     from rest_framework.authtoken.models import Token
+    #     admin.site.unregister(Token)
+    # except NotRegistered:
+    #     pass
     return admin_site
 
 

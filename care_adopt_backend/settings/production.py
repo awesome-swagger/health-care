@@ -64,7 +64,7 @@ REST_FRAMEWORK = {
         'apps.accounts.authentication.NoCSRFSessionAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAdminUser',
+        'rest_framework.permissions.AllowAny',
     ),
     'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.AcceptHeaderVersioning',
     'PAGE_SIZE': 100,
