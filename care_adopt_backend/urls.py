@@ -8,6 +8,9 @@ from rest_framework.routers import DefaultRouter
 
 from apps.landing.views import LandingView
 from apps.accounts.views import UserViewSet
+from apps.core.api import (
+    OrganizationViewSet, FacilityViewSet, ProviderProfileViewSet, ProviderTitleViewSet,
+    ProviderRoleViewSet, ProviderSpecialtyViewSet, DiagnosisViewSet)
 
 from apps.accounts.views import ObtainAuthToken, social_auth, \
     RequestPasswordChange, ResetPassword, ValidateUserView
@@ -20,6 +23,14 @@ admin.site.site_header = mark_safe('<img src="{img}" alt="{alt}"/> {alt}'.format
 
 router = DefaultRouter()
 router.register(r'users', UserViewSet, base_name='users')
+router.register(r'organizations', OrganizationViewSet, base_name='organizations')
+router.register(r'facilities', FacilityViewSet, base_name='facilities')
+router.register(r'provider_profiles', ProviderProfileViewSet, base_name='provider_profiles')
+router.register(r'provider_titles', ProviderTitleViewSet, base_name='provider_titles')
+router.register(r'provider_roles', ProviderRoleViewSet, base_name='provider_roles')
+router.register(
+    r'provider_specialties', ProviderSpecialtyViewSet, base_name='provider_specialties')
+router.register(r'diagnosis', DiagnosisViewSet, base_name='diagnosis')
 
 urlpatterns = [
     url(r'^favicon.ico$', RedirectView.as_view(
