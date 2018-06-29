@@ -10,7 +10,11 @@ from apps.landing.views import LandingView
 from apps.accounts.views import UserViewSet
 from apps.core.api import (
     OrganizationViewSet, FacilityViewSet, ProviderProfileViewSet, ProviderTitleViewSet,
-    ProviderRoleViewSet, ProviderSpecialtyViewSet, DiagnosisViewSet)
+    ProviderRoleViewSet, ProviderSpecialtyViewSet, DiagnosisViewSet,  MedicationViewSet,
+    ProcedureViewSet, )
+from apps.patients.api import (
+    PatientProfileViewSet, PatientDiagnosisViewSet, ProblemAreaViewSet,
+    PatientProcedureViewSet, )
 
 from apps.accounts.views import ObtainAuthToken, social_auth, \
     RequestPasswordChange, ResetPassword, ValidateUserView
@@ -22,15 +26,28 @@ admin.site.site_header = mark_safe('<img src="{img}" alt="{alt}"/> {alt}'.format
 ))
 
 router = DefaultRouter()
+# Accounts
 router.register(r'users', UserViewSet, base_name='users')
+# Core
 router.register(r'organizations', OrganizationViewSet, base_name='organizations')
 router.register(r'facilities', FacilityViewSet, base_name='facilities')
-router.register(r'provider_profiles', ProviderProfileViewSet, base_name='provider_profiles')
+router.register(
+    r'provider_profiles', ProviderProfileViewSet, base_name='provider_profiles')
 router.register(r'provider_titles', ProviderTitleViewSet, base_name='provider_titles')
 router.register(r'provider_roles', ProviderRoleViewSet, base_name='provider_roles')
 router.register(
     r'provider_specialties', ProviderSpecialtyViewSet, base_name='provider_specialties')
 router.register(r'diagnosis', DiagnosisViewSet, base_name='diagnosis')
+router.register(r'medications', MedicationViewSet, base_name='medications')
+router.register(r'procedures', ProcedureViewSet, base_name='procedures')
+# Patients
+router.register(
+    r'patient_profiles', PatientProfileViewSet, base_name='patient_profiles')
+router.register(r'problem_areas', ProblemAreaViewSet, base_name='problem_areas')
+router.register(
+    r'patient_diagnosis', PatientDiagnosisViewSet, base_name='patient_diagnosis')
+router.register(
+    r'patient_procedures', PatientProcedureViewSet, base_name='patient_procedures')
 
 urlpatterns = [
     url(r'^favicon.ico$', RedirectView.as_view(

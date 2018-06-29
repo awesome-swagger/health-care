@@ -53,7 +53,8 @@ class ProviderProfile(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
 class ProviderTitle(UUIDPrimaryKeyMixin):
     name = models.CharField(max_length=35, null=False, blank=False)
     abbreviation = models.CharField(max_length=10, null=False, blank=False)
-    # TODO: Might need to have a field for whether or not this title is a "qualified practitioner"
+    # TODO: Might need to have a field for whether or not this title is
+    # a "qualified practitioner"
 
     def __str__(self):
         return self.name
@@ -89,4 +90,16 @@ class Diagnosis(UUIDPrimaryKeyMixin):
 
 
 class Medication(UUIDPrimaryKeyMixin):
-    pass
+    name = models.CharField(max_length=140, null=False, blank=False)
+    rx_code = models.CharField(max_length=100, null=True, blank=True)
+
+    def __str__(self):
+        return self.name
+
+
+class Procedure(UUIDPrimaryKeyMixin):
+    name = models.CharField(max_length=140, null=False, blank=False)
+    px_code = models.CharField(max_length=100, null=True, blank=True)
+
+    def __str__(self):
+        return self.name

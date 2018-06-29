@@ -1,10 +1,14 @@
 from django.contrib import admin
 from apps.patients.models import (
-    PatientProfile, PatientDiagnosis, ProblemArea, Procedure)
+    PatientProfile, PatientDiagnosis, ProblemArea, PatientProcedure)
 
 
 class PatientProfileAdmin(admin.ModelAdmin):
     list_display = ('user', 'facility', 'status', )
+
+
+class ProblemAreaAdmin(admin.ModelAdmin):
+    list_display = ('patient', 'name', 'identified_by', )
 
 
 class PatientDiagnosisAdmin(admin.ModelAdmin):
@@ -13,15 +17,13 @@ class PatientDiagnosisAdmin(admin.ModelAdmin):
         'diagnosing_practitioner', 'facility', )
 
 
-class ProblemAreaAdmin(admin.ModelAdmin):
-    list_display = ('patient', 'name', 'identified_by', )
-
-
-class ProcedureAdmin(admin.ModelAdmin):
-    list_display = ('patient', 'name', 'px_code', )
+class PatientProcedureAdmin(admin.ModelAdmin):
+    list_display = (
+        'patient', 'procedure', 'date_of_procedure', 'attending_practitioner',
+        'facility', )
 
 
 admin.site.register(PatientProfile, PatientProfileAdmin)
-admin.site.register(PatientDiagnosis, PatientDiagnosisAdmin)
 admin.site.register(ProblemArea, ProblemAreaAdmin)
-admin.site.register(Procedure, ProcedureAdmin)
+admin.site.register(PatientDiagnosis, PatientDiagnosisAdmin)
+admin.site.register(PatientProcedure, PatientProcedureAdmin)

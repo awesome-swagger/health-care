@@ -2,7 +2,7 @@ from django.db.models import Q
 from rest_framework import serializers, viewsets, permissions, mixins
 from apps.core.models import (
     Organization, Facility, ProviderProfile, ProviderTitle, ProviderRole,
-    ProviderSpecialty, Diagnosis)
+    ProviderSpecialty, Diagnosis, Medication, Procedure, )
 from apps.patients.models import PatientProfile
 
 
@@ -140,3 +140,27 @@ class DiagnosisViewSet(viewsets.ModelViewSet):
     serializer_class = DiagnosisSerializer
     permission_classes = (permissions.AllowAny, )
     queryset = Diagnosis.objects.all()
+
+
+class MedicationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Medication
+        fields = '__all__'
+
+
+class MedicationViewSet(viewsets.ModelViewSet):
+    serializer_class = MedicationSerializer
+    permission_classes = (permissions.AllowAny, )
+    queryset = Medication.objects.all()
+
+
+class ProcedureSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Procedure
+        fields = '__all__'
+
+
+class ProcedureViewSet(viewsets.ModelViewSet):
+    serializer_class = ProcedureSerializer
+    permission_classes = (permissions.AllowAny, )
+    queryset = Procedure.objects.all()
