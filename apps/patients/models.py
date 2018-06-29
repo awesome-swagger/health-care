@@ -6,7 +6,8 @@ from apps.core.models import Organization, Facility, ProviderProfile, Diagnosis
 
 
 class PatientProfile(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
-    user = models.ForeignKey(EmailUser, blank=False)
+    user = models.OneToOneField(
+        EmailUser, on_delete=models.CASCADE, related_name='patient_profile')
     facility = models.ForeignKey(
         Facility, null=False, blank=False, on_delete=models.CASCADE)
     STATUS_CHOICES = (

@@ -29,7 +29,9 @@ class CreateUserSerializer(SettingsUserForSerializers,
 
 class UserSerializer(SettingsUserForSerializers,
                      serializers.ModelSerializer):
-    # TODO image url instead of file
+    provider_profile = serializers.PrimaryKeyRelatedField(many=False, read_only=True)
+    patient_profile = serializers.PrimaryKeyRelatedField(many=False, read_only=True)
+
     class Meta:
         # the model attribute will be set by
         # SettingsUserForSerializers.__init__() - see that method

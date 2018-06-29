@@ -1,3 +1,4 @@
+from django.db.models import Q
 from rest_framework import serializers, viewsets, permissions, mixins
 from apps.core.models import (
     Organization, Facility, ProviderProfile, ProviderTitle, ProviderRole,
@@ -10,10 +11,28 @@ class OrganizationSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class OrganizationViewSet(viewsets.ModelViewSet):
+class OrganizationViewSet(
+    mixins.RetrieveModelMixin,
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet
+):
     serializer_class = OrganizationSerializer
     permission_classes = (permissions.IsAuthenticated, )
-    queryset = Organization.objects.all()
+
+    def get_queryset(self):
+        qs = Organization.objects.none()
+        provider_profile = self.request.user.provider_profile
+        if provider_profile is not None:
+            qs = Organization.objects.filter(
+                Q(id__in=provider_profile.organizations.all()) |
+                Q(id__in=provider_profile.organizations_managed.all())
+            )
+            return qs
+        patient_profile = self.request.user.patient_profile
+        if patient_profile is not None:
+            qs = Organization.objects.filter(
+                id=patient_profile.facility.organization.id)
+        return qs
 
 
 class FacilitySerializer(serializers.ModelSerializer):

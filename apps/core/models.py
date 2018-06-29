@@ -26,8 +26,8 @@ class Facility(AddressMixin, CreatedModifiedMixin, UUIDPrimaryKeyMixin):
 
 
 class ProviderProfile(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
-    user = models.ForeignKey(
-        EmailUser, null=False, blank=False, on_delete=models.CASCADE)
+    user = models.OneToOneField(
+        EmailUser, on_delete=models.CASCADE, related_name='provider_profile')
     organizations = models.ManyToManyField(
         Organization, blank=True, related_name='providers')
     organizations_managed = models.ManyToManyField(

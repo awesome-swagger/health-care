@@ -170,21 +170,10 @@ class ObtainAuthToken(OriginalObtain):
             response.status_code = 401
             return response
         token, created = Token.objects.get_or_create(user=user)
-        res = {
+        return Response({
             'token': token.key,
             'id': user.id
-        }
-        try:
-            provider_profile = ProviderProfile.objects.get(user__id=user.id)
-            res.update({'provider': provider_profile.id})
-        except ProviderProfile.DoesNotExist:
-            pass
-        try:
-            patient_profile = PatientProfile.objects.get(user__id=user.id)
-            res.update({'patient': patient_profile.id})
-        except PatientProfile.DoesNotExist:
-            pass
-        return Response(res)
+        })
 
 
 class ObtainUnvalidatedAuthToken(ObtainAuthToken):
