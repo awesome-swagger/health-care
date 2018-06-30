@@ -45,6 +45,8 @@ class OrganizationViewSet(
         return qs.none()
 
 
+# TODO: DELETE on a facility should mark it inactive rather than removing it
+# from the database.
 class FacilitySerializer(serializers.ModelSerializer):
     class Meta:
         model = Facility
@@ -63,21 +65,23 @@ class FacilityViewSet(viewsets.ModelViewSet):
         #     return qs.all()
         try:
             provider_profile = self.request.user.provider_profile
+            patient_profile = self.request.user.patient_profile
         except ProviderProfile.DoesNotExist:
             provider_profile = None
+        except PatientProfile.DoesNotExist:
+            patient_profile = None
+
         if provider_profile is not None:
             qs = qs.filter(
                 Q(id__in=provider_profile.facilities.all()) |
                 Q(id__in=provider_profile.facilities_managed.all())
             )
-            return qs.all()
-        try:
-            patient_profile = self.request.user.patient_profile
-        except PatientProfile.DoesNotExist:
-            patient_profile = None
-        if patient_profile is not None:
+        elif patient_profile is not None:
             qs = qs.filter(id=patient_profile.facility.id)
-            return qs.all()
+        organization = self.request.query_params.get('organization_id')
+        if organization:
+            qs = qs.filter(organization__id=organization)
+        return qs.all()
 
 
 class ProviderProfileSerializer(serializers.ModelSerializer):

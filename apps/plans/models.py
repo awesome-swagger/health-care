@@ -44,10 +44,6 @@ class CarePlanTemplate(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
 #
 # class Assessment():
 #     pass
-#
-#
-# class VitalReport():
-#     pass
 
 
 class Goal(UUIDPrimaryKeyMixin):

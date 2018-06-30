@@ -7,6 +7,9 @@ from apps.accounts.models import EmailUser
 class Organization(AddressMixin, CreatedModifiedMixin, UUIDPrimaryKeyMixin):
     name = models.CharField(max_length=120, null=False, blank=False)
 
+    class Meta:
+        ordering = ('name', )
+
     def __str__(self):
         return self.name
 
