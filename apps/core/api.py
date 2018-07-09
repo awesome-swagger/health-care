@@ -1,5 +1,6 @@
 from django.db.models import Q
 from rest_framework import serializers, viewsets, permissions, mixins
+from apps.accounts.serializers import UserSerializer
 from apps.core.models import (
     Organization, Facility, ProviderProfile, ProviderTitle, ProviderRole,
     ProviderSpecialty, Diagnosis, Medication, Procedure, )
@@ -65,12 +66,12 @@ class FacilityViewSet(viewsets.ModelViewSet):
         #     return qs.all()
         try:
             provider_profile = self.request.user.provider_profile
-            patient_profile = self.request.user.patient_profile
         except ProviderProfile.DoesNotExist:
             provider_profile = None
+        try:
+            patient_profile = self.request.user.patient_profile
         except PatientProfile.DoesNotExist:
             patient_profile = None
-
         if provider_profile is not None:
             qs = qs.filter(
                 Q(id__in=provider_profile.facilities.all()) |
@@ -85,6 +86,7 @@ class FacilityViewSet(viewsets.ModelViewSet):
 
 
 class ProviderProfileSerializer(serializers.ModelSerializer):
+    # user = UserSerializer()
     class Meta:
         model = ProviderProfile
         fields = '__all__'

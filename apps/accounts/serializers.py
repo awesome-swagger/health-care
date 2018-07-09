@@ -38,4 +38,4 @@ class UserSerializer(SettingsUserForSerializers,
         read_only_fields = ('email', 'date_joined', 'last_login',
                             'is_developer', )
         exclude = ('password', 'is_superuser', 'groups', 'user_permissions',
-                   'validation_key', 'validated_at')
+                   'validation_key', 'validated_at', 'reset_key', )

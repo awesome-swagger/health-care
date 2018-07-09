@@ -16,7 +16,7 @@ from apps.patients.api import (
     PatientProfileViewSet, PatientDiagnosisViewSet, ProblemAreaViewSet,
     PatientProcedureViewSet, )
 
-from apps.accounts.views import ObtainAuthToken, social_auth, \
+from apps.accounts.views import ObtainAuthToken, \
     RequestPasswordChange, ResetPassword, ValidateUserView
 
 admin.site.site_title = admin.site.index_title = "CareAdopt Backend"
@@ -57,13 +57,12 @@ urlpatterns = [
     url(r'^$', LandingView.as_view(), name='landing-page'),
 
     # Administration
-    url(r'^admin/', include(admin.site.urls)),
+    url(r'^admin/', admin.site.urls),
 
     # General Api
     url(r'^api-auth/', include('rest_framework.urls',
                                namespace='rest_framework')),
     url(r'^api-token-auth/', ObtainAuthToken.as_view()),
-    url(r'^social/(?P<backend>[^/]+)/', social_auth),
     url(r'reset-password/(?P<email>[a-zA-Z0-9-.+@_]+)/$',
         RequestPasswordChange.as_view(), name='reset-password'),
     url(r'reset/(?P<reset_key>[a-z0-9\-]+)/$',

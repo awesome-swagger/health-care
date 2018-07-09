@@ -15,8 +15,6 @@ from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken as OriginalObtain
 from rest_framework.exceptions import ValidationError
-from social.apps.django_app.utils import psa
-from social.exceptions import AuthCanceled
 
 from apps.accounts.permissions import BaseUserPermission
 from apps.accounts.serializers import UserSerializer, CreateUserSerializer
@@ -179,27 +177,3 @@ class ObtainAuthToken(OriginalObtain):
 class ObtainUnvalidatedAuthToken(ObtainAuthToken):
     def post(self, request, require_validated=False):
         return super().post(request, require_validated=require_validated)
-
-
-@never_cache
-@psa()
-def social_auth(request, backend, *args, **kwargs):
-    state = request.GET.get('state')
-    token = request.GET.get('access_token')
-    request.strategy.session_set(backend + '_state', state)
-    request.backend.redirect_uri = settings.FRONTEND_OAUTH_REDIRECT + backend
-    request.backend.REDIRECT_STATE = False
-    try:
-        if token:
-            user = request.backend.do_auth(token)
-        else:
-            user = request.backend.complete()
-    except (AuthCanceled, HTTPError) as err:
-        return JsonResponse({
-            'error': err
-        }, status=400)
-    token, created = Token.objects.get_or_create(user=user)
-    return JsonResponse({
-        'token': token.key,
-        'id': str(user.id)
-    })

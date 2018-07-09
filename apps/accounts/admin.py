@@ -8,7 +8,6 @@ from django.contrib.auth.forms import (ReadOnlyPasswordHashField,
                                        AdminPasswordChangeForm,
                                        UserCreationForm)
 from django.contrib.auth.models import Group
-from social.apps.django_app.default import models
 from .models import EmailUser
 
 
@@ -28,18 +27,6 @@ def accounts_admin_cleanup(admin_site=None):
     izeni_admin_settings = getattr(settings, 'IZENI', {}).get('ACCOUNTS', {})
     if not izeni_admin_settings.get('CLEANUP_ADMIN', True):
         return admin_site
-    try:
-        admin_site.unregister(models.Association)
-    except NotRegistered:
-        pass
-    try:
-        admin_site.unregister(models.Nonce)
-    except NotRegistered:
-        pass
-    try:
-        admin_site.unregister(models.UserSocialAuth)
-    except NotRegistered:
-        pass
     # we don't typically use Django Group features, so don't show in the admin
     try:
         admin.site.unregister(Group)

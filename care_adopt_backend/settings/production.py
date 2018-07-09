@@ -14,17 +14,17 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(
 )))
 
 
-MIDDLEWARE_CLASSES = (
+MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
+    # 'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-)
+]
 
 INSTALLED_APPS = (
     'django.contrib.admin',
@@ -38,7 +38,6 @@ INSTALLED_APPS = (
     'rest_framework.authtoken',
     'widget_tweaks',
     'corsheaders',
-    'social.apps.django_app.default',
     'apps.landing',
     'apps.accounts',
     'apps.core',
@@ -89,39 +88,9 @@ AUTH_USER_MODEL = 'accounts.EmailUser'
 LOGIN_URL = '/accounts/login/'
 LOGOUT_URL = '/accounts/logout/'
 
-# python-social-auth django settings
-SOCIAL_AUTH_ADMIN_USER_SEARCH_FIELDS = ('first_name', 'last_name', 'email')
-USER_FIELDS = ('email',)
-
-SOCIAL_AUTH_PIPELINE = (
-    'social.pipeline.social_auth.social_details',
-    'social.pipeline.social_auth.social_uid',
-    'social.pipeline.social_auth.auth_allowed',
-    'social.pipeline.social_auth.social_user',
-    'social.pipeline.user.get_username',
-    'social.pipeline.social_auth.associate_by_email',
-    'social.pipeline.user.create_user',
-    'social.pipeline.social_auth.associate_user',
-    'social.pipeline.social_auth.load_extra_data',
-    'social.pipeline.user.user_details',
-    'apps.accounts.pipelines.validate',
-)
-
 AUTHENTICATION_BACKENDS = (
-    'social.backends.google.GoogleOAuth2',
-    'social.backends.facebook.FacebookOAuth2',
     'django.contrib.auth.backends.ModelBackend',
 )
-
-SOCIAL_AUTH_FACEBOOK_SCOPE = ['email']
-SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {
-    'fields': 'id, name, email'
-}
-SOCIAL_AUTH_FACEBOOK_KEY = '1649988431884827'
-SOCIAL_AUTH_FACEBOOK_SECRET = '143fb8c7bc682c44b6f6fbc3e98094c4'
-
-SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '974923707135-9qgnbrpq4a72qecjtfricf9fbv1otv5h.apps.googleusercontent.com'
-SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = 'koODPW6fIwJVI4-zHezApf7m'
 
 
 #############################################################################
