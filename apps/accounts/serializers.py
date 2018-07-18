@@ -1,5 +1,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
+from apps.core.models import ProviderProfile
+from apps.patients.models import PatientProfile
 
 
 class SettingsUserForSerializers:
@@ -27,10 +29,35 @@ class CreateUserSerializer(SettingsUserForSerializers,
         extra_kwargs = {'password': {'write_only': True}}
 
 
+class UserProviderInfo(serializers.ModelSerializer):
+    title = serializers.SerializerMethodField()
+
+    def get_title(self, obj):
+        if not obj.title:
+            return None
+        return obj.title.abbreviation
+
+    def get_specialty(self, obj):
+        if not obj.specialty:
+            return None
+        return obj.specialty.name
+
+    class Meta:
+        model = ProviderProfile
+        exclude = ('user', )
+
+
+class UserPatientInfo(serializers.ModelSerializer):
+
+    class Meta:
+        model = PatientProfile
+        exclude = ('user', )
+
+
 class UserSerializer(SettingsUserForSerializers,
                      serializers.ModelSerializer):
-    provider_profile = serializers.PrimaryKeyRelatedField(many=False, read_only=True)
-    patient_profile = serializers.PrimaryKeyRelatedField(many=False, read_only=True)
+    provider_profile = UserProviderInfo()
+    patient_profile = UserPatientInfo()
 
     class Meta:
         # the model attribute will be set by

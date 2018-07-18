@@ -31,6 +31,11 @@ class Facility(AddressMixin, CreatedModifiedMixin, UUIDPrimaryKeyMixin):
 class ProviderProfile(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
     user = models.OneToOneField(
         EmailUser, on_delete=models.CASCADE, related_name='provider_profile')
+    npi_code = models.CharField(
+        max_length=100, blank=True, null=True,
+        help_text="By adding the NPI number to the user profile, we can link "
+        "providers to the electronic medical records (EMR). If the user is "
+        "not a provider they won't have an NPI number.")
     organizations = models.ManyToManyField(
         Organization, blank=True, related_name='providers')
     organizations_managed = models.ManyToManyField(
@@ -50,14 +55,10 @@ class ProviderProfile(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
             self.user.first_name, self.user.last_name, self.title.abbreviation)
 
 
-# TODO: BillingProfile
-
-
 class ProviderTitle(UUIDPrimaryKeyMixin):
     name = models.CharField(max_length=35, null=False, blank=False)
     abbreviation = models.CharField(max_length=10, null=False, blank=False)
-    # TODO: Might need to have a field for whether or not this title is
-    # a "qualified practitioner"
+    # qualified_practitioner = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name

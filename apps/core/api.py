@@ -1,6 +1,8 @@
 from django.db.models import Q
+from django.contrib.auth import get_user_model
 from rest_framework import serializers, viewsets, permissions, mixins
-from apps.accounts.serializers import UserSerializer
+from apps.accounts.models import EmailUser
+from apps.accounts.serializers import SettingsUserForSerializers
 from apps.core.models import (
     Organization, Facility, ProviderProfile, ProviderTitle, ProviderRole,
     ProviderSpecialty, Diagnosis, Medication, Procedure, )
@@ -85,8 +87,16 @@ class FacilityViewSet(viewsets.ModelViewSet):
         return qs.all()
 
 
+class ProviderUserInfo(SettingsUserForSerializers, serializers.ModelSerializer):
+    class Meta:
+        read_only_fields = ('email', 'date_joined', 'last_login', )
+        exclude = ('password', 'is_superuser', 'groups', 'user_permissions',
+                   'validation_key', 'validated_at', 'reset_key', 'is_developer', )
+
+
 class ProviderProfileSerializer(serializers.ModelSerializer):
-    # user = UserSerializer()
+    user = ProviderUserInfo()
+
     class Meta:
         model = ProviderProfile
         fields = '__all__'

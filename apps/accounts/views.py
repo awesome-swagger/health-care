@@ -43,7 +43,11 @@ class UserViewSet(viewsets.ModelViewSet):
     permission_classes = (BaseUserPermission,)
 
     def get_queryset(self):
-        return get_user_model().objects.all()
+        qs = get_user_model().objects.all()
+        exclude_patients = self.request.query_params.get('exclude_patients')
+        if exclude_patients:
+            qs = qs.filter(patient_profile__isnull=True)
+        return qs.all()
 
     def get_serializer_class(self):
         if self.action == 'create':
