@@ -1,17 +1,30 @@
 from django.db.models import Q
 from rest_framework import serializers, viewsets, permissions, mixins
+from apps.accounts.serializers import SettingsUserForSerializers
 from apps.core.models import ProviderProfile
 from apps.patients.models import (
     PatientProfile, PatientDiagnosis, ProblemArea, PatientProcedure, )
 
 
+class PatientUserInfo(SettingsUserForSerializers, serializers.ModelSerializer):
+    class Meta:
+        read_only_fields = ('email', 'date_joined', 'last_login', )
+        exclude = ('password', 'is_superuser', 'groups', 'user_permissions',
+                   'validation_key', 'validated_at', 'reset_key', 'is_developer', )
+
+
 class PatientProfileSerializer(serializers.ModelSerializer):
+    user = PatientUserInfo()
+
     class Meta:
         model = PatientProfile
         fields = '__all__'
 
 
 class PatientProfileViewSet(viewsets.ModelViewSet):
+    """
+    Patient profile
+    """
     serializer_class = PatientProfileSerializer
     permission_classes = (permissions.IsAuthenticated, )
 

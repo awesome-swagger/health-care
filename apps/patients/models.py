@@ -23,6 +23,9 @@ class PatientProfile(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
         max_length=20, choices=STATUS_CHOICES, default='pre-potential')
     diagnosis = models.ManyToManyField('PatientDiagnosis', blank=True)
 
+    class Meta:
+        ordering = ('user', )
+
     def __str__(self):
         return '{} {}'.format(self.user.first_name, self.user.last_name)
 
@@ -35,6 +38,9 @@ class ProblemArea(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
     date_identified = models.DateField(null=True, blank=True)
     name = models.CharField(max_length=140, null=False, blank=False)
     description = models.CharField(max_length=512, null=True, blank=True)
+
+    class Meta:
+        ordering = ('patient', 'name', )
 
     def __str__(self):
         return '{}: {}'.format(self.patient, self.name)
@@ -52,6 +58,7 @@ class PatientDiagnosis(UUIDPrimaryKeyMixin):
     facility = models.CharField(max_length=140, null=True, blank=True)
 
     class Meta:
+        ordering = ('patient', 'diagnosis', )
         verbose_name_plural = 'patient diagnosis'
 
     def __str__(self):
@@ -66,6 +73,9 @@ class PatientProcedure(UUIDPrimaryKeyMixin):
     date_of_procedure = models.DateField(null=True, blank=True)
     attending_practitioner = models.CharField(max_length=140, null=True, blank=True)
     facility = models.CharField(max_length=140, null=True, blank=True)
+
+    class Meta:
+        ordering = ('patient', 'procedure', )
 
     def __str__(self):
         return '{}: {}'.format(self.patient, self.procedure)

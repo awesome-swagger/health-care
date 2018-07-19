@@ -6,7 +6,7 @@ from django.shortcuts import get_object_or_404, render
 from django.views.generic import TemplateView
 from django.views.decorators.cache import never_cache
 from requests.exceptions import HTTPError
-from rest_framework import status, views, viewsets
+from rest_framework import status, views, viewsets, mixins
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import detail_route, list_route
 from rest_framework.parsers import MultiPartParser
@@ -16,6 +16,7 @@ from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken as OriginalObtain
 from rest_framework.exceptions import ValidationError
 
+from care_adopt_backend import utils
 from apps.accounts.permissions import BaseUserPermission
 from apps.accounts.serializers import UserSerializer, CreateUserSerializer
 from apps.core.models import ProviderProfile
@@ -32,7 +33,10 @@ class GenericErrorResponse(Response):
         super().__init__({"non_field_errors": message}, status=400)
 
 
-class UserViewSet(viewsets.ModelViewSet):
+class UserViewSet(
+    mixins.UpdateModelMixin,
+    viewsets.GenericViewSet
+):
     """
     Other endpoints:
 
@@ -44,9 +48,15 @@ class UserViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         qs = get_user_model().objects.all()
-        exclude_patients = self.request.query_params.get('exclude_patients')
-        if exclude_patients:
-            qs = qs.filter(patient_profile__isnull=True)
+        providers = self.request.query_params.get('providers')
+        if providers:
+            qs = qs.filter(provider_profile__isnull=False)
+        patients = self.request.query_params.get('patients')
+        if patients:
+            qs = qs.filter(patient_profile__isnull=False)
+        organization = self.request.query_params.get('organization')
+        if organization:
+            qs = qs.filter(organization)
         return qs.all()
 
     def get_serializer_class(self):
@@ -171,11 +181,26 @@ class ObtainAuthToken(OriginalObtain):
                 'account for a validation request.')
             response.status_code = 401
             return response
+        # Requires that a user has either a provider profile or a patient profile
+        # to obtain an authentication token.
+        provider_profile = utils.provider_profile_or_none(user)
+        patient_profile = utils.patient_profile_or_none(user)
+        if not provider_profile and not patient_profile:
+            response = GenericErrorResponse(
+                'User does not have an active associated provider or patient profile'
+            )
+            response.status_code = 401
+            return response
         token, created = Token.objects.get_or_create(user=user)
-        return Response({
-            'token': token.key,
-            'id': user.id
-        })
+        response_data = {
+            'token': token.key
+        }
+        if provider_profile:
+            response_data.update({'provider_profile': provider_profile.id})
+        elif patient_profile:
+            response_data.update({'patient_profile': patient_profile.id})
+        response = Response(response_data)
+        return response
 
 
 class ObtainUnvalidatedAuthToken(ObtainAuthToken):

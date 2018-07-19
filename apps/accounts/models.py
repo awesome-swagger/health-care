@@ -129,6 +129,7 @@ class EmailUser(AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = 'email'
 
     class Meta:
+        ordering = ('first_name', 'last_name', )
         verbose_name = _('user')
         verbose_name_plural = _('users')
 

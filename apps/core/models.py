@@ -22,6 +22,7 @@ class Facility(AddressMixin, CreatedModifiedMixin, UUIDPrimaryKeyMixin):
     parent_company = models.CharField(max_length=120, blank=True, null=True)
 
     class Meta:
+        ordering = ('organization', 'name', )
         verbose_name_plural = 'facilities'
 
     def __str__(self):
@@ -50,6 +51,9 @@ class ProviderProfile(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
     specialty = models.ForeignKey(
         'ProviderSpecialty', null=False, blank=False, on_delete=models.PROTECT)
 
+    class Meta:
+        ordering = ('user', )
+
     def __str__(self):
         return '{} {}, {}'.format(
             self.user.first_name, self.user.last_name, self.title.abbreviation)
@@ -60,12 +64,18 @@ class ProviderTitle(UUIDPrimaryKeyMixin):
     abbreviation = models.CharField(max_length=10, null=False, blank=False)
     # qualified_practitioner = models.BooleanField(default=False)
 
+    class Meta:
+        ordering = ('name', )
+
     def __str__(self):
         return self.name
 
 
 class ProviderRole(UUIDPrimaryKeyMixin):
     name = models.CharField(max_length=35, null=False, blank=False)
+
+    class Meta:
+        ordering = ('name', )
 
     def __str__(self):
         return self.name
@@ -76,6 +86,7 @@ class ProviderSpecialty(UUIDPrimaryKeyMixin):
     physician_specialty = models.BooleanField(default=False)
 
     class Meta:
+        ordering = ('name', )
         verbose_name_plural = 'provider specialties'
 
     def __str__(self):
@@ -87,6 +98,7 @@ class Diagnosis(UUIDPrimaryKeyMixin):
     dx_code = models.CharField(max_length=100, null=True, blank=True)
 
     class Meta:
+        ordering = ('name', )
         verbose_name_plural = 'diagnosis'
 
     def __str__(self):
@@ -97,6 +109,9 @@ class Medication(UUIDPrimaryKeyMixin):
     name = models.CharField(max_length=140, null=False, blank=False)
     rx_code = models.CharField(max_length=100, null=True, blank=True)
 
+    class Meta:
+        ordering = ('name', )
+
     def __str__(self):
         return self.name
 
@@ -104,6 +119,9 @@ class Medication(UUIDPrimaryKeyMixin):
 class Procedure(UUIDPrimaryKeyMixin):
     name = models.CharField(max_length=140, null=False, blank=False)
     px_code = models.CharField(max_length=100, null=True, blank=True)
+
+    class Meta:
+        ordering = ('name', )
 
     def __str__(self):
         return self.name
