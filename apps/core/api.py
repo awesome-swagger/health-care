@@ -6,7 +6,7 @@ from care_adopt_backend import utils
 from apps.accounts.models import EmailUser
 from apps.accounts.serializers import SettingsUserForSerializers
 from apps.core.models import (
-    Organization, Facility, ProviderProfile, ProviderTitle, ProviderRole,
+    Organization, Facility, EmployeeProfile, ProviderTitle, ProviderRole,
     ProviderSpecialty, Diagnosis, Medication, Procedure, )
 from apps.patients.models import PatientProfile
 
@@ -16,9 +16,9 @@ class OrganizationSerializer(serializers.ModelSerializer):
 
     def get_is_manager(self, obj):
         request = self.context['request']
-        if not request.user.provider_profile:
+        if not request.user.employee_profile:
             return False
-        return obj.id in request.user.provider_profile.organizations_managed.all()
+        return obj.id in request.user.employee_profile.organizations_managed.all()
 
     class Meta:
         model = Organization
@@ -35,13 +35,13 @@ class OrganizationViewSet(
 
     def get_queryset(self):
         qs = Organization.objects.all()
-        provider_profile = utils.provider_profile_or_none(self.request.user)
+        employee_profile = utils.employee_profile_or_none(self.request.user)
         patient_profile = utils.patient_profile_or_none(self.request.user)
-        # If user is a provider, get all organizations that they belong to
-        if provider_profile is not None:
+        # If user is a employee, get all organizations that they belong to
+        if employee_profile is not None:
             qs = qs.filter(
-                Q(id__in=provider_profile.organizations.all()) |
-                Q(id__in=provider_profile.organizations_managed.all()),
+                Q(id__in=employee_profile.organizations.all()) |
+                Q(id__in=employee_profile.organizations_managed.all()),
             )
             return qs.all()
         # If user is a patient, only return the organization their facility belongs to
@@ -59,10 +59,10 @@ class FacilitySerializer(serializers.ModelSerializer):
 
     def get_is_manager(self, obj):
         request = self.context['request']
-        provider_profile = utils.provider_profile_or_none(request.user)
-        if not provider_profile:
+        employee_profile = utils.employee_profile_or_none(request.user)
+        if not employee_profile:
             return False
-        return obj in request.user.provider_profile.facilities_managed.all()
+        return obj in request.user.employee_profile.facilities_managed.all()
 
     class Meta:
         model = Facility
@@ -75,13 +75,13 @@ class FacilityViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         qs = Facility.objects.all()
-        provider_profile = utils.provider_profile_or_none(self.request.user)
+        employee_profile = utils.employee_profile_or_none(self.request.user)
         patient_profile = utils.patient_profile_or_none(self.request.user)
-        # If user is a provider, filter out facilities they do not belong to
-        if provider_profile is not None:
+        # If user is a employee, filter out facilities they do not belong to
+        if employee_profile is not None:
             qs = qs.filter(
-                Q(id__in=provider_profile.facilities.all()) |
-                Q(id__in=provider_profile.facilities_managed.all())
+                Q(id__in=employee_profile.facilities.all()) |
+                Q(id__in=employee_profile.facilities_managed.all())
             )
             # Filter for getting only facilities within a specific organization
             organization = self.request.query_params.get('organization_id')
@@ -94,34 +94,34 @@ class FacilityViewSet(viewsets.ModelViewSet):
             return qs.all()
 
 
-class ProviderUserInfo(SettingsUserForSerializers, serializers.ModelSerializer):
+class EmployeeUserInfo(SettingsUserForSerializers, serializers.ModelSerializer):
     class Meta:
         read_only_fields = ('email', 'date_joined', 'last_login', )
         exclude = ('password', 'is_superuser', 'groups', 'user_permissions',
                    'validation_key', 'validated_at', 'reset_key', 'is_developer', )
 
 
-class ProviderProfileSerializer(serializers.ModelSerializer):
-    user = ProviderUserInfo()
+class EmployeeProfileSerializer(serializers.ModelSerializer):
+    user = EmployeeUserInfo()
 
     class Meta:
-        model = ProviderProfile
+        model = EmployeeProfile
         fields = '__all__'
 
 
-class ProviderProfileViewSet(viewsets.ModelViewSet):
-    serializer_class = ProviderProfileSerializer
+class EmployeeProfileViewSet(viewsets.ModelViewSet):
+    serializer_class = EmployeeProfileSerializer
     permission_classes = (permissions.IsAuthenticated, )
 
     def get_queryset(self):
-        qs = ProviderProfile.objects.all()
-        provider_profile = utils.provider_profile_or_none(self.request.user)
+        qs = EmployeeProfile.objects.all()
+        employee_profile = utils.employee_profile_or_none(self.request.user)
         patient_profile = utils.patient_profile_or_none(self.request.user)
-        if provider_profile is not None:
-            # TODO: For providers, only return providers in the same facilities/organizations
+        if employee_profile is not None:
+            # TODO: For employees, only return employees in the same facilities/organizations
             return qs.all()
         if patient_profile is not None:
-            # TODO: For patients, only return providers that are providers for the patient
+            # TODO: For patients, only return employees that are providers for the patient
             return qs.all()
 
 

@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
-from apps.core.models import ProviderProfile
+from apps.core.models import EmployeeProfile
 from apps.patients.models import PatientProfile
 
 
@@ -29,7 +29,7 @@ class CreateUserSerializer(SettingsUserForSerializers,
         extra_kwargs = {'password': {'write_only': True}}
 
 
-class UserProviderInfo(serializers.ModelSerializer):
+class UserEmployeeInfo(serializers.ModelSerializer):
     title = serializers.SerializerMethodField()
 
     def get_title(self, obj):
@@ -43,7 +43,7 @@ class UserProviderInfo(serializers.ModelSerializer):
         return obj.specialty.name
 
     class Meta:
-        model = ProviderProfile
+        model = EmployeeProfile
         exclude = ('user', )
 
 
@@ -56,7 +56,7 @@ class UserPatientInfo(serializers.ModelSerializer):
 
 class UserSerializer(SettingsUserForSerializers,
                      serializers.ModelSerializer):
-    provider_profile = UserProviderInfo()
+    employee_profile = UserEmployeeInfo()
     patient_profile = UserPatientInfo()
 
     class Meta:

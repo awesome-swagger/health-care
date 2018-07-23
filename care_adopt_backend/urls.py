@@ -9,7 +9,7 @@ from rest_framework.routers import DefaultRouter
 from apps.landing.views import LandingView
 from apps.accounts.views import UserViewSet
 from apps.core.api import (
-    OrganizationViewSet, FacilityViewSet, ProviderProfileViewSet, ProviderTitleViewSet,
+    OrganizationViewSet, FacilityViewSet, EmployeeProfileViewSet, ProviderTitleViewSet,
     ProviderRoleViewSet, ProviderSpecialtyViewSet, DiagnosisViewSet,  MedicationViewSet,
     ProcedureViewSet, )
 from apps.patients.api import (
@@ -32,7 +32,7 @@ router.register(r'users', UserViewSet, base_name='users')
 router.register(r'organizations', OrganizationViewSet, base_name='organizations')
 router.register(r'facilities', FacilityViewSet, base_name='facilities')
 router.register(
-    r'provider_profiles', ProviderProfileViewSet, base_name='provider_profiles')
+    r'employee_profiles', EmployeeProfileViewSet, base_name='employee_profiles')
 router.register(r'provider_titles', ProviderTitleViewSet, base_name='provider_titles')
 router.register(r'provider_roles', ProviderRoleViewSet, base_name='provider_roles')
 router.register(

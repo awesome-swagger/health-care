@@ -1,15 +1,15 @@
 from apps.accounts.models import EmailUser
-from apps.core.models import ProviderProfile
+from apps.core.models import EmployeeProfile
 from apps.patients.models import PatientProfile
 
 
-def provider_profile_or_none(user):
-    provider = None
+def employee_profile_or_none(user):
+    employee = None
     try:
-        provider = user.provider_profile
-    except ProviderProfile.DoesNotExist:
-        provider = None
-    return provider
+        employee = user.employee_profile
+    except EmployeeProfile.DoesNotExist:
+        employee = None
+    return employee
 
 
 def patient_profile_or_none(user):

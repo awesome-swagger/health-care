@@ -12,6 +12,6 @@ class FacilitiesTestCase(LiveServerTestCase):
         pass
 
 
-class ProviderProfilesTestCase(LiveServerTestCase):
+class EmployeeProfilesTestCase(LiveServerTestCase):
     def setUp(self):
         pass

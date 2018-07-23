@@ -1,6 +1,6 @@
 from django.contrib import admin
 from apps.core.models import (
-    Organization, Facility, ProviderProfile, ProviderTitle, ProviderRole,
+    Organization, Facility, EmployeeProfile, ProviderTitle, ProviderRole,
     ProviderSpecialty, Diagnosis, Medication, Procedure)
 
 
@@ -12,7 +12,7 @@ class FacilityAdmin(admin.ModelAdmin):
     list_display = ('name', 'organization', )
 
 
-class ProviderProfileAdmin(admin.ModelAdmin):
+class EmployeeProfileAdmin(admin.ModelAdmin):
     list_display = ('user', 'title', 'specialty', )
 
 
@@ -42,7 +42,7 @@ class ProcedureAdmin(admin.ModelAdmin):
 
 admin.site.register(Organization, OrganizationAdmin)
 admin.site.register(Facility, FacilityAdmin)
-admin.site.register(ProviderProfile, ProviderProfileAdmin)
+admin.site.register(EmployeeProfile, EmployeeProfileAdmin)
 admin.site.register(ProviderTitle, ProviderTitleAdmin)
 admin.site.register(ProviderRole, ProviderRoleAdmin)
 admin.site.register(ProviderSpecialty, ProviderSpecialtyAdmin)

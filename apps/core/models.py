@@ -29,20 +29,20 @@ class Facility(AddressMixin, CreatedModifiedMixin, UUIDPrimaryKeyMixin):
         return '{}: {}'.format(self.organization.name, self.name)
 
 
-class ProviderProfile(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
+class EmployeeProfile(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
     user = models.OneToOneField(
-        EmailUser, on_delete=models.CASCADE, related_name='provider_profile')
+        EmailUser, on_delete=models.CASCADE, related_name='employee_profile')
     npi_code = models.CharField(
         max_length=100, blank=True, null=True,
         help_text="By adding the NPI number to the user profile, we can link "
         "providers to the electronic medical records (EMR). If the user is "
         "not a provider they won't have an NPI number.")
     organizations = models.ManyToManyField(
-        Organization, blank=True, related_name='providers')
+        Organization, blank=True, related_name='employees')
     organizations_managed = models.ManyToManyField(
         Organization, blank=True, related_name='managers')
     facilities = models.ManyToManyField(
-        Facility, blank=True, related_name='providers')
+        Facility, blank=True, related_name='employees')
     facilities_managed = models.ManyToManyField(
         Facility, blank=True, related_name='managers')
     title = models.ForeignKey(

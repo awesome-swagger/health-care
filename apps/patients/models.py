@@ -3,7 +3,7 @@ from care_adopt_backend.mixins import (
     AddressMixin, CreatedModifiedMixin, UUIDPrimaryKeyMixin)
 from apps.accounts.models import EmailUser
 from apps.core.models import (
-    Organization, Facility, ProviderProfile, Diagnosis, Procedure)
+    Organization, Facility, EmployeeProfile, Diagnosis, Procedure)
 
 
 class PatientProfile(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
@@ -34,7 +34,7 @@ class ProblemArea(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
     patient = models.ForeignKey(
         PatientProfile, null=False, blank=False, on_delete=models.CASCADE)
     identified_by = models.ForeignKey(
-        ProviderProfile, null=True, blank=True, on_delete=models.SET_NULL)
+        EmployeeProfile, null=True, blank=True, on_delete=models.SET_NULL)
     date_identified = models.DateField(null=True, blank=True)
     name = models.CharField(max_length=140, null=False, blank=False)
     description = models.CharField(max_length=512, null=True, blank=True)

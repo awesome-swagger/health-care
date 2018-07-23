@@ -19,7 +19,7 @@ from rest_framework.exceptions import ValidationError
 from care_adopt_backend import utils
 from apps.accounts.permissions import BaseUserPermission
 from apps.accounts.serializers import UserSerializer, CreateUserSerializer
-from apps.core.models import ProviderProfile
+from apps.core.models import EmployeeProfile
 from apps.patients.models import PatientProfile
 
 
@@ -48,9 +48,9 @@ class UserViewSet(
 
     def get_queryset(self):
         qs = get_user_model().objects.all()
-        providers = self.request.query_params.get('providers')
-        if providers:
-            qs = qs.filter(provider_profile__isnull=False)
+        employees = self.request.query_params.get('employees')
+        if employees:
+            qs = qs.filter(employee_profile__isnull=False)
         patients = self.request.query_params.get('patients')
         if patients:
             qs = qs.filter(patient_profile__isnull=False)
@@ -181,13 +181,13 @@ class ObtainAuthToken(OriginalObtain):
                 'account for a validation request.')
             response.status_code = 401
             return response
-        # Requires that a user has either a provider profile or a patient profile
+        # Requires that a user has either a employee profile or a patient profile
         # to obtain an authentication token.
-        provider_profile = utils.provider_profile_or_none(user)
+        employee_profile = utils.employee_profile_or_none(user)
         patient_profile = utils.patient_profile_or_none(user)
-        if not provider_profile and not patient_profile:
+        if not employee_profile and not patient_profile:
             response = GenericErrorResponse(
-                'User does not have an active associated provider or patient profile'
+                'User does not have an active associated employee or patient profile'
             )
             response.status_code = 401
             return response
@@ -195,8 +195,8 @@ class ObtainAuthToken(OriginalObtain):
         response_data = {
             'token': token.key
         }
-        if provider_profile:
-            response_data.update({'provider_profile': provider_profile.id})
+        if employee_profile:
+            response_data.update({'employee_profile': employee_profile.id})
         elif patient_profile:
             response_data.update({'patient_profile': patient_profile.id})
         response = Response(response_data)

@@ -1,7 +1,7 @@
 from django.db.models import Q
 from rest_framework import serializers, viewsets, permissions, mixins
 from apps.accounts.serializers import SettingsUserForSerializers
-from apps.core.models import ProviderProfile
+from apps.core.models import EmployeeProfile
 from apps.patients.models import (
     PatientProfile, PatientDiagnosis, ProblemArea, PatientProcedure, )
 
@@ -31,18 +31,18 @@ class PatientProfileViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         qs = PatientProfile.objects.all()
         try:
-            provider_profile = self.request.user.provider_profile
-        except ProviderProfile.DoesNotExist:
-            provider_profile = None
+            employee_profile = self.request.user.employee_profile
+        except EmployeeProfile.DoesNotExist:
+            employee_profile = None
         try:
             patient_profile = self.request.user.patient_profile
         except PatientProfile.DoesNotExist:
             patient_profile = None
-        if provider_profile is not None:
-            # Filter out users that this provider is not apart of
+        if employee_profile is not None:
+            # Filter out users that reqesting user doesn't have access to
             qs = qs.filter(
-                Q(facility__id__in=provider_profile.facilities.all()) |
-                Q(facility__id__in=provider_profile.facilities_managed.all())
+                Q(facility__id__in=employee_profile.facilities.all()) |
+                Q(facility__id__in=employee_profile.facilities_managed.all())
             )
         elif patient_profile is not None:
             # Return only this patient
