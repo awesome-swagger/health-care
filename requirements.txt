@@ -6,6 +6,7 @@ django-cors-headers
 djangorestframework>=3.6.5,<=3.8.2
 django-widget-tweaks
 requests
+markdown
 
 # Dev tools
 django-extensions

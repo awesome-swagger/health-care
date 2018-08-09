@@ -23,7 +23,11 @@ class PatientProfileSerializer(serializers.ModelSerializer):
 
 class PatientProfileViewSet(viewsets.ModelViewSet):
     """
-    Patient profile
+    If the requesting user is an employee, this endpoint returns patients that
+    belong to the same facilities.
+
+    If the requesting user is a patient, this endpoint only returns their own
+    patient profile.
     """
     serializer_class = PatientProfileSerializer
     permission_classes = (permissions.IsAuthenticated, )

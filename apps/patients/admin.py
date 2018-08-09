@@ -1,6 +1,7 @@
 from django.contrib import admin
 from apps.patients.models import (
-    PatientProfile, PatientDiagnosis, ProblemArea, PatientProcedure)
+    PatientProfile, PatientDiagnosis, ProblemArea, PatientProcedure,
+    PatientMedication, )
 
 
 class PatientProfileAdmin(admin.ModelAdmin):
@@ -23,7 +24,14 @@ class PatientProcedureAdmin(admin.ModelAdmin):
         'facility', )
 
 
+class PatientMedicationAdmin(admin.ModelAdmin):
+    list_display = (
+        'patient', 'medication', 'dose_mg', 'date_prescribed',
+        'duration_days', 'prescribing_practitioner', )
+
+
 admin.site.register(PatientProfile, PatientProfileAdmin)
 admin.site.register(ProblemArea, ProblemAreaAdmin)
 admin.site.register(PatientDiagnosis, PatientDiagnosisAdmin)
 admin.site.register(PatientProcedure, PatientProcedureAdmin)
+admin.site.register(PatientMedication, PatientMedicationAdmin)

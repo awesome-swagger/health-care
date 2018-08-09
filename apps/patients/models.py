@@ -3,7 +3,7 @@ from care_adopt_backend.mixins import (
     AddressMixin, CreatedModifiedMixin, UUIDPrimaryKeyMixin)
 from apps.accounts.models import EmailUser
 from apps.core.models import (
-    Organization, Facility, EmployeeProfile, Diagnosis, Procedure)
+    Organization, Facility, EmployeeProfile, Diagnosis, Procedure, Medication, )
 
 
 class PatientProfile(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
@@ -79,3 +79,23 @@ class PatientProcedure(UUIDPrimaryKeyMixin):
 
     def __str__(self):
         return '{}: {}'.format(self.patient, self.procedure)
+
+
+class PatientMedication(UUIDPrimaryKeyMixin):
+    patient = models.ForeignKey(
+        PatientProfile, null=False, blank=False, on_delete=models.CASCADE)
+    medication = models.ForeignKey(
+        Medication, null=False, blank=False, on_delete=models.CASCADE)
+    dose_mg = models.IntegerField(null=False, blank=False)
+    date_prescribed = models.DateField(null=False, blank=False)
+    duration_days = models.IntegerField(null=False, blank=False)
+    refills = models.IntegerField(default=0)
+    prescribing_practitioner = models.ForeignKey(
+        EmployeeProfile, null=True, blank=True, on_delete=models.SET_NULL)
+    instructions = models.CharField(max_length=480, null=True, blank=True)
+
+    class Meta:
+        ordering = ('patient', 'medication', )
+
+    def __str__(self):
+        return '{}: {}'.format(self.patient, self.medication)

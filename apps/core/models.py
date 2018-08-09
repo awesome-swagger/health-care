@@ -32,6 +32,13 @@ class Facility(AddressMixin, CreatedModifiedMixin, UUIDPrimaryKeyMixin):
 class EmployeeProfile(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
     user = models.OneToOneField(
         EmailUser, on_delete=models.CASCADE, related_name='employee_profile')
+    STATUS_CHOICES = (
+        ('invited', 'Invited'),
+        ('inactive', 'Inactive'),
+        ('active', 'Active'),
+    )
+    status = models.CharField(
+        max_length=20, choices=STATUS_CHOICES, default='invited')
     npi_code = models.CharField(
         max_length=100, blank=True, null=True,
         help_text="By adding the NPI number to the user profile, we can link "
@@ -46,17 +53,21 @@ class EmployeeProfile(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
     facilities_managed = models.ManyToManyField(
         Facility, blank=True, related_name='managers')
     title = models.ForeignKey(
-        'ProviderTitle', null=False, blank=False, on_delete=models.PROTECT)
-    roles = models.ManyToManyField('ProviderRole', blank=False)
+        'ProviderTitle', null=True, blank=True, on_delete=models.PROTECT)
+    roles = models.ManyToManyField('ProviderRole', blank=True)
     specialty = models.ForeignKey(
-        'ProviderSpecialty', null=False, blank=False, on_delete=models.PROTECT)
+        'ProviderSpecialty', null=True, blank=True, on_delete=models.PROTECT)
 
     class Meta:
         ordering = ('user', )
 
     def __str__(self):
-        return '{} {}, {}'.format(
-            self.user.first_name, self.user.last_name, self.title.abbreviation)
+        if self.title:
+            return '{} {}, {}'.format(
+                self.user.first_name, self.user.last_name, self.title.abbreviation)
+        else:
+            return '{} {}'.format(
+                self.user.first_name, self.user.last_name)
 
 
 class ProviderTitle(UUIDPrimaryKeyMixin):
