@@ -18,7 +18,7 @@ class OrganizationSerializer(serializers.ModelSerializer):
         request = self.context['request']
         if not request.user.employee_profile:
             return False
-        return obj.id in request.user.employee_profile.organizations_managed.all()
+        return obj in request.user.employee_profile.organizations_managed.all()
 
     class Meta:
         model = Organization
