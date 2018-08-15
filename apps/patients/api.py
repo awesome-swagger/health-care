@@ -1,5 +1,7 @@
 from django.db.models import Q
-from rest_framework import serializers, viewsets, permissions, mixins
+from rest_framework import serializers, views, viewsets, permissions, mixins
+from rest_framework.decorators import action
+from rest_framework.response import Response
 from apps.accounts.serializers import SettingsUserForSerializers
 from apps.core.models import EmployeeProfile
 from apps.patients.models import (
@@ -11,6 +13,19 @@ class PatientUserInfo(SettingsUserForSerializers, serializers.ModelSerializer):
         read_only_fields = ('email', 'date_joined', 'last_login', )
         exclude = ('password', 'is_superuser', 'groups', 'user_permissions',
                    'validation_key', 'validated_at', 'reset_key', 'is_developer', )
+
+
+class PatientSearchUserInfo(SettingsUserForSerializers, serializers.ModelSerializer):
+    class Meta:
+        fields = ('first_name', 'last_name', )
+
+
+class PatientSearchSerializer(serializers.ModelSerializer):
+    user = PatientSearchUserInfo()
+
+    class Meta:
+        model = PatientProfile
+        fields = ('id', 'user', )
 
 
 class PatientProfileSerializer(serializers.ModelSerializer):
@@ -54,6 +69,20 @@ class PatientProfileViewSet(viewsets.ModelViewSet):
         else:
             qs = qs.none()
         return qs
+
+    @action(methods=['post'], detail=False)
+    def search(self, request):
+        # TODO: If a user is an organization manager they get all the patients that belong to that organization
+        # TODO: If a user is a facility manager they get all the patients that belong to that facility
+        # TODO: If a user is not a manager of any organizations/facilities then they can
+        # only search for their own patients including the patients they are care managers for
+        # or are a member of the care team for.
+        # TODO: Need to be able to search by first AND last name (with space)
+        search_str = request.data.get('name')
+        patients = PatientProfile.objects.filter(
+            Q(user__first_name__icontains=search_str) | Q(user__last_name__icontains=search_str))
+        serializer = PatientSearchSerializer(patients, many=True)
+        return Response(serializer.data)
 
 
 class PatientDiagnosisSerializer(serializers.ModelSerializer):
