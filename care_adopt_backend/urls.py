@@ -14,7 +14,10 @@ from apps.core.api import (
     ProcedureViewSet, )
 from apps.patients.api import (
     PatientProfileViewSet, PatientDiagnosisViewSet, ProblemAreaViewSet,
-    PatientProcedureViewSet, )
+    PatientProcedureViewSet, PatientMedicationViewSet, )
+from apps.plans.api import (
+    CarePlanTemplateViewSet, MessageStreamViewSet, StreamMessageViewSet, GoalViewSet,
+    TeamTaskViewSet, PatientTaskViewSet, CarePlanInstanceViewSet, PlanConsentViewSet, )
 
 from apps.accounts.views import ObtainAuthToken, \
     RequestPasswordChange, ResetPassword, ValidateUserView
@@ -48,6 +51,26 @@ router.register(
     r'patient_diagnosis', PatientDiagnosisViewSet, base_name='patient_diagnosis')
 router.register(
     r'patient_procedures', PatientProcedureViewSet, base_name='patient_procedures')
+router.register(
+    r'patient_medications', PatientMedicationViewSet, base_name='patient_medications')
+# Plans
+router.register(
+    r'care_plan_templates', CarePlanTemplateViewSet, base_name='care_plan_templates')
+router.register(
+    r'care_plan_instances', CarePlanInstanceViewSet, base_name='care_plan_instances')
+router.register(
+    r'plan_consent_forms', PlanConsentViewSet, base_name='plan_consent_forms')
+router.register(
+    r'care_plan_goals', GoalViewSet, base_name='care_plan_goals')
+router.register(
+    r'team_tasks', TeamTaskViewSet, base_name='team_tasks')
+router.register(
+    r'patient_tasks', PatientTaskViewSet, base_name='patient_tasks')
+router.register(
+    r'message_streams', MessageStreamViewSet, base_name='message_streams')
+router.register(
+    r'stream_messages', StreamMessageViewSet, base_name='stream_messages')
+
 
 urlpatterns = [
     url(r'^favicon.ico$', RedirectView.as_view(

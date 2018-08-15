@@ -5,7 +5,8 @@ from rest_framework.response import Response
 from apps.accounts.serializers import SettingsUserForSerializers
 from apps.core.models import EmployeeProfile
 from apps.patients.models import (
-    PatientProfile, PatientDiagnosis, ProblemArea, PatientProcedure, )
+    PatientProfile, PatientDiagnosis, ProblemArea, PatientProcedure,
+    PatientMedication, )
 
 
 class PatientUserInfo(SettingsUserForSerializers, serializers.ModelSerializer):
@@ -119,3 +120,15 @@ class PatientProcedureViewSet(viewsets.ModelViewSet):
     serializer_class = PatientProcedureSerializer
     permission_classes = (permissions.IsAuthenticated, )
     queryset = PatientProcedure.objects.all()
+
+
+class PatientMedicationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PatientMedication
+        fields = '__all__'
+
+
+class PatientMedicationViewSet(viewsets.ModelViewSet):
+    serializer_class = PatientMedicationSerializer
+    permission_classes = (permissions.IsAuthenticated, )
+    queryset = PatientMedication.objects.all()

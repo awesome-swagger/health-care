@@ -1,9 +1,7 @@
 from django.db.models import Q
-from django.contrib.auth import get_user_model
 from rest_framework import serializers, viewsets, permissions, mixins
 
 from care_adopt_backend import utils
-from apps.accounts.models import EmailUser
 from apps.accounts.serializers import SettingsUserForSerializers
 from apps.core.models import (
     Organization, Facility, EmployeeProfile, ProviderTitle, ProviderRole,
