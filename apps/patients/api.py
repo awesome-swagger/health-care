@@ -7,6 +7,7 @@ from apps.core.models import EmployeeProfile
 from apps.patients.models import (
     PatientProfile, PatientDiagnosis, ProblemArea, PatientProcedure,
     PatientMedication, )
+from apps.patients.permissions import (PatientProfilePermissions, )
 
 
 class PatientUserInfo(SettingsUserForSerializers, serializers.ModelSerializer):
@@ -46,7 +47,7 @@ class PatientProfileViewSet(viewsets.ModelViewSet):
     patient profile.
     """
     serializer_class = PatientProfileSerializer
-    permission_classes = (permissions.IsAuthenticated, )
+    permission_classes = (permissions.IsAuthenticated, PatientProfilePermissions, )
 
     def get_queryset(self):
         qs = PatientProfile.objects.all()

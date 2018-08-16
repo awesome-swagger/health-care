@@ -8,26 +8,26 @@ from apps.core.models import (
     ProviderSpecialty, Diagnosis, Medication, Procedure, )
 from apps.patients.models import PatientProfile
 
+from apps.core.permissions import (
+    OrganizationPermissions, FacilityPermissions, EmployeeProfilePermissions, )
+
 
 class OrganizationSerializer(serializers.ModelSerializer):
     is_manager = serializers.SerializerMethodField()
 
     def get_is_manager(self, obj):
         request = self.context['request']
-        if not request.user.employee_profile:
+        employee_profile = utils.employee_profile_or_none(request.user)
+        if employee_profile is None:
             return False
-        return obj in request.user.employee_profile.organizations_managed.all()
+        return obj in employee_profile.organizations_managed.all()
 
     class Meta:
         model = Organization
         fields = '__all__'
 
 
-class OrganizationViewSet(
-    mixins.RetrieveModelMixin,
-    mixins.ListModelMixin,
-    viewsets.GenericViewSet
-):
+class OrganizationViewSet(viewsets.ModelViewSet):
     """
     Fields
     =======
@@ -49,7 +49,7 @@ class OrganizationViewSet(
      object details for them.
     """
     serializer_class = OrganizationSerializer
-    permission_classes = (permissions.IsAuthenticated, )
+    permission_classes = (permissions.IsAuthenticated, OrganizationPermissions, )
 
     def get_queryset(self):
         qs = Organization.objects.all()
@@ -113,7 +113,7 @@ class FacilityViewSet(viewsets.ModelViewSet):
     have access to the facility they are recieving care from.
     """
     serializer_class = FacilitySerializer
-    permission_classes = (permissions.IsAuthenticated, )
+    permission_classes = (permissions.IsAuthenticated, FacilityPermissions, )
 
     def get_queryset(self):
         qs = Facility.objects.all()
@@ -196,7 +196,11 @@ class ProviderSpecialtySerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class ProviderSpecialtyViewSet(viewsets.ModelViewSet):
+class ProviderSpecialtyViewSet(
+    mixins.RetrieveModelMixin,
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet
+):
     """
     Fields
     =======
@@ -262,11 +266,11 @@ class EmployeeProfileViewSet(viewsets.ModelViewSet):
     that are providers for the patient.
 
     User's will be able to update their own employee profiles.  Organization managers and
-    super users may also have that ability.  Organization managers will the ability to
+    super users may also have that ability.  Organization managers will have the ability to
     deactivate employee profiles.
     """
     serializer_class = EmployeeProfileSerializer
-    permission_classes = (permissions.IsAuthenticated, )
+    permission_classes = (permissions.IsAuthenticated, EmployeeProfilePermissions, )
 
     def get_queryset(self):
         qs = EmployeeProfile.objects.all()
@@ -292,7 +296,11 @@ class DiagnosisSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class DiagnosisViewSet(viewsets.ModelViewSet):
+class DiagnosisViewSet(
+    mixins.RetrieveModelMixin,
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet
+):
     serializer_class = DiagnosisSerializer
     permission_classes = (permissions.AllowAny, )
     queryset = Diagnosis.objects.all()
@@ -304,7 +312,11 @@ class MedicationSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class MedicationViewSet(viewsets.ModelViewSet):
+class MedicationViewSet(
+    mixins.RetrieveModelMixin,
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet
+):
     serializer_class = MedicationSerializer
     permission_classes = (permissions.AllowAny, )
     queryset = Medication.objects.all()
@@ -316,7 +328,11 @@ class ProcedureSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class ProcedureViewSet(viewsets.ModelViewSet):
+class ProcedureViewSet(
+    mixins.RetrieveModelMixin,
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet
+):
     serializer_class = ProcedureSerializer
     permission_classes = (permissions.AllowAny, )
     queryset = Procedure.objects.all()
