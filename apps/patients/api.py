@@ -45,6 +45,11 @@ class PatientProfileViewSet(viewsets.ModelViewSet):
 
     If the requesting user is a patient, this endpoint only returns their own
     patient profile.
+
+
+    Query Params
+    ==============
+    *?status=value* - filters out users by status, must be exact match.
     """
     serializer_class = PatientProfileSerializer
     permission_classes = (permissions.IsAuthenticated, PatientProfilePermissions, )
@@ -65,6 +70,9 @@ class PatientProfileViewSet(viewsets.ModelViewSet):
                 Q(facility__id__in=employee_profile.facilities.all()) |
                 Q(facility__id__in=employee_profile.facilities_managed.all())
             )
+            status = self.request.query_params.get('status')
+            if status:
+                qs = qs.filter(status__iexact=status)
         elif patient_profile is not None:
             # Return only this patient
             qs = qs.filter(user__id=self.request.user.id)

@@ -16,12 +16,6 @@ class CarePlanTemplate(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
         ('tcm', 'Transitional Care Management'),
     )
     type = models.CharField(max_length=10, choices=TYPE_CHOICES)
-    message_streams = models.ManyToManyField('MessageStream', blank=True)
-    # assessments = models.ManyToManyField('Assessment', blank=True)
-    # vitals = models.ManyToManyField('VitalReport', blank=True)
-    goals = models.ManyToManyField('Goal', blank=True)
-    # general_tasks = models.ManyToManyField('GeneralTask', blank=True)
-    team_tasks = models.ManyToManyField('TeamTask', blank=True)
 
     def __str__(self):
         return self.name
@@ -29,7 +23,8 @@ class CarePlanTemplate(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
 
 class CarePlanInstance(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
     patient = models.ForeignKey(
-        PatientProfile, null=False, blank=False, on_delete=models.CASCADE)
+        PatientProfile, null=False, blank=False, related_name="care_plans",
+        on_delete=models.CASCADE)
     plan_template = models.ForeignKey(
         CarePlanTemplate, null=False, blank=False, on_delete=models.CASCADE)
 
@@ -61,17 +56,26 @@ class PlanConsent(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
 
 
 class Goal(UUIDPrimaryKeyMixin):
+    plan_template = models.ForeignKey(
+        CarePlanTemplate, null=False, blank=False, related_name="goals",
+        on_delete=models.CASCADE)
     name = models.CharField(max_length=140, null=False, blank=False)
     description = models.CharField(max_length=240, null=False, blank=False)
     focus = models.CharField(max_length=140, null=False, blank=False)
     progress = models.IntegerField(default=1)
-    # TODO: duration and start day
+    start_on_day = models.IntegerField(null=False, blank=False)
+    duration_weeks = models.IntegerField(
+        null=False, blank=False,
+        help_text="If below 0, the goal will continue until the plan ends.")
 
     def __str__(self):
         return self.name
 
 
 class TeamTask(UUIDPrimaryKeyMixin):
+    plan_template = models.ForeignKey(
+        CarePlanTemplate, null=False, blank=False, related_name="team_tasks",
+        on_delete=models.CASCADE)
     name = models.CharField(max_length=140, null=False, blank=False)
     is_manager_task = models.BooleanField(default=False)
     CATEGORY_CHOICES = (
@@ -85,14 +89,20 @@ class TeamTask(UUIDPrimaryKeyMixin):
         ('once', 'Once'),
         ('daily', 'Daily'),
         ('every_other_day', 'Every Other Day'),
+        ('weekly', 'Weekly'),
         ('weekdays', 'Weekdays'),
         ('weekends', 'Weekends'),
     )
     frequency = models.CharField(
         max_length=20, choices=FREQUENCY_CHOICES, default='once')
-    # NOTE: repeat_amount only matters if frequency is not 'once'
-    # If it is below 0, it will repeat until the plan ends
-    repeat_amount = models.IntegerField(default=-1)
+
+    repeat_amount = models.IntegerField(
+        default=-1,
+        help_text="""
+        Only matters if frequency is not 'once'.
+        If it is below 0, it will repeat until the plan ends
+        """
+    )
     appear_time = models.TimeField(null=False, blank=False)
     due_time = models.TimeField(null=False, blank=False)
     role = models.ForeignKey(
@@ -103,20 +113,29 @@ class TeamTask(UUIDPrimaryKeyMixin):
 
 
 class PatientTask(UUIDPrimaryKeyMixin):
+    plan_template = models.ForeignKey(
+        CarePlanTemplate, null=False, blank=False, related_name="patient_tasks",
+        on_delete=models.CASCADE)
     name = models.CharField(max_length=140, null=False, blank=False)
     start_on_day = models.IntegerField(null=False, blank=False)
     FREQUENCY_CHOICES = (
         ('once', 'Once'),
         ('daily', 'Daily'),
+        ('weekly', 'Weekly'),
         ('every_other_day', 'Every Other Day'),
         ('weekdays', 'Weekdays'),
         ('weekends', 'Weekends'),
     )
     frequency = models.CharField(
         max_length=20, choices=FREQUENCY_CHOICES, default='once')
-    # NOTE: repeat_amount only matters if frequency is not 'once'
-    # If it is below 0, it will repeat until the plan ends
-    repeat_amount = models.IntegerField(default=-1)
+
+    repeat_amount = models.IntegerField(
+        default=-1,
+        help_text="""
+        Only matters if frequency is not 'once'.
+        If it is below 0, it will repeat until the plan ends
+        """
+    )
     appear_time = models.TimeField(null=False, blank=False)
     due_time = models.TimeField(null=False, blank=False)
 
@@ -125,6 +144,9 @@ class PatientTask(UUIDPrimaryKeyMixin):
 
 
 class MessageStream(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
+    plan_template = models.ForeignKey(
+        CarePlanTemplate, null=False, blank=False, related_name="message_streams",
+        on_delete=models.CASCADE)
     name = models.CharField(max_length=120, null=False, blank=False)
     TYPE_CHOICES = (
         ('education', 'Education'),
@@ -142,7 +164,6 @@ class StreamMessage(UUIDPrimaryKeyMixin):
     stream = models.ForeignKey(
         MessageStream, null=True, blank=True, on_delete=models.CASCADE)
     text = models.CharField(max_length=512, null=True, blank=True)
-    # TODO: Get clarifacation from Namon about appear day/time
 
     def __str__(self):
         return '{} message'.format(self.stream.name)

@@ -82,6 +82,12 @@ class FacilitySerializer(serializers.ModelSerializer):
             return False
         return obj in request.user.employee_profile.facilities_managed.all()
 
+    def create(self, validated_data):
+        instance = super(FacilitySerializer, self).create(validated_data)
+        user = self.context['request'].user
+        user.employee_profile.facilities_managed.add(instance)
+        return instance
+
     class Meta:
         model = Facility
         fields = '__all__'

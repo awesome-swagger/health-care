@@ -57,19 +57,19 @@ router.register(
 router.register(
     r'care_plan_templates', CarePlanTemplateViewSet, base_name='care_plan_templates')
 router.register(
-    r'care_plan_instances', CarePlanInstanceViewSet, base_name='care_plan_instances')
-router.register(
-    r'plan_consent_forms', PlanConsentViewSet, base_name='plan_consent_forms')
-router.register(
     r'care_plan_goals', GoalViewSet, base_name='care_plan_goals')
 router.register(
-    r'team_tasks', TeamTaskViewSet, base_name='team_tasks')
+    r'care_plan_team_tasks', TeamTaskViewSet, base_name='care_plan_team_tasks')
 router.register(
-    r'patient_tasks', PatientTaskViewSet, base_name='patient_tasks')
+    r'care_plan_patient_tasks', PatientTaskViewSet, base_name='care_plan_patient_tasks')
 router.register(
     r'message_streams', MessageStreamViewSet, base_name='message_streams')
 router.register(
     r'stream_messages', StreamMessageViewSet, base_name='stream_messages')
+router.register(
+    r'plan_instances', CarePlanInstanceViewSet, base_name='plan_instances')
+router.register(
+    r'plan_consent_forms', PlanConsentViewSet, base_name='plan_consent_forms')
 
 
 urlpatterns = [
