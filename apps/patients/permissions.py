@@ -26,3 +26,13 @@ class PatientProfilePermissions(permissions.BasePermission):
         if request.method == "DELETE":
             return employee_profile and obj.facility in employee_profile.facilities_managed.all()
         return False
+
+
+class PatientSearchPermissions(permissions.BasePermission):
+
+    def has_permission(self, request, view):
+        # Must be an employee to hit the search endpoint.
+        employee_profile = utils.employee_profile_or_none(request.user)
+        if employee_profile is not None:
+            return True
+        return False

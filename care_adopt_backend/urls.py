@@ -16,8 +16,9 @@ from apps.patients.api import (
     PatientProfileViewSet, PatientDiagnosisViewSet, ProblemAreaViewSet,
     PatientProcedureViewSet, PatientMedicationViewSet, )
 from apps.plans.api import (
-    CarePlanTemplateViewSet, MessageStreamViewSet, StreamMessageViewSet, GoalViewSet,
-    TeamTaskViewSet, PatientTaskViewSet, CarePlanInstanceViewSet, PlanConsentViewSet, )
+    CarePlanTemplateViewSet, GoalTemplateViewSet,
+    TeamTaskTemplateViewSet, PatientTaskTemplateViewSet, CarePlanInstanceViewSet,
+    PlanConsentViewSet, InfoMessageQueueViewSet, InfoMessageViewSet, CareTeamMemberViewSet, )
 
 from apps.accounts.views import ObtainAuthToken, \
     RequestPasswordChange, ResetPassword, ValidateUserView
@@ -57,17 +58,21 @@ router.register(
 router.register(
     r'care_plan_templates', CarePlanTemplateViewSet, base_name='care_plan_templates')
 router.register(
-    r'care_plan_goals', GoalViewSet, base_name='care_plan_goals')
+    r'goal_templates', GoalTemplateViewSet, base_name='goal_templates')
 router.register(
-    r'care_plan_team_tasks', TeamTaskViewSet, base_name='care_plan_team_tasks')
+    r'team_task_templates', TeamTaskTemplateViewSet, base_name='team_task_templates')
 router.register(
-    r'care_plan_patient_tasks', PatientTaskViewSet, base_name='care_plan_patient_tasks')
+    r'patient_task_templates',
+    PatientTaskTemplateViewSet,
+    base_name='patient_task_templates')
 router.register(
-    r'message_streams', MessageStreamViewSet, base_name='message_streams')
+    r'info_message_queues', InfoMessageQueueViewSet, base_name='info_message_queues')
 router.register(
-    r'stream_messages', StreamMessageViewSet, base_name='stream_messages')
+    r'info_messages', InfoMessageViewSet, base_name='info_messages')
 router.register(
     r'plan_instances', CarePlanInstanceViewSet, base_name='plan_instances')
+router.register(
+    r'care_team_members', CareTeamMemberViewSet, base_name='care_team_members')
 router.register(
     r'plan_consent_forms', PlanConsentViewSet, base_name='plan_consent_forms')
 

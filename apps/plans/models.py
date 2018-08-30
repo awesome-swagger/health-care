@@ -1,7 +1,7 @@
 from django.db import models
 from care_adopt_backend.mixins import (
     AddressMixin, CreatedModifiedMixin, UUIDPrimaryKeyMixin)
-from apps.core.models import ProviderRole
+from apps.core.models import ProviderRole, EmployeeProfile
 from apps.patients.models import PatientProfile
 
 
@@ -21,48 +21,13 @@ class CarePlanTemplate(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
         return self.name
 
 
-class CarePlanInstance(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
-    patient = models.ForeignKey(
-        PatientProfile, null=False, blank=False, related_name="care_plans",
-        on_delete=models.CASCADE)
-    plan_template = models.ForeignKey(
-        CarePlanTemplate, null=False, blank=False, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return '{} {}: {}'.format(
-            self.patient.user.first_name,
-            self.patient.user.last_name,
-            self.plan_template.name)
-
-
-class PlanConsent(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
-    plan_instance = models.ForeignKey(
-        CarePlanInstance, null=False, blank=False, on_delete=models.CASCADE)
-    verbal_consent = models.BooleanField(default=False)
-    discussed_co_pay = models.BooleanField(default=False)
-    seen_within_year = models.BooleanField(default=False)
-    will_use_mobile_app = models.BooleanField(default=False)
-    will_interact_with_team = models.BooleanField(default=False)
-    will_complete_tasks = models.BooleanField(default=False)
-
-    class Meta:
-        ordering = ('created', )
-
-    def __str__(self):
-        return '{} {} {} Plan Concent'.format(
-            self.plan_instance.patient.user.first_name,
-            self.plan_instance.patient.user.last_name,
-            self.plan_instance.plan_template.name)
-
-
-class Goal(UUIDPrimaryKeyMixin):
+class GoalTemplate(UUIDPrimaryKeyMixin):
     plan_template = models.ForeignKey(
         CarePlanTemplate, null=False, blank=False, related_name="goals",
         on_delete=models.CASCADE)
     name = models.CharField(max_length=140, null=False, blank=False)
     description = models.CharField(max_length=240, null=False, blank=False)
     focus = models.CharField(max_length=140, null=False, blank=False)
-    progress = models.IntegerField(default=1)
     start_on_day = models.IntegerField(null=False, blank=False)
     duration_weeks = models.IntegerField(
         null=False, blank=False,
@@ -72,7 +37,7 @@ class Goal(UUIDPrimaryKeyMixin):
         return self.name
 
 
-class TeamTask(UUIDPrimaryKeyMixin):
+class TeamTaskTemplate(UUIDPrimaryKeyMixin):
     plan_template = models.ForeignKey(
         CarePlanTemplate, null=False, blank=False, related_name="team_tasks",
         on_delete=models.CASCADE)
@@ -112,7 +77,7 @@ class TeamTask(UUIDPrimaryKeyMixin):
         return self.name
 
 
-class PatientTask(UUIDPrimaryKeyMixin):
+class PatientTaskTemplate(UUIDPrimaryKeyMixin):
     plan_template = models.ForeignKey(
         CarePlanTemplate, null=False, blank=False, related_name="patient_tasks",
         on_delete=models.CASCADE)
@@ -143,9 +108,9 @@ class PatientTask(UUIDPrimaryKeyMixin):
         return self.name
 
 
-class MessageStream(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
+class InfoMessageQueue(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
     plan_template = models.ForeignKey(
-        CarePlanTemplate, null=False, blank=False, related_name="message_streams",
+        CarePlanTemplate, null=False, blank=False, related_name="info_message_queues",
         on_delete=models.CASCADE)
     name = models.CharField(max_length=120, null=False, blank=False)
     TYPE_CHOICES = (
@@ -160,23 +125,77 @@ class MessageStream(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
         return self.name
 
 
-class StreamMessage(UUIDPrimaryKeyMixin):
-    stream = models.ForeignKey(
-        MessageStream, null=True, blank=True, on_delete=models.CASCADE)
+class InfoMessage(UUIDPrimaryKeyMixin):
+    queue = models.ForeignKey(
+        InfoMessageQueue, null=False, blank=False, related_name="messages",
+        on_delete=models.CASCADE)
     text = models.CharField(max_length=512, null=True, blank=True)
 
     def __str__(self):
-        return '{} message'.format(self.stream.name)
+        return '{} message'.format(self.queue.name)
+
+
+class CarePlanInstance(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
+    patient = models.ForeignKey(
+        PatientProfile, null=False, blank=False, related_name="care_plans",
+        on_delete=models.CASCADE)
+    plan_template = models.ForeignKey(
+        CarePlanTemplate, null=False, blank=False, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return '{} {}: {}'.format(
+            self.patient.user.first_name,
+            self.patient.user.last_name,
+            self.plan_template.name)
+
+
+class PlanConsent(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
+    plan_instance = models.ForeignKey(
+        CarePlanInstance, null=False, blank=False, on_delete=models.CASCADE)
+    verbal_consent = models.BooleanField(default=False)
+    discussed_co_pay = models.BooleanField(default=False)
+    seen_within_year = models.BooleanField(default=False)
+    will_use_mobile_app = models.BooleanField(default=False)
+    will_interact_with_team = models.BooleanField(default=False)
+    will_complete_tasks = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ('created', )
+
+    def __str__(self):
+        return '{} {} {} Plan Concent'.format(
+            self.plan_instance.patient.user.first_name,
+            self.plan_instance.patient.user.last_name,
+            self.plan_instance.plan_template.name)
+
+
+class PatientTaskInstance(UUIDPrimaryKeyMixin):
+    plan_instance = models.ForeignKey(
+        CarePlanInstance, null=False, blank=False, on_delete=models.CASCADE)
+    patient_task_template = models.ForeignKey(
+        PatientTaskTemplate, null=False, blank=False, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return '{} {}: {}'.format(
+            self.plan_instance.patient.first_name,
+            self.plan_instance.patient.last_name,
+            self.patient_task_template.name)
+
+
+class CareTeamMember(UUIDPrimaryKeyMixin):
+    # Ties an employee profile to a specific role on a care plan instance
+    employee_profile = models.ForeignKey(
+        EmployeeProfile, related_name="assigned_roles", on_delete=models.CASCADE)
+    role = models.ForeignKey(
+        ProviderRole, null=False, blank=False, on_delete=models.CASCADE)
+    plan_instance = models.ForeignKey(
+        CarePlanInstance, null=False, blank=False, related_name="care_team_members",
+        on_delete=models.CASCADE)
 
 
 # class BillingInfo(CreatedModifiedMixin, UUIDPrimaryKeyMixin):  # Maybe address mixin?
 #     plan_template = models.ForeignKey(
 #         CarePlanTemplate, null=False, blank=False, on_delete=models.CASCADE)
-
-# class GeneralTask():
-#     # Name, appear time, due date
-#     pass
-
 
 # class Assessment():
 #     pass

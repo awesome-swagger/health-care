@@ -10,6 +10,7 @@ from apps.patients.models import PatientProfile
 
 from apps.core.permissions import (
     OrganizationPermissions, FacilityPermissions, EmployeeProfilePermissions, )
+from apps.plans.models import (CareTeamMember, )
 
 
 class OrganizationSerializer(serializers.ModelSerializer):
@@ -111,12 +112,10 @@ class FacilityViewSet(viewsets.ModelViewSet):
 
     Permissions
     ========
-    * Employee's will not have access to create, update, or delete facilities unless they are a manager of the organization.
-    * Patient's will only have retrieve (GET) access.
-
-    The endpoint filters based on what the requesting user should have access to.  For example, employees
-    have access to all of the facilities that they are an employee or manager of, and patient's only
-    have access to the facility they are recieving care from.
+    * Employee's do not have access to create, update, or delete facilities unless they are a manager of the organization.
+    * Patient's only have retrieve (GET) access.
+    * Employees have access to all of the facilities that they are an employee or manager of.
+    * Patient's only have access to the facility they are recieving care from.
     """
     serializer_class = FacilitySerializer
     permission_classes = (permissions.IsAuthenticated, FacilityPermissions, )
@@ -225,10 +224,16 @@ class ProviderSpecialtyViewSet(
 
 
 class EmployeeUserInfo(SettingsUserForSerializers, serializers.ModelSerializer):
+    image_url = serializers.SerializerMethodField()
+
+    def get_image_url(self, obj):
+        return obj.get_image_url()
+
     class Meta:
-        read_only_fields = ('email', 'date_joined', 'last_login', )
+        read_only_fields = ('email', 'date_joined', 'last_login', 'image_url', )
         exclude = ('password', 'is_superuser', 'groups', 'user_permissions',
-                   'validation_key', 'validated_at', 'reset_key', 'is_developer', )
+                   'validation_key', 'validated_at', 'reset_key', 'is_developer',
+                   'image', )
 
 
 class EmployeeProfileSerializer(serializers.ModelSerializer):
@@ -292,8 +297,11 @@ class EmployeeProfileViewSet(viewsets.ModelViewSet):
             # TODO: For employees, only return employees in the same facilities/organizations
             return qs.all()
         if patient_profile is not None:
-            # TODO: For patients, only return employees that are providers for the patient
-            return qs.all()
+            care_team_members = CareTeamMember.objects.filter(
+                plan_instance__patient=patient_profile).values_list(
+                'employee_profile', flat=True).distinct()
+            return qs.filter(id__in=list(care_team_members))
+        return qs.none()
 
 
 class DiagnosisSerializer(serializers.ModelSerializer):

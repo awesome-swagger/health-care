@@ -2,12 +2,17 @@ from django.db.models import Q
 from rest_framework import serializers, views, viewsets, permissions, mixins
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from care_adopt_backend import utils
+from care_adopt_backend.permissions import EmployeeOrReadOnly
 from apps.accounts.serializers import SettingsUserForSerializers
 from apps.core.models import EmployeeProfile
 from apps.patients.models import (
     PatientProfile, PatientDiagnosis, ProblemArea, PatientProcedure,
     PatientMedication, )
-from apps.patients.permissions import (PatientProfilePermissions, )
+from apps.patients.permissions import (
+    PatientProfilePermissions, PatientSearchPermissions, )
+from apps.plans.models import (CareTeamMember, )
+from apps.plans.api import (CareTeamMemberSerializer, )
 
 
 class PatientUserInfo(SettingsUserForSerializers, serializers.ModelSerializer):
@@ -49,21 +54,24 @@ class PatientProfileViewSet(viewsets.ModelViewSet):
 
     Query Params
     ==============
-    *?status=value* - filters out users by status, must be exact match.
+    `?status=value` - filters out users by status, must be exact match.
+
+    Additional Endpoints
+    ====================
+    `/api/patient_profiles/search/`
+
+    You can post a name to this endpoint and it will return patients that are available
+    to the requesting user who's name matches the query.  Accepts a post request with a
+    `name` field in the request payload.
     """
     serializer_class = PatientProfileSerializer
     permission_classes = (permissions.IsAuthenticated, PatientProfilePermissions, )
 
     def get_queryset(self):
         qs = PatientProfile.objects.all()
-        try:
-            employee_profile = self.request.user.employee_profile
-        except EmployeeProfile.DoesNotExist:
-            employee_profile = None
-        try:
-            patient_profile = self.request.user.patient_profile
-        except PatientProfile.DoesNotExist:
-            patient_profile = None
+        employee_profile = utils.employee_profile_or_none(self.request.user)
+        patient_profile = utils.patient_profile_or_none(self.request.user)
+        # If user is a employee, get all organizations that they belong to
         if employee_profile is not None:
             # Filter out users that reqesting user doesn't have access to
             qs = qs.filter(
@@ -73,6 +81,7 @@ class PatientProfileViewSet(viewsets.ModelViewSet):
             status = self.request.query_params.get('status')
             if status:
                 qs = qs.filter(status__iexact=status)
+        # If user is a patient, only return the organization their facility belongs to
         elif patient_profile is not None:
             # Return only this patient
             qs = qs.filter(user__id=self.request.user.id)
@@ -80,7 +89,9 @@ class PatientProfileViewSet(viewsets.ModelViewSet):
             qs = qs.none()
         return qs
 
-    @action(methods=['post'], detail=False)
+    @action(methods=['post'], detail=False, permission_classes=(
+        PatientSearchPermissions,
+    ))
     def search(self, request):
         # TODO: If a user is an organization manager they get all the patients that belong to that organization
         # TODO: If a user is a facility manager they get all the patients that belong to that facility
@@ -103,7 +114,7 @@ class PatientDiagnosisSerializer(serializers.ModelSerializer):
 
 class PatientDiagnosisViewSet(viewsets.ModelViewSet):
     serializer_class = PatientDiagnosisSerializer
-    permission_classes = (permissions.IsAuthenticated, )
+    permission_classes = (permissions.IsAuthenticated, EmployeeOrReadOnly, )
     queryset = PatientDiagnosis.objects.all()
 
 
@@ -115,7 +126,7 @@ class ProblemAreaSerializer(serializers.ModelSerializer):
 
 class ProblemAreaViewSet(viewsets.ModelViewSet):
     serializer_class = ProblemAreaSerializer
-    permission_classes = (permissions.IsAuthenticated, )
+    permission_classes = (permissions.IsAuthenticated, EmployeeOrReadOnly, )
     queryset = ProblemArea.objects.all()
 
 
@@ -127,7 +138,7 @@ class PatientProcedureSerializer(serializers.ModelSerializer):
 
 class PatientProcedureViewSet(viewsets.ModelViewSet):
     serializer_class = PatientProcedureSerializer
-    permission_classes = (permissions.IsAuthenticated, )
+    permission_classes = (permissions.IsAuthenticated, EmployeeOrReadOnly, )
     queryset = PatientProcedure.objects.all()
 
 
@@ -139,5 +150,5 @@ class PatientMedicationSerializer(serializers.ModelSerializer):
 
 class PatientMedicationViewSet(viewsets.ModelViewSet):
     serializer_class = PatientMedicationSerializer
-    permission_classes = (permissions.IsAuthenticated, )
+    permission_classes = (permissions.IsAuthenticated, EmployeeOrReadOnly, )
     queryset = PatientMedication.objects.all()

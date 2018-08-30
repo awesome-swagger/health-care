@@ -58,11 +58,15 @@ class UserSerializer(SettingsUserForSerializers,
                      serializers.ModelSerializer):
     employee_profile = UserEmployeeInfo()
     patient_profile = UserPatientInfo()
+    image_url = serializers.SerializerMethodField()
+
+    def get_image_url(self, obj):
+        return obj.get_image_url()
 
     class Meta:
         # the model attribute will be set by
         # SettingsUserForSerializers.__init__() - see that method
         read_only_fields = ('email', 'date_joined', 'last_login',
-                            'is_developer', )
+                            'is_developer', 'image_url', )
         exclude = ('password', 'is_superuser', 'groups', 'user_permissions',
                    'validation_key', 'validated_at', 'reset_key', )

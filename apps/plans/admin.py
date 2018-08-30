@@ -1,20 +1,26 @@
 from django.contrib import admin
 from apps.plans.models import (
-    CarePlanTemplate, Goal, TeamTask, CarePlanInstance, PlanConsent,
-    MessageStream, StreamMessage, )
+    CarePlanTemplate, GoalTemplate, TeamTaskTemplate, CarePlanInstance, PlanConsent,
+    InfoMessageQueue, InfoMessage, PatientTaskTemplate, CareTeamMember, )
 
 
 class CarePlanTemplateAdmin(admin.ModelAdmin):
     list_display = ('name', 'type', )
 
 
-class GoalAdmin(admin.ModelAdmin):
-    list_display = ('name', 'progress', )
+class GoalTemplateAdmin(admin.ModelAdmin):
+    list_display = ('name', 'plan_template', 'start_on_day', 'duration_weeks', )
 
 
-class TeamTaskAdmin(admin.ModelAdmin):
+class TeamTaskTemplateAdmin(admin.ModelAdmin):
     list_display = (
         'name', 'category', 'start_on_day', 'frequency',
+        'repeat_amount', 'appear_time', 'due_time', )
+
+
+class PatientTaskTemplateAdmin(admin.ModelAdmin):
+    list_display = (
+        'name', 'start_on_day', 'frequency',
         'repeat_amount', 'appear_time', 'due_time', )
 
 
@@ -29,14 +35,20 @@ class PlanConsentAdmin(admin.ModelAdmin):
         'will_use_mobile_app', 'will_interact_with_team', 'will_complete_tasks', )
 
 
-class MessageStreamAdmin(admin.ModelAdmin):
+class InfoMessageQueueAdmin(admin.ModelAdmin):
     list_display = ('name', 'type', )
 
 
+class CareTeamMemberAdmin(admin.ModelAdmin):
+    list_display = ('employee_profile', 'role', 'plan_instance', )
+
+
 admin.site.register(CarePlanTemplate, CarePlanTemplateAdmin)
-admin.site.register(Goal, GoalAdmin)
-admin.site.register(TeamTask, TeamTaskAdmin)
+admin.site.register(GoalTemplate, GoalTemplateAdmin)
+admin.site.register(TeamTaskTemplate, TeamTaskTemplateAdmin)
+admin.site.register(PatientTaskTemplate, PatientTaskTemplateAdmin)
 admin.site.register(CarePlanInstance, CarePlanInstanceAdmin)
 admin.site.register(PlanConsent, PlanConsentAdmin)
-admin.site.register(MessageStream, MessageStreamAdmin)
-admin.site.register(StreamMessage)
+admin.site.register(InfoMessageQueue, InfoMessageQueueAdmin)
+admin.site.register(InfoMessage)
+admin.site.register(CareTeamMember, CareTeamMemberAdmin)
