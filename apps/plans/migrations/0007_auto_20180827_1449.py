@@ -54,20 +54,17 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='goal',
             name='plan_template',
-            field=models.ForeignKey(default='c0c1f9d5-a7c7-4e6f-ba09-9e136302d998', on_delete=django.db.models.deletion.CASCADE, related_name='goals', to='plans.CarePlanTemplate'),
-            preserve_default=False,
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='goals', to='plans.CarePlanTemplate'),
         ),
         migrations.AddField(
             model_name='patienttask',
             name='plan_template',
-            field=models.ForeignKey(default='c0c1f9d5-a7c7-4e6f-ba09-9e136302d998', on_delete=django.db.models.deletion.CASCADE, related_name='patient_tasks', to='plans.CarePlanTemplate'),
-            preserve_default=False,
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='patient_tasks', to='plans.CarePlanTemplate'),
         ),
         migrations.AddField(
             model_name='teamtask',
             name='plan_template',
-            field=models.ForeignKey(default='c0c1f9d5-a7c7-4e6f-ba09-9e136302d998', on_delete=django.db.models.deletion.CASCADE, related_name='team_tasks', to='plans.CarePlanTemplate'),
-            preserve_default=False,
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='team_tasks', to='plans.CarePlanTemplate'),
         ),
         migrations.AlterField(
             model_name='careplaninstance',

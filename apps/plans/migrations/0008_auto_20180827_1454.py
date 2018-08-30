@@ -14,7 +14,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='infomessage',
             name='queue',
-            field=models.ForeignKey(default='7e63a524-51dd-44f1-a249-97b58e2f6031', on_delete=django.db.models.deletion.CASCADE, related_name='messages', to='plans.InfoMessageQueue'),
-            preserve_default=False,
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='messages', to='plans.InfoMessageQueue'),
         ),
     ]
