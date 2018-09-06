@@ -89,7 +89,6 @@ class PatientMedication(UUIDPrimaryKeyMixin):
     dose_mg = models.IntegerField(null=False, blank=False)
     date_prescribed = models.DateField(null=False, blank=False)
     duration_days = models.IntegerField(null=False, blank=False)
-    refills = models.IntegerField(default=0)
     prescribing_practitioner = models.ForeignKey(
         EmployeeProfile, null=True, blank=True, on_delete=models.SET_NULL)
     instructions = models.CharField(max_length=480, null=True, blank=True)

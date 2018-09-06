@@ -117,6 +117,19 @@ class PatientDiagnosisViewSet(viewsets.ModelViewSet):
     permission_classes = (permissions.IsAuthenticated, EmployeeOrReadOnly, )
     queryset = PatientDiagnosis.objects.all()
 
+    def get_queryset(self):
+        qs = self.queryset
+        employee_profile = utils.employee_profile_or_none(self.request.user)
+        patient_profile = utils.patient_profile_or_none(self.request.user)
+
+        if employee_profile is not None:
+            # TODO: Only get diagnosis for patients this employee has access to
+            return qs.all()
+        elif patient_profile is not None:
+            return qs.filter(patient__id=patient_profile.id)
+        else:
+            return qs.none()
+
 
 class ProblemAreaSerializer(serializers.ModelSerializer):
     class Meta:
@@ -128,6 +141,19 @@ class ProblemAreaViewSet(viewsets.ModelViewSet):
     serializer_class = ProblemAreaSerializer
     permission_classes = (permissions.IsAuthenticated, EmployeeOrReadOnly, )
     queryset = ProblemArea.objects.all()
+
+    def get_queryset(self):
+        qs = self.queryset
+        employee_profile = utils.employee_profile_or_none(self.request.user)
+        patient_profile = utils.patient_profile_or_none(self.request.user)
+
+        if employee_profile is not None:
+            # TODO: Only get problem areas for patients this employee has access to
+            return qs.all()
+        elif patient_profile is not None:
+            return qs.filter(patient__id=patient_profile.id)
+        else:
+            return qs.none()
 
 
 class PatientProcedureSerializer(serializers.ModelSerializer):
@@ -141,6 +167,19 @@ class PatientProcedureViewSet(viewsets.ModelViewSet):
     permission_classes = (permissions.IsAuthenticated, EmployeeOrReadOnly, )
     queryset = PatientProcedure.objects.all()
 
+    def get_queryset(self):
+        qs = self.queryset
+        employee_profile = utils.employee_profile_or_none(self.request.user)
+        patient_profile = utils.patient_profile_or_none(self.request.user)
+
+        if employee_profile is not None:
+            # TODO: Only get procedures for patients this employee has access to
+            return qs.all()
+        elif patient_profile is not None:
+            return qs.filter(patient__id=patient_profile.id)
+        else:
+            return qs.none()
+
 
 class PatientMedicationSerializer(serializers.ModelSerializer):
     class Meta:
@@ -152,3 +191,16 @@ class PatientMedicationViewSet(viewsets.ModelViewSet):
     serializer_class = PatientMedicationSerializer
     permission_classes = (permissions.IsAuthenticated, EmployeeOrReadOnly, )
     queryset = PatientMedication.objects.all()
+
+    def get_queryset(self):
+        qs = self.queryset
+        employee_profile = utils.employee_profile_or_none(self.request.user)
+        patient_profile = utils.patient_profile_or_none(self.request.user)
+
+        if employee_profile is not None:
+            # TODO: Only get medications for patients this employee has access to
+            return qs.all()
+        elif patient_profile is not None:
+            return qs.filter(patient__id=patient_profile.id)
+        else:
+            return qs.none()

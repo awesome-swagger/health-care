@@ -17,8 +17,8 @@ from apps.patients.api import (
     PatientProcedureViewSet, PatientMedicationViewSet, )
 from apps.plans.api import (
     CarePlanTemplateViewSet, GoalTemplateViewSet,
-    TeamTaskTemplateViewSet, PatientTaskTemplateViewSet, CarePlanInstanceViewSet,
-    PlanConsentViewSet, InfoMessageQueueViewSet, InfoMessageViewSet, CareTeamMemberViewSet, )
+    TeamTaskTemplateViewSet, PatientTaskTemplateViewSet, PatientTaskInstanceViewSet, CarePlanInstanceViewSet,
+    PlanConsentViewSet, InfoMessageQueueViewSet, InfoMessageViewSet, CareTeamMemberViewSet, TodaysTasksAPIView, )
 
 from apps.accounts.views import ObtainAuthToken, \
     RequestPasswordChange, ResetPassword, ValidateUserView
@@ -66,6 +66,10 @@ router.register(
     PatientTaskTemplateViewSet,
     base_name='patient_task_templates')
 router.register(
+    r'patient_task_instances',
+    PatientTaskInstanceViewSet,
+    base_name='patient_task_instances')
+router.register(
     r'info_message_queues', InfoMessageQueueViewSet, base_name='info_message_queues')
 router.register(
     r'info_messages', InfoMessageViewSet, base_name='info_messages')
@@ -97,6 +101,8 @@ urlpatterns = [
         ResetPassword.as_view(), name='reset-request'),
     url(r'validate/(?P<validation_key>[a-z0-9\-]+)/$',
         ValidateUserView.as_view(), name='user-validation'),
+
+    url(r'^api/todays_tasks/', TodaysTasksAPIView.as_view()),
 ]
 
 if settings.DEBUG:

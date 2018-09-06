@@ -1,7 +1,8 @@
 from django.contrib import admin
 from apps.plans.models import (
     CarePlanTemplate, GoalTemplate, TeamTaskTemplate, CarePlanInstance, PlanConsent,
-    InfoMessageQueue, InfoMessage, PatientTaskTemplate, CareTeamMember, )
+    InfoMessageQueue, InfoMessage, PatientTaskTemplate, CareTeamMember,
+    PatientTaskInstance, MedicationTaskTemplate, MedicationTaskInstance, )
 
 
 class CarePlanTemplateAdmin(admin.ModelAdmin):
@@ -43,6 +44,10 @@ class CareTeamMemberAdmin(admin.ModelAdmin):
     list_display = ('employee_profile', 'role', 'plan_instance', )
 
 
+class PatientTaskInstanceAdmin(admin.ModelAdmin):
+    list_display = ('plan_instance', 'patient_task_template', 'due_datetime', )
+
+
 admin.site.register(CarePlanTemplate, CarePlanTemplateAdmin)
 admin.site.register(GoalTemplate, GoalTemplateAdmin)
 admin.site.register(TeamTaskTemplate, TeamTaskTemplateAdmin)
@@ -52,3 +57,6 @@ admin.site.register(PlanConsent, PlanConsentAdmin)
 admin.site.register(InfoMessageQueue, InfoMessageQueueAdmin)
 admin.site.register(InfoMessage)
 admin.site.register(CareTeamMember, CareTeamMemberAdmin)
+admin.site.register(PatientTaskInstance, PatientTaskInstanceAdmin)
+admin.site.register(MedicationTaskTemplate)
+admin.site.register(MedicationTaskInstance)
