@@ -121,6 +121,42 @@ class PlanConsentViewSet(viewsets.ModelViewSet):
         return PlanConsent.objects.none()
 
 
+class CareTeamMemberSerializer(serializers.ModelSerializer):
+    employee_profile = EmployeeProfileSerializer(many=False)
+    role = ProviderRoleSerializer(many=False)
+    plan_instance = CarePlanInstanceSerializer(many=False)
+
+    class Meta:
+        model = CareTeamMember
+        fields = '__all__'
+
+
+class CareTeamMemberViewSet(viewsets.ModelViewSet):
+    serializer_class = CareTeamMemberSerializer
+    permission_classes = (permissions.IsAuthenticated, EmployeeOrReadOnly, )
+
+    def get_queryset(self):
+        qs = CareTeamMember.objects.all()
+
+        plan_instance = self.request.query_params.get('plan')
+        if plan_instance:
+            qs = qs.filter(plan_instance=plan_instance)
+        employee_param = self.request.query_params.get('employee')
+        if employee_param:
+            qs = qs.filter(employee_profile=employee_param)
+
+        employee_profile = utils.employee_profile_or_none(self.request.user)
+        patient_profile = utils.patient_profile_or_none(self.request.user)
+        if employee_profile is not None:
+            qs = qs.all()
+        elif patient_profile is not None:
+            qs = qs.filter(
+                plan_instance__patient=patient_profile)
+        else:
+            return qs.none()
+        return qs
+
+
 class GoalTemplateSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -225,42 +261,6 @@ class InfoMessageViewSet(viewsets.ModelViewSet):
     serializer_class = InfoMessageSerializer
     permission_classes = (permissions.IsAuthenticated, EmployeeOrReadOnly, )
     queryset = InfoMessage.objects.all()
-
-
-class CareTeamMemberSerializer(serializers.ModelSerializer):
-    employee_profile = EmployeeProfileSerializer(many=False)
-    role = ProviderRoleSerializer(many=False)
-    plan_instance = CarePlanInstanceSerializer(many=False)
-
-    class Meta:
-        model = CareTeamMember
-        fields = '__all__'
-
-
-class CareTeamMemberViewSet(viewsets.ModelViewSet):
-    serializer_class = CareTeamMemberSerializer
-    permission_classes = (permissions.IsAuthenticated, EmployeeOrReadOnly, )
-
-    def get_queryset(self):
-        qs = CareTeamMember.objects.all()
-
-        plan_instance = self.request.query_params.get('plan')
-        if plan_instance:
-            qs = qs.filter(plan_instance=plan_instance)
-        employee_param = self.request.query_params.get('employee')
-        if employee_param:
-            qs = qs.filter(employee_profile=employee_param)
-
-        employee_profile = utils.employee_profile_or_none(self.request.user)
-        patient_profile = utils.patient_profile_or_none(self.request.user)
-        if employee_profile is not None:
-            qs = qs.all()
-        elif patient_profile is not None:
-            qs = qs.filter(
-                plan_instance__patient=patient_profile)
-        else:
-            return qs.none()
-        return qs
 
 
 class TodaysTasksAPIView(APIView):

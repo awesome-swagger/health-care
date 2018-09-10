@@ -1,7 +1,7 @@
 from django.contrib import admin
 from apps.core.models import (
     Organization, Facility, EmployeeProfile, ProviderTitle, ProviderRole,
-    ProviderSpecialty, Diagnosis, Medication, Procedure)
+    ProviderSpecialty, Diagnosis, Medication, Procedure, Symptom)
 
 
 class OrganizationAdmin(admin.ModelAdmin):
@@ -40,6 +40,10 @@ class ProcedureAdmin(admin.ModelAdmin):
     list_display = ('name', 'px_code', )
 
 
+class SymptomAdmin(admin.ModelAdmin):
+    list_display = ('name', )
+
+
 admin.site.register(Organization, OrganizationAdmin)
 admin.site.register(Facility, FacilityAdmin)
 admin.site.register(EmployeeProfile, EmployeeProfileAdmin)
@@ -49,3 +53,4 @@ admin.site.register(ProviderSpecialty, ProviderSpecialtyAdmin)
 admin.site.register(Diagnosis, DiagnosisAdmin)
 admin.site.register(Medication, MedicationAdmin)
 admin.site.register(Procedure, ProcedureAdmin)
+admin.site.register(Symptom, SymptomAdmin)

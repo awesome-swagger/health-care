@@ -1,11 +1,14 @@
 from datetime import datetime, timedelta
 from django.db import models
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from care_adopt_backend.mixins import (
     AddressMixin, CreatedModifiedMixin, UUIDPrimaryKeyMixin)
-from apps.core.models import ProviderRole, EmployeeProfile
-from apps.patients.models import PatientProfile, PatientMedication
+from apps.core.models import (
+    ProviderRole, EmployeeProfile, Symptom, )
+from apps.patients.models import (
+    PatientProfile, PatientMedication, )
 
 
 FREQUENCY_CHOICES = (
@@ -27,46 +30,10 @@ PLAN_TYPE_CHOICES = (
 )
 
 
-class AbstractTask(models.Model):
-    start_on_day = models.IntegerField(null=False, blank=False)
-    frequency = models.CharField(
-        max_length=20, choices=FREQUENCY_CHOICES, default='once')
-
-    repeat_amount = models.IntegerField(
-        default=-1,
-        help_text="""
-        Only matters if frequency is not 'once'.
-        If it is below 0, it will repeat until the plan ends
-        """
-    )
-    appear_time = models.TimeField(null=False, blank=False)
-    due_time = models.TimeField(null=False, blank=False)
-
-    class Meta:
-        abstract = True
-
-
 class CarePlanTemplate(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
     name = models.CharField(max_length=120)
-
     type = models.CharField(max_length=10, choices=PLAN_TYPE_CHOICES)
     duration_weeks = models.IntegerField(null=False, blank=False)
-
-    def __str__(self):
-        return self.name
-
-
-class GoalTemplate(UUIDPrimaryKeyMixin):
-    plan_template = models.ForeignKey(
-        CarePlanTemplate, null=False, blank=False, related_name="goals",
-        on_delete=models.CASCADE)
-    name = models.CharField(max_length=140, null=False, blank=False)
-    description = models.CharField(max_length=240, null=False, blank=False)
-    focus = models.CharField(max_length=140, null=False, blank=False)
-    start_on_day = models.IntegerField(null=False, blank=False)
-    duration_weeks = models.IntegerField(
-        null=False, blank=False,
-        help_text="If below 0, the goal will continue until the plan ends.")
 
     def __str__(self):
         return self.name
@@ -104,6 +71,59 @@ class PlanConsent(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
             self.plan_instance.patient.user.first_name,
             self.plan_instance.patient.user.last_name,
             self.plan_instance.plan_template.name)
+
+
+class CareTeamMember(UUIDPrimaryKeyMixin):
+    employee_profile = models.ForeignKey(
+        EmployeeProfile, related_name="assigned_roles", on_delete=models.CASCADE)
+    role = models.ForeignKey(
+        ProviderRole, null=False, blank=False, on_delete=models.CASCADE)
+    plan_instance = models.ForeignKey(
+        CarePlanInstance, null=False, blank=False, related_name="care_team_members",
+        on_delete=models.CASCADE)
+
+    def __str__(self):
+        return '{} {}, {} for {}'.format(
+            self.employee_profile.user.first_name,
+            self.employee_profile.user.last_name,
+            self.role.name,
+            self.plan_instance,
+        )
+
+
+class GoalTemplate(UUIDPrimaryKeyMixin):
+    plan_template = models.ForeignKey(
+        CarePlanTemplate, null=False, blank=False, related_name="goals",
+        on_delete=models.CASCADE)
+    name = models.CharField(max_length=140, null=False, blank=False)
+    description = models.CharField(max_length=240, null=False, blank=False)
+    focus = models.CharField(max_length=140, null=False, blank=False)
+    start_on_day = models.IntegerField(null=False, blank=False)
+    duration_weeks = models.IntegerField(
+        null=False, blank=False,
+        help_text="If below 0, the goal will continue until the plan ends.")
+
+    def __str__(self):
+        return self.name
+
+
+class AbstractTask(models.Model):
+    start_on_day = models.IntegerField(null=False, blank=False)
+    frequency = models.CharField(
+        max_length=20, choices=FREQUENCY_CHOICES, default='once')
+
+    repeat_amount = models.IntegerField(
+        default=-1,
+        help_text="""
+        Only matters if frequency is not 'once'.
+        If it is below 0, it will repeat until the plan ends
+        """
+    )
+    appear_time = models.TimeField(null=False, blank=False)
+    due_time = models.TimeField(null=False, blank=False)
+
+    class Meta:
+        abstract = True
 
 
 class PatientTaskTemplate(UUIDPrimaryKeyMixin, AbstractTask):
@@ -154,8 +174,21 @@ class TeamTaskTemplate(UUIDPrimaryKeyMixin, AbstractTask):
         return self.name
 
 
+class TeamTaskInstance(UUIDPrimaryKeyMixin):
+    plan_instance = models.ForeignKey(
+        CarePlanInstance, null=False, blank=False, on_delete=models.CASCADE)
+    team_task_template = models.ForeignKey(
+        TeamTaskTemplate, null=False, blank=False, on_delete=models.CASCADE)
+    appear_datetime = models.DateTimeField(null=False, blank=False)
+    due_datetime = models.DateTimeField(null=False, blank=False)
+
+    class Meta:
+        ordering = ('plan_instance', 'team_task_template', 'due_datetime', )
+
+
 class MedicationTaskTemplate(UUIDPrimaryKeyMixin, AbstractTask):
-    # Medication task templates are created on the plan instance, not the plan template
+    # NOTE: Medication task templates are created on the plan instance,
+    # NOT the plan template like all other tasks
     plan_instance = models.ForeignKey(
         CarePlanInstance, null=False, blank=False, on_delete=models.CASCADE)
     patient_medication = models.ForeignKey(
@@ -198,22 +231,57 @@ class MedicationTaskInstance(UUIDPrimaryKeyMixin):
         )
 
 
-class CareTeamMember(UUIDPrimaryKeyMixin):
-    employee_profile = models.ForeignKey(
-        EmployeeProfile, related_name="assigned_roles", on_delete=models.CASCADE)
-    role = models.ForeignKey(
-        ProviderRole, null=False, blank=False, on_delete=models.CASCADE)
-    plan_instance = models.ForeignKey(
-        CarePlanInstance, null=False, blank=False, related_name="care_team_members",
+class SymptomTaskTemplate(UUIDPrimaryKeyMixin, AbstractTask):
+    plan_template = models.ForeignKey(
+        CarePlanTemplate, null=False, blank=False, related_name="symptom_tasks",
         on_delete=models.CASCADE)
 
     def __str__(self):
-        return '{} {}, {} for {}'.format(
-            self.employee_profile.user.first_name,
-            self.employee_profile.user.last_name,
-            self.role.name,
-            self.plan_instance,
+        return '{} symptom report template'.format(self.plan_template.name)
+
+
+class SymptomTaskInstance(UUIDPrimaryKeyMixin):
+    plan_instance = models.ForeignKey(
+        CarePlanInstance, null=False, blank=False, on_delete=models.CASCADE)
+    symptom_task_template = models.ForeignKey(
+        SymptomTaskTemplate, null=False, blank=False, on_delete=models.CASCADE)
+    appear_datetime = models.DateTimeField(null=False, blank=False)
+    due_datetime = models.DateTimeField(null=False, blank=False)
+    comments = models.CharField(max_length=1024, null=False, blank=False)
+
+    def __str__(self):
+        return '{} {}\'s symptom report due by {}'.format(
+            self.plan_instance.patient.user.first_name,
+            self.plan_instance.patient.user.first_name,
+            self.due_datetime,
         )
+
+
+class SymptomRating(UUIDPrimaryKeyMixin):
+    symptom_task_instance = models.ForeignKey(
+        SymptomTaskInstance, null=False, blank=False, on_delete=models.CASCADE)
+    symptom = models.ForeignKey(
+        Symptom, null=False, blank=False, on_delete=models.CASCADE)
+    rating = models.IntegerField(null=False, blank=False, validators=[
+        MaxValueValidator(5),
+        MinValueValidator(1)
+    ])
+
+    def __str__(self):
+        return '{} {} {}: {}'.format(
+            self.symptom_task_instance.plan_instance.patient.user.first_name,
+            self.symptom_task_instance.plan_instance.patient.user.last_name,
+            self.symptom.name,
+            self.rating,
+        )
+
+
+class AssessmentTaskTemplate(UUIDPrimaryKeyMixin, AbstractTask):
+    plan_template = models.ForeignKey(
+        CarePlanTemplate, null=False, blank=False, related_name="assessment_tasks",
+        on_delete=models.CASCADE)
+    tracks_outcome = models.BooleanField(default=False)
+    tracks_satisfaction = models.BooleanField(default=False)
 
 
 class InfoMessageQueue(CreatedModifiedMixin, UUIDPrimaryKeyMixin):

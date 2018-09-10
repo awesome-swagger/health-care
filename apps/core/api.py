@@ -5,7 +5,7 @@ from care_adopt_backend import utils
 from apps.accounts.serializers import SettingsUserForSerializers
 from apps.core.models import (
     Organization, Facility, EmployeeProfile, ProviderTitle, ProviderRole,
-    ProviderSpecialty, Diagnosis, Medication, Procedure, )
+    ProviderSpecialty, Diagnosis, Medication, Procedure, Symptom, )
 from apps.patients.models import PatientProfile
 
 from apps.core.permissions import (
@@ -350,3 +350,19 @@ class ProcedureViewSet(
     serializer_class = ProcedureSerializer
     permission_classes = (permissions.AllowAny, )
     queryset = Procedure.objects.all()
+
+
+class SymptomSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Symptom
+        fields = '__all__'
+
+
+class SymptomViewSet(
+    mixins.RetrieveModelMixin,
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet
+):
+    serializer_class = SymptomSerializer
+    permission_classes = (permissions.AllowAny, )
+    queryset = Symptom.objects.all()

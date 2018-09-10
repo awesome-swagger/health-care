@@ -136,3 +136,21 @@ class Procedure(UUIDPrimaryKeyMixin):
 
     def __str__(self):
         return self.name
+
+
+class Symptom(UUIDPrimaryKeyMixin):
+    name = models.CharField(max_length=140, null=False, blank=False)
+    worst_label = models.CharField(max_length=40, null=False, blank=False, help_text="""
+    This is the label that will show on symptom reports at the 1 position.  For example
+    for the fatigue symptom that could be "very fatigued".
+    """)
+    best_label = models.CharField(max_length=40, null=False, blank=False, help_text="""
+    Same as the worst label, but this will show at the 5 position.  For example
+    for the fatigue symptom that could be "no fatigue".
+    """)
+
+    class Meta:
+        ordering = ('name', )
+
+    def __str__(self):
+        return self.name
