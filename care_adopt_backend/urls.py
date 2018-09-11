@@ -11,7 +11,7 @@ from apps.accounts.views import UserViewSet
 from apps.core.api import (
     OrganizationViewSet, FacilityViewSet, EmployeeProfileViewSet, ProviderTitleViewSet,
     ProviderRoleViewSet, ProviderSpecialtyViewSet, DiagnosisViewSet,  MedicationViewSet,
-    ProcedureViewSet, )
+    ProcedureViewSet, SymptomViewSet, )
 from apps.patients.api import (
     PatientProfileViewSet, PatientDiagnosisViewSet, ProblemAreaViewSet,
     PatientProcedureViewSet, PatientMedicationViewSet, )
@@ -20,8 +20,21 @@ from apps.plans.api import (
     CareTeamMemberViewSet, GoalTemplateViewSet, InfoMessageQueueViewSet,
     InfoMessageViewSet, )
 from apps.tasks.api import (
-    PatientTaskTemplateViewSet, PatientTaskInstanceViewSet, TeamTaskTemplateViewSet,
-    TodaysTasksAPIView, )
+    PatientTaskTemplateViewSet,
+    PatientTaskInstanceViewSet,
+    TeamTaskTemplateViewSet,
+    TeamTaskInstanceViewSet,
+    MedicationTaskTemplateViewSet,
+    MedicationTaskInstanceViewSet,
+    SymptomTaskTemplateViewSet,
+    SymptomTaskInstanceViewSet,
+    SymptomRatingViewSet,
+    AssessmentTaskTemplateViewSet,
+    AssessmentQuestionViewSet,
+    AssessmentTaskInstanceViewSet,
+    AssessmentResponseViewSet,
+    TodaysTasksAPIView,
+)
 from apps.accounts.views import ObtainAuthToken, \
     RequestPasswordChange, ResetPassword, ValidateUserView
 
@@ -46,6 +59,7 @@ router.register(
 router.register(r'diagnosis', DiagnosisViewSet, base_name='diagnosis')
 router.register(r'medications', MedicationViewSet, base_name='medications')
 router.register(r'procedures', ProcedureViewSet, base_name='procedures')
+router.register(r'symptoms', SymptomViewSet, base_name='symptoms')
 # Patients
 router.register(
     r'patient_profiles', PatientProfileViewSet, base_name='patient_profiles')
@@ -60,9 +74,18 @@ router.register(
 router.register(
     r'care_plan_templates', CarePlanTemplateViewSet, base_name='care_plan_templates')
 router.register(
+    r'plan_instances', CarePlanInstanceViewSet, base_name='plan_instances')
+router.register(
+    r'plan_consent_forms', PlanConsentViewSet, base_name='plan_consent_forms')
+router.register(
+    r'care_team_members', CareTeamMemberViewSet, base_name='care_team_members')
+router.register(
     r'goal_templates', GoalTemplateViewSet, base_name='goal_templates')
 router.register(
-    r'team_task_templates', TeamTaskTemplateViewSet, base_name='team_task_templates')
+    r'info_message_queues', InfoMessageQueueViewSet, base_name='info_message_queues')
+router.register(
+    r'info_messages', InfoMessageViewSet, base_name='info_messages')
+# Tasks
 router.register(
     r'patient_task_templates',
     PatientTaskTemplateViewSet,
@@ -72,15 +95,45 @@ router.register(
     PatientTaskInstanceViewSet,
     base_name='patient_task_instances')
 router.register(
-    r'info_message_queues', InfoMessageQueueViewSet, base_name='info_message_queues')
+    r'team_task_templates', TeamTaskTemplateViewSet, base_name='team_task_templates')
 router.register(
-    r'info_messages', InfoMessageViewSet, base_name='info_messages')
+    r'team_task_instances', TeamTaskInstanceViewSet, base_name='team_task_instances')
 router.register(
-    r'plan_instances', CarePlanInstanceViewSet, base_name='plan_instances')
+    r'medication_task_templates',
+    MedicationTaskTemplateViewSet,
+    base_name='medication_task_templates')
 router.register(
-    r'care_team_members', CareTeamMemberViewSet, base_name='care_team_members')
+    r'medication_task_instances',
+    MedicationTaskInstanceViewSet,
+    base_name='medication_task_instances')
 router.register(
-    r'plan_consent_forms', PlanConsentViewSet, base_name='plan_consent_forms')
+    r'symptom_task_templates',
+    SymptomTaskTemplateViewSet,
+    base_name='symptom_task_templates')
+router.register(
+    r'symptom_task_instances',
+    SymptomTaskInstanceViewSet,
+    base_name='symptom_task_instances')
+router.register(
+    r'symptom_ratings',
+    SymptomRatingViewSet,
+    base_name='symptom_ratings')
+router.register(
+    r'assessment_task_templates',
+    AssessmentTaskTemplateViewSet,
+    base_name='assessment_task_templates')
+router.register(
+    r'assessment_questions',
+    AssessmentQuestionViewSet,
+    base_name='assessment_questions')
+router.register(
+    r'assessment_task_instances',
+    AssessmentTaskInstanceViewSet,
+    base_name='assessment_task_instances')
+router.register(
+    r'assessment_responses',
+    AssessmentResponseViewSet,
+    base_name='assessment_responses')
 
 
 urlpatterns = [

@@ -7,7 +7,20 @@ from care_adopt_backend.permissions import EmployeeOrReadOnly
 from apps.core.models import (ProviderRole, )
 from apps.core.api import (ProviderRoleSerializer, EmployeeProfileSerializer, )
 from apps.tasks.models import (
-    PatientTaskTemplate, PatientTaskInstance, TeamTaskTemplate, )
+    PatientTaskTemplate,
+    PatientTaskInstance,
+    TeamTaskTemplate,
+    TeamTaskInstance,
+    MedicationTaskTemplate,
+    MedicationTaskInstance,
+    SymptomTaskTemplate,
+    SymptomTaskInstance,
+    SymptomRating,
+    AssessmentTaskTemplate,
+    AssessmentQuestion,
+    AssessmentTaskInstance,
+    AssessmentResponse,
+)
 from care_adopt_backend import utils
 
 
@@ -76,6 +89,137 @@ class TeamTaskTemplateViewSet(viewsets.ModelViewSet):
     serializer_class = TeamTaskTemplateSerializer
     permission_classes = (permissions.IsAuthenticated, EmployeeOrReadOnly, )
     queryset = TeamTaskTemplate.objects.all()
+
+
+class TeamTaskInstanceSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = TeamTaskInstance
+        fields = '__all__'
+
+
+class TeamTaskInstanceViewSet(viewsets.ModelViewSet):
+    serializer_class = TeamTaskInstanceSerializer
+    permission_classes = (permissions.IsAuthenticated, EmployeeOrReadOnly, )
+    queryset = TeamTaskInstance.objects.all()
+
+
+class MedicationTaskTemplateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = MedicationTaskTemplate
+        fields = '__all__'
+
+
+class MedicationTaskTemplateViewSet(viewsets.ModelViewSet):
+    serializer_class = MedicationTaskTemplateSerializer
+    permission_classes = (permissions.IsAuthenticated, EmployeeOrReadOnly, )
+    queryset = MedicationTaskTemplate.objects.all()
+
+
+class MedicationTaskInstanceSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = MedicationTaskInstance
+        fields = '__all__'
+
+
+class MedicationTaskInstanceViewSet(viewsets.ModelViewSet):
+    serializer_class = MedicationTaskInstanceSerializer
+    permission_classes = (permissions.IsAuthenticated, EmployeeOrReadOnly, )
+    queryset = MedicationTaskInstance.objects.all()
+
+
+class SymptomTaskTemplateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = SymptomTaskTemplate
+        fields = '__all__'
+
+
+class SymptomTaskTemplateViewSet(viewsets.ModelViewSet):
+    serializer_class = SymptomTaskTemplateSerializer
+    permission_classes = (permissions.IsAuthenticated, EmployeeOrReadOnly, )
+    queryset = SymptomTaskTemplate.objects.all()
+
+
+class SymptomTaskInstanceSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = SymptomTaskInstance
+        fields = '__all__'
+
+
+class SymptomTaskInstanceViewSet(viewsets.ModelViewSet):
+    serializer_class = SymptomTaskInstanceSerializer
+    permission_classes = (permissions.IsAuthenticated, EmployeeOrReadOnly, )
+    queryset = SymptomTaskInstance.objects.all()
+
+
+class SymptomRatingSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = SymptomRating
+        fields = '__all__'
+
+
+class SymptomRatingViewSet(viewsets.ModelViewSet):
+    serializer_class = SymptomRatingSerializer
+    permission_classes = (permissions.IsAuthenticated, EmployeeOrReadOnly, )
+    queryset = SymptomRating.objects.all()
+
+
+class AssessmentTaskTemplateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = AssessmentTaskTemplate
+        fields = '__all__'
+
+
+class AssessmentTaskTemplateViewSet(viewsets.ModelViewSet):
+    serializer_class = AssessmentTaskTemplateSerializer
+    permission_classes = (permissions.IsAuthenticated, EmployeeOrReadOnly, )
+    queryset = AssessmentTaskTemplate.objects.all()
+
+
+class AssessmentQuestionSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = AssessmentQuestion
+        fields = '__all__'
+
+
+class AssessmentQuestionViewSet(viewsets.ModelViewSet):
+    serializer_class = AssessmentQuestionSerializer
+    permission_classes = (permissions.IsAuthenticated, EmployeeOrReadOnly, )
+    queryset = AssessmentQuestion.objects.all()
+
+
+class AssessmentTaskInstanceSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = AssessmentTaskInstance
+        fields = '__all__'
+
+
+class AssessmentTaskInstanceViewSet(viewsets.ModelViewSet):
+    serializer_class = AssessmentTaskInstanceSerializer
+    permission_classes = (permissions.IsAuthenticated, EmployeeOrReadOnly, )
+    queryset = AssessmentTaskInstance.objects.all()
+
+
+class AssessmentResponseSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = AssessmentResponse
+        fields = '__all__'
+
+
+class AssessmentResponseViewSet(viewsets.ModelViewSet):
+    serializer_class = AssessmentResponseSerializer
+    permission_classes = (permissions.IsAuthenticated, EmployeeOrReadOnly, )
+    queryset = AssessmentResponse.objects.all()
+
 
 
 class TodaysTasksAPIView(APIView):
