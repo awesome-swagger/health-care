@@ -193,8 +193,63 @@ class AssessmentTaskTemplate(UUIDPrimaryKeyMixin, AbstractTask):
     plan_template = models.ForeignKey(
         CarePlanTemplate, null=False, blank=False, related_name="assessment_tasks",
         on_delete=models.CASCADE)
+    name = models.CharField(max_length=120, null=False, blank=False)
     tracks_outcome = models.BooleanField(default=False)
     tracks_satisfaction = models.BooleanField(default=False)
+
+    def __str__(self):
+        return '{}'.format(
+            self.name,
+        )
+
+
+class AssessmentQuestion(UUIDPrimaryKeyMixin):
+    assessment_task_template = models.ForeignKey(
+        AssessmentTaskTemplate, null=False, blank=False, on_delete=models.CASCADE)
+    prompt = models.CharField(max_length=240, null=False, blank=False)
+    worst_label = models.CharField(max_length=40, null=False, blank=False)
+    best_label = models.CharField(max_length=40, null=False, blank=False)
+
+    def __str__(self):
+        return '{}: {}'.format(
+            self.assessment_task_template.name,
+            self.prompt,
+        )
+
+
+class AssessmentTaskInstance(UUIDPrimaryKeyMixin):
+    plan_instance = models.ForeignKey(
+        CarePlanInstance, null=False, blank=False, on_delete=models.CASCADE)
+    assessment_task_template = models.ForeignKey(
+        AssessmentTaskTemplate, null=False, blank=False, on_delete=models.CASCADE)
+    appear_datetime = models.DateTimeField(null=False, blank=False)
+    due_datetime = models.DateTimeField(null=False, blank=False)
+    comments = models.CharField(max_length=1024, null=False, blank=False)
+
+    def __str__(self):
+        return '{} {}\'s assessment report due by {}'.format(
+            self.plan_instance.patient.user.first_name,
+            self.plan_instance.patient.user.first_name,
+            self.due_datetime,
+        )
+
+
+class AssessmentResponse(UUIDPrimaryKeyMixin):
+    assessment_task_instance = models.ForeignKey(
+        AssessmentTaskInstance, null=False, blank=False, on_delete=models.CASCADE)
+    assessment_question = models.ForeignKey(
+        AssessmentQuestion, null=False, blank=False, on_delete=models.CASCADE)
+    rating = models.IntegerField(null=False, blank=False, validators=[
+        MaxValueValidator(5),
+        MinValueValidator(1)
+    ])
+
+    def __str__(self):
+        return '{}: {} (rated: {})'.format(
+            self.assessment_task_instance.assessment_task_template.name,
+            self.assessment_question.prompt,
+            self.rating,
+        )
 
 
 def replace_time(datetime, time):
