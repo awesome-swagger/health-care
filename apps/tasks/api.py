@@ -222,7 +222,6 @@ class AssessmentResponseViewSet(viewsets.ModelViewSet):
     queryset = AssessmentResponse.objects.all()
 
 
-
 class TodaysTasksAPIView(APIView):
 
     def get(self, request, format=None):
@@ -235,12 +234,48 @@ class TodaysTasksAPIView(APIView):
             patient_tasks = PatientTaskInstance.objects.filter(
                 plan_instance__patient__id=patient_profile.id,
                 due_datetime__range=(today_min, today_max))
-            medication_tasks = MedicationTaskInstance.objects.filter()
+            medication_tasks = MedicationTaskInstance.objects.filter(
+                medication_task_template__plan_instance__patient__id=patient_profile.id,
+                due_datetime__range=(today_min, today_max))
+            symptom_tasks = SymptomTaskInstance.objects.filter(
+                plan_instance__patient__id=patient_profile.id,
+                due_datetime__range=(today_min, today_max))
+            assessment_tasks = AssessmentTaskInstance.objects.filter(
+                plan_instance__patient__id=patient_profile.id,
+                due_datetime__range=(today_min, today_max))
             for task in patient_tasks.all():
                 tasks.append({
                     'id': task.id,
                     'type': 'patient_task',
                     'name': task.patient_task_template.name,
+                    'appear_datetime': task.appear_datetime,
+                    'due_datetime': task.due_datetime,
+                })
+            for task in medication_tasks.all():
+                name = '{}, {}mg'.format(
+                    task.medication_task_template.patient_medication.medication.name,
+                    task.medication_task_template.patient_medication.dose_mg,
+                )
+                tasks.append({
+                    'id': task.id,
+                    'type': 'medication_task',
+                    'name': name,
+                    'appear_datetime': task.appear_datetime,
+                    'due_datetime': task.due_datetime,
+                })
+            for task in symptom_tasks.all():
+                tasks.append({
+                    'id': task.id,
+                    'type': 'symptom_task',
+                    'name': 'Symptoms Report',
+                    'appear_datetime': task.appear_datetime,
+                    'due_datetime': task.due_datetime,
+                })
+            for task in assessment_tasks.all():
+                tasks.append({
+                    'id': task.id,
+                    'type': 'assessment_task',
+                    'name': task.assessment_task_template.name,
                     'appear_datetime': task.appear_datetime,
                     'due_datetime': task.due_datetime,
                 })
