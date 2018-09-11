@@ -53,6 +53,7 @@ class PatientTaskTemplateViewSet(viewsets.ModelViewSet):
 
 
 class PatientTaskInstanceSerializer(serializers.ModelSerializer):
+    patient_task_template = PatientTaskTemplateSerializer(many=False)
 
     class Meta:
         model = PatientTaskInstance
