@@ -16,10 +16,12 @@ from apps.patients.api import (
     PatientProfileViewSet, PatientDiagnosisViewSet, ProblemAreaViewSet,
     PatientProcedureViewSet, PatientMedicationViewSet, )
 from apps.plans.api import (
-    CarePlanTemplateViewSet, GoalTemplateViewSet,
-    TeamTaskTemplateViewSet, PatientTaskTemplateViewSet, PatientTaskInstanceViewSet, CarePlanInstanceViewSet,
-    PlanConsentViewSet, InfoMessageQueueViewSet, InfoMessageViewSet, CareTeamMemberViewSet, TodaysTasksAPIView, )
-
+    CarePlanTemplateViewSet, CarePlanInstanceViewSet, PlanConsentViewSet,
+    CareTeamMemberViewSet, GoalTemplateViewSet, InfoMessageQueueViewSet,
+    InfoMessageViewSet, )
+from apps.tasks.api import (
+    PatientTaskTemplateViewSet, PatientTaskInstanceViewSet, TeamTaskTemplateViewSet,
+    TodaysTasksAPIView, )
 from apps.accounts.views import ObtainAuthToken, \
     RequestPasswordChange, ResetPassword, ValidateUserView
 

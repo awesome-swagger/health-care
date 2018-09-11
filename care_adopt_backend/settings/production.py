@@ -43,6 +43,7 @@ INSTALLED_APPS = (
     'apps.core',
     'apps.patients',
     'apps.plans',
+    'apps.tasks',
 )
 
 # Domain configuration
