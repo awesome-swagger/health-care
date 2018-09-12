@@ -147,7 +147,7 @@ urlpatterns = [
         ValidateUserView.as_view(), name='user-validation'),
 
     url(r'^api/todays_tasks/', TodaysTasksAPIView.as_view()),
-    url(r'^swagger/$', schema_view),
+    url(r'^swagger/', schema_view),
 ]
 
 if settings.DEBUG:
