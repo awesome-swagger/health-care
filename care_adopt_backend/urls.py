@@ -5,6 +5,7 @@ from django.contrib import admin
 from django.utils.safestring import mark_safe
 from django.views.generic.base import RedirectView
 from rest_framework.routers import DefaultRouter
+from rest_framework_swagger.views import get_swagger_view
 
 from apps.landing.views import LandingView
 from apps.accounts.views import UserViewSet
@@ -74,7 +75,7 @@ router.register(
 router.register(
     r'care_plan_templates', CarePlanTemplateViewSet, base_name='care_plan_templates')
 router.register(
-    r'plan_instances', CarePlanInstanceViewSet, base_name='plan_instances')
+    r'care_plans', CarePlanInstanceViewSet, base_name='care_plans')
 router.register(
     r'plan_consent_forms', PlanConsentViewSet, base_name='plan_consent_forms')
 router.register(
@@ -90,34 +91,23 @@ router.register(
     r'patient_task_templates',
     PatientTaskTemplateViewSet,
     base_name='patient_task_templates')
-router.register(
-    r'patient_task_instances',
-    PatientTaskInstanceViewSet,
-    base_name='patient_task_instances')
+router.register(r'patient_tasks', PatientTaskInstanceViewSet, base_name='patient_tasks')
 router.register(
     r'team_task_templates', TeamTaskTemplateViewSet, base_name='team_task_templates')
 router.register(
-    r'team_task_instances', TeamTaskInstanceViewSet, base_name='team_task_instances')
+    r'team_tasks', TeamTaskInstanceViewSet, base_name='team_tasks')
 router.register(
     r'medication_task_templates',
     MedicationTaskTemplateViewSet,
     base_name='medication_task_templates')
 router.register(
-    r'medication_task_instances',
-    MedicationTaskInstanceViewSet,
-    base_name='medication_task_instances')
+    r'medication_tasks', MedicationTaskInstanceViewSet, base_name='medication_tasks')
 router.register(
     r'symptom_task_templates',
     SymptomTaskTemplateViewSet,
     base_name='symptom_task_templates')
-router.register(
-    r'symptom_task_instances',
-    SymptomTaskInstanceViewSet,
-    base_name='symptom_task_instances')
-router.register(
-    r'symptom_ratings',
-    SymptomRatingViewSet,
-    base_name='symptom_ratings')
+router.register(r'symptom_tasks', SymptomTaskInstanceViewSet, base_name='symptom_tasks')
+router.register(r'symptom_ratings', SymptomRatingViewSet, base_name='symptom_ratings')
 router.register(
     r'assessment_task_templates',
     AssessmentTaskTemplateViewSet,
@@ -127,14 +117,13 @@ router.register(
     AssessmentQuestionViewSet,
     base_name='assessment_questions')
 router.register(
-    r'assessment_task_instances',
-    AssessmentTaskInstanceViewSet,
-    base_name='assessment_task_instances')
+    r'assessment_tasks', AssessmentTaskInstanceViewSet, base_name='assessment_tasks')
 router.register(
     r'assessment_responses',
     AssessmentResponseViewSet,
     base_name='assessment_responses')
 
+schema_view = get_swagger_view(title='CareAdopt API')
 
 urlpatterns = [
     url(r'^favicon.ico$', RedirectView.as_view(
@@ -158,6 +147,7 @@ urlpatterns = [
         ValidateUserView.as_view(), name='user-validation'),
 
     url(r'^api/todays_tasks/', TodaysTasksAPIView.as_view()),
+    url(r'^swagger/$', schema_view),
 ]
 
 if settings.DEBUG:

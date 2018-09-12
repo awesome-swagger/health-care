@@ -10,3 +10,4 @@ markdown
 
 # Dev tools
 django-extensions
+django-rest-swagger
