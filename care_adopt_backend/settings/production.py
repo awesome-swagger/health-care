@@ -88,8 +88,8 @@ DATABASES = {
 
 # Auth Configuration
 AUTH_USER_MODEL = 'accounts.EmailUser'
-LOGIN_URL = '/accounts/login/'
-LOGOUT_URL = '/accounts/logout/'
+LOGIN_URL = '/api-auth/login/'
+LOGOUT_URL = '/api-auth/logout/'
 
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',

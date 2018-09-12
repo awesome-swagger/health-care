@@ -2,6 +2,7 @@ from django.conf import settings
 from django.conf.urls import include, url
 from django.conf.urls.static import static
 from django.contrib import admin
+import django.contrib.auth.views as auth_views
 from django.utils.safestring import mark_safe
 from django.views.generic.base import RedirectView
 from rest_framework.routers import DefaultRouter
@@ -148,6 +149,9 @@ urlpatterns = [
 
     url(r'^api/todays_tasks/', TodaysTasksAPIView.as_view()),
     url(r'^swagger/', schema_view),
+
+    # Work around to direct to rest framework login view to authenticate on swagger
+    url(r'^accounts/', include('rest_framework.urls')),
 ]
 
 if settings.DEBUG:
