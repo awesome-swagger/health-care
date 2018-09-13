@@ -3,6 +3,8 @@ database:
   environment:
     - POSTGRES_USER=care_adopt_backend
     - POSTGRES_PASSWORD=care_adopt_backend
+  ports:
+  - "5432:5432"
 backend:
   build: .
   command: bash /care_adopt_backend/server/django_devserver.sh
