@@ -1,17 +1,17 @@
 from django.contrib import admin
 from apps.tasks.models import (
     PatientTaskTemplate,
-    PatientTaskInstance,
+    PatientTask,
     TeamTaskTemplate,
-    TeamTaskInstance,
+    TeamTask,
     MedicationTaskTemplate,
-    MedicationTaskInstance,
+    MedicationTask,
     SymptomTaskTemplate,
-    SymptomTaskInstance,
+    SymptomTask,
     SymptomRating,
     AssessmentTaskTemplate,
     AssessmentQuestion,
-    AssessmentTaskInstance,
+    AssessmentTask,
     AssessmentResponse,
 )
 
@@ -22,9 +22,9 @@ class PatientTaskTemplateAdmin(admin.ModelAdmin):
         'repeat_amount', 'appear_time', 'due_time', )
 
 
-class PatientTaskInstanceAdmin(admin.ModelAdmin):
+class PatientTaskAdmin(admin.ModelAdmin):
     list_display = (
-        'plan_instance', 'patient_task_template', 'appear_datetime', 'due_datetime', )
+        'plan', 'patient_task_template', 'appear_datetime', 'due_datetime', )
 
 
 class TeamTaskTemplateAdmin(admin.ModelAdmin):
@@ -33,18 +33,18 @@ class TeamTaskTemplateAdmin(admin.ModelAdmin):
         'repeat_amount', 'appear_time', 'due_time', )
 
 
-class TeamTaskInstanceAdmin(admin.ModelAdmin):
+class TeamTaskAdmin(admin.ModelAdmin):
     list_display = (
-        'plan_instance', 'team_task_template', 'appear_datetime', 'due_datetime', )
+        'plan', 'team_task_template', 'appear_datetime', 'due_datetime', )
 
 
 class MedicationTaskTemplateAdmin(admin.ModelAdmin):
     list_display = (
-        'plan_instance', 'patient_medication', 'start_on_day', 'frequency',
+        'plan', 'patient_medication', 'start_on_day', 'frequency',
         'repeat_amount', 'appear_time', 'due_time', )
 
 
-class MedicationTaskInstanceAdmin(admin.ModelAdmin):
+class MedicationTaskAdmin(admin.ModelAdmin):
     list_display = (
         'medication_task_template', 'appear_datetime', 'due_datetime', )
 
@@ -58,12 +58,12 @@ class SymptomRatingInline(admin.TabularInline):
     model = SymptomRating
 
 
-class SymptomTaskInstanceAdmin(admin.ModelAdmin):
+class SymptomTaskAdmin(admin.ModelAdmin):
     inlines = [
         SymptomRatingInline,
     ]
     list_display = (
-        'plan_instance', 'symptom_task_template', 'appear_datetime', 'due_datetime', )
+        'plan', 'symptom_task_template', 'appear_datetime', 'due_datetime', )
 
 
 class AssessmentQuestionInline(admin.TabularInline):
@@ -83,22 +83,22 @@ class AssessmentResponseInline(admin.TabularInline):
     model = AssessmentResponse
 
 
-class AssessmentTaskInstanceAdmin(admin.ModelAdmin):
+class AssessmentTaskAdmin(admin.ModelAdmin):
     inlines = [
         AssessmentResponseInline,
     ]
     list_display = (
-        'plan_instance', 'assessment_task_template', 'appear_datetime',
+        'plan', 'assessment_task_template', 'appear_datetime',
         'due_datetime', )
 
 
 admin.site.register(PatientTaskTemplate, PatientTaskTemplateAdmin)
-admin.site.register(PatientTaskInstance, PatientTaskInstanceAdmin)
+admin.site.register(PatientTask, PatientTaskAdmin)
 admin.site.register(TeamTaskTemplate, TeamTaskTemplateAdmin)
-admin.site.register(TeamTaskInstance, TeamTaskInstanceAdmin)
+admin.site.register(TeamTask, TeamTaskAdmin)
 admin.site.register(MedicationTaskTemplate, MedicationTaskTemplateAdmin)
-admin.site.register(MedicationTaskInstance, MedicationTaskInstanceAdmin)
+admin.site.register(MedicationTask, MedicationTaskAdmin)
 admin.site.register(SymptomTaskTemplate, SymptomTaskTemplateAdmin)
-admin.site.register(SymptomTaskInstance, SymptomTaskInstanceAdmin)
+admin.site.register(SymptomTask, SymptomTaskAdmin)
 admin.site.register(AssessmentTaskTemplate, AssessmentTaskTemplateAdmin)
-admin.site.register(AssessmentTaskInstance, AssessmentTaskInstanceAdmin)
+admin.site.register(AssessmentTask, AssessmentTaskAdmin)

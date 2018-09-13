@@ -298,7 +298,7 @@ class EmployeeProfileViewSet(viewsets.ModelViewSet):
             return qs.all()
         if patient_profile is not None:
             care_team_members = CareTeamMember.objects.filter(
-                plan_instance__patient=patient_profile).values_list(
+                plan__patient=patient_profile).values_list(
                 'employee_profile', flat=True).distinct()
             return qs.filter(id__in=list(care_team_members))
         return qs.none()

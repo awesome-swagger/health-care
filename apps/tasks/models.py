@@ -7,7 +7,7 @@ from care_adopt_backend.mixins import (
     AddressMixin, CreatedModifiedMixin, UUIDPrimaryKeyMixin)
 from apps.core.models import (ProviderRole, Symptom, )
 from apps.patients.models import (PatientMedication, )
-from apps.plans.models import (CarePlanTemplate, CarePlanInstance, )
+from apps.plans.models import (CarePlanTemplate, CarePlan, )
 
 
 FREQUENCY_CHOICES = (
@@ -49,9 +49,9 @@ class PatientTaskTemplate(UUIDPrimaryKeyMixin, AbstractTask):
         return self.name
 
 
-class PatientTaskInstance(UUIDPrimaryKeyMixin):
-    plan_instance = models.ForeignKey(
-        CarePlanInstance, null=False, blank=False, on_delete=models.CASCADE)
+class PatientTask(UUIDPrimaryKeyMixin):
+    plan = models.ForeignKey(
+        CarePlan, null=False, blank=False, on_delete=models.CASCADE)
     patient_task_template = models.ForeignKey(
         PatientTaskTemplate, null=False, blank=False, on_delete=models.CASCADE)
     appear_datetime = models.DateTimeField(null=False, blank=False)
@@ -65,7 +65,7 @@ class PatientTaskInstance(UUIDPrimaryKeyMixin):
         choices=STATUS_CHOICES, max_length=12, default="undefined")
 
     class Meta:
-        ordering = ('plan_instance', 'patient_task_template', 'due_datetime', )
+        ordering = ('plan', 'patient_task_template', 'due_datetime', )
 
 
 class TeamTaskTemplate(UUIDPrimaryKeyMixin, AbstractTask):
@@ -87,33 +87,33 @@ class TeamTaskTemplate(UUIDPrimaryKeyMixin, AbstractTask):
         return self.name
 
 
-class TeamTaskInstance(UUIDPrimaryKeyMixin):
-    plan_instance = models.ForeignKey(
-        CarePlanInstance, null=False, blank=False, on_delete=models.CASCADE)
+class TeamTask(UUIDPrimaryKeyMixin):
+    plan = models.ForeignKey(
+        CarePlan, null=False, blank=False, on_delete=models.CASCADE)
     team_task_template = models.ForeignKey(
         TeamTaskTemplate, null=False, blank=False, on_delete=models.CASCADE)
     appear_datetime = models.DateTimeField(null=False, blank=False)
     due_datetime = models.DateTimeField(null=False, blank=False)
 
     class Meta:
-        ordering = ('plan_instance', 'team_task_template', 'due_datetime', )
+        ordering = ('plan', 'team_task_template', 'due_datetime', )
 
 
 class MedicationTaskTemplate(UUIDPrimaryKeyMixin, AbstractTask):
     # NOTE: Medication task templates are created on the plan instance,
     # NOT the plan template like all other tasks
-    plan_instance = models.ForeignKey(
-        CarePlanInstance, null=False, blank=False, on_delete=models.CASCADE)
+    plan = models.ForeignKey(
+        CarePlan, null=False, blank=False, on_delete=models.CASCADE)
     patient_medication = models.ForeignKey(
         PatientMedication, null=False, blank=False, on_delete=models.CASCADE)
 
     class Meta:
-        ordering = ('plan_instance', 'patient_medication', )
+        ordering = ('plan', 'patient_medication', )
 
     def __str__(self):
         return '{} {} {} {}mg, {} at {}'.format(
-            self.plan_instance.patient.user.first_name,
-            self.plan_instance.patient.user.last_name,
+            self.plan.patient.user.first_name,
+            self.plan.patient.user.last_name,
             self.patient_medication.medication.name,
             self.patient_medication.dose_mg,
             self.frequency,
@@ -121,7 +121,7 @@ class MedicationTaskTemplate(UUIDPrimaryKeyMixin, AbstractTask):
         )
 
 
-class MedicationTaskInstance(UUIDPrimaryKeyMixin):
+class MedicationTask(UUIDPrimaryKeyMixin):
     medication_task_template = models.ForeignKey(
         MedicationTaskTemplate, null=False, blank=False, on_delete=models.CASCADE)
     appear_datetime = models.DateTimeField(null=False, blank=False)
@@ -136,8 +136,8 @@ class MedicationTaskInstance(UUIDPrimaryKeyMixin):
 
     def __str__(self):
         return '{} {} {} {}mg, at {}'.format(
-            self.medication_task_template.plan_instance.patient.user.first_name,
-            self.medication_task_template.plan_instance.patient.user.last_name,
+            self.medication_task_template.plan.patient.user.first_name,
+            self.medication_task_template.plan.patient.user.last_name,
             self.medication_task_template.patient_medication.medication.name,
             self.medication_task_template.patient_medication.dose_mg,
             self.appear_datetime,
@@ -153,9 +153,9 @@ class SymptomTaskTemplate(UUIDPrimaryKeyMixin, AbstractTask):
         return '{} symptom report template'.format(self.plan_template.name)
 
 
-class SymptomTaskInstance(UUIDPrimaryKeyMixin):
-    plan_instance = models.ForeignKey(
-        CarePlanInstance, null=False, blank=False, on_delete=models.CASCADE)
+class SymptomTask(UUIDPrimaryKeyMixin):
+    plan = models.ForeignKey(
+        CarePlan, null=False, blank=False, on_delete=models.CASCADE)
     symptom_task_template = models.ForeignKey(
         SymptomTaskTemplate, null=False, blank=False, on_delete=models.CASCADE)
     appear_datetime = models.DateTimeField(null=False, blank=False)
@@ -164,15 +164,15 @@ class SymptomTaskInstance(UUIDPrimaryKeyMixin):
 
     def __str__(self):
         return '{} {}\'s symptom report due by {}'.format(
-            self.plan_instance.patient.user.first_name,
-            self.plan_instance.patient.user.first_name,
+            self.plan.patient.user.first_name,
+            self.plan.patient.user.first_name,
             self.due_datetime,
         )
 
 
 class SymptomRating(UUIDPrimaryKeyMixin):
-    symptom_task_instance = models.ForeignKey(
-        SymptomTaskInstance, null=False, blank=False, on_delete=models.CASCADE)
+    symptom_task = models.ForeignKey(
+        SymptomTask, null=False, blank=False, on_delete=models.CASCADE)
     symptom = models.ForeignKey(
         Symptom, null=False, blank=False, on_delete=models.CASCADE)
     rating = models.IntegerField(null=False, blank=False, validators=[
@@ -182,8 +182,8 @@ class SymptomRating(UUIDPrimaryKeyMixin):
 
     def __str__(self):
         return '{} {} {}: {}'.format(
-            self.symptom_task_instance.plan_instance.patient.user.first_name,
-            self.symptom_task_instance.plan_instance.patient.user.last_name,
+            self.symptom_task.plan.patient.user.first_name,
+            self.symptom_task.plan.patient.user.last_name,
             self.symptom.name,
             self.rating,
         )
@@ -217,9 +217,9 @@ class AssessmentQuestion(UUIDPrimaryKeyMixin):
         )
 
 
-class AssessmentTaskInstance(UUIDPrimaryKeyMixin):
-    plan_instance = models.ForeignKey(
-        CarePlanInstance, null=False, blank=False, on_delete=models.CASCADE)
+class AssessmentTask(UUIDPrimaryKeyMixin):
+    plan = models.ForeignKey(
+        CarePlan, null=False, blank=False, on_delete=models.CASCADE)
     assessment_task_template = models.ForeignKey(
         AssessmentTaskTemplate, null=False, blank=False, on_delete=models.CASCADE)
     appear_datetime = models.DateTimeField(null=False, blank=False)
@@ -228,15 +228,15 @@ class AssessmentTaskInstance(UUIDPrimaryKeyMixin):
 
     def __str__(self):
         return '{} {}\'s assessment report due by {}'.format(
-            self.plan_instance.patient.user.first_name,
-            self.plan_instance.patient.user.first_name,
+            self.plan.patient.user.first_name,
+            self.plan.patient.user.first_name,
             self.due_datetime,
         )
 
 
 class AssessmentResponse(UUIDPrimaryKeyMixin):
-    assessment_task_instance = models.ForeignKey(
-        AssessmentTaskInstance, null=False, blank=False, on_delete=models.CASCADE)
+    assessment_task = models.ForeignKey(
+        AssessmentTask, null=False, blank=False, on_delete=models.CASCADE)
     assessment_question = models.ForeignKey(
         AssessmentQuestion, null=False, blank=False, on_delete=models.CASCADE)
     rating = models.IntegerField(null=False, blank=False, validators=[
@@ -246,7 +246,7 @@ class AssessmentResponse(UUIDPrimaryKeyMixin):
 
     def __str__(self):
         return '{}: {} (rated: {})'.format(
-            self.assessment_task_instance.assessment_task_template.name,
+            self.assessment_task.assessment_task_template.name,
             self.assessment_question.prompt,
             self.rating,
         )
@@ -256,7 +256,7 @@ def replace_time(datetime, time):
     return datetime.replace(hour=time.hour, minute=time.minute, second=time.second)
 
 
-@receiver(post_save, sender=CarePlanInstance)
+@receiver(post_save, sender=CarePlan)
 def create_patient_tasks(sender, instance, created, **kwargs):
     if created:
         patient_task_templates = PatientTaskTemplate.objects.filter(
@@ -270,8 +270,8 @@ def create_patient_tasks(sender, instance, created, **kwargs):
                 due_datetime = replace_time(due_datetime, template.due_time)
                 appear_datetime = datetime.now() + timedelta(days=template.start_on_day)
                 appear_datetime = replace_time(appear_datetime, template.appear_time)
-                PatientTaskInstance.objects.create(
-                    plan_instance=instance, patient_task_template=template,
+                PatientTask.objects.create(
+                    plan=instance, patient_task_template=template,
                     due_datetime=due_datetime, appear_datetime=appear_datetime)
             elif template.frequency == 'daily':
                 if template.repeat_amount > 0:
@@ -284,8 +284,8 @@ def create_patient_tasks(sender, instance, created, **kwargs):
                         appear_datetime = replace_time(
                             appear_datetime,
                             template.appear_time)
-                        PatientTaskInstance.objects.create(
-                            plan_instance=instance, patient_task_template=template,
+                        PatientTask.objects.create(
+                            plan=instance, patient_task_template=template,
                             due_datetime=due_datetime, appear_datetime=appear_datetime)
                 else:
                     # Create a task instance for every day until the plan end date
@@ -299,8 +299,8 @@ def create_patient_tasks(sender, instance, created, **kwargs):
                             days=(template.start_on_day + day))
                         appear_datetime = replace_time(
                             appear_datetime, template.appear_time)
-                        PatientTaskInstance.objects.create(
-                            plan_instance=instance, patient_task_template=template,
+                        PatientTask.objects.create(
+                            plan=instance, patient_task_template=template,
                             due_datetime=due_datetime, appear_datetime=appear_datetime)
                         day += 1
             elif template.frequency == 'weekly':
@@ -313,8 +313,8 @@ def create_patient_tasks(sender, instance, created, **kwargs):
                             days=(template.start_on_day + (i * 7)))
                         appear_datetime = replace_time(
                             appear_datetime, template.appear_time)
-                        PatientTaskInstance.objects.create(
-                            plan_instance=instance, patient_task_template=template,
+                        PatientTask.objects.create(
+                            plan=instance, patient_task_template=template,
                             due_datetime=due_datetime, appear_datetime=appear_datetime)
                 else:
                     # Create a task instance every week until the plan end date
@@ -329,8 +329,8 @@ def create_patient_tasks(sender, instance, created, **kwargs):
                             days=(template.start_on_day + day))
                         appear_datetime = replace_time(
                             appear_datetime, template.appear_time)
-                        PatientTaskInstance.objects.create(
-                            plan_instance=instance, patient_task_template=template,
+                        PatientTask.objects.create(
+                            plan=instance, patient_task_template=template,
                             due_datetime=due_datetime, appear_datetime=appear_datetime)
                         day += 7
             # elif template.frequency == 'every_other_day':
@@ -353,8 +353,8 @@ def create_patient_tasks(sender, instance, created, **kwargs):
                             (due_datetime.weekday() > 4 and
                              template.frequency == 'weekends')
                         ):
-                            PatientTaskInstance.objects.create(
-                                plan_instance=instance, patient_task_template=template,
+                            PatientTask.objects.create(
+                                plan=instance, patient_task_template=template,
                                 due_datetime=due_datetime,
                                 appear_datetime=appear_datetime)
                             repeats += 1
@@ -377,8 +377,8 @@ def create_patient_tasks(sender, instance, created, **kwargs):
                             (due_datetime.weekday() > 4 and
                              template.frequency == 'weekends')
                         ):
-                            PatientTaskInstance.objects.create(
-                                plan_instance=instance, patient_task_template=template,
+                            PatientTask.objects.create(
+                                plan=instance, patient_task_template=template,
                                 due_datetime=due_datetime,
                                 appear_datetime=appear_datetime)
                         day += 1

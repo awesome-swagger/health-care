@@ -8,17 +8,17 @@ from apps.core.models import (ProviderRole, )
 from apps.core.api import (ProviderRoleSerializer, EmployeeProfileSerializer, )
 from apps.tasks.models import (
     PatientTaskTemplate,
-    PatientTaskInstance,
+    PatientTask,
     TeamTaskTemplate,
-    TeamTaskInstance,
+    TeamTask,
     MedicationTaskTemplate,
-    MedicationTaskInstance,
+    MedicationTask,
     SymptomTaskTemplate,
-    SymptomTaskInstance,
+    SymptomTask,
     SymptomRating,
     AssessmentTaskTemplate,
     AssessmentQuestion,
-    AssessmentTaskInstance,
+    AssessmentTask,
     AssessmentResponse,
 )
 from care_adopt_backend import utils
@@ -52,18 +52,18 @@ class PatientTaskTemplateViewSet(viewsets.ModelViewSet):
             return qs.none()
 
 
-class PatientTaskInstanceSerializer(serializers.ModelSerializer):
+class PatientTaskSerializer(serializers.ModelSerializer):
     patient_task_template = PatientTaskTemplateSerializer(many=False)
 
     class Meta:
-        model = PatientTaskInstance
+        model = PatientTask
         fields = '__all__'
 
 
-class PatientTaskInstanceViewSet(viewsets.ModelViewSet):
-    serializer_class = PatientTaskInstanceSerializer
+class PatientTaskViewSet(viewsets.ModelViewSet):
+    serializer_class = PatientTaskSerializer
     permission_classes = (permissions.IsAuthenticated, EmployeeOrReadOnly, )
-    queryset = PatientTaskInstance.objects.all()
+    queryset = PatientTask.objects.all()
 
     def get_queryset(self):
         qs = self.queryset
@@ -74,7 +74,7 @@ class PatientTaskInstanceViewSet(viewsets.ModelViewSet):
             # TODO: Only get tasks for patients this employee has access to
             return qs.all()
         elif patient_profile is not None:
-            return qs.filter(plan_instance__patient__id=patient_profile.id)
+            return qs.filter(plan__patient__id=patient_profile.id)
         else:
             return qs.none()
 
@@ -92,17 +92,17 @@ class TeamTaskTemplateViewSet(viewsets.ModelViewSet):
     queryset = TeamTaskTemplate.objects.all()
 
 
-class TeamTaskInstanceSerializer(serializers.ModelSerializer):
+class TeamTaskSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = TeamTaskInstance
+        model = TeamTask
         fields = '__all__'
 
 
-class TeamTaskInstanceViewSet(viewsets.ModelViewSet):
-    serializer_class = TeamTaskInstanceSerializer
+class TeamTaskViewSet(viewsets.ModelViewSet):
+    serializer_class = TeamTaskSerializer
     permission_classes = (permissions.IsAuthenticated, EmployeeOrReadOnly, )
-    queryset = TeamTaskInstance.objects.all()
+    queryset = TeamTask.objects.all()
 
 
 class MedicationTaskTemplateSerializer(serializers.ModelSerializer):
@@ -118,17 +118,17 @@ class MedicationTaskTemplateViewSet(viewsets.ModelViewSet):
     queryset = MedicationTaskTemplate.objects.all()
 
 
-class MedicationTaskInstanceSerializer(serializers.ModelSerializer):
+class MedicationTaskSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = MedicationTaskInstance
+        model = MedicationTask
         fields = '__all__'
 
 
-class MedicationTaskInstanceViewSet(viewsets.ModelViewSet):
-    serializer_class = MedicationTaskInstanceSerializer
+class MedicationTaskViewSet(viewsets.ModelViewSet):
+    serializer_class = MedicationTaskSerializer
     permission_classes = (permissions.IsAuthenticated, EmployeeOrReadOnly, )
-    queryset = MedicationTaskInstance.objects.all()
+    queryset = MedicationTask.objects.all()
 
 
 class SymptomTaskTemplateSerializer(serializers.ModelSerializer):
@@ -144,17 +144,17 @@ class SymptomTaskTemplateViewSet(viewsets.ModelViewSet):
     queryset = SymptomTaskTemplate.objects.all()
 
 
-class SymptomTaskInstanceSerializer(serializers.ModelSerializer):
+class SymptomTaskSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = SymptomTaskInstance
+        model = SymptomTask
         fields = '__all__'
 
 
-class SymptomTaskInstanceViewSet(viewsets.ModelViewSet):
-    serializer_class = SymptomTaskInstanceSerializer
+class SymptomTaskViewSet(viewsets.ModelViewSet):
+    serializer_class = SymptomTaskSerializer
     permission_classes = (permissions.IsAuthenticated, EmployeeOrReadOnly, )
-    queryset = SymptomTaskInstance.objects.all()
+    queryset = SymptomTask.objects.all()
 
 
 class SymptomRatingSerializer(serializers.ModelSerializer):
@@ -196,17 +196,17 @@ class AssessmentQuestionViewSet(viewsets.ModelViewSet):
     queryset = AssessmentQuestion.objects.all()
 
 
-class AssessmentTaskInstanceSerializer(serializers.ModelSerializer):
+class AssessmentTaskSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = AssessmentTaskInstance
+        model = AssessmentTask
         fields = '__all__'
 
 
-class AssessmentTaskInstanceViewSet(viewsets.ModelViewSet):
-    serializer_class = AssessmentTaskInstanceSerializer
+class AssessmentTaskViewSet(viewsets.ModelViewSet):
+    serializer_class = AssessmentTaskSerializer
     permission_classes = (permissions.IsAuthenticated, EmployeeOrReadOnly, )
-    queryset = AssessmentTaskInstance.objects.all()
+    queryset = AssessmentTask.objects.all()
 
 
 class AssessmentResponseSerializer(serializers.ModelSerializer):
@@ -231,17 +231,17 @@ class TodaysTasksAPIView(APIView):
         patient_profile = utils.patient_profile_or_none(self.request.user)
 
         if patient_profile is not None:
-            patient_tasks = PatientTaskInstance.objects.filter(
-                plan_instance__patient__id=patient_profile.id,
+            patient_tasks = PatientTask.objects.filter(
+                plan__patient__id=patient_profile.id,
                 due_datetime__range=(today_min, today_max))
-            medication_tasks = MedicationTaskInstance.objects.filter(
-                medication_task_template__plan_instance__patient__id=patient_profile.id,
+            medication_tasks = MedicationTask.objects.filter(
+                medication_task_template__plan__patient__id=patient_profile.id,
                 due_datetime__range=(today_min, today_max))
-            symptom_tasks = SymptomTaskInstance.objects.filter(
-                plan_instance__patient__id=patient_profile.id,
+            symptom_tasks = SymptomTask.objects.filter(
+                plan__patient__id=patient_profile.id,
                 due_datetime__range=(today_min, today_max))
-            assessment_tasks = AssessmentTaskInstance.objects.filter(
-                plan_instance__patient__id=patient_profile.id,
+            assessment_tasks = AssessmentTask.objects.filter(
+                plan__patient__id=patient_profile.id,
                 due_datetime__range=(today_min, today_max))
             for task in patient_tasks.all():
                 tasks.append({

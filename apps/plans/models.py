@@ -30,7 +30,7 @@ class CarePlanTemplate(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
         return self.name
 
 
-class CarePlanInstance(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
+class CarePlan(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
     patient = models.ForeignKey(
         PatientProfile, null=False, blank=False, related_name="care_plans",
         on_delete=models.CASCADE)
@@ -45,8 +45,8 @@ class CarePlanInstance(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
 
 
 class PlanConsent(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
-    plan_instance = models.ForeignKey(
-        CarePlanInstance, null=False, blank=False, on_delete=models.CASCADE)
+    plan = models.ForeignKey(
+        CarePlan, null=False, blank=False, on_delete=models.CASCADE)
     verbal_consent = models.BooleanField(default=False)
     discussed_co_pay = models.BooleanField(default=False)
     seen_within_year = models.BooleanField(default=False)
@@ -59,9 +59,9 @@ class PlanConsent(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
 
     def __str__(self):
         return '{} {} {} Plan Consent'.format(
-            self.plan_instance.patient.user.first_name,
-            self.plan_instance.patient.user.last_name,
-            self.plan_instance.plan_template.name)
+            self.plan.patient.user.first_name,
+            self.plan.patient.user.last_name,
+            self.plan.plan_template.name)
 
 
 class CareTeamMember(UUIDPrimaryKeyMixin):
@@ -69,8 +69,8 @@ class CareTeamMember(UUIDPrimaryKeyMixin):
         EmployeeProfile, related_name="assigned_roles", on_delete=models.CASCADE)
     role = models.ForeignKey(
         ProviderRole, null=False, blank=False, on_delete=models.CASCADE)
-    plan_instance = models.ForeignKey(
-        CarePlanInstance, null=False, blank=False, related_name="care_team_members",
+    plan = models.ForeignKey(
+        CarePlan, null=False, blank=False, related_name="care_team_members",
         on_delete=models.CASCADE)
 
     def __str__(self):
@@ -78,7 +78,7 @@ class CareTeamMember(UUIDPrimaryKeyMixin):
             self.employee_profile.user.first_name,
             self.employee_profile.user.last_name,
             self.role.name,
-            self.plan_instance,
+            self.plan,
         )
 
 
