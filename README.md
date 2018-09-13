@@ -69,6 +69,8 @@ _(Note: make certain you are using **python3** for this - python2 is no longer s
     Then bash in the container
 
     ```bash
+    source my_env/bin/activate
+    
     manage.py createsuperuser
     ```
 1. Reset everything.
