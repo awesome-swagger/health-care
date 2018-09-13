@@ -115,6 +115,6 @@ $RECYCLE.BIN/
 .directory
 
 ### Virtual Environment for Backend ###
-/my_env
+/backend_env
 
 foo/*

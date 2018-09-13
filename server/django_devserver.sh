@@ -3,7 +3,11 @@
 
 cd /care_adopt_backend/
 
-source my_env/bin/activate
+python -m venv backend_env
+
+source backend_env/bin/activate
+
+pip install -r requirements.txt
 
 python manage.py migrate --noinput
 python manage.py runserver 0.0.0.0:8000

@@ -7,10 +7,4 @@ WORKDIR /care_adopt_backend
 
 ADD requirements.txt /care_adopt_backend/requirements.txt
 
-RUN python -m venv my_env
-
-RUN source my_env/bin/activate
-
-RUN pip install -r requirements.txt
-
 ADD . /care_adopt_backend
