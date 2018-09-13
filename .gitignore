@@ -104,6 +104,9 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
+### Visual Studio ###
+.vs
+.vscode
 
 ### Linux ###
 *~
@@ -111,5 +114,7 @@ $RECYCLE.BIN/
 # KDE directory preferences
 .directory
 
+### Virtual Environment for Backend ###
+/my_env
 
 foo/*
