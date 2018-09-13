@@ -256,129 +256,188 @@ def replace_time(datetime, time):
     return datetime.replace(hour=time.hour, minute=time.minute, second=time.second)
 
 
+def create_scheduled_tasks(plan, template_model, instance_model, template_field):
+    task_templates = template_model.objects.filter(
+        plan_template=plan.plan_template)
+
+    for template in task_templates:
+        plan_end = datetime.now() + timedelta(
+            weeks=template.plan_template.duration_weeks)
+        template_config = {
+            "{}".format(template_field): template
+        }
+        if template.frequency == 'once':
+            due_datetime = datetime.now() + timedelta(days=template.start_on_day)
+            due_datetime = replace_time(due_datetime, template.due_time)
+            appear_datetime = datetime.now() + timedelta(days=template.start_on_day)
+            appear_datetime = replace_time(appear_datetime, template.appear_time)
+            instance_model.objects.create(
+                plan=plan,
+                due_datetime=due_datetime,
+                appear_datetime=appear_datetime,
+                **template_config)
+        elif template.frequency == 'daily':
+            if template.repeat_amount > 0:
+                for i in range(template.repeat_amount):
+                    due_datetime = datetime.now() + timedelta(
+                        days=(template.start_on_day + i))
+                    due_datetime = replace_time(due_datetime, template.due_time)
+                    appear_datetime = datetime.now() + timedelta(
+                        days=(template.start_on_day + i))
+                    appear_datetime = replace_time(
+                        appear_datetime,
+                        template.appear_time)
+                    instance_model.objects.create(
+                        plan=plan,
+                        due_datetime=due_datetime,
+                        appear_datetime=appear_datetime,
+                        **template_config)
+            else:
+                # Create a task instance for every day until the plan end date
+                day = 0
+                due_datetime = datetime.now()
+                while due_datetime < plan_end:
+                    due_datetime = datetime.now() + timedelta(
+                        days=(template.start_on_day + day))
+                    due_datetime = replace_time(due_datetime, template.due_time)
+                    appear_datetime = datetime.now() + timedelta(
+                        days=(template.start_on_day + day))
+                    appear_datetime = replace_time(
+                        appear_datetime, template.appear_time)
+                    instance_model.objects.create(
+                        plan=plan,
+                        due_datetime=due_datetime,
+                        appear_datetime=appear_datetime,
+                        **template_config)
+                    day += 1
+        elif template.frequency == 'weekly':
+            if template.repeat_amount > 0:
+                for i in range(template.repeat_amount):
+                    due_datetime = datetime.now() + timedelta(
+                        days=(template.start_on_day + (i * 7)))
+                    due_datetime = replace_time(due_datetime, template.due_time)
+                    appear_datetime = datetime.now() + timedelta(
+                        days=(template.start_on_day + (i * 7)))
+                    appear_datetime = replace_time(
+                        appear_datetime, template.appear_time)
+                    instance_model.objects.create(
+                        plan=plan,
+                        due_datetime=due_datetime,
+                        appear_datetime=appear_datetime,
+                        **template_config)
+            else:
+                # Create a task instance every week until the plan end date
+                day = 0
+                due_datetime = datetime.now()
+                appear_datetime = datetime.now()
+                while due_datetime < plan_end:
+                    due_datetime = datetime.now() + timedelta(
+                        days=(template.start_on_day + day))
+                    due_datetime = replace_time(due_datetime, template.due_time)
+                    appear_datetime = datetime.now() + timedelta(
+                        days=(template.start_on_day + day))
+                    appear_datetime = replace_time(
+                        appear_datetime, template.appear_time)
+                    instance_model.objects.create(
+                        plan=plan,
+                        due_datetime=due_datetime,
+                        appear_datetime=appear_datetime,
+                        **template_config)
+                    day += 7
+        elif template.frequency == 'every_other_day':
+            if template.repeat_amount > 0:
+                i = 0
+                created = 0
+                while created < template.repeat_amount:
+                    if i % 2 == 0:
+                        due_datetime = datetime.now() + timedelta(
+                            days=(template.start_on_day + i))
+                        due_datetime = replace_time(due_datetime, template.due_time)
+                        appear_datetime = datetime.now() + timedelta(
+                            days=(template.start_on_day + i))
+                        appear_datetime = replace_time(
+                            appear_datetime, template.appear_time)
+                        instance_model.objects.create(
+                            plan=plan,
+                            due_datetime=due_datetime,
+                            appear_datetime=appear_datetime,
+                            **template_config)
+                        created += 1
+                    i += 1
+            else:
+                i = 0
+                due_datetime = datetime.now()
+                appear_datetime = datetime.now()
+                while due_datetime < plan_end:
+                    if i % 2 == 0:
+                        due_datetime = datetime.now() + timedelta(
+                            days=(template.start_on_day + i))
+                        due_datetime = replace_time(due_datetime, template.due_time)
+                        appear_datetime = datetime.now() + timedelta(
+                            days=(template.start_on_day + i))
+                        appear_datetime = replace_time(
+                            appear_datetime, template.appear_time)
+                        instance_model.objects.create(
+                            plan=plan,
+                            due_datetime=due_datetime,
+                            appear_datetime=appear_datetime,
+                            **template_config)
+                    i += 1
+        elif template.frequency == 'weekdays' or template.frequency == 'weekends':
+            if template.repeat_amount > 0:
+                repeats = 0
+                while repeats < template.repeat_amount:
+                    due_datetime = datetime.now() + timedelta(
+                        days=(template.start_on_day + i))
+                    due_datetime = replace_time(due_datetime, template.due_time)
+                    appear_datetime = datetime.now() + timedelta(
+                        days=(template.start_on_day + i))
+                    appear_datetime = replace_time(
+                        appear_datetime, template.appear_time)
+                    if (
+                        (due_datetime.weekday() < 5 and
+                         template.frequency == 'weekdays') or
+                        (due_datetime.weekday() > 4 and
+                         template.frequency == 'weekends')
+                    ):
+                        instance_model.objects.create(
+                            plan=plan,
+                            due_datetime=due_datetime,
+                            appear_datetime=appear_datetime,
+                            **template_config)
+                        repeats += 1
+            else:
+                # Create tasks on all weekends or weekdays until plan ends.
+                day = 0
+                due_datetime = datetime.now()
+                appear_datetime = datetime.now()
+                while due_datetime < plan_end:
+                    due_datetime = datetime.now() + timedelta(
+                        days=(template.start_on_day + day))
+                    due_datetime = replace_time(due_datetime, template.due_time)
+                    appear_datetime = datetime.now() + timedelta(
+                        days=(template.start_on_day + day))
+                    appear_datetime = replace_time(
+                        appear_datetime, template.appear_time)
+                    if (
+                        (due_datetime.weekday() < 5 and
+                         template.frequency == 'weekdays') or
+                        (due_datetime.weekday() > 4 and
+                         template.frequency == 'weekends')
+                    ):
+                        instance_model.objects.create(
+                            plan=plan,
+                            due_datetime=due_datetime,
+                            appear_datetime=appear_datetime,
+                            **template_config)
+                    day += 1
+
+
 @receiver(post_save, sender=CarePlan)
 def create_patient_tasks(sender, instance, created, **kwargs):
-    if created:
-        patient_task_templates = PatientTaskTemplate.objects.filter(
-            plan_template=instance.plan_template)
-
-        for template in patient_task_templates:
-            plan_end = datetime.now() + timedelta(
-                weeks=template.plan_template.duration_weeks)
-            if template.frequency == 'once':
-                due_datetime = datetime.now() + timedelta(days=template.start_on_day)
-                due_datetime = replace_time(due_datetime, template.due_time)
-                appear_datetime = datetime.now() + timedelta(days=template.start_on_day)
-                appear_datetime = replace_time(appear_datetime, template.appear_time)
-                PatientTask.objects.create(
-                    plan=instance, patient_task_template=template,
-                    due_datetime=due_datetime, appear_datetime=appear_datetime)
-            elif template.frequency == 'daily':
-                if template.repeat_amount > 0:
-                    for i in range(template.repeat_amount):
-                        due_datetime = datetime.now() + timedelta(
-                            days=(template.start_on_day + i))
-                        due_datetime = replace_time(due_datetime, template.due_time)
-                        appear_datetime = datetime.now() + timedelta(
-                            days=(template.start_on_day + i))
-                        appear_datetime = replace_time(
-                            appear_datetime,
-                            template.appear_time)
-                        PatientTask.objects.create(
-                            plan=instance, patient_task_template=template,
-                            due_datetime=due_datetime, appear_datetime=appear_datetime)
-                else:
-                    # Create a task instance for every day until the plan end date
-                    day = 0
-                    due_datetime = datetime.now()
-                    while due_datetime < plan_end:
-                        due_datetime = datetime.now() + timedelta(
-                            days=(template.start_on_day + day))
-                        due_datetime = replace_time(due_datetime, template.due_time)
-                        appear_datetime = datetime.now() + timedelta(
-                            days=(template.start_on_day + day))
-                        appear_datetime = replace_time(
-                            appear_datetime, template.appear_time)
-                        PatientTask.objects.create(
-                            plan=instance, patient_task_template=template,
-                            due_datetime=due_datetime, appear_datetime=appear_datetime)
-                        day += 1
-            elif template.frequency == 'weekly':
-                if template.repeat_amount > 0:
-                    for i in range(template.repeat_amount):
-                        due_datetime = datetime.now() + timedelta(
-                            days=(template.start_on_day + (i * 7)))
-                        due_datetime = replace_time(due_datetime, template.due_time)
-                        appear_datetime = datetime.now() + timedelta(
-                            days=(template.start_on_day + (i * 7)))
-                        appear_datetime = replace_time(
-                            appear_datetime, template.appear_time)
-                        PatientTask.objects.create(
-                            plan=instance, patient_task_template=template,
-                            due_datetime=due_datetime, appear_datetime=appear_datetime)
-                else:
-                    # Create a task instance every week until the plan end date
-                    day = 0
-                    due_datetime = datetime.now()
-                    appear_datetime = datetime.now()
-                    while due_datetime < plan_end:
-                        due_datetime = datetime.now() + timedelta(
-                            days=(template.start_on_day + day))
-                        due_datetime = replace_time(due_datetime, template.due_time)
-                        appear_datetime = datetime.now() + timedelta(
-                            days=(template.start_on_day + day))
-                        appear_datetime = replace_time(
-                            appear_datetime, template.appear_time)
-                        PatientTask.objects.create(
-                            plan=instance, patient_task_template=template,
-                            due_datetime=due_datetime, appear_datetime=appear_datetime)
-                        day += 7
-            # elif template.frequency == 'every_other_day':
-            #     if template.repeat_amount > 0:
-            #
-            elif template.frequency == 'weekdays' or template.frequency == 'weekends':
-                if template.repeat_amount > 0:
-                    repeats = 0
-                    while repeats < template.repeat_amount:
-                        due_datetime = datetime.now() + timedelta(
-                            days=(template.start_on_day + i))
-                        due_datetime = replace_time(due_datetime, template.due_time)
-                        appear_datetime = datetime.now() + timedelta(
-                            days=(template.start_on_day + i))
-                        appear_datetime = replace_time(
-                            appear_datetime, template.appear_time)
-                        if (
-                            (due_datetime.weekday() < 5 and
-                             template.frequency == 'weekdays') or
-                            (due_datetime.weekday() > 4 and
-                             template.frequency == 'weekends')
-                        ):
-                            PatientTask.objects.create(
-                                plan=instance, patient_task_template=template,
-                                due_datetime=due_datetime,
-                                appear_datetime=appear_datetime)
-                            repeats += 1
-                else:
-                    # Create tasks on all weekends or weekdays until plan ends.
-                    day = 0
-                    due_datetime = datetime.now()
-                    appear_datetime = datetime.now()
-                    while due_datetime < plan_end:
-                        due_datetime = datetime.now() + timedelta(
-                            days=(template.start_on_day + day))
-                        due_datetime = replace_time(due_datetime, template.due_time)
-                        appear_datetime = datetime.now() + timedelta(
-                            days=(template.start_on_day + day))
-                        appear_datetime = replace_time(
-                            appear_datetime, template.appear_time)
-                        if (
-                            (due_datetime.weekday() < 5 and
-                             template.frequency == 'weekdays') or
-                            (due_datetime.weekday() > 4 and
-                             template.frequency == 'weekends')
-                        ):
-                            PatientTask.objects.create(
-                                plan=instance, patient_task_template=template,
-                                due_datetime=due_datetime,
-                                appear_datetime=appear_datetime)
-                        day += 1
+    create_scheduled_tasks(
+        instance, PatientTaskTemplate, PatientTask, 'patient_task_template')
+    create_scheduled_tasks(
+        instance, SymptomTaskTemplate, SymptomTask, 'symptom_task_template')
+    create_scheduled_tasks(
+        instance, AssessmentTaskTemplate, AssessmentTask, 'assessment_task_template')

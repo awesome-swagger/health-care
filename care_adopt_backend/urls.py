@@ -149,9 +149,6 @@ urlpatterns = [
 
     url(r'^api/todays_tasks/', TodaysTasksAPIView.as_view()),
     url(r'^swagger/', schema_view),
-
-    # Work around to direct to rest framework login view to authenticate on swagger
-    url(r'^accounts/', include('rest_framework.urls')),
 ]
 
 if settings.DEBUG:
