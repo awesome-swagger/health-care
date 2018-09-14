@@ -164,13 +164,23 @@ class TasksMixin(PlansMixin):
             due_time=due_time,
         )
 
-    def create_team_task(self):
-        appear_datetime = self.fake.future_datetime(end_date="+5d")
-        due_datetime = self.fake.future_datetime(end_date="+30d")
+    def create_team_task(self, **kwargs):
+        if 'plan' not in kwargs:
+            kwargs.update({'plan': self.create_care_plan()})
 
-        return TeamTaskFactory(
-            plan=self.create_care_plan(),
-            team_task_template=self.create_team_task_template(),
-            appear_datetime=appear_datetime,
-            due_datetime=due_datetime,
-        )
+        if 'team_task_template' not in kwargs:
+            kwargs.update({
+                'team_task_template': self.create_team_task_template()
+            })
+
+        if 'appear_datetime' not in kwargs:
+            kwargs.update({
+                'appear_datetime': self.fake.future_datetime(end_date="+5d")
+            })
+
+        if 'due_datetime' not in kwargs:
+            kwargs.update({
+                'due_datetime': self.fake.future_datetime(end_date="+30d")
+            })
+
+        return TeamTaskFactory(**kwargs)

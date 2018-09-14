@@ -37,6 +37,7 @@ class PatientTaskSerializer(serializers.ModelSerializer):
             'due_datetime',
             'status',
             'is_complete',
+            'state',
         )
         read_only_fields = (
             'id',
@@ -62,6 +63,7 @@ class TeamTaskSerializer(serializers.ModelSerializer):
             'due_datetime',
             'status',
             'is_complete',
+            'state',
         )
         read_only_fields = (
             'id',
@@ -86,6 +88,7 @@ class MedicationTaskSerializer(serializers.ModelSerializer):
             'due_datetime',
             'status',
             'is_complete',
+            'state',
         )
         read_only_fields = (
             'id',
@@ -111,6 +114,7 @@ class SymptomTaskSerializer(serializers.ModelSerializer):
             'due_datetime',
             'comments',
             'is_complete',
+            'state',
         )
         read_only_fields = (
             'id',
@@ -150,6 +154,7 @@ class AssessmentTaskSerializer(serializers.ModelSerializer):
             'due_datetime',
             'comments',
             'is_complete',
+            'state',
         )
         read_only_fields = (
             'id',
