@@ -184,3 +184,36 @@ class TasksMixin(PlansMixin):
             })
 
         return TeamTaskFactory(**kwargs)
+
+
+class StateTestMixin(object):
+
+    def execute_state_test(self, state, **kwargs):
+        raise NotImplementedError(
+            'Override execute_state_test in the main TestAPICase class'
+        )
+
+    def test_complete_state(self):
+        kwargs = {
+            'status': 'done'
+        }
+        self.execute_state_test('done', **kwargs)
+
+    def test_upcoming_state(self):
+        kwargs = {
+            'appear_datetime': self.fake.future_datetime(end_date="+2d")
+        }
+        self.execute_state_test('upcoming', **kwargs)
+
+    def test_available_state(self):
+        kwargs = {
+            'appear_datetime': self.fake.past_datetime(start_date="-5d")
+        }
+        self.execute_state_test('available', **kwargs)
+
+    def test_past_due_state(self):
+        kwargs = {
+            'appear_datetime': self.fake.past_datetime(start_date="-10d"),
+            'due_datetime': self.fake.past_datetime(start_date="-1d")
+        }
+        self.execute_state_test('past due', **kwargs)

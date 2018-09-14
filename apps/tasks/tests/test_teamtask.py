@@ -4,22 +4,13 @@ from faker import Faker
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from .mixins import TasksMixin
+from .mixins import StateTestMixin, TasksMixin
 
 
-class TestTeamTask(TasksMixin, APITestCase):
+class TestTeamTask(StateTestMixin, TasksMixin, APITestCase):
     """
     Test cases for :model:`tasks.TeamTask`
     """
-
-    def execute_state_test(self, state, **kwargs):
-        team_task = self.create_team_task(**kwargs)
-        url = reverse(
-            'team_tasks-detail',
-            kwargs={'pk': team_task.id}
-        )
-        response = self.client.get(url)
-        self.assertEqual(response.data['state'], state)
 
     def setUp(self):
         self.fake = Faker()
@@ -49,27 +40,11 @@ class TestTeamTask(TasksMixin, APITestCase):
         response = self.client.patch(self.detail_url, payload)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    def test_complete_state(self):
-        kwargs = {
-            'status': 'done'
-        }
-        self.execute_state_test('done', **kwargs)
-
-    def test_upcoming_state(self):
-        kwargs = {
-            'appear_datetime': self.fake.future_datetime(end_date="+2d")
-        }
-        self.execute_state_test('upcoming', **kwargs)
-
-    def test_available_state(self):
-        kwargs = {
-            'appear_datetime': self.fake.past_datetime(start_date="-5d")
-        }
-        self.execute_state_test('available', **kwargs)
-
-    def test_past_due_state(self):
-        kwargs = {
-            'appear_datetime': self.fake.past_datetime(start_date="-10d"),
-            'due_datetime': self.fake.past_datetime(start_date="-1d")
-        }
-        self.execute_state_test('past due', **kwargs)
+    def execute_state_test(self, state, **kwargs):
+        team_task = self.create_team_task(**kwargs)
+        url = reverse(
+            'team_tasks-detail',
+            kwargs={'pk': team_task.id}
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.data['state'], state)
