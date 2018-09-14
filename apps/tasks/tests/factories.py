@@ -62,3 +62,39 @@ class SymptomRatingFactory(factory.django.DjangoModelFactory):
 
     class Meta:
         model = 'tasks.SymptomRating'
+
+
+class AssessmentTaskTemplateFactory(factory.django.DjangoModelFactory):
+    """
+    Factory for :model:`tasks.AssessmentTaskTemplate`
+    """
+
+    class Meta:
+        model = 'tasks.AssessmentTaskTemplate'
+
+
+class AssessmentTaskFactory(factory.django.DjangoModelFactory):
+    """
+    Factory for :model:`tasks.AssessmentTask`
+    """
+
+    class Meta:
+        model = 'tasks.AssessmentTask'
+
+
+class AssessmentQuestionFactory(factory.django.DjangoModelFactory):
+    """
+    Factory for :model:`tasks.AssessmentQuestion`
+    """
+
+    class Meta:
+        model = 'tasks.AssessmentQuestion'
+
+
+class AssessmentResponseFactory(factory.django.DjangoModelFactory):
+    """
+    Factory for :model:`tasks.AssessmentResponse`
+    """
+
+    class Meta:
+        model = 'tasks.AssessmentResponse'

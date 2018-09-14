@@ -110,7 +110,18 @@ class AssessmentTaskSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = AssessmentTask
-        fields = '__all__'
+        fields = (
+            'id',
+            'plan',
+            'assessment_task_template',
+            'appear_datetime',
+            'due_datetime',
+            'comments',
+            'is_complete',
+        )
+        read_only_fields = (
+            'id',
+        )
 
 
 class AssessmentResponseSerializer(serializers.ModelSerializer):
