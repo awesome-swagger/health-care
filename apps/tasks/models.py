@@ -88,12 +88,19 @@ class TeamTaskTemplate(UUIDPrimaryKeyMixin, AbstractTask):
 
 
 class TeamTask(UUIDPrimaryKeyMixin):
+    STATUS_CHOICES = (
+        ('undefined', 'Undefined'),
+        ('missed', 'Missed'),
+        ('done', 'Done'),
+    )
     plan = models.ForeignKey(
         CarePlan, null=False, blank=False, on_delete=models.CASCADE)
     team_task_template = models.ForeignKey(
         TeamTaskTemplate, null=False, blank=False, on_delete=models.CASCADE)
     appear_datetime = models.DateTimeField(null=False, blank=False)
     due_datetime = models.DateTimeField(null=False, blank=False)
+    status = models.CharField(
+        choices=STATUS_CHOICES, max_length=12, default="undefined")
 
     class Meta:
         ordering = ('plan', 'team_task_template', 'due_datetime', )
