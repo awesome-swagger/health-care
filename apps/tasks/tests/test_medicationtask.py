@@ -29,7 +29,7 @@ class TestMedicationTask(TasksMixin, APITestCase):
             'status': done
         }
         response = self.client.patch(self.detail_url, payload)
-        self.assertEqual(response.data['status'], done)
+        self.assertEqual(response.data['is_complete'], True)
 
     def test_update_status_medication_task_unauthenticated(self):
         self.client.logout()

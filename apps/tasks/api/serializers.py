@@ -79,7 +79,17 @@ class MedicationTaskSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = MedicationTask
-        fields = '__all__'
+        fields = (
+            'id',
+            'medication_task_template',
+            'appear_datetime',
+            'due_datetime',
+            'status',
+            'is_complete',
+        )
+        read_only_fields = (
+            'id',
+        )
 
 
 class SymptomTaskTemplateSerializer(serializers.ModelSerializer):

@@ -158,6 +158,10 @@ class MedicationTask(UUIDPrimaryKeyMixin):
             self.appear_datetime,
         )
 
+    @property
+    def is_complete(self):
+        return self.status == 'done'
+
 
 class SymptomTaskTemplate(UUIDPrimaryKeyMixin, AbstractTask):
     plan_template = models.ForeignKey(
