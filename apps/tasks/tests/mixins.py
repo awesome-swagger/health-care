@@ -37,17 +37,26 @@ class TasksMixin(PlansMixin):
             due_time=due_time,
         )
 
-    def create_patient_task(self):
-        plan = self.create_care_plan()
-        patient_task_template = self.create_patient_task_template()
-        appear_time = self.fake.future_datetime(end_date="+5d")
-        due_datetime = self.fake.future_datetime(end_date="+30d")
-        return PatientTaskFactory(
-            plan=plan,
-            patient_task_template=patient_task_template,
-            appear_datetime=appear_time,
-            due_datetime=due_datetime,
-        )
+    def create_patient_task(self, **kwargs):
+        if 'plan' not in kwargs:
+            kwargs.update({'plan': self.create_care_plan()})
+
+        if 'patient_task_template' not in kwargs:
+            kwargs.update({
+                'patient_task_template': self.create_patient_task_template()
+            })
+
+        if 'appear_datetime' not in kwargs:
+            kwargs.update({
+                'appear_datetime': self.fake.future_datetime(end_date="+5d")
+            })
+
+        if 'due_datetime' not in kwargs:
+            kwargs.update({
+                'due_datetime': self.fake.future_datetime(end_date="+30d")
+            })
+
+        return PatientTaskFactory(**kwargs)
 
     def create_medication_task_template(self):
         appear_time = datetime.time(8, 0, 0)
