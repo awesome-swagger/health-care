@@ -2,7 +2,6 @@ from django.conf import settings
 from django.conf.urls import include, url
 from django.conf.urls.static import static
 from django.contrib import admin
-import django.contrib.auth.views as auth_views
 from django.utils.safestring import mark_safe
 from django.views.generic.base import RedirectView
 from rest_framework.routers import DefaultRouter
@@ -10,10 +9,10 @@ from rest_framework_swagger.views import get_swagger_view
 
 from apps.landing.views import LandingView
 from apps.accounts.views import UserViewSet
-from apps.core.api import (
-    OrganizationViewSet, FacilityViewSet, EmployeeProfileViewSet, ProviderTitleViewSet,
-    ProviderRoleViewSet, ProviderSpecialtyViewSet, DiagnosisViewSet,  MedicationViewSet,
-    ProcedureViewSet, SymptomViewSet, )
+from apps.core.api.views import (
+    OrganizationViewSet, FacilityViewSet, EmployeeProfileViewSet,
+    ProviderTitleViewSet, ProviderRoleViewSet, ProviderSpecialtyViewSet,
+    DiagnosisViewSet,  MedicationViewSet, ProcedureViewSet, SymptomViewSet, )
 from apps.patients.api.views import (
     PatientProfileViewSet, PatientDiagnosisViewSet, ProblemAreaViewSet,
     PatientProcedureViewSet, PatientMedicationViewSet, )
