@@ -21,7 +21,7 @@ from .serializers import (
     InfoMessageSerializer,
 )
 from apps.core.models import ProviderRole
-from apps.core.api import ProviderRoleSerializer
+from apps.core.api.serializers import ProviderRoleSerializer
 from care_adopt_backend import utils
 from care_adopt_backend.permissions import EmployeeOrReadOnly
 
