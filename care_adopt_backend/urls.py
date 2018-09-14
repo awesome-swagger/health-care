@@ -21,7 +21,7 @@ from apps.plans.api import (
     CarePlanTemplateViewSet, CarePlanViewSet, PlanConsentViewSet,
     CareTeamMemberViewSet, GoalTemplateViewSet, InfoMessageQueueViewSet,
     InfoMessageViewSet, )
-from apps.tasks.api import (
+from apps.tasks.api.views import (
     PatientTaskTemplateViewSet,
     PatientTaskViewSet,
     TeamTaskTemplateViewSet,
