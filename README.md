@@ -60,8 +60,25 @@ _(Note: make certain you are using **python3** for this - python2 is no longer s
 
 1. Create a superuser to access the admin:
 
+    Create an interactive session running bash in the backend container.
+
     ```bash
-    docker-compose run --rm backend ./manage.py createsuperuser
+    docker exec -it <container_name> bash
+    ```
+
+    Then bash in the container
+
+    ```bash
+    source my_env/bin/activate
+    
+    manage.py createsuperuser
+    ```
+1. Reset everything.
+
+    If things change, need clean db etc recreate the containers and repeat above steps to create super user.
+
+    ```bash
+    docker-compose up --force-recreate
     ```
 
 ## Typical development tasks
