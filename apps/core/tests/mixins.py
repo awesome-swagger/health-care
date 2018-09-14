@@ -1,9 +1,8 @@
-import factory
-
 from .factories import (
     EmployeeProfileFactory,
     OrganizationFactory,
     FacilityFactory,
+    MedicationFactory,
 )
 from apps.accounts.tests.factories import RegularUserFactory
 
@@ -19,10 +18,15 @@ class CoreMixin(object):
         )
 
     def create_organization(self):
-        return OrganizationFactory(name=factory.Faker('name'))
+        return OrganizationFactory(name=self.fake.name())
 
     def create_facility(self):
         return FacilityFactory(
-            name=factory.Faker('name'),
+            name=self.fake.name(),
             organization=self.create_organization()
+        )
+
+    def create_medication(self):
+        return MedicationFactory(
+            name=self.fake.name(),
         )

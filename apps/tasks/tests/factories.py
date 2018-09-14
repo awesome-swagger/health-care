@@ -17,3 +17,21 @@ class PatientTaskFactory(factory.django.DjangoModelFactory):
 
     class Meta:
         model = 'tasks.PatientTask'
+
+
+class MedicationTaskTemplateFactory(factory.django.DjangoModelFactory):
+    """
+    Factory for :model:`tasks.MedicationTaskTemplate`
+    """
+
+    class Meta:
+        model = 'tasks.MedicationTaskTemplate'
+
+
+class MedicationTaskFactory(factory.django.DjangoModelFactory):
+    """
+    Factory for :model:`tasks.MedicationTask`
+    """
+
+    class Meta:
+        model = 'tasks.MedicationTask'

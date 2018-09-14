@@ -6,23 +6,23 @@ from rest_framework.test import APITestCase
 from .mixins import TasksMixin
 
 
-class TestPatientTask(TasksMixin, APITestCase):
+class TestMedicationTask(TasksMixin, APITestCase):
     """
-    Test cases for :model:`tasks.PatientTask`
+    Test cases for :model:`tasks.MedicationTask`
     """
 
     def setUp(self):
         self.fake = Faker()
         self.employee = self.create_employee()
         self.user = self.employee.user
-        self.patient_task = self.create_patient_task()
+        self.medication_task = self.create_medication_task()
         self.detail_url = reverse(
-            'patient_tasks-detail',
-            kwargs={'pk': self.patient_task.id}
+            'medication_tasks-detail',
+            kwargs={'pk': self.medication_task.id}
         )
         self.client.force_authenticate(user=self.user)
 
-    def test_update_status_patient_task(self):
+    def test_update_status_medication_task(self):
         done = 'done'
         payload = {
             'status': done

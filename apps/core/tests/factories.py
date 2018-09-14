@@ -29,3 +29,13 @@ class OrganizationFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = 'core.Organization'
         django_get_or_create = ('name', )
+
+
+class MedicationFactory(factory.django.DjangoModelFactory):
+    """
+    Factory for :model:`core.Medication`
+    """
+
+    class Meta:
+        model = 'core.Medication'
+        django_get_or_create = ('name', )
