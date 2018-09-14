@@ -17,7 +17,7 @@ from apps.core.api import (
 from apps.patients.api import (
     PatientProfileViewSet, PatientDiagnosisViewSet, ProblemAreaViewSet,
     PatientProcedureViewSet, PatientMedicationViewSet, )
-from apps.plans.api import (
+from apps.plans.api.views import (
     CarePlanTemplateViewSet, CarePlanViewSet, PlanConsentViewSet,
     CareTeamMemberViewSet, GoalTemplateViewSet, InfoMessageQueueViewSet,
     InfoMessageViewSet, )
