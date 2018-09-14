@@ -58,11 +58,14 @@ class TasksMixin(PlansMixin):
 
         return PatientTaskFactory(**kwargs)
 
-    def create_medication_task_template(self):
+    def create_medication_task_template(self, plan=None):
+        if plan is None:
+            plan = self.create_care_plan()
+
         appear_time = datetime.time(8, 0, 0)
         due_time = datetime.time(17, 0, 0)
         return MedicationTaskTemplateFactory(
-            plan=self.create_care_plan(),
+            plan=plan,
             patient_medication=self.create_patient_medication(),
             start_on_day=5,
             appear_time=appear_time,

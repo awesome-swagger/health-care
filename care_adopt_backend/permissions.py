@@ -13,3 +13,9 @@ class EmployeeOrReadOnly(permissions.BasePermission):
             if employee_profile is not None:
                 return True
             return False
+
+
+class IsPatientOnly(permissions.BasePermission):
+
+    def has_permission(self, request, view):
+        return request.user.is_patient

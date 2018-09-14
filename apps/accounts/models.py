@@ -153,6 +153,10 @@ class EmailUser(AbstractBaseUser, PermissionsMixin):
     def is_staff(self):
         return self.is_superuser
 
+    @property
+    def is_patient(self):
+        return hasattr(self, 'patient_profile') and self.patient_profile is not None
+
     # Some nice conveniences
     @property
     def age(self) -> int:
