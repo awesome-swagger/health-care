@@ -67,6 +67,10 @@ class PatientTask(UUIDPrimaryKeyMixin):
     class Meta:
         ordering = ('plan', 'patient_task_template', 'due_datetime', )
 
+    @property
+    def is_complete(self):
+        return self.status == 'done'
+
 
 class TeamTaskTemplate(UUIDPrimaryKeyMixin, AbstractTask):
     plan_template = models.ForeignKey(

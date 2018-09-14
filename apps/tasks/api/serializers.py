@@ -29,7 +29,18 @@ class PatientTaskSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PatientTask
-        fields = '__all__'
+        fields = (
+            'id',
+            'plan',
+            'patient_task_template',
+            'appear_datetime',
+            'due_datetime',
+            'status',
+            'is_complete',
+        )
+        read_only_fields = (
+            'id',
+        )
 
 
 class TeamTaskTemplateSerializer(serializers.ModelSerializer):
