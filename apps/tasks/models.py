@@ -298,10 +298,14 @@ class AssessmentTask(StateMixin, UUIDPrimaryKeyMixin):
             .values_list('id', flat=True).distinct()
         responses = self.assessmentresponse_set.values_list(
             'assessment_question', flat=True).distinct()
-        for question_id in questions:
-            if question_id not in responses:
-                value = False
-                break
+
+        if questions.exists():
+            for question_id in questions:
+                if question_id not in responses:
+                    value = False
+                    break
+        else:
+            value = False
         return value
 
 
