@@ -15,6 +15,8 @@ from .factories import (
     AssessmentQuestionFactory,
     AssessmentTaskFactory,
     AssessmentResponseFactory,
+    TeamTaskTemplateFactory,
+    TeamTaskFactory,
 )
 from apps.plans.tests.mixins import PlansMixin
 
@@ -147,4 +149,28 @@ class TasksMixin(PlansMixin):
             assessment_task=assessment_task,
             assessment_question=assessment_question,
             rating=random.randint(1, 5)
+        )
+
+    def create_team_task_template(self):
+        appear_time = datetime.time(8, 0, 0)
+        due_time = datetime.time(17, 0, 0)
+
+        return TeamTaskTemplateFactory(
+            plan_template=self.create_care_plan_template(),
+            name=self.fake.name(),
+            category='notes',
+            start_on_day=5,
+            appear_time=appear_time,
+            due_time=due_time,
+        )
+
+    def create_team_task(self):
+        appear_datetime = self.fake.future_datetime(end_date="+5d")
+        due_datetime = self.fake.future_datetime(end_date="+30d")
+
+        return TeamTaskFactory(
+            plan=self.create_care_plan(),
+            team_task_template=self.create_team_task_template(),
+            appear_datetime=appear_datetime,
+            due_datetime=due_datetime,
         )

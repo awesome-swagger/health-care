@@ -43,7 +43,18 @@ class TeamTaskSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = TeamTask
-        fields = '__all__'
+        fields = (
+            'id',
+            'plan',
+            'team_task_template',
+            'appear_datetime',
+            'due_datetime',
+            'status',
+            'is_complete',
+        )
+        read_only_fields = (
+            'id',
+        )
 
 
 class MedicationTaskTemplateSerializer(serializers.ModelSerializer):

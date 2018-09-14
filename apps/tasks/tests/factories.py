@@ -98,3 +98,21 @@ class AssessmentResponseFactory(factory.django.DjangoModelFactory):
 
     class Meta:
         model = 'tasks.AssessmentResponse'
+
+
+class TeamTaskFactory(factory.django.DjangoModelFactory):
+    """
+    Factory for :model:`tasks.TeamTask`
+    """
+
+    class Meta:
+        model = 'tasks.TeamTask'
+
+
+class TeamTaskTemplateFactory(factory.django.DjangoModelFactory):
+    """
+    Factory for :model:`tasks.TeamTaskTemplate`
+    """
+
+    class Meta:
+        model = 'tasks.TeamTaskTemplate'

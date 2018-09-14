@@ -105,6 +105,10 @@ class TeamTask(UUIDPrimaryKeyMixin):
     class Meta:
         ordering = ('plan', 'team_task_template', 'due_datetime', )
 
+    @property
+    def is_complete(self):
+        return self.status == 'done'
+
 
 class MedicationTaskTemplate(UUIDPrimaryKeyMixin, AbstractTask):
     # NOTE: Medication task templates are created on the plan instance,
