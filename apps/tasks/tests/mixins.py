@@ -79,16 +79,30 @@ class TasksMixin(PlansMixin):
             due_time=due_time,
         )
 
-    def create_symptom_task(self):
-        appear_datetime = self.fake.future_datetime(end_date="+5d")
-        due_datetime = self.fake.future_datetime(end_date="+30d")
-        return SymptomTaskFactory(
-            plan=self.create_care_plan(),
-            symptom_task_template=self.create_symptom_task_template(),
-            appear_datetime=appear_datetime,
-            due_datetime=due_datetime,
-            comments=self.fake.sentence(nb_words=20)
-        )
+    def create_symptom_task(self, **kwargs):
+        if 'plan' not in kwargs:
+            kwargs.update({'plan': self.create_care_plan()})
+
+        if 'symptom_task_template' not in kwargs:
+            kwargs.update({
+                'symptom_task_template': self.create_symptom_task_template()
+            })
+        if 'appear_datetime' not in kwargs:
+            kwargs.update({
+                'appear_datetime': self.fake.future_datetime(end_date="+5d")
+            })
+
+        if 'due_datetime' not in kwargs:
+            kwargs.update({
+                'due_datetime': self.fake.future_datetime(end_date="+30d")
+            })
+
+        if 'comments' not in kwargs:
+            kwargs.update({
+                'comments': self.fake.sentence(nb_words=20)
+            })
+
+        return SymptomTaskFactory(**kwargs)
 
     def create_symptom_rating(self, symptom_task=None):
         if symptom_task is None:
