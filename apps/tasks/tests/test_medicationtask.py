@@ -4,10 +4,10 @@ from faker import Faker
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from .mixins import TasksMixin
+from .mixins import StateTestMixin, TasksMixin
 
 
-class TestMedicationTask(TasksMixin, APITestCase):
+class TestMedicationTask(StateTestMixin, TasksMixin, APITestCase):
     """
     Test cases for :model:`tasks.MedicationTask`
     """
@@ -39,3 +39,19 @@ class TestMedicationTask(TasksMixin, APITestCase):
         }
         response = self.client.patch(self.detail_url, payload)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def execute_state_test(self, state, **kwargs):
+
+        medication_task = self.create_medication_task(**kwargs)
+        url = reverse(
+            'medication_tasks-detail',
+            kwargs={'pk': medication_task.id}
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.data['state'], state)
+
+    def test_missed_state(self):
+        kwargs = {
+            'status': 'missed'
+        }
+        self.execute_state_test('missed', **kwargs)
