@@ -1,4 +1,5 @@
 import datetime
+import random
 
 import factory
 
@@ -7,6 +8,9 @@ from .factories import (
     PatientTaskFactory,
     MedicationTaskTemplateFactory,
     MedicationTaskFactory,
+    SymptomTaskTemplateFactory,
+    SymptomTaskFactory,
+    SymptomRatingFactory,
 )
 from apps.plans.tests.mixins import PlansMixin
 
@@ -57,4 +61,35 @@ class TasksMixin(PlansMixin):
             medication_task_template=self.create_medication_task_template(),
             appear_datetime=appear_datetime,
             due_datetime=due_datetime,
+        )
+
+    def create_symptom_task_template(self):
+        appear_time = datetime.time(8, 0, 0)
+        due_time = datetime.time(17, 0, 0)
+        return SymptomTaskTemplateFactory(
+            plan_template=self.create_care_plan_template(),
+            start_on_day=5,
+            appear_time=appear_time,
+            due_time=due_time,
+        )
+
+    def create_symptom_task(self):
+        appear_datetime = self.fake.future_datetime(end_date="+5d")
+        due_datetime = self.fake.future_datetime(end_date="+30d")
+        return SymptomTaskFactory(
+            plan=self.create_care_plan(),
+            symptom_task_template=self.create_symptom_task_template(),
+            appear_datetime=appear_datetime,
+            due_datetime=due_datetime,
+            comments=self.fake.sentence(nb_words=20)
+        )
+
+    def create_symptom_rating(self, symptom_task=None):
+        if symptom_task is None:
+            symptom_task = self.create_symptom_task()
+
+        return SymptomRatingFactory(
+            symptom_task=symptom_task,
+            symptom=self.create_symptom(),
+            rating=random.randint(1, 5)
         )

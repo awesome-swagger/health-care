@@ -35,3 +35,30 @@ class MedicationTaskFactory(factory.django.DjangoModelFactory):
 
     class Meta:
         model = 'tasks.MedicationTask'
+
+
+class SymptomTaskTemplateFactory(factory.django.DjangoModelFactory):
+    """
+    Factory for :model:`tasks.SymptomTaskTemplate`
+    """
+
+    class Meta:
+        model = 'tasks.SymptomTaskTemplate'
+
+
+class SymptomTaskFactory(factory.django.DjangoModelFactory):
+    """
+    Factory for :model:`tasks.SymptomTask`
+    """
+
+    class Meta:
+        model = 'tasks.SymptomTask'
+
+
+class SymptomRatingFactory(factory.django.DjangoModelFactory):
+    """
+    Factory for :model:`tasks.SymptomRating`
+    """
+
+    class Meta:
+        model = 'tasks.SymptomRating'

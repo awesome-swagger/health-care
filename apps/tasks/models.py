@@ -169,6 +169,10 @@ class SymptomTask(UUIDPrimaryKeyMixin):
             self.due_datetime,
         )
 
+    @property
+    def is_complete(self):
+        return self.symptomrating_set.exists()
+
 
 class SymptomRating(UUIDPrimaryKeyMixin):
     symptom_task = models.ForeignKey(

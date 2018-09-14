@@ -3,6 +3,7 @@ from .factories import (
     OrganizationFactory,
     FacilityFactory,
     MedicationFactory,
+    SymptomFactory,
 )
 from apps.accounts.tests.factories import RegularUserFactory
 
@@ -29,4 +30,11 @@ class CoreMixin(object):
     def create_medication(self):
         return MedicationFactory(
             name=self.fake.name(),
+        )
+
+    def create_symptom(self):
+        return SymptomFactory(
+            name=self.fake.name(),
+            worst_label=self.fake.word(),
+            best_label=self.fake.word(),
         )

@@ -71,7 +71,18 @@ class SymptomTaskSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SymptomTask
-        fields = '__all__'
+        fields = (
+            'id',
+            'plan',
+            'symptom_task_template',
+            'appear_datetime',
+            'due_datetime',
+            'comments',
+            'is_complete',
+        )
+        read_only_fields = (
+            'id',
+        )
 
 
 class SymptomRatingSerializer(serializers.ModelSerializer):

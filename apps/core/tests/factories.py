@@ -39,3 +39,13 @@ class MedicationFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = 'core.Medication'
         django_get_or_create = ('name', )
+
+
+class SymptomFactory(factory.django.DjangoModelFactory):
+    """
+    Factory for :model:`core.Symptom`
+    """
+
+    class Meta:
+        model = 'core.Symptom'
+        django_get_or_create = ('name', )
