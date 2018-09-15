@@ -19,6 +19,9 @@ class TestMedicationTask(StateTestMixin, TasksMixin, APITestCase):
         self.fake = Faker()
         self.user = AdminUserFactory()
         self.medication_task = self.create_medication_task()
+        self.template = self.medication_task.medication_task_template
+        self.plan = self.template.plan
+        self.url = reverse('medication_tasks-list')
         self.detail_url = reverse(
             'medication_tasks-detail',
             kwargs={'pk': self.medication_task.id}
@@ -57,6 +60,26 @@ class TestMedicationTask(StateTestMixin, TasksMixin, APITestCase):
             'status': 'missed'
         }
         self.execute_state_test('missed', **kwargs)
+
+    def test_filter_by_care_plan(self):
+        filter_url = f'{self.url}?medication_task_template__plan__id={self.plan.id}'
+        response = self.client.get(filter_url)
+        self.assertEqual(response.data['count'], 1)
+
+    def test_filter_by_medication_task_template(self):
+        filter_url = f'{self.url}?medication_task_template__id={self.template.id}'
+        response = self.client.get(filter_url)
+        self.assertEqual(response.data['count'], 1)
+
+    def test_filter_by_patient(self):
+        filter_url = f'{self.url}?medication_task_template__plan__patient__id={self.plan.patient.id}'
+        response = self.client.get(filter_url)
+        self.assertEqual(response.data['count'], 1)
+
+    def test_filter_by_status(self):
+        filter_url = f'{self.url}?status={self.medication_task.status}'
+        response = self.client.get(filter_url)
+        self.assertEqual(response.data['count'], 1)
 
 
 class TestMedicationTaskUsingEmployee(TasksMixin, APITestCase):
