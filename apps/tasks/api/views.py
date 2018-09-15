@@ -25,6 +25,7 @@ from ..models import (
     AssessmentResponse,
 )
 from ..permissions import IsPatientOrEmployeeForTask
+from .filters import DurationFilter
 from . serializers import (
     PatientTaskTemplateSerializer,
     PatientTaskSerializer,
@@ -81,7 +82,7 @@ class PatientTaskViewSet(viewsets.ModelViewSet):
         IsPatientOrEmployeeForTask,
     )
     queryset = PatientTask.objects.all()
-    filter_backends = (DjangoFilterBackend, )
+    filter_backends = (DjangoFilterBackend, DurationFilter)
     filterset_fields = (
         'plan__id',
         'patient_task_template__id',
