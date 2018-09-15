@@ -89,9 +89,9 @@ class TestAssessmentTask(StateTestMixin, TasksMixin, APITestCase):
         self.assertEqual(response.data['state'], state)
 
 
-class TestSymptomTaskUsingEmployee(TasksMixin, APITestCase):
+class TestAssessmentTaskUsingEmployee(TasksMixin, APITestCase):
     """
-    Test cases for :model:`tasks.SymptomTask` using an employee
+    Test cases for :model:`tasks.AssessmentTask` using an employee
     as the logged in user.
     """
 
@@ -248,3 +248,160 @@ class TestSymptomTaskUsingEmployee(TasksMixin, APITestCase):
         )
         response = self.client.delete(url, {})
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+
+class TestAssessmentTaskUsingPatient(TasksMixin, APITestCase):
+    """
+    Test cases for :model:`tasks.AssessmentTask` using a patient
+    as the logged in user.
+    """
+
+    def setUp(self):
+        self.fake = Faker()
+        self.patient = self.create_patient()
+        self.user = self.patient.user
+
+        self.plan = self.create_care_plan(patient=self.patient)
+        self.assessment_task = self.create_assessment_task(**{
+            'plan': self.plan
+        })
+        self.url = reverse('assessment_tasks-list')
+        self.detail_url = reverse(
+            'assessment_tasks-detail',
+            kwargs={'pk': self.assessment_task.id}
+        )
+        self.client.force_authenticate(user=self.user)
+
+    def test_get_assessment_tasks_list(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.data['count'], 1)
+
+    def test_get_assessment_task_detail(self):
+        response = self.client.get(self.detail_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_assessment_task_detail_unauthenticated(self):
+        self.client.logout()
+        response = self.client.get(self.detail_url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_get_assessment_task_detail_not_owner(self):
+        task = self.create_assessment_task()
+        url = reverse('assessment_tasks-detail', kwargs={'pk': task.id})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_create_assessment_task(self):
+        template = self.create_assessment_task_template()
+
+        appear_datetime = pytz.utc.localize(
+            self.fake.future_datetime(end_date="+5d")
+        )
+
+        due_datetime = pytz.utc.localize(
+            self.fake.future_datetime(end_date="+30d")
+        )
+
+        payload = {
+            'plan': self.plan.id,
+            'assessment_task_template': template.id,
+            'appear_datetime': appear_datetime,
+            'due_datetime': due_datetime,
+            'comments': self.fake.sentence(nb_words=10),
+        }
+        response = self.client.post(self.url, payload)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_full_update_assessment_task(self):
+        template = self.create_assessment_task_template()
+
+        appear_datetime = pytz.utc.localize(
+            self.fake.future_datetime(end_date="+5d")
+        )
+
+        due_datetime = pytz.utc.localize(
+            self.fake.future_datetime(end_date="+30d")
+        )
+        payload = {
+            'plan': self.plan.id,
+            'assessment_task_template': template.id,
+            'appear_datetime': appear_datetime,
+            'due_datetime': due_datetime,
+            'comments': self.fake.sentence(nb_words=10),
+        }
+        response = self.client.put(self.detail_url, payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_full_update_assessment_task_not_owner(self):
+        template = self.create_assessment_task_template()
+
+        appear_datetime = pytz.utc.localize(
+            self.fake.future_datetime(end_date="+5d")
+        )
+
+        due_datetime = pytz.utc.localize(
+            self.fake.future_datetime(end_date="+30d")
+        )
+        payload = {
+            'plan': self.plan.id,
+            'assessment_task_template': template.id,
+            'appear_datetime': appear_datetime,
+            'due_datetime': due_datetime,
+            'comments': self.fake.sentence(nb_words=10),
+        }
+
+        assessment_task = self.create_assessment_task()
+        url = reverse(
+            'assessment_tasks-detail',
+            kwargs={'pk': assessment_task.id}
+        )
+        response = self.client.put(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_partial_update_assessment_task(self):
+        appear_datetime = pytz.utc.localize(
+            self.fake.future_datetime(end_date="+5d")
+        )
+
+        due_datetime = pytz.utc.localize(
+            self.fake.future_datetime(end_date="+30d")
+        )
+        payload = {
+            'appear_datetime': appear_datetime,
+            'due_datetime': due_datetime,
+        }
+        response = self.client.patch(self.detail_url, payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_partial_update_assessment_task_not_owner(self):
+        appear_datetime = pytz.utc.localize(
+            self.fake.future_datetime(end_date="+5d")
+        )
+
+        due_datetime = pytz.utc.localize(
+            self.fake.future_datetime(end_date="+30d")
+        )
+        payload = {
+            'appear_datetime': appear_datetime,
+            'due_datetime': due_datetime,
+        }
+        assessment_task = self.create_assessment_task()
+        url = reverse(
+            'assessment_tasks-detail',
+            kwargs={'pk': assessment_task.id}
+        )
+        response = self.client.patch(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_delete_assessment_task(self):
+        response = self.client.delete(self.detail_url, {})
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_delete_assessment_task_not_member(self):
+        assessment_task = self.create_assessment_task()
+        url = reverse(
+            'assessment_tasks-detail',
+            kwargs={'pk': assessment_task.id}
+        )
+        response = self.client.delete(url, {})
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
