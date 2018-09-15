@@ -49,7 +49,7 @@ class DurationFilter(filters.BaseFilterBackend):
             due_datetime = datetime.strptime(due_datetime, '%Y-%m-%d')
             due_datetime = datetime.combine(
                 due_datetime,
-                time.max,
+                time.min,
                 tzinfo=pytz.utc
             )
         return due_datetime
@@ -61,12 +61,12 @@ class DurationFilter(filters.BaseFilterBackend):
         context = {}
         if appear_datetime:
             context.update({
-                'appear_datetime__gte': appear_datetime
+                'appear_datetime__date': appear_datetime.date()
             })
 
         if due_datetime:
             context.update({
-                'due_datetime__lte': due_datetime
+                'due_datetime__date': due_datetime.date()
             })
         return queryset.filter(**context)
 
