@@ -129,6 +129,13 @@ class MedicationTaskViewSet(viewsets.ModelViewSet):
         IsPatientOrEmployeeForTask,
     )
     queryset = MedicationTask.objects.all()
+    filter_backends = (DjangoFilterBackend, DurationFilter)
+    filterset_fields = (
+        'medication_task_template__plan__id',
+        'medication_task_template__id',
+        'medication_task_template__plan__patient__id',
+        'status',
+    )
 
     def get_queryset(self):
         queryset = super(MedicationTaskViewSet, self).get_queryset()
