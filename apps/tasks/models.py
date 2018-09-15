@@ -67,6 +67,10 @@ class PatientTask(UUIDPrimaryKeyMixin):
     class Meta:
         ordering = ('plan', 'patient_task_template', 'due_datetime', )
 
+    @property
+    def is_complete(self):
+        return self.status == 'done'
+
 
 class TeamTaskTemplate(UUIDPrimaryKeyMixin, AbstractTask):
     plan_template = models.ForeignKey(
@@ -88,15 +92,26 @@ class TeamTaskTemplate(UUIDPrimaryKeyMixin, AbstractTask):
 
 
 class TeamTask(UUIDPrimaryKeyMixin):
+    STATUS_CHOICES = (
+        ('undefined', 'Undefined'),
+        ('missed', 'Missed'),
+        ('done', 'Done'),
+    )
     plan = models.ForeignKey(
         CarePlan, null=False, blank=False, on_delete=models.CASCADE)
     team_task_template = models.ForeignKey(
         TeamTaskTemplate, null=False, blank=False, on_delete=models.CASCADE)
     appear_datetime = models.DateTimeField(null=False, blank=False)
     due_datetime = models.DateTimeField(null=False, blank=False)
+    status = models.CharField(
+        choices=STATUS_CHOICES, max_length=12, default="undefined")
 
     class Meta:
         ordering = ('plan', 'team_task_template', 'due_datetime', )
+
+    @property
+    def is_complete(self):
+        return self.status == 'done'
 
 
 class MedicationTaskTemplate(UUIDPrimaryKeyMixin, AbstractTask):
@@ -143,6 +158,10 @@ class MedicationTask(UUIDPrimaryKeyMixin):
             self.appear_datetime,
         )
 
+    @property
+    def is_complete(self):
+        return self.status == 'done'
+
 
 class SymptomTaskTemplate(UUIDPrimaryKeyMixin, AbstractTask):
     plan_template = models.ForeignKey(
@@ -168,6 +187,10 @@ class SymptomTask(UUIDPrimaryKeyMixin):
             self.plan.patient.user.first_name,
             self.due_datetime,
         )
+
+    @property
+    def is_complete(self):
+        return self.symptomrating_set.exists()
 
 
 class SymptomRating(UUIDPrimaryKeyMixin):
@@ -232,6 +255,19 @@ class AssessmentTask(UUIDPrimaryKeyMixin):
             self.plan.patient.user.first_name,
             self.due_datetime,
         )
+
+    @property
+    def is_complete(self):
+        value = True
+        questions = self.assessment_task_template.assessmentquestion_set\
+            .values_list('id', flat=True).distinct()
+        responses = self.assessmentresponse_set.values_list(
+            'assessment_question', flat=True).distinct()
+        for question_id in questions:
+            if question_id not in responses:
+                value = False
+                break
+        return value
 
 
 class AssessmentResponse(UUIDPrimaryKeyMixin):
