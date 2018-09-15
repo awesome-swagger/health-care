@@ -155,7 +155,13 @@ class EmailUser(AbstractBaseUser, PermissionsMixin):
 
     @property
     def is_patient(self):
-        return hasattr(self, 'patient_profile') and self.patient_profile is not None
+        return hasattr(self, 'patient_profile') and \
+            self.patient_profile is not None
+
+    @property
+    def is_employee(self):
+        return hasattr(self, 'employee_profile') and \
+            self.employee_profile is not None
 
     # Some nice conveniences
     @property

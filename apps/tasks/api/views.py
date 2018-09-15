@@ -7,7 +7,11 @@ from django.utils import timezone
 from rest_framework import viewsets, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from care_adopt_backend.permissions import EmployeeOrReadOnly, IsPatientOnly
+from care_adopt_backend.permissions import (
+    EmployeeOrReadOnly,
+    IsPatientOnly,
+    IsPatientOrEmployeeForTask,
+)
 from ..models import (
     PatientTaskTemplate,
     PatientTask,
@@ -70,21 +74,24 @@ class PatientTaskTemplateViewSet(viewsets.ModelViewSet):
 
 class PatientTaskViewSet(viewsets.ModelViewSet):
     serializer_class = PatientTaskSerializer
-    permission_classes = (permissions.IsAuthenticated, EmployeeOrReadOnly, )
+    permission_classes = (
+        permissions.IsAuthenticated,
+        IsPatientOrEmployeeForTask,
+    )
     queryset = PatientTask.objects.all()
 
     def get_queryset(self):
-        qs = self.queryset
-        employee_profile = utils.employee_profile_or_none(self.request.user)
-        patient_profile = utils.patient_profile_or_none(self.request.user)
+        queryset = super(PatientTaskViewSet, self).get_queryset()
+        user = self.request.user
 
-        if employee_profile is not None:
-            # TODO: Only get tasks for patients this employee has access to
-            return qs.all()
-        elif patient_profile is not None:
-            return qs.filter(plan__patient__id=patient_profile.id)
-        else:
-            return qs.none()
+        if user.is_employee:
+            queryset = queryset.filter(
+                plan__care_team_members__employee_profile=user.employee_profile
+            )
+        elif user.is_patient:
+            queryset = queryset.filter(plan__patient=user.patient_profile)
+
+        return queryset
 
 
 class TeamTaskTemplateViewSet(viewsets.ModelViewSet):
