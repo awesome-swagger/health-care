@@ -49,3 +49,13 @@ class SymptomFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = 'core.Symptom'
         django_get_or_create = ('name', )
+
+
+class ProviderRoleFactory(factory.django.DjangoModelFactory):
+    """
+    Factory for :model:`core.ProviderRole`
+    """
+
+    class Meta:
+        model = 'core.ProviderRole'
+        django_get_or_create = ('name', )

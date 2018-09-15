@@ -36,19 +36,3 @@ class PatientSearchPermissions(permissions.BasePermission):
         if employee_profile is not None:
             return True
         return False
-
-
-class IsPatientOrEmployeeForTask(permissions.BasePermission):
-
-    def has_permission(self, request, view):
-        if request.method in permissions.SAFE_METHODS:
-            return request.user.is_patient or request.user.is_employee
-        else:
-            return request.user.is_employee
-
-    def has_object_permission(self, request, view, obj):
-        SAFE_AND_UPDATE = permissions.SAFEE_METHODS + ['PUT', 'PATCH']
-        if request.method in SAFE_AND_UPDATE:
-            return request.user.is_patient or request.user.is_employee
-        elif request.method in ["POST", "DELETE"]:
-            return request.user.is_employee

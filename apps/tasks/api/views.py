@@ -10,7 +10,6 @@ from rest_framework.views import APIView
 from care_adopt_backend.permissions import (
     EmployeeOrReadOnly,
     IsPatientOnly,
-    IsPatientOrEmployeeForTask,
 )
 from ..models import (
     PatientTaskTemplate,
@@ -27,6 +26,7 @@ from ..models import (
     AssessmentTask,
     AssessmentResponse,
 )
+from ..permissions import IsPatientOrEmployeeForTask
 from . serializers import (
     PatientTaskTemplateSerializer,
     PatientTaskSerializer,

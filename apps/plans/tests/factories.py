@@ -18,3 +18,12 @@ class CarePlanFactory(factory.django.DjangoModelFactory):
 
     class Meta:
         model = 'plans.CarePlan'
+
+
+class CareTeamMemberFactory(factory.django.DjangoModelFactory):
+    """
+    Factory for :model:`plans.CareTeamMember`
+    """
+
+    class Meta:
+        model = 'plans.CareTeamMember'

@@ -25,7 +25,6 @@ class PatientTaskTemplateSerializer(serializers.ModelSerializer):
 
 
 class PatientTaskSerializer(serializers.ModelSerializer):
-    patient_task_template = PatientTaskTemplateSerializer(many=False)
 
     class Meta:
         model = PatientTask
@@ -42,6 +41,17 @@ class PatientTaskSerializer(serializers.ModelSerializer):
         read_only_fields = (
             'id',
         )
+
+    def to_representation(self, instance):
+        data = super(PatientTaskSerializer, self).to_representation(instance)
+        if instance.patient_task_template:
+            template = PatientTaskTemplateSerializer(
+                instance.patient_task_template
+            )
+            data.update({
+                'patient_task_template': template.data
+            })
+        return data
 
 
 class PatientTaskTodaySerializer(serializers.ModelSerializer):
