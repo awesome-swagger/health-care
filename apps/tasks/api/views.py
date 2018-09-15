@@ -124,8 +124,24 @@ class MedicationTaskTemplateViewSet(viewsets.ModelViewSet):
 
 class MedicationTaskViewSet(viewsets.ModelViewSet):
     serializer_class = MedicationTaskSerializer
-    permission_classes = (permissions.IsAuthenticated, EmployeeOrReadOnly, )
+    permission_classes = (
+        permissions.IsAuthenticated,
+        IsPatientOrEmployeeForTask,
+    )
     queryset = MedicationTask.objects.all()
+
+    def get_queryset(self):
+        queryset = super(MedicationTaskViewSet, self).get_queryset()
+        user = self.request.user
+
+        if user.is_employee:
+            queryset = queryset.filter(
+                medication_task_template__plan__care_team_members__employee_profile=user.employee_profile
+            )
+        elif user.is_patient:
+            queryset = queryset.filter(medication_task_template__plan__patient=user.patient_profile)
+
+        return queryset
 
 
 class SymptomTaskTemplateViewSet(viewsets.ModelViewSet):
