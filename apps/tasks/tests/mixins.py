@@ -37,37 +37,56 @@ class TasksMixin(PlansMixin):
             due_time=due_time,
         )
 
-    def create_patient_task(self):
-        plan = self.create_care_plan()
-        patient_task_template = self.create_patient_task_template()
-        appear_time = self.fake.future_datetime(end_date="+5d")
-        due_datetime = self.fake.future_datetime(end_date="+30d")
-        return PatientTaskFactory(
-            plan=plan,
-            patient_task_template=patient_task_template,
-            appear_datetime=appear_time,
-            due_datetime=due_datetime,
-        )
+    def create_patient_task(self, **kwargs):
+        if 'plan' not in kwargs:
+            kwargs.update({'plan': self.create_care_plan()})
 
-    def create_medication_task_template(self):
+        if 'patient_task_template' not in kwargs:
+            kwargs.update({
+                'patient_task_template': self.create_patient_task_template()
+            })
+
+        if 'appear_datetime' not in kwargs:
+            kwargs.update({
+                'appear_datetime': self.fake.future_datetime(end_date="+5d")
+            })
+
+        if 'due_datetime' not in kwargs:
+            kwargs.update({
+                'due_datetime': self.fake.future_datetime(end_date="+30d")
+            })
+
+        return PatientTaskFactory(**kwargs)
+
+    def create_medication_task_template(self, plan=None):
+        if plan is None:
+            plan = self.create_care_plan()
+
         appear_time = datetime.time(8, 0, 0)
         due_time = datetime.time(17, 0, 0)
         return MedicationTaskTemplateFactory(
-            plan=self.create_care_plan(),
+            plan=plan,
             patient_medication=self.create_patient_medication(),
             start_on_day=5,
             appear_time=appear_time,
             due_time=due_time,
         )
 
-    def create_medication_task(self):
-        appear_datetime = self.fake.future_datetime(end_date="+5d")
-        due_datetime = self.fake.future_datetime(end_date="+30d")
-        return MedicationTaskFactory(
-            medication_task_template=self.create_medication_task_template(),
-            appear_datetime=appear_datetime,
-            due_datetime=due_datetime,
-        )
+    def create_medication_task(self, **kwargs):
+        if 'medication_task_template' not in kwargs:
+            kwargs.update({
+                'medication_task_template': self.create_medication_task_template()
+            })
+        if 'appear_datetime' not in kwargs:
+            kwargs.update({
+                'appear_datetime': self.fake.future_datetime(end_date="+5d")
+            })
+
+        if 'due_datetime' not in kwargs:
+            kwargs.update({
+                'due_datetime': self.fake.future_datetime(end_date="+30d")
+            })
+        return MedicationTaskFactory(**kwargs)
 
     def create_symptom_task_template(self):
         appear_time = datetime.time(8, 0, 0)
@@ -79,16 +98,30 @@ class TasksMixin(PlansMixin):
             due_time=due_time,
         )
 
-    def create_symptom_task(self):
-        appear_datetime = self.fake.future_datetime(end_date="+5d")
-        due_datetime = self.fake.future_datetime(end_date="+30d")
-        return SymptomTaskFactory(
-            plan=self.create_care_plan(),
-            symptom_task_template=self.create_symptom_task_template(),
-            appear_datetime=appear_datetime,
-            due_datetime=due_datetime,
-            comments=self.fake.sentence(nb_words=20)
-        )
+    def create_symptom_task(self, **kwargs):
+        if 'plan' not in kwargs:
+            kwargs.update({'plan': self.create_care_plan()})
+
+        if 'symptom_task_template' not in kwargs:
+            kwargs.update({
+                'symptom_task_template': self.create_symptom_task_template()
+            })
+        if 'appear_datetime' not in kwargs:
+            kwargs.update({
+                'appear_datetime': self.fake.future_datetime(end_date="+5d")
+            })
+
+        if 'due_datetime' not in kwargs:
+            kwargs.update({
+                'due_datetime': self.fake.future_datetime(end_date="+30d")
+            })
+
+        if 'comments' not in kwargs:
+            kwargs.update({
+                'comments': self.fake.sentence(nb_words=20)
+            })
+
+        return SymptomTaskFactory(**kwargs)
 
     def create_symptom_rating(self, symptom_task=None):
         if symptom_task is None:
@@ -122,17 +155,31 @@ class TasksMixin(PlansMixin):
             best_label=self.fake.word()
         )
 
-    def create_assessment_task(self):
-        appear_datetime = self.fake.future_datetime(end_date="+5d")
-        due_datetime = self.fake.future_datetime(end_date="+30d")
+    def create_assessment_task(self, **kwargs):
+        if 'plan' not in kwargs:
+            kwargs.update({'plan': self.create_care_plan()})
 
-        return AssessmentTaskFactory(
-            plan=self.create_care_plan(),
-            assessment_task_template=self.create_assessment_task_template(),
-            appear_datetime=appear_datetime,
-            due_datetime=due_datetime,
-            comments=self.fake.sentence(nb_words=20)
-        )
+        if 'assessment_task_template' not in kwargs:
+            kwargs.update({
+                'assessment_task_template': self.create_assessment_task_template()
+            })
+
+        if 'appear_datetime' not in kwargs:
+            kwargs.update({
+                'appear_datetime': self.fake.future_datetime(end_date="+5d")
+            })
+
+        if 'due_datetime' not in kwargs:
+            kwargs.update({
+                'due_datetime': self.fake.future_datetime(end_date="+30d")
+            })
+
+        if 'comments' not in kwargs:
+            kwargs.update({
+                'comments': self.fake.sentence(nb_words=20)
+            })
+
+        return AssessmentTaskFactory(**kwargs)
 
     def create_assessment_response(self,
                                    assessment_task=None,
@@ -164,13 +211,56 @@ class TasksMixin(PlansMixin):
             due_time=due_time,
         )
 
-    def create_team_task(self):
-        appear_datetime = self.fake.future_datetime(end_date="+5d")
-        due_datetime = self.fake.future_datetime(end_date="+30d")
+    def create_team_task(self, **kwargs):
+        if 'plan' not in kwargs:
+            kwargs.update({'plan': self.create_care_plan()})
 
-        return TeamTaskFactory(
-            plan=self.create_care_plan(),
-            team_task_template=self.create_team_task_template(),
-            appear_datetime=appear_datetime,
-            due_datetime=due_datetime,
+        if 'team_task_template' not in kwargs:
+            kwargs.update({
+                'team_task_template': self.create_team_task_template()
+            })
+
+        if 'appear_datetime' not in kwargs:
+            kwargs.update({
+                'appear_datetime': self.fake.future_datetime(end_date="+5d")
+            })
+
+        if 'due_datetime' not in kwargs:
+            kwargs.update({
+                'due_datetime': self.fake.future_datetime(end_date="+30d")
+            })
+
+        return TeamTaskFactory(**kwargs)
+
+
+class StateTestMixin(object):
+
+    def execute_state_test(self, state, **kwargs):
+        raise NotImplementedError(
+            'Override execute_state_test in the main TestAPICase class'
         )
+
+    def test_complete_state(self):
+        kwargs = {
+            'status': 'done'
+        }
+        self.execute_state_test('done', **kwargs)
+
+    def test_upcoming_state(self):
+        kwargs = {
+            'appear_datetime': self.fake.future_datetime(end_date="+2d")
+        }
+        self.execute_state_test('upcoming', **kwargs)
+
+    def test_available_state(self):
+        kwargs = {
+            'appear_datetime': self.fake.past_datetime(start_date="-5d")
+        }
+        self.execute_state_test('available', **kwargs)
+
+    def test_past_due_state(self):
+        kwargs = {
+            'appear_datetime': self.fake.past_datetime(start_date="-10d"),
+            'due_datetime': self.fake.past_datetime(start_date="-1d")
+        }
+        self.execute_state_test('past due', **kwargs)

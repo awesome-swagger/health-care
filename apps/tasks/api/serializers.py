@@ -37,10 +37,36 @@ class PatientTaskSerializer(serializers.ModelSerializer):
             'due_datetime',
             'status',
             'is_complete',
+            'state',
         )
         read_only_fields = (
             'id',
         )
+
+
+class PatientTaskTodaySerializer(serializers.ModelSerializer):
+    """
+    This is a simplified serializer of :model:`tasks.PatientTask`. This
+    will be primarily used in :view:`tasks.TodaysTasksAPIView`.
+    """
+    type = serializers.SerializerMethodField()
+    name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = PatientTask
+        fields = (
+            'id',
+            'type',
+            'name',
+            'appear_datetime',
+            'due_datetime',
+        )
+
+    def get_type(self, obj):
+        return 'patient_task'
+
+    def get_name(self, obj):
+        return obj.patient_task_template.name
 
 
 class TeamTaskTemplateSerializer(serializers.ModelSerializer):
@@ -62,6 +88,7 @@ class TeamTaskSerializer(serializers.ModelSerializer):
             'due_datetime',
             'status',
             'is_complete',
+            'state',
         )
         read_only_fields = (
             'id',
@@ -86,10 +113,37 @@ class MedicationTaskSerializer(serializers.ModelSerializer):
             'due_datetime',
             'status',
             'is_complete',
+            'state',
         )
         read_only_fields = (
             'id',
         )
+
+
+class MedicationTaskTodaySerializer(serializers.ModelSerializer):
+    """
+    This is a simplified serializer of :model:`tasks.MedicationTask`. This
+    will be primarily used in :view:`tasks.TodaysTasksAPIView`.
+    """
+    type = serializers.SerializerMethodField()
+    name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = MedicationTask
+        fields = (
+            'id',
+            'type',
+            'name',
+            'appear_datetime',
+            'due_datetime',
+        )
+
+    def get_type(self, obj):
+        return 'patient_task'
+
+    def get_name(self, obj):
+        medication = obj.medication_task_template.patient_medication
+        return f'{medication.medication.name}, {medication.dose_mg}mg'
 
 
 class SymptomTaskTemplateSerializer(serializers.ModelSerializer):
@@ -111,10 +165,36 @@ class SymptomTaskSerializer(serializers.ModelSerializer):
             'due_datetime',
             'comments',
             'is_complete',
+            'state',
         )
         read_only_fields = (
             'id',
         )
+
+
+class SymptomTaskTodaySerializer(serializers.ModelSerializer):
+    """
+    This is a simplified serializer of :model:`tasks.SymptomTask`. This
+    will be primarily used in :view:`tasks.TodaysTasksAPIView`.
+    """
+    type = serializers.SerializerMethodField()
+    name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = SymptomTask
+        fields = (
+            'id',
+            'type',
+            'name',
+            'appear_datetime',
+            'due_datetime',
+        )
+
+    def get_type(self, obj):
+        return 'symptom_task'
+
+    def get_name(self, obj):
+        return 'Symptoms Report'
 
 
 class SymptomRatingSerializer(serializers.ModelSerializer):
@@ -150,10 +230,36 @@ class AssessmentTaskSerializer(serializers.ModelSerializer):
             'due_datetime',
             'comments',
             'is_complete',
+            'state',
         )
         read_only_fields = (
             'id',
         )
+
+
+class AssessmentTaskTodaySerializer(serializers.ModelSerializer):
+    """
+    This is a simplified serializer of :model:`tasks.AssessmentTask`. This
+    will be primarily used in :view:`tasks.TodaysTasksAPIView`.
+    """
+    type = serializers.SerializerMethodField()
+    name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = AssessmentTask
+        fields = (
+            'id',
+            'type',
+            'name',
+            'appear_datetime',
+            'due_datetime',
+        )
+
+    def get_type(self, obj):
+        return 'assessment_task'
+
+    def get_name(self, obj):
+        return obj.assessment_task_template.name
 
 
 class AssessmentResponseSerializer(serializers.ModelSerializer):

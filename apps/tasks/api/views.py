@@ -2,7 +2,7 @@ import datetime
 from rest_framework import viewsets, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from care_adopt_backend.permissions import EmployeeOrReadOnly
+from care_adopt_backend.permissions import EmployeeOrReadOnly, IsPatientOnly
 from ..models import (
     PatientTaskTemplate,
     PatientTask,
@@ -21,16 +21,20 @@ from ..models import (
 from . serializers import (
     PatientTaskTemplateSerializer,
     PatientTaskSerializer,
+    PatientTaskTodaySerializer,
     TeamTaskTemplateSerializer,
     TeamTaskSerializer,
     MedicationTaskTemplateSerializer,
     MedicationTaskSerializer,
+    MedicationTaskTodaySerializer,
     SymptomTaskTemplateSerializer,
     SymptomTaskSerializer,
+    SymptomTaskTodaySerializer,
     SymptomRatingSerializer,
     AssessmentTaskTemplateSerializer,
     AssessmentQuestionSerializer,
     AssessmentTaskSerializer,
+    AssessmentTaskTodaySerializer,
     AssessmentResponseSerializer,
 )
 from care_adopt_backend import utils
@@ -149,6 +153,7 @@ class AssessmentResponseViewSet(viewsets.ModelViewSet):
 ############################
 
 class TodaysTasksAPIView(APIView):
+    permission_classes = (permissions.IsAuthenticated, IsPatientOnly)
 
     def get(self, request, format=None):
         tasks = []
@@ -156,55 +161,47 @@ class TodaysTasksAPIView(APIView):
                                               datetime.time.min)
         today_max = datetime.datetime.combine(datetime.date.today(),
                                               datetime.time.max)
-        patient_profile = utils.patient_profile_or_none(self.request.user)
+        patient_profile = request.user.patient_profile
 
-        if patient_profile is not None:
-            patient_tasks = PatientTask.objects.filter(
-                plan__patient__id=patient_profile.id,
-                due_datetime__range=(today_min, today_max))
-            medication_tasks = MedicationTask.objects.filter(
-                medication_task_template__plan__patient__id=patient_profile.id,
-                due_datetime__range=(today_min, today_max))
-            symptom_tasks = SymptomTask.objects.filter(
-                plan__patient__id=patient_profile.id,
-                due_datetime__range=(today_min, today_max))
-            assessment_tasks = AssessmentTask.objects.filter(
-                plan__patient__id=patient_profile.id,
-                due_datetime__range=(today_min, today_max))
-            for task in patient_tasks.all():
-                tasks.append({
-                    'id': task.id,
-                    'type': 'patient_task',
-                    'name': task.patient_task_template.name,
-                    'appear_datetime': task.appear_datetime,
-                    'due_datetime': task.due_datetime,
-                })
-            for task in medication_tasks.all():
-                name = '{}, {}mg'.format(
-                    task.medication_task_template.patient_medication.medication.name,
-                    task.medication_task_template.patient_medication.dose_mg,
-                )
-                tasks.append({
-                    'id': task.id,
-                    'type': 'medication_task',
-                    'name': name,
-                    'appear_datetime': task.appear_datetime,
-                    'due_datetime': task.due_datetime,
-                })
-            for task in symptom_tasks.all():
-                tasks.append({
-                    'id': task.id,
-                    'type': 'symptom_task',
-                    'name': 'Symptoms Report',
-                    'appear_datetime': task.appear_datetime,
-                    'due_datetime': task.due_datetime,
-                })
-            for task in assessment_tasks.all():
-                tasks.append({
-                    'id': task.id,
-                    'type': 'assessment_task',
-                    'name': task.assessment_task_template.name,
-                    'appear_datetime': task.appear_datetime,
-                    'due_datetime': task.due_datetime,
-                })
-            return Response(tasks)
+        patient_tasks = PatientTask.objects.filter(
+            plan__patient__id=patient_profile.id,
+            due_datetime__range=(today_min, today_max))
+        medication_tasks = MedicationTask.objects.filter(
+            medication_task_template__plan__patient__id=patient_profile.id,
+            due_datetime__range=(today_min, today_max))
+        symptom_tasks = SymptomTask.objects.filter(
+            plan__patient__id=patient_profile.id,
+            due_datetime__range=(today_min, today_max))
+        assessment_tasks = AssessmentTask.objects.filter(
+            plan__patient__id=patient_profile.id,
+            due_datetime__range=(today_min, today_max))
+
+        if patient_tasks.exists():
+            serializer = PatientTaskTodaySerializer(
+                patient_tasks.all(),
+                many=True
+            )
+            tasks += serializer.data
+
+        if medication_tasks.exists():
+            serializer = MedicationTaskTodaySerializer(
+                medication_tasks.all(),
+                many=True
+            )
+            tasks += serializer.data
+
+        if symptom_tasks.exists():
+            serializer = SymptomTaskTodaySerializer(
+                symptom_tasks.all(),
+                many=True
+            )
+            tasks += serializer.data
+
+        if assessment_tasks.exists():
+            serializer = AssessmentTaskTodaySerializer(
+                assessment_tasks.all(),
+                many=True
+            )
+            tasks += serializer.data
+
+        return Response(data=tasks)

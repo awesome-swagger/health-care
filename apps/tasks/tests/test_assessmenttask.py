@@ -3,10 +3,10 @@ from django.urls import reverse
 from faker import Faker
 from rest_framework.test import APITestCase
 
-from .mixins import TasksMixin
+from .mixins import StateTestMixin, TasksMixin
 
 
-class TestAssessmentTask(TasksMixin, APITestCase):
+class TestAssessmentTask(StateTestMixin, TasksMixin, APITestCase):
     """
     Test cases for :model:`tasks.AssessmentTask`
     """
@@ -14,6 +14,17 @@ class TestAssessmentTask(TasksMixin, APITestCase):
     def create_multiple_assessment_questions(self, assessment_task_template):
         for i in range(5):
             self.create_assessment_question(assessment_task_template)
+
+    def create_responses_to_multiple_questions(self,
+                                               template,
+                                               task,
+                                               questions):
+
+        if not template.assessmentquestion_set.exists():
+            self.create_multiple_assessment_questions(template)
+
+        for question in questions:
+            self.create_assessment_response(task, question)
 
     def setUp(self):
         self.fake = Faker()
@@ -35,26 +46,41 @@ class TestAssessmentTask(TasksMixin, APITestCase):
         self.assertEqual(response.data['is_complete'], False)
 
     def test_assessment_task_with_incomplete_responses(self):
-        if not self.assessment_task_template.assessmentquestion_set.exists():
-            self.create_multiple_assessment_questions(
-                self.assessment_task_template
-            )
-
-        for question in self.assessment_task_template.assessmentquestion_set.all()[1:]:
-            self.create_assessment_response(self.assessment_task, question)
+        self.create_responses_to_multiple_questions(
+            self.assessment_task_template,
+            self.assessment_task,
+            self.assessment_task_template.assessmentquestion_set.all()[1:]
+        )
 
         response = self.client.get(self.detail_url)
         self.assertEqual(response.data['is_complete'], False)
 
     def test_assessment_task_with_complete_responses(self):
-
-        if not self.assessment_task_template.assessmentquestion_set.exists():
-            self.create_multiple_assessment_questions(
-                self.assessment_task_template
-            )
-
-        for question in self.assessment_task_template.assessmentquestion_set.all():
-            self.create_assessment_response(self.assessment_task, question)
+        self.create_responses_to_multiple_questions(
+            self.assessment_task_template,
+            self.assessment_task,
+            self.assessment_task_template.assessmentquestion_set.all()
+        )
 
         response = self.client.get(self.detail_url)
         self.assertEqual(response.data['is_complete'], True)
+
+    def execute_state_test(self, state, **kwargs):
+        # Remove status since we don't have this field in SymptomTask
+        if 'status' in kwargs:
+            kwargs.pop('status')
+
+        task = self.create_assessment_task(**kwargs)
+        if state == 'done':
+            self.create_responses_to_multiple_questions(
+                task.assessment_task_template,
+                task,
+                task.assessment_task_template.assessmentquestion_set.all()
+            )
+
+        url = reverse(
+            'assessment_tasks-detail',
+            kwargs={'pk': task.id}
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.data['state'], state)

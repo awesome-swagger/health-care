@@ -3,8 +3,9 @@ from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from care_adopt_backend.mixins import (
-    AddressMixin, CreatedModifiedMixin, UUIDPrimaryKeyMixin)
+from django.utils import timezone
+
+from care_adopt_backend.mixins import UUIDPrimaryKeyMixin
 from apps.core.models import (ProviderRole, Symptom, )
 from apps.patients.models import (PatientMedication, )
 from apps.plans.models import (CarePlanTemplate, CarePlan, )
@@ -39,6 +40,34 @@ class AbstractTask(models.Model):
         abstract = True
 
 
+class StateMixin(object):
+
+    def check_if_missed(self):
+        """
+        This method will only be used for PatientTask and MedicationTask.
+        By default, we set it to False to disregard this. This method should
+        be overridden in PatientTask and MedicationTask model to allow for
+        custom condition for `missed` state
+        """
+        return False
+
+    @property
+    def state(self):
+        value = ""
+        now = timezone.now()
+        if self.is_complete:
+            value = "done"
+        elif self.check_if_missed():
+            value = "missed"
+        elif now < self.appear_datetime:
+            value = "upcoming"
+        elif now > self.appear_datetime and now < self.due_datetime:
+            value = "available"
+        elif now > self.due_datetime:
+            value = "past due"
+        return value
+
+
 class PatientTaskTemplate(UUIDPrimaryKeyMixin, AbstractTask):
     plan_template = models.ForeignKey(
         CarePlanTemplate, null=False, blank=False, related_name="patient_tasks",
@@ -49,7 +78,7 @@ class PatientTaskTemplate(UUIDPrimaryKeyMixin, AbstractTask):
         return self.name
 
 
-class PatientTask(UUIDPrimaryKeyMixin):
+class PatientTask(StateMixin, UUIDPrimaryKeyMixin):
     plan = models.ForeignKey(
         CarePlan, null=False, blank=False, on_delete=models.CASCADE)
     patient_task_template = models.ForeignKey(
@@ -71,6 +100,9 @@ class PatientTask(UUIDPrimaryKeyMixin):
     def is_complete(self):
         return self.status == 'done'
 
+    def check_if_missed(self):
+        return self.status == 'missed'
+
 
 class TeamTaskTemplate(UUIDPrimaryKeyMixin, AbstractTask):
     plan_template = models.ForeignKey(
@@ -91,7 +123,7 @@ class TeamTaskTemplate(UUIDPrimaryKeyMixin, AbstractTask):
         return self.name
 
 
-class TeamTask(UUIDPrimaryKeyMixin):
+class TeamTask(StateMixin, UUIDPrimaryKeyMixin):
     STATUS_CHOICES = (
         ('undefined', 'Undefined'),
         ('missed', 'Missed'),
@@ -136,7 +168,7 @@ class MedicationTaskTemplate(UUIDPrimaryKeyMixin, AbstractTask):
         )
 
 
-class MedicationTask(UUIDPrimaryKeyMixin):
+class MedicationTask(StateMixin, UUIDPrimaryKeyMixin):
     medication_task_template = models.ForeignKey(
         MedicationTaskTemplate, null=False, blank=False, on_delete=models.CASCADE)
     appear_datetime = models.DateTimeField(null=False, blank=False)
@@ -162,6 +194,9 @@ class MedicationTask(UUIDPrimaryKeyMixin):
     def is_complete(self):
         return self.status == 'done'
 
+    def check_if_missed(self):
+        return self.status == 'missed'
+
 
 class SymptomTaskTemplate(UUIDPrimaryKeyMixin, AbstractTask):
     plan_template = models.ForeignKey(
@@ -172,7 +207,7 @@ class SymptomTaskTemplate(UUIDPrimaryKeyMixin, AbstractTask):
         return '{} symptom report template'.format(self.plan_template.name)
 
 
-class SymptomTask(UUIDPrimaryKeyMixin):
+class SymptomTask(StateMixin, UUIDPrimaryKeyMixin):
     plan = models.ForeignKey(
         CarePlan, null=False, blank=False, on_delete=models.CASCADE)
     symptom_task_template = models.ForeignKey(
@@ -240,7 +275,7 @@ class AssessmentQuestion(UUIDPrimaryKeyMixin):
         )
 
 
-class AssessmentTask(UUIDPrimaryKeyMixin):
+class AssessmentTask(StateMixin, UUIDPrimaryKeyMixin):
     plan = models.ForeignKey(
         CarePlan, null=False, blank=False, on_delete=models.CASCADE)
     assessment_task_template = models.ForeignKey(
@@ -263,10 +298,14 @@ class AssessmentTask(UUIDPrimaryKeyMixin):
             .values_list('id', flat=True).distinct()
         responses = self.assessmentresponse_set.values_list(
             'assessment_question', flat=True).distinct()
-        for question_id in questions:
-            if question_id not in responses:
-                value = False
-                break
+
+        if questions.exists():
+            for question_id in questions:
+                if question_id not in responses:
+                    value = False
+                    break
+        else:
+            value = False
         return value
 
 

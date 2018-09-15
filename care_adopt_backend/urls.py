@@ -146,7 +146,7 @@ urlpatterns = [
     url(r'validate/(?P<validation_key>[a-z0-9\-]+)/$',
         ValidateUserView.as_view(), name='user-validation'),
 
-    url(r'^api/todays_tasks/', TodaysTasksAPIView.as_view()),
+    url(r'^api/todays_tasks/', TodaysTasksAPIView.as_view(), name="todays_tasks"),
     url(r'^swagger/', schema_view),
 ]
 
