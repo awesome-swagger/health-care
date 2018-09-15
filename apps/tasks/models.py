@@ -21,25 +21,6 @@ FREQUENCY_CHOICES = (
 )
 
 
-class AbstractTask(models.Model):
-    start_on_day = models.IntegerField(null=False, blank=False)
-    frequency = models.CharField(
-        max_length=20, choices=FREQUENCY_CHOICES, default='once')
-
-    repeat_amount = models.IntegerField(
-        default=-1,
-        help_text="""
-        Only matters if frequency is not 'once'.
-        If it is below 0, it will repeat until the plan ends
-        """
-    )
-    appear_time = models.TimeField(null=False, blank=False)
-    due_time = models.TimeField(null=False, blank=False)
-
-    class Meta:
-        abstract = True
-
-
 class StateMixin(object):
 
     def check_if_missed(self):
@@ -68,7 +49,34 @@ class StateMixin(object):
         return value
 
 
-class PatientTaskTemplate(UUIDPrimaryKeyMixin, AbstractTask):
+class AbstractTaskTemplate(UUIDPrimaryKeyMixin):
+    start_on_day = models.IntegerField(null=False, blank=False)
+    frequency = models.CharField(
+        max_length=20, choices=FREQUENCY_CHOICES, default='once')
+
+    repeat_amount = models.IntegerField(
+        default=-1,
+        help_text="""
+        Only matters if frequency is not 'once'.
+        If it is below 0, it will repeat until the plan ends
+        """
+    )
+    appear_time = models.TimeField(null=False, blank=False)
+    due_time = models.TimeField(null=False, blank=False)
+
+    class Meta:
+        abstract = True
+
+
+class AbstractTask(UUIDPrimaryKeyMixin, StateMixin):
+    appear_datetime = models.DateTimeField(null=False, blank=False)
+    due_datetime = models.DateTimeField(null=False, blank=False)
+
+    class Meta:
+        abstract = True
+
+
+class PatientTaskTemplate(AbstractTaskTemplate):
     plan_template = models.ForeignKey(
         CarePlanTemplate, null=False, blank=False, related_name="patient_tasks",
         on_delete=models.CASCADE)
@@ -78,13 +86,11 @@ class PatientTaskTemplate(UUIDPrimaryKeyMixin, AbstractTask):
         return self.name
 
 
-class PatientTask(StateMixin, UUIDPrimaryKeyMixin):
+class PatientTask(AbstractTask):
     plan = models.ForeignKey(
         CarePlan, null=False, blank=False, on_delete=models.CASCADE)
     patient_task_template = models.ForeignKey(
         PatientTaskTemplate, null=False, blank=False, on_delete=models.CASCADE)
-    appear_datetime = models.DateTimeField(null=False, blank=False)
-    due_datetime = models.DateTimeField(null=False, blank=False)
     STATUS_CHOICES = (
         ('undefined', 'Undefined'),
         ('missed', 'Missed'),
@@ -104,7 +110,7 @@ class PatientTask(StateMixin, UUIDPrimaryKeyMixin):
         return self.status == 'missed'
 
 
-class TeamTaskTemplate(UUIDPrimaryKeyMixin, AbstractTask):
+class TeamTaskTemplate(AbstractTaskTemplate):
     plan_template = models.ForeignKey(
         CarePlanTemplate, null=False, blank=False, related_name="team_tasks",
         on_delete=models.CASCADE)
@@ -123,7 +129,7 @@ class TeamTaskTemplate(UUIDPrimaryKeyMixin, AbstractTask):
         return self.name
 
 
-class TeamTask(StateMixin, UUIDPrimaryKeyMixin):
+class TeamTask(AbstractTask):
     STATUS_CHOICES = (
         ('undefined', 'Undefined'),
         ('missed', 'Missed'),
@@ -133,8 +139,6 @@ class TeamTask(StateMixin, UUIDPrimaryKeyMixin):
         CarePlan, null=False, blank=False, on_delete=models.CASCADE)
     team_task_template = models.ForeignKey(
         TeamTaskTemplate, null=False, blank=False, on_delete=models.CASCADE)
-    appear_datetime = models.DateTimeField(null=False, blank=False)
-    due_datetime = models.DateTimeField(null=False, blank=False)
     status = models.CharField(
         choices=STATUS_CHOICES, max_length=12, default="undefined")
 
@@ -146,7 +150,7 @@ class TeamTask(StateMixin, UUIDPrimaryKeyMixin):
         return self.status == 'done'
 
 
-class MedicationTaskTemplate(UUIDPrimaryKeyMixin, AbstractTask):
+class MedicationTaskTemplate(AbstractTaskTemplate):
     # NOTE: Medication task templates are created on the plan instance,
     # NOT the plan template like all other tasks
     plan = models.ForeignKey(
@@ -168,11 +172,9 @@ class MedicationTaskTemplate(UUIDPrimaryKeyMixin, AbstractTask):
         )
 
 
-class MedicationTask(StateMixin, UUIDPrimaryKeyMixin):
+class MedicationTask(AbstractTask):
     medication_task_template = models.ForeignKey(
         MedicationTaskTemplate, null=False, blank=False, on_delete=models.CASCADE)
-    appear_datetime = models.DateTimeField(null=False, blank=False)
-    due_datetime = models.DateTimeField(null=False, blank=False)
     STATUS_CHOICES = (
         ('undefined', 'Undefined'),
         ('missed', 'Missed'),
@@ -198,7 +200,7 @@ class MedicationTask(StateMixin, UUIDPrimaryKeyMixin):
         return self.status == 'missed'
 
 
-class SymptomTaskTemplate(UUIDPrimaryKeyMixin, AbstractTask):
+class SymptomTaskTemplate(AbstractTaskTemplate):
     plan_template = models.ForeignKey(
         CarePlanTemplate, null=False, blank=False, related_name="symptom_tasks",
         on_delete=models.CASCADE)
@@ -207,13 +209,11 @@ class SymptomTaskTemplate(UUIDPrimaryKeyMixin, AbstractTask):
         return '{} symptom report template'.format(self.plan_template.name)
 
 
-class SymptomTask(StateMixin, UUIDPrimaryKeyMixin):
+class SymptomTask(AbstractTask):
     plan = models.ForeignKey(
         CarePlan, null=False, blank=False, on_delete=models.CASCADE)
     symptom_task_template = models.ForeignKey(
         SymptomTaskTemplate, null=False, blank=False, on_delete=models.CASCADE)
-    appear_datetime = models.DateTimeField(null=False, blank=False)
-    due_datetime = models.DateTimeField(null=False, blank=False)
     comments = models.CharField(max_length=1024, null=False, blank=False)
 
     def __str__(self):
@@ -247,7 +247,7 @@ class SymptomRating(UUIDPrimaryKeyMixin):
         )
 
 
-class AssessmentTaskTemplate(UUIDPrimaryKeyMixin, AbstractTask):
+class AssessmentTaskTemplate(AbstractTaskTemplate):
     plan_template = models.ForeignKey(
         CarePlanTemplate, null=False, blank=False, related_name="assessment_tasks",
         on_delete=models.CASCADE)
@@ -275,13 +275,11 @@ class AssessmentQuestion(UUIDPrimaryKeyMixin):
         )
 
 
-class AssessmentTask(StateMixin, UUIDPrimaryKeyMixin):
+class AssessmentTask(AbstractTask):
     plan = models.ForeignKey(
         CarePlan, null=False, blank=False, on_delete=models.CASCADE)
     assessment_task_template = models.ForeignKey(
         AssessmentTaskTemplate, null=False, blank=False, on_delete=models.CASCADE)
-    appear_datetime = models.DateTimeField(null=False, blank=False)
-    due_datetime = models.DateTimeField(null=False, blank=False)
     comments = models.CharField(max_length=1024, null=False, blank=False)
 
     def __str__(self):
