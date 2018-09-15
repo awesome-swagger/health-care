@@ -19,6 +19,8 @@ class TestSymptomTask(StateTestMixin, TasksMixin, APITestCase):
         self.fake = Faker()
         self.user = AdminUserFactory()
         self.symptom_task = self.create_symptom_task()
+        self.plan = self.symptom_task.plan
+        self.url = reverse('symptom_tasks-list')
         self.detail_url = reverse(
             'symptom_tasks-detail',
             kwargs={'pk': self.symptom_task.id}
@@ -49,6 +51,21 @@ class TestSymptomTask(StateTestMixin, TasksMixin, APITestCase):
         )
         response = self.client.get(url)
         self.assertEqual(response.data['state'], state)
+
+    def test_filter_by_care_plan(self):
+        filter_url = f'{self.url}?plan__id={self.plan.id}'
+        response = self.client.get(filter_url)
+        self.assertEqual(response.data['count'], 1)
+
+    def test_filter_by_symptom_task_template(self):
+        filter_url = f'{self.url}?symptom_task_template__id={self.symptom_task.symptom_task_template.id}'
+        response = self.client.get(filter_url)
+        self.assertEqual(response.data['count'], 1)
+
+    def test_filter_by_patient(self):
+        filter_url = f'{self.url}?plan__patient__id={self.plan.patient.id}'
+        response = self.client.get(filter_url)
+        self.assertEqual(response.data['count'], 1)
 
 
 class TestSymptomTaskUsingEmployee(TasksMixin, APITestCase):
