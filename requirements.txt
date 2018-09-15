@@ -8,6 +8,7 @@ django-widget-tweaks
 requests
 markdown
 factory-boy==2.11.1
+pytest-django==3.4.2
 
 # Dev tools
 django-extensions
