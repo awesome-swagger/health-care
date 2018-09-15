@@ -2,6 +2,7 @@ import datetime
 import random
 
 import factory
+import pytz
 
 from .factories import (
     PatientTaskTemplateFactory,
@@ -47,13 +48,19 @@ class TasksMixin(PlansMixin):
             })
 
         if 'appear_datetime' not in kwargs:
+            appear_datetime = pytz.utc.localize(
+                self.fake.future_datetime(end_date="+5d")
+            )
             kwargs.update({
-                'appear_datetime': self.fake.future_datetime(end_date="+5d")
+                'appear_datetime': appear_datetime
             })
 
         if 'due_datetime' not in kwargs:
+            due_datetime = pytz.utc.localize(
+                self.fake.future_datetime(end_date="+30d")
+            )
             kwargs.update({
-                'due_datetime': self.fake.future_datetime(end_date="+30d")
+                'due_datetime': due_datetime
             })
 
         return PatientTaskFactory(**kwargs)
@@ -78,13 +85,19 @@ class TasksMixin(PlansMixin):
                 'medication_task_template': self.create_medication_task_template()
             })
         if 'appear_datetime' not in kwargs:
+            appear_datetime = pytz.utc.localize(
+                self.fake.future_datetime(end_date="+5d")
+            )
             kwargs.update({
-                'appear_datetime': self.fake.future_datetime(end_date="+5d")
+                'appear_datetime': appear_datetime
             })
 
         if 'due_datetime' not in kwargs:
+            due_datetime = pytz.utc.localize(
+                self.fake.future_datetime(end_date="+30d")
+            )
             kwargs.update({
-                'due_datetime': self.fake.future_datetime(end_date="+30d")
+                'due_datetime': due_datetime
             })
         return MedicationTaskFactory(**kwargs)
 
@@ -106,14 +119,21 @@ class TasksMixin(PlansMixin):
             kwargs.update({
                 'symptom_task_template': self.create_symptom_task_template()
             })
+
         if 'appear_datetime' not in kwargs:
+            appear_datetime = pytz.utc.localize(
+                self.fake.future_datetime(end_date="+5d")
+            )
             kwargs.update({
-                'appear_datetime': self.fake.future_datetime(end_date="+5d")
+                'appear_datetime': appear_datetime
             })
 
         if 'due_datetime' not in kwargs:
+            due_datetime = pytz.utc.localize(
+                self.fake.future_datetime(end_date="+30d")
+            )
             kwargs.update({
-                'due_datetime': self.fake.future_datetime(end_date="+30d")
+                'due_datetime': due_datetime
             })
 
         if 'comments' not in kwargs:
@@ -165,13 +185,19 @@ class TasksMixin(PlansMixin):
             })
 
         if 'appear_datetime' not in kwargs:
+            appear_datetime = pytz.utc.localize(
+                self.fake.future_datetime(end_date="+5d")
+            )
             kwargs.update({
-                'appear_datetime': self.fake.future_datetime(end_date="+5d")
+                'appear_datetime': appear_datetime
             })
 
         if 'due_datetime' not in kwargs:
+            due_datetime = pytz.utc.localize(
+                self.fake.future_datetime(end_date="+30d")
+            )
             kwargs.update({
-                'due_datetime': self.fake.future_datetime(end_date="+30d")
+                'due_datetime': due_datetime
             })
 
         if 'comments' not in kwargs:
@@ -221,13 +247,19 @@ class TasksMixin(PlansMixin):
             })
 
         if 'appear_datetime' not in kwargs:
+            appear_datetime = pytz.utc.localize(
+                self.fake.future_datetime(end_date="+5d")
+            )
             kwargs.update({
-                'appear_datetime': self.fake.future_datetime(end_date="+5d")
+                'appear_datetime': appear_datetime
             })
 
         if 'due_datetime' not in kwargs:
+            due_datetime = pytz.utc.localize(
+                self.fake.future_datetime(end_date="+30d")
+            )
             kwargs.update({
-                'due_datetime': self.fake.future_datetime(end_date="+30d")
+                'due_datetime': due_datetime
             })
 
         return TeamTaskFactory(**kwargs)
@@ -247,20 +279,36 @@ class StateTestMixin(object):
         self.execute_state_test('done', **kwargs)
 
     def test_upcoming_state(self):
+        appear_datetime = self.fake.future_datetime(
+            end_date="+5d",
+            tzinfo=pytz.utc
+        )
         kwargs = {
-            'appear_datetime': self.fake.future_datetime(end_date="+2d")
+            'appear_datetime': appear_datetime
         }
         self.execute_state_test('upcoming', **kwargs)
 
     def test_available_state(self):
+        appear_datetime = self.fake.past_datetime(
+            start_date="-5d",
+            tzinfo=pytz.utc
+        )
         kwargs = {
-            'appear_datetime': self.fake.past_datetime(start_date="-5d")
+            'appear_datetime': appear_datetime,
         }
         self.execute_state_test('available', **kwargs)
 
     def test_past_due_state(self):
+        appear_datetime = self.fake.past_datetime(
+            start_date="-10d",
+            tzinfo=pytz.utc
+        )
+        due_datetime = self.fake.past_datetime(
+            start_date="-1d",
+            tzinfo=pytz.utc
+        )
         kwargs = {
-            'appear_datetime': self.fake.past_datetime(start_date="-10d"),
-            'due_datetime': self.fake.past_datetime(start_date="-1d")
+            'appear_datetime': appear_datetime,
+            'due_datetime': due_datetime
         }
         self.execute_state_test('past due', **kwargs)

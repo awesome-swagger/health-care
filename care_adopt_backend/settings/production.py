@@ -5,7 +5,7 @@ Base settings, extended by the dev/staging/production settings.
 import os
 from django.utils.log import DEFAULT_LOGGING
 
-from apps import accounts
+# from apps import accounts
 
 DEBUG = False
 
@@ -222,7 +222,7 @@ TEMPLATES = [
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
             os.path.join(BASE_DIR, 'care_adopt_backend', 'templates'),
-            os.path.join(accounts.__path__[0], 'templates'),
+            # os.path.join(accounts.__path__[0], 'templates'),
         ],
         'APP_DIRS': True,
         'OPTIONS': {

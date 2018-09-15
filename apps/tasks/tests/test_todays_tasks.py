@@ -1,3 +1,5 @@
+import pytz
+
 from django.urls import reverse
 from django.utils import timezone
 
@@ -22,9 +24,12 @@ class TestTodaysTask(TasksMixin, APITestCase):
         self.client.force_authenticate(user=self.user)
 
     def create_patient_task_due_today(self, **kwargs):
+        appear_datetime = pytz.utc.localize(
+            self.fake.past_datetime(start_date="-1d")
+        )
         kwargs.update({
             'plan': self.plan,
-            'appear_datetime': self.fake.past_datetime(start_date="-1d"),
+            'appear_datetime': appear_datetime,
             'due_datetime': timezone.now()
         })
         return self.create_patient_task(**kwargs)
@@ -33,25 +38,34 @@ class TestTodaysTask(TasksMixin, APITestCase):
         medication_task_template = self.create_medication_task_template(
             self.plan
         )
+        appear_datetime = pytz.utc.localize(
+            self.fake.past_datetime(start_date="-1d")
+        )
         kwargs.update({
             'medication_task_template': medication_task_template,
-            'appear_datetime': self.fake.past_datetime(start_date="-1d"),
+            'appear_datetime': appear_datetime,
             'due_datetime': timezone.now()
         })
         return self.create_medication_task(**kwargs)
 
     def create_symptom_task_due_today(self, **kwargs):
+        appear_datetime = pytz.utc.localize(
+            self.fake.past_datetime(start_date="-1d")
+        )
         kwargs.update({
             'plan': self.plan,
-            'appear_datetime': self.fake.past_datetime(start_date="-1d"),
+            'appear_datetime': appear_datetime,
             'due_datetime': timezone.now()
         })
         return self.create_symptom_task(**kwargs)
 
     def create_assessment_task_due_today(self, **kwargs):
+        appear_datetime = pytz.utc.localize(
+            self.fake.past_datetime(start_date="-1d")
+        )
         kwargs.update({
             'plan': self.plan,
-            'appear_datetime': self.fake.past_datetime(start_date="-1d"),
+            'appear_datetime': appear_datetime,
             'due_datetime': timezone.now()
         })
         return self.create_assessment_task(**kwargs)
