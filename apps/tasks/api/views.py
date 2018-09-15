@@ -4,13 +4,11 @@ import pytz
 
 from django.utils import timezone
 
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from care_adopt_backend.permissions import (
-    EmployeeOrReadOnly,
-    IsPatientOnly,
-)
+
 from ..models import (
     PatientTaskTemplate,
     PatientTask,
@@ -47,6 +45,10 @@ from . serializers import (
     AssessmentResponseSerializer,
 )
 from care_adopt_backend import utils
+from care_adopt_backend.permissions import (
+    EmployeeOrReadOnly,
+    IsPatientOnly,
+)
 
 
 class PatientTaskTemplateViewSet(viewsets.ModelViewSet):
@@ -79,6 +81,13 @@ class PatientTaskViewSet(viewsets.ModelViewSet):
         IsPatientOrEmployeeForTask,
     )
     queryset = PatientTask.objects.all()
+    filter_backends = (DjangoFilterBackend, )
+    filter_fields = (
+        'plan',
+        'patient_task_template',
+        'plan__patient',
+        'status',
+    )
 
     def get_queryset(self):
         queryset = super(PatientTaskViewSet, self).get_queryset()
