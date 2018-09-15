@@ -7,6 +7,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from .mixins import StateTestMixin, TasksMixin
+from apps.accounts.tests.factories import AdminUserFactory
 
 
 class TestPatientTask(StateTestMixin, TasksMixin, APITestCase):
@@ -16,17 +17,16 @@ class TestPatientTask(StateTestMixin, TasksMixin, APITestCase):
 
     def setUp(self):
         self.fake = Faker()
-        self.employee = self.create_employee()
-        self.user = self.employee.user
+        self.user = AdminUserFactory()
 
         self.plan = self.create_care_plan()
-        self.create_care_team_member(**{
-            'employee_profile': self.employee,
-            'plan': self.plan
-        })
         self.patient_task = self.create_patient_task(**{
             'plan': self.plan
         })
+        self.other_task = self.create_patient_task(**{
+            'status': 'missed'
+        })
+        self.url = reverse('patient_tasks-list')
         self.detail_url = reverse(
             'patient_tasks-detail',
             kwargs={'pk': self.patient_task.id}
@@ -69,6 +69,26 @@ class TestPatientTask(StateTestMixin, TasksMixin, APITestCase):
             'status': 'missed'
         }
         self.execute_state_test('missed', **kwargs)
+
+    def test_filter_by_care_plan(self):
+        filter_url = f'{self.url}?plan__id={self.plan.id}'
+        response = self.client.get(filter_url)
+        self.assertEqual(response.data['count'], 1)
+
+    def test_filter_by_patient_task_template(self):
+        filter_url = f'{self.url}?patient_task_template__id={self.patient_task.patient_task_template.id}'
+        response = self.client.get(filter_url)
+        self.assertEqual(response.data['count'], 1)
+
+    def test_filter_by_patient(self):
+        filter_url = f'{self.url}?plan__patient__id={self.plan.patient.id}'
+        response = self.client.get(filter_url)
+        self.assertEqual(response.data['count'], 1)
+
+    def test_filter_by_status(self):
+        filter_url = f'{self.url}?status={self.patient_task.status}'
+        response = self.client.get(filter_url)
+        self.assertEqual(response.data['count'], 1)
 
 
 class TestPatientTaskUsingEmployee(TasksMixin, APITestCase):
