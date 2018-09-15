@@ -164,6 +164,12 @@ class SymptomTaskViewSet(viewsets.ModelViewSet):
         IsPatientOrEmployeeForTask,
     )
     queryset = SymptomTask.objects.all()
+    filter_backends = (DjangoFilterBackend, DurationFilter)
+    filterset_fields = (
+        'plan__id',
+        'symptom_task_template__id',
+        'plan__patient__id',
+    )
 
     def get_queryset(self):
         queryset = super(SymptomTaskViewSet, self).get_queryset()
