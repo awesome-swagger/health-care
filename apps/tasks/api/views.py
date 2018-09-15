@@ -1,4 +1,9 @@
 import datetime
+
+import pytz
+
+from django.utils import timezone
+
 from rest_framework import viewsets, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -157,10 +162,13 @@ class TodaysTasksAPIView(APIView):
 
     def get(self, request, format=None):
         tasks = []
-        today_min = datetime.datetime.combine(datetime.date.today(),
-                                              datetime.time.min)
-        today_max = datetime.datetime.combine(datetime.date.today(),
-                                              datetime.time.max)
+        today = timezone.now().date()
+        today_min = datetime.datetime.combine(today,
+                                              datetime.time.min,
+                                              tzinfo=pytz.utc)
+        today_max = datetime.datetime.combine(today,
+                                              datetime.time.max,
+                                              tzinfo=pytz.utc)
         patient_profile = request.user.patient_profile
 
         patient_tasks = PatientTask.objects.filter(
