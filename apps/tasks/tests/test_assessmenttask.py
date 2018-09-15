@@ -34,7 +34,9 @@ class TestAssessmentTask(StateTestMixin, TasksMixin, APITestCase):
         self.fake = Faker()
         self.user = AdminUserFactory()
         self.assessment_task = self.create_assessment_task()
+        self.plan = self.assessment_task.plan
         self.assessment_task_template = self.assessment_task.assessment_task_template
+        self.url = reverse('assessment_tasks-list')
         self.detail_url = reverse(
             'assessment_tasks-detail',
             kwargs={'pk': self.assessment_task.id}
@@ -87,6 +89,21 @@ class TestAssessmentTask(StateTestMixin, TasksMixin, APITestCase):
         )
         response = self.client.get(url)
         self.assertEqual(response.data['state'], state)
+
+    def test_filter_by_care_plan(self):
+        filter_url = f'{self.url}?plan__id={self.plan.id}'
+        response = self.client.get(filter_url)
+        self.assertEqual(response.data['count'], 1)
+
+    def test_filter_by_assessment_task_template(self):
+        filter_url = f'{self.url}?assessment_task_template__id={self.assessment_task_template.id}'
+        response = self.client.get(filter_url)
+        self.assertEqual(response.data['count'], 1)
+
+    def test_filter_by_patient(self):
+        filter_url = f'{self.url}?plan__patient__id={self.plan.patient.id}'
+        response = self.client.get(filter_url)
+        self.assertEqual(response.data['count'], 1)
 
 
 class TestAssessmentTaskUsingEmployee(TasksMixin, APITestCase):
