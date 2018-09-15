@@ -205,8 +205,24 @@ class AssessmentQuestionViewSet(viewsets.ModelViewSet):
 
 class AssessmentTaskViewSet(viewsets.ModelViewSet):
     serializer_class = AssessmentTaskSerializer
-    permission_classes = (permissions.IsAuthenticated, EmployeeOrReadOnly, )
+    permission_classes = (
+        permissions.IsAuthenticated,
+        IsPatientOrEmployeeForTask,
+    )
     queryset = AssessmentTask.objects.all()
+
+    def get_queryset(self):
+        queryset = super(AssessmentTaskViewSet, self).get_queryset()
+        user = self.request.user
+
+        if user.is_employee:
+            queryset = queryset.filter(
+                plan__care_team_members__employee_profile=user.employee_profile
+            )
+        elif user.is_patient:
+            queryset = queryset.filter(plan__patient=user.patient_profile)
+
+        return queryset
 
 
 class AssessmentResponseViewSet(viewsets.ModelViewSet):
