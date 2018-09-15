@@ -24,7 +24,10 @@ from ..models import (
     AssessmentTask,
     AssessmentResponse,
 )
-from ..permissions import IsPatientOrEmployeeForTask
+from ..permissions import (
+    IsPatientOrEmployeeForTask,
+    IsPatientOrEmployeeForAssessmentResponse,
+)
 from .filters import DurationFilter
 from . serializers import (
     PatientTaskTemplateSerializer,
@@ -227,8 +230,26 @@ class AssessmentTaskViewSet(viewsets.ModelViewSet):
 
 class AssessmentResponseViewSet(viewsets.ModelViewSet):
     serializer_class = AssessmentResponseSerializer
-    permission_classes = (permissions.IsAuthenticated, EmployeeOrReadOnly, )
+    permission_classes = (
+        permissions.IsAuthenticated,
+        IsPatientOrEmployeeForAssessmentResponse,
+    )
     queryset = AssessmentResponse.objects.all()
+
+    def get_queryset(self):
+        queryset = super(AssessmentResponseViewSet, self).get_queryset()
+        user = self.request.user
+
+        if user.is_employee:
+            queryset = queryset.filter(
+                assessment_task__plan__care_team_members__employee_profile=user.employee_profile
+            )
+        elif user.is_patient:
+            queryset = queryset.filter(
+                assessment_task__plan__patient=user.patient_profile
+            )
+
+        return queryset
 
 
 ############################
