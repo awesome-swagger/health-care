@@ -1,5 +1,6 @@
 from django.db.models import Q
 
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -48,17 +49,21 @@ class PatientProfileViewSet(viewsets.ModelViewSet):
         PatientProfilePermissions,
     )
     queryset = PatientProfile.objects.all()
+    filter_backends = (DjangoFilterBackend, )
+    filterset_fields = (
+        'status',
+    )
 
     def get_queryset(self):
-        queryset = super(PatientProfile, self).get_queryset()
+        queryset = super(PatientProfileViewSet, self).get_queryset()
         user = self.request.user
 
         # If user is a employee, get all organizations that they belong to
         if user.is_employee:
             employee = user.employee_profile
             queryset = queryset.filter(
-                Q(facility__id__in=employee.facilities.all()) |
-                Q(facility__id__in=employee.facilities_managed.all())
+                Q(facility__in=employee.facilities.all()) |
+                Q(facility__in=employee.facilities_managed.all())
             )
         # If user is a patient, only return the organization their facility
         # belongs to

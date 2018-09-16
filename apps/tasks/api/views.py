@@ -85,8 +85,7 @@ class PatientTaskViewSet(viewsets.ModelViewSet):
         IsPatientOrEmployeeForTask,
     )
     queryset = PatientTask.objects.all()
-    filter_backends = (DjangoFilterBackend, 
-        )
+    filter_backends = (DjangoFilterBackend, )
     filterset_fields = (
         'plan__id',
         'patient_task_template__id',
