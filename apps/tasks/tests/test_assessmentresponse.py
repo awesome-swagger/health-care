@@ -39,8 +39,8 @@ class TestAssessmentResponse(TasksMixin, APITestCase):
         )
         self.client.force_authenticate(user=self.user)
 
-    def test_filter_by_assessment_task_template(self):
-        filter_url = f'{self.url}?assessment_task__assessment_task_template__id={self.template.id}'
+    def test_filter_by_assessment_task(self):
+        filter_url = f'{self.url}?assessment_task__id={self.assessment_task.id}'
         response = self.client.get(filter_url)
         self.assertEqual(response.data['count'], self.responses.count())
 

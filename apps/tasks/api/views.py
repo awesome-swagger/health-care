@@ -237,7 +237,7 @@ class AssessmentResponseViewSet(viewsets.ModelViewSet):
     queryset = AssessmentResponse.objects.all()
     filter_backends = (DjangoFilterBackend, )
     filterset_fields = (
-        'assessment_task__assessment_task_template__id',
+        'assessment_task__id',
         'assessment_question__id',
     )
 
