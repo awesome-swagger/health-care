@@ -10,16 +10,8 @@ from django.utils.translation import ugettext_lazy as _
 
 class DurationFilter(filters.BaseFilterBackend):
     """
-    Custom filtering that enables views to filter using the pre-configured
-    duration values. Accepted values are the following:
-        - today
-        - this_week
-        - last_week
-        - this_month
-        - year_to_date
-
-    This filter requires a `duration_field` variable declared in the view.
-    Otherwise, this will return an AssertionError.
+    Custom filtering that enables views to filter using the model's
+    `appear_datetime` or `due_datetime` fields.
     """
     appear_datetime_param = 'appear_datetime'
     appear_datetime_title = _('Appear Datetime')
@@ -47,11 +39,6 @@ class DurationFilter(filters.BaseFilterBackend):
         due_datetime = request.query_params.get('due_datetime', None)
         if due_datetime:
             due_datetime = datetime.strptime(due_datetime, '%Y-%m-%d')
-            due_datetime = datetime.combine(
-                due_datetime,
-                time.min,
-                tzinfo=pytz.utc
-            )
         return due_datetime
 
     def filter_queryset(self, request, queryset, view):
@@ -60,13 +47,33 @@ class DurationFilter(filters.BaseFilterBackend):
 
         context = {}
         if appear_datetime:
+            start_date = datetime.combine(
+                appear_datetime.date(),
+                time.min,
+                tzinfo=pytz.utc
+            )
+            end_date = datetime.combine(
+                appear_datetime.date(),
+                time.max,
+                tzinfo=pytz.utc
+            )
             context.update({
-                'appear_datetime__date': appear_datetime.date()
+                'appear_datetime__range': (start_date, end_date)
             })
 
         if due_datetime:
+            start_date = datetime.combine(
+                due_datetime.date(),
+                time.min,
+                tzinfo=pytz.utc
+            )
+            end_date = datetime.combine(
+                due_datetime.date(),
+                time.max,
+                tzinfo=pytz.utc
+            )
             context.update({
-                'due_datetime__date': due_datetime.date()
+                'due_datetime__range': (start_date, end_date)
             })
         return queryset.filter(**context)
 

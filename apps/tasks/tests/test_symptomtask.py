@@ -19,6 +19,7 @@ class TestSymptomTask(StateTestMixin, TasksMixin, APITestCase):
         self.fake = Faker()
         self.user = AdminUserFactory()
         self.symptom_task = self.create_symptom_task()
+        self.other_task = self.create_symptom_task()
         self.plan = self.symptom_task.plan
         self.url = reverse('symptom_tasks-list')
         self.detail_url = reverse(
@@ -66,6 +67,22 @@ class TestSymptomTask(StateTestMixin, TasksMixin, APITestCase):
         filter_url = f'{self.url}?plan__patient__id={self.plan.patient.id}'
         response = self.client.get(filter_url)
         self.assertEqual(response.data['count'], 1)
+
+    def test_filter_by_appear_datetime(self):
+        count = 2 if self.symptom_task.appear_datetime.date() == self.other_task.appear_datetime.date()\
+            else 1
+
+        filter_url = f'{self.url}?appear_datetime={self.symptom_task.appear_datetime.strftime("%Y-%m-%d")}'
+        response = self.client.get(filter_url)
+        self.assertEqual(response.data['count'], count)
+
+    def test_filter_by_due_datetime(self):
+        count = 2 if self.symptom_task.due_datetime.date() == self.other_task.due_datetime.date()\
+            else 1
+
+        filter_url = f'{self.url}?due_datetime={self.symptom_task.due_datetime.strftime("%Y-%m-%d")}'
+        response = self.client.get(filter_url)
+        self.assertEqual(response.data['count'], count)
 
 
 class TestSymptomTaskUsingEmployee(TasksMixin, APITestCase):

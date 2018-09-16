@@ -4,6 +4,10 @@ import random
 import factory
 import pytz
 
+from django.utils import timezone
+
+from dateutil.relativedelta import relativedelta
+
 from .factories import (
     PatientTaskTemplateFactory,
     PatientTaskFactory,
@@ -39,6 +43,7 @@ class TasksMixin(PlansMixin):
         )
 
     def create_patient_task(self, **kwargs):
+        now = timezone.now()
         if 'plan' not in kwargs:
             kwargs.update({'plan': self.create_care_plan()})
 
@@ -48,17 +53,13 @@ class TasksMixin(PlansMixin):
             })
 
         if 'appear_datetime' not in kwargs:
-            appear_datetime = pytz.utc.localize(
-                self.fake.future_datetime(end_date="+5d")
-            )
+            appear_datetime = now + relativedelta(days=5)
             kwargs.update({
                 'appear_datetime': appear_datetime
             })
 
         if 'due_datetime' not in kwargs:
-            due_datetime = pytz.utc.localize(
-                self.fake.future_datetime(end_date="+30d")
-            )
+            due_datetime = now + relativedelta(days=30)
             kwargs.update({
                 'due_datetime': due_datetime
             })
@@ -80,22 +81,19 @@ class TasksMixin(PlansMixin):
         )
 
     def create_medication_task(self, **kwargs):
+        now = timezone.now()
         if 'medication_task_template' not in kwargs:
             kwargs.update({
                 'medication_task_template': self.create_medication_task_template()
             })
         if 'appear_datetime' not in kwargs:
-            appear_datetime = pytz.utc.localize(
-                self.fake.future_datetime(end_date="+5d")
-            )
+            appear_datetime = now + relativedelta(days=5)
             kwargs.update({
                 'appear_datetime': appear_datetime
             })
 
         if 'due_datetime' not in kwargs:
-            due_datetime = pytz.utc.localize(
-                self.fake.future_datetime(end_date="+30d")
-            )
+            due_datetime = now + relativedelta(days=30)
             kwargs.update({
                 'due_datetime': due_datetime
             })
@@ -112,6 +110,7 @@ class TasksMixin(PlansMixin):
         )
 
     def create_symptom_task(self, **kwargs):
+        now = timezone.now()
         if 'plan' not in kwargs:
             kwargs.update({'plan': self.create_care_plan()})
 
@@ -121,17 +120,13 @@ class TasksMixin(PlansMixin):
             })
 
         if 'appear_datetime' not in kwargs:
-            appear_datetime = pytz.utc.localize(
-                self.fake.future_datetime(end_date="+5d")
-            )
+            appear_datetime = now + relativedelta(days=5)
             kwargs.update({
                 'appear_datetime': appear_datetime
             })
 
         if 'due_datetime' not in kwargs:
-            due_datetime = pytz.utc.localize(
-                self.fake.future_datetime(end_date="+30d")
-            )
+            due_datetime = now + relativedelta(days=30)
             kwargs.update({
                 'due_datetime': due_datetime
             })
@@ -176,6 +171,7 @@ class TasksMixin(PlansMixin):
         )
 
     def create_assessment_task(self, **kwargs):
+        now = timezone.now()
         if 'plan' not in kwargs:
             kwargs.update({'plan': self.create_care_plan()})
 
@@ -185,17 +181,13 @@ class TasksMixin(PlansMixin):
             })
 
         if 'appear_datetime' not in kwargs:
-            appear_datetime = pytz.utc.localize(
-                self.fake.future_datetime(end_date="+5d")
-            )
+            appear_datetime = now + relativedelta(days=5)
             kwargs.update({
                 'appear_datetime': appear_datetime
             })
 
         if 'due_datetime' not in kwargs:
-            due_datetime = pytz.utc.localize(
-                self.fake.future_datetime(end_date="+30d")
-            )
+            due_datetime = now + relativedelta(days=30)
             kwargs.update({
                 'due_datetime': due_datetime
             })
@@ -253,6 +245,7 @@ class TasksMixin(PlansMixin):
         )
 
     def create_team_task(self, **kwargs):
+        now = timezone.now()
         if 'plan' not in kwargs:
             kwargs.update({'plan': self.create_care_plan()})
 
@@ -262,17 +255,13 @@ class TasksMixin(PlansMixin):
             })
 
         if 'appear_datetime' not in kwargs:
-            appear_datetime = pytz.utc.localize(
-                self.fake.future_datetime(end_date="+5d")
-            )
+            appear_datetime = now + relativedelta(days=5)
             kwargs.update({
                 'appear_datetime': appear_datetime
             })
 
         if 'due_datetime' not in kwargs:
-            due_datetime = pytz.utc.localize(
-                self.fake.future_datetime(end_date="+30d")
-            )
+            due_datetime = now + relativedelta(days=30)
             kwargs.update({
                 'due_datetime': due_datetime
             })
