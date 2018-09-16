@@ -214,6 +214,12 @@ class AssessmentTaskViewSet(viewsets.ModelViewSet):
         IsPatientOrEmployeeForTask,
     )
     queryset = AssessmentTask.objects.all()
+    filter_backends = (DjangoFilterBackend, DurationFilter)
+    filterset_fields = (
+        'plan__id',
+        'assessment_task_template__id',
+        'plan__patient__id',
+    )
 
     def get_queryset(self):
         queryset = super(AssessmentTaskViewSet, self).get_queryset()
