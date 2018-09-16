@@ -5,6 +5,9 @@ from care_adopt_backend import utils
 class PatientProfilePermissions(permissions.BasePermission):
 
     def has_permission(self, request, view):
+        if request.user.is_superuser:
+            return True
+
         if request.method in permissions.SAFE_METHODS:
             return True
         if request.method == "POST":
@@ -14,6 +17,9 @@ class PatientProfilePermissions(permissions.BasePermission):
         return False
 
     def has_object_permission(self, request, view, obj):
+        if request.user.is_superuser:
+            return True
+
         if request.method in permissions.SAFE_METHODS:
             return True
         employee_profile = utils.employee_profile_or_none(request.user)

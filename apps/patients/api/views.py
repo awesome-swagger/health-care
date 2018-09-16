@@ -47,29 +47,25 @@ class PatientProfileViewSet(viewsets.ModelViewSet):
         permissions.IsAuthenticated,
         PatientProfilePermissions,
     )
+    queryset = PatientProfile.objects.all()
 
     def get_queryset(self):
-        qs = PatientProfile.objects.all()
-        employee_profile = utils.employee_profile_or_none(self.request.user)
-        patient_profile = utils.patient_profile_or_none(self.request.user)
+        queryset = super(PatientProfile, self).get_queryset()
+        user = self.request.user
+
         # If user is a employee, get all organizations that they belong to
-        if employee_profile is not None:
-            # Filter out users that reqesting user doesn't have access to
-            qs = qs.filter(
-                Q(facility__id__in=employee_profile.facilities.all()) |
-                Q(facility__id__in=employee_profile.facilities_managed.all())
+        if user.is_employee:
+            employee = user.employee_profile
+            queryset = queryset.filter(
+                Q(facility__id__in=employee.facilities.all()) |
+                Q(facility__id__in=employee.facilities_managed.all())
             )
-            status = self.request.query_params.get('status')
-            if status:
-                qs = qs.filter(status__iexact=status)
         # If user is a patient, only return the organization their facility
         # belongs to
-        elif patient_profile is not None:
-            # Return only this patient
-            qs = qs.filter(user__id=self.request.user.id)
-        else:
-            qs = qs.none()
-        return qs
+        elif user.is_patient:
+            queryset = queryset.filter(user=user)
+
+        return queryset
 
     @action(methods=['post'], detail=False, permission_classes=(
         PatientSearchPermissions,
