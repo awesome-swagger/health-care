@@ -19,6 +19,7 @@ class TestAssessmentTask(StateTestMixin, TasksMixin, APITestCase):
         self.fake = Faker()
         self.user = AdminUserFactory()
         self.assessment_task = self.create_assessment_task()
+        self.other_task = self.create_assessment_task()
         self.plan = self.assessment_task.plan
         self.assessment_task_template = self.assessment_task.assessment_task_template
         self.url = reverse('assessment_tasks-list')
@@ -89,6 +90,22 @@ class TestAssessmentTask(StateTestMixin, TasksMixin, APITestCase):
         filter_url = f'{self.url}?plan__patient__id={self.plan.patient.id}'
         response = self.client.get(filter_url)
         self.assertEqual(response.data['count'], 1)
+
+    def test_filter_by_appear_datetime(self):
+        count = 2 if self.assessment_task.appear_datetime.date() == self.other_task.appear_datetime.date()\
+            else 1
+
+        filter_url = f'{self.url}?appear_datetime={self.assessment_task.appear_datetime.strftime("%Y-%m-%d")}'
+        response = self.client.get(filter_url)
+        self.assertEqual(response.data['count'], count)
+
+    def test_filter_by_due_datetime(self):
+        count = 2 if self.assessment_task.due_datetime.date() == self.other_task.due_datetime.date()\
+            else 1
+
+        filter_url = f'{self.url}?due_datetime={self.assessment_task.due_datetime.strftime("%Y-%m-%d")}'
+        response = self.client.get(filter_url)
+        self.assertEqual(response.data['count'], count)
 
 
 class TestAssessmentTaskUsingEmployee(TasksMixin, APITestCase):
