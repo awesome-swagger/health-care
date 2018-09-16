@@ -8,7 +8,7 @@ from django.views.decorators.cache import never_cache
 from requests.exceptions import HTTPError
 from rest_framework import status, views, viewsets, mixins
 from rest_framework.authentication import SessionAuthentication
-from rest_framework.decorators import detail_route, list_route
+from rest_framework.decorators import action
 from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework.response import Response
@@ -66,14 +66,14 @@ class UserViewSet(
 
     # TODO: Remove this detail_route and list_route in favor of
     # default crud operations
-    @detail_route(methods=['POST'], parser_classes=[MultiPartParser])
+    @action(methods=['POST'], detail=True, parser_classes=[MultiPartParser])
     def upload_image(self, request, pk=None):
         user = self.get_object()
         user.image = request.FILES.get('file')
         user.save()
         return Response(self.get_serializer(user).data)
 
-    @list_route()
+    @action(detail=False)
     def from_token(self, request, *args, **kwargs):
         """
         Returns the user associated with the provided token.
@@ -88,7 +88,7 @@ class UserViewSet(
         user = self.get_object()
         return Response(self.get_serializer(user).data)
 
-    @list_route(methods=['POST'], permission_classes=[IsAdminUser])
+    @action(methods=['POST'], detail=False, permission_classes=[IsAdminUser])
     def impersonate(self, request):
         email = request.data.get('email')
         user = get_user_model().objects.get(email=email)
