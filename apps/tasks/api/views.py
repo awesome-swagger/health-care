@@ -235,6 +235,11 @@ class AssessmentResponseViewSet(viewsets.ModelViewSet):
         IsPatientOrEmployeeForAssessmentResponse,
     )
     queryset = AssessmentResponse.objects.all()
+    filter_backends = (DjangoFilterBackend, )
+    filterset_fields = (
+        'assessment_task__assessment_task_template__id',
+        'assessment_question__id',
+    )
 
     def get_queryset(self):
         queryset = super(AssessmentResponseViewSet, self).get_queryset()
