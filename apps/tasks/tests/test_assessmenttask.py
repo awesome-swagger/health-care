@@ -15,21 +15,6 @@ class TestAssessmentTask(StateTestMixin, TasksMixin, APITestCase):
     Test cases for :model:`tasks.AssessmentTask`
     """
 
-    def create_multiple_assessment_questions(self, assessment_task_template):
-        for i in range(5):
-            self.create_assessment_question(assessment_task_template)
-
-    def create_responses_to_multiple_questions(self,
-                                               template,
-                                               task,
-                                               questions):
-
-        if not template.assessmentquestion_set.exists():
-            self.create_multiple_assessment_questions(template)
-
-        for question in questions:
-            self.create_assessment_response(task, question)
-
     def setUp(self):
         self.fake = Faker()
         self.user = AdminUserFactory()
