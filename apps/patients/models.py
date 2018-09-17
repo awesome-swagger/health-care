@@ -11,6 +11,11 @@ class PatientProfile(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
         EmailUser, on_delete=models.CASCADE, related_name='patient_profile')
     facility = models.ForeignKey(
         Facility, null=False, blank=False, on_delete=models.CASCADE)
+    emr_code = models.CharField(
+        max_length=100, blank=True, null=True,
+        help_text="By adding the emr code to the patient profile, we can link "
+        "patients to the electronic medical records (EMR). If the user is "
+        "not in the emr they won't have an emr number.")
     STATUS_CHOICES = (
         ('pre-potential', 'Pre Potential'),
         ('potential', 'Potential'),
