@@ -17,6 +17,7 @@ from .serializers import (
     ProblemAreaSerializer,
     PatientProcedureSerializer,
     PatientMedicationSerializer,
+    PatientDashboardSerializer,
 )
 from care_adopt_backend import utils
 from care_adopt_backend.permissions import EmployeeOrReadOnly
@@ -71,6 +72,34 @@ class PatientProfileViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(user=user)
 
         return queryset
+
+    @action(detail=False, url_path='dashboard')
+    def progress_dashboard(self, request, *args, **kwargs):
+        """
+        Patient Dashboard
+        =================
+        This endpoint will display data that is essential for Patient Dashboard
+        usage. The data will include the following:
+
+            - Average score from assessments
+            - All tasks that are due today particularly displaying the `state`
+              of each tasks
+            - Percentage of tasks completed for patient vs how many tasks
+              they've been assigned.
+
+        """
+        queryset = self.get_queryset()
+        serializer = PatientDashboardSerializer()
+
+        queryset = self.filter_queryset(queryset)
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = PatientDashboardSerializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = PatientDashboardSerializer(queryset, many=True)
+        return Response(serializer.data)
 
     @action(methods=['post'], detail=False, permission_classes=(
         PatientSearchPermissions,

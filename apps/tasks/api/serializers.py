@@ -68,6 +68,7 @@ class PatientTaskTodaySerializer(serializers.ModelSerializer):
             'id',
             'type',
             'name',
+            'state',
             'appear_datetime',
             'due_datetime',
         )
@@ -144,6 +145,7 @@ class MedicationTaskTodaySerializer(serializers.ModelSerializer):
             'id',
             'type',
             'name',
+            'state',
             'appear_datetime',
             'due_datetime',
         )
@@ -196,6 +198,7 @@ class SymptomTaskTodaySerializer(serializers.ModelSerializer):
             'id',
             'type',
             'name',
+            'state',
             'appear_datetime',
             'due_datetime',
         )
@@ -261,6 +264,7 @@ class AssessmentTaskTodaySerializer(serializers.ModelSerializer):
             'id',
             'type',
             'name',
+            'state',
             'appear_datetime',
             'due_datetime',
         )
