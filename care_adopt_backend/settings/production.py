@@ -39,6 +39,7 @@ INSTALLED_APPS = (
     'rest_framework_swagger',
     'widget_tweaks',
     'corsheaders',
+    'django_filters',
     'apps.landing',
     'apps.accounts',
     'apps.core',

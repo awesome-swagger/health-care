@@ -183,6 +183,9 @@ class MedicationTask(AbstractTask):
     status = models.CharField(
         choices=STATUS_CHOICES, max_length=12, default="undefined")
 
+    class Meta:
+        ordering = ('appear_datetime', )
+
     def __str__(self):
         return '{} {} {} {}mg, at {}'.format(
             self.medication_task_template.plan.patient.user.first_name,
@@ -215,6 +218,9 @@ class SymptomTask(AbstractTask):
     symptom_task_template = models.ForeignKey(
         SymptomTaskTemplate, null=False, blank=False, on_delete=models.CASCADE)
     comments = models.CharField(max_length=1024, null=False, blank=False)
+
+    class Meta:
+        ordering = ('appear_datetime', )
 
     def __str__(self):
         return '{} {}\'s symptom report due by {}'.format(
@@ -282,6 +288,9 @@ class AssessmentTask(AbstractTask):
         AssessmentTaskTemplate, null=False, blank=False, on_delete=models.CASCADE)
     comments = models.CharField(max_length=1024, null=False, blank=False)
 
+    class Meta:
+        ordering = ('appear_datetime', )
+
     def __str__(self):
         return '{} {}\'s assessment report due by {}'.format(
             self.plan.patient.user.first_name,
@@ -316,6 +325,9 @@ class AssessmentResponse(UUIDPrimaryKeyMixin):
         MaxValueValidator(5),
         MinValueValidator(1)
     ])
+
+    class Meta:
+        ordering = ('assessment_task__appear_datetime', )
 
     def __str__(self):
         return '{}: {} (rated: {})'.format(

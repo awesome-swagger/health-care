@@ -3,6 +3,7 @@ from .factories import (
     OrganizationFactory,
     FacilityFactory,
     MedicationFactory,
+    ProviderRoleFactory,
     SymptomFactory,
 )
 from apps.accounts.tests.factories import RegularUserFactory
@@ -38,3 +39,11 @@ class CoreMixin(object):
             worst_label=self.fake.word(),
             best_label=self.fake.word(),
         )
+
+    def create_provider_role(self, **kwargs):
+        if 'name' not in kwargs:
+            kwargs.update({
+                'name': self.fake.name()
+            })
+
+        return ProviderRoleFactory(**kwargs)

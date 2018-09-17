@@ -1,6 +1,8 @@
-import factory
-
-from .factories import CarePlanFactory, CarePlanTemplateFactory
+from .factories import (
+    CarePlanFactory,
+    CarePlanTemplateFactory,
+    CareTeamMemberFactory,
+)
 from apps.patients.tests.mixins import PatientsMixin
 
 
@@ -16,7 +18,25 @@ class PlansMixin(PatientsMixin):
 
     def create_care_plan_template(self):
         return CarePlanTemplateFactory(
-            name=factory.Faker('name'),
+            name=self.fake.name(),
             type='ccm',
             duration_weeks=10
         )
+
+    def create_care_team_member(self, **kwargs):
+        if 'employee_profile' not in kwargs:
+            kwargs.update({
+                'employee_profile': self.create_employee()
+            })
+
+        if 'role' not in kwargs:
+            kwargs.update({
+                'role': self.create_provider_role()
+            })
+
+        if 'plan' not in kwargs:
+            kwargs.update({
+                'plan': self.create_care_plan()
+            })
+
+        return CareTeamMemberFactory(**kwargs)
