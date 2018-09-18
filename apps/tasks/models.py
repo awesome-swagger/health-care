@@ -307,23 +307,6 @@ class AssessmentTask(AbstractTask):
             self.due_datetime,
         )
 
-    # @property
-    # def is_complete(self):
-    #     value = True
-    #     questions = self.assessment_task_template.assessmentquestion_set\
-    #         .values_list('id', flat=True).distinct()
-    #     responses = self.assessmentresponse_set.values_list(
-    #         'assessment_question', flat=True).distinct()
-
-    #     if questions.exists():
-    #         for question_id in questions:
-    #             if question_id not in responses:
-    #                 value = False
-    #                 break
-    #     else:
-    #         value = False
-    #     return value
-
 
 class AssessmentResponse(UUIDPrimaryKeyMixin):
     assessment_task = models.ForeignKey(
