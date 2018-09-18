@@ -5,6 +5,7 @@ from django.utils import timezone
 from faker import Faker
 from rest_framework.test import APITestCase
 
+from ..models import PatientProfile
 from apps.tasks.models import AssessmentResponse
 from apps.tasks.tests.mixins import TasksMixin
 from apps.tasks.utils import (
@@ -32,7 +33,7 @@ class TestPatientProfileDashboard(TasksMixin, APITestCase):
         self.generate_symptom_tasks()
         self.generate_assessment_tasks_with_questions_and_responses()
 
-        self.dashboard_url = reverse('patient_profiles-patient-dashboard')
+        self.dashboard_url = reverse('patient-dashboard')
         self.client.force_authenticate(user=self.user)
 
     def generate_patient_tasks(self):
@@ -116,3 +117,16 @@ class TestPatientProfileDashboard(TasksMixin, APITestCase):
         response = self.client.get(self.dashboard_url)
         patient = response.data['results'][0]
         self.assertEqual(len(patient['tasks_today']), len(tasks))
+
+    def test_filter_patient_dashboard_by_id(self):
+        # Use an employee account to get list of patients in the queryset
+        self.client.logout()
+        employee = self.create_employee()
+        self.client.force_authenticate(user=employee.user)
+
+        for patient in PatientProfile.objects.all():
+            employee.facilities.add(patient.facility)
+
+        filter_url = f'{self.dashboard_url}?id={self.patient.id}'
+        response = self.client.get(filter_url)
+        self.assertEqual(response.data['count'], 1)
