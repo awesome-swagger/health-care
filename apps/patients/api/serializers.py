@@ -1,7 +1,3 @@
-import datetime
-
-import pytz
-
 from django.db.models import Avg
 from django.utils import timezone
 
@@ -13,18 +9,11 @@ from apps.patients.models import (
     PatientMedication, )
 from apps.tasks.models import (
     AssessmentResponse,
-    PatientTask,
-    MedicationTask,
-    SymptomTask,
-    AssessmentTask,
 )
-from apps.tasks.api.serializers import (
-    PatientTaskTodaySerializer,
-    MedicationTaskTodaySerializer,
-    SymptomTaskTodaySerializer,
-    AssessmentTaskTodaySerializer,
+from apps.tasks.utils import (
+    calculate_task_percentage,
+    get_all_tasks_of_patient_today,
 )
-from apps.tasks.utils import calculate_task_percentage
 
 
 class PatientUserInfo(SettingsUserForSerializers, serializers.ModelSerializer):
@@ -113,53 +102,4 @@ class PatientDashboardSerializer(serializers.ModelSerializer):
         return round(average['score']) if average['score'] else 0
 
     def get_tasks_today(self, obj):
-        tasks = []
-        today = timezone.now().date()
-        today_min = datetime.datetime.combine(today,
-                                              datetime.time.min,
-                                              tzinfo=pytz.utc)
-        today_max = datetime.datetime.combine(today,
-                                              datetime.time.max,
-                                              tzinfo=pytz.utc)
-
-        patient_tasks = PatientTask.objects.filter(
-            plan__patient=obj,
-            due_datetime__range=(today_min, today_max))
-        medication_tasks = MedicationTask.objects.filter(
-            medication_task_template__plan__patient=obj,
-            due_datetime__range=(today_min, today_max))
-        symptom_tasks = SymptomTask.objects.filter(
-            plan__patient=obj,
-            due_datetime__range=(today_min, today_max))
-        assessment_tasks = AssessmentTask.objects.filter(
-            plan__patient=obj,
-            due_datetime__range=(today_min, today_max))
-
-        if patient_tasks.exists():
-            serializer = PatientTaskTodaySerializer(
-                patient_tasks.all(),
-                many=True
-            )
-            tasks += serializer.data
-
-        if medication_tasks.exists():
-            serializer = MedicationTaskTodaySerializer(
-                medication_tasks.all(),
-                many=True
-            )
-            tasks += serializer.data
-
-        if symptom_tasks.exists():
-            serializer = SymptomTaskTodaySerializer(
-                symptom_tasks.all(),
-                many=True
-            )
-            tasks += serializer.data
-
-        if assessment_tasks.exists():
-            serializer = AssessmentTaskTodaySerializer(
-                assessment_tasks.all(),
-                many=True
-            )
-            tasks += serializer.data
-        return tasks
+        return get_all_tasks_of_patient_today(obj)

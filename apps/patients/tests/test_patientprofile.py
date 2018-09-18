@@ -3,18 +3,21 @@ from django.urls import reverse
 from django.utils import timezone
 
 from faker import Faker
-from rest_framework import status
 from rest_framework.test import APITestCase
 
 from apps.tasks.models import AssessmentResponse
 from apps.tasks.tests.mixins import TasksMixin
-from apps.tasks.utils import calculate_task_percentage
+from apps.tasks.utils import (
+    calculate_task_percentage,
+    get_all_tasks_of_patient_today,
+)
 
 
-class TestPatientProfile(TasksMixin, APITestCase):
+class TestPatientProfileDashboard(TasksMixin, APITestCase):
     """
     Test cases for :model:`tasks.PatientTask` using a patient
-    as the logged in user.
+    as the logged in user. This test case is specific to the
+    patient dashboard.
     """
 
     def setUp(self):
@@ -106,3 +109,9 @@ class TestPatientProfile(TasksMixin, APITestCase):
         response = self.client.get(self.dashboard_url)
         patient = response.data['results'][0]
         self.assertEqual(patient['assessment_score'], score)
+
+    def test_get_tasks_today(self):
+        tasks = get_all_tasks_of_patient_today(self.patient)
+        response = self.client.get(self.dashboard_url)
+        patient = response.data['results'][0]
+        self.assertEqual(len(patient['tasks_today']), len(tasks))

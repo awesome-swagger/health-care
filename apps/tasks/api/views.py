@@ -1,9 +1,3 @@
-import datetime
-
-import pytz
-
-from django.utils import timezone
-
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, permissions
 from rest_framework.response import Response
@@ -28,24 +22,21 @@ from ..permissions import (
     IsPatientOrEmployeeForTask,
     IsPatientOrEmployeeForAssessmentResponse,
 )
+from ..utils import get_all_tasks_of_patient_today
 from .filters import DurationFilter
 from . serializers import (
     PatientTaskTemplateSerializer,
     PatientTaskSerializer,
-    PatientTaskTodaySerializer,
     TeamTaskTemplateSerializer,
     TeamTaskSerializer,
     MedicationTaskTemplateSerializer,
     MedicationTaskSerializer,
-    MedicationTaskTodaySerializer,
     SymptomTaskTemplateSerializer,
     SymptomTaskSerializer,
-    SymptomTaskTodaySerializer,
     SymptomRatingSerializer,
     AssessmentTaskTemplateSerializer,
     AssessmentQuestionSerializer,
     AssessmentTaskSerializer,
-    AssessmentTaskTodaySerializer,
     AssessmentResponseSerializer,
 )
 from care_adopt_backend import utils
@@ -271,55 +262,5 @@ class TodaysTasksAPIView(APIView):
     permission_classes = (permissions.IsAuthenticated, IsPatientOnly)
 
     def get(self, request, format=None):
-        tasks = []
-        today = timezone.now().date()
-        today_min = datetime.datetime.combine(today,
-                                              datetime.time.min,
-                                              tzinfo=pytz.utc)
-        today_max = datetime.datetime.combine(today,
-                                              datetime.time.max,
-                                              tzinfo=pytz.utc)
-        patient_profile = request.user.patient_profile
-
-        patient_tasks = PatientTask.objects.filter(
-            plan__patient__id=patient_profile.id,
-            due_datetime__range=(today_min, today_max))
-        medication_tasks = MedicationTask.objects.filter(
-            medication_task_template__plan__patient__id=patient_profile.id,
-            due_datetime__range=(today_min, today_max))
-        symptom_tasks = SymptomTask.objects.filter(
-            plan__patient__id=patient_profile.id,
-            due_datetime__range=(today_min, today_max))
-        assessment_tasks = AssessmentTask.objects.filter(
-            plan__patient__id=patient_profile.id,
-            due_datetime__range=(today_min, today_max))
-
-        if patient_tasks.exists():
-            serializer = PatientTaskTodaySerializer(
-                patient_tasks.all(),
-                many=True
-            )
-            tasks += serializer.data
-
-        if medication_tasks.exists():
-            serializer = MedicationTaskTodaySerializer(
-                medication_tasks.all(),
-                many=True
-            )
-            tasks += serializer.data
-
-        if symptom_tasks.exists():
-            serializer = SymptomTaskTodaySerializer(
-                symptom_tasks.all(),
-                many=True
-            )
-            tasks += serializer.data
-
-        if assessment_tasks.exists():
-            serializer = AssessmentTaskTodaySerializer(
-                assessment_tasks.all(),
-                many=True
-            )
-            tasks += serializer.data
-
+        tasks = get_all_tasks_of_patient_today(request.user.patient_profile)
         return Response(data=tasks)
