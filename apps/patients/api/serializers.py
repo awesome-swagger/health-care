@@ -126,7 +126,8 @@ class PatientDashboardSerializer(serializers.ModelSerializer):
 
     def get_assessment_score(self, obj):
         responses = AssessmentResponse.objects.filter(
-            assessment_task__plan__patient=obj
+            assessment_task__plan__patient=obj,
+            assessment_task__assessment_task_template__tracks_outcome=True
         )
         average = responses.aggregate(score=Avg('rating'))
         return round(average['score']) if average['score'] else 0
