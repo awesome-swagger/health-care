@@ -4,6 +4,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
+from django.utils.translation import ugettext_lazy as _
 
 from care_adopt_backend.mixins import UUIDPrimaryKeyMixin
 from apps.core.models import (ProviderRole, Symptom, )
@@ -285,8 +286,16 @@ class AssessmentTask(AbstractTask):
     plan = models.ForeignKey(
         CarePlan, null=False, blank=False, on_delete=models.CASCADE)
     assessment_task_template = models.ForeignKey(
-        AssessmentTaskTemplate, null=False, blank=False, on_delete=models.CASCADE)
+        AssessmentTaskTemplate, null=False, blank=False,
+        on_delete=models.CASCADE)
     comments = models.CharField(max_length=1024, null=False, blank=False)
+    is_complete = models.BooleanField(
+        default=False,
+        editable=False,
+        help_text=_(
+            'Set to True if all questions has its corresponding response.'
+        )
+    )
 
     class Meta:
         ordering = ('appear_datetime', )
@@ -298,22 +307,22 @@ class AssessmentTask(AbstractTask):
             self.due_datetime,
         )
 
-    @property
-    def is_complete(self):
-        value = True
-        questions = self.assessment_task_template.assessmentquestion_set\
-            .values_list('id', flat=True).distinct()
-        responses = self.assessmentresponse_set.values_list(
-            'assessment_question', flat=True).distinct()
+    # @property
+    # def is_complete(self):
+    #     value = True
+    #     questions = self.assessment_task_template.assessmentquestion_set\
+    #         .values_list('id', flat=True).distinct()
+    #     responses = self.assessmentresponse_set.values_list(
+    #         'assessment_question', flat=True).distinct()
 
-        if questions.exists():
-            for question_id in questions:
-                if question_id not in responses:
-                    value = False
-                    break
-        else:
-            value = False
-        return value
+    #     if questions.exists():
+    #         for question_id in questions:
+    #             if question_id not in responses:
+    #                 value = False
+    #                 break
+    #     else:
+    #         value = False
+    #     return value
 
 
 class AssessmentResponse(UUIDPrimaryKeyMixin):
