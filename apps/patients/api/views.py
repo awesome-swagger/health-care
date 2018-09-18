@@ -3,6 +3,7 @@ from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, permissions
 from rest_framework.decorators import action
+from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 
 from ..models import (
@@ -72,34 +73,6 @@ class PatientProfileViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(user=user)
 
         return queryset
-
-    @action(detail=False, url_path='dashboard', url_name='patient-dashboard')
-    def progress_dashboard(self, request, *args, **kwargs):
-        """
-        Patient Dashboard
-        =================
-        This endpoint will display data that is essential for Patient Dashboard
-        usage. The data will include the following:
-
-            - Average score from assessments
-            - All tasks that are due today particularly displaying the `state`
-              of each tasks
-            - Percentage of tasks completed for patient vs how many tasks
-              they've been assigned.
-
-        """
-        queryset = self.get_queryset()
-        serializer = PatientDashboardSerializer()
-
-        queryset = self.filter_queryset(queryset)
-
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = PatientDashboardSerializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-
-        serializer = PatientDashboardSerializer(queryset, many=True)
-        return Response(serializer.data)
 
     @action(methods=['post'], detail=False, permission_classes=(
         PatientSearchPermissions,
@@ -192,3 +165,50 @@ class PatientMedicationViewSet(viewsets.ModelViewSet):
             return qs.filter(patient__id=patient_profile.id)
         else:
             return qs.none()
+
+
+######################################
+# ---------- CUSTOM VIEWS ---------- #
+######################################
+class PatientProfileDashboard(ListAPIView):
+    """
+    Patient Dashboard
+    =================
+    This endpoint will display data that is essential for Patient Dashboard
+    usage. The data will include the following:
+
+        - Average score from assessments
+        - All tasks that are due today particularly displaying the `state`
+          of each tasks
+        - Percentage of tasks completed for patient vs how many tasks
+          they've been assigned.
+
+    """
+    serializer_class = PatientDashboardSerializer
+    queryset = PatientProfile.objects.all()
+    permission_classes = (
+        permissions.IsAuthenticated,
+        PatientProfilePermissions,
+    )
+    filter_backends = (DjangoFilterBackend, )
+    filterset_fields = (
+        'id',
+    )
+
+    def get_queryset(self):
+        queryset = super(PatientProfileDashboard, self).get_queryset()
+        user = self.request.user
+
+        # If user is a employee, get all organizations that they belong to
+        if user.is_employee:
+            employee = user.employee_profile
+            queryset = queryset.filter(
+                Q(facility__in=employee.facilities.all()) |
+                Q(facility__in=employee.facilities_managed.all())
+            )
+        # If user is a patient, only return the organization their facility
+        # belongs to
+        elif user.is_patient:
+            queryset = queryset.filter(user=user)
+
+        return queryset

@@ -23,6 +23,7 @@ class TestPatientProfileDashboard(TasksMixin, APITestCase):
     def setUp(self):
         self.fake = Faker()
         self.patient = self.create_patient()
+        self.other_patient = self.create_patient()
         self.user = self.patient.user
 
         self.plan = self.create_care_plan(patient=self.patient)
