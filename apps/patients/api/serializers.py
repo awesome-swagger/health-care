@@ -13,7 +13,6 @@ from apps.patients.models import (
     PatientMedication, )
 from apps.tasks.models import (
     AssessmentResponse,
-    AssessmentQuestion,
     PatientTask,
     MedicationTask,
     SymptomTask,
@@ -130,9 +129,9 @@ class PatientDashboardSerializer(serializers.ModelSerializer):
             assessment_task__plan__patient=obj
         )
         average = responses.aggregate(score=Avg('rating'))
-        return average['rating']
+        return round(average['score']) if average['score'] else 0
 
-    def tasks_today(self, obj):
+    def get_tasks_today(self, obj):
         tasks = []
         today = timezone.now().date()
         today_min = datetime.datetime.combine(today,

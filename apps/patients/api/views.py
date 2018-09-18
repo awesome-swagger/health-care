@@ -73,7 +73,7 @@ class PatientProfileViewSet(viewsets.ModelViewSet):
 
         return queryset
 
-    @action(detail=False, url_path='dashboard')
+    @action(detail=False, url_path='dashboard', url_name='patient-dashboard')
     def progress_dashboard(self, request, *args, **kwargs):
         """
         Patient Dashboard
