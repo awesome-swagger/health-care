@@ -103,7 +103,9 @@ class PatientDashboardSerializer(serializers.ModelSerializer):
         return calculate_task_percentage(obj)
 
     def get_assessment_score(self, obj):
+        now = timezone.now()
         responses = AssessmentResponse.objects.filter(
+            assessment_task__appear_datetime__lte=now,
             assessment_task__plan__patient=obj,
             assessment_task__assessment_task_template__tracks_outcome=True
         )

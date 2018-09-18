@@ -1,3 +1,5 @@
+from django.utils import timezone
+
 from .models import (
     AssessmentTask,
     MedicationTask,
@@ -17,23 +19,33 @@ def calculate_task_percentage(patient):
     """
 
     # Patient tasks
-    patient_tasks = PatientTask.objects.filter(plan__patient=patient)
+    patient_tasks = PatientTask.objects.filter(
+        plan__patient=patient,
+        appear_datetime__lte=timezone.now()
+    )
     completed_patient_tasks = patient_tasks.filter(status='done')
 
     # Medication tasks
     medication_tasks = MedicationTask.objects.filter(
-        medication_task_template__plan__patient=patient
+        medication_task_template__plan__patient=patient,
+        appear_datetime__lte=timezone.now()
     )
     completed_medication_tasks = medication_tasks.filter(status='done')
 
     # Symptom tasks
-    symptom_tasks = SymptomTask.objects.filter(plan__patient=patient)
+    symptom_tasks = SymptomTask.objects.filter(
+        plan__patient=patient,
+        appear_datetime__lte=timezone.now()
+    )
     completed_symptom_tasks = symptom_tasks.filter(
         symptomrating__isnull=False
     )
 
     # Assessment tasks
-    assessment_tasks = AssessmentTask.objects.filter(plan__patient=patient)
+    assessment_tasks = AssessmentTask.objects.filter(
+        plan__patient=patient,
+        appear_datetime__lte=timezone.now()
+    )
     completed_assessment_tasks = assessment_tasks.filter(is_complete=True)
 
     total_tasks = patient_tasks.count() + medication_tasks.count() + \
@@ -43,5 +55,7 @@ def calculate_task_percentage(patient):
         completed_symptom_tasks.count() + \
         completed_assessment_tasks.count()
 
-    percentage = (completed_tasks / total_tasks) * 100
-    return round(percentage)
+    if total_tasks > 0:
+        percentage = (completed_tasks / total_tasks) * 100
+        return round(percentage)
+    return total_tasks

@@ -1,5 +1,6 @@
 from django.db.models import Avg
 from django.urls import reverse
+from django.utils import timezone
 
 from faker import Faker
 from rest_framework import status
@@ -94,7 +95,9 @@ class TestPatientProfile(TasksMixin, APITestCase):
         self.assertEqual(patient['task_percentage'], percentage)
 
     def test_get_assessment_score(self):
+        now = timezone.now()
         responses = AssessmentResponse.objects.filter(
+            assessment_task__appear_datetime__lte=now,
             assessment_task__plan__patient=self.patient,
             assessment_task__assessment_task_template__tracks_outcome=True
         )
