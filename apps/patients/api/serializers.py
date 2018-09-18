@@ -24,6 +24,7 @@ from apps.tasks.api.serializers import (
     SymptomTaskTodaySerializer,
     AssessmentTaskTodaySerializer,
 )
+from apps.tasks.utils import calculate_task_percentage
 
 
 class PatientUserInfo(SettingsUserForSerializers, serializers.ModelSerializer):
@@ -99,30 +100,7 @@ class PatientDashboardSerializer(serializers.ModelSerializer):
         )
 
     def get_task_percentage(self, obj):
-        # Patient tasks
-        patient_tasks = PatientTask.objects.filter(plan__patient=obj)
-        completed_patient_tasks = patient_tasks.filter(status='done')
-
-        # Medication tasks
-        medication_tasks = MedicationTask.objects.filter(
-            medication_task_template__plan__patient=obj
-        )
-        completed_medication_tasks = medication_tasks.filter(status='done')
-
-        # Symptom tasks
-        symptom_tasks = SymptomTask.objects.filter(plan__patient=obj)
-        completed_symptom_tasks = symptom_tasks.filter(
-            symptomrating__isnull=False
-        )
-
-        total_tasks = patient_tasks.count() + medication_tasks.count() + \
-            symptom_tasks.count()
-        completed_tasks = completed_patient_tasks.count() + \
-            completed_medication_tasks.count() + \
-            completed_symptom_tasks.count()
-
-        percentage = (completed_tasks / total_tasks) * 100
-        return round(percentage)
+        return calculate_task_percentage(obj)
 
     def get_assessment_score(self, obj):
         responses = AssessmentResponse.objects.filter(

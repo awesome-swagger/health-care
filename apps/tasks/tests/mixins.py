@@ -148,16 +148,33 @@ class TasksMixin(PlansMixin):
             rating=random.randint(1, 5)
         )
 
-    def create_assessment_task_template(self):
-        appear_time = datetime.time(8, 0, 0)
-        due_time = datetime.time(17, 0, 0)
-        return AssessmentTaskTemplateFactory(
-            plan_template=self.create_care_plan_template(),
-            name=self.fake.name(),
-            start_on_day=5,
-            appear_time=appear_time,
-            due_time=due_time,
-        )
+    def create_assessment_task_template(self, **kwargs):
+        if 'plan_template' not in kwargs:
+            kwargs.update({
+                'plan_template': self.create_care_plan_template()
+            })
+
+        if 'start_on_day' not in kwargs:
+            kwargs.update({
+                'start_on_day': random.randint(2, 10)
+            })
+
+        if 'name' not in kwargs:
+            kwargs.update({
+                'name': self.fake.name()
+            })
+
+        if 'appear_time' not in kwargs:
+            kwargs.update({
+                'appear_time': datetime.time(8, 0, 0)
+            })
+
+        if 'due_time' not in kwargs:
+            kwargs.update({
+                'due_time': datetime.time(17, 0, 0)
+            })
+
+        return AssessmentTaskTemplateFactory(**kwargs)
 
     def create_assessment_question(self, assessment_task_template=None):
         if assessment_task_template is None:
