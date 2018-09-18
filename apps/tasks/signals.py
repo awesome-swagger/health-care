@@ -28,6 +28,18 @@ def assign_is_complete_to_assessment_task(instance):
         task.save()
 
 
+def assign_is_complete_to_symptom_task(instance):
+    """
+    This function will set `is_complete` field of
+    :model:`tasks.SymptomTask` to True based on the given
+    symptom rating instance.
+    """
+    task = instance.symptom_task
+    if not task.is_complete:
+        task.is_complete = True
+        task.save()
+
+
 def assessmentresponse_post_save(sender, instance, created, **kwargs):
     """
     Function to be used as signal (post_save) when saving
@@ -35,3 +47,12 @@ def assessmentresponse_post_save(sender, instance, created, **kwargs):
     """
     if created:
         assign_is_complete_to_assessment_task(instance)
+
+
+def symptomrating_post_save(sender, instance, created, **kwargs):
+    """
+    Function to be used as signal (post_save) when saving
+    :model:`tasks.SymptomRating`
+    """
+    if created:
+        assign_is_complete_to_symptom_task(instance)
