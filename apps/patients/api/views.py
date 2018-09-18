@@ -21,7 +21,8 @@ from .serializers import (
     PatientDashboardSerializer,
 )
 from care_adopt_backend import utils
-from care_adopt_backend.permissions import EmployeeOrReadOnly
+from care_adopt_backend.permissions import (
+    EmployeeOrReadOnly, IsEmployeeOnly, )
 
 
 class PatientProfileViewSet(viewsets.ModelViewSet):
@@ -112,21 +113,16 @@ class PatientDiagnosisViewSet(viewsets.ModelViewSet):
 
 class ProblemAreaViewSet(viewsets.ModelViewSet):
     serializer_class = ProblemAreaSerializer
-    permission_classes = (permissions.IsAuthenticated, EmployeeOrReadOnly, )
+    permission_classes = (permissions.IsAuthenticated, IsEmployeeOnly, )
     queryset = ProblemArea.objects.all()
 
     def get_queryset(self):
         qs = self.queryset
         employee_profile = utils.employee_profile_or_none(self.request.user)
-        patient_profile = utils.patient_profile_or_none(self.request.user)
 
         if employee_profile is not None:
             # TODO: Only get problem areas for patients this employee has access to
             return qs.all()
-        elif patient_profile is not None:
-            return qs.filter(patient__id=patient_profile.id)
-        else:
-            return qs.none()
 
 
 class PatientProcedureViewSet(viewsets.ModelViewSet):

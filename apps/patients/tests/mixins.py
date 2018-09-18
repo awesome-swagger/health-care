@@ -2,6 +2,7 @@ import datetime
 
 from .factories import (
     PatientProfileFactory,
+    ProblemAreaFactory,
     PatientMedicationFactory,
 )
 from apps.accounts.tests.factories import RegularUserFactory
@@ -17,6 +18,15 @@ class PatientsMixin(CoreMixin):
             user=user,
             facility=self.create_facility(),
             status='active'
+        )
+
+    def create_problem_area(self, patient, employee):
+        return ProblemAreaFactory(
+            patient=patient,
+            identified_by=employee,
+            date_identified=datetime.date.today(),
+            name='Severe Depression',
+            description='Unable to concentrate or keep a job or relationship.'
         )
 
     def create_patient_medication(self):
