@@ -72,7 +72,9 @@ def calculate_task_percentage(patient):
 
 
 def get_all_tasks_of_patient_today(patient):
-
+    """
+    Retrieves all tasks of the patient that are due for current day.
+    """
     tasks = []
     today = timezone.now().date()
     today_min = datetime.datetime.combine(today,
