@@ -47,9 +47,7 @@ def calculate_task_percentage(patient):
         plan__patient=patient,
         appear_datetime__lte=timezone.now()
     )
-    completed_symptom_tasks = symptom_tasks.filter(
-        symptomrating__isnull=False
-    )
+    completed_symptom_tasks = symptom_tasks.filter(is_complete=True)
 
     # Assessment tasks
     assessment_tasks = AssessmentTask.objects.filter(
