@@ -1,7 +1,9 @@
 from django.db.models import Q
 
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, permissions
 from rest_framework.decorators import action
+from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 
 from ..models import (
@@ -16,6 +18,7 @@ from .serializers import (
     ProblemAreaSerializer,
     PatientProcedureSerializer,
     PatientMedicationSerializer,
+    PatientDashboardSerializer,
 )
 from care_adopt_backend import utils
 from care_adopt_backend.permissions import EmployeeOrReadOnly
@@ -47,29 +50,29 @@ class PatientProfileViewSet(viewsets.ModelViewSet):
         permissions.IsAuthenticated,
         PatientProfilePermissions,
     )
+    queryset = PatientProfile.objects.all()
+    filter_backends = (DjangoFilterBackend, )
+    filterset_fields = (
+        'status',
+    )
 
     def get_queryset(self):
-        qs = PatientProfile.objects.all()
-        employee_profile = utils.employee_profile_or_none(self.request.user)
-        patient_profile = utils.patient_profile_or_none(self.request.user)
+        queryset = super(PatientProfileViewSet, self).get_queryset()
+        user = self.request.user
+
         # If user is a employee, get all organizations that they belong to
-        if employee_profile is not None:
-            # Filter out users that reqesting user doesn't have access to
-            qs = qs.filter(
-                Q(facility__id__in=employee_profile.facilities.all()) |
-                Q(facility__id__in=employee_profile.facilities_managed.all())
+        if user.is_employee:
+            employee = user.employee_profile
+            queryset = queryset.filter(
+                Q(facility__in=employee.facilities.all()) |
+                Q(facility__in=employee.facilities_managed.all())
             )
-            status = self.request.query_params.get('status')
-            if status:
-                qs = qs.filter(status__iexact=status)
         # If user is a patient, only return the organization their facility
         # belongs to
-        elif patient_profile is not None:
-            # Return only this patient
-            qs = qs.filter(user__id=self.request.user.id)
-        else:
-            qs = qs.none()
-        return qs
+        elif user.is_patient:
+            queryset = queryset.filter(user=user)
+
+        return queryset
 
     @action(methods=['post'], detail=False, permission_classes=(
         PatientSearchPermissions,
@@ -162,3 +165,50 @@ class PatientMedicationViewSet(viewsets.ModelViewSet):
             return qs.filter(patient__id=patient_profile.id)
         else:
             return qs.none()
+
+
+######################################
+# ---------- CUSTOM VIEWS ---------- #
+######################################
+class PatientProfileDashboard(ListAPIView):
+    """
+    Patient Dashboard
+    =================
+    This endpoint will display data that is essential for Patient Dashboard
+    usage. The data will include the following:
+
+        - Average score from assessments
+        - All tasks that are due today particularly displaying the `state`
+          of each tasks
+        - Percentage of tasks completed for patient vs how many tasks
+          they've been assigned.
+
+    """
+    serializer_class = PatientDashboardSerializer
+    queryset = PatientProfile.objects.all()
+    permission_classes = (
+        permissions.IsAuthenticated,
+        PatientProfilePermissions,
+    )
+    filter_backends = (DjangoFilterBackend, )
+    filterset_fields = (
+        'id',
+    )
+
+    def get_queryset(self):
+        queryset = super(PatientProfileDashboard, self).get_queryset()
+        user = self.request.user
+
+        # If user is a employee, get all organizations that they belong to
+        if user.is_employee:
+            employee = user.employee_profile
+            queryset = queryset.filter(
+                Q(facility__in=employee.facilities.all()) |
+                Q(facility__in=employee.facilities_managed.all())
+            )
+        # If user is a patient, only return the organization their facility
+        # belongs to
+        elif user.is_patient:
+            queryset = queryset.filter(user=user)
+
+        return queryset

@@ -1,9 +1,19 @@
+from django.db.models import Avg
+from django.utils import timezone
+
 from rest_framework import serializers
 
 from apps.accounts.serializers import SettingsUserForSerializers
 from apps.patients.models import (
     PatientProfile, PatientDiagnosis, ProblemArea, PatientProcedure,
     PatientMedication, )
+from apps.tasks.models import (
+    AssessmentResponse,
+)
+from apps.tasks.utils import (
+    calculate_task_percentage,
+    get_all_tasks_of_patient_today,
+)
 
 
 class PatientUserInfo(SettingsUserForSerializers, serializers.ModelSerializer):
@@ -58,3 +68,38 @@ class PatientMedicationSerializer(serializers.ModelSerializer):
     class Meta:
         model = PatientMedication
         fields = '__all__'
+
+
+class PatientDashboardSerializer(serializers.ModelSerializer):
+
+    task_percentage = serializers.SerializerMethodField()
+    assessment_score = serializers.SerializerMethodField()
+    tasks_today = serializers.SerializerMethodField()
+
+    class Meta:
+        model = PatientProfile
+        fields = (
+            'id',
+            'task_percentage',
+            'assessment_score',
+            'tasks_today',
+        )
+        read_only_fields = (
+            'id',
+        )
+
+    def get_task_percentage(self, obj):
+        return calculate_task_percentage(obj)
+
+    def get_assessment_score(self, obj):
+        now = timezone.now()
+        responses = AssessmentResponse.objects.filter(
+            assessment_task__appear_datetime__lte=now,
+            assessment_task__plan__patient=obj,
+            assessment_task__assessment_task_template__tracks_outcome=True
+        )
+        average = responses.aggregate(score=Avg('rating'))
+        return round(average['score']) if average['score'] else 0
+
+    def get_tasks_today(self, obj):
+        return get_all_tasks_of_patient_today(obj)
