@@ -6,6 +6,7 @@ from django.dispatch import receiver
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
+from .signals import assessmentresponse_post_save
 from care_adopt_backend.mixins import UUIDPrimaryKeyMixin
 from apps.core.models import (ProviderRole, Symptom, )
 from apps.patients.models import (PatientMedication, )
@@ -518,3 +519,10 @@ def create_patient_tasks(sender, instance, created, **kwargs):
         instance, SymptomTaskTemplate, SymptomTask, 'symptom_task_template')
     create_scheduled_tasks(
         instance, AssessmentTaskTemplate, AssessmentTask, 'assessment_task_template')
+
+
+# SIGNALS
+models.signals.post_save.connect(
+    assessmentresponse_post_save,
+    sender=AssessmentResponse
+)
