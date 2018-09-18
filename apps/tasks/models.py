@@ -220,6 +220,13 @@ class SymptomTask(AbstractTask):
     symptom_task_template = models.ForeignKey(
         SymptomTaskTemplate, null=False, blank=False, on_delete=models.CASCADE)
     comments = models.CharField(max_length=1024, null=False, blank=False)
+    is_complete = models.BooleanField(
+        default=False,
+        editable=False,
+        help_text=_(
+            'Set to True if a rating has been created for this symptom task.'
+        )
+    )
 
     class Meta:
         ordering = ('appear_datetime', )
@@ -230,10 +237,6 @@ class SymptomTask(AbstractTask):
             self.plan.patient.user.first_name,
             self.due_datetime,
         )
-
-    @property
-    def is_complete(self):
-        return self.symptomrating_set.exists()
 
 
 class SymptomRating(UUIDPrimaryKeyMixin):
