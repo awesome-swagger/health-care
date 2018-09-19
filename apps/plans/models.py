@@ -3,6 +3,8 @@ from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.utils.translation import ugettext_lazy as _
+
 from care_adopt_backend.mixins import (
     AddressMixin, CreatedModifiedMixin, UUIDPrimaryKeyMixin)
 from apps.core.models import (
@@ -97,6 +99,30 @@ class GoalTemplate(UUIDPrimaryKeyMixin):
 
     def __str__(self):
         return self.name
+
+
+class Goal(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
+    """
+    Stores information about a certain goal for patients.
+    """
+    plan = models.ForeignKey(
+        CarePlan,
+        related_name='goals',
+        on_delete=models.CASCADE
+    )
+    goal_template = models.ForeignKey(
+        GoalTemplate,
+        related_name='goals',
+        on_delete=models.CASCADE
+    )
+
+    class Meta:
+        verbose_name = _('Goal')
+        verbose_name_plural = _('Goals')
+        ordering = ('created', )
+
+    def __str__(self):
+        return f'{self.plan}: {self.goal_template.name}'
 
 
 class InfoMessageQueue(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
