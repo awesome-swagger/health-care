@@ -152,6 +152,30 @@ class GoalProgress(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
         return f'{self.goal.goal_template.name}: {self.rating}'
 
 
+class GoalComment(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
+    """
+    This stores the comments written by a user about a specific goal
+    """
+    goal = models.ForeignKey(
+        Goal,
+        related_name='comments',
+        on_delete=models.CASCADE
+    )
+    user = models.ForeignKey(
+        'accounts.EmailUser',
+        related_name='goal_comments',
+        on_delete=models.CASCADE
+    )
+    content = models.TextField()
+
+    class Meta:
+        verbose_name = _('Goal Comment')
+        verbose_name_plural = _('Goal Comments')
+
+    def __str__(self):
+        return f'{self.goal} - {self.user}: {self.content}'
+
+
 class InfoMessageQueue(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
     plan_template = models.ForeignKey(
         CarePlanTemplate, null=False, blank=False, related_name="info_message_queues",
