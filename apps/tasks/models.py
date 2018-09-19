@@ -219,7 +219,7 @@ class SymptomTask(AbstractTask):
         CarePlan, null=False, blank=False, on_delete=models.CASCADE)
     symptom_task_template = models.ForeignKey(
         SymptomTaskTemplate, null=False, blank=False, on_delete=models.CASCADE)
-    comments = models.CharField(max_length=1024, null=False, blank=False)
+    comments = models.CharField(max_length=1024, null=True, blank=True)
     is_complete = models.BooleanField(
         default=False,
         editable=False,
@@ -292,7 +292,7 @@ class AssessmentTask(AbstractTask):
     assessment_task_template = models.ForeignKey(
         AssessmentTaskTemplate, null=False, blank=False,
         on_delete=models.CASCADE)
-    comments = models.CharField(max_length=1024, null=False, blank=False)
+    comments = models.CharField(max_length=1024, null=True, blank=True)
     is_complete = models.BooleanField(
         default=False,
         editable=False,
