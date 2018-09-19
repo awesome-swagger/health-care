@@ -49,4 +49,4 @@ class IsEmployeeOrPatientReadOnly(permissions.BasePermission):
         if request.method in permissions.SAFE_METHODS:
             return request.user.is_patient or request.user.is_employee
         else:
-            return request.user.employee
+            return request.user.is_employee
