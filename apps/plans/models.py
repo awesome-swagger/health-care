@@ -125,6 +125,33 @@ class Goal(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
         return f'{self.plan}: {self.goal_template.name}'
 
 
+class GoalProgress(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
+    """
+    Stores information about updates that was made to a specific goal.
+    This will be primarily used by the employee to set updates for
+    a patients goal.
+    """
+    goal = models.ForeignKey(
+        Goal,
+        related_name='progresses',
+        on_delete=models.CASCADE
+    )
+    rating = models.IntegerField(
+        validators=[
+            MaxValueValidator(5),
+            MinValueValidator(1)
+        ]
+    )
+
+    class Meta:
+        verbose_name = _('Goal Progress')
+        verbose_name_plural = _('Goal Progresses')
+        ordering = ('created', )
+
+    def __str__(self):
+        return f'{self.goal.goal_template.name}: {self.rating}'
+
+
 class InfoMessageQueue(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
     plan_template = models.ForeignKey(
         CarePlanTemplate, null=False, blank=False, related_name="info_message_queues",
