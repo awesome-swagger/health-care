@@ -6,6 +6,7 @@ from .factories import (
     CareTeamMemberFactory,
     GoalTeamplateFactory,
     GoalFactory,
+    GoalProgressFactory,
 )
 from apps.patients.tests.mixins import PatientsMixin
 
@@ -90,3 +91,16 @@ class PlansMixin(PatientsMixin):
             })
 
         return GoalFactory(**kwargs)
+
+    def create_goal_progress(self, **kwargs):
+        if 'goal' not in kwargs:
+            kwargs.update({
+                'goal': self.create_goal()
+            })
+
+        if 'rating' not in kwargs:
+            kwargs.update({
+                'rating': random.randint(1, 5)
+            })
+
+        return GoalProgressFactory(**kwargs)

@@ -23,6 +23,7 @@ from apps.plans.api.views import (
     CareTeamMemberViewSet,
     GoalTemplateViewSet,
     GoalViewSet,
+    GoalProgressViewSet,
     InfoMessageQueueViewSet,
     InfoMessageViewSet, )
 from apps.tasks.api.views import (
@@ -89,6 +90,8 @@ router.register(
     r'goal_templates', GoalTemplateViewSet, base_name='goal_templates')
 router.register(
     r'goals', GoalViewSet, base_name='goals')
+router.register(
+    r'goal_progresses', GoalProgressViewSet, base_name='goal_progresses')
 router.register(
     r'info_message_queues', InfoMessageQueueViewSet, base_name='info_message_queues')
 router.register(
