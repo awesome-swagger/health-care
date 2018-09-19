@@ -187,6 +187,21 @@ class SymptomRatingViewSet(viewsets.ModelViewSet):
     )
     queryset = SymptomRating.objects.all()
 
+    def get_queryset(self):
+        queryset = super(SymptomRatingViewSet, self).get_queryset()
+        user = self.request.user
+
+        if user.is_employee:
+            queryset = queryset.filter(
+                symptom_task__plan__care_team_members__employee_profile=user.employee_profile
+            )
+        elif user.is_patient:
+            queryset = queryset.filter(
+                symptom_task__plan__patient=user.patient_profile
+            )
+
+        return queryset
+
 
 class AssessmentTaskTemplateViewSet(viewsets.ModelViewSet):
     serializer_class = AssessmentTaskTemplateSerializer
