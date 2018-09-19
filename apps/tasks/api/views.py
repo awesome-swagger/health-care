@@ -20,7 +20,7 @@ from ..models import (
 )
 from ..permissions import (
     IsPatientOrEmployeeForTask,
-    IsPatientOrEmployeeForAssessmentResponse,
+    IsPatientOrEmployeeReadOnly,
 )
 from ..utils import get_all_tasks_of_patient_today
 from .filters import DurationFilter
@@ -181,7 +181,10 @@ class SymptomTaskViewSet(viewsets.ModelViewSet):
 
 class SymptomRatingViewSet(viewsets.ModelViewSet):
     serializer_class = SymptomRatingSerializer
-    permission_classes = (permissions.IsAuthenticated, EmployeeOrReadOnly, )
+    permission_classes = (
+        permissions.IsAuthenticated,
+        IsPatientOrEmployeeReadOnly,
+    )
     queryset = SymptomRating.objects.all()
 
 
@@ -229,7 +232,7 @@ class AssessmentResponseViewSet(viewsets.ModelViewSet):
     serializer_class = AssessmentResponseSerializer
     permission_classes = (
         permissions.IsAuthenticated,
-        IsPatientOrEmployeeForAssessmentResponse,
+        IsPatientOrEmployeeReadOnly,
     )
     queryset = AssessmentResponse.objects.all()
     filter_backends = (DjangoFilterBackend, )
