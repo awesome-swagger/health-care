@@ -8,6 +8,7 @@ from ..models import (
     PlanConsent,
     GoalTemplate,
     Goal,
+    GoalProgress,
     InfoMessageQueue,
     InfoMessage,
     CareTeamMember,
@@ -19,6 +20,7 @@ from .serializers import (
     CareTeamMemberSerializer,
     GoalTemplateSerializer,
     GoalSerializer,
+    GoalProgressSerializer,
     InfoMessageQueueSerializer,
     InfoMessageSerializer,
 )
@@ -202,6 +204,64 @@ class GoalViewSet(viewsets.ModelViewSet):
             )
         elif user.is_patient:
             queryset = queryset.filter(plan__patient=user.patient_profile)
+
+        return queryset
+
+
+class GoalProgressViewSet(viewsets.ModelViewSet):
+    """
+    Viewset for :model:`plans.GoalProgress`
+    ========
+
+    create:
+        Creates :model:`plans.GoalProgress` object. Only admins and employees
+        are allowed to perform this action.
+
+    update:
+        Updates :model:`plans.GoalProgress` object. Only admins and employees
+        who belong to the same care team are allowed to perform this action.
+
+    partial_update:
+        Updates one or more fields of an existing goal object. Only admins and
+        employees who belong to the same care team are allowed to perform this
+        action.
+
+    retrieve:
+        Retrieves a :model:`plans.GoalProgress` instance. Admins will have
+        access to all goal progress objects. Employees will only have access
+        to those progresses belonging to its own care team. Patients will have
+        access to all progresses assigned to them.
+
+    list:
+        Returns list of all :model:`plans.GoalProgress` objects. Admins will
+        get all existing goal progress objects. Employees will get the progress
+        belonging to a certain care team. Patients will get all progresses
+        belonging to them.
+
+    delete:
+        Deletes a :model:`plans.GoalProgress` instance. Only admins and
+        employees who belong to the same care team are allowed to perform this
+        action.
+    """
+    serializer_class = GoalProgressSerializer
+    permission_classes = (
+        permissions.IsAuthenticated,
+        IsEmployeeOrPatientReadOnly,
+    )
+    queryset = GoalProgress.objects.all()
+
+    def get_queryset(self):
+        queryset = super(GoalProgressViewSet, self).get_queryset()
+        user = self.request.user
+
+        if user.is_employee:
+            queryset = queryset.filter(
+                goal__plan__care_team_members__employee_profile=user.employee_profile
+            )
+        elif user.is_patient:
+            queryset = queryset.filter(
+                goal__plan__patient=user.patient_profile
+            )
 
         return queryset
 
