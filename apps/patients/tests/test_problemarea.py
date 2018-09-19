@@ -38,25 +38,18 @@ class TestProblemArea(PlansMixin, PatientsMixin, APITestCase):
         self.client.force_authenticate(user=self.patient_user)
         list_url = reverse('problem_areas-list')
         detail_url = reverse(
-            'problem_areas-detail', kwargs={'pk': self.patient_problem_area})
-        create_response = self.client.patch(list_url, {
-            'patient': self.patient,
-            'name': 'Oi'
-        })
+            'problem_areas-detail', kwargs={'pk': self.patient_problem_area.id})
         list_response = self.client.get(list_url)
         get_response = self.client.get(detail_url)
-        update_response = self.client.patch(detail_url, {
-            'name': 'New Problem Name'
-        })
-        destroy_response = self.client.delete(detail_url)
-        self.assertEqual(create_response.status_code, 403)
         self.assertEqual(list_response.status_code, 403)
         self.assertEqual(get_response.status_code, 403)
-        self.assertEqual(update_response.status_code, 403)
-        self.assertEqual(destroy_response.status_code, 403)
 
     def test_employee_access(self):
-        pass
-
-    def test_manager_access(self):
-        pass
+        self.client.force_authenticate(user=self.employee_user)
+        list_url = reverse('problem_areas-list')
+        detail_url = reverse(
+            'problem_areas-detail', kwargs={'pk': self.patient_problem_area.id})
+        list_response = self.client.get(list_url)
+        get_response = self.client.get(detail_url)
+        self.assertEqual(list_response.data['count'], 1)
+        self.assertEqual(get_response.status_code, 200)
