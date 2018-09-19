@@ -7,6 +7,7 @@ from apps.plans.models import (
     GoalTemplate,
     Goal,
     GoalProgress,
+    GoalComment,
     InfoMessageQueue,
     InfoMessage,
 )
@@ -49,6 +50,13 @@ class GoalProgressAdmin(admin.ModelAdmin):
     list_display = ('goal', 'rating')
 
 
+class GoalCommentAdmin(admin.ModelAdmin):
+    """
+    Admin view for :model:`plans.GoalComment`
+    """
+    list_display = ('goal', 'user', 'content')
+
+
 class InfoMessageQueueAdmin(admin.ModelAdmin):
     list_display = ('name', 'type', )
 
@@ -60,5 +68,6 @@ admin.site.register(CareTeamMember, CareTeamMemberAdmin)
 admin.site.register(GoalTemplate, GoalTemplateAdmin)
 admin.site.register(Goal, GoalAdmin)
 admin.site.register(GoalProgress, GoalProgressAdmin)
+admin.site.register(GoalComment, GoalCommentAdmin)
 admin.site.register(InfoMessageQueue, InfoMessageQueueAdmin)
 admin.site.register(InfoMessage)
