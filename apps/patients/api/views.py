@@ -6,6 +6,8 @@ from rest_framework.decorators import action
 from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 
+from apps.plans.models import CareTeamMember
+
 from ..models import (
     PatientProfile, PatientDiagnosis, ProblemArea, PatientProcedure,
     PatientMedication, )
@@ -21,7 +23,8 @@ from .serializers import (
     PatientDashboardSerializer,
 )
 from care_adopt_backend import utils
-from care_adopt_backend.permissions import EmployeeOrReadOnly
+from care_adopt_backend.permissions import (
+    EmployeeOrReadOnly, IsEmployeeOnly, )
 
 
 class PatientProfileViewSet(viewsets.ModelViewSet):
@@ -37,13 +40,37 @@ class PatientProfileViewSet(viewsets.ModelViewSet):
     ==============
     `?status=value` - filters out users by status, must be exact match.
 
-    Additional Endpoints
+    Search Patients
     ====================
-    `/api/patient_profiles/search/`
+    `POST` to `/api/patient_profiles/search/`
 
-    You can post a name to this endpoint and it will return patients that are
-    available to the requesting user who's name matches the query.  Accepts
-    a post request with a `name` field in the request payload.
+        {
+            "name": "Pati"
+        }
+
+    `RESPONSE`
+
+        [
+            ...
+            {
+                "id": "78d5472b-32d4-4b15-8dd1-f14a65070da4",
+                "user": {
+                     "first_name": "Patient",
+                     "last_name": "Test"
+                 }
+            }
+            ...
+        ]
+
+    Dashboard
+    =================
+    `GET` to `/api/patient_profiles/dashboard`
+
+    This will return all the data needed for the dashboard.  For patients this
+    returns only their own dashboard, for employees this returns all patient dashboards
+    for patients they are care team members for.
+
+    Employees can add a query param to filter by patient id, e.g: `/api/patient_profiles/dashboard/?id=<id_here>`
     """
     serializer_class = PatientProfileSerializer
     permission_classes = (
@@ -112,21 +139,16 @@ class PatientDiagnosisViewSet(viewsets.ModelViewSet):
 
 class ProblemAreaViewSet(viewsets.ModelViewSet):
     serializer_class = ProblemAreaSerializer
-    permission_classes = (permissions.IsAuthenticated, EmployeeOrReadOnly, )
+    permission_classes = (permissions.IsAuthenticated, IsEmployeeOnly, )
     queryset = ProblemArea.objects.all()
 
     def get_queryset(self):
         qs = self.queryset
-        employee_profile = utils.employee_profile_or_none(self.request.user)
-        patient_profile = utils.patient_profile_or_none(self.request.user)
-
-        if employee_profile is not None:
-            # TODO: Only get problem areas for patients this employee has access to
-            return qs.all()
-        elif patient_profile is not None:
-            return qs.filter(patient__id=patient_profile.id)
-        else:
-            return qs.none()
+        employee_patient_ids = CareTeamMember.objects.filter(
+            employee_profile__id=self.request.user.employee_profile.id).values_list(
+                'plan__patient__id', flat=True).distinct()
+        qs = qs.filter(patient__id__in=employee_patient_ids)
+        return qs
 
 
 class PatientProcedureViewSet(viewsets.ModelViewSet):

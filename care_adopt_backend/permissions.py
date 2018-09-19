@@ -19,3 +19,9 @@ class IsPatientOnly(permissions.BasePermission):
 
     def has_permission(self, request, view):
         return request.user.is_patient
+
+
+class IsEmployeeOnly(permissions.BasePermission):
+
+    def has_permission(self, request, view):
+        return request.user.is_employee

@@ -11,6 +11,15 @@ class PatientProfileFactory(factory.django.DjangoModelFactory):
         django_get_or_create = ('user', )
 
 
+class ProblemAreaFactory(factory.django.DjangoModelFactory):
+    """
+    Factory for :model:`patients.ProblemArea`
+    """
+
+    class Meta:
+        model = 'patients.ProblemArea'
+
+
 class PatientMedicationFactory(factory.django.DjangoModelFactory):
     """
     Factory for :model:`patients.PatientMedication`
