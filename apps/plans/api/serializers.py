@@ -5,6 +5,9 @@ from ..models import (
     CarePlan,
     PlanConsent,
     GoalTemplate,
+    Goal,
+    GoalProgress,
+    GoalComment,
     InfoMessageQueue,
     InfoMessage,
     CareTeamMember,
@@ -65,3 +68,67 @@ class InfoMessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = InfoMessage
         fields = '__all__'
+
+
+class GoalSerializer(serializers.ModelSerializer):
+    """
+    serializer for :model:`plans.Goal`
+    """
+
+    class Meta:
+        model = Goal
+        fields = (
+            'id',
+            'plan',
+            'goal_template',
+            'created',
+            'modified',
+        )
+        read_only_fields = (
+            'id',
+            'created',
+            'modified',
+        )
+
+
+class GoalProgressSerializer(serializers.ModelSerializer):
+    """
+    serializer for :model:`plans.GoalProgress`
+    """
+
+    class Meta:
+        model = GoalProgress
+        fields = (
+            'id',
+            'goal',
+            'rating',
+            'created',
+            'modified',
+        )
+        read_only_fields = (
+            'id',
+            'created',
+            'modified',
+        )
+
+
+class GoalCommentSerializer(serializers.ModelSerializer):
+    """
+    serializer for :model:`plans.GoalComment`
+    """
+
+    class Meta:
+        model = GoalComment
+        fields = (
+            'id',
+            'goal',
+            'user',
+            'content',
+            'created',
+            'modified',
+        )
+        read_only_fields = (
+            'id',
+            'created',
+            'modified',
+        )
