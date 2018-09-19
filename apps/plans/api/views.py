@@ -7,6 +7,7 @@ from ..models import (
     CarePlan,
     PlanConsent,
     GoalTemplate,
+    Goal,
     InfoMessageQueue,
     InfoMessage,
     CareTeamMember,
@@ -17,11 +18,13 @@ from .serializers import (
     PlanConsentSerializer,
     CareTeamMemberSerializer,
     GoalTemplateSerializer,
+    GoalSerializer,
     InfoMessageQueueSerializer,
     InfoMessageSerializer,
 )
 from apps.core.models import ProviderRole
 from apps.core.api.serializers import ProviderRoleSerializer
+from apps.tasks.permissions import IsEmployeeOrPatientReadOnly
 from care_adopt_backend import utils
 from care_adopt_backend.permissions import EmployeeOrReadOnly
 
@@ -147,6 +150,60 @@ class GoalTemplateViewSet(viewsets.ModelViewSet):
     serializer_class = GoalTemplateSerializer
     permission_classes = (permissions.IsAuthenticated, EmployeeOrReadOnly, )
     queryset = GoalTemplate.objects.all()
+
+
+class GoalViewSet(viewsets.ModelViewSet):
+    """
+    Viewset for :model:`plans.Goal`
+    ========
+
+    create:
+        Creates :model:`plans.Goal` object. Only admins and employees are
+        allowed to perform this action.
+
+    update:
+        Updates :model:`plans.Goal` object. Only admins and employees who
+        belong to the same care team are allowed to perform this action.
+
+    partial_update:
+        Updates one or more fields of an existing goal object. Only admins and
+        employees who belong to the same care team are allowed to perform this
+        action.
+
+    retrieve:
+        Retrieves a :model:`plans.Goal` instance. Admins will have access to
+        all goal objects. Employees will only have access to those goals
+        belonging to its own care team. Patients will have access to all goals
+        assigned to them.
+
+    list:
+        Returns list of all :model:`plans.Goal` objects. Admins will get all
+        existing goal objects. Employees will get the goals belonging to a
+        certain care team. Patients will get all goals belonging to them.
+
+    delete:
+        Deletes a :model:`plans.Goal` instance. Only admins and employees
+        who belong to the same care team are allowed to perform this action.
+    """
+    serializer_class = GoalSerializer
+    permission_classes = (
+        permissions.IsAuthenticated,
+        IsEmployeeOrPatientReadOnly,
+    )
+    queryset = Goal.objects.all()
+
+    def get_queryset(self):
+        queryset = super(GoalViewSet, self).get_queryset()
+        user = self.request.user
+
+        if user.is_employee:
+            queryset = queryset.filter(
+                plan__care_team_members__employee_profile=user.employee_profile
+            )
+        elif user.is_patient:
+            queryset = queryset.filter(plan__patient=user.patient_profile)
+
+        return queryset
 
 
 class InfoMessageQueueViewSet(viewsets.ModelViewSet):

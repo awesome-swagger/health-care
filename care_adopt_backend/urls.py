@@ -17,8 +17,13 @@ from apps.patients.api.views import (
     PatientProfileViewSet, PatientDiagnosisViewSet, ProblemAreaViewSet,
     PatientProcedureViewSet, PatientMedicationViewSet, )
 from apps.plans.api.views import (
-    CarePlanTemplateViewSet, CarePlanViewSet, PlanConsentViewSet,
-    CareTeamMemberViewSet, GoalTemplateViewSet, InfoMessageQueueViewSet,
+    CarePlanTemplateViewSet,
+    CarePlanViewSet,
+    PlanConsentViewSet,
+    CareTeamMemberViewSet,
+    GoalTemplateViewSet,
+    GoalViewSet,
+    InfoMessageQueueViewSet,
     InfoMessageViewSet, )
 from apps.tasks.api.views import (
     PatientTaskTemplateViewSet,
@@ -82,6 +87,8 @@ router.register(
     r'care_team_members', CareTeamMemberViewSet, base_name='care_team_members')
 router.register(
     r'goal_templates', GoalTemplateViewSet, base_name='goal_templates')
+router.register(
+    r'goals', GoalViewSet, base_name='goals')
 router.register(
     r'info_message_queues', InfoMessageQueueViewSet, base_name='info_message_queues')
 router.register(
