@@ -1,3 +1,5 @@
+from django.utils.translation import ugettext_lazy as _
+
 from rest_framework import serializers
 
 from ..models import (
@@ -132,3 +134,25 @@ class GoalCommentSerializer(serializers.ModelSerializer):
             'created',
             'modified',
         )
+
+    def validate(self, data):
+        goal = data['goal']
+        user = data['user']
+
+        if user.is_superuser:
+            return data
+        elif user.is_employee:
+            profiles = goal.plan.care_team_members.values_list(
+                'employee_profile', flat=True).distinct()
+            if user.employee_profile not in profiles:
+                err = _(
+                    "The user is not a care team member of the goal provided."
+                )
+                raise serializers.ValidationError(err)
+            return data
+        elif user.is_patient:
+            patient = user.patient_profile
+            if goal.plan.patient != patient:
+                err = _("The user is not the owner of the goal's plan.")
+                raise serializers.ValidationError(err)
+            return data
