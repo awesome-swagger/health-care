@@ -333,6 +333,25 @@ class AssessmentResponse(UUIDPrimaryKeyMixin):
         )
 
 
+class VitalTaskTemplate(AbstractTaskTemplate):
+    """
+    Stores information about a template primarily used in a vital task.
+    """
+    plan_template = models.ForeignKey(
+        CarePlanTemplate,
+        related_name='vital_templates',
+        on_delete=models.CASCADE
+    )
+    name = models.CharField(max_length=254)
+
+    class Meta:
+        verbose_name = _('Vital Task Template')
+        verbose_name_plural = _('Vital Task Templates')
+
+    def __str__(self):
+        return self.name
+
+
 def replace_time(datetime, time):
     return datetime.replace(hour=time.hour, minute=time.minute, second=time.second)
 
