@@ -72,27 +72,6 @@ class InfoMessageSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class GoalSerializer(serializers.ModelSerializer):
-    """
-    serializer for :model:`plans.Goal`
-    """
-
-    class Meta:
-        model = Goal
-        fields = (
-            'id',
-            'plan',
-            'goal_template',
-            'created',
-            'modified',
-        )
-        read_only_fields = (
-            'id',
-            'created',
-            'modified',
-        )
-
-
 class GoalProgressSerializer(serializers.ModelSerializer):
     """
     serializer for :model:`plans.GoalProgress`
@@ -111,6 +90,26 @@ class GoalProgressSerializer(serializers.ModelSerializer):
             'id',
             'created',
             'modified',
+        )
+
+
+class SimplifiedGoalProgressSerializer(serializers.ModelSerializer):
+    """
+    serializer for :model:`plans.GoalProgress`. This will be primarily
+    used as an inline in GoalSerializer.
+    """
+
+    class Meta:
+        model = GoalProgress
+        fields = (
+            'id',
+            'rating',
+            'created',
+        )
+        read_only_fields = (
+            'id',
+            'rating',
+            'created',
         )
 
 
@@ -156,3 +155,52 @@ class GoalCommentSerializer(serializers.ModelSerializer):
                 err = _("The user is not the owner of the goal's plan.")
                 raise serializers.ValidationError(err)
             return data
+
+
+class SimplifiedGoalCommentSerializer(serializers.ModelSerializer):
+    """
+    serializer for :model:`plans.GoalComment`. This will be primarily
+    used as an inline in GoalSerializer.
+    """
+
+    class Meta:
+        model = GoalComment
+        fields = (
+            'id',
+            'user',
+            'content',
+            'created',
+            'updated',
+        )
+        read_only_fields = (
+            'id',
+            'user',
+            'content',
+            'created',
+            'updated',
+        )
+
+
+class GoalSerializer(serializers.ModelSerializer):
+    """
+    serializer for :model:`plans.Goal`
+    """
+    latest_progress = SimplifiedGoalProgressSerializer(read_only=True)
+    comments = SimplifiedGoalCommentSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Goal
+        fields = (
+            'id',
+            'plan',
+            'goal_template',
+            'latest_progress',
+            'comments',
+            'created',
+            'modified',
+        )
+        read_only_fields = (
+            'id',
+            'created',
+            'modified',
+        )

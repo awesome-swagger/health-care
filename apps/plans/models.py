@@ -124,6 +124,10 @@ class Goal(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
     def __str__(self):
         return f'{self.plan}: {self.goal_template.name}'
 
+    @property
+    def latest_progress(self):
+        return self.progresses.last()
+
 
 class GoalProgress(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
     """
