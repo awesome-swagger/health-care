@@ -54,3 +54,12 @@ class GoalProgressFactory(factory.django.DjangoModelFactory):
 
     class Meta:
         model = 'plans.GoalProgress'
+
+
+class GoalCommentFactory(factory.django.DjangoModelFactory):
+    """
+    Factory for :model:`plans.GoalComment`
+    """
+
+    class Meta:
+        model = 'plans.GoalComment'

@@ -136,15 +136,15 @@ class GoalCommentSerializer(serializers.ModelSerializer):
         )
 
     def validate(self, data):
-        goal = data['goal']
-        user = data['user']
+        goal = data['goal'] if 'goal' in data else self.instance.goal
+        user = data['user'] if 'user' in data else self.instance.user
 
         if user.is_superuser:
             return data
         elif user.is_employee:
             profiles = goal.plan.care_team_members.values_list(
                 'employee_profile', flat=True).distinct()
-            if user.employee_profile not in profiles:
+            if user.employee_profile.id not in profiles:
                 err = _(
                     "The user is not a care team member of the goal provided."
                 )

@@ -7,7 +7,9 @@ from .factories import (
     GoalTeamplateFactory,
     GoalFactory,
     GoalProgressFactory,
+    GoalCommentFactory,
 )
+from apps.accounts.tests.factories import RegularUserFactory
 from apps.patients.tests.mixins import PatientsMixin
 
 
@@ -104,3 +106,21 @@ class PlansMixin(PatientsMixin):
             })
 
         return GoalProgressFactory(**kwargs)
+
+    def create_goal_comment(self, **kwargs):
+        if 'goal' not in kwargs:
+            kwargs.update({
+                'goal': self.create_goal()
+            })
+
+        if 'user' not in kwargs:
+            kwargs.update({
+                'user': RegularUserFactory()
+            })
+
+        if 'content' not in kwargs:
+            kwargs.update({
+                'content': self.fake.sentence(nb_words=20)
+            })
+
+        return GoalCommentFactory(**kwargs)
