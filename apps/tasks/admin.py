@@ -13,6 +13,7 @@ from apps.tasks.models import (
     AssessmentQuestion,
     AssessmentTask,
     AssessmentResponse,
+    VitalTaskTemplate,
 )
 
 
@@ -92,6 +93,12 @@ class AssessmentTaskAdmin(admin.ModelAdmin):
         'due_datetime', )
 
 
+class VitalTaskTemplateAdmin(admin.ModelAdmin):
+    list_display = (
+        'name', 'plan_template', 'start_on_day', 'frequency', 'repeat_amount',
+        'appear_time', 'due_time', )
+
+
 admin.site.register(PatientTaskTemplate, PatientTaskTemplateAdmin)
 admin.site.register(PatientTask, PatientTaskAdmin)
 admin.site.register(TeamTaskTemplate, TeamTaskTemplateAdmin)
@@ -102,3 +109,4 @@ admin.site.register(SymptomTaskTemplate, SymptomTaskTemplateAdmin)
 admin.site.register(SymptomTask, SymptomTaskAdmin)
 admin.site.register(AssessmentTaskTemplate, AssessmentTaskTemplateAdmin)
 admin.site.register(AssessmentTask, AssessmentTaskAdmin)
+admin.site.register(VitalTaskTemplate, VitalTaskTemplateAdmin)
