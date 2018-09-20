@@ -352,6 +352,36 @@ class VitalTaskTemplate(AbstractTaskTemplate):
         return self.name
 
 
+class VitalTask(AbstractTask):
+    """
+    Stores information about a vital task for a specific care plan.
+    """
+    plan = models.ForeignKey(
+        CarePlan,
+        related_name='vital_tasks',
+        on_delete=models.CASCADE
+    )
+    vital_task_template = models.ForeignKey(
+        VitalTaskTemplate,
+        related_name='vital_tasks',
+        on_delete=models.CASCADE
+    )
+    is_complete = models.BooleanField(
+        default=False,
+        editable=False,
+        help_text=_(
+            'Set to True if all questions has its corresponding response.'
+        )
+    )
+
+    class Meta:
+        ordering = ('appear_datetime', )
+
+    def __str__(self):
+        return f"{self.plan.patient.user.get_full_name()}'s vital " + \
+            f"report due by {self.due_datetime}"
+
+
 def replace_time(datetime, time):
     return datetime.replace(hour=time.hour, minute=time.minute, second=time.second)
 

@@ -14,6 +14,7 @@ from apps.tasks.models import (
     AssessmentTask,
     AssessmentResponse,
     VitalTaskTemplate,
+    VitalTask,
 )
 
 
@@ -99,6 +100,16 @@ class VitalTaskTemplateAdmin(admin.ModelAdmin):
         'appear_time', 'due_time', )
 
 
+class VitalTaskAdmin(admin.ModelAdmin):
+    """
+    Admin view for :model:`tasks.VitalTask`
+    """
+
+    list_display = (
+        'plan', 'vital_task_template', 'appear_datetime',
+        'due_datetime', 'is_complete', )
+
+
 admin.site.register(PatientTaskTemplate, PatientTaskTemplateAdmin)
 admin.site.register(PatientTask, PatientTaskAdmin)
 admin.site.register(TeamTaskTemplate, TeamTaskTemplateAdmin)
@@ -110,3 +121,4 @@ admin.site.register(SymptomTask, SymptomTaskAdmin)
 admin.site.register(AssessmentTaskTemplate, AssessmentTaskTemplateAdmin)
 admin.site.register(AssessmentTask, AssessmentTaskAdmin)
 admin.site.register(VitalTaskTemplate, VitalTaskTemplateAdmin)
+admin.site.register(VitalTask, VitalTaskAdmin)
