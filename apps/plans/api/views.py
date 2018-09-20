@@ -44,12 +44,15 @@ class CarePlanTemplateViewSet(viewsets.ModelViewSet):
         employee_profile = utils.employee_profile_or_none(self.request.user)
         patient_profile = utils.patient_profile_or_none(self.request.user)
         if employee_profile is not None:
+            include_inactive = self.request.query_params.get('include_inactive')
+            if include_inactive != "true":
+                qs = qs.filter(is_active=True)
             return qs.all()
         if patient_profile is not None:
-            template_ids = patient_profile.care_plans.all().values_list(
-                'plan_template', flat=True)
-            return qs.filter(
-                id__in=template_ids)
+            template_ids = patient_profile.care_plans.filter(
+                is_active=True
+            ).values_list('plan_template', flat=True)
+            return qs.filter(id__in=template_ids)
         return CarePlanTemplate.objects.none()
 
 
@@ -134,8 +137,7 @@ class CareTeamMemberViewSet(viewsets.ModelViewSet):
         if employee_profile is not None:
             qs = qs.all()
         elif patient_profile is not None:
-            qs = qs.filter(
-                plan__patient=patient_profile)
+            qs = qs.filter(plan__patient=patient_profile)
         else:
             return qs.none()
         return qs
