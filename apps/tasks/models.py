@@ -398,6 +398,38 @@ class VitalQuestion(UUIDPrimaryKeyMixin):
         return f'{self.vital_task_template.name}: {self.prompt}'
 
 
+class VitalResponse(UUIDPrimaryKeyMixin):
+    """
+    Stores information about a response made by a patient to a specific
+    question for a particular vital task.
+    """
+    vital_task = models.ForeignKey(
+        VitalTask,
+        related_name='responses',
+        on_delete=models.CASCADE
+    )
+    question = models.ForeignKey(
+        VitalQuestion,
+        related_name='responses',
+        on_delete=models.CASCADE
+    )
+    answer_boolean = models.NullBooleanField(blank=True, null=True)
+    answer_time = models.TimeField(blank=True, null=True)
+    answer_float = models.FloatField(blank=True, null=True)
+    answer_integer = models.IntegerField(blank=True, null=True)
+    answer_scale = models.IntegerField(blank=True, null=True)
+    answer_string = models.CharField(max_length=255, blank=True)
+
+    def __str__(self):
+        return f"{self.vital_task.vital_task_template.name}:" + \
+            f"{self.question.prompt} (answer: {self.answer})"
+
+    @property
+    def answer(self):
+        answer_type = self.question.answer_type
+        return getattr(self, f"answer_{answer_type}", "")
+
+
 def replace_time(datetime, time):
     return datetime.replace(hour=time.hour, minute=time.minute, second=time.second)
 

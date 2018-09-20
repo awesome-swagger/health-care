@@ -16,6 +16,7 @@ from apps.tasks.models import (
     VitalTaskTemplate,
     VitalTask,
     VitalQuestion,
+    VitalResponse,
 )
 
 
@@ -99,6 +100,10 @@ class VitalQuestionInline(admin.TabularInline):
     model = VitalQuestion
 
 
+class VitalResponseInline(admin.TabularInline):
+    model = VitalResponse
+
+
 class VitalTaskTemplateAdmin(admin.ModelAdmin):
     inlines = [
         VitalQuestionInline,
@@ -112,7 +117,9 @@ class VitalTaskAdmin(admin.ModelAdmin):
     """
     Admin view for :model:`tasks.VitalTask`
     """
-
+    inlines = [
+        VitalResponseInline,
+    ]
     list_display = (
         'plan', 'vital_task_template', 'appear_datetime',
         'due_datetime', 'is_complete', )
