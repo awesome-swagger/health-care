@@ -15,6 +15,7 @@ from apps.tasks.models import (
     AssessmentResponse,
     VitalTaskTemplate,
     VitalTask,
+    VitalQuestion,
 )
 
 
@@ -94,7 +95,14 @@ class AssessmentTaskAdmin(admin.ModelAdmin):
         'due_datetime', )
 
 
+class VitalQuestionInline(admin.TabularInline):
+    model = VitalQuestion
+
+
 class VitalTaskTemplateAdmin(admin.ModelAdmin):
+    inlines = [
+        VitalQuestionInline,
+    ]
     list_display = (
         'name', 'plan_template', 'start_on_day', 'frequency', 'repeat_amount',
         'appear_time', 'due_time', )

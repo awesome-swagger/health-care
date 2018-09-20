@@ -382,6 +382,22 @@ class VitalTask(AbstractTask):
             f"report due by {self.due_datetime}"
 
 
+class VitalQuestion(UUIDPrimaryKeyMixin):
+    """
+    Stores information about a vital question related to a vital task template
+    """
+    vital_task_template = models.ForeignKey(
+        VitalTaskTemplate,
+        related_name="questions",
+        on_delete=models.CASCADE
+    )
+    prompt = models.CharField(max_length=255)
+    answer_type = models.CharField(max_length=128)
+
+    def __str__(self):
+        return f'{self.vital_task_template.name}: {self.prompt}'
+
+
 def replace_time(datetime, time):
     return datetime.replace(hour=time.hour, minute=time.minute, second=time.second)
 
