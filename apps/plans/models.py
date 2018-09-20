@@ -25,6 +25,7 @@ class CarePlanTemplate(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
     name = models.CharField(max_length=120)
     type = models.CharField(max_length=10, choices=PLAN_TYPE_CHOICES)
     duration_weeks = models.IntegerField(null=False, blank=False)
+    is_active = models.BooleanField(default=True)
 
     def __str__(self):
         return self.name
