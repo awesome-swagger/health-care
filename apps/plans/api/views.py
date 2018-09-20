@@ -288,25 +288,22 @@ class GoalCommentViewSet(viewsets.ModelViewSet):
 
     retrieve:
         Retrieves a :model:`plans.GoalComment` instance. Admins will have
-        access to all goal comment objects. Employees will only have access
-        to those comments belonging to its own care team. Patients will have
-        access to all comments of goals assigned to them.
+        access to all goal comment objects while employees and patients will
+        only have access to comments they own.
 
     list:
         Returns list of all :model:`plans.GoalComment` objects. Admins will
-        get all existing goal comment objects. Employees will get the comment
-        belonging to a certain care team. Patients will get all comments
-        of goals belonging to them.
+        have access to all goal comment objects while employees and patients
+        will only have access to comments they own.
 
     delete:
-        Deletes a :model:`plans.GoalComment` instance. All authenticated users
-        are allowed to perform this action so long as the comment belongs to
-        them.
+        Deletes a :model:`plans.GoalComment` instance. Admins will
+        have access to all goal comment objects while employees and patients
+        will only have access to comments they own.
     """
     serializer_class = GoalCommentSerializer
     permission_classes = (
         permissions.IsAuthenticated,
-        IsEmployeeOrPatientReadOnly,
     )
     queryset = GoalComment.objects.all()
 
@@ -314,14 +311,8 @@ class GoalCommentViewSet(viewsets.ModelViewSet):
         queryset = super(GoalCommentViewSet, self).get_queryset()
         user = self.request.user
 
-        if user.is_employee:
-            queryset = queryset.filter(
-                goal__plan__care_team_members__employee_profile=user.employee_profile
-            )
-        elif user.is_patient:
-            queryset = queryset.filter(
-                goal__plan__patient=user.patient_profile
-            )
+        if not user.is_superuser:
+            queryset = queryset.filter(user=user)
 
         return queryset
 
