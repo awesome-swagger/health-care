@@ -170,14 +170,14 @@ class SimplifiedGoalCommentSerializer(serializers.ModelSerializer):
             'user',
             'content',
             'created',
-            'updated',
+            'modified',
         )
         read_only_fields = (
             'id',
             'user',
             'content',
             'created',
-            'updated',
+            'modified',
         )
 
 

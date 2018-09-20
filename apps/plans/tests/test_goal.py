@@ -118,6 +118,28 @@ class TestGoalUsingEmployee(PlansMixin, APITestCase):
         response = self.client.delete(url, {})
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
+    def test_get_goal_latest_progress(self):
+        self.create_goal_progress(**{
+            'goal': self.goal
+        })
+        latest_progress = self.create_goal_progress(**{
+            'goal': self.goal
+        })
+        response = self.client.get(self.detail_url)
+        self.assertEqual(
+            response.data['latest_progress']['id'], str(latest_progress.id)
+        )
+
+    def test_get_goal_comments(self):
+        count = 5
+        for i in range(count):
+            self.create_goal_comment(**{
+                'goal': self.goal,
+                'user': self.user
+            })
+        response = self.client.get(self.detail_url)
+        self.assertEqual(len(response.data['comments']), count)
+
 
 class TestGoalUsingPatient(PlansMixin, APITestCase):
     """
@@ -226,3 +248,25 @@ class TestGoalUsingPatient(PlansMixin, APITestCase):
         url = reverse('goals-detail', kwargs={'pk': goal.id})
         response = self.client.delete(url, {})
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_get_goal_latest_progress(self):
+        self.create_goal_progress(**{
+            'goal': self.goal
+        })
+        latest_progress = self.create_goal_progress(**{
+            'goal': self.goal
+        })
+        response = self.client.get(self.detail_url)
+        self.assertEqual(
+            response.data['latest_progress']['id'], str(latest_progress.id)
+        )
+
+    def test_get_goal_comments(self):
+        count = 5
+        for i in range(count):
+            self.create_goal_comment(**{
+                'goal': self.goal,
+                'user': self.user
+            })
+        response = self.client.get(self.detail_url)
+        self.assertEqual(len(response.data['comments']), count)
