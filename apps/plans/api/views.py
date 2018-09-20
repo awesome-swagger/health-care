@@ -9,6 +9,7 @@ from ..models import (
     GoalTemplate,
     Goal,
     GoalProgress,
+    GoalComment,
     InfoMessageQueue,
     InfoMessage,
     CareTeamMember,
@@ -21,6 +22,7 @@ from .serializers import (
     GoalTemplateSerializer,
     GoalSerializer,
     GoalProgressSerializer,
+    GoalCommentSerializer,
     InfoMessageQueueSerializer,
     InfoMessageSerializer,
 )
@@ -252,6 +254,64 @@ class GoalProgressViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         queryset = super(GoalProgressViewSet, self).get_queryset()
+        user = self.request.user
+
+        if user.is_employee:
+            queryset = queryset.filter(
+                goal__plan__care_team_members__employee_profile=user.employee_profile
+            )
+        elif user.is_patient:
+            queryset = queryset.filter(
+                goal__plan__patient=user.patient_profile
+            )
+
+        return queryset
+
+
+class GoalCommentViewSet(viewsets.ModelViewSet):
+    """
+    Viewset for :model:`plans.GoalComment`
+    ========
+
+    create:
+        Creates :model:`plans.GoalComment` object. All authenticated users are
+        allowed to perform this action.
+
+    update:
+        Updates :model:`plans.GoalComment` object. All authenticated users are
+        allowed to perform this action so long as the comment belongs to them.
+
+    partial_update:
+        Updates one or more fields of an existing goal comment object. All
+        authenticated users are allowed to perform this action so long as the
+        comment belongs to them.
+
+    retrieve:
+        Retrieves a :model:`plans.GoalComment` instance. Admins will have
+        access to all goal comment objects. Employees will only have access
+        to those comments belonging to its own care team. Patients will have
+        access to all comments of goals assigned to them.
+
+    list:
+        Returns list of all :model:`plans.GoalComment` objects. Admins will
+        get all existing goal comment objects. Employees will get the comment
+        belonging to a certain care team. Patients will get all comments
+        of goals belonging to them.
+
+    delete:
+        Deletes a :model:`plans.GoalComment` instance. All authenticated users
+        are allowed to perform this action so long as the comment belongs to
+        them.
+    """
+    serializer_class = GoalCommentSerializer
+    permission_classes = (
+        permissions.IsAuthenticated,
+        IsEmployeeOrPatientReadOnly,
+    )
+    queryset = GoalComment.objects.all()
+
+    def get_queryset(self):
+        queryset = super(GoalCommentViewSet, self).get_queryset()
         user = self.request.user
 
         if user.is_employee:
