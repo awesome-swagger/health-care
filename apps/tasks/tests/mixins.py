@@ -25,6 +25,7 @@ from .factories import (
     VitalTaskTemplateFactory,
     VitalTaskFactory,
     VitalQuestionFactory,
+    VitalResponseFactory,
 )
 from apps.plans.tests.mixins import PlansMixin
 
@@ -375,6 +376,74 @@ class TasksMixin(PlansMixin):
             self.create_vital_question(**{
                 'vital_task_template': vital_task_template
             })
+
+    def create_responses_to_multiple_vital_questions(self,
+                                                     template,
+                                                     task):
+
+        if not template.questions.exists():
+            self.create_multiple_vital_questions(template)
+
+        for question in template.questions.all():
+            self.create_vital_response(**{
+                'vital_task': task,
+                'question': question
+            })
+
+    def create_string_response_by_answer_type(self, answer_type):
+        if answer_type == 'boolean':
+            return str(random.choice([True, False]))
+        elif answer_type == 'time':
+            response_time = datetime.time(
+                random.randint(1, 23),
+                random.randint(1, 59),
+                0
+            )
+            return response_time.strftime("%H:%M:%S")
+        elif answer_type == 'float':
+            return str(random.uniform(5.5, 15.3))
+        elif answer_type == 'integer':
+            return str(random.randint(1, 100))
+        elif answer_type == 'scale':
+            return str(random.randint(1, 5))
+        elif answer_type == 'string':
+            return self.fake.sentence(nb_words=5)
+
+    def create_response_by_answer_type(self, answer_type):
+        if answer_type == 'boolean':
+            return True
+        elif answer_type == 'time':
+            datetime.time(random.randint(1, 23), random.randint(1, 59), 0)
+        elif answer_type == 'float':
+            return random.uniform(5.5, 15.3)
+        elif answer_type == 'integer':
+            return random.randint(1, 100)
+        elif answer_type == 'scale':
+            return random.randint(1, 5)
+        elif answer_type == 'string':
+            return self.fake.sentence(nb_words=5)
+
+    def create_vital_response(self, **kwargs):
+        if 'vital_task' not in kwargs:
+            kwargs.update({
+                'vital_task': self.create_vital_task()
+            })
+
+        if 'question' not in kwargs:
+            kwargs.update({
+                'question': self.create_vital_question()
+            })
+
+        question = kwargs.get('question')
+        answer_type = question.answer_type
+
+        if 'response' not in kwargs:
+            answer = self.create_response_by_answer_type(answer_type)
+            kwargs.update({
+                f'answer_{answer_type}': answer
+            })
+
+        return VitalResponseFactory(**kwargs)
 
 
 class StateTestMixin(object):
