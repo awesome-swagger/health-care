@@ -23,6 +23,7 @@ from .factories import (
     TeamTaskTemplateFactory,
     TeamTaskFactory,
     VitalTaskTemplateFactory,
+    VitalTaskFactory,
 )
 from apps.plans.tests.mixins import PlansMixin
 
@@ -313,6 +314,32 @@ class TasksMixin(PlansMixin):
             })
 
         return VitalTaskTemplateFactory(**kwargs)
+
+    def create_vital_task(self, **kwargs):
+        now = timezone.now()
+        if 'plan' not in kwargs:
+            kwargs.update({
+                'plan': self.create_care_plan()
+            })
+
+        if 'vital_task_template' not in kwargs:
+            kwargs.update({
+                'vital_task_template': self.create_vital_task_template()
+            })
+
+        if 'appear_datetime' not in kwargs:
+            appear_datetime = now + relativedelta(days=5)
+            kwargs.update({
+                'appear_datetime': appear_datetime
+            })
+
+        if 'due_datetime' not in kwargs:
+            due_datetime = now + relativedelta(days=30)
+            kwargs.update({
+                'due_datetime': due_datetime
+            })
+
+        return VitalTaskFactory(**kwargs)
 
 
 class StateTestMixin(object):

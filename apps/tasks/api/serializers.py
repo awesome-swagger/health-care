@@ -15,6 +15,7 @@ from ..models import (
     AssessmentTask,
     AssessmentResponse,
     VitalTaskTemplate,
+    VitalTask,
 )
 
 
@@ -303,4 +304,25 @@ class VitalTaskTemplateSerializer(serializers.ModelSerializer):
         )
         read_only_fields = (
             'id',
+        )
+
+
+class VitalTaskSerializer(serializers.ModelSerializer):
+    """
+    serializer to be used by :model:`tasks.VitalTask`
+    """
+
+    class Meta:
+        model = VitalTask
+        fields = (
+            'id',
+            'plan',
+            'vital_task_template',
+            'is_complete',
+            'appear_datetime',
+            'due_datetime',
+        )
+        read_only_fields = (
+            'id',
+            'is_complete',
         )

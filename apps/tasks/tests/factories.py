@@ -125,3 +125,12 @@ class VitalTaskTemplateFactory(factory.django.DjangoModelFactory):
 
     class Meta:
         model = 'tasks.VitalTaskTemplate'
+
+
+class VitalTaskFactory(factory.django.DjangoModelFactory):
+    """
+    Factory for :model:`tasks.VitalTask`
+    """
+
+    class Meta:
+        model = 'tasks.VitalTask'
