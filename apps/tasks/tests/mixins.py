@@ -24,6 +24,7 @@ from .factories import (
     TeamTaskFactory,
     VitalTaskTemplateFactory,
     VitalTaskFactory,
+    VitalQuestionFactory,
 )
 from apps.plans.tests.mixins import PlansMixin
 
@@ -340,6 +341,40 @@ class TasksMixin(PlansMixin):
             })
 
         return VitalTaskFactory(**kwargs)
+
+    def get_random_vital_answer_type(self):
+        answer_choices = [
+            'boolean',
+            'time',
+            'float',
+            'integer',
+            'scale',
+            'string'
+        ]
+        return random.choice(answer_choices)
+
+    def create_vital_question(self, **kwargs):
+        if 'vital_task_template' not in kwargs:
+            kwargs.update({
+                'vital_task_template': self.create_vital_task_template()
+            })
+
+        if 'prompt' not in kwargs:
+            kwargs.update({
+                'prompt': self.fake.sentence(nb_words=10)
+            })
+
+        if 'answer_type' not in kwargs:
+            kwargs.update({
+                'answer_type': self.get_random_vital_answer_type()
+            })
+        return VitalQuestionFactory(**kwargs)
+
+    def create_multiple_vital_questions(self, vital_task_template):
+        for i in range(5):
+            self.create_vital_question(**{
+                'vital_task_template': vital_task_template
+            })
 
 
 class StateTestMixin(object):
