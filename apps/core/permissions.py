@@ -10,7 +10,7 @@ class OrganizationPermissions(permissions.BasePermission):
         employee_profile = utils.employee_profile_or_none(request.user)
         if employee_profile is None:
             return False
-        if request.method == "PUT":
+        if request.method == "PUT" or request.method == "PATCH":
             return True
         return False
 
@@ -20,7 +20,7 @@ class OrganizationPermissions(permissions.BasePermission):
         employee_profile = utils.employee_profile_or_none(request.user)
         if employee_profile is None:
             return False
-        if request.method == "PUT":
+        if request.method == "PUT" or request.method == "PATCH":
             return obj in employee_profile.organizations_managed.all()
         return False
 
