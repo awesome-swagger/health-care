@@ -17,10 +17,12 @@ from ..models import (
     AssessmentQuestion,
     AssessmentTask,
     AssessmentResponse,
+    VitalTaskTemplate,
 )
 from ..permissions import (
     IsPatientOrEmployeeForTask,
     IsPatientOrEmployeeReadOnly,
+    IsEmployeeOrPatientReadOnly,
 )
 from ..utils import get_all_tasks_of_patient_today
 from .filters import DurationFilter
@@ -38,6 +40,7 @@ from . serializers import (
     AssessmentQuestionSerializer,
     AssessmentTaskSerializer,
     AssessmentResponseSerializer,
+    VitalTaskTemplateSerializer,
 )
 from care_adopt_backend import utils
 from care_adopt_backend.permissions import (
@@ -270,6 +273,41 @@ class AssessmentResponseViewSet(viewsets.ModelViewSet):
             )
 
         return queryset
+
+
+class VitalTaskTemplateViewSet(viewsets.ModelViewSet):
+    """
+    Viewset for :model:`tasks.VitalTaskTemplate`
+    ========
+
+    create:
+        Creates :model:`tasks.VitalTaskTemplate` object. Only admins and
+        employees are allowed to perform this action.
+
+    update:
+        Updates :model:`tasks.VitalTaskTemplate` object. Only admins and
+        employees are allowed to perform this action.
+
+    partial_update:
+        Updates one or more fields of an existing vital task template object.
+        Only admins and employees are allowed to perform this action.
+
+    retrieve:
+        Retrieves a :model:`tasks.VitalTaskTemplate` instance.
+
+    list:
+        Returns list of all :model:`tasks.VitalTaskTemplate` objects.
+
+    delete:
+        Deletes a :model:`tasks.VitalTaskTemplate` instance. Only admins and
+        employees are allowed to perform this action.
+    """
+    serializer_class = VitalTaskTemplateSerializer
+    permission_classes = (
+        permissions.IsAuthenticated,
+        IsEmployeeOrPatientReadOnly,
+    )
+    queryset = VitalTaskTemplate.objects.all()
 
 
 ############################

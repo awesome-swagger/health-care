@@ -14,6 +14,7 @@ from ..models import (
     AssessmentQuestion,
     AssessmentTask,
     AssessmentResponse,
+    VitalTaskTemplate,
 )
 
 
@@ -281,3 +282,25 @@ class AssessmentResponseSerializer(serializers.ModelSerializer):
     class Meta:
         model = AssessmentResponse
         fields = '__all__'
+
+
+class VitalTaskTemplateSerializer(serializers.ModelSerializer):
+    """
+    serializer to be used by :model:`tasks.VitalTaskTemplate`
+    """
+
+    class Meta:
+        model = VitalTaskTemplate
+        fields = (
+            'id',
+            'plan_template',
+            'name',
+            'start_on_day',
+            'frequency',
+            'repeat_amount',
+            'appear_time',
+            'due_time',
+        )
+        read_only_fields = (
+            'id',
+        )
