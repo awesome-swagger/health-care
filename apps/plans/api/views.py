@@ -162,32 +162,35 @@ class GoalViewSet(viewsets.ModelViewSet):
     ========
 
     create:
-        Creates :model:`plans.Goal` object. Only admins and employees are
-        allowed to perform this action.
+        Creates :model:`plans.Goal` object.
+        Only admins and employees are allowed to perform this action.
 
     update:
-        Updates :model:`plans.Goal` object. Only admins and employees who
-        belong to the same care team are allowed to perform this action.
+        Updates :model:`plans.Goal` object.
+        Only admins and employees who belong to the same care team are allowed
+        to perform this action.
 
     partial_update:
-        Updates one or more fields of an existing goal object. Only admins and
-        employees who belong to the same care team are allowed to perform this
-        action.
+        Updates one or more fields of an existing goal object.
+        Only admins and employees who belong to the same care team are allowed
+        to perform this action.
 
     retrieve:
-        Retrieves a :model:`plans.Goal` instance. Admins will have access to
-        all goal objects. Employees will only have access to those goals
-        belonging to its own care team. Patients will have access to all goals
-        assigned to them.
+        Retrieves a :model:`plans.Goal` instance.
+        Admins will have access to all goal objects. Employees will only have
+        access to those goals belonging to its own care team. Patients will
+        have access to all goals assigned to them.
 
     list:
-        Returns list of all :model:`plans.Goal` objects. Admins will get all
-        existing goal objects. Employees will get the goals belonging to a
-        certain care team. Patients will get all goals belonging to them.
+        Returns list of all :model:`plans.Goal` objects.
+        Admins will get all existing goal objects. Employees will get the goals
+        belonging to a certain care team. Patients will get all goals belonging
+        to them.
 
     delete:
-        Deletes a :model:`plans.Goal` instance. Only admins and employees
-        who belong to the same care team are allowed to perform this action.
+        Deletes a :model:`plans.Goal` instance.
+        Only admins and employees who belong to the same care team are allowed
+        to perform this action.
     """
     serializer_class = GoalSerializer
     permission_classes = (
@@ -216,34 +219,35 @@ class GoalProgressViewSet(viewsets.ModelViewSet):
     ========
 
     create:
-        Creates :model:`plans.GoalProgress` object. Only admins and employees
-        are allowed to perform this action.
+        Creates :model:`plans.GoalProgress` object.
+        Only admins and employees are allowed to perform this action.
 
     update:
-        Updates :model:`plans.GoalProgress` object. Only admins and employees
-        who belong to the same care team are allowed to perform this action.
+        Updates :model:`plans.GoalProgress` object.
+        Only admins and employees who belong to the same care team are allowed
+        to perform this action.
 
     partial_update:
-        Updates one or more fields of an existing goal object. Only admins and
-        employees who belong to the same care team are allowed to perform this
-        action.
+        Updates one or more fields of an existing goal object.
+        Only admins and employees who belong to the same care team are allowed
+        to perform this action.
 
     retrieve:
-        Retrieves a :model:`plans.GoalProgress` instance. Admins will have
-        access to all goal progress objects. Employees will only have access
-        to those progresses belonging to its own care team. Patients will have
-        access to all progresses assigned to them.
+        Retrieves a :model:`plans.GoalProgress` instance.
+        Admins will have access to all goal progress objects. Employees will
+        only have access to those progresses belonging to its own care team.
+        Patients will have access to all progresses assigned to them.
 
     list:
-        Returns list of all :model:`plans.GoalProgress` objects. Admins will
-        get all existing goal progress objects. Employees will get the progress
-        belonging to a certain care team. Patients will get all progresses
-        belonging to them.
+        Returns list of all :model:`plans.GoalProgress` objects.
+        Admins will get all existing goal progress objects. Employees will get
+        the progress belonging to a certain care team. Patients will get all
+        progresses belonging to them.
 
     delete:
-        Deletes a :model:`plans.GoalProgress` instance. Only admins and
-        employees who belong to the same care team are allowed to perform this
-        action.
+        Deletes a :model:`plans.GoalProgress` instance.
+        Only admins and employees who belong to the same care team are allowed
+        to perform this action.
     """
     serializer_class = GoalProgressSerializer
     permission_classes = (
@@ -274,32 +278,33 @@ class GoalCommentViewSet(viewsets.ModelViewSet):
     ========
 
     create:
-        Creates :model:`plans.GoalComment` object. All authenticated users are
-        allowed to perform this action.
+        Creates :model:`plans.GoalComment` object.
+        All authenticated users are allowed to perform this action.
 
     update:
-        Updates :model:`plans.GoalComment` object. All authenticated users are
-        allowed to perform this action so long as the comment belongs to them.
+        Updates :model:`plans.GoalComment` object.
+        All authenticated users are allowed to perform this action so long as
+        the comment belongs to them.
 
     partial_update:
-        Updates one or more fields of an existing goal comment object. All
-        authenticated users are allowed to perform this action so long as the
-        comment belongs to them.
+        Updates one or more fields of an existing goal comment object.
+        All authenticated users are allowed to perform this action so long as
+        the comment belongs to them.
 
     retrieve:
-        Retrieves a :model:`plans.GoalComment` instance. Admins will have
-        access to all goal comment objects while employees and patients will
-        only have access to comments they own.
+        Retrieves a :model:`plans.GoalComment` instance.
+        Admins will have access to all goal comment objects while employees and
+        patients will only have access to comments they own.
 
     list:
-        Returns list of all :model:`plans.GoalComment` objects. Admins will
-        have access to all goal comment objects while employees and patients
-        will only have access to comments they own.
+        Returns list of all :model:`plans.GoalComment` objects.
+        Admins will have access to all goal comment objects while employees and
+        patients will only have access to comments they own.
 
     delete:
-        Deletes a :model:`plans.GoalComment` instance. Admins will
-        have access to all goal comment objects while employees and patients
-        will only have access to comments they own.
+        Deletes a :model:`plans.GoalComment` instance.
+        Admins will have access to all goal comment objects while employees and
+        patients will only have access to comments they own.
     """
     serializer_class = GoalCommentSerializer
     permission_classes = (
