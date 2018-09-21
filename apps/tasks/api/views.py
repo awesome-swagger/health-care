@@ -20,6 +20,7 @@ from ..models import (
     VitalTaskTemplate,
     VitalTask,
     VitalQuestion,
+    VitalResponse,
 )
 from ..permissions import (
     IsPatientOrEmployeeForTask,
@@ -45,6 +46,7 @@ from . serializers import (
     VitalTaskTemplateSerializer,
     VitalTaskSerializer,
     VitalQuestionSerializer,
+    VitalResponseSerializer,
 )
 from care_adopt_backend import utils
 from care_adopt_backend.permissions import (
@@ -404,6 +406,30 @@ class VitalQuestionViewSet(viewsets.ModelViewSet):
         IsEmployeeOrPatientReadOnly,
     )
     queryset = VitalQuestion.objects.all()
+
+
+class VitalResponseViewSet(viewsets.ModelViewSet):
+    serializer_class = VitalResponseSerializer
+    permission_classes = (
+        permissions.IsAuthenticated,
+        IsPatientOrEmployeeReadOnly,
+    )
+    queryset = VitalResponse.objects.all()
+
+    def get_queryset(self):
+        queryset = super(VitalResponseViewSet, self).get_queryset()
+        user = self.request.user
+
+        if user.is_employee:
+            queryset = queryset.filter(
+                vital_task__plan__care_team_members__employee_profile=user.employee_profile
+            )
+        elif user.is_patient:
+            queryset = queryset.filter(
+                vital_task__plan__patient=user.patient_profile
+            )
+
+        return queryset
 
 
 ############################
