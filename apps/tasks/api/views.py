@@ -283,12 +283,12 @@ class VitalTaskTemplateViewSet(viewsets.ModelViewSet):
     ========
 
     create:
-        Creates :model:`tasks.VitalTaskTemplate` object. Only admins and
-        employees are allowed to perform this action.
+        Creates :model:`tasks.VitalTaskTemplate` object.
+        Only admins and employees are allowed to perform this action.
 
     update:
-        Updates :model:`tasks.VitalTaskTemplate` object. Only admins and
-        employees are allowed to perform this action.
+        Updates :model:`tasks.VitalTaskTemplate` object.
+        Only admins and employees are allowed to perform this action.
 
     partial_update:
         Updates one or more fields of an existing vital task template object.
@@ -301,8 +301,8 @@ class VitalTaskTemplateViewSet(viewsets.ModelViewSet):
         Returns list of all :model:`tasks.VitalTaskTemplate` objects.
 
     delete:
-        Deletes a :model:`tasks.VitalTaskTemplate` instance. Only admins and
-        employees are allowed to perform this action.
+        Deletes a :model:`tasks.VitalTaskTemplate` instance.
+        Only admins and employees are allowed to perform this action.
     """
     serializer_class = VitalTaskTemplateSerializer
     permission_classes = (
@@ -318,33 +318,35 @@ class VitalTaskViewSet(viewsets.ModelViewSet):
     ========
 
     create:
-        Creates :model:`tasks.VitalTask` object. Only admins and
-        employees are allowed to perform this action.
+        Creates :model:`tasks.VitalTask` object.
+        Only admins and employees are allowed to perform this action.
 
     update:
-        Updates :model:`tasks.VitalTask` object. Only admins and employees who
-        belong to the same care team are allowed to perform this action.
+        Updates :model:`tasks.VitalTask` object.
+        Only admins and employees who belong to the same care team are allowed
+        to perform this action.
 
     partial_update:
-        Updates one or more fields of an existing vital task  object. Only
-        admins and employees who belong to the same care team are allowed to
-        perform this action.
+        Updates one or more fields of an existing vital task object.
+        Only admins and employees who belong to the same care team are allowed
+        to perform this action.
 
     retrieve:
-        Retrieves a :model:`tasks.VitalTask` instance. Admins will have access
-        to all vital tasks objects. Employees will only have access to those
-        vital tasks belonging to its own care team. Patients will have access
-        to all vital tasks assigned to them.
+        Retrieves a :model:`tasks.VitalTask` instance.
+        Admins will have access to all vital tasks objects. Employees will only
+        have access to those vital tasks belonging to its own care team.
+        Patients will have access to all vital tasks assigned to them.
 
     list:
-        Returns list of all :model:`tasks.VitalTask` objects. Admins will get
-        all existing vital task objects. Employees will get the vital tasks
-        belonging to a certain care team. Patients will get all vital tasks
-        belonging to them.
+        Returns list of all :model:`tasks.VitalTask` objects.
+        Admins will get all existing vital task objects. Employees will get the
+        vital tasks belonging to a certain care team. Patients will get all
+        vital tasks belonging to them.
 
     delete:
-        Deletes a :model:`tasks.VitalTask` instance. Only admins and employees
-        who belong to the same care team are allowed to perform this action.
+        Deletes a :model:`tasks.VitalTask` instance.
+        Only admins and employees who belong to the same care team are allowed
+        to perform this action.
     """
     serializer_class = VitalTaskSerializer
     permission_classes = (
