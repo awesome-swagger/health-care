@@ -1,3 +1,4 @@
+import datetime
 import time
 
 from django.utils.translation import ugettext_lazy as _
@@ -365,6 +366,7 @@ class VitalResponseSerializer(serializers.ModelSerializer):
             'vital_task',
             'question',
             'response',
+            'answer',
         )
         read_only_fields = (
             'id',
@@ -374,7 +376,12 @@ class VitalResponseSerializer(serializers.ModelSerializer):
         if answer_type == 'boolean':
             return True if response == 'True' else False
         elif answer_type == 'time':
-            return time.strptime(response, "%H:%M:%S")
+            time_obj = time.strptime(response, "%H:%M:%S")
+            return datetime.time(
+                time_obj.tm_hour,
+                time_obj.tm_min,
+                time_obj.tm_sec
+            )
         elif answer_type == 'float':
             return float(response)
         elif answer_type == 'integer' or answer_type == 'scale':
@@ -396,7 +403,7 @@ class VitalResponseSerializer(serializers.ModelSerializer):
             answer = data['response']
 
             if answer_type == 'boolean':
-                if str(answer) != 'True' or str(answer) != 'False':
+                if str(answer) != 'True' and str(answer) != 'False':
                     raise serializers.ValidationError({
                         'response': _('Please provide a valid boolean value.')
                     })
@@ -450,7 +457,8 @@ class VitalResponseSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         if 'response' in validated_data:
             response = validated_data.pop('response')
-            question = validated_data.get('question')
+            question = validated_data.get('question') \
+                if 'question' in validated_data else instance.question
             answer_type = question.answer_type
             formatted_answer = self.format_answer(answer_type, response)
             validated_data.update({
@@ -459,3 +467,4 @@ class VitalResponseSerializer(serializers.ModelSerializer):
         for field, value in validated_data.items():
             setattr(instance, field, value)
         instance.save()
+        return instance
