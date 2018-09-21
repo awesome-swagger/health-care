@@ -347,6 +347,7 @@ class VitalTaskTemplate(AbstractTaskTemplate):
     class Meta:
         verbose_name = _('Vital Task Template')
         verbose_name_plural = _('Vital Task Templates')
+        ordering = ('name', )
 
     def __str__(self):
         return self.name

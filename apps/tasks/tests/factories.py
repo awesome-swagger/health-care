@@ -116,3 +116,12 @@ class TeamTaskTemplateFactory(factory.django.DjangoModelFactory):
 
     class Meta:
         model = 'tasks.TeamTaskTemplate'
+
+
+class VitalTaskTemplateFactory(factory.django.DjangoModelFactory):
+    """
+    Factory for :model:`tasks.VitalTaskTemplate`
+    """
+
+    class Meta:
+        model = 'tasks.VitalTaskTemplate'
