@@ -19,6 +19,7 @@ from ..models import (
     AssessmentResponse,
     VitalTaskTemplate,
     VitalTask,
+    VitalQuestion,
 )
 from ..permissions import (
     IsPatientOrEmployeeForTask,
@@ -43,6 +44,7 @@ from . serializers import (
     AssessmentResponseSerializer,
     VitalTaskTemplateSerializer,
     VitalTaskSerializer,
+    VitalQuestionSerializer,
 )
 from care_adopt_backend import utils
 from care_adopt_backend.permissions import (
@@ -367,6 +369,41 @@ class VitalTaskViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(plan__patient=user.patient_profile)
 
         return queryset
+
+
+class VitalQuestionViewSet(viewsets.ModelViewSet):
+    """
+    Viewset for :model:`tasks.VitalQuestion`
+    ========
+
+    create:
+        Creates :model:`tasks.VitalQuestion` object.
+        Only admins and employees are allowed to perform this action.
+
+    update:
+        Updates :model:`tasks.VitalQuestion` object.
+        Only admins and employees are allowed to perform this action.
+
+    partial_update:
+        Updates one or more fields of an existing vital question object.
+        Only admins and employees are allowed to perform this action.
+
+    retrieve:
+        Retrieves a :model:`tasks.VitalQuestion` instance.
+
+    list:
+        Returns list of all :model:`tasks.VitalQuestion` objects.
+
+    delete:
+        Deletes a :model:`tasks.VitalQuestion` instance.
+        Only admins and employees are allowed to perform this action.
+    """
+    serializer_class = VitalQuestionSerializer
+    permission_classes = (
+        permissions.IsAuthenticated,
+        IsEmployeeOrPatientReadOnly,
+    )
+    queryset = VitalQuestion.objects.all()
 
 
 ############################

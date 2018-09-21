@@ -43,6 +43,7 @@ from apps.tasks.api.views import (
     AssessmentResponseViewSet,
     VitalTaskTemplateViewSet,
     VitalTaskViewSet,
+    VitalQuestionViewSet,
     TodaysTasksAPIView,
 )
 from apps.accounts.views import ObtainAuthToken, \
@@ -141,10 +142,11 @@ router.register(
     r'vital_task_templates',
     VitalTaskTemplateViewSet,
     base_name='vital_task_templates')
+router.register(r'vital_tasks', VitalTaskViewSet, base_name='vital_tasks')
 router.register(
-    r'vital_tasks',
-    VitalTaskViewSet,
-    base_name='vital_tasks')
+    r'vital_questions',
+    VitalQuestionViewSet,
+    base_name='vital_questions')
 
 
 schema_view = get_swagger_view(title='CareAdopt API')
