@@ -409,6 +409,42 @@ class VitalQuestionViewSet(viewsets.ModelViewSet):
 
 
 class VitalResponseViewSet(viewsets.ModelViewSet):
+    """
+    Viewset for :model:`tasks.VitalResponse`
+    ========
+
+    create:
+        Creates :model:`tasks.VitalResponse` object.
+        Only admins and patients are allowed to perform this action.
+
+    update:
+        Updates :model:`tasks.VitalResponse` object.
+        Only admins and patients who own the plan are allowed to perform this
+        action.
+
+    partial_update:
+        Updates one or more fields of an existing vital task object.
+        Only admins and patients who own the plan are allowed to perform this
+        action.
+
+    retrieve:
+        Retrieves a :model:`tasks.VitalResponse` instance.
+        Admins will have access to all vital responses objects. Employees will
+        only have access to those vital responses belonging to its own care
+        team. Patients will have access to all vital responses assigned to
+        them.
+
+    list:
+        Returns list of all :model:`tasks.VitalResponse` objects.
+        Admins will get all existing vital task objects. Employees will get the
+        vital responses belonging to their care team. Patients will get all
+        vital responses belonging to them.
+
+    delete:
+        Deletes a :model:`tasks.VitalResponse` instance.
+        Only admins and patients who own the plan are allowed to perform this
+        action.
+    """
     serializer_class = VitalResponseSerializer
     permission_classes = (
         permissions.IsAuthenticated,
