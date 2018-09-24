@@ -108,13 +108,93 @@ class EmployeeUserInfo(SettingsUserForSerializers, serializers.ModelSerializer):
 
 
 class EmployeeProfileSerializer(serializers.ModelSerializer):
-    user = EmployeeUserInfo()
-    specialty = ProviderSpecialtySerializer(many=False, read_only=True)
-    title = ProviderTitleSerializer(many=False, read_only=True)
 
     class Meta:
         model = EmployeeProfile
-        fields = '__all__'
+        fields = (
+            'id',
+            'user',
+            'status',
+            'npi_code',
+            'organizations',
+            'organizations_managed',
+            'facilities',
+            'facilities_managed',
+            'title',
+            'roles',
+            'specialty',
+            'created',
+            'modified',
+        )
+        read_only_fields = (
+            'id',
+            'created',
+            'modified',
+        )
+
+    def to_representation(self, instance):
+        data = super(EmployeeProfileSerializer, self).to_representation(
+            instance)
+
+        if instance.user:
+            user = EmployeeUserInfo(instance.user)
+            data.update({
+                'user': user.data
+            })
+
+        if instance.specialty:
+            specialty = ProviderSpecialtySerializer(
+                instance.specialty
+            )
+            data.update({
+                'specialty': specialty.data
+            })
+
+        if instance.title:
+            title = ProviderTitleSerializer(
+                instance.title
+            )
+            data.update({
+                'title': title.data
+            })
+
+        if instance.organizations.exists():
+            organizations = OrganizationSerializer(
+                instance.organizations.all(),
+                many=True
+            )
+            data.update({
+                'organizations': organizations.data
+            })
+
+        if instance.organizations_managed.exists():
+            organizations_managed = OrganizationSerializer(
+                instance.organizations_managed.all(),
+                many=True
+            )
+            data.update({
+                'organizations_managed': organizations_managed.data
+            })
+
+        if instance.facilities.exists():
+            facilities = FacilitySerializer(
+                instance.facilities.all(),
+                many=True
+            )
+            data.update({
+                'facilities': facilities.data
+            })
+
+        if instance.facilities_managed.exists():
+            facilities_managed = FacilitySerializer(
+                instance.facilities_managed.all(),
+                many=True
+            )
+            data.update({
+                'facilities_managed': facilities_managed.data
+            })
+
+        return data
 
 
 class DiagnosisSerializer(serializers.ModelSerializer):
