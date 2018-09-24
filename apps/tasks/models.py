@@ -241,7 +241,9 @@ class SymptomTask(AbstractTask):
 
 class SymptomRating(UUIDPrimaryKeyMixin):
     symptom_task = models.ForeignKey(
-        SymptomTask, null=False, blank=False, on_delete=models.CASCADE)
+        SymptomTask,
+        related_name='ratings',
+        on_delete=models.CASCADE)
     symptom = models.ForeignKey(
         Symptom, null=False, blank=False, on_delete=models.CASCADE)
     rating = models.IntegerField(null=False, blank=False, validators=[
