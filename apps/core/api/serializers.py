@@ -19,7 +19,23 @@ class OrganizationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Organization
-        fields = '__all__'
+        fields = (
+            'id',
+            'name',
+            'is_manager',
+            'addr_street',
+            'addr_suite',
+            'addr_city',
+            'addr_state',
+            'addr_zip',
+            'created',
+            'modified',
+        )
+        read_only_fields = (
+            'id',
+            'created',
+            'modified',
+        )
 
 
 # TODO: DELETE on a facility should mark it inactive rather than removing it
@@ -162,7 +178,8 @@ class EmployeeProfileSerializer(serializers.ModelSerializer):
         if instance.organizations.exists():
             organizations = OrganizationSerializer(
                 instance.organizations.all(),
-                many=True
+                many=True,
+                context=self.context
             )
             data.update({
                 'organizations': organizations.data
@@ -171,7 +188,8 @@ class EmployeeProfileSerializer(serializers.ModelSerializer):
         if instance.organizations_managed.exists():
             organizations_managed = OrganizationSerializer(
                 instance.organizations_managed.all(),
-                many=True
+                many=True,
+                context=self.context
             )
             data.update({
                 'organizations_managed': organizations_managed.data
@@ -180,7 +198,8 @@ class EmployeeProfileSerializer(serializers.ModelSerializer):
         if instance.facilities.exists():
             facilities = FacilitySerializer(
                 instance.facilities.all(),
-                many=True
+                many=True,
+                context=self.context
             )
             data.update({
                 'facilities': facilities.data
@@ -189,7 +208,8 @@ class EmployeeProfileSerializer(serializers.ModelSerializer):
         if instance.facilities_managed.exists():
             facilities_managed = FacilitySerializer(
                 instance.facilities_managed.all(),
-                many=True
+                many=True,
+                context=self.context
             )
             data.update({
                 'facilities_managed': facilities_managed.data
