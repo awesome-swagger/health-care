@@ -333,6 +333,104 @@ class AssessmentResponse(UUIDPrimaryKeyMixin):
         )
 
 
+class VitalTaskTemplate(AbstractTaskTemplate):
+    """
+    Stores information about a template primarily used in a vital task.
+    """
+    plan_template = models.ForeignKey(
+        CarePlanTemplate,
+        related_name='vital_templates',
+        on_delete=models.CASCADE
+    )
+    name = models.CharField(max_length=254)
+
+    class Meta:
+        verbose_name = _('Vital Task Template')
+        verbose_name_plural = _('Vital Task Templates')
+        ordering = ('name', )
+
+    def __str__(self):
+        return self.name
+
+
+class VitalTask(AbstractTask):
+    """
+    Stores information about a vital task for a specific care plan.
+    """
+    plan = models.ForeignKey(
+        CarePlan,
+        related_name='vital_tasks',
+        on_delete=models.CASCADE
+    )
+    vital_task_template = models.ForeignKey(
+        VitalTaskTemplate,
+        related_name='vital_tasks',
+        on_delete=models.CASCADE
+    )
+    is_complete = models.BooleanField(
+        default=False,
+        editable=False,
+        help_text=_(
+            'Set to True if all questions has its corresponding response.'
+        )
+    )
+
+    class Meta:
+        ordering = ('appear_datetime', )
+
+    def __str__(self):
+        return f"{self.plan.patient.user.get_full_name()}'s vital " + \
+            f"report due by {self.due_datetime}"
+
+
+class VitalQuestion(UUIDPrimaryKeyMixin):
+    """
+    Stores information about a vital question related to a vital task template
+    """
+    vital_task_template = models.ForeignKey(
+        VitalTaskTemplate,
+        related_name="questions",
+        on_delete=models.CASCADE
+    )
+    prompt = models.CharField(max_length=255)
+    answer_type = models.CharField(max_length=128)
+
+    def __str__(self):
+        return f'{self.vital_task_template.name}: {self.prompt}'
+
+
+class VitalResponse(UUIDPrimaryKeyMixin):
+    """
+    Stores information about a response made by a patient to a specific
+    question for a particular vital task.
+    """
+    vital_task = models.ForeignKey(
+        VitalTask,
+        related_name='responses',
+        on_delete=models.CASCADE
+    )
+    question = models.ForeignKey(
+        VitalQuestion,
+        related_name='responses',
+        on_delete=models.CASCADE
+    )
+    answer_boolean = models.NullBooleanField(blank=True, null=True)
+    answer_time = models.TimeField(blank=True, null=True)
+    answer_float = models.FloatField(blank=True, null=True)
+    answer_integer = models.IntegerField(blank=True, null=True)
+    answer_scale = models.IntegerField(blank=True, null=True)
+    answer_string = models.CharField(max_length=255, blank=True)
+
+    def __str__(self):
+        return f"{self.vital_task.vital_task_template.name}:" + \
+            f"{self.question.prompt} (answer: {self.answer})"
+
+    @property
+    def answer(self):
+        answer_type = self.question.answer_type
+        return getattr(self, f"answer_{answer_type}", "")
+
+
 def replace_time(datetime, time):
     return datetime.replace(hour=time.hour, minute=time.minute, second=time.second)
 

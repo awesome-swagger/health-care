@@ -17,10 +17,15 @@ from ..models import (
     AssessmentQuestion,
     AssessmentTask,
     AssessmentResponse,
+    VitalTaskTemplate,
+    VitalTask,
+    VitalQuestion,
+    VitalResponse,
 )
 from ..permissions import (
     IsPatientOrEmployeeForTask,
     IsPatientOrEmployeeReadOnly,
+    IsEmployeeOrPatientReadOnly,
 )
 from ..utils import get_all_tasks_of_patient_today
 from .filters import DurationFilter
@@ -38,6 +43,10 @@ from . serializers import (
     AssessmentQuestionSerializer,
     AssessmentTaskSerializer,
     AssessmentResponseSerializer,
+    VitalTaskTemplateSerializer,
+    VitalTaskSerializer,
+    VitalQuestionSerializer,
+    VitalResponseSerializer,
 )
 from care_adopt_backend import utils
 from care_adopt_backend.permissions import (
@@ -267,6 +276,193 @@ class AssessmentResponseViewSet(viewsets.ModelViewSet):
         elif user.is_patient:
             queryset = queryset.filter(
                 assessment_task__plan__patient=user.patient_profile
+            )
+
+        return queryset
+
+
+class VitalTaskTemplateViewSet(viewsets.ModelViewSet):
+    """
+    Viewset for :model:`tasks.VitalTaskTemplate`
+    ========
+
+    create:
+        Creates :model:`tasks.VitalTaskTemplate` object.
+        Only admins and employees are allowed to perform this action.
+
+    update:
+        Updates :model:`tasks.VitalTaskTemplate` object.
+        Only admins and employees are allowed to perform this action.
+
+    partial_update:
+        Updates one or more fields of an existing vital task template object.
+        Only admins and employees are allowed to perform this action.
+
+    retrieve:
+        Retrieves a :model:`tasks.VitalTaskTemplate` instance.
+
+    list:
+        Returns list of all :model:`tasks.VitalTaskTemplate` objects.
+
+    delete:
+        Deletes a :model:`tasks.VitalTaskTemplate` instance.
+        Only admins and employees are allowed to perform this action.
+    """
+    serializer_class = VitalTaskTemplateSerializer
+    permission_classes = (
+        permissions.IsAuthenticated,
+        IsEmployeeOrPatientReadOnly,
+    )
+    queryset = VitalTaskTemplate.objects.all()
+
+
+class VitalTaskViewSet(viewsets.ModelViewSet):
+    """
+    Viewset for :model:`tasks.VitalTask`
+    ========
+
+    create:
+        Creates :model:`tasks.VitalTask` object.
+        Only admins and employees are allowed to perform this action.
+
+    update:
+        Updates :model:`tasks.VitalTask` object.
+        Only admins and employees who belong to the same care team are allowed
+        to perform this action.
+
+    partial_update:
+        Updates one or more fields of an existing vital task object.
+        Only admins and employees who belong to the same care team are allowed
+        to perform this action.
+
+    retrieve:
+        Retrieves a :model:`tasks.VitalTask` instance.
+        Admins will have access to all vital tasks objects. Employees will only
+        have access to those vital tasks belonging to its own care team.
+        Patients will have access to all vital tasks assigned to them.
+
+    list:
+        Returns list of all :model:`tasks.VitalTask` objects.
+        Admins will get all existing vital task objects. Employees will get the
+        vital tasks belonging to a certain care team. Patients will get all
+        vital tasks belonging to them.
+
+    delete:
+        Deletes a :model:`tasks.VitalTask` instance.
+        Only admins and employees who belong to the same care team are allowed
+        to perform this action.
+    """
+    serializer_class = VitalTaskSerializer
+    permission_classes = (
+        permissions.IsAuthenticated,
+        IsEmployeeOrPatientReadOnly,
+    )
+    queryset = VitalTask.objects.all()
+
+    def get_queryset(self):
+        queryset = super(VitalTaskViewSet, self).get_queryset()
+        user = self.request.user
+
+        if user.is_employee:
+            queryset = queryset.filter(
+                plan__care_team_members__employee_profile=user.employee_profile
+            )
+        elif user.is_patient:
+            queryset = queryset.filter(plan__patient=user.patient_profile)
+
+        return queryset
+
+
+class VitalQuestionViewSet(viewsets.ModelViewSet):
+    """
+    Viewset for :model:`tasks.VitalQuestion`
+    ========
+
+    create:
+        Creates :model:`tasks.VitalQuestion` object.
+        Only admins and employees are allowed to perform this action.
+
+    update:
+        Updates :model:`tasks.VitalQuestion` object.
+        Only admins and employees are allowed to perform this action.
+
+    partial_update:
+        Updates one or more fields of an existing vital question object.
+        Only admins and employees are allowed to perform this action.
+
+    retrieve:
+        Retrieves a :model:`tasks.VitalQuestion` instance.
+
+    list:
+        Returns list of all :model:`tasks.VitalQuestion` objects.
+
+    delete:
+        Deletes a :model:`tasks.VitalQuestion` instance.
+        Only admins and employees are allowed to perform this action.
+    """
+    serializer_class = VitalQuestionSerializer
+    permission_classes = (
+        permissions.IsAuthenticated,
+        IsEmployeeOrPatientReadOnly,
+    )
+    queryset = VitalQuestion.objects.all()
+
+
+class VitalResponseViewSet(viewsets.ModelViewSet):
+    """
+    Viewset for :model:`tasks.VitalResponse`
+    ========
+
+    create:
+        Creates :model:`tasks.VitalResponse` object.
+        Only admins and patients are allowed to perform this action.
+
+    update:
+        Updates :model:`tasks.VitalResponse` object.
+        Only admins and patients who own the plan are allowed to perform this
+        action.
+
+    partial_update:
+        Updates one or more fields of an existing vital task object.
+        Only admins and patients who own the plan are allowed to perform this
+        action.
+
+    retrieve:
+        Retrieves a :model:`tasks.VitalResponse` instance.
+        Admins will have access to all vital responses objects. Employees will
+        only have access to those vital responses belonging to its own care
+        team. Patients will have access to all vital responses assigned to
+        them.
+
+    list:
+        Returns list of all :model:`tasks.VitalResponse` objects.
+        Admins will get all existing vital task objects. Employees will get the
+        vital responses belonging to their care team. Patients will get all
+        vital responses belonging to them.
+
+    delete:
+        Deletes a :model:`tasks.VitalResponse` instance.
+        Only admins and patients who own the plan are allowed to perform this
+        action.
+    """
+    serializer_class = VitalResponseSerializer
+    permission_classes = (
+        permissions.IsAuthenticated,
+        IsPatientOrEmployeeReadOnly,
+    )
+    queryset = VitalResponse.objects.all()
+
+    def get_queryset(self):
+        queryset = super(VitalResponseViewSet, self).get_queryset()
+        user = self.request.user
+
+        if user.is_employee:
+            queryset = queryset.filter(
+                vital_task__plan__care_team_members__employee_profile=user.employee_profile
+            )
+        elif user.is_patient:
+            queryset = queryset.filter(
+                vital_task__plan__patient=user.patient_profile
             )
 
         return queryset

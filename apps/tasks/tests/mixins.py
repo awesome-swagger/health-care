@@ -22,6 +22,10 @@ from .factories import (
     AssessmentResponseFactory,
     TeamTaskTemplateFactory,
     TeamTaskFactory,
+    VitalTaskTemplateFactory,
+    VitalTaskFactory,
+    VitalQuestionFactory,
+    VitalResponseFactory,
 )
 from apps.plans.tests.mixins import PlansMixin
 
@@ -284,6 +288,162 @@ class TasksMixin(PlansMixin):
             })
 
         return TeamTaskFactory(**kwargs)
+
+    def create_vital_task_template(self, **kwargs):
+        if 'plan_template' not in kwargs:
+            kwargs.update({
+                'plan_template': self.create_care_plan_template()
+            })
+
+        if 'name' not in kwargs:
+            kwargs.update({
+                'name': self.fake.name()
+            })
+
+        if 'start_on_day' not in kwargs:
+            kwargs.update({
+                'start_on_day': random.randint(2, 6)
+            })
+
+        if 'appear_time' not in kwargs:
+            kwargs.update({
+                'appear_time': datetime.time(8, 0, 0)
+            })
+
+        if 'due_time' not in kwargs:
+            kwargs.update({
+                'due_time': datetime.time(17, 0, 0)
+            })
+
+        return VitalTaskTemplateFactory(**kwargs)
+
+    def create_vital_task(self, **kwargs):
+        now = timezone.now()
+        if 'plan' not in kwargs:
+            kwargs.update({
+                'plan': self.create_care_plan()
+            })
+
+        if 'vital_task_template' not in kwargs:
+            kwargs.update({
+                'vital_task_template': self.create_vital_task_template()
+            })
+
+        if 'appear_datetime' not in kwargs:
+            appear_datetime = now + relativedelta(days=5)
+            kwargs.update({
+                'appear_datetime': appear_datetime
+            })
+
+        if 'due_datetime' not in kwargs:
+            due_datetime = now + relativedelta(days=30)
+            kwargs.update({
+                'due_datetime': due_datetime
+            })
+
+        return VitalTaskFactory(**kwargs)
+
+    def get_random_vital_answer_type(self):
+        answer_choices = [
+            'boolean',
+            'time',
+            'float',
+            'integer',
+            'scale',
+            'string'
+        ]
+        return random.choice(answer_choices)
+
+    def create_vital_question(self, **kwargs):
+        if 'vital_task_template' not in kwargs:
+            kwargs.update({
+                'vital_task_template': self.create_vital_task_template()
+            })
+
+        if 'prompt' not in kwargs:
+            kwargs.update({
+                'prompt': self.fake.sentence(nb_words=10)
+            })
+
+        if 'answer_type' not in kwargs:
+            kwargs.update({
+                'answer_type': self.get_random_vital_answer_type()
+            })
+        return VitalQuestionFactory(**kwargs)
+
+    def create_multiple_vital_questions(self, vital_task_template):
+        for i in range(5):
+            self.create_vital_question(**{
+                'vital_task_template': vital_task_template
+            })
+
+    def create_responses_to_multiple_vital_questions(self,
+                                                     template,
+                                                     task):
+
+        if not template.questions.exists():
+            self.create_multiple_vital_questions(template)
+
+        for question in template.questions.all():
+            self.create_vital_response(**{
+                'vital_task': task,
+                'question': question
+            })
+
+    def create_string_response_by_answer_type(self, answer_type):
+        if answer_type == 'boolean':
+            return str(random.choice([True, False]))
+        elif answer_type == 'time':
+            response_time = datetime.time(
+                random.randint(1, 23),
+                random.randint(1, 59),
+                0
+            )
+            return response_time.strftime("%H:%M:%S")
+        elif answer_type == 'float':
+            return str(random.uniform(5.5, 15.3))
+        elif answer_type == 'integer':
+            return str(random.randint(1, 100))
+        elif answer_type == 'scale':
+            return str(random.randint(1, 5))
+        elif answer_type == 'string':
+            return self.fake.sentence(nb_words=5)
+
+    def create_response_by_answer_type(self, answer_type):
+        if answer_type == 'boolean':
+            return True
+        elif answer_type == 'time':
+            datetime.time(random.randint(1, 23), random.randint(1, 59), 0)
+        elif answer_type == 'float':
+            return random.uniform(5.5, 15.3)
+        elif answer_type == 'integer':
+            return random.randint(1, 100)
+        elif answer_type == 'scale':
+            return random.randint(1, 5)
+        elif answer_type == 'string':
+            return self.fake.sentence(nb_words=5)
+
+    def create_vital_response(self, **kwargs):
+        if 'vital_task' not in kwargs:
+            kwargs.update({
+                'vital_task': self.create_vital_task()
+            })
+
+        if 'question' not in kwargs:
+            kwargs.update({
+                'question': self.create_vital_question()
+            })
+
+        question = kwargs.get('question')
+        answer_type = question.answer_type
+
+        if 'response' not in kwargs:
+            answer = self.create_response_by_answer_type(answer_type)
+            kwargs.update({
+                f'answer_{answer_type}': answer
+            })
+
+        return VitalResponseFactory(**kwargs)
 
 
 class StateTestMixin(object):

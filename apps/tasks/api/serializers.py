@@ -1,3 +1,8 @@
+import datetime
+import time
+
+from django.utils.translation import ugettext_lazy as _
+
 from rest_framework import serializers
 
 from ..models import (
@@ -14,6 +19,10 @@ from ..models import (
     AssessmentQuestion,
     AssessmentTask,
     AssessmentResponse,
+    VitalTaskTemplate,
+    VitalTask,
+    VitalQuestion,
+    VitalResponse,
 )
 
 
@@ -281,3 +290,181 @@ class AssessmentResponseSerializer(serializers.ModelSerializer):
     class Meta:
         model = AssessmentResponse
         fields = '__all__'
+
+
+class VitalTaskTemplateSerializer(serializers.ModelSerializer):
+    """
+    serializer to be used by :model:`tasks.VitalTaskTemplate`
+    """
+
+    class Meta:
+        model = VitalTaskTemplate
+        fields = (
+            'id',
+            'plan_template',
+            'name',
+            'start_on_day',
+            'frequency',
+            'repeat_amount',
+            'appear_time',
+            'due_time',
+        )
+        read_only_fields = (
+            'id',
+        )
+
+
+class VitalTaskSerializer(serializers.ModelSerializer):
+    """
+    serializer to be used by :model:`tasks.VitalTask`
+    """
+
+    class Meta:
+        model = VitalTask
+        fields = (
+            'id',
+            'plan',
+            'vital_task_template',
+            'is_complete',
+            'appear_datetime',
+            'due_datetime',
+        )
+        read_only_fields = (
+            'id',
+            'is_complete',
+        )
+
+
+class VitalQuestionSerializer(serializers.ModelSerializer):
+    """
+    serializer to be used by :model:`tasks.VitalQuestion`
+    """
+
+    class Meta:
+        model = VitalQuestion
+        fields = (
+            'id',
+            'vital_task_template',
+            'prompt',
+            'answer_type',
+        )
+        read_only_fields = (
+            'id',
+        )
+
+
+class VitalResponseSerializer(serializers.ModelSerializer):
+    """
+    serializer to be used by :model:`tasks.VitalResponse`
+    """
+    response = serializers.CharField(write_only=True)
+
+    class Meta:
+        model = VitalResponse
+        fields = (
+            'id',
+            'vital_task',
+            'question',
+            'response',
+            'answer',
+        )
+        read_only_fields = (
+            'id',
+        )
+
+    def format_answer(self, answer_type, response):
+        if answer_type == 'boolean':
+            return True if response == 'True' else False
+        elif answer_type == 'time':
+            time_obj = time.strptime(response, "%H:%M:%S")
+            return datetime.time(
+                time_obj.tm_hour,
+                time_obj.tm_min,
+                time_obj.tm_sec
+            )
+        elif answer_type == 'float':
+            return float(response)
+        elif answer_type == 'integer' or answer_type == 'scale':
+            return int(response)
+        return response
+
+    def validate(self, data):
+        question = data['question'] if 'question' in data \
+            else self.instance.question
+        answer_type = question.answer_type
+
+        # Make sure to always ask for a response when editing a question
+        if self.instance and 'question' in data and 'response' not in data:
+            raise serializers.ValidationError({
+                    'response': _("'response' field is required.")
+                })
+
+        if 'response' in data:
+            answer = data['response']
+
+            if answer_type == 'boolean':
+                if str(answer) != 'True' and str(answer) != 'False':
+                    raise serializers.ValidationError({
+                        'response': _('Please provide a valid boolean value.')
+                    })
+            elif answer_type == 'time':
+                try:
+                    time.strptime(answer, "%H:%M:%S")
+                except ValueError:
+                    raise serializers.ValidationError({
+                        'response': _('Please provide a valid time in the format HH:MM:SS.')
+                    })
+            elif answer_type == 'float':
+                try:
+                    float(answer)
+                except ValueError:
+                    raise serializers.ValidationError({
+                        'response': _('Please provide a valid float value.')
+                    })
+            elif answer_type == 'integer':
+                try:
+                    int(answer)
+                except ValueError:
+                    raise serializers.ValidationError({
+                        'response': _('Please provide a valid integer value.')
+                    })
+            elif answer_type == 'scale':
+                try:
+                    value = int(answer)
+                    if value < 1 or value > 5:
+                        raise serializers.ValidationError({
+                            'response': _('Value should be between 1-5.')
+                        })
+                except ValueError:
+                    raise serializers.ValidationError({
+                        'response': _('Please provide a valid integer value.')
+                    })
+
+        return data
+
+    def create(self, validated_data):
+        response = validated_data.pop('response')
+        question = validated_data.get('question')
+        answer_type = question.answer_type
+        validated_data.update({
+            f'answer_{answer_type}': self.format_answer(answer_type, response)
+        })
+        vital_response = self.Meta.model.objects.create(
+            **validated_data
+        )
+        return vital_response
+
+    def update(self, instance, validated_data):
+        if 'response' in validated_data:
+            response = validated_data.pop('response')
+            question = validated_data.get('question') \
+                if 'question' in validated_data else instance.question
+            answer_type = question.answer_type
+            formatted_answer = self.format_answer(answer_type, response)
+            validated_data.update({
+                f'answer_{answer_type}': formatted_answer
+            })
+        for field, value in validated_data.items():
+            setattr(instance, field, value)
+        instance.save()
+        return instance

@@ -34,3 +34,19 @@ class IsPatientOrEmployeeReadOnly(permissions.BasePermission):
             return request.user.is_patient or request.user.is_employee
         else:
             return request.user.is_patient
+
+
+class IsEmployeeOrPatientReadOnly(permissions.BasePermission):
+    """
+    Gives access to employees and admins for all requests while restricts
+    patients to only be allowed on GET requests.
+    """
+
+    def has_permission(self, request, view):
+        if request.user.is_superuser:
+            return True
+
+        if request.method in permissions.SAFE_METHODS:
+            return request.user.is_patient or request.user.is_employee
+        else:
+            return request.user.is_employee

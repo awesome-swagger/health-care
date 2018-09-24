@@ -17,8 +17,15 @@ from apps.patients.api.views import (
     PatientProfileViewSet, PatientDiagnosisViewSet, ProblemAreaViewSet,
     PatientProcedureViewSet, PatientMedicationViewSet, )
 from apps.plans.api.views import (
-    CarePlanTemplateViewSet, CarePlanViewSet, PlanConsentViewSet,
-    CareTeamMemberViewSet, GoalTemplateViewSet, InfoMessageQueueViewSet,
+    CarePlanTemplateViewSet,
+    CarePlanViewSet,
+    PlanConsentViewSet,
+    CareTeamMemberViewSet,
+    GoalTemplateViewSet,
+    GoalViewSet,
+    GoalProgressViewSet,
+    GoalCommentViewSet,
+    InfoMessageQueueViewSet,
     InfoMessageViewSet, )
 from apps.tasks.api.views import (
     PatientTaskTemplateViewSet,
@@ -34,6 +41,10 @@ from apps.tasks.api.views import (
     AssessmentQuestionViewSet,
     AssessmentTaskViewSet,
     AssessmentResponseViewSet,
+    VitalTaskTemplateViewSet,
+    VitalTaskViewSet,
+    VitalQuestionViewSet,
+    VitalResponseViewSet,
     TodaysTasksAPIView,
 )
 from apps.accounts.views import ObtainAuthToken, \
@@ -83,6 +94,12 @@ router.register(
 router.register(
     r'goal_templates', GoalTemplateViewSet, base_name='goal_templates')
 router.register(
+    r'goals', GoalViewSet, base_name='goals')
+router.register(
+    r'goal_progresses', GoalProgressViewSet, base_name='goal_progresses')
+router.register(
+    r'goal_comments', GoalCommentViewSet, base_name='goal_comments')
+router.register(
     r'info_message_queues', InfoMessageQueueViewSet, base_name='info_message_queues')
 router.register(
     r'info_messages', InfoMessageViewSet, base_name='info_messages')
@@ -122,6 +139,20 @@ router.register(
     r'assessment_responses',
     AssessmentResponseViewSet,
     base_name='assessment_responses')
+router.register(
+    r'vital_task_templates',
+    VitalTaskTemplateViewSet,
+    base_name='vital_task_templates')
+router.register(r'vital_tasks', VitalTaskViewSet, base_name='vital_tasks')
+router.register(
+    r'vital_questions',
+    VitalQuestionViewSet,
+    base_name='vital_questions')
+router.register(
+    r'vital_responses',
+    VitalResponseViewSet,
+    base_name='vital_responses')
+
 
 schema_view = get_swagger_view(title='CareAdopt API')
 

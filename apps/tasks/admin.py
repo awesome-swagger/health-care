@@ -13,6 +13,10 @@ from apps.tasks.models import (
     AssessmentQuestion,
     AssessmentTask,
     AssessmentResponse,
+    VitalTaskTemplate,
+    VitalTask,
+    VitalQuestion,
+    VitalResponse,
 )
 
 
@@ -92,6 +96,35 @@ class AssessmentTaskAdmin(admin.ModelAdmin):
         'due_datetime', )
 
 
+class VitalQuestionInline(admin.TabularInline):
+    model = VitalQuestion
+
+
+class VitalResponseInline(admin.TabularInline):
+    model = VitalResponse
+
+
+class VitalTaskTemplateAdmin(admin.ModelAdmin):
+    inlines = [
+        VitalQuestionInline,
+    ]
+    list_display = (
+        'name', 'plan_template', 'start_on_day', 'frequency', 'repeat_amount',
+        'appear_time', 'due_time', )
+
+
+class VitalTaskAdmin(admin.ModelAdmin):
+    """
+    Admin view for :model:`tasks.VitalTask`
+    """
+    inlines = [
+        VitalResponseInline,
+    ]
+    list_display = (
+        'plan', 'vital_task_template', 'appear_datetime',
+        'due_datetime', 'is_complete', )
+
+
 admin.site.register(PatientTaskTemplate, PatientTaskTemplateAdmin)
 admin.site.register(PatientTask, PatientTaskAdmin)
 admin.site.register(TeamTaskTemplate, TeamTaskTemplateAdmin)
@@ -102,3 +135,5 @@ admin.site.register(SymptomTaskTemplate, SymptomTaskTemplateAdmin)
 admin.site.register(SymptomTask, SymptomTaskAdmin)
 admin.site.register(AssessmentTaskTemplate, AssessmentTaskTemplateAdmin)
 admin.site.register(AssessmentTask, AssessmentTaskAdmin)
+admin.site.register(VitalTaskTemplate, VitalTaskTemplateAdmin)
+admin.site.register(VitalTask, VitalTaskAdmin)

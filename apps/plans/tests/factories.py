@@ -27,3 +27,39 @@ class CareTeamMemberFactory(factory.django.DjangoModelFactory):
 
     class Meta:
         model = 'plans.CareTeamMember'
+
+
+class GoalTeamplateFactory(factory.django.DjangoModelFactory):
+    """
+    Factory for :model:`plans.GoalTemplate`
+    """
+
+    class Meta:
+        model = 'plans.GoalTemplate'
+
+
+class GoalFactory(factory.django.DjangoModelFactory):
+    """
+    Factory for :model:`plans.Goal`
+    """
+
+    class Meta:
+        model = 'plans.Goal'
+
+
+class GoalProgressFactory(factory.django.DjangoModelFactory):
+    """
+    Factory for :model:`plans.GoalProgress`
+    """
+
+    class Meta:
+        model = 'plans.GoalProgress'
+
+
+class GoalCommentFactory(factory.django.DjangoModelFactory):
+    """
+    Factory for :model:`plans.GoalComment`
+    """
+
+    class Meta:
+        model = 'plans.GoalComment'

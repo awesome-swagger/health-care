@@ -3,6 +3,8 @@ from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.utils.translation import ugettext_lazy as _
+
 from care_adopt_backend.mixins import (
     AddressMixin, CreatedModifiedMixin, UUIDPrimaryKeyMixin)
 from apps.core.models import (
@@ -97,6 +99,85 @@ class GoalTemplate(UUIDPrimaryKeyMixin):
 
     def __str__(self):
         return self.name
+
+
+class Goal(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
+    """
+    Stores information about a certain goal for patients.
+    """
+    plan = models.ForeignKey(
+        CarePlan,
+        related_name='goals',
+        on_delete=models.CASCADE
+    )
+    goal_template = models.ForeignKey(
+        GoalTemplate,
+        related_name='goals',
+        on_delete=models.CASCADE
+    )
+
+    class Meta:
+        verbose_name = _('Goal')
+        verbose_name_plural = _('Goals')
+        ordering = ('created', )
+
+    def __str__(self):
+        return f'{self.plan}: {self.goal_template.name}'
+
+    @property
+    def latest_progress(self):
+        return self.progresses.last()
+
+
+class GoalProgress(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
+    """
+    Stores information about updates that was made to a specific goal.
+    This will be primarily used by the employee to set updates for
+    a patients goal.
+    """
+    goal = models.ForeignKey(
+        Goal,
+        related_name='progresses',
+        on_delete=models.CASCADE
+    )
+    rating = models.IntegerField(
+        validators=[
+            MaxValueValidator(5),
+            MinValueValidator(1)
+        ]
+    )
+
+    class Meta:
+        verbose_name = _('Goal Progress')
+        verbose_name_plural = _('Goal Progresses')
+        ordering = ('created', )
+
+    def __str__(self):
+        return f'{self.goal.goal_template.name}: {self.rating}'
+
+
+class GoalComment(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
+    """
+    This stores the comments written by a user about a specific goal
+    """
+    goal = models.ForeignKey(
+        Goal,
+        related_name='comments',
+        on_delete=models.CASCADE
+    )
+    user = models.ForeignKey(
+        'accounts.EmailUser',
+        related_name='goal_comments',
+        on_delete=models.CASCADE
+    )
+    content = models.TextField()
+
+    class Meta:
+        verbose_name = _('Goal Comment')
+        verbose_name_plural = _('Goal Comments')
+
+    def __str__(self):
+        return f'{self.goal} - {self.user}: {self.content}'
 
 
 class InfoMessageQueue(CreatedModifiedMixin, UUIDPrimaryKeyMixin):

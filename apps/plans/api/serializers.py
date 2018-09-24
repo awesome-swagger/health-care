@@ -1,3 +1,5 @@
+from django.utils.translation import ugettext_lazy as _
+
 from rest_framework import serializers
 
 from ..models import (
@@ -5,6 +7,9 @@ from ..models import (
     CarePlan,
     PlanConsent,
     GoalTemplate,
+    Goal,
+    GoalProgress,
+    GoalComment,
     InfoMessageQueue,
     InfoMessage,
     CareTeamMember,
@@ -65,3 +70,137 @@ class InfoMessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = InfoMessage
         fields = '__all__'
+
+
+class GoalProgressSerializer(serializers.ModelSerializer):
+    """
+    serializer for :model:`plans.GoalProgress`
+    """
+
+    class Meta:
+        model = GoalProgress
+        fields = (
+            'id',
+            'goal',
+            'rating',
+            'created',
+            'modified',
+        )
+        read_only_fields = (
+            'id',
+            'created',
+            'modified',
+        )
+
+
+class SimplifiedGoalProgressSerializer(serializers.ModelSerializer):
+    """
+    serializer for :model:`plans.GoalProgress`. This will be primarily
+    used as an inline in GoalSerializer.
+    """
+
+    class Meta:
+        model = GoalProgress
+        fields = (
+            'id',
+            'rating',
+            'created',
+        )
+        read_only_fields = (
+            'id',
+            'rating',
+            'created',
+        )
+
+
+class GoalCommentSerializer(serializers.ModelSerializer):
+    """
+    serializer for :model:`plans.GoalComment`
+    """
+
+    class Meta:
+        model = GoalComment
+        fields = (
+            'id',
+            'goal',
+            'user',
+            'content',
+            'created',
+            'modified',
+        )
+        read_only_fields = (
+            'id',
+            'created',
+            'modified',
+        )
+
+    def validate(self, data):
+        goal = data['goal'] if 'goal' in data else self.instance.goal
+        user = data['user'] if 'user' in data else self.instance.user
+
+        if user.is_superuser:
+            return data
+        elif user.is_employee:
+            profiles = goal.plan.care_team_members.values_list(
+                'employee_profile', flat=True).distinct()
+            if user.employee_profile.id not in profiles:
+                err = _(
+                    "The user is not a care team member of the goal provided."
+                )
+                raise serializers.ValidationError(err)
+            return data
+        elif user.is_patient:
+            patient = user.patient_profile
+            if goal.plan.patient != patient:
+                err = _("The user is not the owner of the goal's plan.")
+                raise serializers.ValidationError(err)
+            return data
+
+
+class SimplifiedGoalCommentSerializer(serializers.ModelSerializer):
+    """
+    serializer for :model:`plans.GoalComment`. This will be primarily
+    used as an inline in GoalSerializer.
+    """
+
+    class Meta:
+        model = GoalComment
+        fields = (
+            'id',
+            'user',
+            'content',
+            'created',
+            'modified',
+        )
+        read_only_fields = (
+            'id',
+            'user',
+            'content',
+            'created',
+            'modified',
+        )
+
+
+class GoalSerializer(serializers.ModelSerializer):
+    """
+    serializer for :model:`plans.Goal`
+    """
+    latest_progress = SimplifiedGoalProgressSerializer(read_only=True)
+    comments = SimplifiedGoalCommentSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Goal
+        fields = (
+            'id',
+            'plan',
+            'goal_template',
+            'latest_progress',
+            'comments',
+            'created',
+            'modified',
+        )
+        read_only_fields = (
+            'id',
+            'created',
+            'modified',
+        )

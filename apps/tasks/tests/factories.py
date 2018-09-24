@@ -116,3 +116,39 @@ class TeamTaskTemplateFactory(factory.django.DjangoModelFactory):
 
     class Meta:
         model = 'tasks.TeamTaskTemplate'
+
+
+class VitalTaskTemplateFactory(factory.django.DjangoModelFactory):
+    """
+    Factory for :model:`tasks.VitalTaskTemplate`
+    """
+
+    class Meta:
+        model = 'tasks.VitalTaskTemplate'
+
+
+class VitalTaskFactory(factory.django.DjangoModelFactory):
+    """
+    Factory for :model:`tasks.VitalTask`
+    """
+
+    class Meta:
+        model = 'tasks.VitalTask'
+
+
+class VitalQuestionFactory(factory.django.DjangoModelFactory):
+    """
+    Factory for :model:`tasks.VitalQuestion`
+    """
+
+    class Meta:
+        model = 'tasks.VitalQuestion'
+
+
+class VitalResponseFactory(factory.django.DjangoModelFactory):
+    """
+    Factory for :model:`tasks.VitalResponse`
+    """
+
+    class Meta:
+        model = 'tasks.VitalResponse'
