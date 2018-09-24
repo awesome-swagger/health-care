@@ -42,7 +42,38 @@ class FacilitySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Facility
-        fields = '__all__'
+        fields = (
+            'id',
+            'name',
+            'organization',
+            'is_affiliate',
+            'is_manager',
+            'parent_company',
+            'addr_street',
+            'addr_suite',
+            'addr_city',
+            'addr_state',
+            'addr_zip',
+            'created',
+            'modified',
+        )
+        read_only_fields = (
+            'id',
+            'is_manager',
+            'created',
+            'modified',
+        )
+
+    def to_representation(self, instance):
+        data = super(FacilitySerializer, self).to_representation(instance)
+        if instance.organization:
+            organization = OrganizationSerializer(
+                instance.organization
+            )
+            data.update({
+                'organization': organization.data
+            })
+        return data
 
 
 class ProviderTitleSerializer(serializers.ModelSerializer):
