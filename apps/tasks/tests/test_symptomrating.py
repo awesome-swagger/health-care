@@ -40,6 +40,13 @@ class TestSymptomRatingUsingEmployee(TasksMixin, APITestCase):
         )
         self.client.force_authenticate(user=self.user)
 
+    def test_get_symptom_name(self):
+        response = self.client.get(self.detail_url)
+        self.assertEqual(
+            response.data['symptom']['name'],
+            self.symptom_rating.symptom.name
+        )
+
     def test_get_symptom_ratings_list(self):
         response = self.client.get(self.url)
         self.assertEqual(response.data['count'], 1)
@@ -127,6 +134,13 @@ class TestSymptomTaskUsingPatient(TasksMixin, APITestCase):
             kwargs={'pk': self.symptom_rating.id}
         )
         self.client.force_authenticate(user=self.user)
+
+    def test_get_symptom_name(self):
+        response = self.client.get(self.detail_url)
+        self.assertEqual(
+            response.data['symptom']['name'],
+            self.symptom_rating.symptom.name
+        )
 
     def test_get_symptom_tasks_list(self):
         response = self.client.get(self.url)
