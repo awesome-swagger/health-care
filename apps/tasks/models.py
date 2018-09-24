@@ -620,6 +620,8 @@ def create_patient_tasks(sender, instance, created, **kwargs):
         instance, SymptomTaskTemplate, SymptomTask, 'symptom_task_template')
     create_scheduled_tasks(
         instance, AssessmentTaskTemplate, AssessmentTask, 'assessment_task_template')
+    create_scheduled_tasks(
+        instance, VitalTaskTemplate, VitalTask, 'vital_task_template')
 
 
 # SIGNALS
