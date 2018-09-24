@@ -175,7 +175,35 @@ class SymptomTaskTemplateSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class SymptomRatingSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = SymptomRating
+        fields = (
+            'id',
+            'symptom_task',
+            'symptom',
+            'rating',
+        )
+        read_only_fields = (
+            'id',
+        )
+
+    def to_representation(self, instance):
+        data = super(SymptomRatingSerializer, self).to_representation(instance)
+        if instance.symptom:
+            symptom = SymptomSerializer(
+                instance.symptom
+            )
+            data.update({
+                'symptom': symptom.data
+            })
+        return data
+
+
 class SymptomTaskSerializer(serializers.ModelSerializer):
+
+    ratings = SymptomRatingSerializer(many=True, read_only=True)
 
     class Meta:
         model = SymptomTask
@@ -188,9 +216,11 @@ class SymptomTaskSerializer(serializers.ModelSerializer):
             'comments',
             'is_complete',
             'state',
+            'ratings',
         )
         read_only_fields = (
             'id',
+            'ratings',
         )
 
 
@@ -218,32 +248,6 @@ class SymptomTaskTodaySerializer(serializers.ModelSerializer):
 
     def get_name(self, obj):
         return 'Symptoms Report'
-
-
-class SymptomRatingSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = SymptomRating
-        fields = (
-            'id',
-            'symptom_task',
-            'symptom',
-            'rating',
-        )
-        read_only_fields = (
-            'id',
-        )
-
-    def to_representation(self, instance):
-        data = super(SymptomRatingSerializer, self).to_representation(instance)
-        if instance.symptom:
-            symptom = SymptomSerializer(
-                instance.symptom
-            )
-            data.update({
-                'symptom': symptom.data
-            })
-        return data
 
 
 class AssessmentTaskTemplateSerializer(serializers.ModelSerializer):
