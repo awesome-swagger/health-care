@@ -6,12 +6,39 @@ from faker import Faker
 from rest_framework.test import APITestCase
 
 from ..models import PatientProfile
+from ..tests.mixins import PatientsMixin
 from apps.tasks.models import AssessmentResponse
 from apps.tasks.tests.mixins import TasksMixin
 from apps.tasks.utils import (
     calculate_task_percentage,
     get_all_tasks_of_patient_today,
 )
+
+
+class TestPatientProfile(PatientsMixin, APITestCase):
+    """
+    Test cases for :model:`tasks.PatientProfile` using a patient
+    as the logged in user.
+    """
+
+    def setUp(self):
+        self.fake = Faker()
+        self.patient = self.create_patient()
+        self.other_patient = self.create_patient()
+        self.user = self.patient.user
+
+        self.detail_url = reverse(
+            'patient_profiles-detail',
+            kwargs={'pk': self.patient.id}
+        )
+        self.client.force_authenticate(user=self.user)
+
+    def test_get_patient_detail_with_facility(self):
+        response = self.client.get(self.detail_url)
+        self.assertEqual(
+            response.data['facility']['name'],
+            self.patient.facility.name
+        )
 
 
 class TestPatientProfileDashboard(TasksMixin, APITestCase):

@@ -68,7 +68,8 @@ class FacilitySerializer(serializers.ModelSerializer):
         data = super(FacilitySerializer, self).to_representation(instance)
         if instance.organization:
             organization = OrganizationSerializer(
-                instance.organization
+                instance.organization,
+                context=self.context
             )
             data.update({
                 'organization': organization.data

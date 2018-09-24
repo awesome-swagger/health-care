@@ -4,6 +4,7 @@ from django.utils import timezone
 from rest_framework import serializers
 
 from apps.accounts.serializers import SettingsUserForSerializers
+from apps.core.api.serializers import FacilitySerializer
 from apps.patients.models import (
     PatientProfile, PatientDiagnosis, ProblemArea, PatientProcedure,
     PatientMedication, )
@@ -69,7 +70,10 @@ class PatientProfileSerializer(serializers.ModelSerializer):
             })
 
         if instance.facility:
-            facility = PatientUserInfo(instance.facility)
+            facility = FacilitySerializer(
+                instance.facility,
+                context=self.context
+            )
             data.update({
                 'facility': facility.data
             })
