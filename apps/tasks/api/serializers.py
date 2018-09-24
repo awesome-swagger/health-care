@@ -24,6 +24,7 @@ from ..models import (
     VitalQuestion,
     VitalResponse,
 )
+from apps.core.api.serializers import SymptomSerializer
 
 
 class PatientTaskTemplateSerializer(serializers.ModelSerializer):
@@ -223,7 +224,26 @@ class SymptomRatingSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SymptomRating
-        fields = '__all__'
+        fields = (
+            'id',
+            'symptom_task',
+            'symptom',
+            'rating',
+        )
+        read_only_fields = (
+            'id',
+        )
+
+    def to_representation(self, instance):
+        data = super(SymptomRatingSerializer, self).to_representation(instance)
+        if instance.symptom:
+            symptom = SymptomSerializer(
+                instance.symptom
+            )
+            data.update({
+                'symptom': symptom.data
+            })
+        return data
 
 
 class AssessmentTaskTemplateSerializer(serializers.ModelSerializer):
