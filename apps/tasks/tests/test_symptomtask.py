@@ -94,6 +94,31 @@ class TestSymptomTask(StateTestMixin, TasksMixin, APITestCase):
         response = self.client.get(self.detail_url)
         self.assertEqual(len(response.data['ratings']), count)
 
+    def test_get_symptom_task_mark_incomplete_on_delete_symptomrating(self):
+        count = 5
+        # Creating a SymptomRating will mark the SymptomTask as complete
+        for i in range(count):
+            self.create_symptom_rating(**{
+                'symptom_task': self.symptom_task
+            })
+
+        # This will mark the SymptomTask as incomplete
+        self.symptom_task.ratings.all().delete()
+
+        response = self.client.get(self.detail_url)
+        self.assertEqual(response.data['is_complete'], False)
+
+    def test_get_symptom_task_mark_complete_on_save_symptomrating(self):
+        count = 5
+        # Creating a SymptomRating will mark the SymptomTask as complete
+        for i in range(count):
+            self.create_symptom_rating(**{
+                'symptom_task': self.symptom_task
+            })
+
+        response = self.client.get(self.detail_url)
+        self.assertEqual(response.data['is_complete'], True)
+
 
 class TestSymptomTaskUsingEmployee(TasksMixin, APITestCase):
     """
