@@ -121,6 +121,21 @@ class TestAssessmentResponseUsingEmployee(TasksMixin, APITestCase):
         response = self.client.post(self.url, payload)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
+    def test_create_multiple_assessment_response_status_code(self):
+        self.create_multiple_assessment_questions(self.template)
+        questions = self.template.questions.all()
+
+        payload = []
+        for question in questions:
+            data = {
+                'assessment_task': self.assessment_task.id,
+                'assessment_question': question.id,
+                'rating': random.randint(1, 5)
+            }
+            payload.append(data)
+        response = self.client.post(self.url, payload, format='json')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
     def test_full_update_assessment_response(self):
         question = self.create_assessment_question(self.template)
 
@@ -248,6 +263,36 @@ class TestAssessmentResponseUsingPatient(TasksMixin, APITestCase):
         }
         response = self.client.post(self.url, payload)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_create_multiple_assessment_response_status_code(self):
+        self.create_multiple_assessment_questions(self.template)
+        questions = self.template.questions.all()
+
+        payload = []
+        for question in questions:
+            data = {
+                'assessment_task': self.assessment_task.id,
+                'assessment_question': question.id,
+                'rating': random.randint(1, 5)
+            }
+            payload.append(data)
+        response = self.client.post(self.url, payload, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_create_multiple_assessment_response_count(self):
+        self.create_multiple_assessment_questions(self.template)
+        questions = self.template.questions.all()
+
+        payload = []
+        for question in questions:
+            data = {
+                'assessment_task': self.assessment_task.id,
+                'assessment_question': question.id,
+                'rating': random.randint(1, 5)
+            }
+            payload.append(data)
+        response = self.client.post(self.url, payload, format='json')
+        self.assertEqual(len(response.data), questions.count())
 
     def test_full_update_assessment_response(self):
         question = self.create_assessment_question(self.template)
