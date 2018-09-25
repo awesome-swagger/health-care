@@ -9,12 +9,14 @@ from .models import (
     MedicationTask,
     PatientTask,
     SymptomTask,
+    VitalTask,
 )
 from .api.serializers import (
     PatientTaskTodaySerializer,
     MedicationTaskTodaySerializer,
     SymptomTaskTodaySerializer,
     AssessmentTaskTodaySerializer,
+    VitalTaskTodaySerializer,
 )
 
 
@@ -94,6 +96,9 @@ def get_all_tasks_of_patient_today(patient):
     assessment_tasks = AssessmentTask.objects.filter(
         plan__patient__id=patient.id,
         due_datetime__range=(today_min, today_max))
+    vital_tasks = VitalTask.objects.filter(
+        plan__patient__id=patient.id,
+        due_datetime__range=(today_min, today_max))
 
     if patient_tasks.exists():
         serializer = PatientTaskTodaySerializer(
@@ -119,6 +124,13 @@ def get_all_tasks_of_patient_today(patient):
     if assessment_tasks.exists():
         serializer = AssessmentTaskTodaySerializer(
             assessment_tasks.all(),
+            many=True
+        )
+        tasks += serializer.data
+
+    if vital_tasks.exists():
+        serializer = VitalTaskTodaySerializer(
+            vital_tasks.all(),
             many=True
         )
         tasks += serializer.data
