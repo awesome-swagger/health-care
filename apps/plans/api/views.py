@@ -1,5 +1,6 @@
 from rest_framework import viewsets, permissions
 from rest_framework.decorators import action
+from rest_framework.generics import RetrieveAPIView
 from rest_framework.response import Response
 
 from ..models import (
@@ -363,3 +364,34 @@ class InfoMessageViewSet(viewsets.ModelViewSet):
     serializer_class = InfoMessageSerializer
     permission_classes = (permissions.IsAuthenticated, EmployeeOrReadOnly, )
     queryset = InfoMessage.objects.all()
+
+
+############################
+# ----- CUSTOM VIEWS ----- #
+############################
+
+class GoalTemplatesByPlanTemplate(RetrieveAPIView):
+    """
+    Returns a list of goal templates related to the given plan template.
+    """
+    queryset = CarePlanTemplate.objects.all()
+    serializer_class = GoalTemplateSerializer
+    permission_classes = (
+        permissions.IsAuthenticated,
+        IsEmployeeOrPatientReadOnly,
+    )
+
+    def get_goal_templates(self):
+        instance = self.get_object()
+        return instance.goals.all()
+
+    def retrieve(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_goal_templates())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
