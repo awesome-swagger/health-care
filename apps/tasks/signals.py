@@ -114,3 +114,14 @@ def assessmentresponse_post_delete(sender, instance, **kwargs):
     if task.is_complete:
         task.is_complete = False
         task.save()
+
+
+def vitalresponse_post_delete(sender, instance, **kwargs):
+    """
+    Function to be used as signal (post_delete) when deleting
+    :model:`tasks.VitalResponse`
+    """
+    task = instance.vital_task
+    if task.is_complete:
+        task.is_complete = False
+        task.save()
