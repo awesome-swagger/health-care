@@ -273,8 +273,17 @@ class AssessmentTaskTemplateSerializer(serializers.ModelSerializer):
         )
 
 
+class AssessmentResponseSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = AssessmentResponse
+        fields = '__all__'
+
+
 class AssessmentTaskSerializer(RepresentationMixin,
                                serializers.ModelSerializer):
+
+    responses = AssessmentResponseSerializer(many=True, read_only=True)
 
     class Meta:
         model = AssessmentTask
@@ -287,6 +296,7 @@ class AssessmentTaskSerializer(RepresentationMixin,
             'comments',
             'is_complete',
             'state',
+            'responses',
         )
         read_only_fields = (
             'id',
@@ -323,13 +333,6 @@ class AssessmentTaskTodaySerializer(serializers.ModelSerializer):
 
     def get_name(self, obj):
         return obj.assessment_task_template.name
-
-
-class AssessmentResponseSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = AssessmentResponse
-        fields = '__all__'
 
 
 class VitalTaskTemplateSerializer(serializers.ModelSerializer):
