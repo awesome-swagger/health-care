@@ -131,6 +131,37 @@ class TestAssessmentTask(StateTestMixin, TasksMixin, APITestCase):
             answer.rating
         )
 
+    def test_mark_assessmenttask_incomplete_on_delete_assessmentresponse(self):
+        self.create_multiple_assessment_questions(
+            self.assessment_task_template
+        )
+        # This will mark the AssessmentTask as complete
+        self.create_responses_to_multiple_questions(
+            self.assessment_task_template,
+            self.assessment_task,
+            self.assessment_task_template.questions.all()
+        )
+
+        # This will mark the AssessmentTask as incomplete
+        self.assessment_task.responses.all().delete()
+
+        response = self.client.get(self.detail_url)
+        self.assertEqual(response.data['is_complete'], False)
+
+    def test_mark_assessmenttask_complete_on_save_assessmentresponse(self):
+        self.create_multiple_assessment_questions(
+            self.assessment_task_template
+        )
+        # This will mark the AssessmentTask as complete
+        self.create_responses_to_multiple_questions(
+            self.assessment_task_template,
+            self.assessment_task,
+            self.assessment_task_template.questions.all()
+        )
+
+        response = self.client.get(self.detail_url)
+        self.assertEqual(response.data['is_complete'], True)
+
 
 class TestAssessmentTaskUsingEmployee(TasksMixin, APITestCase):
     """
