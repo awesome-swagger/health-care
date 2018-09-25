@@ -1,21 +1,14 @@
 from django.db.models import Avg
 from django.utils import timezone
-
 from rest_framework import serializers
 
 from apps.accounts.serializers import SettingsUserForSerializers
 from apps.core.api.mixins import RepresentationMixin
 from apps.core.api.serializers import FacilitySerializer
-from apps.patients.models import (
-    PatientProfile, PatientDiagnosis, ProblemArea, PatientProcedure,
-    PatientMedication, )
-from apps.tasks.models import (
-    AssessmentResponse,
-)
-from apps.tasks.utils import (
-    calculate_task_percentage,
-    get_all_tasks_of_patient_today,
-)
+from apps.patients.models import (PatientDiagnosis, PatientMedication,
+                                  PatientProcedure, PatientProfile,
+                                  ProblemArea)
+from apps.tasks.models import AssessmentResponse
 
 
 class PatientUserInfo(SettingsUserForSerializers, serializers.ModelSerializer):
@@ -115,6 +108,7 @@ class PatientDashboardSerializer(serializers.ModelSerializer):
         )
 
     def get_task_percentage(self, obj):
+        from apps.tasks.utils import calculate_task_percentage
         return calculate_task_percentage(obj)
 
     def get_assessment_score(self, obj):
@@ -128,4 +122,5 @@ class PatientDashboardSerializer(serializers.ModelSerializer):
         return round(average['score']) if average['score'] else 0
 
     def get_tasks_today(self, obj):
+        from apps.tasks.utils import get_all_tasks_of_patient_today
         return get_all_tasks_of_patient_today(obj)

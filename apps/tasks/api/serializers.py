@@ -26,6 +26,7 @@ from ..models import (
 )
 from apps.core.api.mixins import RepresentationMixin
 from apps.core.api.serializers import SymptomSerializer
+from apps.patients.api.serializers import PatientMedicationSerializer
 
 
 class PatientTaskTemplateSerializer(serializers.ModelSerializer):
@@ -112,15 +113,19 @@ class TeamTaskSerializer(serializers.ModelSerializer):
         )
 
 
-class MedicationTaskTemplateSerializer(serializers.ModelSerializer):
-
+class MedicationTaskTemplateSerializer(RepresentationMixin, serializers.ModelSerializer):
     class Meta:
         model = MedicationTaskTemplate
         fields = '__all__'
+        nested_serializers = [
+            {
+                'field': 'patient_medication',
+                'serializer_class': PatientMedicationSerializer,
+            }
+        ]
 
 
-class MedicationTaskSerializer(serializers.ModelSerializer):
-
+class MedicationTaskSerializer(RepresentationMixin, serializers.ModelSerializer):
     class Meta:
         model = MedicationTask
         fields = (
@@ -135,6 +140,12 @@ class MedicationTaskSerializer(serializers.ModelSerializer):
         read_only_fields = (
             'id',
         )
+        nested_serializers = [
+            {
+                'field': 'medication_task_template',
+                'serializer_class': MedicationTaskTemplateSerializer,
+            }
+        ]
 
 
 class MedicationTaskTodaySerializer(serializers.ModelSerializer):
