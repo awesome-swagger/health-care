@@ -9,8 +9,8 @@ def assign_is_complete_to_assessment_task(instance):
     corresponding response.
     """
     task = instance.assessment_task
-    questions = task.assessment_task_template.assessmentquestion_set\
-        .values_list('id', flat=True).distinct()
+    questions = task.assessment_task_template.questions.values_list(
+        'id', flat=True).distinct()
     responses = task.assessmentresponse_set.values_list(
         'assessment_question', flat=True).distinct()
 

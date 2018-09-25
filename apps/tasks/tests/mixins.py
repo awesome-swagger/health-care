@@ -246,7 +246,7 @@ class TasksMixin(PlansMixin):
                                                task,
                                                questions):
 
-        if not template.assessmentquestion_set.exists():
+        if not template.questions.exists():
             self.create_multiple_assessment_questions(template)
 
         for question in questions:

@@ -28,7 +28,7 @@ class TestAssessmentResponse(TasksMixin, APITestCase):
         self.create_responses_to_multiple_questions(
             self.template,
             self.assessment_task,
-            self.template.assessmentquestion_set.all()
+            self.template.questions.all()
         )
         self.responses = self.assessment_task.assessmentresponse_set.all()
         self.assessment_response = random.choice(self.responses)
@@ -74,7 +74,7 @@ class TestAssessmentResponseUsingEmployee(TasksMixin, APITestCase):
         self.create_responses_to_multiple_questions(
             self.template,
             self.assessment_task,
-            self.template.assessmentquestion_set.all()
+            self.template.questions.all()
         )
         self.responses = self.assessment_task.assessmentresponse_set.all()
         self.assessment_response = random.choice(self.responses)
@@ -202,7 +202,7 @@ class TestAssessmentResponseUsingPatient(TasksMixin, APITestCase):
         self.create_responses_to_multiple_questions(
             self.template,
             self.assessment_task,
-            self.template.assessmentquestion_set.all()
+            self.template.questions.all()
         )
         self.responses = self.assessment_task.assessmentresponse_set.all()
         self.assessment_response = random.choice(self.responses)

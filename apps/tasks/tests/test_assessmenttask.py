@@ -40,7 +40,7 @@ class TestAssessmentTask(StateTestMixin, TasksMixin, APITestCase):
         self.create_responses_to_multiple_questions(
             self.assessment_task_template,
             self.assessment_task,
-            self.assessment_task_template.assessmentquestion_set.all()[1:]
+            self.assessment_task_template.questions.all()[1:]
         )
 
         response = self.client.get(self.detail_url)
@@ -50,7 +50,7 @@ class TestAssessmentTask(StateTestMixin, TasksMixin, APITestCase):
         self.create_responses_to_multiple_questions(
             self.assessment_task_template,
             self.assessment_task,
-            self.assessment_task_template.assessmentquestion_set.all()
+            self.assessment_task_template.questions.all()
         )
 
         response = self.client.get(self.detail_url)
@@ -66,7 +66,7 @@ class TestAssessmentTask(StateTestMixin, TasksMixin, APITestCase):
             self.create_responses_to_multiple_questions(
                 task.assessment_task_template,
                 task,
-                task.assessment_task_template.assessmentquestion_set.all()
+                task.assessment_task_template.questions.all()
             )
 
         url = reverse(
