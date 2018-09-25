@@ -4,6 +4,7 @@ from django.utils import timezone
 from rest_framework import serializers
 
 from apps.accounts.serializers import SettingsUserForSerializers
+from apps.core.api.serializers import FacilitySerializer
 from apps.patients.models import (
     PatientProfile, PatientDiagnosis, ProblemArea, PatientProcedure,
     PatientMedication, )
@@ -39,11 +40,45 @@ class PatientSearchSerializer(serializers.ModelSerializer):
 
 
 class PatientProfileSerializer(serializers.ModelSerializer):
-    user = PatientUserInfo()
 
     class Meta:
         model = PatientProfile
-        fields = '__all__'
+        fields = (
+            'id',
+            'user',
+            'facility',
+            'emr_code',
+            'status',
+            'diagnosis',
+            'created',
+            'modified',
+        )
+        read_only_fields = (
+            'id',
+            'created',
+            'modified',
+        )
+
+    def to_representation(self, instance):
+        data = super(PatientProfileSerializer, self).to_representation(
+            instance)
+
+        if instance.user:
+            user = PatientUserInfo(instance.user)
+            data.update({
+                'user': user.data
+            })
+
+        if instance.facility:
+            facility = FacilitySerializer(
+                instance.facility,
+                context=self.context
+            )
+            data.update({
+                'facility': facility.data
+            })
+
+        return data
 
 
 class PatientDiagnosisSerializer(serializers.ModelSerializer):

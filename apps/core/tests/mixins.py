@@ -14,10 +14,22 @@ class CoreMixin(object):
     def create_employee(self, user=None):
         if user is None:
             user = RegularUserFactory()
-        return EmployeeProfileFactory(
+
+        organization = self.create_organization()
+        managed_organization = self.create_organization()
+        facility = self.create_facility()
+        managed_facility = self.create_facility()
+
+        employee = EmployeeProfileFactory(
             user=user,
             status='active'
         )
+        employee.organizations.add(organization)
+        employee.organizations_managed.add(managed_organization)
+        employee.facilities.add(facility)
+        employee.facilities_managed.add(managed_facility)
+
+        return employee
 
     def create_organization(self):
         return OrganizationFactory(name=self.fake.name())
