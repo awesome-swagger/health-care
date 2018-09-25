@@ -107,6 +107,30 @@ class TestAssessmentTask(StateTestMixin, TasksMixin, APITestCase):
         response = self.client.get(filter_url)
         self.assertEqual(response.data['count'], count)
 
+    def test_assessment_task_get_detail_with_question(self):
+        question = self.create_assessment_question(
+            self.assessment_task_template
+        )
+        response = self.client.get(self.detail_url)
+        self.assertEqual(
+            response.data['assessment_task_template']['questions'][0]['prompt'],
+            question.prompt
+        )
+
+    def test_assessment_task_get_detail_with_response(self):
+        question = self.create_assessment_question(
+            self.assessment_task_template
+        )
+        answer = self.create_assessment_response(
+            self.assessment_task,
+            question
+        )
+        response = self.client.get(self.detail_url)
+        self.assertEqual(
+            response.data['responses'][0]['rating'],
+            answer.rating
+        )
+
 
 class TestAssessmentTaskUsingEmployee(TasksMixin, APITestCase):
     """
