@@ -378,6 +378,32 @@ class VitalTaskSerializer(serializers.ModelSerializer):
         )
 
 
+class VitalTaskTodaySerializer(serializers.ModelSerializer):
+    """
+    This is a simplified serializer of :model:`tasks.VitalTask`. This
+    will be primarily used in :view:`tasks.TodaysTasksAPIView`.
+    """
+    type = serializers.SerializerMethodField()
+    name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = VitalTask
+        fields = (
+            'id',
+            'type',
+            'name',
+            'state',
+            'appear_datetime',
+            'due_datetime',
+        )
+
+    def get_type(self, obj):
+        return 'vital_task'
+
+    def get_name(self, obj):
+        return obj.vital_task_template.name
+
+
 class VitalQuestionSerializer(serializers.ModelSerializer):
     """
     serializer to be used by :model:`tasks.VitalQuestion`
