@@ -250,18 +250,35 @@ class SymptomTaskTodaySerializer(serializers.ModelSerializer):
         return 'Symptoms Report'
 
 
-class AssessmentTaskTemplateSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = AssessmentTaskTemplate
-        fields = '__all__'
-
-
 class AssessmentQuestionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = AssessmentQuestion
         fields = '__all__'
+
+
+class AssessmentTaskTemplateSerializer(serializers.ModelSerializer):
+
+    questions = AssessmentQuestionSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = AssessmentTaskTemplate
+        fields = (
+            'id',
+            'plan_template',
+            'name',
+            'tracks_outcome',
+            'tracks_satisfaction',
+            'start_on_day',
+            'frequency',
+            'repeat_amount',
+            'appear_time',
+            'due_time',
+            'questions',
+        )
+        read_only_fields = (
+            'id',
+        )
 
 
 class AssessmentTaskSerializer(serializers.ModelSerializer):
