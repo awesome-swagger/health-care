@@ -319,7 +319,10 @@ class AssessmentTask(AbstractTask):
 
 class AssessmentResponse(UUIDPrimaryKeyMixin):
     assessment_task = models.ForeignKey(
-        AssessmentTask, null=False, blank=False, on_delete=models.CASCADE)
+        AssessmentTask,
+        related_name='responses',
+        on_delete=models.CASCADE,
+    )
     assessment_question = models.ForeignKey(
         AssessmentQuestion, null=False, blank=False, on_delete=models.CASCADE)
     rating = models.IntegerField(null=False, blank=False, validators=[
