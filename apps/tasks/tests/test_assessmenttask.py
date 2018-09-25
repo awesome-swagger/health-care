@@ -40,7 +40,7 @@ class TestAssessmentTask(StateTestMixin, TasksMixin, APITestCase):
         self.create_responses_to_multiple_questions(
             self.assessment_task_template,
             self.assessment_task,
-            self.assessment_task_template.assessmentquestion_set.all()[1:]
+            self.assessment_task_template.questions.all()[1:]
         )
 
         response = self.client.get(self.detail_url)
@@ -50,7 +50,7 @@ class TestAssessmentTask(StateTestMixin, TasksMixin, APITestCase):
         self.create_responses_to_multiple_questions(
             self.assessment_task_template,
             self.assessment_task,
-            self.assessment_task_template.assessmentquestion_set.all()
+            self.assessment_task_template.questions.all()
         )
 
         response = self.client.get(self.detail_url)
@@ -66,7 +66,7 @@ class TestAssessmentTask(StateTestMixin, TasksMixin, APITestCase):
             self.create_responses_to_multiple_questions(
                 task.assessment_task_template,
                 task,
-                task.assessment_task_template.assessmentquestion_set.all()
+                task.assessment_task_template.questions.all()
             )
 
         url = reverse(
@@ -106,6 +106,30 @@ class TestAssessmentTask(StateTestMixin, TasksMixin, APITestCase):
         filter_url = f'{self.url}?due_datetime={self.assessment_task.due_datetime.strftime("%Y-%m-%d")}'
         response = self.client.get(filter_url)
         self.assertEqual(response.data['count'], count)
+
+    def test_assessment_task_get_detail_with_question(self):
+        question = self.create_assessment_question(
+            self.assessment_task_template
+        )
+        response = self.client.get(self.detail_url)
+        self.assertEqual(
+            response.data['assessment_task_template']['questions'][0]['prompt'],
+            question.prompt
+        )
+
+    def test_assessment_task_get_detail_with_response(self):
+        question = self.create_assessment_question(
+            self.assessment_task_template
+        )
+        answer = self.create_assessment_response(
+            self.assessment_task,
+            question
+        )
+        response = self.client.get(self.detail_url)
+        self.assertEqual(
+            response.data['responses'][0]['rating'],
+            answer.rating
+        )
 
 
 class TestAssessmentTaskUsingEmployee(TasksMixin, APITestCase):

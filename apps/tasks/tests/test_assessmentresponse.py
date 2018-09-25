@@ -28,9 +28,9 @@ class TestAssessmentResponse(TasksMixin, APITestCase):
         self.create_responses_to_multiple_questions(
             self.template,
             self.assessment_task,
-            self.template.assessmentquestion_set.all()
+            self.template.questions.all()
         )
-        self.responses = self.assessment_task.assessmentresponse_set.all()
+        self.responses = self.assessment_task.responses.all()
         self.assessment_response = random.choice(self.responses)
         self.url = reverse('assessment_responses-list')
         self.detail_url = reverse(
@@ -74,9 +74,9 @@ class TestAssessmentResponseUsingEmployee(TasksMixin, APITestCase):
         self.create_responses_to_multiple_questions(
             self.template,
             self.assessment_task,
-            self.template.assessmentquestion_set.all()
+            self.template.questions.all()
         )
-        self.responses = self.assessment_task.assessmentresponse_set.all()
+        self.responses = self.assessment_task.responses.all()
         self.assessment_response = random.choice(self.responses)
         self.url = reverse('assessment_responses-list')
         self.detail_url = reverse(
@@ -202,9 +202,9 @@ class TestAssessmentResponseUsingPatient(TasksMixin, APITestCase):
         self.create_responses_to_multiple_questions(
             self.template,
             self.assessment_task,
-            self.template.assessmentquestion_set.all()
+            self.template.questions.all()
         )
-        self.responses = self.assessment_task.assessmentresponse_set.all()
+        self.responses = self.assessment_task.responses.all()
         self.assessment_response = random.choice(self.responses)
         self.url = reverse('assessment_responses-list')
         self.detail_url = reverse(

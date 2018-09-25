@@ -276,7 +276,10 @@ class AssessmentTaskTemplate(AbstractTaskTemplate):
 
 class AssessmentQuestion(UUIDPrimaryKeyMixin):
     assessment_task_template = models.ForeignKey(
-        AssessmentTaskTemplate, null=False, blank=False, on_delete=models.CASCADE)
+        AssessmentTaskTemplate,
+        related_name='questions',
+        on_delete=models.CASCADE
+    )
     prompt = models.CharField(max_length=240, null=False, blank=False)
     worst_label = models.CharField(max_length=40, null=False, blank=False)
     best_label = models.CharField(max_length=40, null=False, blank=False)
@@ -316,7 +319,10 @@ class AssessmentTask(AbstractTask):
 
 class AssessmentResponse(UUIDPrimaryKeyMixin):
     assessment_task = models.ForeignKey(
-        AssessmentTask, null=False, blank=False, on_delete=models.CASCADE)
+        AssessmentTask,
+        related_name='responses',
+        on_delete=models.CASCADE,
+    )
     assessment_question = models.ForeignKey(
         AssessmentQuestion, null=False, blank=False, on_delete=models.CASCADE)
     rating = models.IntegerField(null=False, blank=False, validators=[

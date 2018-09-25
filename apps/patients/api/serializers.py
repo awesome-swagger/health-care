@@ -4,6 +4,7 @@ from django.utils import timezone
 from rest_framework import serializers
 
 from apps.accounts.serializers import SettingsUserForSerializers
+from apps.core.api.mixins import RepresentationMixin
 from apps.core.api.serializers import FacilitySerializer
 from apps.patients.models import (
     PatientProfile, PatientDiagnosis, ProblemArea, PatientProcedure,
@@ -39,7 +40,8 @@ class PatientSearchSerializer(serializers.ModelSerializer):
         fields = ('id', 'user', )
 
 
-class PatientProfileSerializer(serializers.ModelSerializer):
+class PatientProfileSerializer(RepresentationMixin,
+                               serializers.ModelSerializer):
 
     class Meta:
         model = PatientProfile
@@ -58,27 +60,16 @@ class PatientProfileSerializer(serializers.ModelSerializer):
             'created',
             'modified',
         )
-
-    def to_representation(self, instance):
-        data = super(PatientProfileSerializer, self).to_representation(
-            instance)
-
-        if instance.user:
-            user = PatientUserInfo(instance.user)
-            data.update({
-                'user': user.data
-            })
-
-        if instance.facility:
-            facility = FacilitySerializer(
-                instance.facility,
-                context=self.context
-            )
-            data.update({
-                'facility': facility.data
-            })
-
-        return data
+        nested_serializers = [
+            {
+                'field': 'user',
+                'serializer_class': PatientUserInfo,
+            },
+            {
+                'field': 'facility',
+                'serializer_class': FacilitySerializer,
+            }
+        ]
 
 
 class PatientDiagnosisSerializer(serializers.ModelSerializer):

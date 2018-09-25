@@ -24,6 +24,7 @@ from ..models import (
     VitalQuestion,
     VitalResponse,
 )
+from apps.core.api.mixins import RepresentationMixin
 from apps.core.api.serializers import SymptomSerializer
 
 
@@ -34,7 +35,7 @@ class PatientTaskTemplateSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class PatientTaskSerializer(serializers.ModelSerializer):
+class PatientTaskSerializer(RepresentationMixin, serializers.ModelSerializer):
 
     class Meta:
         model = PatientTask
@@ -51,17 +52,12 @@ class PatientTaskSerializer(serializers.ModelSerializer):
         read_only_fields = (
             'id',
         )
-
-    def to_representation(self, instance):
-        data = super(PatientTaskSerializer, self).to_representation(instance)
-        if instance.patient_task_template:
-            template = PatientTaskTemplateSerializer(
-                instance.patient_task_template
-            )
-            data.update({
-                'patient_task_template': template.data
-            })
-        return data
+        nested_serializers = [
+            {
+                'field': 'patient_task_template',
+                'serializer_class': PatientTaskTemplateSerializer,
+            }
+        ]
 
 
 class PatientTaskTodaySerializer(serializers.ModelSerializer):
@@ -175,7 +171,8 @@ class SymptomTaskTemplateSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class SymptomRatingSerializer(serializers.ModelSerializer):
+class SymptomRatingSerializer(RepresentationMixin,
+                              serializers.ModelSerializer):
 
     class Meta:
         model = SymptomRating
@@ -188,17 +185,12 @@ class SymptomRatingSerializer(serializers.ModelSerializer):
         read_only_fields = (
             'id',
         )
-
-    def to_representation(self, instance):
-        data = super(SymptomRatingSerializer, self).to_representation(instance)
-        if instance.symptom:
-            symptom = SymptomSerializer(
-                instance.symptom
-            )
-            data.update({
-                'symptom': symptom.data
-            })
-        return data
+        nested_serializers = [
+            {
+                'field': 'symptom',
+                'serializer_class': SymptomSerializer,
+            }
+        ]
 
 
 class SymptomTaskSerializer(serializers.ModelSerializer):
@@ -250,13 +242,6 @@ class SymptomTaskTodaySerializer(serializers.ModelSerializer):
         return 'Symptoms Report'
 
 
-class AssessmentTaskTemplateSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = AssessmentTaskTemplate
-        fields = '__all__'
-
-
 class AssessmentQuestionSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -264,7 +249,41 @@ class AssessmentQuestionSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class AssessmentTaskSerializer(serializers.ModelSerializer):
+class AssessmentTaskTemplateSerializer(serializers.ModelSerializer):
+
+    questions = AssessmentQuestionSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = AssessmentTaskTemplate
+        fields = (
+            'id',
+            'plan_template',
+            'name',
+            'tracks_outcome',
+            'tracks_satisfaction',
+            'start_on_day',
+            'frequency',
+            'repeat_amount',
+            'appear_time',
+            'due_time',
+            'questions',
+        )
+        read_only_fields = (
+            'id',
+        )
+
+
+class AssessmentResponseSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = AssessmentResponse
+        fields = '__all__'
+
+
+class AssessmentTaskSerializer(RepresentationMixin,
+                               serializers.ModelSerializer):
+
+    responses = AssessmentResponseSerializer(many=True, read_only=True)
 
     class Meta:
         model = AssessmentTask
@@ -277,10 +296,17 @@ class AssessmentTaskSerializer(serializers.ModelSerializer):
             'comments',
             'is_complete',
             'state',
+            'responses',
         )
         read_only_fields = (
             'id',
         )
+        nested_serializers = [
+            {
+                'field': 'assessment_task_template',
+                'serializer_class': AssessmentTaskTemplateSerializer,
+            }
+        ]
 
 
 class AssessmentTaskTodaySerializer(serializers.ModelSerializer):
@@ -307,13 +333,6 @@ class AssessmentTaskTodaySerializer(serializers.ModelSerializer):
 
     def get_name(self, obj):
         return obj.assessment_task_template.name
-
-
-class AssessmentResponseSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = AssessmentResponse
-        fields = '__all__'
 
 
 class VitalTaskTemplateSerializer(serializers.ModelSerializer):

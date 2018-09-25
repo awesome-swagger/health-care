@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+from .mixins import RepresentationMixin
 from care_adopt_backend import utils
 from apps.accounts.serializers import SettingsUserForSerializers
 from apps.core.models import (
@@ -40,7 +41,7 @@ class OrganizationSerializer(serializers.ModelSerializer):
 
 # TODO: DELETE on a facility should mark it inactive rather than removing it
 # from the database.
-class FacilitySerializer(serializers.ModelSerializer):
+class FacilitySerializer(RepresentationMixin, serializers.ModelSerializer):
     is_manager = serializers.SerializerMethodField()
 
     def get_is_manager(self, obj):
@@ -79,18 +80,12 @@ class FacilitySerializer(serializers.ModelSerializer):
             'created',
             'modified',
         )
-
-    def to_representation(self, instance):
-        data = super(FacilitySerializer, self).to_representation(instance)
-        if instance.organization:
-            organization = OrganizationSerializer(
-                instance.organization,
-                context=self.context
-            )
-            data.update({
-                'organization': organization.data
-            })
-        return data
+        nested_serializers = [
+            {
+                'field': 'organization',
+                'serializer_class': OrganizationSerializer,
+            }
+        ]
 
 
 class ProviderTitleSerializer(serializers.ModelSerializer):
@@ -124,7 +119,7 @@ class EmployeeUserInfo(SettingsUserForSerializers, serializers.ModelSerializer):
                    'image', )
 
 
-class EmployeeProfileSerializer(serializers.ModelSerializer):
+class EmployeeProfileSerializer(RepresentationMixin, serializers.ModelSerializer):
 
     class Meta:
         model = EmployeeProfile
@@ -148,74 +143,40 @@ class EmployeeProfileSerializer(serializers.ModelSerializer):
             'created',
             'modified',
         )
-
-    def to_representation(self, instance):
-        data = super(EmployeeProfileSerializer, self).to_representation(
-            instance)
-
-        if instance.user:
-            user = EmployeeUserInfo(instance.user)
-            data.update({
-                'user': user.data
-            })
-
-        if instance.specialty:
-            specialty = ProviderSpecialtySerializer(
-                instance.specialty
-            )
-            data.update({
-                'specialty': specialty.data
-            })
-
-        if instance.title:
-            title = ProviderTitleSerializer(
-                instance.title
-            )
-            data.update({
-                'title': title.data
-            })
-
-        if instance.organizations.exists():
-            organizations = OrganizationSerializer(
-                instance.organizations.all(),
-                many=True,
-                context=self.context
-            )
-            data.update({
-                'organizations': organizations.data
-            })
-
-        if instance.organizations_managed.exists():
-            organizations_managed = OrganizationSerializer(
-                instance.organizations_managed.all(),
-                many=True,
-                context=self.context
-            )
-            data.update({
-                'organizations_managed': organizations_managed.data
-            })
-
-        if instance.facilities.exists():
-            facilities = FacilitySerializer(
-                instance.facilities.all(),
-                many=True,
-                context=self.context
-            )
-            data.update({
-                'facilities': facilities.data
-            })
-
-        if instance.facilities_managed.exists():
-            facilities_managed = FacilitySerializer(
-                instance.facilities_managed.all(),
-                many=True,
-                context=self.context
-            )
-            data.update({
-                'facilities_managed': facilities_managed.data
-            })
-
-        return data
+        nested_serializers = [
+            {
+                'field': 'user',
+                'serializer_class': EmployeeUserInfo,
+            },
+            {
+                'field': 'specialty',
+                'serializer_class': ProviderSpecialtySerializer,
+            },
+            {
+                'field': 'title',
+                'serializer_class': ProviderTitleSerializer,
+            },
+            {
+                'field': 'organizations',
+                'serializer_class': OrganizationSerializer,
+                'many': True,
+            },
+            {
+                'field': 'organizations_managed',
+                'serializer_class': OrganizationSerializer,
+                'many': True,
+            },
+            {
+                'field': 'facilities',
+                'serializer_class': FacilitySerializer,
+                'many': True,
+            },
+            {
+                'field': 'facilities_managed',
+                'serializer_class': FacilitySerializer,
+                'many': True,
+            },
+        ]
 
 
 class DiagnosisSerializer(serializers.ModelSerializer):
