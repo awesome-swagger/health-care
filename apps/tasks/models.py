@@ -6,7 +6,11 @@ from django.dispatch import receiver
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
-from .signals import assessmentresponse_post_save, symptomrating_post_save
+from .signals import (
+    assessmentresponse_post_save,
+    symptomrating_post_save,
+    vitalresponse_post_save,
+)
 from care_adopt_backend.mixins import UUIDPrimaryKeyMixin
 from apps.core.models import (ProviderRole, Symptom, )
 from apps.patients.models import (PatientMedication, )
@@ -640,4 +644,8 @@ models.signals.post_save.connect(
 models.signals.post_save.connect(
     symptomrating_post_save,
     sender=SymptomRating
+)
+models.signals.post_save.connect(
+    vitalresponse_post_save,
+    sender=VitalResponse
 )
