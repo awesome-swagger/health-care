@@ -27,8 +27,14 @@ class PatientTaskTemplateAdmin(admin.ModelAdmin):
 
 
 class PatientTaskAdmin(admin.ModelAdmin):
+
+    def is_complete(self):
+        return self.is_complete
+    is_complete.boolean = True
+
     list_display = (
-        'plan', 'patient_task_template', 'appear_datetime', 'due_datetime', )
+        'plan', 'patient_task_template', 'appear_datetime', 'due_datetime',
+        is_complete, )
 
 
 class TeamTaskTemplateAdmin(admin.ModelAdmin):
@@ -38,19 +44,32 @@ class TeamTaskTemplateAdmin(admin.ModelAdmin):
 
 
 class TeamTaskAdmin(admin.ModelAdmin):
+
+    def is_complete(self):
+        return self.is_complete
+    is_complete.boolean = True
+
     list_display = (
-        'plan', 'team_task_template', 'appear_datetime', 'due_datetime', )
+        'plan', 'team_task_template', 'appear_datetime', 'due_datetime',
+        is_complete, )
 
 
 class MedicationTaskTemplateAdmin(admin.ModelAdmin):
+
     list_display = (
         'plan', 'patient_medication', 'start_on_day', 'frequency',
         'repeat_amount', 'appear_time', 'due_time', )
 
 
 class MedicationTaskAdmin(admin.ModelAdmin):
+
+    def is_complete(self):
+        return self.is_complete
+    is_complete.boolean = True
+
     list_display = (
-        'medication_task_template', 'appear_datetime', 'due_datetime', )
+        'medication_task_template', 'appear_datetime', 'due_datetime',
+        is_complete, )
 
 
 class SymptomTaskTemplateAdmin(admin.ModelAdmin):
@@ -67,7 +86,8 @@ class SymptomTaskAdmin(admin.ModelAdmin):
         SymptomRatingInline,
     ]
     list_display = (
-        'plan', 'symptom_task_template', 'appear_datetime', 'due_datetime', )
+        'plan', 'symptom_task_template', 'appear_datetime', 'due_datetime',
+        'is_complete', )
 
 
 class AssessmentQuestionInline(admin.TabularInline):
@@ -93,7 +113,7 @@ class AssessmentTaskAdmin(admin.ModelAdmin):
     ]
     list_display = (
         'plan', 'assessment_task_template', 'appear_datetime',
-        'due_datetime', )
+        'due_datetime', 'is_complete', )
 
 
 class VitalQuestionInline(admin.TabularInline):
