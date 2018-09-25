@@ -28,6 +28,7 @@ class TestVitalTaskUsingEmployee(TasksMixin, APITestCase):
         self.vital_task = self.create_vital_task(**{
             'plan': self.plan
         })
+        self.template = self.vital_task.vital_task_template
         self.url = reverse('vital_tasks-list')
         self.detail_url = reverse(
             'vital_tasks-detail',
@@ -165,6 +166,27 @@ class TestVitalTaskUsingEmployee(TasksMixin, APITestCase):
         )
         response = self.client.delete(url, {})
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_get_vital_task_incomplete_status(self):
+        self.create_multiple_vital_questions(self.template)
+        for count, question in enumerate(self.template.questions.all()):
+            if count < 2:
+                self.create_vital_response(**{
+                    'vital_task': self.vital_task,
+                    'question': question
+                })
+        response = self.client.get(self.detail_url)
+        self.assertEqual(response.data['is_complete'], False)
+
+    def test_get_vital_task_complete_status(self):
+        self.create_multiple_vital_questions(self.template)
+        for count, question in enumerate(self.template.questions.all()):
+            self.create_vital_response(**{
+                'vital_task': self.vital_task,
+                'question': question
+            })
+        response = self.client.get(self.detail_url)
+        self.assertEqual(response.data['is_complete'], True)
 
 
 class TestVitalTaskUsingPatient(TasksMixin, APITestCase):
