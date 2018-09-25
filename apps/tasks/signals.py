@@ -92,3 +92,10 @@ def symptomrating_post_save(sender, instance, created, **kwargs):
     """
     if created:
         assign_is_complete_to_symptom_task(instance)
+
+
+def symptomrating_post_delete(sender, instance, **kwargs):
+    task = instance.symptom_task
+    if task.is_complete:
+        task.is_complete = False
+        task.save()
