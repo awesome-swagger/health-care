@@ -37,7 +37,9 @@ class CarePlan(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
         PatientProfile, null=False, blank=False, related_name="care_plans",
         on_delete=models.CASCADE)
     plan_template = models.ForeignKey(
-        CarePlanTemplate, null=False, blank=False, on_delete=models.CASCADE)
+        CarePlanTemplate,
+        related_name="care_plans",
+        on_delete=models.CASCADE)
 
     def __str__(self):
         return '{} {}: {}'.format(
