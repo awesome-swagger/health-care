@@ -84,6 +84,16 @@ class TestSymptomTask(StateTestMixin, TasksMixin, APITestCase):
         response = self.client.get(filter_url)
         self.assertEqual(response.data['count'], count)
 
+    def test_get_symptom_ratings(self):
+        count = 5
+        for i in range(count):
+            self.create_symptom_rating(**{
+                'symptom_task': self.symptom_task
+            })
+
+        response = self.client.get(self.detail_url)
+        self.assertEqual(len(response.data['ratings']), count)
+
 
 class TestSymptomTaskUsingEmployee(TasksMixin, APITestCase):
     """
