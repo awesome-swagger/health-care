@@ -95,7 +95,22 @@ def symptomrating_post_save(sender, instance, created, **kwargs):
 
 
 def symptomrating_post_delete(sender, instance, **kwargs):
+    """
+    Function to be used as signal (post_delete) when deleting
+    :model:`tasks.SymptomRating`
+    """
     task = instance.symptom_task
+    if task.is_complete:
+        task.is_complete = False
+        task.save()
+
+
+def assessmentresponse_post_delete(sender, instance, **kwargs):
+    """
+    Function to be used as signal (post_delete) when deleting
+    :model:`tasks.AssessmentResponse`
+    """
+    task = instance.assessment_task
     if task.is_complete:
         task.is_complete = False
         task.save()
