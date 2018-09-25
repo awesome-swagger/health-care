@@ -57,7 +57,7 @@ class CarePlanTemplateViewSet(viewsets.ModelViewSet):
             return qs.all()
         if patient_profile is not None:
             template_ids = patient_profile.care_plans.filter(
-                is_active=True
+                plan_template__is_active=True
             ).values_list('plan_template', flat=True)
             return qs.filter(id__in=template_ids)
         return CarePlanTemplate.objects.none()
