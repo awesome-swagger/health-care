@@ -280,6 +280,12 @@ class AssessmentResponseViewSet(viewsets.ModelViewSet):
 
         return queryset
 
+    def get_serializer(self, *args, **kwargs):
+        if self.request.method == "POST":
+            kwargs['many'] = True
+        return super(AssessmentResponseViewSet, self).get_serializer(
+            *args, **kwargs)
+
 
 class VitalTaskTemplateViewSet(viewsets.ModelViewSet):
     """
