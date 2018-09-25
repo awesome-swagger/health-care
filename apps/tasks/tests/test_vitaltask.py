@@ -188,6 +188,31 @@ class TestVitalTaskUsingEmployee(TasksMixin, APITestCase):
         response = self.client.get(self.detail_url)
         self.assertEqual(response.data['is_complete'], True)
 
+    def test_mark_vitaltask_incomplete_on_delete_vitalresponse(self):
+        self.create_multiple_vital_questions(self.template)
+        # This will mark the VitalTask as complete
+        self.create_responses_to_multiple_vital_questions(
+            self.template,
+            self.vital_task,
+        )
+
+        # This will mark the VitalTask as incomplete
+        self.vital_task.responses.all().delete()
+
+        response = self.client.get(self.detail_url)
+        self.assertEqual(response.data['is_complete'], False)
+
+    def test_mark_vitaltask_complete_on_save_vitalresponse(self):
+        self.create_multiple_vital_questions(self.template)
+        # This will mark the VitalTask as complete
+        self.create_responses_to_multiple_vital_questions(
+            self.template,
+            self.vital_task,
+        )
+
+        response = self.client.get(self.detail_url)
+        self.assertEqual(response.data['is_complete'], True)
+
 
 class TestVitalTaskUsingPatient(TasksMixin, APITestCase):
     """
