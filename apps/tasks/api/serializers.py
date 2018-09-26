@@ -453,18 +453,18 @@ class VitalResponseSerializer(serializers.ModelSerializer):
         )
 
     def format_answer(self, answer_type, response):
-        if answer_type == 'boolean':
+        if answer_type == VitalQuestion.BOOLEAN:
             return True if response == 'True' else False
-        elif answer_type == 'time':
+        elif answer_type == VitalQuestion.TIME:
             time_obj = time.strptime(response, "%H:%M:%S")
             return datetime.time(
                 time_obj.tm_hour,
                 time_obj.tm_min,
                 time_obj.tm_sec
             )
-        elif answer_type == 'float':
+        elif answer_type == VitalQuestion.FLOAT:
             return float(response)
-        elif answer_type == 'integer' or answer_type == 'scale':
+        elif answer_type in [VitalQuestion.INTEGER, VitalQuestion.SCALE]:
             return int(response)
         return response
 
@@ -482,33 +482,33 @@ class VitalResponseSerializer(serializers.ModelSerializer):
         if 'response' in data:
             answer = data['response']
 
-            if answer_type == 'boolean':
+            if answer_type == VitalQuestion.BOOLEAN:
                 if str(answer) != 'True' and str(answer) != 'False':
                     raise serializers.ValidationError({
                         'response': _('Please provide a valid boolean value.')
                     })
-            elif answer_type == 'time':
+            elif answer_type == VitalQuestion.TIME:
                 try:
                     time.strptime(answer, "%H:%M:%S")
                 except ValueError:
                     raise serializers.ValidationError({
                         'response': _('Please provide a valid time in the format HH:MM:SS.')
                     })
-            elif answer_type == 'float':
+            elif answer_type == VitalQuestion.FLOAT:
                 try:
                     float(answer)
                 except ValueError:
                     raise serializers.ValidationError({
                         'response': _('Please provide a valid float value.')
                     })
-            elif answer_type == 'integer':
+            elif answer_type == VitalQuestion.INTEGER:
                 try:
                     int(answer)
                 except ValueError:
                     raise serializers.ValidationError({
                         'response': _('Please provide a valid integer value.')
                     })
-            elif answer_type == 'scale':
+            elif answer_type == VitalQuestion.SCALE:
                 try:
                     value = int(answer)
                     if value < 1 or value > 5:

@@ -28,7 +28,7 @@ from .factories import (
     VitalResponseFactory,
 )
 from apps.plans.tests.mixins import PlansMixin
-
+from apps.tasks.models import VitalQuestion
 
 class TasksMixin(PlansMixin):
 
@@ -391,36 +391,36 @@ class TasksMixin(PlansMixin):
             })
 
     def create_string_response_by_answer_type(self, answer_type):
-        if answer_type == 'boolean':
+        if answer_type == VitalQuestion.BOOLEAN:
             return str(random.choice([True, False]))
-        elif answer_type == 'time':
+        elif answer_type == VitalQuestion.TIME:
             response_time = datetime.time(
                 random.randint(1, 23),
                 random.randint(1, 59),
                 0
             )
             return response_time.strftime("%H:%M:%S")
-        elif answer_type == 'float':
+        elif answer_type == VitalQuestion.FLOAT:
             return str(random.uniform(5.5, 15.3))
-        elif answer_type == 'integer':
+        elif answer_type == VitalQuestion.INTEGER:
             return str(random.randint(1, 100))
-        elif answer_type == 'scale':
+        elif answer_type == VitalQuestion.SCALE:
             return str(random.randint(1, 5))
-        elif answer_type == 'string':
+        elif answer_type == VitalQuestion.STRING:
             return self.fake.sentence(nb_words=5)
 
     def create_response_by_answer_type(self, answer_type):
-        if answer_type == 'boolean':
+        if answer_type == VitalQuestion.BOOLEAN:
             return True
-        elif answer_type == 'time':
+        elif answer_type == VitalQuestion.TIME:
             datetime.time(random.randint(1, 23), random.randint(1, 59), 0)
-        elif answer_type == 'float':
+        elif answer_type == VitalQuestion.FLOAT:
             return random.uniform(5.5, 15.3)
-        elif answer_type == 'integer':
+        elif answer_type == VitalQuestion.INTEGER:
             return random.randint(1, 100)
-        elif answer_type == 'scale':
+        elif answer_type == VitalQuestion.SCALE:
             return random.randint(1, 5)
-        elif answer_type == 'string':
+        elif answer_type == VitalQuestion.STRING:
             return self.fake.sentence(nb_words=5)
 
     def create_vital_response(self, **kwargs):

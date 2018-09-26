@@ -402,13 +402,27 @@ class VitalQuestion(UUIDPrimaryKeyMixin):
     """
     Stores information about a vital question related to a vital task template
     """
+    BOOLEAN = 'boolean'
+    TIME = 'time'
+    FLOAT = 'float'
+    INTEGER = 'integer'
+    SCALE = 'scale'
+    STRING = 'string'
+    ANSWER_TYPE_CHOICES = (
+        (BOOLEAN, 'Boolean'),
+        (TIME, 'Time'),
+        (FLOAT, 'Float'),
+        (INTEGER, 'Integer'),
+        (SCALE, 'Scale'),
+        (STRING, 'String'),
+    )
     vital_task_template = models.ForeignKey(
         VitalTaskTemplate,
         related_name="questions",
         on_delete=models.CASCADE
     )
     prompt = models.CharField(max_length=255)
-    answer_type = models.CharField(max_length=128)
+    answer_type = models.CharField(max_length=128, choices=ANSWER_TYPE_CHOICES)
 
     def __str__(self):
         return f'{self.vital_task_template.name}: {self.prompt}'
