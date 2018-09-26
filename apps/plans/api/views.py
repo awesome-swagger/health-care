@@ -89,7 +89,8 @@ class CarePlanTemplateViewSet(viewsets.ModelViewSet):
                 queryset = queryset.filter(is_active=True)
         elif user.is_patient:
             queryset = queryset.filter(
-                care_plans__patient=user.patient_profile
+                care_plans__patient=user.patient_profile,
+                is_active=True
             )
 
         return queryset
@@ -380,6 +381,17 @@ class GoalTemplatesByPlanTemplate(RetrieveAPIView):
         permissions.IsAuthenticated,
         IsEmployeeOrPatientReadOnly,
     )
+
+    def get_queryset(self):
+        queryset = super(GoalTemplatesByPlanTemplate, self).get_queryset()
+        user = self.request.user
+
+        if user.is_patient:
+            queryset = queryset.filter(
+                care_plans__patient=user.patient_profile
+            )
+
+        return queryset
 
     def get_goal_templates(self):
         instance = self.get_object()

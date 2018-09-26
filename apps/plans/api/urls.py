@@ -13,7 +13,7 @@ urlpatterns = [
 
     # GoalTemplate
     url(
-        r'^care_plan_templates/(?P<id>[0-9]+)/goal_templates/$',
+        r'^care_plan_templates/(?P<pk>[0-9a-f-]+)/goal_templates/$',
         GoalTemplatesByPlanTemplate.as_view(),
         name='plan-template-goals'
     ),

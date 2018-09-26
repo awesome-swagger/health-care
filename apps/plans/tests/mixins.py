@@ -15,12 +15,17 @@ from apps.patients.tests.mixins import PatientsMixin
 
 class PlansMixin(PatientsMixin):
 
-    def create_care_plan(self, patient=None):
+    def create_care_plan(self, patient=None, **kwargs):
         if patient is None:
             patient = self.create_patient()
+
+        if 'plan_template' not in kwargs:
+            kwargs.update({
+                'plan_template': self.create_care_plan_template()
+            })
         return CarePlanFactory(
             patient=patient,
-            plan_template=self.create_care_plan_template(),
+            **kwargs
         )
 
     def create_care_plan_template(self):
