@@ -446,8 +446,18 @@ class VitalResponse(UUIDPrimaryKeyMixin):
         return getattr(self, f"answer_{answer_type}", "")
 
 
+def addDays(datetime, days):
+    return datetime + timedelta(days=days)
+
+
 def replace_time(datetime, time):
     return datetime.replace(hour=time.hour, minute=time.minute, second=time.second)
+
+
+def addDaysAndReplaceTime(datetime, days, time):
+    new_datetime = addDays(datetime, days)
+    new_datetime = replace_time(new_datetime, time)
+    return new_datetime
 
 
 def create_scheduled_tasks(plan, template_model, instance_model, template_field):
@@ -455,16 +465,16 @@ def create_scheduled_tasks(plan, template_model, instance_model, template_field)
         plan_template=plan.plan_template)
 
     for template in task_templates:
-        plan_end = datetime.now() + timedelta(
+        plan_end = timezone.now() + timedelta(
             weeks=template.plan_template.duration_weeks)
         template_config = {
             "{}".format(template_field): template
         }
         if template.frequency == 'once':
-            due_datetime = datetime.now() + timedelta(days=template.start_on_day)
-            due_datetime = replace_time(due_datetime, template.due_time)
-            appear_datetime = datetime.now() + timedelta(days=template.start_on_day)
-            appear_datetime = replace_time(appear_datetime, template.appear_time)
+            due_datetime = addDaysAndReplaceTime(
+                timezone.now(), template.start_on_day, template.due_time)
+            appear_datetime = addDaysAndReplaceTime(
+                timezone.now(), template.start_on_day, template.appear_time)
             instance_model.objects.create(
                 plan=plan,
                 due_datetime=due_datetime,
@@ -473,14 +483,10 @@ def create_scheduled_tasks(plan, template_model, instance_model, template_field)
         elif template.frequency == 'daily':
             if template.repeat_amount > 0:
                 for i in range(template.repeat_amount):
-                    due_datetime = datetime.now() + timedelta(
-                        days=(template.start_on_day + i))
-                    due_datetime = replace_time(due_datetime, template.due_time)
-                    appear_datetime = datetime.now() + timedelta(
-                        days=(template.start_on_day + i))
-                    appear_datetime = replace_time(
-                        appear_datetime,
-                        template.appear_time)
+                    due_datetime = addDaysAndReplaceTime(
+                        timezone.now(), template.start_on_day + i, template.due_time)
+                    appear_datetime = addDaysAndReplaceTime(
+                        timezone.now(), template.start_on_day + i, template.appear_time)
                     instance_model.objects.create(
                         plan=plan,
                         due_datetime=due_datetime,
@@ -489,15 +495,13 @@ def create_scheduled_tasks(plan, template_model, instance_model, template_field)
             else:
                 # Create a task instance for every day until the plan end date
                 day = 0
-                due_datetime = datetime.now()
+                due_datetime = timezone.now()
                 while due_datetime < plan_end:
-                    due_datetime = datetime.now() + timedelta(
-                        days=(template.start_on_day + day))
-                    due_datetime = replace_time(due_datetime, template.due_time)
-                    appear_datetime = datetime.now() + timedelta(
-                        days=(template.start_on_day + day))
-                    appear_datetime = replace_time(
-                        appear_datetime, template.appear_time)
+                    due_datetime = addDaysAndReplaceTime(
+                        timezone.now(), template.start_on_day + day, template.due_time)
+                    appear_datetime = addDaysAndReplaceTime(
+                        timezone.now(), template.start_on_day + day,
+                        template.appear_time)
                     instance_model.objects.create(
                         plan=plan,
                         due_datetime=due_datetime,
@@ -507,13 +511,12 @@ def create_scheduled_tasks(plan, template_model, instance_model, template_field)
         elif template.frequency == 'weekly':
             if template.repeat_amount > 0:
                 for i in range(template.repeat_amount):
-                    due_datetime = datetime.now() + timedelta(
-                        days=(template.start_on_day + (i * 7)))
-                    due_datetime = replace_time(due_datetime, template.due_time)
-                    appear_datetime = datetime.now() + timedelta(
-                        days=(template.start_on_day + (i * 7)))
-                    appear_datetime = replace_time(
-                        appear_datetime, template.appear_time)
+                    due_datetime = addDaysAndReplaceTime(
+                        timezone.now(), template.start_on_day + (i * 7),
+                        template.due_time)
+                    appear_datetime = addDaysAndReplaceTime(
+                        timezone.now(), template.start_on_day + (i * 7),
+                        template.appear_time)
                     instance_model.objects.create(
                         plan=plan,
                         due_datetime=due_datetime,
@@ -522,16 +525,15 @@ def create_scheduled_tasks(plan, template_model, instance_model, template_field)
             else:
                 # Create a task instance every week until the plan end date
                 day = 0
-                due_datetime = datetime.now()
-                appear_datetime = datetime.now()
+                due_datetime = timezone.now()
+                appear_datetime = timezone.now()
                 while due_datetime < plan_end:
-                    due_datetime = datetime.now() + timedelta(
-                        days=(template.start_on_day + day))
-                    due_datetime = replace_time(due_datetime, template.due_time)
-                    appear_datetime = datetime.now() + timedelta(
-                        days=(template.start_on_day + day))
-                    appear_datetime = replace_time(
-                        appear_datetime, template.appear_time)
+                    due_datetime = addDaysAndReplaceTime(
+                        timezone.now(), (template.start_on_day + day),
+                        template.due_time)
+                    appear_datetime = addDaysAndReplaceTime(
+                        timezone.now(), (template.start_on_day + day),
+                        template.appear_time)
                     instance_model.objects.create(
                         plan=plan,
                         due_datetime=due_datetime,
@@ -544,13 +546,12 @@ def create_scheduled_tasks(plan, template_model, instance_model, template_field)
                 created = 0
                 while created < template.repeat_amount:
                     if i % 2 == 0:
-                        due_datetime = datetime.now() + timedelta(
-                            days=(template.start_on_day + i))
-                        due_datetime = replace_time(due_datetime, template.due_time)
-                        appear_datetime = datetime.now() + timedelta(
-                            days=(template.start_on_day + i))
-                        appear_datetime = replace_time(
-                            appear_datetime, template.appear_time)
+                        due_datetime = addDaysAndReplaceTime(
+                            timezone.now(), (template.start_on_day + i),
+                            template.due_time)
+                        appear_datetime = addDaysAndReplaceTime(
+                            timezone.now(), (template.start_on_day + i),
+                            template.appear_time)
                         instance_model.objects.create(
                             plan=plan,
                             due_datetime=due_datetime,
@@ -560,17 +561,16 @@ def create_scheduled_tasks(plan, template_model, instance_model, template_field)
                     i += 1
             else:
                 i = 0
-                due_datetime = datetime.now()
-                appear_datetime = datetime.now()
+                due_datetime = timezone.now()
+                appear_datetime = timezone.now()
                 while due_datetime < plan_end:
                     if i % 2 == 0:
-                        due_datetime = datetime.now() + timedelta(
-                            days=(template.start_on_day + i))
-                        due_datetime = replace_time(due_datetime, template.due_time)
-                        appear_datetime = datetime.now() + timedelta(
-                            days=(template.start_on_day + i))
-                        appear_datetime = replace_time(
-                            appear_datetime, template.appear_time)
+                        due_datetime = addDaysAndReplaceTime(
+                            timezone.now(), (template.start_on_day + i),
+                            template.due_time)
+                        appear_datetime = addDaysAndReplaceTime(
+                            timezone.now(), (template.start_on_day + i),
+                            template.appear_time)
                         instance_model.objects.create(
                             plan=plan,
                             due_datetime=due_datetime,
@@ -581,13 +581,12 @@ def create_scheduled_tasks(plan, template_model, instance_model, template_field)
             if template.repeat_amount > 0:
                 repeats = 0
                 while repeats < template.repeat_amount:
-                    due_datetime = datetime.now() + timedelta(
-                        days=(template.start_on_day + i))
-                    due_datetime = replace_time(due_datetime, template.due_time)
-                    appear_datetime = datetime.now() + timedelta(
-                        days=(template.start_on_day + i))
-                    appear_datetime = replace_time(
-                        appear_datetime, template.appear_time)
+                    due_datetime = addDaysAndReplaceTime(
+                        timezone.now(), (template.start_on_day + i),
+                        template.due_time)
+                    appear_datetime = addDaysAndReplaceTime(
+                        timezone.now(), (template.start_on_day + i),
+                        template.appear_time)
                     if (
                         (due_datetime.weekday() < 5 and
                          template.frequency == 'weekdays') or
@@ -603,13 +602,13 @@ def create_scheduled_tasks(plan, template_model, instance_model, template_field)
             else:
                 # Create tasks on all weekends or weekdays until plan ends.
                 day = 0
-                due_datetime = datetime.now()
-                appear_datetime = datetime.now()
+                due_datetime = timezone.now()
+                appear_datetime = timezone.now()
                 while due_datetime < plan_end:
-                    due_datetime = datetime.now() + timedelta(
+                    due_datetime = timezone.now() + timedelta(
                         days=(template.start_on_day + day))
                     due_datetime = replace_time(due_datetime, template.due_time)
-                    appear_datetime = datetime.now() + timedelta(
+                    appear_datetime = timezone.now() + timedelta(
                         days=(template.start_on_day + day))
                     appear_datetime = replace_time(
                         appear_datetime, template.appear_time)
