@@ -103,15 +103,29 @@ class TasksMixin(PlansMixin):
             })
         return MedicationTaskFactory(**kwargs)
 
-    def create_symptom_task_template(self):
-        appear_time = datetime.time(8, 0, 0)
-        due_time = datetime.time(17, 0, 0)
-        return SymptomTaskTemplateFactory(
-            plan_template=self.create_care_plan_template(),
-            start_on_day=5,
-            appear_time=appear_time,
-            due_time=due_time,
-        )
+    def create_symptom_task_template(self, **kwargs):
+
+        if 'plan_template' not in kwargs:
+            kwargs.update({
+                'plan_template': self.create_care_plan_template()
+            })
+
+        if 'start_on_day' not in kwargs:
+            kwargs.update({
+                'start_on_day': random.randint(2, 10)
+            })
+
+        if 'appear_time' not in kwargs:
+            kwargs.update({
+                'appear_time': datetime.time(8, 0, 0)
+            })
+
+        if 'due_time' not in kwargs:
+            kwargs.update({
+                'due_time': datetime.time(17, 0, 0)
+            })
+
+        return SymptomTaskTemplateFactory(**kwargs)
 
     def create_symptom_task(self, **kwargs):
         now = timezone.now()
