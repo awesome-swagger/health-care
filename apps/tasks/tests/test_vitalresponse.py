@@ -7,6 +7,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from .mixins import TasksMixin
+from apps.tasks.models import VitalQuestion
 
 
 class TestVitalResponseUsingEmployee(TasksMixin, APITestCase):
@@ -209,7 +210,7 @@ class TestVitalResponseUsingPatient(TasksMixin, APITestCase):
     def test_create_vital_response_with_boolean_response(self):
         question = self.create_vital_question(**{
             'vital_task_template': self.template,
-            'answer_type': 'boolean'
+            'answer_type': VitalQuestion.BOOLEAN,
         })
         answer_type = question.answer_type
 
@@ -224,7 +225,7 @@ class TestVitalResponseUsingPatient(TasksMixin, APITestCase):
     def test_create_vital_response_with_boolean_response_invalid(self):
         question = self.create_vital_question(**{
             'vital_task_template': self.template,
-            'answer_type': 'boolean'
+            'answer_type': VitalQuestion.BOOLEAN,
         })
 
         payload = {
@@ -238,7 +239,7 @@ class TestVitalResponseUsingPatient(TasksMixin, APITestCase):
     def test_create_vital_response_with_time_response(self):
         question = self.create_vital_question(**{
             'vital_task_template': self.template,
-            'answer_type': 'time'
+            'answer_type': VitalQuestion.TIME,
         })
         answer_type = question.answer_type
 
@@ -254,7 +255,7 @@ class TestVitalResponseUsingPatient(TasksMixin, APITestCase):
     def test_create_vital_response_with_time_response_invalid(self):
         question = self.create_vital_question(**{
             'vital_task_template': self.template,
-            'answer_type': 'time'
+            'answer_type': VitalQuestion.TIME,
         })
 
         payload = {
@@ -269,7 +270,7 @@ class TestVitalResponseUsingPatient(TasksMixin, APITestCase):
     def test_create_vital_response_with_float_response(self):
         question = self.create_vital_question(**{
             'vital_task_template': self.template,
-            'answer_type': 'float'
+            'answer_type': VitalQuestion.FLOAT,
         })
         answer_type = question.answer_type
 
@@ -285,7 +286,7 @@ class TestVitalResponseUsingPatient(TasksMixin, APITestCase):
     def test_create_vital_response_with_float_response_invalid(self):
         question = self.create_vital_question(**{
             'vital_task_template': self.template,
-            'answer_type': 'float'
+            'answer_type': VitalQuestion.FLOAT,
         })
 
         payload = {
@@ -300,7 +301,7 @@ class TestVitalResponseUsingPatient(TasksMixin, APITestCase):
     def test_create_vital_response_with_integer_response(self):
         question = self.create_vital_question(**{
             'vital_task_template': self.template,
-            'answer_type': 'integer'
+            'answer_type': VitalQuestion.INTEGER,
         })
         answer_type = question.answer_type
 
@@ -316,7 +317,7 @@ class TestVitalResponseUsingPatient(TasksMixin, APITestCase):
     def test_create_vital_response_with_integer_response_invalid(self):
         question = self.create_vital_question(**{
             'vital_task_template': self.template,
-            'answer_type': 'integer'
+            'answer_type': VitalQuestion.INTEGER,
         })
 
         payload = {
@@ -331,7 +332,7 @@ class TestVitalResponseUsingPatient(TasksMixin, APITestCase):
     def test_create_vital_response_with_scale_response(self):
         question = self.create_vital_question(**{
             'vital_task_template': self.template,
-            'answer_type': 'scale'
+            'answer_type': VitalQuestion.SCALE,
         })
         answer_type = question.answer_type
 
@@ -347,7 +348,7 @@ class TestVitalResponseUsingPatient(TasksMixin, APITestCase):
     def test_create_vital_response_with_scale_response_invalid_scale(self):
         question = self.create_vital_question(**{
             'vital_task_template': self.template,
-            'answer_type': 'scale'
+            'answer_type': VitalQuestion.SCALE,
         })
 
         payload = {
@@ -361,7 +362,7 @@ class TestVitalResponseUsingPatient(TasksMixin, APITestCase):
     def test_create_vital_response_with_scale_response_invalid_integer(self):
         question = self.create_vital_question(**{
             'vital_task_template': self.template,
-            'answer_type': 'scale'
+            'answer_type': VitalQuestion.SCALE,
         })
 
         payload = {
@@ -375,7 +376,7 @@ class TestVitalResponseUsingPatient(TasksMixin, APITestCase):
     def test_create_vital_response_with_string_response(self):
         question = self.create_vital_question(**{
             'vital_task_template': self.template,
-            'answer_type': 'string'
+            'answer_type': VitalQuestion.STRING,
         })
         answer_type = question.answer_type
 
