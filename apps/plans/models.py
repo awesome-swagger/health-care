@@ -111,6 +111,7 @@ class Goal(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
         related_name='goals',
         on_delete=models.CASCADE
     )
+    start_on_datetime = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         verbose_name = _('Goal')
