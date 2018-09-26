@@ -13,7 +13,7 @@ urlpatterns = [
 
     # PatientProfile
     url(
-        r'^dashboard/$',
+        r'^patient_profiles/dashboard/$',
         PatientProfileDashboard.as_view(),
         name='patient-dashboard'
     ),

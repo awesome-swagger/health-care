@@ -1,5 +1,6 @@
 from rest_framework import viewsets, permissions
 from rest_framework.decorators import action
+from rest_framework.generics import RetrieveAPIView
 from rest_framework.response import Response
 
 from ..models import (
@@ -35,32 +36,64 @@ from care_adopt_backend.permissions import EmployeeOrReadOnly
 
 class CarePlanTemplateViewSet(viewsets.ModelViewSet):
     """
-    Permissions
+    Viewset for :model:`plans.CarePlanTemplate`
     ========
-    Employees get all templates, patients only get templates for which they
-    have an existing plan for.
 
-    Employees are able to create and update templates.  They are read-only
-    for patients.
+    create:
+        Creates :model:`plans.CarePlanTemplate` object.
+        Only admins and employees are allowed to perform this action.
+
+    update:
+        Updates :model:`plans.CarePlanTemplate` object.
+        Only admins and employees who belong to the same care team are allowed
+        to perform this action.
+
+    partial_update:
+        Updates one or more fields of an existing plan template object.
+        Only admins and employees who belong to the same care team are allowed
+        to perform this action.
+
+    retrieve:
+        Retrieves a :model:`plans.CarePlanTemplate` instance.
+        Admins will have access to all plan template objects. Employees will
+        only have access to those plan templates belonging to its own care
+        team. Patients will have access to all plan templates assigned to them.
+
+    list:
+        Returns list of all :model:`plans.CarePlanTemplate` objects.
+        Admins will get all existing plan template objects. Employees will get
+        the plan templates belonging to a certain care team. Patients will get
+        all plan templates belonging to them.
+
+    delete:
+        Deletes a :model:`plans.CarePlanTemplate` instance.
+        Only admins and employees who belong to the same care team are allowed
+        to perform this action.
     """
     serializer_class = CarePlanTemplateSerializer
-    permission_classes = (permissions.IsAuthenticated, EmployeeOrReadOnly, )
+    permission_classes = (
+        permissions.IsAuthenticated,
+        IsEmployeeOrPatientReadOnly,
+    )
+    queryset = CarePlanTemplate.objects.all()
 
     def get_queryset(self):
-        qs = CarePlanTemplate.objects.all()
-        employee_profile = utils.employee_profile_or_none(self.request.user)
-        patient_profile = utils.patient_profile_or_none(self.request.user)
-        if employee_profile is not None:
-            include_inactive = self.request.query_params.get('include_inactive')
+        queryset = super(CarePlanTemplateViewSet, self).get_queryset()
+        user = self.request.user
+
+        if user.is_employee:
+            # TODO: Move this to django filtering
+            include_inactive = self.request.query_params.get(
+                'include_inactive')
             if include_inactive != "true":
-                qs = qs.filter(is_active=True)
-            return qs.all()
-        if patient_profile is not None:
-            template_ids = patient_profile.care_plans.filter(
-                plan_template__is_active=True
-            ).values_list('plan_template', flat=True)
-            return qs.filter(id__in=template_ids)
-        return CarePlanTemplate.objects.none()
+                queryset = queryset.filter(is_active=True)
+        elif user.is_patient:
+            queryset = queryset.filter(
+                care_plans__patient=user.patient_profile,
+                is_active=True
+            )
+
+        return queryset
 
 
 class CarePlanViewSet(viewsets.ModelViewSet):
@@ -332,3 +365,45 @@ class InfoMessageViewSet(viewsets.ModelViewSet):
     serializer_class = InfoMessageSerializer
     permission_classes = (permissions.IsAuthenticated, EmployeeOrReadOnly, )
     queryset = InfoMessage.objects.all()
+
+
+############################
+# ----- CUSTOM VIEWS ----- #
+############################
+
+class GoalTemplatesByPlanTemplate(RetrieveAPIView):
+    """
+    Returns a list of goal templates related to the given plan template.
+    """
+    queryset = CarePlanTemplate.objects.all()
+    serializer_class = GoalTemplateSerializer
+    permission_classes = (
+        permissions.IsAuthenticated,
+        IsEmployeeOrPatientReadOnly,
+    )
+
+    def get_queryset(self):
+        queryset = super(GoalTemplatesByPlanTemplate, self).get_queryset()
+        user = self.request.user
+
+        if user.is_patient:
+            queryset = queryset.filter(
+                care_plans__patient=user.patient_profile
+            )
+
+        return queryset
+
+    def get_goal_templates(self):
+        instance = self.get_object()
+        return instance.goals.all()
+
+    def retrieve(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_goal_templates())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)

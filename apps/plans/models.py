@@ -1,15 +1,10 @@
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
-from django.db.models.signals import post_save
-from django.dispatch import receiver
 from django.utils.translation import ugettext_lazy as _
 
-from care_adopt_backend.mixins import (
-    AddressMixin, CreatedModifiedMixin, UUIDPrimaryKeyMixin)
-from apps.core.models import (
-    ProviderRole, EmployeeProfile, Symptom, )
-from apps.patients.models import (
-    PatientProfile, PatientMedication, )
+from care_adopt_backend.mixins import CreatedModifiedMixin, UUIDPrimaryKeyMixin
+from apps.core.models import ProviderRole, EmployeeProfile
+from apps.patients.models import PatientProfile
 
 
 PLAN_TYPE_CHOICES = (
@@ -37,7 +32,9 @@ class CarePlan(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
         PatientProfile, null=False, blank=False, related_name="care_plans",
         on_delete=models.CASCADE)
     plan_template = models.ForeignKey(
-        CarePlanTemplate, null=False, blank=False, on_delete=models.CASCADE)
+        CarePlanTemplate,
+        related_name="care_plans",
+        on_delete=models.CASCADE)
 
     def __str__(self):
         return '{} {}: {}'.format(

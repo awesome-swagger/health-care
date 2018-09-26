@@ -160,7 +160,8 @@ urlpatterns = [
     url(r'^favicon.ico$', RedirectView.as_view(
         url=settings.STATIC_URL + 'favicon.ico')),
 
-    url(r'^api/patient_profiles/', include('apps.patients.api.urls')),
+    url(r'^api/', include('apps.patients.api.urls')),
+    url(r'^api/', include('apps.plans.api.urls')),
 
     url(r'^api/', include(router.urls)),
     url(r'^$', LandingView.as_view(), name='landing-page'),
