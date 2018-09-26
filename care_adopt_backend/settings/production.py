@@ -24,6 +24,8 @@ MIDDLEWARE = [
     # 'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # CUSTOM MIDDLEWARES
+    'care_adopt_backend.middleware.TimezoneMiddleware',
 ]
 
 INSTALLED_APPS = (
