@@ -136,6 +136,13 @@ class TestMedicationTaskUsingEmployee(TasksMixin, APITestCase):
         response = self.client.get(self.detail_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    def test_get_medication_task_with_patient_medication(self):
+        response = self.client.get(self.detail_url)
+
+        medication_task_template = response.json()['medication_task_template']
+
+        self.assertEqual(medication_task_template['plan'], str(self.plan.id))
+
     def test_get_medication_task_detail_unauthenticated(self):
         self.client.logout()
         response = self.client.get(self.detail_url)
@@ -284,6 +291,13 @@ class TestMedicationTaskUsingPatient(TasksMixin, APITestCase):
     def test_get_medication_task_detail(self):
         response = self.client.get(self.detail_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_medication_task_with_patient_medication(self):
+        response = self.client.get(self.detail_url)
+
+        medication_task_template = response.json()['medication_task_template']
+
+        self.assertEqual(medication_task_template['plan'], str(self.plan.id))
 
     def test_get_medication_task_detail_unauthenticated(self):
         self.client.logout()
