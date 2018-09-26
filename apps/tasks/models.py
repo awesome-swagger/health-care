@@ -633,16 +633,15 @@ def create_scheduled_tasks(plan, template_model, instance_model, template_field)
 
 @receiver(post_save, sender=CarePlan)
 def create_patient_tasks(sender, instance, created, **kwargs):
-    create_scheduled_tasks(
-        instance, PatientTaskTemplate, PatientTask, 'patient_task_template')
-    create_scheduled_tasks(
-        instance, TeamTaskTemplate, TeamTask, 'team_task_template')
-    create_scheduled_tasks(
-        instance, SymptomTaskTemplate, SymptomTask, 'symptom_task_template')
-    create_scheduled_tasks(
-        instance, AssessmentTaskTemplate, AssessmentTask, 'assessment_task_template')
-    create_scheduled_tasks(
-        instance, VitalTaskTemplate, VitalTask, 'vital_task_template')
+    tasks = [
+        (PatientTaskTemplate, PatientTask, 'patient_task_template'),
+        (TeamTaskTemplate, TeamTask, 'team_task_template'),
+        (SymptomTaskTemplate, SymptomTask, 'symptom_task_template'),
+        (AssessmentTaskTemplate, AssessmentTask, 'assessment_task_template'),
+        (VitalTaskTemplate, VitalTask, 'vital_task_template'),
+    ]
+    for template, task, template_field in tasks:
+        create_scheduled_tasks(instance, template, task, template_field)
 
 
 # SIGNALS
