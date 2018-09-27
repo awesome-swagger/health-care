@@ -1,14 +1,61 @@
 import pytz
 
 from django.urls import reverse
-from django.utils import timezone
 
 from faker import Faker
 from rest_framework import status
 from rest_framework.test import APITestCase
 
 from .mixins import StateTestMixin, TasksMixin
-from apps.accounts.tests.factories import AdminUserFactory
+from apps.accounts.tests.factories import AdminUserFactory, RegularUserFactory
+
+
+class TestPatientTaskTimezoneConversion(TasksMixin, APITestCase):
+    """
+    Test cases for :model:`tasks.PatientTask`.
+    This will particularly test the timezone conversion of datetime
+    values in the PatientTask model.
+    """
+
+    def setUp(self):
+        self.fake = Faker()
+        self.user = RegularUserFactory(time_zone='Asia/Manila')
+        self.patient = self.create_patient(self.user)
+        self.plan = self.create_care_plan(self.patient)
+        self.patient_task = self.create_patient_task(**{
+            'plan': self.plan
+        })
+        self.other_task = self.create_patient_task(**{
+            'status': 'missed'
+        })
+        self.url = reverse('patient_tasks-list')
+        self.detail_url = reverse(
+            'patient_tasks-detail',
+            kwargs={'pk': self.patient_task.id}
+        )
+        self.client.force_authenticate(user=self.user)
+
+    def test_timezone_conversion_from_user_due(self):
+        gmt_plus_8 = "+08:00"
+        self.client.force_login(user=self.user)
+        response = self.client.get(self.detail_url)
+        self.assertEqual(response.data['due_datetime'][-6:], gmt_plus_8)
+
+    def test_timezone_conversion_due_unauthenticated(self):
+        gmt_minus_6 = "-06:00"
+        response = self.client.get(self.detail_url)
+        self.assertEqual(response.data['due_datetime'][-6:], gmt_minus_6)
+
+    def test_timezone_conversion_from_user_appear(self):
+        gmt_plus_8 = "+08:00"
+        self.client.force_login(user=self.user)
+        response = self.client.get(self.detail_url)
+        self.assertEqual(response.data['appear_datetime'][-6:], gmt_plus_8)
+
+    def test_timezone_conversion_appear_unauthenticated(self):
+        gmt_minus_6 = "-06:00"
+        response = self.client.get(self.detail_url)
+        self.assertEqual(response.data['appear_datetime'][-6:], gmt_minus_6)
 
 
 class TestPatientTask(StateTestMixin, TasksMixin, APITestCase):
