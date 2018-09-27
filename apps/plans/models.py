@@ -1,11 +1,15 @@
-from django.db import models
+from datetime import timedelta
+
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
-from care_adopt_backend.mixins import CreatedModifiedMixin, UUIDPrimaryKeyMixin
-from apps.core.models import ProviderRole, EmployeeProfile
+from apps.core.models import EmployeeProfile, ProviderRole
 from apps.patients.models import PatientProfile
-
+from care_adopt_backend.mixins import CreatedModifiedMixin, UUIDPrimaryKeyMixin
 
 PLAN_TYPE_CHOICES = (
     ('rpm', 'Remote Patient Management'),
@@ -202,3 +206,17 @@ class InfoMessage(UUIDPrimaryKeyMixin):
 
     def __str__(self):
         return '{} message'.format(self.queue.name)
+
+
+@receiver(post_save, sender=CarePlan)
+def create_goals(sender, instance, created, **kwargs):
+    if created:
+        care_plan_template = instance.plan_template
+
+        for goal_template in care_plan_template.goals.all():
+            goal_start_date = timezone.now() + timedelta(days=goal_template.start_on_day)
+            Goal.objects.create(
+                plan=instance,
+                goal_template=goal_template,
+                start_on_datetime=goal_start_date,
+            )
