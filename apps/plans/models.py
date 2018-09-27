@@ -214,9 +214,9 @@ def create_goals(sender, instance, created, **kwargs):
         care_plan_template = instance.plan_template
 
         for goal_template in care_plan_template.goals.all():
-            goal_start_date = timezone.now() + timedelta(days=goal_template.start_on_day)
+            start_on_datetime = timezone.now() + timedelta(days=goal_template.start_on_day)
             Goal.objects.create(
                 plan=instance,
                 goal_template=goal_template,
-                start_on_datetime=goal_start_date,
+                start_on_datetime=start_on_datetime,
             )
