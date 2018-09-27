@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from django.urls import reverse
 from django.utils import timezone
 from faker import Faker
@@ -39,6 +41,22 @@ class TestGoalUsingEmployee(PlansMixin, APITestCase):
 
     def test_get_goals_list(self):
         response = self.client.get(self.url)
+        self.assertEqual(response.data['count'], 1)
+
+    def test_get_goals_list_excluding_already_started(self):
+        url = self.url + '?exclude_past_start_on_datetime=1'
+        response = self.client.get(url)
+
+        self.assertEqual(response.data['count'], 0)
+
+        future_date = timezone.now() + timedelta(days=5)
+        self.goal_with_future_start_on_datetime = self.create_goal(
+            start_on_datetime=future_date,
+            plan=self.plan,
+        )
+
+        response = self.client.get(url)
+
         self.assertEqual(response.data['count'], 1)
 
     def test_get_goal_detail(self):
