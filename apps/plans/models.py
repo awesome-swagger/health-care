@@ -2,7 +2,6 @@ from datetime import timedelta
 
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
@@ -210,15 +209,8 @@ class InfoMessage(UUIDPrimaryKeyMixin):
         return '{} message'.format(self.queue.name)
 
 
-@receiver(post_save, sender=CarePlan)
-def create_goals(sender, instance, created, **kwargs):
-    if created:
-        care_plan_template = instance.plan_template
-
-        for goal_template in care_plan_template.goals.all():
-            start_on_datetime = timezone.now() + timedelta(days=goal_template.start_on_day)
-            Goal.objects.create(
-                plan=instance,
-                goal_template=goal_template,
-                start_on_datetime=start_on_datetime,
-            )
+# Signals
+models.signals.post_save.connect(
+    careplan_post_save,
+    sender=CarePlan,
+)
