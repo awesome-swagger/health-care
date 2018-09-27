@@ -11,6 +11,8 @@ from apps.core.models import EmployeeProfile, ProviderRole
 from apps.patients.models import PatientProfile
 from care_adopt_backend.mixins import CreatedModifiedMixin, UUIDPrimaryKeyMixin
 
+from .signals import careplan_post_save
+
 PLAN_TYPE_CHOICES = (
     ('rpm', 'Remote Patient Management'),
     ('bhi', 'Behavioral Health Initiative'),
@@ -115,7 +117,7 @@ class Goal(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
         related_name='goals',
         on_delete=models.CASCADE
     )
-    start_on_datetime = models.DateTimeField(null=True, blank=True)
+    start_on_datetime = models.DateTimeField()
 
     class Meta:
         verbose_name = _('Goal')
