@@ -1,5 +1,10 @@
 import random
 
+from django.utils import timezone
+
+from apps.accounts.tests.factories import RegularUserFactory
+from apps.patients.tests.mixins import PatientsMixin
+
 from .factories import (
     CarePlanFactory,
     CarePlanTemplateFactory,
@@ -9,8 +14,6 @@ from .factories import (
     GoalProgressFactory,
     GoalCommentFactory,
 )
-from apps.accounts.tests.factories import RegularUserFactory
-from apps.patients.tests.mixins import PatientsMixin
 
 
 class PlansMixin(PatientsMixin):
@@ -96,6 +99,9 @@ class PlansMixin(PatientsMixin):
             kwargs.update({
                 'goal_template': self.create_goal_template()
             })
+
+        if 'start_on_datetime' not in kwargs:
+            kwargs['start_on_datetime'] = timezone.now()
 
         return GoalFactory(**kwargs)
 
