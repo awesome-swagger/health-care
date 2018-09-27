@@ -196,6 +196,7 @@ class GoalSerializer(serializers.ModelSerializer):
             'goal_template',
             'latest_progress',
             'comments',
+            'start_on_datetime',
             'created',
             'modified',
         )
