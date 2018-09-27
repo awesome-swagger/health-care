@@ -1,5 +1,5 @@
 from django.urls import reverse
-
+from django.utils import timezone
 from faker import Faker
 from rest_framework import status
 from rest_framework.test import APITestCase
@@ -61,6 +61,7 @@ class TestGoalUsingEmployee(PlansMixin, APITestCase):
         payload = {
             'plan': self.plan.id,
             'goal_template': template.id,
+            'start_on_datetime': timezone.now(),
         }
         response = self.client.post(self.url, payload)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -71,6 +72,7 @@ class TestGoalUsingEmployee(PlansMixin, APITestCase):
         payload = {
             'plan': self.plan.id,
             'goal_template': template.id,
+            'start_on_datetime': timezone.now(),
         }
         response = self.client.put(self.detail_url, payload)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
