@@ -963,3 +963,94 @@ class TestCarePlanPostSaveSignalWeekdaysWithoutRepeat(TasksMixin, APITestCase):
         count = VitalTask.objects.filter(
             plan__id=response.data['id']).count()
         self.assertEqual(count, days.count() - 1)
+
+
+class TestCarePlanPostSaveSignalWeekendsWithRepeat(TasksMixin, APITestCase):
+    """
+    Test cases for :model:`plans.CarePlan` using an employee
+    as the logged in user. This is particularly testing the
+    post_save signal of the CarePlan model with weekends frequency
+    and with repeat_amount
+    """
+
+    def setUp(self):
+        self.fake = Faker()
+        self.employee = self.create_employee()
+        self.user = self.employee.user
+
+        self.plan_template = self.create_care_plan_template()
+        self.patient_user = RegularUserFactory(time_zone='Asia/Manila')
+        self.patient = self.create_patient(self.patient_user)
+
+        self.url = reverse('care_plans-list')
+        self.client.force_authenticate(user=self.user)
+
+    def test_create_care_plan_patient_task_with_repeat(self):
+        repeat_amount = random.randint(5, 30)
+        self.create_patient_task_template(
+            self.plan_template,
+            **{
+                'frequency': 'weekends',
+                'repeat_amount': repeat_amount
+            }
+        )
+        payload = {
+            'patient': self.patient.id,
+            'plan_template': self.plan_template.id
+        }
+
+        response = self.client.post(self.url, payload)
+        count = PatientTask.objects.filter(
+            plan__id=response.data['id']).count()
+        self.assertEqual(count, repeat_amount)
+
+    def test_create_care_plan_symptom_task_with_repeat(self):
+        repeat_amount = random.randint(5, 30)
+        self.create_symptom_task_template(**{
+            'plan_template': self.plan_template,
+            'frequency': 'weekends',
+            'repeat_amount': repeat_amount
+        })
+        payload = {
+            'patient': self.patient.id,
+            'plan_template': self.plan_template.id
+        }
+
+        response = self.client.post(self.url, payload)
+        count = SymptomTask.objects.filter(
+            plan__id=response.data['id']).count()
+        self.assertEqual(count, repeat_amount)
+
+    def test_create_care_plan_assessment_task_with_repeat(self):
+        repeat_amount = random.randint(5, 30)
+        self.create_assessment_task_template(**{
+            'plan_template': self.plan_template,
+            'frequency': 'weekends',
+            'repeat_amount': repeat_amount
+        })
+        payload = {
+            'patient': self.patient.id,
+            'plan_template': self.plan_template.id
+        }
+
+        response = self.client.post(self.url, payload)
+        count = AssessmentTask.objects.filter(
+            plan__id=response.data['id']).count()
+        self.assertEqual(count, repeat_amount)
+
+    def test_create_care_plan_vital_task_with_repeat(self):
+        repeat_amount = random.randint(5, 30)
+        self.create_vital_task_template(**{
+            'plan_template': self.plan_template,
+            'frequency': 'weekends',
+            'repeat_amount': repeat_amount
+        })
+        payload = {
+            'patient': self.patient.id,
+            'plan_template': self.plan_template.id
+        }
+
+        response = self.client.post(self.url, payload)
+        count = VitalTask.objects.filter(
+            plan__id=response.data['id']).count()
+        self.assertEqual(count, repeat_amount)
