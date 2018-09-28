@@ -1,4 +1,7 @@
 from datetime import datetime, timedelta
+
+from dateutil import rrule
+
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db.models.signals import post_save
@@ -474,6 +477,39 @@ def addDaysAndReplaceTime(datetime, days, time):
     return new_datetime
 
 
+def increase_dates(due_datetime, appear_datetime, date_type):
+    types_lookup = ['weekdays', 'weekends']
+    if date_type in types_lookup:
+        days = 1
+
+        if date_type == 'weekdays':
+            while due_datetime.weekday() > 4:
+                due_datetime = addDays(
+                    due_datetime,
+                    days
+                )
+                appear_datetime = addDays(
+                    appear_datetime,
+                    days
+                )
+                days += 1
+
+        elif date_type == 'weekends':
+            while due_datetime.weekday() < 5:
+                due_datetime = addDays(
+                    due_datetime,
+                    days
+                )
+                appear_datetime = addDays(
+                    appear_datetime,
+                    days
+                )
+                days += 1
+
+        return due_datetime, appear_datetime
+    raise ValueError(_('Date type not supported.'))
+
+
 def create_scheduled_tasks(plan, template_model, instance_model, template_field):
     task_templates = template_model.objects.filter(plan_template=plan.plan_template)
 
@@ -584,51 +620,80 @@ def create_scheduled_tasks(plan, template_model, instance_model, template_field)
                             appear_datetime=appear_datetime,
                             **template_config)
                     i += 1
-        elif template.frequency == 'weekdays' or template.frequency == 'weekends':
+        elif template.frequency == 'weekdays' or \
+                template.frequency == 'weekends':
             if template.repeat_amount > 0:
                 repeats = 0
                 while repeats < template.repeat_amount:
+
                     due_datetime = addDaysAndReplaceTime(
-                        timezone.now(), (template.start_on_day + i),
-                        template.due_time)
+                        timezone.now(),
+                        template.start_on_day + repeats,
+                        template.due_time
+                    )
                     appear_datetime = addDaysAndReplaceTime(
-                        timezone.now(), (template.start_on_day + i),
-                        template.appear_time)
-                    if (
-                        (due_datetime.weekday() < 5 and
-                         template.frequency == 'weekdays') or
-                        (due_datetime.weekday() > 4 and
-                         template.frequency == 'weekends')
-                    ):
-                        instance_model.objects.create(
-                            due_datetime=due_datetime,
-                            appear_datetime=appear_datetime,
-                            **template_config)
-                        repeats += 1
+                        timezone.now(),
+                        template.start_on_day + repeats,
+                        template.appear_time
+                    )
+
+                    due_datetime, appear_datetime = increase_dates(
+                        due_datetime,
+                        appear_datetime,
+                        template.frequency
+                    )
+
+                    instance_model.objects.create(
+                        plan=plan,
+                        due_datetime=due_datetime,
+                        appear_datetime=appear_datetime,
+                        **template_config)
+
+                    repeats += 1
+
             else:
                 # Create tasks on all weekends or weekdays until plan ends.
-                day = 0
-                due_datetime = timezone.now()
-                appear_datetime = timezone.now()
-                while due_datetime < plan_end:
-                    due_datetime = timezone.now() + timedelta(
-                        days=(template.start_on_day + day))
-                    due_datetime = replace_time(due_datetime, template.due_time)
-                    appear_datetime = timezone.now() + timedelta(
-                        days=(template.start_on_day + day))
-                    appear_datetime = replace_time(
-                        appear_datetime, template.appear_time)
-                    if (
-                        (due_datetime.weekday() < 5 and
-                         template.frequency == 'weekdays') or
-                        (due_datetime.weekday() > 4 and
-                         template.frequency == 'weekends')
-                    ):
-                        instance_model.objects.create(
-                            due_datetime=due_datetime,
-                            appear_datetime=appear_datetime,
-                            **template_config)
-                    day += 1
+                due_datetime = addDaysAndReplaceTime(
+                    timezone.now(),
+                    template.start_on_day,
+                    template.due_time
+                )
+                appear_datetime = addDaysAndReplaceTime(
+                    timezone.now(),
+                    template.start_on_day,
+                    template.appear_time
+                )
+
+                days_lookup = {
+                    'weekdays': [0, 1, 2, 3, 4],  # Monday-Friday
+                    'weekends': [5, 6]  # Saturday-Sunday
+                }
+
+                # Gets all weekday/weekend dates from due_datetime to plan_end
+                due_dates = rrule.rrule(
+                    rrule.DAILY,
+                    dtstart=due_datetime,
+                    until=plan_end,
+                    byweekday=days_lookup[template.frequency]
+                )
+
+                # Gets all weekday/weekend dates from appear_datetime to
+                # plan_end
+                appear_dates = rrule.rrule(
+                    rrule.DAILY,
+                    dtstart=appear_datetime,
+                    until=plan_end,
+                    byweekday=days_lookup[template.frequency]
+                )
+
+                dates = zip(list(appear_dates), list(due_dates))
+
+                for appear, due in dates:
+                    instance_model.objects.create(
+                        plan=plan,
+                        due_datetime=due,
+                        appear_datetime=appear,
+                        **template_config)
 
 
 @receiver(post_save, sender=CarePlan)
