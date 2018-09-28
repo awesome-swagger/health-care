@@ -7,6 +7,7 @@ from django.apps import apps
 from django.urls import reverse
 from django.utils import timezone
 
+from dateutil import rrule
 from dateutil.relativedelta import relativedelta
 from faker import Faker
 from rest_framework.test import APITestCase
@@ -736,3 +737,229 @@ class TestCarePlanPostSaveSignalOtherDayWithoutRepeat(TasksMixin, APITestCase):
         count = VitalTask.objects.filter(
             plan__id=response.data['id']).count()
         self.assertEqual(count, math.ceil((diff.days) / 2) + 1)
+
+
+class TestCarePlanPostSaveSignalWeekdaysWithRepeat(TasksMixin, APITestCase):
+    """
+    Test cases for :model:`plans.CarePlan` using an employee
+    as the logged in user. This is particularly testing the
+    post_save signal of the CarePlan model with weekdays frequency
+    and with repeat_amount
+    """
+
+    def setUp(self):
+        self.fake = Faker()
+        self.employee = self.create_employee()
+        self.user = self.employee.user
+
+        self.plan_template = self.create_care_plan_template()
+        self.patient_user = RegularUserFactory(time_zone='Asia/Manila')
+        self.patient = self.create_patient(self.patient_user)
+
+        self.url = reverse('care_plans-list')
+        self.client.force_authenticate(user=self.user)
+
+    def test_create_care_plan_patient_task_with_repeat(self):
+        repeat_amount = random.randint(5, 30)
+        self.create_patient_task_template(
+            self.plan_template,
+            **{
+                'frequency': 'weekdays',
+                'repeat_amount': repeat_amount
+            }
+        )
+        payload = {
+            'patient': self.patient.id,
+            'plan_template': self.plan_template.id
+        }
+
+        response = self.client.post(self.url, payload)
+        count = PatientTask.objects.filter(
+            plan__id=response.data['id']).count()
+        self.assertEqual(count, repeat_amount)
+
+    def test_create_care_plan_symptom_task_with_repeat(self):
+        repeat_amount = random.randint(5, 30)
+        self.create_symptom_task_template(**{
+            'plan_template': self.plan_template,
+            'frequency': 'weekdays',
+            'repeat_amount': repeat_amount
+        })
+        payload = {
+            'patient': self.patient.id,
+            'plan_template': self.plan_template.id
+        }
+
+        response = self.client.post(self.url, payload)
+        count = SymptomTask.objects.filter(
+            plan__id=response.data['id']).count()
+        self.assertEqual(count, repeat_amount)
+
+    def test_create_care_plan_assessment_task_with_repeat(self):
+        repeat_amount = random.randint(5, 30)
+        self.create_assessment_task_template(**{
+            'plan_template': self.plan_template,
+            'frequency': 'weekdays',
+            'repeat_amount': repeat_amount
+        })
+        payload = {
+            'patient': self.patient.id,
+            'plan_template': self.plan_template.id
+        }
+
+        response = self.client.post(self.url, payload)
+        count = AssessmentTask.objects.filter(
+            plan__id=response.data['id']).count()
+        self.assertEqual(count, repeat_amount)
+
+    def test_create_care_plan_vital_task_with_repeat(self):
+        repeat_amount = random.randint(5, 30)
+        self.create_vital_task_template(**{
+            'plan_template': self.plan_template,
+            'frequency': 'weekdays',
+            'repeat_amount': repeat_amount
+        })
+        payload = {
+            'patient': self.patient.id,
+            'plan_template': self.plan_template.id
+        }
+
+        response = self.client.post(self.url, payload)
+        count = VitalTask.objects.filter(
+            plan__id=response.data['id']).count()
+        self.assertEqual(count, repeat_amount)
+
+
+class TestCarePlanPostSaveSignalWeekdaysWithoutRepeat(TasksMixin, APITestCase):
+    """
+    Test cases for :model:`plans.CarePlan` using an employee
+    as the logged in user. This is particularly testing the
+    post_save signal of the CarePlan model with weekdays frequency
+    and without repeat_amount
+    """
+
+    def setUp(self):
+        self.fake = Faker()
+        self.employee = self.create_employee()
+        self.user = self.employee.user
+
+        self.duration_weeks = random.randint(1, 3)
+        self.duration_days = self.duration_weeks * 7
+        self.plan_template = self.create_care_plan_template(**{
+            'duration_weeks': self.duration_weeks
+        })
+        self.patient_user = RegularUserFactory(time_zone='Asia/Manila')
+        self.patient = self.create_patient(self.patient_user)
+
+        self.url = reverse('care_plans-list')
+        self.client.force_authenticate(user=self.user)
+
+    def test_create_care_plan_patient_task_without_repeat(self):
+        now = timezone.now()
+        start_on_day = random.randint(2, 5)
+        start = now + relativedelta(days=start_on_day)
+        end = now + relativedelta(weeks=self.duration_weeks)
+        weekdays = [0, 1, 2, 3, 4]
+        days = rrule.rrule(
+            rrule.DAILY,
+            dtstart=start,
+            until=end,
+            byweekday=weekdays
+        )
+        self.create_patient_task_template(
+            self.plan_template,
+            **{
+                'frequency': 'weekdays',
+                'start_on_day': start_on_day
+            }
+        )
+        payload = {
+            'patient': self.patient.id,
+            'plan_template': self.plan_template.id
+        }
+
+        response = self.client.post(self.url, payload)
+        count = PatientTask.objects.filter(
+            plan__id=response.data['id']).count()
+        self.assertEqual(count, days.count() - 1)
+
+    def test_create_care_plan_symptom_task_without_repeat(self):
+        now = timezone.now()
+        start_on_day = random.randint(2, 5)
+        start = now + relativedelta(days=start_on_day)
+        end = now + relativedelta(weeks=self.duration_weeks)
+        weekdays = [0, 1, 2, 3, 4]
+        days = rrule.rrule(
+            rrule.DAILY,
+            dtstart=start,
+            until=end,
+            byweekday=weekdays
+        )
+        self.create_symptom_task_template(**{
+            'plan_template': self.plan_template,
+            'frequency': 'weekdays',
+            'start_on_day': start_on_day
+        })
+        payload = {
+            'patient': self.patient.id,
+            'plan_template': self.plan_template.id
+        }
+
+        response = self.client.post(self.url, payload)
+        count = SymptomTask.objects.filter(
+            plan__id=response.data['id']).count()
+        self.assertEqual(count, days.count() - 1)
+
+    def test_create_care_plan_assessment_task_without_repeat(self):
+        now = timezone.now()
+        start_on_day = random.randint(2, 5)
+        start = now + relativedelta(days=start_on_day)
+        end = now + relativedelta(weeks=self.duration_weeks)
+        weekdays = [0, 1, 2, 3, 4]
+        days = rrule.rrule(
+            rrule.DAILY,
+            dtstart=start,
+            until=end,
+            byweekday=weekdays
+        )
+        self.create_assessment_task_template(**{
+            'plan_template': self.plan_template,
+            'frequency': 'weekdays',
+            'start_on_day': start_on_day
+        })
+        payload = {
+            'patient': self.patient.id,
+            'plan_template': self.plan_template.id
+        }
+
+        response = self.client.post(self.url, payload)
+        count = AssessmentTask.objects.filter(
+            plan__id=response.data['id']).count()
+        self.assertEqual(count, days.count() - 1)
+
+    def test_create_care_plan_vital_task_without_repeat(self):
+        now = timezone.now()
+        start_on_day = random.randint(2, 5)
+        start = now + relativedelta(days=start_on_day)
+        end = now + relativedelta(weeks=self.duration_weeks)
+        weekdays = [0, 1, 2, 3, 4]
+        days = rrule.rrule(
+            rrule.DAILY,
+            dtstart=start,
+            until=end,
+            byweekday=weekdays
+        )
+        self.create_vital_task_template(**{
+            'plan_template': self.plan_template,
+            'frequency': 'weekdays',
+            'start_on_day': start_on_day
+        })
+        payload = {
+            'patient': self.patient.id,
+            'plan_template': self.plan_template.id
+        }
+
+        response = self.client.post(self.url, payload)
+        count = VitalTask.objects.filter(
+            plan__id=response.data['id']).count()
+        self.assertEqual(count, days.count() - 1)
