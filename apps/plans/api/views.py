@@ -235,6 +235,10 @@ class GoalViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = super(GoalViewSet, self).get_queryset()
         user = self.request.user
+        include_future_goals = self.request.query_params.get('include_future_goals')
+
+        if not include_future_goals:
+            queryset = queryset.exclude(start_on_datetime__gte=timezone.now())
 
         if user.is_employee:
             queryset = queryset.filter(
@@ -242,11 +246,6 @@ class GoalViewSet(viewsets.ModelViewSet):
             )
         elif user.is_patient:
             queryset = queryset.filter(plan__patient=user.patient_profile)
-
-        exclude_past_start_on_datetime = self.request.query_params.get('exclude_past_start_on_datetime')
-
-        if exclude_past_start_on_datetime == '1':
-            queryset = queryset.exclude(start_on_datetime__lte=timezone.now())
 
         return queryset
 

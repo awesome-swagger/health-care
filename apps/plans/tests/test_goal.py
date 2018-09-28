@@ -43,11 +43,8 @@ class TestGoalUsingEmployee(PlansMixin, APITestCase):
         response = self.client.get(self.url)
         self.assertEqual(response.data['count'], 1)
 
-    def test_get_goals_list_excluding_already_started(self):
-        url = self.url + '?exclude_past_start_on_datetime=1'
-        response = self.client.get(url)
-
-        self.assertEqual(response.data['count'], 0)
+    def test_get_goals_list_include_future_goals(self):
+        url = self.url + '?include_future_goals=1'
 
         future_date = timezone.now() + timedelta(days=5)
         self.goal_with_future_start_on_datetime = self.create_goal(
@@ -57,7 +54,7 @@ class TestGoalUsingEmployee(PlansMixin, APITestCase):
 
         response = self.client.get(url)
 
-        self.assertEqual(response.data['count'], 1)
+        self.assertEqual(response.data['count'], 2)
 
     def test_get_goal_detail(self):
         response = self.client.get(self.detail_url)
