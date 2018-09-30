@@ -490,139 +490,124 @@ def create_scheduled_tasks(plan,
             '{}'.format(template_field): template,
             'plan': plan,
         }
-        if template.frequency == 'once':
-            due_datetime = add_days_and_replace_time(
-                timezone.now(),
-                template.start_on_day,
-                template.due_time
-            )
-            appear_datetime = add_days_and_replace_time(
-                timezone.now(),
-                template.start_on_day,
-                template.appear_time
-            )
-            instance_model.objects.create(
-                due_datetime=due_datetime,
-                appear_datetime=appear_datetime,
-                **template_config)
-        elif template.frequency == 'daily':
+
+        due_datetime = add_days_and_replace_time(
+            timezone.now(),
+            template.start_on_day,
+            template.due_time
+        )
+        appear_datetime = add_days_and_replace_time(
+            timezone.now(),
+            template.start_on_day,
+            template.appear_time
+        )
+
+        if template.frequency == 'daily':
+
             if template.repeat_amount > 0:
-                for i in range(template.repeat_amount):
-                    due_datetime = add_days_and_replace_time(
-                        timezone.now(),
-                        template.start_on_day + i,
-                        template.due_time
-                    )
-                    appear_datetime = add_days_and_replace_time(
-                        timezone.now(),
-                        template.start_on_day + i,
-                        template.appear_time
-                    )
-                    instance_model.objects.create(
-                        due_datetime=due_datetime,
-                        appear_datetime=appear_datetime,
-                        **template_config)
+
+                # Gets all dates from due_datetime up to the
+                # number of `count` given. In this case, that would be the
+                # `template.repeat_amount`
+                due_dates = rrule.rrule(
+                    rrule.DAILY,
+                    dtstart=due_datetime,
+                    count=template.repeat_amount,
+                )
+
+                # Gets all dates from appear_datetime up to the
+                # number of `count` given. In this case, that would be the
+                # `template.repeat_amount`
+                appear_dates = rrule.rrule(
+                    rrule.DAILY,
+                    dtstart=appear_datetime,
+                    count=template.repeat_amount,
+                )
+
             else:
-                # Create a task instance for every day until the plan end date
-                day = 0
-                due_datetime = timezone.now()
-                while due_datetime < plan_end:
-                    due_datetime = add_days_and_replace_time(
-                        timezone.now(),
-                        template.start_on_day + day,
-                        template.due_time
-                    )
-                    appear_datetime = add_days_and_replace_time(
-                        timezone.now(),
-                        template.start_on_day + day,
-                        template.appear_time
-                    )
-                    instance_model.objects.create(
-                        due_datetime=due_datetime,
-                        appear_datetime=appear_datetime,
-                        **template_config)
-                    day += 1
+                # Gets all dates from due_datetime to plan_end
+                due_dates = rrule.rrule(
+                    rrule.DAILY,
+                    dtstart=due_datetime,
+                    until=plan_end,
+                )
+
+                # Gets all dates from appear_datetime to plan_end
+                appear_dates = rrule.rrule(
+                    rrule.DAILY,
+                    dtstart=appear_datetime,
+                    until=plan_end,
+                )
+
         elif template.frequency == 'weekly':
+
             if template.repeat_amount > 0:
-                for i in range(template.repeat_amount):
-                    due_datetime = add_days_and_replace_time(
-                        timezone.now(),
-                        template.start_on_day + (i * 7),
-                        template.due_time
-                    )
-                    appear_datetime = add_days_and_replace_time(
-                        timezone.now(),
-                        template.start_on_day + (i * 7),
-                        template.appear_time
-                    )
-                    instance_model.objects.create(
-                        due_datetime=due_datetime,
-                        appear_datetime=appear_datetime,
-                        **template_config)
+                # Gets all dates weekly from due_datetime up to the
+                # number of `count` given. In this case, that would be the
+                # `template.repeat_amount`
+                due_dates = rrule.rrule(
+                    rrule.WEEKLY,
+                    dtstart=due_datetime,
+                    count=template.repeat_amount,
+                )
+
+                # Gets all dates weekly from appear_datetime up to the
+                # number of `count` given. In this case, that would be the
+                # `template.repeat_amount`
+                appear_dates = rrule.rrule(
+                    rrule.WEEKLY,
+                    dtstart=appear_datetime,
+                    count=template.repeat_amount,
+                )
+
             else:
-                # Create a task instance every week until the plan end date
-                day = 0
-                due_datetime = timezone.now()
-                appear_datetime = timezone.now()
-                while due_datetime < plan_end:
-                    due_datetime = add_days_and_replace_time(
-                        timezone.now(),
-                        (template.start_on_day + day),
-                        template.due_time
-                    )
-                    appear_datetime = add_days_and_replace_time(
-                        timezone.now(),
-                        (template.start_on_day + day),
-                        template.appear_time
-                    )
-                    instance_model.objects.create(
-                        due_datetime=due_datetime,
-                        appear_datetime=appear_datetime,
-                        **template_config)
-                    day += 7
+                # Gets all dates weekly from due_datetime to plan_end
+                due_dates = rrule.rrule(
+                    rrule.WEEKLY,
+                    dtstart=due_datetime,
+                    until=plan_end,
+                )
+
+                # Gets all dates weekly from appear_datetime to plan_end
+                appear_dates = rrule.rrule(
+                    rrule.WEEKLY,
+                    dtstart=appear_datetime,
+                    until=plan_end,
+                )
+
         elif template.frequency == 'every_other_day':
+
             if template.repeat_amount > 0:
-                i = 0
-                created = 0
-                while created < template.repeat_amount:
-                    if i % 2 == 0:
-                        due_datetime = add_days_and_replace_time(
-                            timezone.now(),
-                            (template.start_on_day + i),
-                            template.due_time
-                        )
-                        appear_datetime = add_days_and_replace_time(
-                            timezone.now(),
-                            (template.start_on_day + i),
-                            template.appear_time
-                        )
-                        instance_model.objects.create(
-                            due_datetime=due_datetime,
-                            appear_datetime=appear_datetime,
-                            **template_config)
-                        created += 1
-                    i += 1
+
+                due_dates = rrule.rrule(
+                    rrule.DAILY,
+                    interval=2,
+                    dtstart=due_datetime,
+                    count=template.repeat_amount,
+                )
+
+                appear_dates = rrule.rrule(
+                    rrule.DAILY,
+                    interval=2,
+                    dtstart=appear_datetime,
+                    count=template.repeat_amount,
+                )
+
             else:
-                i = 0
-                due_datetime = timezone.now()
-                appear_datetime = timezone.now()
-                while due_datetime < plan_end:
-                    if i % 2 == 0:
-                        due_datetime = add_days_and_replace_time(
-                            timezone.now(),
-                            (template.start_on_day + i),
-                            template.due_time
-                        )
-                        appear_datetime = add_days_and_replace_time(
-                            timezone.now(),
-                            (template.start_on_day + i),
-                            template.appear_time
-                        )
-                        instance_model.objects.create(
-                            due_datetime=due_datetime,
-                            appear_datetime=appear_datetime,
-                            **template_config)
-                    i += 1
+                due_dates = rrule.rrule(
+                    rrule.DAILY,
+                    interval=2,
+                    dtstart=due_datetime,
+                    until=plan_end,
+                )
+
+                appear_dates = rrule.rrule(
+                    rrule.DAILY,
+                    interval=2,
+                    dtstart=appear_datetime,
+                    until=plan_end,
+                )
+
         elif template.frequency == 'weekdays' or \
                 template.frequency == 'weekends':
 
@@ -630,17 +615,6 @@ def create_scheduled_tasks(plan,
                 'weekdays': [0, 1, 2, 3, 4],  # Monday-Friday
                 'weekends': [5, 6]  # Saturday-Sunday
             }
-
-            due_datetime = add_days_and_replace_time(
-                timezone.now(),
-                template.start_on_day,
-                template.due_time
-            )
-            appear_datetime = add_days_and_replace_time(
-                timezone.now(),
-                template.start_on_day,
-                template.appear_time
-            )
 
             if template.repeat_amount > 0:
                 # Gets all weekday/weekend dates from due_datetime up to the
@@ -663,8 +637,6 @@ def create_scheduled_tasks(plan,
                     byweekday=days_lookup[template.frequency]
                 )
 
-                dates = zip(list(appear_dates), list(due_dates))
-
             else:
                 # Create tasks on all weekends or weekdays until plan ends.
 
@@ -685,7 +657,14 @@ def create_scheduled_tasks(plan,
                     byweekday=days_lookup[template.frequency]
                 )
 
-                dates = zip(list(appear_dates), list(due_dates))
+        if template.frequency == 'once':
+            instance_model.objects.create(
+                plan=plan,
+                due_datetime=due_datetime,
+                appear_datetime=appear_datetime,
+                **template_config)
+        elif appear_dates.count() > 0 and due_dates.count() > 0:
+            dates = zip(list(appear_dates), list(due_dates))
 
             for appear, due in dates:
                 instance_model.objects.create(
