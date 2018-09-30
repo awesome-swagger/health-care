@@ -1,11 +1,16 @@
-from django.db import models
+from datetime import timedelta
+
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db import models
+from django.dispatch import receiver
+from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
-from care_adopt_backend.mixins import CreatedModifiedMixin, UUIDPrimaryKeyMixin
-from apps.core.models import ProviderRole, EmployeeProfile
+from apps.core.models import EmployeeProfile, ProviderRole
 from apps.patients.models import PatientProfile
+from care_adopt_backend.mixins import CreatedModifiedMixin, UUIDPrimaryKeyMixin
 
+from .signals import careplan_post_save
 
 PLAN_TYPE_CHOICES = (
     ('rpm', 'Remote Patient Management'),
@@ -111,6 +116,7 @@ class Goal(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
         related_name='goals',
         on_delete=models.CASCADE
     )
+    start_on_datetime = models.DateTimeField()
 
     class Meta:
         verbose_name = _('Goal')
@@ -201,3 +207,10 @@ class InfoMessage(UUIDPrimaryKeyMixin):
 
     def __str__(self):
         return '{} message'.format(self.queue.name)
+
+
+# Signals
+models.signals.post_save.connect(
+    careplan_post_save,
+    sender=CarePlan,
+)

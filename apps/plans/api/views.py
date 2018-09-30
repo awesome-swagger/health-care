@@ -32,7 +32,7 @@ from apps.core.api.serializers import ProviderRoleSerializer
 from apps.tasks.permissions import IsEmployeeOrPatientReadOnly
 from care_adopt_backend import utils
 from care_adopt_backend.permissions import EmployeeOrReadOnly
-
+from django.utils import timezone
 
 class CarePlanTemplateViewSet(viewsets.ModelViewSet):
     """
@@ -235,6 +235,10 @@ class GoalViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = super(GoalViewSet, self).get_queryset()
         user = self.request.user
+        include_future_goals = self.request.query_params.get('include_future_goals')
+
+        if not include_future_goals:
+            queryset = queryset.exclude(start_on_datetime__gte=timezone.now())
 
         if user.is_employee:
             queryset = queryset.filter(
