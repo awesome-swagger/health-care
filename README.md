@@ -1,13 +1,8 @@
-# care_adopt_backend
-
-_**TODO**: point these links to the correct URLs once CI is activated for this project_
-
-- [![build status](https://dev.izeni.net/ci/projects/_TODO_/status.png?ref=master)](https://dev.izeni.net/ci/projects/_TODO_?ref=master) @ [master](https://dev.izeni.net/_TODO__PROJECT_GROUP__TODO_/care_adopt_backend/blob/master/README.md)
-- [![build status](https://dev.izeni.net/ci/projects/_TODO_/status.png?ref=develop)](https://dev.izeni.net/ci/projects/_TODO_?ref=develop) @ [develop](https://dev.izeni.net/_TODO__PROJECT_GROUP__TODO_/care_adopt_backend/blob/develop/README.md)
+# Care Adopt Backend
 
 
 ## Setting up a development environment
-    
+
 ### [Recommended development tools/aliases][recommended-development-tools]
 
 [recommended-development-tools]: https://dev.izeni.net/izeni/izeni-django-template/wikis/recommended-development-tools
@@ -27,7 +22,7 @@ _(Note: make certain you are using **python3** for this - python2 is no longer s
     ```
 
 1. Create the database:
-    
+
     ```bash
     echo "CREATE USER care_adopt_backend WITH PASSWORD 'care_adopt_backend'; CREATE DATABASE care_adopt_backend OWNER care_adopt_backend; ALTER USER care_adopt_backend CREATEDB;" | su postgres -c psql
     ```
@@ -70,7 +65,7 @@ _(Note: make certain you are using **python3** for this - python2 is no longer s
 
     ```bash
     source my_env/bin/activate
-    
+
     manage.py createsuperuser
     ```
 1. Reset everything.
