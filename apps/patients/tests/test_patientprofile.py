@@ -1,3 +1,5 @@
+from unittest import mock
+
 from django.db.models import Avg
 from django.urls import reverse
 from django.utils import timezone
@@ -39,6 +41,41 @@ class TestPatientProfile(PatientsMixin, APITestCase):
             response.data['facility']['name'],
             self.patient.facility.name
         )
+
+
+class TestPatientProfilesAsEmployee(PatientsMixin, APITestCase):
+    """
+    Test cases for :view:`patients.PatientProfileViewSet` using an employee as the logged in user.
+    """
+    def setUp(self):
+        self.fake = Faker()
+        self.employee = self.create_employee()
+        self.client.force_authenticate(user=self.employee.user)
+
+    @mock.patch('apps.patients.api.views.get_searchable_patients')
+    def test_search_patients_via_haystack_with_search_query(self, get_searchable_patients):
+        """
+        search view should call `get_searchable_patients` function if the GET request has `q` data
+        """
+        search_url = reverse('patient_profiles-search') + '?q=' + 'Patient Name'
+
+        response = self.client.get(search_url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(get_searchable_patients.called)
+
+    @mock.patch('apps.patients.api.views.get_searchable_patients')
+    def test_search_patients_via_haystack_without_search_query(self, get_searchable_patients):
+        """
+        search view should return an empty list if the GET request does not contain `q` data
+        """
+        search_url = reverse('patient_profiles-search')
+
+        response = self.client.get(search_url)
+
+        self.assertFalse(get_searchable_patients.called)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data, [])
 
 
 class TestPatientProfileDashboard(TasksMixin, APITestCase):
