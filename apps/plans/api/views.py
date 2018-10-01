@@ -34,6 +34,7 @@ from care_adopt_backend import utils
 from care_adopt_backend.permissions import EmployeeOrReadOnly
 from django.utils import timezone
 
+
 class CarePlanTemplateViewSet(viewsets.ModelViewSet):
     """
     Viewset for :model:`plans.CarePlanTemplate`
@@ -83,10 +84,9 @@ class CarePlanTemplateViewSet(viewsets.ModelViewSet):
 
         if user.is_employee:
             # TODO: Move this to django filtering
-            include_inactive = self.request.query_params.get(
-                'include_inactive')
-            if include_inactive != "true":
-                queryset = queryset.filter(is_active=True)
+            exclude_inactive = self.request.query_params.get('exclude_inactive')
+            if exclude_inactive == "true":
+                queryset = queryset.exclude(is_active=False)
         elif user.is_patient:
             queryset = queryset.filter(
                 care_plans__patient=user.patient_profile,

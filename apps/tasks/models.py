@@ -475,14 +475,14 @@ def addDaysAndReplaceTime(datetime, days, time):
 
 
 def create_scheduled_tasks(plan, template_model, instance_model, template_field):
-    task_templates = template_model.objects.filter(
-        plan_template=plan.plan_template)
+    task_templates = template_model.objects.filter(plan_template=plan.plan_template)
 
     for template in task_templates:
         plan_end = timezone.now() + timedelta(
             weeks=template.plan_template.duration_weeks)
         template_config = {
-            "{}".format(template_field): template
+            '{}'.format(template_field): template,
+            'plan': plan,
         }
         if template.frequency == 'once':
             due_datetime = addDaysAndReplaceTime(
@@ -490,7 +490,6 @@ def create_scheduled_tasks(plan, template_model, instance_model, template_field)
             appear_datetime = addDaysAndReplaceTime(
                 timezone.now(), template.start_on_day, template.appear_time)
             instance_model.objects.create(
-                plan=plan,
                 due_datetime=due_datetime,
                 appear_datetime=appear_datetime,
                 **template_config)
@@ -502,7 +501,6 @@ def create_scheduled_tasks(plan, template_model, instance_model, template_field)
                     appear_datetime = addDaysAndReplaceTime(
                         timezone.now(), template.start_on_day + i, template.appear_time)
                     instance_model.objects.create(
-                        plan=plan,
                         due_datetime=due_datetime,
                         appear_datetime=appear_datetime,
                         **template_config)
@@ -517,7 +515,6 @@ def create_scheduled_tasks(plan, template_model, instance_model, template_field)
                         timezone.now(), template.start_on_day + day,
                         template.appear_time)
                     instance_model.objects.create(
-                        plan=plan,
                         due_datetime=due_datetime,
                         appear_datetime=appear_datetime,
                         **template_config)
@@ -532,7 +529,6 @@ def create_scheduled_tasks(plan, template_model, instance_model, template_field)
                         timezone.now(), template.start_on_day + (i * 7),
                         template.appear_time)
                     instance_model.objects.create(
-                        plan=plan,
                         due_datetime=due_datetime,
                         appear_datetime=appear_datetime,
                         **template_config)
@@ -549,7 +545,6 @@ def create_scheduled_tasks(plan, template_model, instance_model, template_field)
                         timezone.now(), (template.start_on_day + day),
                         template.appear_time)
                     instance_model.objects.create(
-                        plan=plan,
                         due_datetime=due_datetime,
                         appear_datetime=appear_datetime,
                         **template_config)
@@ -567,7 +562,6 @@ def create_scheduled_tasks(plan, template_model, instance_model, template_field)
                             timezone.now(), (template.start_on_day + i),
                             template.appear_time)
                         instance_model.objects.create(
-                            plan=plan,
                             due_datetime=due_datetime,
                             appear_datetime=appear_datetime,
                             **template_config)
@@ -586,7 +580,6 @@ def create_scheduled_tasks(plan, template_model, instance_model, template_field)
                             timezone.now(), (template.start_on_day + i),
                             template.appear_time)
                         instance_model.objects.create(
-                            plan=plan,
                             due_datetime=due_datetime,
                             appear_datetime=appear_datetime,
                             **template_config)
@@ -608,7 +601,6 @@ def create_scheduled_tasks(plan, template_model, instance_model, template_field)
                          template.frequency == 'weekends')
                     ):
                         instance_model.objects.create(
-                            plan=plan,
                             due_datetime=due_datetime,
                             appear_datetime=appear_datetime,
                             **template_config)
@@ -633,7 +625,6 @@ def create_scheduled_tasks(plan, template_model, instance_model, template_field)
                          template.frequency == 'weekends')
                     ):
                         instance_model.objects.create(
-                            plan=plan,
                             due_datetime=due_datetime,
                             appear_datetime=appear_datetime,
                             **template_config)
@@ -644,6 +635,8 @@ def create_scheduled_tasks(plan, template_model, instance_model, template_field)
 def create_patient_tasks(sender, instance, created, **kwargs):
     create_scheduled_tasks(
         instance, PatientTaskTemplate, PatientTask, 'patient_task_template')
+    create_scheduled_tasks(
+        instance, TeamTaskTemplate, TeamTask, 'team_task_template')
     create_scheduled_tasks(
         instance, SymptomTaskTemplate, SymptomTask, 'symptom_task_template')
     create_scheduled_tasks(

@@ -25,24 +25,25 @@ from apps.plans.models import (CareTeamMember, )
 
 class OrganizationViewSet(viewsets.ModelViewSet):
     """
-    Fields
-    =======
-    * **is_manager** - returns true if the requesting user is a manager of this organization
-    * **created** - the datetime that this organization was created
-    * **modified** - the datetime that any of the fields on this object were last updated
-    * **addr_*** - the address of this organization (optional)
-    * **name** - the name of this organization
-
-    Permissions
+    Viewset for :model:`core.Organizaion`
     ========
-    Through the API only GET requests are available.
 
-    If the requesting user is an employee, only the organizations they are a employee or
-    manager of are returned.  If the requesting user is a patient, only the organization
-    that the facility they are recieving care from belongs to is returned
-    **example**: if a patient is recieving care from the
-     Ogden Clinic: Canyon View facility, this endpoint would return the Ogden Clinic
-     object details for them.
+    update:
+        Updates :model:`core.Organizaion` object.
+        Only managers of the organization can perform this action.
+
+    partial_update:
+        Updates one or more fields of an existing organization object.
+        Only managers of the organization can perform this action.
+
+    retrieve:
+        Retrieves a :model:`core.Organizaion` instance.
+
+    list:
+        Returns list of all :model:`core.Organizaion` objects.
+
+        - Employees get all organizations they belong to.
+        - Patient's get only the organization for the facility they belong to.
     """
     serializer_class = OrganizationSerializer
     permission_classes = (
@@ -71,26 +72,33 @@ class OrganizationViewSet(viewsets.ModelViewSet):
 
 class FacilityViewSet(viewsets.ModelViewSet):
     """
-    Fields
-    =======
-    * **is_manager** (*auto*) - returns true if the requesting user is a manager of this facility
-    * **created** (*auto*) - the datetime that this facility was created
-    * **modified** (*auto*) - the datetime that any of the fields on this object were last updated
-    * **addr_field** (*optional*) - these fields form the full address of the facility
-    * **name** (*required*) - the name of this facility
-    * **organization** (*required*) - the organization that this facility belongs to
-    * **is_affiliate** (*default false*) - true if the facility is a third party affiliate of the organization
-    * **parent_company** (*optional*) - if the facility is the entity purchasing the
-        CareAdopt plan, they have the option to list a parent company. If this facility
-        belongs to an organization which purchased a CareAdopt plan, the
-        parent_company field is not relevant.
-
-    Permissions
+    Viewset for :model:`core.Facility`
     ========
-    * Employee's do not have access to create, update, or delete facilities unless they are a manager of the organization.
-    * Patient's only have retrieve (GET) access.
-    * Employees have access to all of the facilities that they are an employee or manager of.
-    * Patient's only have access to the facility they are recieving care from.
+
+    create:
+        Creates :model:`core.Facility` object.
+        Only managers of the organization can perform this action.
+
+    update:
+        Updates :model:`core.Facility` object.
+        Only managers of the facility can perform this action.
+
+    partial_update:
+        Updates one or more fields of an existing organization object.
+        Only managers of the facility can perform this action.
+
+    retrieve:
+        Retrieves a :model:`core.Facility` instance.
+
+    list:
+        Returns list of all :model:`core.Facility` objects.
+
+        - Employees get all facilities they belong to.
+        - Patients only get the facility they're receiving care from.
+
+    delete:
+        Deletes a :model:`core.Facility` instance.
+        Only admins and employees are allowed to perform this action.
     """
     serializer_class = FacilitySerializer
     permission_classes = (permissions.IsAuthenticated, FacilityPermissions, )
@@ -122,16 +130,14 @@ class ProviderTitleViewSet(
     viewsets.GenericViewSet
 ):
     """
-    Fields
-    =======
-    * **name** (*required*) - the full name of the title
-    * **abbreviation** (*required*) - the abbreviation that will show next to the
-    employee's name in many places
-
-    Permissions
+    Viewset for :model:`core.ProviderTitle`
     ========
-    This endpoint is readonly.  ProviderTitles can not be created, updated, or
-    destroyed.
+
+    retrieve:
+        Retrieves a :model:`core.ProviderTitle` instance.
+
+    list:
+        Returns list of all :model:`core.ProviderTitle` objects.
     """
     serializer_class = ProviderTitleSerializer
     permission_classes = (permissions.AllowAny, )
@@ -144,14 +150,14 @@ class ProviderRoleViewSet(
     viewsets.GenericViewSet,
 ):
     """
-    Fields
-    =======
-    * **name** (*required*) - the name of the role
-
-    Permissions
+    Viewset for :model:`core.ProviderRole`
     ========
-    This endpoint is readonly.  ProviderRoles can not be created, updated, or
-    destroyed.
+
+    retrieve:
+        Retrieves a :model:`core.ProviderRole` instance.
+
+    list:
+        Returns list of all :model:`core.ProviderRole` objects.
     """
     serializer_class = ProviderRoleSerializer
     permission_classes = (permissions.AllowAny, )
@@ -164,16 +170,14 @@ class ProviderSpecialtyViewSet(
     viewsets.GenericViewSet
 ):
     """
-    Fields
-    =======
-    * **name** (*required*) - the name of the specialty
-    * **physician_specialty** (*default false*) - Determines whether or not this
-    specialty is reserved for physicians
-
-    Permissions
+    Viewset for :model:`core.ProviderSpecialty`
     ========
-    This endpoint is readonly.  ProviderSpecialties can not be created, updated, or
-    destroyed.
+
+    retrieve:
+        Retrieves a :model:`core.ProviderSpecialty` instance.
+
+    list:
+        Returns list of all :model:`core.ProviderSpecialty` objects.
     """
     serializer_class = ProviderSpecialtySerializer
     permission_classes = (permissions.AllowAny, )
@@ -182,37 +186,33 @@ class ProviderSpecialtyViewSet(
 
 class EmployeeProfileViewSet(viewsets.ModelViewSet):
     """
-    Fields
-    =======
-    * **user** (*auto*) - both employees and patients wrap around a user object
-    that allows them to authenticate.  This object is readonly from this endpoint
-    * **specialty** (*optional*) - only applies if the employee is a provider.
-    Determines what the provider's specialty is.
-    * **title** (*optional*) - only applies if the employee is a provider.
-    The title abbrviation is shown near the employee's name in many places.
-    * **created** (*auto*) - the datetime that this employee was created
-    * **modified** (*auto*) - the datetime that any of the fields on this object were last updated
-    * **status** (*default invited*) - valid options are `invited`, `inactive`, and `active`
-    * **npi** (*optional*) - by having an NPI number providers can be linked to the electronic medical records (EMR).
-    If the user is not a provider they won't have an NPI number.
-    * **organizations** (*default none*) - organizations this employee works for
-    * **organizations_managed** (*default none*) - organizations this employee manages
-    * **facilities** (*default none*) - facilities this employee works for
-    * **facilities_managed** (*default none*) - facilities this employee manages
-    * **roles** (*default none*) - only applies if the employee is a provider.
-    Determines what roles the provider is responsible for.
-
-
-    Permissions
+    Viewset for :model:`core.Facility`
     ========
-    * If the requesting user is an employee, this endpoint will return other employee's
-    in the same facilities and organizations as the user.
-    * If the requesting user is a patient, this endpoint will return only employee's
-    that are providers for the patient.
 
-    User's will be able to update their own employee profiles.  Organization managers and
-    super users may also have that ability.  Organization managers will have the ability to
-    deactivate employee profiles.
+    create:
+        Creates :model:`core.Facility` object.
+        Only admins and employees are allowed to perform this action.
+
+    update:
+        Updates :model:`core.Facility` object.
+        Only admins and employees are allowed to perform this action.
+
+    partial_update:
+        Updates one or more fields of an existing organization object.
+        Only admins and employees are allowed to perform this action.
+
+    retrieve:
+        Retrieves a :model:`core.Facility` instance.
+
+    list:
+        Returns list of all :model:`core.Facility` objects.
+
+        - Employees get all facilities they belong to.
+        - Patients only get the facility they're receiving care from.
+
+    delete:
+        Deletes a :model:`core.Facility` instance.
+        Only admins and employees are allowed to perform this action.
     """
     serializer_class = EmployeeProfileSerializer
     permission_classes = (
