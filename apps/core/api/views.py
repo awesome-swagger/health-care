@@ -21,6 +21,7 @@ from .serializers import (
 from apps.core.permissions import (
     OrganizationPermissions, FacilityPermissions, EmployeeProfilePermissions, )
 from apps.plans.models import (CareTeamMember, )
+from .filters import RelatedOrderingFilter
 
 
 class OrganizationViewSet(viewsets.ModelViewSet):
@@ -70,7 +71,7 @@ class OrganizationViewSet(viewsets.ModelViewSet):
         return qs.none()
 
 
-class FacilityViewSet(viewsets.ModelViewSet):
+class FacilityViewSet(viewsets.ModelViewSet, RelatedOrderingFilter):
     """
     Viewset for :model:`core.Facility`
     ========
