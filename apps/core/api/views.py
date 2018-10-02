@@ -70,6 +70,7 @@ class OrganizationViewSet(viewsets.ModelViewSet):
             return qs.all()
         return qs.none()
 
+from rest_framework.generics import ListAPIView
 
 class FacilityViewSet(viewsets.ModelViewSet, RelatedOrderingFilter):
     """
@@ -106,6 +107,35 @@ class FacilityViewSet(viewsets.ModelViewSet, RelatedOrderingFilter):
 
     def get_queryset(self):
         qs = Facility.objects.all()
+        employee_profile = utils.employee_profile_or_none(self.request.user)
+        patient_profile = utils.patient_profile_or_none(self.request.user)
+        # If user is a employee, filter out facilities they do not belong to
+        if employee_profile is not None:
+            qs = qs.filter(
+                Q(id__in=employee_profile.facilities.all()) |
+                Q(id__in=employee_profile.facilities_managed.all())
+            )
+            # Filter for getting only facilities within a specific organization
+            organization = self.request.query_params.get('organization_id')
+            if organization:
+                qs = qs.filter(organization__id=organization)
+            return qs.all()
+        # If user is a patient, only return their facility
+        if patient_profile is not None:
+            qs = qs.filter(id=patient_profile.facility.id)
+            return qs.all()
+
+
+class AffiliateFacilityListView(ListAPIView):
+    """
+    Facility that are affiliates
+    """
+    serializer_class = FacilitySerializer
+    permission_classes = (permissions.IsAuthenticated, FacilityPermissions, )
+
+    def get_queryset(self):
+        # TODO: create util for repeated logic?
+        qs = Facility.objects.filter(is_affiliate=True)
         employee_profile = utils.employee_profile_or_none(self.request.user)
         patient_profile = utils.patient_profile_or_none(self.request.user)
         # If user is a employee, filter out facilities they do not belong to

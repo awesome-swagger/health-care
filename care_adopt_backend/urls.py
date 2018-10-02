@@ -12,7 +12,7 @@ from apps.accounts.views import UserViewSet
 from apps.core.api.views import (
     OrganizationViewSet, FacilityViewSet, EmployeeProfileViewSet,
     ProviderTitleViewSet, ProviderRoleViewSet, ProviderSpecialtyViewSet,
-    DiagnosisViewSet,  MedicationViewSet, ProcedureViewSet, SymptomViewSet, )
+    DiagnosisViewSet,  MedicationViewSet, ProcedureViewSet, SymptomViewSet, AffiliateFacilityListView)
 from apps.patients.api.views import (
     PatientProfileViewSet, PatientDiagnosisViewSet, ProblemAreaViewSet,
     PatientProcedureViewSet, PatientMedicationViewSet, PatientProfileSearchViewSet)
@@ -164,6 +164,7 @@ urlpatterns = [
     url(r'^favicon.ico$', RedirectView.as_view(
         url=settings.STATIC_URL + 'favicon.ico')),
 
+    url(r'^api/', include('apps.core.api.urls')),
     url(r'^api/', include('apps.patients.api.urls')),
     url(r'^api/', include('apps.plans.api.urls')),
 
