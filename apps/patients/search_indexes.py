@@ -5,6 +5,7 @@ from .models import PatientProfile
 
 class PatientProfileIndex(indexes.SearchIndex, indexes.Indexable):
     text = indexes.CharField(document=True, use_template=True)
+    id = indexes.CharField(model_attr='id')
     user = indexes.CharField(model_attr='user')
     facility = indexes.CharField(model_attr='facility')
     emr_code = indexes.CharField(model_attr='emr_code')

@@ -15,7 +15,7 @@ from apps.core.api.views import (
     DiagnosisViewSet,  MedicationViewSet, ProcedureViewSet, SymptomViewSet, )
 from apps.patients.api.views import (
     PatientProfileViewSet, PatientDiagnosisViewSet, ProblemAreaViewSet,
-    PatientProcedureViewSet, PatientMedicationViewSet, )
+    PatientProcedureViewSet, PatientMedicationViewSet, PatientProfileSearchViewSet)
 from apps.plans.api.views import (
     CarePlanTemplateViewSet,
     CarePlanViewSet,
@@ -73,6 +73,11 @@ router.register(r'medications', MedicationViewSet, base_name='medications')
 router.register(r'procedures', ProcedureViewSet, base_name='procedures')
 router.register(r'symptoms', SymptomViewSet, base_name='symptoms')
 # Patients
+router.register(
+    'patient_profiles/search',
+    PatientProfileSearchViewSet,
+    base_name='patient_profiles_search',
+)
 router.register(
     r'patient_profiles', PatientProfileViewSet, base_name='patient_profiles')
 router.register(r'problem_areas', ProblemAreaViewSet, base_name='problem_areas')
@@ -152,7 +157,6 @@ router.register(
     r'vital_responses',
     VitalResponseViewSet,
     base_name='vital_responses')
-
 
 schema_view = get_swagger_view(title='CareAdopt API')
 

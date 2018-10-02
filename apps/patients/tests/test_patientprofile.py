@@ -43,9 +43,9 @@ class TestPatientProfile(PatientsMixin, APITestCase):
         )
 
 
-class TestPatientProfilesAsEmployee(PatientsMixin, APITestCase):
+class TestPatientProfileSearchViewSet(PatientsMixin, APITestCase):
     """
-    Test cases for :view:`patients.PatientProfileViewSet` using an employee as the logged in user.
+    Test cases for :view:`patients.PatientProfileSearchViewSet` using an employee as the logged in user.
     """
     def setUp(self):
         self.fake = Faker()
@@ -57,7 +57,7 @@ class TestPatientProfilesAsEmployee(PatientsMixin, APITestCase):
         """
         search view should call `get_searchable_patients` function if the GET request has `q` data
         """
-        search_url = reverse('patient_profiles-search') + '?q=' + 'Patient Name'
+        search_url = reverse('patient_profiles_search-list') + '?q=' + 'Patient Name'
 
         response = self.client.get(search_url)
 
@@ -67,15 +67,15 @@ class TestPatientProfilesAsEmployee(PatientsMixin, APITestCase):
     @mock.patch('apps.patients.api.views.get_searchable_patients')
     def test_search_patients_via_haystack_without_search_query(self, get_searchable_patients):
         """
-        search view should return an empty list if the GET request does not contain `q` data
+        search view should return no data if the GET request does not contain `q` data
         """
-        search_url = reverse('patient_profiles-search')
+        search_url = reverse('patient_profiles_search-list')
 
         response = self.client.get(search_url)
 
         self.assertFalse(get_searchable_patients.called)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data, [])
+        self.assertEqual(response.data['count'], 0)
 
 
 class TestPatientProfileDashboard(TasksMixin, APITestCase):
