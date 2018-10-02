@@ -1,7 +1,8 @@
 import math
+import pytz
 import random
 
-from datetime import timedelta
+from datetime import datetime, time, timedelta
 
 from django.apps import apps
 from django.urls import reverse
@@ -269,7 +270,11 @@ class TestCarePlanPostSaveSignalDailyWithoutRepeat(TasksMixin, APITestCase):
         start_on_day = random.randint(2, 5)
         start = now + relativedelta(days=start_on_day)
         end = now + relativedelta(days=self.duration_days)
-        diff = end - start
+        days = rrule.rrule(
+            rrule.DAILY,
+            dtstart=start,
+            until=end,
+        )
         self.create_patient_task_template(
             self.plan_template,
             **{
@@ -285,14 +290,18 @@ class TestCarePlanPostSaveSignalDailyWithoutRepeat(TasksMixin, APITestCase):
         response = self.client.post(self.url, payload)
         count = PatientTask.objects.filter(
             plan__id=response.data['id']).count()
-        self.assertEqual(count, diff.days)
+        self.assertEqual(count, days.count())
 
     def test_create_care_plan_symptom_task_without_repeat(self):
         now = timezone.now()
         start_on_day = random.randint(2, 5)
         start = now + relativedelta(days=start_on_day)
         end = now + relativedelta(days=self.duration_days)
-        diff = end - start
+        days = rrule.rrule(
+            rrule.DAILY,
+            dtstart=start,
+            until=end,
+        )
         self.create_symptom_task_template(**{
             'plan_template': self.plan_template,
             'frequency': 'daily',
@@ -306,14 +315,18 @@ class TestCarePlanPostSaveSignalDailyWithoutRepeat(TasksMixin, APITestCase):
         response = self.client.post(self.url, payload)
         count = SymptomTask.objects.filter(
             plan__id=response.data['id']).count()
-        self.assertEqual(count, diff.days)
+        self.assertEqual(count, days.count())
 
     def test_create_care_plan_assessment_task_without_repeat(self):
         now = timezone.now()
         start_on_day = random.randint(2, 5)
         start = now + relativedelta(days=start_on_day)
         end = now + relativedelta(days=self.duration_days)
-        diff = end - start
+        days = rrule.rrule(
+            rrule.DAILY,
+            dtstart=start,
+            until=end,
+        )
         self.create_assessment_task_template(**{
             'plan_template': self.plan_template,
             'frequency': 'daily',
@@ -327,14 +340,18 @@ class TestCarePlanPostSaveSignalDailyWithoutRepeat(TasksMixin, APITestCase):
         response = self.client.post(self.url, payload)
         count = AssessmentTask.objects.filter(
             plan__id=response.data['id']).count()
-        self.assertEqual(count, diff.days)
+        self.assertEqual(count, days.count())
 
     def test_create_care_plan_vital_task_without_repeat(self):
         now = timezone.now()
         start_on_day = random.randint(2, 5)
         start = now + relativedelta(days=start_on_day)
         end = now + relativedelta(days=self.duration_days)
-        diff = end - start
+        days = rrule.rrule(
+            rrule.DAILY,
+            dtstart=start,
+            until=end,
+        )
         self.create_vital_task_template(**{
             'plan_template': self.plan_template,
             'frequency': 'daily',
@@ -348,7 +365,7 @@ class TestCarePlanPostSaveSignalDailyWithoutRepeat(TasksMixin, APITestCase):
         response = self.client.post(self.url, payload)
         count = VitalTask.objects.filter(
             plan__id=response.data['id']).count()
-        self.assertEqual(count, diff.days)
+        self.assertEqual(count, days.count())
 
 
 class TestCarePlanPostSaveSignalWeeklyWithRepeat(TasksMixin, APITestCase):
@@ -657,7 +674,13 @@ class TestCarePlanPostSaveSignalOtherDayWithoutRepeat(TasksMixin, APITestCase):
         start_on_day = random.randint(2, 5)
         start = now + relativedelta(days=start_on_day)
         end = now + relativedelta(days=self.duration_days)
-        diff = end - start
+        end = datetime.combine(end.date(), time.max, tzinfo=pytz.utc)
+        days = rrule.rrule(
+            rrule.DAILY,
+            interval=2,
+            dtstart=start,
+            until=end,
+        )
         self.create_patient_task_template(
             self.plan_template,
             **{
@@ -673,14 +696,20 @@ class TestCarePlanPostSaveSignalOtherDayWithoutRepeat(TasksMixin, APITestCase):
         response = self.client.post(self.url, payload)
         count = PatientTask.objects.filter(
             plan__id=response.data['id']).count()
-        self.assertEqual(count, math.ceil((diff.days) / 2))
+        self.assertEqual(count, days.count())
 
     def test_create_care_plan_symptom_task_without_repeat(self):
         now = timezone.now()
         start_on_day = random.randint(2, 5)
         start = now + relativedelta(days=start_on_day)
         end = now + relativedelta(days=self.duration_days)
-        diff = end - start
+        end = datetime.combine(end.date(), time.max, tzinfo=pytz.utc)
+        days = rrule.rrule(
+            rrule.DAILY,
+            interval=2,
+            dtstart=start,
+            until=end,
+        )
         self.create_symptom_task_template(**{
             'plan_template': self.plan_template,
             'frequency': 'every_other_day',
@@ -694,14 +723,20 @@ class TestCarePlanPostSaveSignalOtherDayWithoutRepeat(TasksMixin, APITestCase):
         response = self.client.post(self.url, payload)
         count = SymptomTask.objects.filter(
             plan__id=response.data['id']).count()
-        self.assertEqual(count, math.ceil((diff.days) / 2))
+        self.assertEqual(count, days.count())
 
     def test_create_care_plan_assessment_task_without_repeat(self):
         now = timezone.now()
         start_on_day = random.randint(2, 5)
         start = now + relativedelta(days=start_on_day)
         end = now + relativedelta(days=self.duration_days)
-        diff = end - start
+        end = datetime.combine(end.date(), time.max, tzinfo=pytz.utc)
+        days = rrule.rrule(
+            rrule.DAILY,
+            interval=2,
+            dtstart=start,
+            until=end,
+        )
         self.create_assessment_task_template(**{
             'plan_template': self.plan_template,
             'frequency': 'every_other_day',
@@ -715,14 +750,20 @@ class TestCarePlanPostSaveSignalOtherDayWithoutRepeat(TasksMixin, APITestCase):
         response = self.client.post(self.url, payload)
         count = AssessmentTask.objects.filter(
             plan__id=response.data['id']).count()
-        self.assertEqual(count, math.ceil((diff.days) / 2))
+        self.assertEqual(count, days.count())
 
     def test_create_care_plan_vital_task_without_repeat(self):
         now = timezone.now()
         start_on_day = random.randint(2, 5)
         start = now + relativedelta(days=start_on_day)
         end = now + relativedelta(days=self.duration_days)
-        diff = end - start
+        end = datetime.combine(end.date(), time.max, tzinfo=pytz.utc)
+        days = rrule.rrule(
+            rrule.DAILY,
+            interval=2,
+            dtstart=start,
+            until=end,
+        )
         self.create_vital_task_template(**{
             'plan_template': self.plan_template,
             'frequency': 'every_other_day',
@@ -736,7 +777,7 @@ class TestCarePlanPostSaveSignalOtherDayWithoutRepeat(TasksMixin, APITestCase):
         response = self.client.post(self.url, payload)
         count = VitalTask.objects.filter(
             plan__id=response.data['id']).count()
-        self.assertEqual(count, math.ceil((diff.days) / 2))
+        self.assertEqual(count, days.count())
 
 
 class TestCarePlanPostSaveSignalWeekdaysWithRepeat(TasksMixin, APITestCase):
@@ -859,6 +900,7 @@ class TestCarePlanPostSaveSignalWeekdaysWithoutRepeat(TasksMixin, APITestCase):
         start_on_day = random.randint(2, 5)
         start = now + relativedelta(days=start_on_day)
         end = now + relativedelta(weeks=self.duration_weeks)
+        end = datetime.combine(end.date(), time.max, tzinfo=pytz.utc)
         weekdays = [0, 1, 2, 3, 4]
         days = rrule.rrule(
             rrule.DAILY,
@@ -879,8 +921,9 @@ class TestCarePlanPostSaveSignalWeekdaysWithoutRepeat(TasksMixin, APITestCase):
         }
 
         response = self.client.post(self.url, payload)
-        count = PatientTask.objects.filter(
-            plan__id=response.data['id']).count()
+        tasks = PatientTask.objects.filter(
+            plan__id=response.data['id'])
+        count = tasks.count()
         self.assertEqual(count, days.count())
 
     def test_create_care_plan_symptom_task_without_repeat(self):
@@ -888,6 +931,7 @@ class TestCarePlanPostSaveSignalWeekdaysWithoutRepeat(TasksMixin, APITestCase):
         start_on_day = random.randint(2, 5)
         start = now + relativedelta(days=start_on_day)
         end = now + relativedelta(weeks=self.duration_weeks)
+        end = datetime.combine(end.date(), time.max, tzinfo=pytz.utc)
         weekdays = [0, 1, 2, 3, 4]
         days = rrule.rrule(
             rrule.DAILY,
@@ -915,6 +959,7 @@ class TestCarePlanPostSaveSignalWeekdaysWithoutRepeat(TasksMixin, APITestCase):
         start_on_day = random.randint(2, 5)
         start = now + relativedelta(days=start_on_day)
         end = now + relativedelta(weeks=self.duration_weeks)
+        end = datetime.combine(end.date(), time.max, tzinfo=pytz.utc)
         weekdays = [0, 1, 2, 3, 4]
         days = rrule.rrule(
             rrule.DAILY,
@@ -942,6 +987,7 @@ class TestCarePlanPostSaveSignalWeekdaysWithoutRepeat(TasksMixin, APITestCase):
         start_on_day = random.randint(2, 5)
         start = now + relativedelta(days=start_on_day)
         end = now + relativedelta(weeks=self.duration_weeks)
+        end = datetime.combine(end.date(), time.max, tzinfo=pytz.utc)
         weekdays = [0, 1, 2, 3, 4]
         days = rrule.rrule(
             rrule.DAILY,
