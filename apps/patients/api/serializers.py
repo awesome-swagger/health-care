@@ -1,5 +1,6 @@
 from django.db.models import Avg
 from django.utils import timezone
+from drf_haystack.serializers import HaystackSerializerMixin
 from rest_framework import serializers
 
 from apps.accounts.serializers import SettingsUserForSerializers
@@ -9,6 +10,8 @@ from apps.patients.models import (PatientDiagnosis, PatientMedication,
                                   PatientProcedure, PatientProfile,
                                   ProblemArea)
 from apps.tasks.models import AssessmentResponse
+
+from ..search_indexes import PatientProfileIndex
 
 
 class PatientUserInfo(SettingsUserForSerializers, serializers.ModelSerializer):
@@ -124,3 +127,9 @@ class PatientDashboardSerializer(serializers.ModelSerializer):
     def get_tasks_today(self, obj):
         from apps.tasks.utils import get_all_tasks_of_patient_today
         return get_all_tasks_of_patient_today(obj)
+
+
+class PatientProfileSearchSerializer(HaystackSerializerMixin, PatientSearchSerializer):
+    class Meta(PatientSearchSerializer.Meta):
+        index_classes = [PatientProfileIndex]
+        search_fields = ('text', )

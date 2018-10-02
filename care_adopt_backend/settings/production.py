@@ -33,6 +33,8 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    # 3rd party
     'django_extensions',
     'rest_framework',
     'rest_framework.authtoken',
@@ -40,6 +42,9 @@ INSTALLED_APPS = (
     'widget_tweaks',
     'corsheaders',
     'django_filters',
+    'haystack',
+
+    # Local
     'apps.landing',
     'apps.accounts',
     'apps.core',
@@ -291,3 +296,12 @@ USE_L10N = True
 
 # Secrets
 SECRET_KEY = '7iw@hrmhjg&rb$t0&h5lq@_43=ho+=ci_lrkpgr50isv&_x1ac'
+
+# ElasticSearch 2.x
+HAYSTACK_CONNECTIONS = {
+    'default': {
+        'ENGINE': 'haystack.backends.elasticsearch2_backend.Elasticsearch2SearchEngine',
+        'URL': 'http://127.0.0.1:9200/',
+        'INDEX_NAME': 'haystack',
+    },
+}

@@ -1,30 +1,26 @@
 from django.db.models import Q
-
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import viewsets, permissions
+from drf_haystack.viewsets import HaystackViewSet
+from haystack.query import EmptySearchQuerySet, SearchQuerySet
+from rest_framework import permissions, viewsets
 from rest_framework.decorators import action
 from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 
 from apps.plans.models import CareTeamMember
-
-from ..models import (
-    PatientProfile, PatientDiagnosis, ProblemArea, PatientProcedure,
-    PatientMedication, )
-from ..permissions import (
-    PatientProfilePermissions, PatientSearchPermissions, )
-from .serializers import (
-    PatientSearchSerializer,
-    PatientProfileSerializer,
-    PatientDiagnosisSerializer,
-    ProblemAreaSerializer,
-    PatientProcedureSerializer,
-    PatientMedicationSerializer,
-    PatientDashboardSerializer,
-)
 from care_adopt_backend import utils
-from care_adopt_backend.permissions import (
-    EmployeeOrReadOnly, IsEmployeeOnly, )
+from care_adopt_backend.permissions import EmployeeOrReadOnly, IsEmployeeOnly
+
+from ..models import (PatientDiagnosis, PatientMedication, PatientProcedure,
+                      PatientProfile, ProblemArea)
+from ..permissions import PatientProfilePermissions, PatientSearchPermissions
+from .serializers import (PatientDashboardSerializer,
+                          PatientDiagnosisSerializer,
+                          PatientMedicationSerializer,
+                          PatientProcedureSerializer,
+                          PatientProfileSearchSerializer,
+                          PatientProfileSerializer, PatientSearchSerializer,
+                          ProblemAreaSerializer)
 
 
 class PatientProfileViewSet(viewsets.ModelViewSet):
@@ -39,28 +35,6 @@ class PatientProfileViewSet(viewsets.ModelViewSet):
     Query Params
     ==============
     `?status=value` - filters out users by status, must be exact match.
-
-    Search Patients
-    ====================
-    `POST` to `/api/patient_profiles/search/`
-
-        {
-            "name": "Pati"
-        }
-
-    `RESPONSE`
-
-        [
-            ...
-            {
-                "id": "78d5472b-32d4-4b15-8dd1-f14a65070da4",
-                "user": {
-                     "first_name": "Patient",
-                     "last_name": "Test"
-                 }
-            }
-            ...
-        ]
 
     Dashboard
     =================
@@ -100,22 +74,6 @@ class PatientProfileViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(user=user)
 
         return queryset
-
-    @action(methods=['post'], detail=False, permission_classes=(
-        PatientSearchPermissions,
-    ))
-    def search(self, request):
-        # TODO: If a user is an organization manager they get all the patients that belong to that organization
-        # TODO: If a user is a facility manager they get all the patients that belong to that facility
-        # TODO: If a user is not a manager of any organizations/facilities then they can
-        # only search for their own patients including the patients they are care managers for
-        # or are a member of the care team for.
-        # TODO: Need to be able to search by first AND last name (with space)
-        search_str = request.data.get('name')
-        patients = PatientProfile.objects.filter(
-            Q(user__first_name__icontains=search_str) | Q(user__last_name__icontains=search_str))
-        serializer = PatientSearchSerializer(patients, many=True)
-        return Response(serializer.data)
 
 
 class PatientDiagnosisViewSet(viewsets.ModelViewSet):
@@ -193,7 +151,7 @@ class PatientMedicationViewSet(viewsets.ModelViewSet):
 # ---------- CUSTOM VIEWS ---------- #
 ######################################
 class PatientProfileDashboard(ListAPIView):
-    """
+    """ 
     Patient Dashboard
     =================
     This endpoint will display data that is essential for Patient Dashboard
@@ -234,3 +192,96 @@ class PatientProfileDashboard(ListAPIView):
             queryset = queryset.filter(user=user)
 
         return queryset
+
+
+def get_searchable_patients(user):
+    """
+    Returns searchable `PatientProfile`s depending if the user is an Employee or a Patient.
+    """
+    employee_profile = utils.employee_profile_or_none(user)
+    queryset = PatientProfile.objects.none()
+
+    if employee_profile:
+        queryset = PatientProfile.objects.all()
+        # Admins to an organization can search for any patient tied to a facility in the organization.
+        if employee_profile.organizations_managed.exists():
+            organizations = employee_profile.organizations_managed.all()
+            queryset = queryset.filter(
+                facility__organization__in=organizations,
+            )
+
+        # Admins to a facility can search for any patient within their facility.
+        elif employee_profile.facilities_managed.exists():
+            facilities = employee_profile.facilities_managed.all()
+            queryset = queryset.filter(
+                facility__in=facilities,
+            )
+
+        # All other employees are only able to search for their own patients
+        # they are care managers for or a member of the care team for.
+        # All other patients are not searchable or accessible to the user
+        else:
+            care_plans = employee_profile.assigned_roles.values_list('plan')
+            patient_medications = employee_profile.patientmedication_set.all()
+            problem_areas = employee_profile.problemarea_set.all()
+            queryset = queryset.filter(
+                Q(care_plans__id__in=care_plans) |
+                Q(patientmedication__id__in=patient_medications) |
+                Q(problemarea__id__in=problem_areas)
+            )
+
+    return queryset
+
+
+class PatientProfileSearchViewSet(HaystackViewSet):
+    """
+    Handles search feature for :model:`patients.PatientProfile`
+
+    Search Patients
+    ====================
+    `GET` to `/api/patient_profiles/search/`
+
+    `PatientProfile`s can be searched via: `email`, `first_name`, `last_name`, `preferred_name` or `emr_code`.
+
+        {
+            "q": "Alfa One"
+        }
+
+    `RESPONSE`
+
+        [
+            ...
+            {
+                "id": "78d5472b-32d4-4b15-8dd1-f14a65070da4",
+                "user": {
+                     "first_name": "Alfa",
+                     "last_name": "One"
+                 }
+            }
+            ...
+        ]
+    
+    Searchable patients depend on the employee who performed the search.
+    See `apps.patients.api.views.get_searchable_patients`
+
+    """
+    index_models = [PatientProfile]
+    serializer_class = PatientProfileSearchSerializer
+    permission_classes = (
+        permissions.IsAuthenticated,
+        PatientSearchPermissions,
+    )
+
+    def get_queryset(self, index_models=[]):
+        search_str = self.request.GET.get('q')
+
+        if search_str:
+            searchable_patient_ids = get_searchable_patients(self.request.user).values_list('id', flat=True)
+            queryset = super(PatientProfileSearchViewSet, self).get_queryset(
+                index_models,
+            ).filter(id__in=searchable_patient_ids)
+            queryset = queryset.filter(content=search_str)
+
+            return queryset
+
+        return []
