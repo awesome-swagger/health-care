@@ -16,6 +16,7 @@ from rest_framework.test import APITestCase
 from .mixins import PlansMixin
 from apps.tasks.models import (
     PatientTask,
+    TeamTask,
     SymptomTask,
     AssessmentTask,
     VitalTask,
@@ -104,6 +105,20 @@ class TestCarePlanPostSaveSignalFrequencyOnce(TasksMixin, APITestCase):
             plan__id=response.data['id']).count()
         self.assertEqual(count, 1)
 
+    def test_create_care_plan_team_task(self):
+        self.create_team_task_template(**{
+            'plan_template': self.plan_template
+        })
+        payload = {
+            'patient': self.patient.id,
+            'plan_template': self.plan_template.id
+        }
+
+        response = self.client.post(self.url, payload)
+        count = TeamTask.objects.filter(
+            plan__id=response.data['id']).count()
+        self.assertEqual(count, 1)
+
     def test_create_care_plan_symptom_task(self):
         self.create_symptom_task_template(**{
             'plan_template': self.plan_template,
@@ -186,6 +201,23 @@ class TestCarePlanPostSaveSignalDailyWithRepeat(TasksMixin, APITestCase):
 
         response = self.client.post(self.url, payload)
         count = PatientTask.objects.filter(
+            plan__id=response.data['id']).count()
+        self.assertEqual(count, repeat_amount)
+
+    def test_create_care_plan_team_task_with_repeat(self):
+        repeat_amount = random.randint(2, 5)
+        self.create_team_task_template(**{
+            'plan_template': self.plan_template,
+            'frequency': 'daily',
+            'repeat_amount': repeat_amount
+        })
+        payload = {
+            'patient': self.patient.id,
+            'plan_template': self.plan_template.id
+        }
+
+        response = self.client.post(self.url, payload)
+        count = TeamTask.objects.filter(
             plan__id=response.data['id']).count()
         self.assertEqual(count, repeat_amount)
 
@@ -289,6 +321,31 @@ class TestCarePlanPostSaveSignalDailyWithoutRepeat(TasksMixin, APITestCase):
 
         response = self.client.post(self.url, payload)
         count = PatientTask.objects.filter(
+            plan__id=response.data['id']).count()
+        self.assertEqual(count, days.count())
+
+    def test_create_care_plan_team_task_without_repeat(self):
+        now = timezone.now()
+        start_on_day = random.randint(2, 5)
+        start = now + relativedelta(days=start_on_day)
+        end = now + relativedelta(days=self.duration_days)
+        days = rrule.rrule(
+            rrule.DAILY,
+            dtstart=start,
+            until=end,
+        )
+        self.create_team_task_template(**{
+            'plan_template': self.plan_template,
+            'frequency': 'daily',
+            'start_on_day': start_on_day
+        })
+        payload = {
+            'patient': self.patient.id,
+            'plan_template': self.plan_template.id
+        }
+
+        response = self.client.post(self.url, payload)
+        count = TeamTask.objects.filter(
             plan__id=response.data['id']).count()
         self.assertEqual(count, days.count())
 
@@ -407,6 +464,23 @@ class TestCarePlanPostSaveSignalWeeklyWithRepeat(TasksMixin, APITestCase):
             plan__id=response.data['id']).count()
         self.assertEqual(count, repeat_amount)
 
+    def test_create_care_plan_team_task_with_repeat(self):
+        repeat_amount = random.randint(2, 5)
+        self.create_team_task_template(**{
+            'plan_template': self.plan_template,
+            'frequency': 'weekly',
+            'repeat_amount': repeat_amount
+        })
+        payload = {
+            'patient': self.patient.id,
+            'plan_template': self.plan_template.id
+        }
+
+        response = self.client.post(self.url, payload)
+        count = TeamTask.objects.filter(
+            plan__id=response.data['id']).count()
+        self.assertEqual(count, repeat_amount)
+
     def test_create_care_plan_symptom_task_with_repeat(self):
         repeat_amount = random.randint(2, 5)
         self.create_symptom_task_template(**{
@@ -502,6 +576,23 @@ class TestCarePlanPostSaveSignalWeeklyWithoutRepeat(TasksMixin, APITestCase):
             plan__id=response.data['id']).count()
         self.assertEqual(count, self.duration_weeks)
 
+    def test_create_care_plan_team_task_without_repeat(self):
+        start_on_day = random.randint(2, 5)
+        self.create_team_task_template(**{
+            'plan_template': self.plan_template,
+            'frequency': 'weekly',
+            'start_on_day': start_on_day
+        })
+        payload = {
+            'patient': self.patient.id,
+            'plan_template': self.plan_template.id
+        }
+
+        response = self.client.post(self.url, payload)
+        count = TeamTask.objects.filter(
+            plan__id=response.data['id']).count()
+        self.assertEqual(count, self.duration_weeks)
+
     def test_create_care_plan_symptom_task_without_repeat(self):
         start_on_day = random.randint(2, 5)
         self.create_symptom_task_template(**{
@@ -590,6 +681,23 @@ class TestCarePlanPostSaveSignalOtherDayWithRepeat(TasksMixin, APITestCase):
 
         response = self.client.post(self.url, payload)
         count = PatientTask.objects.filter(
+            plan__id=response.data['id']).count()
+        self.assertEqual(count, repeat_amount)
+
+    def test_create_care_plan_team_task_with_repeat(self):
+        repeat_amount = random.randint(2, 5)
+        self.create_team_task_template(**{
+            'plan_template': self.plan_template,
+            'frequency': 'every_other_day',
+            'repeat_amount': repeat_amount
+        })
+        payload = {
+            'patient': self.patient.id,
+            'plan_template': self.plan_template.id
+        }
+
+        response = self.client.post(self.url, payload)
+        count = TeamTask.objects.filter(
             plan__id=response.data['id']).count()
         self.assertEqual(count, repeat_amount)
 
@@ -695,6 +803,33 @@ class TestCarePlanPostSaveSignalOtherDayWithoutRepeat(TasksMixin, APITestCase):
 
         response = self.client.post(self.url, payload)
         count = PatientTask.objects.filter(
+            plan__id=response.data['id']).count()
+        self.assertEqual(count, days.count())
+
+    def test_create_care_plan_team_task_without_repeat(self):
+        now = timezone.now()
+        start_on_day = random.randint(2, 5)
+        start = now + relativedelta(days=start_on_day)
+        end = now + relativedelta(days=self.duration_days)
+        end = datetime.combine(end.date(), time.max, tzinfo=pytz.utc)
+        days = rrule.rrule(
+            rrule.DAILY,
+            interval=2,
+            dtstart=start,
+            until=end,
+        )
+        self.create_team_task_template(**{
+            'plan_template': self.plan_template,
+            'frequency': 'every_other_day',
+            'start_on_day': start_on_day
+        })
+        payload = {
+            'patient': self.patient.id,
+            'plan_template': self.plan_template.id
+        }
+
+        response = self.client.post(self.url, payload)
+        count = TeamTask.objects.filter(
             plan__id=response.data['id']).count()
         self.assertEqual(count, days.count())
 
@@ -819,6 +954,23 @@ class TestCarePlanPostSaveSignalWeekdaysWithRepeat(TasksMixin, APITestCase):
             plan__id=response.data['id']).count()
         self.assertEqual(count, repeat_amount)
 
+    def test_create_care_plan_team_task_with_repeat(self):
+        repeat_amount = random.randint(5, 30)
+        self.create_team_task_template(**{
+            'plan_template': self.plan_template,
+            'frequency': 'weekdays',
+            'repeat_amount': repeat_amount
+        })
+        payload = {
+            'patient': self.patient.id,
+            'plan_template': self.plan_template.id
+        }
+
+        response = self.client.post(self.url, payload)
+        count = TeamTask.objects.filter(
+            plan__id=response.data['id']).count()
+        self.assertEqual(count, repeat_amount)
+
     def test_create_care_plan_symptom_task_with_repeat(self):
         repeat_amount = random.randint(5, 30)
         self.create_symptom_task_template(**{
@@ -924,6 +1076,34 @@ class TestCarePlanPostSaveSignalWeekdaysWithoutRepeat(TasksMixin, APITestCase):
         tasks = PatientTask.objects.filter(
             plan__id=response.data['id'])
         count = tasks.count()
+        self.assertEqual(count, days.count())
+
+    def test_create_care_plan_team_task_without_repeat(self):
+        now = timezone.now()
+        start_on_day = random.randint(2, 5)
+        start = now + relativedelta(days=start_on_day)
+        end = now + relativedelta(weeks=self.duration_weeks)
+        end = datetime.combine(end.date(), time.max, tzinfo=pytz.utc)
+        weekdays = [0, 1, 2, 3, 4]
+        days = rrule.rrule(
+            rrule.DAILY,
+            dtstart=start,
+            until=end,
+            byweekday=weekdays
+        )
+        self.create_team_task_template(**{
+            'plan_template': self.plan_template,
+            'frequency': 'weekdays',
+            'start_on_day': start_on_day
+        })
+        payload = {
+            'patient': self.patient.id,
+            'plan_template': self.plan_template.id
+        }
+
+        response = self.client.post(self.url, payload)
+        count = TeamTask.objects.filter(
+            plan__id=response.data['id']).count()
         self.assertEqual(count, days.count())
 
     def test_create_care_plan_symptom_task_without_repeat(self):
@@ -1047,6 +1227,23 @@ class TestCarePlanPostSaveSignalWeekendsWithRepeat(TasksMixin, APITestCase):
 
         response = self.client.post(self.url, payload)
         count = PatientTask.objects.filter(
+            plan__id=response.data['id']).count()
+        self.assertEqual(count, repeat_amount)
+
+    def test_create_care_plan_team_task_with_repeat(self):
+        repeat_amount = random.randint(5, 30)
+        self.create_team_task_template(**{
+            'plan_template': self.plan_template,
+            'frequency': 'weekends',
+            'repeat_amount': repeat_amount
+        })
+        payload = {
+            'patient': self.patient.id,
+            'plan_template': self.plan_template.id
+        }
+
+        response = self.client.post(self.url, payload)
+        count = TeamTask.objects.filter(
             plan__id=response.data['id']).count()
         self.assertEqual(count, repeat_amount)
 

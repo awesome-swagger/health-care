@@ -281,17 +281,36 @@ class TasksMixin(PlansMixin):
         for question in questions:
             self.create_assessment_response(task, question)
 
-    def create_team_task_template(self):
-        appear_time = datetime.time(8, 0, 0)
-        due_time = datetime.time(17, 0, 0)
+    def create_team_task_template(self, **kwargs):
+
+        if 'plan_template' not in kwargs:
+            kwargs.update({
+                'plan_template': self.create_care_plan_template()
+            })
+
+        if 'name' not in kwargs:
+            kwargs.update({
+                'name': self.fake.name()
+            })
+
+        if 'start_on_day' not in kwargs:
+            kwargs.update({
+                'start_on_day': random.randint(2, 10)
+            })
+
+        if 'appear_time' not in kwargs:
+            kwargs.update({
+                'appear_time': datetime.time(8, 0, 0)
+            })
+
+        if 'due_time' not in kwargs:
+            kwargs.update({
+                'due_time': datetime.time(17, 0, 0)
+            })
 
         return TeamTaskTemplateFactory(
-            plan_template=self.create_care_plan_template(),
-            name=self.fake.name(),
             category='notes',
-            start_on_day=5,
-            appear_time=appear_time,
-            due_time=due_time,
+            **kwargs
         )
 
     def create_team_task(self, **kwargs):
