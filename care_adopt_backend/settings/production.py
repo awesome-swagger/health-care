@@ -45,6 +45,7 @@ INSTALLED_APPS = (
     'corsheaders',
     'django_filters',
     'haystack',
+    'rest_auth',
 
     # Local
     'apps.landing',
