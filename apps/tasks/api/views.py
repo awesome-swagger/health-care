@@ -281,7 +281,7 @@ class AssessmentResponseViewSet(viewsets.ModelViewSet):
         return queryset
 
     def get_serializer(self, *args, **kwargs):
-        if self.request.method == "POST":
+        if self.request.method == 'POST' and self.request.data:
             kwargs['many'] = True
         return super(AssessmentResponseViewSet, self).get_serializer(
             *args, **kwargs)
