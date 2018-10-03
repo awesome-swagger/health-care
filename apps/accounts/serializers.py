@@ -70,3 +70,11 @@ class UserSerializer(SettingsUserForSerializers,
                             'is_developer', 'image_url', )
         exclude = ('password', 'is_superuser', 'groups', 'user_permissions',
                    'validation_key', 'validated_at', 'reset_key', )
+
+
+class EmailUserDetailSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = get_user_model()
+        fields = ('pk', 'email', 'first_name', 'last_name')
+        read_only_fields = ('email', )
