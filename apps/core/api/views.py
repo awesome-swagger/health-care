@@ -1,27 +1,22 @@
 from django.db.models import Q
-from rest_framework import viewsets, permissions, mixins
+from rest_framework import mixins, permissions, viewsets
+from rest_framework.generics import ListAPIView
 
+from apps.core.models import (Diagnosis, EmployeeProfile, Facility, Medication,
+                              Organization, Procedure, ProviderRole,
+                              ProviderSpecialty, ProviderTitle, Symptom)
+from apps.core.permissions import (EmployeeProfilePermissions,
+                                   FacilityPermissions,
+                                   OrganizationPermissions)
+from apps.plans.models import CareTeamMember
 from care_adopt_backend import utils
-from apps.core.models import (
-    Organization, Facility, EmployeeProfile, ProviderTitle, ProviderRole,
-    ProviderSpecialty, Diagnosis, Medication, Procedure, Symptom, )
 
-from .serializers import (
-    OrganizationSerializer,
-    FacilitySerializer,
-    ProviderTitleSerializer,
-    ProviderRoleSerializer,
-    ProviderSpecialtySerializer,
-    EmployeeProfileSerializer,
-    DiagnosisSerializer,
-    MedicationSerializer,
-    ProcedureSerializer,
-    SymptomSerializer,
-)
-from apps.core.permissions import (
-    OrganizationPermissions, FacilityPermissions, EmployeeProfilePermissions, )
-from apps.plans.models import (CareTeamMember, )
 from .filters import RelatedOrderingFilter
+from .serializers import (DiagnosisSerializer, EmployeeProfileSerializer,
+                          FacilitySerializer, MedicationSerializer,
+                          OrganizationSerializer, ProcedureSerializer,
+                          ProviderRoleSerializer, ProviderSpecialtySerializer,
+                          ProviderTitleSerializer, SymptomSerializer)
 
 
 class OrganizationViewSet(viewsets.ModelViewSet):
@@ -51,6 +46,9 @@ class OrganizationViewSet(viewsets.ModelViewSet):
         permissions.IsAuthenticated,
         OrganizationPermissions,
     )
+    filter_backends = (RelatedOrderingFilter, )
+    ordering = ('name', )
+
 
     def get_queryset(self):
         qs = Organization.objects.all()
@@ -70,9 +68,8 @@ class OrganizationViewSet(viewsets.ModelViewSet):
             return qs.all()
         return qs.none()
 
-from rest_framework.generics import ListAPIView
 
-class FacilityViewSet(viewsets.ModelViewSet, RelatedOrderingFilter):
+class FacilityViewSet(viewsets.ModelViewSet):
     """
     Viewset for :model:`core.Facility`
     ========
@@ -104,6 +101,8 @@ class FacilityViewSet(viewsets.ModelViewSet, RelatedOrderingFilter):
     """
     serializer_class = FacilitySerializer
     permission_classes = (permissions.IsAuthenticated, FacilityPermissions, )
+    filter_backends = (RelatedOrderingFilter, )
+    ordering = ('name', )
 
     def get_queryset(self):
         qs = Facility.objects.all()
@@ -128,10 +127,12 @@ class FacilityViewSet(viewsets.ModelViewSet, RelatedOrderingFilter):
 
 class AffiliateFacilityListView(ListAPIView):
     """
-    Facility that are affiliates
+    Returns list of all :model:`core.Facility` objects where `is_affiliate` is `True`.
     """
     serializer_class = FacilitySerializer
     permission_classes = (permissions.IsAuthenticated, FacilityPermissions, )
+    filter_backends = (RelatedOrderingFilter, )
+    ordering = ('name', )
 
     def get_queryset(self):
         # TODO: create util for repeated logic?

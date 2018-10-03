@@ -1,11 +1,7 @@
-from django.conf.urls import url
+from django.urls import path
 
 from .views import AffiliateFacilityListView
 
 urlpatterns = [
-    url(
-        r'^affiliate_facilities/$',
-        AffiliateFacilityListView.as_view(),
-        name='affiliate_facilities',
-    ),
+    path('facilities/affiliates/', AffiliateFacilityListView.as_view(), name='affiliate_facilities'),
 ]
