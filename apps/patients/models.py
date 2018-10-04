@@ -122,6 +122,7 @@ class PatientVerificationCode(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
         verbose_name = _('Patient Verification Code')
         verbose_name_plural = _('Patient Verification Codes')
         unique_together = ('patient', 'code')
+        ordering = ('-created', )
 
     def __str__(self):
         return f'{self.patient.user.get_full_name()}: {self.code}'
