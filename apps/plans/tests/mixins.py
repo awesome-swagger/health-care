@@ -31,12 +31,23 @@ class PlansMixin(PatientsMixin):
             **kwargs
         )
 
-    def create_care_plan_template(self):
-        return CarePlanTemplateFactory(
-            name=self.fake.name(),
-            type='ccm',
-            duration_weeks=10
-        )
+    def create_care_plan_template(self, **kwargs):
+        if 'name' not in kwargs:
+            kwargs.update({
+                'name': self.fake.name()
+            })
+
+        if 'type' not in kwargs:
+            kwargs.update({
+                'type': 'ccm'
+            })
+
+        if 'duration_weeks' not in kwargs:
+            kwargs.update({
+                'duration_weeks': random.randint(1, 3)
+            })
+
+        return CarePlanTemplateFactory(**kwargs)
 
     def create_care_team_member(self, **kwargs):
         if 'employee_profile' not in kwargs:

@@ -1,5 +1,6 @@
 import datetime
 import os
+import pytz
 import uuid
 import hashlib
 from urllib.request import Request, urlopen
@@ -96,6 +97,7 @@ class EmailUser(AbstractBaseUser, PermissionsMixin):
         ('f', 'Female'),
         ('m', 'Male'),
     ]
+    TIMEZONE_CHOICES = [(tz, tz) for tz in pytz.all_timezones]
 
     # Use a UUID for a primary key
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -114,6 +116,11 @@ class EmailUser(AbstractBaseUser, PermissionsMixin):
         null=True, blank=True, verbose_name='Birth date')
     phone = models.CharField(
         max_length=16, blank=True, verbose_name='Phone number')
+    time_zone = models.CharField(
+        max_length=128,
+        choices=TIMEZONE_CHOICES,
+        default=settings.TIME_ZONE
+    )
 
     # Account Validation
     date_joined = models.DateTimeField(_('date joined'), default=timezone.now)

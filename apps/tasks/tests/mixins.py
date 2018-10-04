@@ -1,7 +1,6 @@
 import datetime
 import random
 
-import factory
 import pytz
 
 from django.utils import timezone
@@ -30,20 +29,36 @@ from .factories import (
 from apps.plans.tests.mixins import PlansMixin
 from apps.tasks.models import VitalQuestion
 
+
 class TasksMixin(PlansMixin):
 
-    def create_patient_task_template(self, plan_template=None):
+    def create_patient_task_template(self, plan_template=None, **kwargs):
         if plan_template is None:
             plan_template = self.create_care_plan_template()
 
-        appear_time = datetime.time(8, 0, 0)
-        due_time = datetime.time(17, 0, 0)
+        if 'name' not in kwargs:
+            kwargs.update({
+                'name': self.fake.name(),
+            })
+
+        if 'start_on_day' not in kwargs:
+            kwargs.update({
+                'start_on_day': random.randint(2, 5)
+            })
+
+        if 'appear_time' not in kwargs:
+            kwargs.update({
+                'appear_time': datetime.time(8, 0, 0)
+            })
+
+        if 'due_time' not in kwargs:
+            kwargs.update({
+                'due_time': datetime.time(17, 0, 0)
+            })
+
         return PatientTaskTemplateFactory(
             plan_template=plan_template,
-            name=factory.Faker('name'),
-            start_on_day=5,
-            appear_time=appear_time,
-            due_time=due_time,
+            **kwargs
         )
 
     def create_patient_task(self, **kwargs):
@@ -103,15 +118,29 @@ class TasksMixin(PlansMixin):
             })
         return MedicationTaskFactory(**kwargs)
 
-    def create_symptom_task_template(self):
-        appear_time = datetime.time(8, 0, 0)
-        due_time = datetime.time(17, 0, 0)
-        return SymptomTaskTemplateFactory(
-            plan_template=self.create_care_plan_template(),
-            start_on_day=5,
-            appear_time=appear_time,
-            due_time=due_time,
-        )
+    def create_symptom_task_template(self, **kwargs):
+
+        if 'plan_template' not in kwargs:
+            kwargs.update({
+                'plan_template': self.create_care_plan_template()
+            })
+
+        if 'start_on_day' not in kwargs:
+            kwargs.update({
+                'start_on_day': random.randint(2, 10)
+            })
+
+        if 'appear_time' not in kwargs:
+            kwargs.update({
+                'appear_time': datetime.time(8, 0, 0)
+            })
+
+        if 'due_time' not in kwargs:
+            kwargs.update({
+                'due_time': datetime.time(17, 0, 0)
+            })
+
+        return SymptomTaskTemplateFactory(**kwargs)
 
     def create_symptom_task(self, **kwargs):
         now = timezone.now()
@@ -252,17 +281,36 @@ class TasksMixin(PlansMixin):
         for question in questions:
             self.create_assessment_response(task, question)
 
-    def create_team_task_template(self):
-        appear_time = datetime.time(8, 0, 0)
-        due_time = datetime.time(17, 0, 0)
+    def create_team_task_template(self, **kwargs):
+
+        if 'plan_template' not in kwargs:
+            kwargs.update({
+                'plan_template': self.create_care_plan_template()
+            })
+
+        if 'name' not in kwargs:
+            kwargs.update({
+                'name': self.fake.name()
+            })
+
+        if 'start_on_day' not in kwargs:
+            kwargs.update({
+                'start_on_day': random.randint(2, 10)
+            })
+
+        if 'appear_time' not in kwargs:
+            kwargs.update({
+                'appear_time': datetime.time(8, 0, 0)
+            })
+
+        if 'due_time' not in kwargs:
+            kwargs.update({
+                'due_time': datetime.time(17, 0, 0)
+            })
 
         return TeamTaskTemplateFactory(
-            plan_template=self.create_care_plan_template(),
-            name=self.fake.name(),
             category='notes',
-            start_on_day=5,
-            appear_time=appear_time,
-            due_time=due_time,
+            **kwargs
         )
 
     def create_team_task(self, **kwargs):
