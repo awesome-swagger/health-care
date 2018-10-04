@@ -56,7 +56,7 @@ class TestPatientProfileUsingEmployee(PatientsMixin, APITestCase):
         self.client.force_authenticate(user=self.user)
 
     def test_create_verification_code_on_invite(self):
-        patient = self.create_patient(user=None, **{
+        patient = self.create_patient(**{
             'status': 'invited'
         })
         self.assertTrue(patient.verification_codes.exists())
