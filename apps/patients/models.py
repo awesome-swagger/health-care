@@ -1,9 +1,9 @@
 from django.db import models
-from care_adopt_backend.mixins import (
-    AddressMixin, CreatedModifiedMixin, UUIDPrimaryKeyMixin)
+
 from apps.accounts.models import EmailUser
-from apps.core.models import (
-    Organization, Facility, EmployeeProfile, Diagnosis, Procedure, Medication, )
+from apps.core.models import (Diagnosis, EmployeeProfile, Facility, Medication,
+                              Procedure)
+from care_adopt_backend.mixins import CreatedModifiedMixin, UUIDPrimaryKeyMixin
 
 
 class PatientProfile(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
@@ -103,3 +103,25 @@ class PatientMedication(UUIDPrimaryKeyMixin):
 
     def __str__(self):
         return '{}: {}'.format(self.patient, self.medication)
+
+
+class ReminderEmail(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
+    patient = models.ForeignKey(
+        PatientProfile,
+        null=False,
+        blank=False,
+        on_delete=models.CASCADE,
+    )
+    subject = models.CharField(
+        max_length=140,
+        blank=False,
+        null=False,
+    )
+    message = models.CharField(
+        max_length=500,
+        blank=False,
+        null=False,
+    )
+
+    def __str__(self):
+        return '{}: {}'.format(self.patient, self.subject)
