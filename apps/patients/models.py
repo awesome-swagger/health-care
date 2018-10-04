@@ -1,4 +1,6 @@
 from django.db import models
+from django.utils.translation import ugettext_lazy as _
+
 from care_adopt_backend.mixins import (
     AddressMixin, CreatedModifiedMixin, UUIDPrimaryKeyMixin)
 from apps.accounts.models import EmailUser
@@ -103,3 +105,23 @@ class PatientMedication(UUIDPrimaryKeyMixin):
 
     def __str__(self):
         return '{}: {}'.format(self.patient, self.medication)
+
+
+class PatientVerificationCode(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
+    """
+    Stores the verification code of patients used to verify their account.
+    """
+    patient = models.ForeignKey(
+        'patients.PatientProfile',
+        related_name='verification_codes',
+        on_delete=models.CASCADE
+    )
+    code = models.CharField(max_length=6)
+
+    class Meta:
+        verbose_name = _('Patient Verification Code')
+        verbose_name_plural = _('Patient Verification Codes')
+        unique_together = ('patient', 'code')
+
+    def __str__(self):
+        return f'{self.patient.user.get_full_name()}: {self.code}'
