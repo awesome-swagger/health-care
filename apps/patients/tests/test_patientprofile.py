@@ -61,6 +61,19 @@ class TestPatientProfileUsingEmployee(PatientsMixin, APITestCase):
         })
         self.assertTrue(patient.verification_codes.exists())
 
+    def test_verification_code_valid(self):
+        patient = self.create_patient(**{
+            'status': 'invited'
+        })
+        code = patient.verification_codes.first()
+        payload = {
+            'email': patient.user.email,
+            'code': code.code
+        }
+        url = reverse('patient-verification')
+        response = self.client.post(url, payload)
+        self.assertIsNotNone(response.data['user']['token'])
+
 
 class TestPatientProfileSearchViewSet(PatientsMixin, APITestCase):
     """

@@ -6,6 +6,7 @@ from .views import (
 
     # PatientProfile
     PatientProfileDashboard,
+    PatientVerification,
 
 )
 
@@ -17,4 +18,10 @@ urlpatterns = [
         PatientProfileDashboard.as_view(),
         name='patient-dashboard'
     ),
+    url(
+        r'^patient_profiles/verification/$',
+        PatientVerification.as_view(),
+        name='patient-verification'
+    ),
+
 ]
