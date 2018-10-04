@@ -1,7 +1,8 @@
 from django.db import models
-from care_adopt_backend.mixins import (
-    AddressMixin, CreatedModifiedMixin, UUIDPrimaryKeyMixin)
+
 from apps.accounts.models import EmailUser
+from care_adopt_backend.mixins import (AddressMixin, CreatedModifiedMixin,
+                                       UUIDPrimaryKeyMixin)
 
 
 class Organization(AddressMixin, CreatedModifiedMixin, UUIDPrimaryKeyMixin):
@@ -154,3 +155,12 @@ class Symptom(UUIDPrimaryKeyMixin):
 
     def __str__(self):
         return self.name
+
+
+class InvitedEmailTemplate(UUIDPrimaryKeyMixin):
+    subject = models.CharField(max_length=140, null=False, blank=False, default='Invitation to CareAdopt')
+    message = models.CharField(max_length=500, null=False, blank=False)
+    is_default = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.subject
