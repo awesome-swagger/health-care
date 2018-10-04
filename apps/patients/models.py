@@ -1,11 +1,16 @@
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
-from care_adopt_backend.mixins import (
-    AddressMixin, CreatedModifiedMixin, UUIDPrimaryKeyMixin)
+from .signals import patientprofile_post_save
+from care_adopt_backend.mixins import CreatedModifiedMixin, UUIDPrimaryKeyMixin
 from apps.accounts.models import EmailUser
 from apps.core.models import (
-    Organization, Facility, EmployeeProfile, Diagnosis, Procedure, Medication, )
+    Facility,
+    EmployeeProfile,
+    Diagnosis,
+    Procedure,
+    Medication,
+)
 
 
 class PatientProfile(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
@@ -35,6 +40,10 @@ class PatientProfile(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
 
     def __str__(self):
         return '{} {}'.format(self.user.first_name, self.user.last_name)
+
+    @property
+    def has_been_invited(self):
+        return self.status == 'invited'
 
 
 class ProblemArea(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
@@ -126,3 +135,10 @@ class PatientVerificationCode(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
 
     def __str__(self):
         return f'{self.patient.user.get_full_name()}: {self.code}'
+
+
+# Signals
+models.signals.post_save.connect(
+    patientprofile_post_save,
+    sender=PatientProfile,
+)
