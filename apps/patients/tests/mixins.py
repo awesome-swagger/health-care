@@ -11,13 +11,23 @@ from apps.core.tests.mixins import CoreMixin
 
 class PatientsMixin(CoreMixin):
 
-    def create_patient(self, user=None):
+    def create_patient(self, user=None, **kwargs):
         if user is None:
             user = RegularUserFactory()
+
+        if 'facility' not in kwargs:
+            kwargs.update({
+                'facility': self.create_facility()
+            })
+
+        if 'status' not in kwargs:
+            kwargs.update({
+                'status': 'active'
+            })
+
         return PatientProfileFactory(
             user=user,
-            facility=self.create_facility(),
-            status='active'
+            **kwargs
         )
 
     def create_problem_area(self, patient, employee):
