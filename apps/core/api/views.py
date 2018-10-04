@@ -1,26 +1,25 @@
 from django.db.models import Q
-from rest_framework import viewsets, permissions, mixins
+from django.shortcuts import get_object_or_404
+from rest_framework import mixins, permissions, viewsets
+from rest_framework.generics import RetrieveAPIView
+from rest_framework.response import Response
 
+from apps.core.models import (Diagnosis, EmployeeProfile, Facility,
+                              InvitedEmailTemplate, Medication, Organization,
+                              Procedure, ProviderRole, ProviderSpecialty,
+                              ProviderTitle, Symptom)
+from apps.core.permissions import (EmployeeProfilePermissions,
+                                   FacilityPermissions,
+                                   OrganizationPermissions)
+from apps.plans.models import CareTeamMember
 from care_adopt_backend import utils
-from apps.core.models import (
-    Organization, Facility, EmployeeProfile, ProviderTitle, ProviderRole,
-    ProviderSpecialty, Diagnosis, Medication, Procedure, Symptom, )
 
-from .serializers import (
-    OrganizationSerializer,
-    FacilitySerializer,
-    ProviderTitleSerializer,
-    ProviderRoleSerializer,
-    ProviderSpecialtySerializer,
-    EmployeeProfileSerializer,
-    DiagnosisSerializer,
-    MedicationSerializer,
-    ProcedureSerializer,
-    SymptomSerializer,
-)
-from apps.core.permissions import (
-    OrganizationPermissions, FacilityPermissions, EmployeeProfilePermissions, )
-from apps.plans.models import (CareTeamMember, )
+from .serializers import (DiagnosisSerializer, EmployeeProfileSerializer,
+                          FacilitySerializer, InvitedEmailTemplateSerializer,
+                          MedicationSerializer, OrganizationSerializer,
+                          ProcedureSerializer, ProviderRoleSerializer,
+                          ProviderSpecialtySerializer, ProviderTitleSerializer,
+                          SymptomSerializer)
 
 
 class OrganizationViewSet(viewsets.ModelViewSet):
@@ -279,3 +278,22 @@ class SymptomViewSet(
     serializer_class = SymptomSerializer
     permission_classes = (permissions.AllowAny, )
     queryset = Symptom.objects.all()
+
+
+class InvitedEmailTemplateView(RetrieveAPIView):
+    """
+    Returns the :model:`core.InvitedEmailTemplate` instance where `is_default=True`.
+
+    Raises 404 if the instance does not exist.
+    """
+    serializer_class = InvitedEmailTemplateSerializer
+    permission_classes = (
+        permissions.IsAdminUser,
+    )
+
+    def retrieve(self, request, *args, **kwargs):
+        invited_email_template = get_object_or_404(InvitedEmailTemplate, is_default=True)
+
+        serializer = self.get_serializer(invited_email_template)
+
+        return Response(serializer.data)

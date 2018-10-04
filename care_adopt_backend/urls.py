@@ -164,6 +164,7 @@ urlpatterns = [
     url(r'^favicon.ico$', RedirectView.as_view(
         url=settings.STATIC_URL + 'favicon.ico')),
 
+    url(r'^api/', include('apps.core.api.urls')),
     url(r'^api/', include('apps.patients.api.urls')),
     url(r'^api/', include('apps.plans.api.urls')),
 
