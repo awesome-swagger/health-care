@@ -1,26 +1,23 @@
 from django.db.models import Q
-from rest_framework import viewsets, permissions, mixins
+from rest_framework import mixins, permissions, viewsets
+from rest_framework.generics import ListAPIView
 
+from apps.core.models import (Diagnosis, EmployeeProfile, Medication,
+                              Organization, Procedure, ProviderRole,
+                              ProviderSpecialty, ProviderTitle, Symptom)
+from apps.core.permissions import (EmployeeProfilePermissions,
+                                   FacilityPermissions,
+                                   OrganizationPermissions)
+from apps.plans.models import CareTeamMember
 from care_adopt_backend import utils
-from apps.core.models import (
-    Organization, Facility, EmployeeProfile, ProviderTitle, ProviderRole,
-    ProviderSpecialty, Diagnosis, Medication, Procedure, Symptom, )
 
-from .serializers import (
-    OrganizationSerializer,
-    FacilitySerializer,
-    ProviderTitleSerializer,
-    ProviderRoleSerializer,
-    ProviderSpecialtySerializer,
-    EmployeeProfileSerializer,
-    DiagnosisSerializer,
-    MedicationSerializer,
-    ProcedureSerializer,
-    SymptomSerializer,
-)
-from apps.core.permissions import (
-    OrganizationPermissions, FacilityPermissions, EmployeeProfilePermissions, )
-from apps.plans.models import (CareTeamMember, )
+from ..utils import get_facilities_for_user
+from .filters import RelatedOrderingFilter
+from .serializers import (DiagnosisSerializer, EmployeeProfileSerializer,
+                          FacilitySerializer, MedicationSerializer,
+                          OrganizationSerializer, ProcedureSerializer,
+                          ProviderRoleSerializer, ProviderSpecialtySerializer,
+                          ProviderTitleSerializer, SymptomSerializer)
 
 
 class OrganizationViewSet(viewsets.ModelViewSet):
@@ -50,6 +47,8 @@ class OrganizationViewSet(viewsets.ModelViewSet):
         permissions.IsAuthenticated,
         OrganizationPermissions,
     )
+    filter_backends = (RelatedOrderingFilter, )
+    ordering = ('name', )
 
     def get_queryset(self):
         qs = Organization.objects.all()
@@ -102,26 +101,31 @@ class FacilityViewSet(viewsets.ModelViewSet):
     """
     serializer_class = FacilitySerializer
     permission_classes = (permissions.IsAuthenticated, FacilityPermissions, )
+    filter_backends = (RelatedOrderingFilter, )
+    ordering = ('name', )
 
     def get_queryset(self):
-        qs = Facility.objects.all()
-        employee_profile = utils.employee_profile_or_none(self.request.user)
-        patient_profile = utils.patient_profile_or_none(self.request.user)
-        # If user is a employee, filter out facilities they do not belong to
-        if employee_profile is not None:
-            qs = qs.filter(
-                Q(id__in=employee_profile.facilities.all()) |
-                Q(id__in=employee_profile.facilities_managed.all())
-            )
-            # Filter for getting only facilities within a specific organization
-            organization = self.request.query_params.get('organization_id')
-            if organization:
-                qs = qs.filter(organization__id=organization)
-            return qs.all()
-        # If user is a patient, only return their facility
-        if patient_profile is not None:
-            qs = qs.filter(id=patient_profile.facility.id)
-            return qs.all()
+        return get_facilities_for_user(
+            self.request.user,
+            self.request.query_params.get('organization_id'),
+        )
+
+
+class AffiliateFacilityListView(ListAPIView):
+    """
+    Returns list of all :model:`core.Facility` objects where `is_affiliate` is `True`.
+    """
+    serializer_class = FacilitySerializer
+    permission_classes = (permissions.IsAuthenticated, FacilityPermissions, )
+    filter_backends = (RelatedOrderingFilter, )
+    ordering = ('name', )
+
+    def get_queryset(self):
+        queryset = get_facilities_for_user(
+            self.request.user,
+            self.request.query_params.get('organization_id'),
+        )
+        return queryset.filter(is_affiliate=True)
 
 
 class ProviderTitleViewSet(
