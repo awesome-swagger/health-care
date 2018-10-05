@@ -43,6 +43,38 @@ class TestPatientProfile(PatientsMixin, APITestCase):
         )
 
 
+class TestPatientProfileUsingEmployee(PatientsMixin, APITestCase):
+    """
+    Test cases for :model:`tasks.PatientProfile` using an employee
+    as the logged in user.
+    """
+
+    def setUp(self):
+        self.fake = Faker()
+        self.employee = self.create_employee()
+        self.user = self.employee.user
+        self.client.force_authenticate(user=self.user)
+
+    def test_create_verification_code_on_invite(self):
+        patient = self.create_patient(**{
+            'status': 'invited'
+        })
+        self.assertTrue(patient.verification_codes.exists())
+
+    def test_verification_code_valid(self):
+        patient = self.create_patient(**{
+            'status': 'invited'
+        })
+        code = patient.verification_codes.first()
+        payload = {
+            'email': patient.user.email,
+            'code': code.code
+        }
+        url = reverse('patient-verification')
+        response = self.client.post(url, payload)
+        self.assertIsNotNone(response.data['user']['token'])
+
+
 class TestPatientProfileSearchViewSet(PatientsMixin, APITestCase):
     """
     Test cases for :view:`patients.PatientProfileSearchViewSet` using an employee as the logged in user.

@@ -1,8 +1,11 @@
 from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_haystack.viewsets import HaystackViewSet
-from rest_framework import permissions, viewsets
-from rest_framework.generics import CreateAPIView, ListAPIView
+from haystack.query import EmptySearchQuerySet, SearchQuerySet
+from rest_framework import permissions, viewsets, status
+from rest_framework.decorators import action
+from rest_framework.generics import CreateAPIView, ListAPIView, GenericAPIView
+from rest_framework.response import Response
 from rest_framework.permissions import IsAdminUser
 
 from apps.plans.models import CareTeamMember
@@ -18,7 +21,9 @@ from .serializers import (PatientDashboardSerializer,
                           PatientProcedureSerializer,
                           PatientProfileSearchSerializer,
                           PatientProfileSerializer,
-                          ProblemAreaSerializer, ReminderEmailSerializer)
+                          ProblemAreaSerializer,
+                          VerifyPatientSerializer,
+                          ReminderEmailSerializer)
 
 
 class PatientProfileViewSet(viewsets.ModelViewSet):
@@ -284,6 +289,29 @@ class PatientProfileSearchViewSet(HaystackViewSet):
 
         return []
 
+
+class PatientVerification(GenericAPIView):
+    """
+    Checks if the given email and verification matches a record in our
+    database. This endpoint will only accept POST requests and will return
+    user data along with the authentication token.
+
+    If successful, this endpoint will return the following user data:
+        - email
+        - first_name
+        - last_name
+        - token  (to be used for authentication)
+    """
+
+    serializer_class = VerifyPatientSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        return Response(
+            serializer.data,
+            status=status.HTTP_200_OK
+        )
 
 
 class ReminderEmailCreateView(CreateAPIView):

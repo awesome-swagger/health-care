@@ -1,14 +1,17 @@
 from django.db.models import Avg
 from django.utils import timezone
+from django.utils.translation import ugettext_lazy as _
+
 from drf_haystack.serializers import HaystackSerializerMixin
 from rest_framework import serializers
+from rest_framework.authtoken.models import Token
 
 from apps.accounts.serializers import SettingsUserForSerializers
 from apps.core.api.mixins import RepresentationMixin
 from apps.core.api.serializers import FacilitySerializer
 from apps.patients.models import (PatientDiagnosis, PatientMedication,
                                   PatientProcedure, PatientProfile,
-                                  ProblemArea, ReminderEmail)
+                                  ProblemArea, PatientVerificationCode, ReminderEmail)
 from apps.tasks.models import AssessmentResponse
 
 from ..search_indexes import PatientProfileIndex
@@ -134,6 +137,77 @@ class PatientProfileSearchSerializer(HaystackSerializerMixin, PatientSearchSeria
         index_classes = [PatientProfileIndex]
         search_fields = ('text', )
 
+
+class VerifiedUserSerializer(SettingsUserForSerializers,
+                             serializers.ModelSerializer):
+    token = serializers.SerializerMethodField()
+
+    class Meta:
+        fields = (
+            'email',
+            'first_name',
+            'last_name',
+            'token',
+        )
+
+    def get_token(self, obj):
+        token, created = Token.objects.get_or_create(user=obj)
+        return token.key
+
+
+class VerifiedPatientSerializer(serializers.ModelSerializer):
+    """
+    This serializer works in conjunction with `VerifyPatientSerializer`.
+    This serializer will be used as representation after a patient
+    gets verified.
+    """
+    user = VerifiedUserSerializer(read_only=True)
+
+    class Meta:
+        model = PatientProfile
+        fields = (
+            'id',
+            'user',
+        )
+
+
+class VerifyPatientSerializer(serializers.Serializer):
+    """
+    Serializer to be used for verifying a patient using the code
+    """
+    email = serializers.EmailField()
+    code = serializers.CharField(max_length=6)
+
+    def validate_email(self, value):
+        try:
+            PatientProfile.objects.get(user__email=value)
+        except PatientProfile.DoesNotExist:
+            raise serializers.ValidationError(_('Given email does not exist.'))
+        return value
+
+    def validate(self, data):
+        email = data.get('email')
+        code = data.get('code')
+
+        patient = PatientProfile.objects.get(user__email=email)
+
+        try:
+            PatientVerificationCode.objects.get(
+                patient=patient,
+                code=code
+            )
+        except PatientVerificationCode.DoesNotExist:
+            raise serializers.ValidationError(
+                _('The given email and code does not match any record in our '
+                    'database.')
+            )
+        return data
+
+    def to_representation(self, data):
+        patient = PatientProfile.objects.get(user__email=data.get('email'))
+        serializer = VerifiedPatientSerializer(patient)
+        return serializer.data
+        
 
 class ReminderEmailSerializer(serializers.ModelSerializer):
     class Meta:

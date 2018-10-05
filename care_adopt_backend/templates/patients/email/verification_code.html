@@ -1,0 +1,26 @@
+{% load i18n %}
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+      <meta charset="UTF-8">
+      <title>{% trans 'Invitation to CareAdopt' %}</title>
+  </head>
+  <body>
+  <p>
+    {% blocktrans %}
+      You have been invited to create an account in CareAdopt. Please use the verification code below to verify this email:
+    {% endblocktrans %}
+  </p>
+
+  <p>{% trans 'Email' %}: <strong>{{ patient.user.email }}</strong></p>
+  <p>{% trans 'Verification Code' %}: {{ verification_code.code }}</p>
+
+  <p>{% trans 'If you have any questions, please email us at' %}: <a href="mailto:{{ admin_email }}">{{ admin_email }}</a></p>
+
+  <p>
+    {% trans 'Thank you!' %}<br />
+    {% trans 'CareAdopt Staff' %}<br/>
+  </p>
+  </body>
+</html>

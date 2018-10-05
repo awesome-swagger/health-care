@@ -1,10 +1,20 @@
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.db import models
+from django.utils.translation import ugettext_lazy as _
+
+from .signals import patientprofile_post_save
+from care_adopt_backend.mixins import CreatedModifiedMixin, UUIDPrimaryKeyMixin
+from apps.accounts.models import EmailUser
+from apps.core.models import (
+    Facility,
+    EmployeeProfile,
+    Diagnosis,
+    Procedure,
+    Medication,
+)
 
 from apps.accounts.models import EmailUser
-from apps.core.models import (Diagnosis, EmployeeProfile, Facility, Medication,
-                              Procedure)
 from care_adopt_backend.mixins import CreatedModifiedMixin, UUIDPrimaryKeyMixin
 
 from .signals import reminder_email_post_save
@@ -44,6 +54,10 @@ class PatientProfile(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
 
     def __str__(self):
         return '{} {}'.format(self.user.first_name, self.user.last_name)
+
+    @property
+    def has_been_invited(self):
+        return self.status == 'invited'
 
 
 class ProblemArea(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
@@ -116,6 +130,27 @@ class PatientMedication(UUIDPrimaryKeyMixin):
         return '{}: {}'.format(self.patient, self.medication)
 
 
+class PatientVerificationCode(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
+    """
+    Stores the verification code of patients used to verify their account.
+    """
+    patient = models.ForeignKey(
+        'patients.PatientProfile',
+        related_name='verification_codes',
+        on_delete=models.CASCADE
+    )
+    code = models.CharField(max_length=6)
+
+    class Meta:
+        verbose_name = _('Patient Verification Code')
+        verbose_name_plural = _('Patient Verification Codes')
+        unique_together = ('patient', 'code')
+        ordering = ('-created', )
+
+    def __str__(self):
+        return f'{self.patient.user.get_full_name()}: {self.code}'
+
+
 class ReminderEmail(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
     patient = models.ForeignKey(
         PatientProfile,
@@ -145,6 +180,12 @@ class ReminderEmail(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
             from_email=settings.DEFAULT_FROM_EMAIL,
         )
         email.send()
+
+
+# Signals
+models.signals.post_save.connect(
+    patientprofile_post_save,
+    sender=PatientProfile,
 
 
 models.signals.post_save.connect(
