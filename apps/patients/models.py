@@ -48,6 +48,13 @@ class PatientProfile(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
     status = models.CharField(
         max_length=20, choices=STATUS_CHOICES, default='pre-potential')
     diagnosis = models.ManyToManyField('PatientDiagnosis', blank=True)
+    message_for_day = models.ForeignKey(
+        'plans.InfoMessage',
+        related_name='patients',
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True
+    )
 
     class Meta:
         ordering = ('user', )
