@@ -181,6 +181,33 @@ class EmployeeProfileSerializer(RepresentationMixin, serializers.ModelSerializer
         ]
 
 
+class EmployeeOrganizationSerializer(serializers.ModelSerializer):
+    """
+    Serializer to be used for employees inside an organization
+    """
+    full_name = serializers.SerializerMethodField()
+    facilities_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = EmployeeProfile
+        fields = (
+            'full_name',
+            'title',
+            'status',
+            'facilities_count',
+        )
+
+    def get_full_name(self, obj):
+        return obj.user.get_full_name()
+
+    def get_facilities_count(self, obj):
+        facilities = obj.facilities.values_list('id', flat=True).distinct()
+        facilities_managed = obj.facilities_managed.values_list(
+            'id', flat=True).distinct()
+        ids = set(list(facilities) + list(facilities_managed))
+        return len(ids)
+
+
 class DiagnosisSerializer(serializers.ModelSerializer):
     class Meta:
         model = Diagnosis

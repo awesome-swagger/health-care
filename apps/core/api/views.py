@@ -9,12 +9,15 @@ from apps.core.models import (Diagnosis, EmployeeProfile, Facility,
                               Procedure, ProviderRole, ProviderSpecialty,
                               ProviderTitle, Symptom)
 
+from rest_framework_extensions.mixins import NestedViewSetMixin
+
 from apps.core.permissions import (EmployeeProfilePermissions,
                                    FacilityPermissions,
                                    OrganizationPermissions)
 
 from apps.plans.models import CareTeamMember
 from care_adopt_backend import utils
+from care_adopt_backend.permissions import IsAdminOrEmployee
 
 from ..utils import get_facilities_for_user
 from .filters import RelatedOrderingFilter
@@ -23,7 +26,8 @@ from .serializers import (DiagnosisSerializer, EmployeeProfileSerializer,
                           OrganizationSerializer, ProcedureSerializer,
                           ProviderRoleSerializer, ProviderSpecialtySerializer,
                           ProviderTitleSerializer, SymptomSerializer,
-                          InvitedEmailTemplateSerializer)
+                          InvitedEmailTemplateSerializer,
+                          EmployeeOrganizationSerializer)
 
 
 class OrganizationViewSet(viewsets.ModelViewSet):
@@ -308,3 +312,15 @@ class InvitedEmailTemplateView(RetrieveAPIView):
         serializer = self.get_serializer(invited_email_template)
 
         return Response(serializer.data)
+
+
+class EmployeeOrganizationViewSet(NestedViewSetMixin,
+                                  mixins.ListModelMixin,
+                                  viewsets.GenericViewSet):
+    """
+    Displays all employees in a parent organization.
+    """
+
+    serializer_class = EmployeeOrganizationSerializer
+    permission_clases = (permissions.IsAuthenticated, IsAdminOrEmployee)
+    queryset = EmployeeProfile.objects.all()

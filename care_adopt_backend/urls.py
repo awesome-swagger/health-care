@@ -4,7 +4,8 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.utils.safestring import mark_safe
 from django.views.generic.base import RedirectView
-from rest_framework.routers import DefaultRouter
+
+from rest_framework_extensions.routers import ExtendedSimpleRouter
 from rest_framework_swagger.views import get_swagger_view
 
 from apps.landing.views import LandingView
@@ -12,7 +13,8 @@ from apps.accounts.views import UserViewSet
 from apps.core.api.views import (
     OrganizationViewSet, FacilityViewSet, EmployeeProfileViewSet,
     ProviderTitleViewSet, ProviderRoleViewSet, ProviderSpecialtyViewSet,
-    DiagnosisViewSet,  MedicationViewSet, ProcedureViewSet, SymptomViewSet, AffiliateFacilityListView)
+    DiagnosisViewSet,  MedicationViewSet, ProcedureViewSet, SymptomViewSet,
+    EmployeeOrganizationViewSet)
 from apps.patients.api.views import (
     PatientProfileViewSet, PatientDiagnosisViewSet, ProblemAreaViewSet,
     PatientProcedureViewSet, PatientMedicationViewSet, PatientProfileSearchViewSet)
@@ -56,11 +58,24 @@ admin.site.site_header = mark_safe('<img src="{img}" alt="{alt}"/> {alt}'.format
     alt=admin.site.site_title,
 ))
 
-router = DefaultRouter()
+router = ExtendedSimpleRouter()
 # Accounts
 router.register(r'users', UserViewSet, base_name='users')
 # Core
-router.register(r'organizations', OrganizationViewSet, base_name='organizations')
+
+organization_routes = router.register(
+    r'organizations',
+    OrganizationViewSet,
+    base_name='organizations'
+)
+organization_routes.register(
+    r'employee_profiles',
+    EmployeeOrganizationViewSet,
+    base_name='organization-employees',
+    parents_query_lookups=['organization']
+)
+
+
 router.register(r'facilities', FacilityViewSet, base_name='facilities')
 router.register(
     r'employee_profiles', EmployeeProfileViewSet, base_name='employee_profiles')
