@@ -8,7 +8,7 @@ from apps.core.api.mixins import RepresentationMixin
 from apps.core.api.serializers import FacilitySerializer
 from apps.patients.models import (PatientDiagnosis, PatientMedication,
                                   PatientProcedure, PatientProfile,
-                                  ProblemArea)
+                                  ProblemArea, ReminderEmail)
 from apps.tasks.models import AssessmentResponse
 
 from ..search_indexes import PatientProfileIndex
@@ -133,3 +133,13 @@ class PatientProfileSearchSerializer(HaystackSerializerMixin, PatientSearchSeria
     class Meta(PatientSearchSerializer.Meta):
         index_classes = [PatientProfileIndex]
         search_fields = ('text', )
+
+
+class ReminderEmailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ReminderEmail
+        fields = [
+            'patient',
+            'subject',
+            'message',
+        ]

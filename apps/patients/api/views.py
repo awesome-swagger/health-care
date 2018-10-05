@@ -1,11 +1,9 @@
 from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_haystack.viewsets import HaystackViewSet
-from haystack.query import EmptySearchQuerySet, SearchQuerySet
 from rest_framework import permissions, viewsets
-from rest_framework.decorators import action
-from rest_framework.generics import ListAPIView
-from rest_framework.response import Response
+from rest_framework.generics import CreateAPIView, ListAPIView
+from rest_framework.permissions import IsAdminUser
 
 from apps.plans.models import CareTeamMember
 from care_adopt_backend import utils
@@ -19,8 +17,8 @@ from .serializers import (PatientDashboardSerializer,
                           PatientMedicationSerializer,
                           PatientProcedureSerializer,
                           PatientProfileSearchSerializer,
-                          PatientProfileSerializer, PatientSearchSerializer,
-                          ProblemAreaSerializer)
+                          PatientProfileSerializer,
+                          ProblemAreaSerializer, ReminderEmailSerializer)
 
 
 class PatientProfileViewSet(viewsets.ModelViewSet):
@@ -285,3 +283,9 @@ class PatientProfileSearchViewSet(HaystackViewSet):
             return queryset
 
         return []
+
+
+
+class ReminderEmailCreateView(CreateAPIView):
+    serializer_class = ReminderEmailSerializer
+    permission_classes = (IsAdminUser, )
