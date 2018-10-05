@@ -35,6 +35,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
 
     # 3rd party
     'django_extensions',
@@ -45,6 +46,9 @@ INSTALLED_APPS = (
     'corsheaders',
     'django_filters',
     'haystack',
+    'allauth',
+    'allauth.account',
+    'rest_auth',
 
     # Local
     'apps.landing',
@@ -56,6 +60,7 @@ INSTALLED_APPS = (
 )
 
 # Domain configuration
+SITE_ID = 1
 SITE_SCHEMA = os.environ.get('SCHEMA', 'http')
 SITE_DOMAIN = os.environ.get('FQDN', 'localhost')
 # Retrieve list of space separated domains
@@ -80,6 +85,16 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 100,
 }
+REST_AUTH_SERIALIZERS = {
+    'USER_DETAILS_SERIALIZER': 'apps.accounts.serializers.EmailUserDetailSerializer'
+}
+OLD_PASSWORD_FIELD_ENABLED = True
+
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_UNIQUE_EMAIL = True
+ACCOUNT_USERNAME_REQUIRED = False
 
 CORS_ORIGIN_ALLOW_ALL = True
 
@@ -101,6 +116,7 @@ LOGOUT_URL = '/api-auth/logout/'
 
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
 )
 
 

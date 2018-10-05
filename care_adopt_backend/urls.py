@@ -12,7 +12,7 @@ from apps.accounts.views import UserViewSet
 from apps.core.api.views import (
     OrganizationViewSet, FacilityViewSet, EmployeeProfileViewSet,
     ProviderTitleViewSet, ProviderRoleViewSet, ProviderSpecialtyViewSet,
-    DiagnosisViewSet,  MedicationViewSet, ProcedureViewSet, SymptomViewSet, )
+    DiagnosisViewSet,  MedicationViewSet, ProcedureViewSet, SymptomViewSet, AffiliateFacilityListView)
 from apps.patients.api.views import (
     PatientProfileViewSet, PatientDiagnosisViewSet, ProblemAreaViewSet,
     PatientProcedureViewSet, PatientMedicationViewSet, PatientProfileSearchViewSet)
@@ -183,7 +183,9 @@ urlpatterns = [
     url(r'reset/(?P<reset_key>[a-z0-9\-]+)/$',
         ResetPassword.as_view(), name='reset-request'),
     url(r'validate/(?P<validation_key>[a-z0-9\-]+)/$',
-        ValidateUserView.as_view(), name='user-validation'),
+        ValidateUserView.as_view(), name='user-validation'),\
+
+    url(r'^rest-auth/', include('rest_auth.urls')),
 
     url(r'^api/todays_tasks/', TodaysTasksAPIView.as_view(), name="todays_tasks"),
     url(r'^swagger/', schema_view),

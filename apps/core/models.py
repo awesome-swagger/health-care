@@ -25,7 +25,7 @@ class Facility(AddressMixin, CreatedModifiedMixin, UUIDPrimaryKeyMixin):
     parent_company = models.CharField(max_length=120, blank=True, null=True)
 
     class Meta:
-        ordering = ('organization', 'name', )
+        ordering = ('name', 'organization')
         verbose_name_plural = 'facilities'
 
     def __str__(self):

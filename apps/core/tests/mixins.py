@@ -34,10 +34,15 @@ class CoreMixin(object):
     def create_organization(self):
         return OrganizationFactory(name=self.fake.name())
 
-    def create_facility(self):
+    def create_facility(self, for_organization=None):
+        if not for_organization:
+            org = self.create_organization()
+        else:
+            org = for_organization
+
         return FacilityFactory(
             name=self.fake.name(),
-            organization=self.create_organization()
+            organization=org,
         )
 
     def create_medication(self):
