@@ -4,6 +4,8 @@ from apps.accounts.models import EmailUser
 from care_adopt_backend.mixins import (AddressMixin, CreatedModifiedMixin,
                                        UUIDPrimaryKeyMixin)
 
+from .signals import invited_email_template_post_save
+
 
 class Organization(AddressMixin, CreatedModifiedMixin, UUIDPrimaryKeyMixin):
     name = models.CharField(max_length=120, null=False, blank=False)
@@ -164,3 +166,9 @@ class InvitedEmailTemplate(UUIDPrimaryKeyMixin):
 
     def __str__(self):
         return self.subject
+
+
+models.signals.post_save.connect(
+    invited_email_template_post_save,
+    sender=InvitedEmailTemplate,
+)
