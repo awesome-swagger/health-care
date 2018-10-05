@@ -22,7 +22,8 @@ from .serializers import (DiagnosisSerializer, EmployeeProfileSerializer,
                           FacilitySerializer, MedicationSerializer,
                           OrganizationSerializer, ProcedureSerializer,
                           ProviderRoleSerializer, ProviderSpecialtySerializer,
-                          ProviderTitleSerializer, SymptomSerializer)
+                          ProviderTitleSerializer, SymptomSerializer,
+                          InvitedEmailTemplateSerializer)
 
 
 class OrganizationViewSet(viewsets.ModelViewSet):

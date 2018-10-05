@@ -47,7 +47,8 @@ class PatientProfileViewSet(viewsets.ModelViewSet):
     returns only their own dashboard, for employees this returns all patient dashboards
     for patients they are care team members for.
 
-    Employees can add a query param to filter by patient id, e.g: `/api/patient_profiles/dashboard/?id=<id_here>`
+    Employees can add a query param to filter by patient id, e.g:
+    `/api/patient_profiles/dashboard/?id=<id_here>`
     """
     serializer_class = PatientProfileSerializer
     permission_classes = (
@@ -154,7 +155,7 @@ class PatientMedicationViewSet(viewsets.ModelViewSet):
 # ---------- CUSTOM VIEWS ---------- #
 ######################################
 class PatientProfileDashboard(ListAPIView):
-    """ 
+    """
     Patient Dashboard
     =================
     This endpoint will display data that is essential for Patient Dashboard
@@ -263,7 +264,7 @@ class PatientProfileSearchViewSet(HaystackViewSet):
             }
             ...
         ]
-    
+
     Searchable patients depend on the employee who performed the search.
     See `apps.patients.api.views.get_searchable_patients`
 

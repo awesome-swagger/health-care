@@ -186,7 +186,7 @@ class ReminderEmail(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
 models.signals.post_save.connect(
     patientprofile_post_save,
     sender=PatientProfile,
-
+)
 
 models.signals.post_save.connect(
     reminder_email_post_save,
