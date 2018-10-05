@@ -11,7 +11,9 @@ from apps.core.api.mixins import RepresentationMixin
 from apps.core.api.serializers import FacilitySerializer
 from apps.patients.models import (PatientDiagnosis, PatientMedication,
                                   PatientProcedure, PatientProfile,
-                                  ProblemArea, PatientVerificationCode, ReminderEmail)
+                                  ProblemArea, PatientVerificationCode,
+                                  ReminderEmail)
+from apps.plans.api.serializers import InfoMessageSerializer
 from apps.tasks.models import AssessmentResponse
 
 from ..search_indexes import PatientProfileIndex
@@ -67,6 +69,10 @@ class PatientProfileSerializer(RepresentationMixin,
             {
                 'field': 'facility',
                 'serializer_class': FacilitySerializer,
+            },
+            {
+                'field': 'message_for_day',
+                'serializer_class': InfoMessageSerializer
             }
         ]
 

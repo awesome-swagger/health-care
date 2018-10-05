@@ -9,6 +9,7 @@ from rest_framework.test import APITestCase
 
 from ..models import PatientProfile
 from ..tests.mixins import PatientsMixin
+from apps.plans.tests.mixins import PlansMixin
 from apps.tasks.models import AssessmentResponse
 from apps.tasks.tests.mixins import TasksMixin
 from apps.tasks.utils import (
@@ -17,7 +18,7 @@ from apps.tasks.utils import (
 )
 
 
-class TestPatientProfile(PatientsMixin, APITestCase):
+class TestPatientProfile(PlansMixin, APITestCase):
     """
     Test cases for :model:`tasks.PatientProfile` using a patient
     as the logged in user.
@@ -25,7 +26,10 @@ class TestPatientProfile(PatientsMixin, APITestCase):
 
     def setUp(self):
         self.fake = Faker()
-        self.patient = self.create_patient()
+        message = self.create_info_message()
+        self.patient = self.create_patient(**{
+            'message_for_day': message
+        })
         self.other_patient = self.create_patient()
         self.user = self.patient.user
 
@@ -41,6 +45,10 @@ class TestPatientProfile(PatientsMixin, APITestCase):
             response.data['facility']['name'],
             self.patient.facility.name
         )
+
+    def test_get_info_message(self):
+        response = self.client.get(self.detail_url)
+        self.assertIsNotNone(response.data['message_for_day']['text'])
 
 
 class TestPatientProfileUsingEmployee(PatientsMixin, APITestCase):
