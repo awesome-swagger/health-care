@@ -1,3 +1,5 @@
+from django.conf import settings
+from django.core.mail import EmailMultiAlternatives
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
@@ -12,8 +14,27 @@ from apps.core.models import (
     Medication,
 )
 
+from apps.accounts.models import EmailUser
+from care_adopt_backend.mixins import CreatedModifiedMixin, UUIDPrimaryKeyMixin
+
+from .signals import reminder_email_post_save
+
 
 class PatientProfile(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
+    PRE_POTENTIAL = 'pre-potential'
+    POTENTIAL = 'potential'
+    INVITED = 'invited'
+    DELINQUENT = 'delinquent'
+    INACTIVE = 'inactive'
+    ACTIVE = 'active'
+    STATUS_CHOICES = (
+        (PRE_POTENTIAL, 'Pre Potential'),
+        (POTENTIAL, 'Potential'),
+        (INVITED, 'Invited'),
+        (DELINQUENT, 'Delinquent'),
+        (INACTIVE, 'Inactive'),
+        (ACTIVE, 'Active'),
+    )
     user = models.OneToOneField(
         EmailUser, on_delete=models.CASCADE, related_name='patient_profile')
     facility = models.ForeignKey(
@@ -23,14 +44,7 @@ class PatientProfile(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
         help_text="By adding the emr code to the patient profile, we can link "
         "patients to the electronic medical records (EMR). If the user is "
         "not in the emr they won't have an emr number.")
-    STATUS_CHOICES = (
-        ('pre-potential', 'Pre Potential'),
-        ('potential', 'Potential'),
-        ('invited', 'Invited'),
-        ('delinquent', 'Delinquent'),
-        ('inactive', 'Inactive'),
-        ('active', 'Active'),
-    )
+
     status = models.CharField(
         max_length=20, choices=STATUS_CHOICES, default='pre-potential')
     diagnosis = models.ManyToManyField('PatientDiagnosis', blank=True)
@@ -137,8 +151,44 @@ class PatientVerificationCode(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
         return f'{self.patient.user.get_full_name()}: {self.code}'
 
 
+class ReminderEmail(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
+    patient = models.ForeignKey(
+        PatientProfile,
+        null=False,
+        blank=False,
+        on_delete=models.CASCADE,
+    )
+    subject = models.CharField(
+        max_length=140,
+        blank=False,
+        null=False,
+    )
+    message = models.CharField(
+        max_length=500,
+        blank=False,
+        null=False,
+    )
+
+    def __str__(self):
+        return '{}: {}'.format(self.patient, self.subject)
+
+    def send_reminder_email(self):
+        email = EmailMultiAlternatives(
+            subject=self.subject,
+            body=self.message,
+            to=[self.patient.user.email],
+            from_email=settings.DEFAULT_FROM_EMAIL,
+        )
+        email.send()
+
+
 # Signals
 models.signals.post_save.connect(
     patientprofile_post_save,
     sender=PatientProfile,
+
+
+models.signals.post_save.connect(
+    reminder_email_post_save,
+    sender=ReminderEmail,
 )

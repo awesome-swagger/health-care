@@ -1,7 +1,6 @@
 from django.contrib import admin
-from apps.core.models import (
-    Organization, Facility, EmployeeProfile, ProviderTitle, ProviderRole,
-    ProviderSpecialty, Diagnosis, Medication, Procedure, Symptom)
+
+from . import models
 
 
 class OrganizationAdmin(admin.ModelAdmin):
@@ -44,13 +43,18 @@ class SymptomAdmin(admin.ModelAdmin):
     list_display = ('name', )
 
 
-admin.site.register(Organization, OrganizationAdmin)
-admin.site.register(Facility, FacilityAdmin)
-admin.site.register(EmployeeProfile, EmployeeProfileAdmin)
-admin.site.register(ProviderTitle, ProviderTitleAdmin)
-admin.site.register(ProviderRole, ProviderRoleAdmin)
-admin.site.register(ProviderSpecialty, ProviderSpecialtyAdmin)
-admin.site.register(Diagnosis, DiagnosisAdmin)
-admin.site.register(Medication, MedicationAdmin)
-admin.site.register(Procedure, ProcedureAdmin)
-admin.site.register(Symptom, SymptomAdmin)
+class InvitedEmailTemplateAdmin(admin.ModelAdmin):
+    list_display = ('subject', 'message', 'is_default')
+
+
+admin.site.register(models.Organization, OrganizationAdmin)
+admin.site.register(models.Facility, FacilityAdmin)
+admin.site.register(models.EmployeeProfile, EmployeeProfileAdmin)
+admin.site.register(models.ProviderTitle, ProviderTitleAdmin)
+admin.site.register(models.ProviderRole, ProviderRoleAdmin)
+admin.site.register(models.ProviderSpecialty, ProviderSpecialtyAdmin)
+admin.site.register(models.Diagnosis, DiagnosisAdmin)
+admin.site.register(models.Medication, MedicationAdmin)
+admin.site.register(models.Procedure, ProcedureAdmin)
+admin.site.register(models.Symptom, SymptomAdmin)
+admin.site.register(models.InvitedEmailTemplate, InvitedEmailTemplateAdmin)

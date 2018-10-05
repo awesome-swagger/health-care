@@ -1,11 +1,13 @@
 from rest_framework import serializers
 
-from .mixins import RepresentationMixin
-from care_adopt_backend import utils
 from apps.accounts.serializers import SettingsUserForSerializers
-from apps.core.models import (
-    Organization, Facility, EmployeeProfile, ProviderTitle, ProviderRole,
-    ProviderSpecialty, Diagnosis, Medication, Procedure, Symptom, )
+from apps.core.models import (Diagnosis, EmployeeProfile, Facility,
+                              InvitedEmailTemplate, Medication, Organization,
+                              Procedure, ProviderRole, ProviderSpecialty,
+                              ProviderTitle, Symptom)
+from care_adopt_backend import utils
+
+from .mixins import RepresentationMixin
 
 
 class OrganizationSerializer(serializers.ModelSerializer):
@@ -201,3 +203,13 @@ class SymptomSerializer(serializers.ModelSerializer):
     class Meta:
         model = Symptom
         fields = '__all__'
+
+
+class InvitedEmailTemplateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = InvitedEmailTemplate
+        fields = [
+            'subject',
+            'message',
+            'is_default',
+        ]

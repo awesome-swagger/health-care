@@ -11,7 +11,7 @@ from apps.core.api.mixins import RepresentationMixin
 from apps.core.api.serializers import FacilitySerializer
 from apps.patients.models import (PatientDiagnosis, PatientMedication,
                                   PatientProcedure, PatientProfile,
-                                  ProblemArea, PatientVerificationCode)
+                                  ProblemArea, PatientVerificationCode, ReminderEmail)
 from apps.tasks.models import AssessmentResponse
 
 from ..search_indexes import PatientProfileIndex
@@ -207,3 +207,13 @@ class VerifyPatientSerializer(serializers.Serializer):
         patient = PatientProfile.objects.get(user__email=data.get('email'))
         serializer = VerifiedPatientSerializer(patient)
         return serializer.data
+        
+
+class ReminderEmailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ReminderEmail
+        fields = [
+            'patient',
+            'subject',
+            'message',
+        ]

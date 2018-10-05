@@ -4,8 +4,9 @@ from drf_haystack.viewsets import HaystackViewSet
 from haystack.query import EmptySearchQuerySet, SearchQuerySet
 from rest_framework import permissions, viewsets, status
 from rest_framework.decorators import action
-from rest_framework.generics import ListAPIView, GenericAPIView
+from rest_framework.generics import CreateAPIView, ListAPIView, GenericAPIView
 from rest_framework.response import Response
+from rest_framework.permissions import IsAdminUser
 
 from apps.plans.models import CareTeamMember
 from care_adopt_backend import utils
@@ -21,7 +22,8 @@ from .serializers import (PatientDashboardSerializer,
                           PatientProfileSearchSerializer,
                           PatientProfileSerializer,
                           ProblemAreaSerializer,
-                          VerifyPatientSerializer)
+                          VerifyPatientSerializer,
+                          ReminderEmailSerializer)
 
 
 class PatientProfileViewSet(viewsets.ModelViewSet):
@@ -310,3 +312,8 @@ class PatientVerification(GenericAPIView):
             serializer.data,
             status=status.HTTP_200_OK
         )
+
+
+class ReminderEmailCreateView(CreateAPIView):
+    serializer_class = ReminderEmailSerializer
+    permission_classes = (IsAdminUser, )

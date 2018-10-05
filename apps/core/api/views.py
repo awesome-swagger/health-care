@@ -1,13 +1,18 @@
 from django.db.models import Q
+from django.shortcuts import get_object_or_404
 from rest_framework import mixins, permissions, viewsets
-from rest_framework.generics import ListAPIView
+from rest_framework.generics import ListAPIView, RetrieveAPIView
+from rest_framework.response import Response
 
-from apps.core.models import (Diagnosis, EmployeeProfile, Medication,
-                              Organization, Procedure, ProviderRole,
-                              ProviderSpecialty, ProviderTitle, Symptom)
+from apps.core.models import (Diagnosis, EmployeeProfile, Facility,
+                              InvitedEmailTemplate, Medication, Organization,
+                              Procedure, ProviderRole, ProviderSpecialty,
+                              ProviderTitle, Symptom)
+
 from apps.core.permissions import (EmployeeProfilePermissions,
                                    FacilityPermissions,
                                    OrganizationPermissions)
+
 from apps.plans.models import CareTeamMember
 from care_adopt_backend import utils
 
@@ -283,3 +288,22 @@ class SymptomViewSet(
     serializer_class = SymptomSerializer
     permission_classes = (permissions.AllowAny, )
     queryset = Symptom.objects.all()
+
+
+class InvitedEmailTemplateView(RetrieveAPIView):
+    """
+    Returns the :model:`core.InvitedEmailTemplate` instance where `is_default=True`.
+
+    Raises 404 if the instance does not exist.
+    """
+    serializer_class = InvitedEmailTemplateSerializer
+    permission_classes = (
+        permissions.IsAdminUser,
+    )
+
+    def retrieve(self, request, *args, **kwargs):
+        invited_email_template = get_object_or_404(InvitedEmailTemplate, is_default=True)
+
+        serializer = self.get_serializer(invited_email_template)
+
+        return Response(serializer.data)
