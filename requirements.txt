@@ -15,6 +15,7 @@ elasticsearch==2.4.1
 drf-haystack==1.8.4
 celery==4.2.1
 django-rest-auth==0.9.3
+django-allauth
 
 # Dev tools
 django-extensions
