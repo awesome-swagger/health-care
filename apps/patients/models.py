@@ -1,9 +1,13 @@
+from django.conf import settings
+from django.core.mail import EmailMultiAlternatives
 from django.db import models
 
 from apps.accounts.models import EmailUser
 from apps.core.models import (Diagnosis, EmployeeProfile, Facility, Medication,
                               Procedure)
 from care_adopt_backend.mixins import CreatedModifiedMixin, UUIDPrimaryKeyMixin
+
+from .signals import reminder_email_post_save
 
 
 class PatientProfile(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
@@ -125,3 +129,18 @@ class ReminderEmail(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
 
     def __str__(self):
         return '{}: {}'.format(self.patient, self.subject)
+
+    def send_reminder_email(self):
+        email = EmailMultiAlternatives(
+            subject=self.subject,
+            body=self.message,
+            to=[self.patient.user.email],
+            from_email=settings.DEFAULT_FROM_EMAIL,
+        )
+        email.send()
+
+
+models.signals.post_save.connect(
+    reminder_email_post_save,
+    sender=ReminderEmail,
+)
