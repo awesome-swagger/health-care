@@ -8,6 +8,37 @@ from ..models import InvitedEmailTemplate
 from .mixins import CoreMixin
 
 
+class TestInvitedEmailTemplate(CoreMixin, APITestCase):
+    """
+    Test cases for :model:`core.InvitedEmailTemplate`
+    """
+    def test_latest_created_instance_should_be_only_default(self):
+        invited_email_template1 = InvitedEmailTemplate.objects.create(
+            subject='First Subject',
+            message='First Message',
+        )
+        invited_email_template2 = InvitedEmailTemplate.objects.create(
+            subject='Second Subject',
+            message='Second Message',
+        )
+        invited_email_template3 = InvitedEmailTemplate.objects.create(
+            subject='Third Subject',
+            message='Third Message',
+        )
+        latest_invited_email_template = InvitedEmailTemplate.objects.create(
+            subject='Latest Subject',
+            message='Latest Message',
+        )
+        self.assertEqual(
+            InvitedEmailTemplate.objects.filter(is_default=True).count(),
+            1,
+        )
+        self.assertEqual(
+            InvitedEmailTemplate.objects.filter(is_default=True).first().id,
+            latest_invited_email_template.id,
+        )
+
+
 class TestInvitedEmailTemplateView(CoreMixin, APITestCase):
     def setUp(self):
         self.fake = Faker()
