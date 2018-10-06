@@ -11,23 +11,27 @@ from apps.accounts.tests.factories import RegularUserFactory
 
 class CoreMixin(object):
 
-    def create_employee(self, user=None):
+    def create_employee(self, user=None, **kwargs):
         if user is None:
             user = RegularUserFactory()
 
-        organization = self.create_organization()
-        managed_organization = self.create_organization()
-        facility = self.create_facility()
-        managed_facility = self.create_facility()
+        organizations = kwargs.pop('organizations',
+                                   [self.create_organization()])
+        organizations_managed = kwargs.pop('organizations_managed',
+                                           [self.create_organization()])
+        facilities = kwargs.pop('facilities',
+                                [self.create_facility()])
+        facilities_managed = kwargs.pop('facilities_managed',
+                                        [self.create_facility()])
 
         employee = EmployeeProfileFactory(
             user=user,
             status='active'
         )
-        employee.organizations.add(organization)
-        employee.organizations_managed.add(managed_organization)
-        employee.facilities.add(facility)
-        employee.facilities_managed.add(managed_facility)
+        employee.organizations.add(*organizations)
+        employee.organizations_managed.add(*organizations_managed)
+        employee.facilities.add(*facilities)
+        employee.facilities_managed.add(*facilities_managed)
 
         return employee
 

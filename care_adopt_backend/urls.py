@@ -14,7 +14,7 @@ from apps.core.api.views import (
     OrganizationViewSet, FacilityViewSet, EmployeeProfileViewSet,
     ProviderTitleViewSet, ProviderRoleViewSet, ProviderSpecialtyViewSet,
     DiagnosisViewSet,  MedicationViewSet, ProcedureViewSet, SymptomViewSet,
-    EmployeeOrganizationViewSet)
+    OrganizationEmployeeViewSet)
 from apps.patients.api.views import (
     PatientProfileViewSet, PatientDiagnosisViewSet, ProblemAreaViewSet,
     PatientProcedureViewSet, PatientMedicationViewSet, PatientProfileSearchViewSet)
@@ -70,9 +70,9 @@ organization_routes = router.register(
 )
 organization_routes.register(
     r'employee_profiles',
-    EmployeeOrganizationViewSet,
+    OrganizationEmployeeViewSet,
     base_name='organization-employees',
-    parents_query_lookups=['organization']
+    parents_query_lookups=['organizations']
 )
 
 

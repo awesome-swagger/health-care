@@ -1,3 +1,6 @@
+from django.http import Http404
+
+
 class RepresentationMixin(object):
     """
     This mixin will handle representation of nested serializers. When used,
@@ -40,3 +43,24 @@ class RepresentationMixin(object):
                     })
 
         return data
+
+
+class ParentViewSetPermissionMixin(object):
+    """
+    This mixin will check for the user's access permission for the parent
+    object in a nested ViewSet.
+    """
+
+    def filter_queryset_by_parents_lookups(self, queryset):
+        parents_query_dict = self.get_parents_query_dict()
+        for field, model, viewset in self.parent_objects:
+            obj = model.objects.get(id=parents_query_dict[field])
+            viewset().check_object_permissions(self.request, obj)
+
+        if parents_query_dict:
+            try:
+                return queryset.filter(**parents_query_dict)
+            except ValueError:
+                raise Http404
+        else:
+            return queryset

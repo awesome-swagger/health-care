@@ -181,7 +181,7 @@ class EmployeeProfileSerializer(RepresentationMixin, serializers.ModelSerializer
         ]
 
 
-class EmployeeOrganizationSerializer(serializers.ModelSerializer):
+class OrganizationEmployeeSerializer(serializers.ModelSerializer):
     """
     Serializer to be used for employees inside an organization
     """
