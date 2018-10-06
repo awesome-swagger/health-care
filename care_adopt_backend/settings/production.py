@@ -1,7 +1,7 @@
 """
 Base settings, extended by the dev/staging/production settings.
 """
-
+from celery.schedules import crontab
 import os
 from django.utils.log import DEFAULT_LOGGING
 
@@ -322,4 +322,12 @@ HAYSTACK_CONNECTIONS = {
         'URL': 'http://127.0.0.1:9200/',
         'INDEX_NAME': 'haystack',
     },
+}
+
+
+CELERY_BEAT_SCHEDULE = {
+    'remind_invited_patients': {
+        'task': 'apps.patients.tasks.remind_invited_patients',
+        'schedule': crontab(minute=0, hour=22),
+    }
 }
