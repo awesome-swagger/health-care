@@ -120,19 +120,25 @@ class SimplifiedGoalProgressSerializer(serializers.ModelSerializer):
     serializer for :model:`plans.GoalProgress`. This will be primarily
     used as an inline in GoalSerializer.
     """
+    goal_name = serializers.SerializerMethodField()
 
     class Meta:
         model = GoalProgress
         fields = (
             'id',
+            'goal_name',
             'rating',
             'created',
         )
         read_only_fields = (
             'id',
+            'goal_name',
             'rating',
             'created',
         )
+
+    def get_goal_name(self, obj):
+        return obj.goal.goal_template.name
 
 
 class GoalCommentSerializer(serializers.ModelSerializer):
@@ -226,4 +232,20 @@ class GoalSerializer(serializers.ModelSerializer):
             'id',
             'created',
             'modified',
+        )
+
+
+class CarePlanGoalSerializer(serializers.ModelSerializer):
+    """
+    serializer to be used by :model:`plans.CarePlan` with
+    corresponding related goal objects.
+    """
+    goals = SimplifiedGoalProgressSerializer(many=True)
+    plan_template = CarePlanTemplateSerializer(read_only=True)
+
+    class Meta:
+        fields = (
+            'id',
+            'plan_template',
+            'goals',
         )
