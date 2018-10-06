@@ -8,7 +8,6 @@ from celery.task import PeriodicTask
 
 from apps.core.models import InvitedEmailTemplate
 from apps.plans.models import InfoMessage
-from care_adopt_backend.logger import logger
 
 from .models import PatientProfile, ReminderEmail
 
@@ -49,8 +48,6 @@ class DailyInfoMessage(PeriodicTask):
     run_every = crontab(hour='0')
 
     def run(self):
-        logger.info("=== Running DailyInfoMessage Periodic Task  ===")
-        print("=== Running DailyInfoMessage Periodic Task  ===")
 
         for patient in PatientProfile.objects.all():
 
