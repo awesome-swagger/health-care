@@ -360,15 +360,121 @@ class GoalCommentViewSet(viewsets.ModelViewSet):
 
 
 class InfoMessageQueueViewSet(viewsets.ModelViewSet):
+    """
+    Viewset for :model:`plans.InfoMessageQueue`
+    ========
+
+    create:
+        Creates :model:`plans.InfoMessageQueue` object.
+        Only admins and employees are allowed to perform this action.
+
+    update:
+        Updates :model:`plans.InfoMessageQueue` object.
+        Only admins and employees who belong to the same care team are allowed
+        to perform this action.
+
+    partial_update:
+        Updates one or more fields of an existing message queue object.
+        Only admins and employees who belong to the same care team are allowed
+        to perform this action.
+
+    retrieve:
+        Retrieves a :model:`plans.InfoMessageQueue` instance.
+        Admins will have access to all message queue objects. Employees will
+        only have access to those queues belonging to its own care team.
+        Patients will have access to all queues assigned to them.
+
+    list:
+        Returns list of all :model:`plans.InfoMessageQueue` objects.
+        Admins will get all existing message queue objects. Employees will get
+        the message queue belonging to a certain care team. Patients will get
+        all queues belonging to them.
+
+    delete:
+        Deletes a :model:`plans.InfoMessageQueue` instance.
+        Only admins and employees who belong to the same care team are allowed
+        to perform this action.
+    """
     serializer_class = InfoMessageQueueSerializer
-    permission_classes = (permissions.IsAuthenticated, EmployeeOrReadOnly, )
+    permission_classes = (
+        permissions.IsAuthenticated,
+        IsEmployeeOrPatientReadOnly,
+    )
     queryset = InfoMessageQueue.objects.all()
+
+    def get_queryset(self):
+        queryset = super(InfoMessageQueueViewSet, self).get_queryset()
+        user = self.request.user
+
+        if user.is_employee:
+            queryset = queryset.filter(
+                plan_template__care_plans__care_team_members__employee_profile=user.employee_profile
+            )
+        elif user.is_patient:
+            queryset = queryset.filter(
+                plan_template__care_plans__patient=user.patient_profile
+            )
+
+        return queryset
 
 
 class InfoMessageViewSet(viewsets.ModelViewSet):
+    """
+    Viewset for :model:`plans.InfoMessage`
+    ========
+
+    create:
+        Creates :model:`plans.InfoMessage` object.
+        Only admins and employees are allowed to perform this action.
+
+    update:
+        Updates :model:`plans.InfoMessage` object.
+        Only admins and employees who belong to the same care team are allowed
+        to perform this action.
+
+    partial_update:
+        Updates one or more fields of an existing message object.
+        Only admins and employees who belong to the same care team are allowed
+        to perform this action.
+
+    retrieve:
+        Retrieves a :model:`plans.InfoMessage` instance.
+        Admins will have access to all message objects. Employees will
+        only have access to those messages belonging to its own care team.
+        Patients will have access to all messages assigned to them.
+
+    list:
+        Returns list of all :model:`plans.InfoMessage` objects.
+        Admins will get all existing message objects. Employees will get
+        the message belonging to a certain care team. Patients will get
+        all messages belonging to them.
+
+    delete:
+        Deletes a :model:`plans.InfoMessage` instance.
+        Only admins and employees who belong to the same care team are allowed
+        to perform this action.
+    """
     serializer_class = InfoMessageSerializer
-    permission_classes = (permissions.IsAuthenticated, EmployeeOrReadOnly, )
+    permission_classes = (
+        permissions.IsAuthenticated,
+        IsEmployeeOrPatientReadOnly,
+    )
     queryset = InfoMessage.objects.all()
+
+    def get_queryset(self):
+        queryset = super(InfoMessageViewSet, self).get_queryset()
+        user = self.request.user
+
+        if user.is_patient:
+            queryset = queryset.filter(
+                queue__plan_template__care_plans__care_team_members__employee_profile=user.employee_profile
+            )
+        elif user.is_patient:
+            queryset = queryset.filter(
+                queue__plan_template__care_plans__patient=user.patient_profile
+            )
+
+        return queryset
 
 
 ############################
