@@ -83,10 +83,11 @@ class PatientProfileViewSet(viewsets.ModelViewSet):
     def care_plan_goals(self, request, *args, **kwargs):
         """
         This endpoint will return all care plans of the given patient
-        along with the corresponding goals for each care plans.
+        along with the corresponding goals for each care plans. This
+        endpoint will only return care plans with goals.
         """
         patient = self.get_object()
-        care_plans = patient.care_plans.all()
+        care_plans = patient.care_plans.filter(goals__isnull=False).distinct()
         serializer = CarePlanGoalSerializer(care_plans, many=True)
         return Response(serializer.data)
 
