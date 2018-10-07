@@ -51,6 +51,24 @@ class TestVitalTaskUsingEmployee(TasksMixin, APITestCase):
             self.template.name
         )
 
+    def test_get_vital_task_detail_with_responses_count(self):
+        self.create_multiple_vital_questions(self.template)
+        self.create_responses_to_multiple_vital_questions(
+            self.template,
+            self.vital_task
+        )
+        response = self.client.get(self.detail_url)
+        self.assertTrue(len(response.data['responses']) > 0)
+
+    def test_get_vital_task_detail_with_responses_detail(self):
+        self.create_multiple_vital_questions(self.template)
+        self.create_responses_to_multiple_vital_questions(
+            self.template,
+            self.vital_task
+        )
+        response = self.client.get(self.detail_url)
+        self.assertIsNotNone(response.data['responses'][0]['answer'])
+
     def test_get_vital_task_detail_unauthenticated(self):
         self.client.logout()
         response = self.client.get(self.detail_url)
