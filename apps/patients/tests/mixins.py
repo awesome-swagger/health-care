@@ -1,4 +1,7 @@
 import datetime
+import random
+
+from django.utils import timezone
 
 from .factories import (
     PatientProfileFactory,
@@ -39,11 +42,39 @@ class PatientsMixin(CoreMixin):
             description='Unable to concentrate or keep a job or relationship.'
         )
 
-    def create_patient_medication(self):
-        return PatientMedicationFactory(
-            patient=self.create_patient(),
-            medication=self.create_medication(),
-            dose_mg=250,
-            date_prescribed=datetime.date.today(),
-            duration_days=15
-        )
+    def create_patient_medication(self, **kwargs):
+        if 'patient' not in kwargs:
+            kwargs.update({
+                'patient': self.create_patient()
+            })
+
+        if 'medication' not in kwargs:
+            kwargs.update({
+                'medication': self.create_medication()
+            })
+
+        if 'dose_mg' not in kwargs:
+            kwargs.update({
+                'dose_mg': random.choice([50, 250, 500, 1000])
+            })
+
+        if 'date_prescribed' not in kwargs:
+            kwargs.update({
+                'date_prescribed': timezone.now()
+            })
+
+        if 'duration_days' not in kwargs:
+            kwargs.update({
+                'duration_days': random.randint(5, 20)
+            })
+
+        if 'prescribing_practitioner' not in kwargs:
+            kwargs.update({
+                'prescribing_practitioner': self.create_employee()
+            })
+
+        if 'instructions' not in kwargs:
+            kwargs.update({
+                'instructions': self.fake.sentence(nb_words=10)
+            })
+        return PatientMedicationFactory(**kwargs)

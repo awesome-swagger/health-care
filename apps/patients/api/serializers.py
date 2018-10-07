@@ -105,6 +105,7 @@ class PatientMedicationSerializer(RepresentationMixin,
         model = PatientMedication
         fields = (
             'id',
+            'patient',
             'medication',
             'dose_mg',
             'date_prescribed',
