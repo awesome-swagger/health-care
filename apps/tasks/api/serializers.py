@@ -346,10 +346,29 @@ class AssessmentTaskTodaySerializer(serializers.ModelSerializer):
         return obj.assessment_task_template.name
 
 
+class VitalQuestionSerializer(serializers.ModelSerializer):
+    """
+    serializer to be used by :model:`tasks.VitalQuestion`
+    """
+
+    class Meta:
+        model = VitalQuestion
+        fields = (
+            'id',
+            'vital_task_template',
+            'prompt',
+            'answer_type',
+        )
+        read_only_fields = (
+            'id',
+        )
+
+
 class VitalTaskTemplateSerializer(serializers.ModelSerializer):
     """
     serializer to be used by :model:`tasks.VitalTaskTemplate`
     """
+    questions = VitalQuestionSerializer(many=True, read_only=True)
 
     class Meta:
         model = VitalTaskTemplate
@@ -360,6 +379,7 @@ class VitalTaskTemplateSerializer(serializers.ModelSerializer):
             'start_on_day',
             'frequency',
             'repeat_amount',
+            'questions',
             'appear_time',
             'due_time',
         )
@@ -413,24 +433,6 @@ class VitalTaskTodaySerializer(serializers.ModelSerializer):
 
     def get_name(self, obj):
         return obj.vital_task_template.name
-
-
-class VitalQuestionSerializer(serializers.ModelSerializer):
-    """
-    serializer to be used by :model:`tasks.VitalQuestion`
-    """
-
-    class Meta:
-        model = VitalQuestion
-        fields = (
-            'id',
-            'vital_task_template',
-            'prompt',
-            'answer_type',
-        )
-        read_only_fields = (
-            'id',
-        )
 
 
 class VitalResponseSerializer(serializers.ModelSerializer):
