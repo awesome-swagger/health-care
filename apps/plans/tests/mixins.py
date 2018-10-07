@@ -13,6 +13,8 @@ from .factories import (
     GoalFactory,
     GoalProgressFactory,
     GoalCommentFactory,
+    InfoMessageQueueFactory,
+    InfoMessageFactory,
 )
 
 
@@ -146,3 +148,34 @@ class PlansMixin(PatientsMixin):
             })
 
         return GoalCommentFactory(**kwargs)
+
+    def create_info_message_queue(self, **kwargs):
+        if 'plan_template' not in kwargs:
+            kwargs.update({
+                'plan_template': self.create_care_plan_template()
+            })
+
+        if 'name' not in kwargs:
+            kwargs.update({
+                'name': self.fake.name()
+            })
+
+        if 'type' not in kwargs:
+            kwargs.update({
+                'type': 'education'
+            })
+
+        return InfoMessageQueueFactory(**kwargs)
+
+    def create_info_message(self, **kwargs):
+        if 'queue' not in kwargs:
+            kwargs.update({
+                'queue': self.create_info_message_queue()
+            })
+
+        if 'text' not in kwargs:
+            kwargs.update({
+                'text': self.fake.sentence(nb_words=10)
+            })
+
+        return InfoMessageFactory(**kwargs)

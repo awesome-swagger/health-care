@@ -63,3 +63,21 @@ class GoalCommentFactory(factory.django.DjangoModelFactory):
 
     class Meta:
         model = 'plans.GoalComment'
+
+
+class InfoMessageQueueFactory(factory.django.DjangoModelFactory):
+    """
+    Factory for :model:`plans.InfoMessageQueue`
+    """
+
+    class Meta:
+        model = 'plans.InfoMessageQueue'
+
+
+class InfoMessageFactory(factory.django.DjangoModelFactory):
+    """
+    Factory for :model:`plans.InfoMessage`
+    """
+
+    class Meta:
+        model = 'plans.InfoMessage'
