@@ -23,6 +23,8 @@ class TestVitalTaskTemplateUsingEmployee(TasksMixin, APITestCase):
 
         self.template = self.create_vital_task_template()
 
+        self.create_multiple_vital_questions(self.template)
+
         self.url = reverse('vital_task_templates-list')
         self.detail_url = reverse(
             'vital_task_templates-detail',
@@ -37,6 +39,14 @@ class TestVitalTaskTemplateUsingEmployee(TasksMixin, APITestCase):
     def test_get_vital_task_template_detail(self):
         response = self.client.get(self.detail_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_vital_task_template_detail_with_questions_count(self):
+        response = self.client.get(self.detail_url)
+        self.assertIsNotNone(response.data['questions'][0]['prompt'])
+
+    def test_get_vital_task_template_detail_with_questions_detail(self):
+        response = self.client.get(self.detail_url)
+        self.assertEqual(len(response.data['questions']), 5)
 
     def test_get_vital_task_template_detail_unauthenticated(self):
         self.client.logout()
