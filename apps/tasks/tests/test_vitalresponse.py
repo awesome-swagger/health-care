@@ -77,10 +77,29 @@ class TestVitalResponseUsingEmployee(TasksMixin, APITestCase):
 
         payload = {
             'vital_task': self.vital_task.id,
-            'vital_question': question.id,
+            'question': question.id,
             'response': self.create_string_response_by_answer_type(answer_type)
         }
         response = self.client.post(self.url, payload)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_create_multiple_vital_response_status_code(self):
+        self.create_vital_question(**{
+            'vital_task_template': self.template
+        })
+        questions = self.template.questions.all()
+
+        payload = []
+        for question in questions:
+            answer_type = question.answer_type
+            data = {
+                'vital_task': self.vital_task.id,
+                'question': question.id,
+                'response': self.create_string_response_by_answer_type(
+                    answer_type)
+            }
+            payload.append(data)
+        response = self.client.post(self.url, payload, format='json')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_full_update_vital_response(self):
@@ -91,7 +110,7 @@ class TestVitalResponseUsingEmployee(TasksMixin, APITestCase):
 
         payload = {
             'vital_task': self.vital_task.id,
-            'vital_question': question.id,
+            'question': question.id,
             'response': self.create_string_response_by_answer_type(answer_type)
         }
         response = self.client.put(self.detail_url, payload)
@@ -105,7 +124,7 @@ class TestVitalResponseUsingEmployee(TasksMixin, APITestCase):
 
         payload = {
             'vital_task': self.vital_task.id,
-            'vital_question': question.id,
+            'question': question.id,
             'response': self.create_string_response_by_answer_type(answer_type)
         }
 
@@ -387,6 +406,25 @@ class TestVitalResponseUsingPatient(TasksMixin, APITestCase):
         }
         response = self.client.post(self.url, payload)
 
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_create_multiple_vital_response_status_code(self):
+        self.create_vital_question(**{
+            'vital_task_template': self.template
+        })
+        questions = self.template.questions.all()
+
+        payload = []
+        for question in questions:
+            answer_type = question.answer_type
+            data = {
+                'vital_task': self.vital_task.id,
+                'question': question.id,
+                'response': self.create_string_response_by_answer_type(
+                    answer_type)
+            }
+            payload.append(data)
+        response = self.client.post(self.url, payload, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_full_update_vital_response(self):
