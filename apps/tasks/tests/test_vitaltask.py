@@ -44,6 +44,13 @@ class TestVitalTaskUsingEmployee(TasksMixin, APITestCase):
         response = self.client.get(self.detail_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    def test_get_vital_task_detail_with_template_detail(self):
+        response = self.client.get(self.detail_url)
+        self.assertEqual(
+            response.data['vital_task_template']['name'],
+            self.template.name
+        )
+
     def test_get_vital_task_detail_unauthenticated(self):
         self.client.logout()
         response = self.client.get(self.detail_url)
