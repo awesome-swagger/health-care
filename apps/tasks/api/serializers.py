@@ -388,33 +388,6 @@ class VitalTaskTemplateSerializer(serializers.ModelSerializer):
         )
 
 
-class VitalTaskSerializer(RepresentationMixin, serializers.ModelSerializer):
-    """
-    serializer to be used by :model:`tasks.VitalTask`
-    """
-
-    class Meta:
-        model = VitalTask
-        fields = (
-            'id',
-            'plan',
-            'vital_task_template',
-            'is_complete',
-            'appear_datetime',
-            'due_datetime',
-        )
-        read_only_fields = (
-            'id',
-            'is_complete',
-        )
-        nested_serializers = [
-            {
-                'field': 'vital_task_template',
-                'serializer_class': VitalTaskTemplateSerializer,
-            }
-        ]
-
-
 class VitalTaskTodaySerializer(serializers.ModelSerializer):
     """
     This is a simplified serializer of :model:`tasks.VitalTask`. This
@@ -556,3 +529,32 @@ class VitalResponseSerializer(serializers.ModelSerializer):
             setattr(instance, field, value)
         instance.save()
         return instance
+
+
+class VitalTaskSerializer(RepresentationMixin, serializers.ModelSerializer):
+    """
+    serializer to be used by :model:`tasks.VitalTask`
+    """
+    responses = VitalResponseSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = VitalTask
+        fields = (
+            'id',
+            'plan',
+            'vital_task_template',
+            'is_complete',
+            'responses',
+            'appear_datetime',
+            'due_datetime',
+        )
+        read_only_fields = (
+            'id',
+            'is_complete',
+        )
+        nested_serializers = [
+            {
+                'field': 'vital_task_template',
+                'serializer_class': VitalTaskTemplateSerializer,
+            }
+        ]
