@@ -388,7 +388,7 @@ class VitalTaskTemplateSerializer(serializers.ModelSerializer):
         )
 
 
-class VitalTaskSerializer(serializers.ModelSerializer):
+class VitalTaskSerializer(RepresentationMixin, serializers.ModelSerializer):
     """
     serializer to be used by :model:`tasks.VitalTask`
     """
@@ -407,6 +407,12 @@ class VitalTaskSerializer(serializers.ModelSerializer):
             'id',
             'is_complete',
         )
+        nested_serializers = [
+            {
+                'field': 'vital_task_template',
+                'serializer_class': VitalTaskTemplateSerializer,
+            }
+        ]
 
 
 class VitalTaskTodaySerializer(serializers.ModelSerializer):
