@@ -217,7 +217,14 @@ class DiagnosisSerializer(serializers.ModelSerializer):
 class MedicationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Medication
-        fields = '__all__'
+        fields = (
+            'id',
+            'name',
+            'rx_code',
+        )
+        read_only_fields = (
+            'id',
+        )
 
 
 class ProcedureSerializer(serializers.ModelSerializer):

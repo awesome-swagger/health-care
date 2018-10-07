@@ -8,7 +8,11 @@ from rest_framework.authtoken.models import Token
 
 from apps.accounts.serializers import SettingsUserForSerializers
 from apps.core.api.mixins import RepresentationMixin
-from apps.core.api.serializers import FacilitySerializer
+from apps.core.api.serializers import (
+    FacilitySerializer,
+    MedicationSerializer,
+    EmployeeProfileSerializer,
+)
 from apps.patients.models import (PatientDiagnosis, PatientMedication,
                                   PatientProcedure, PatientProfile,
                                   ProblemArea, PatientVerificationCode,
@@ -95,10 +99,32 @@ class PatientProcedureSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class PatientMedicationSerializer(serializers.ModelSerializer):
+class PatientMedicationSerializer(RepresentationMixin,
+                                  serializers.ModelSerializer):
     class Meta:
         model = PatientMedication
-        fields = '__all__'
+        fields = (
+            'id',
+            'medication',
+            'dose_mg',
+            'date_prescribed',
+            'duration_days',
+            'prescribing_practitioner',
+            'instructions',
+        )
+        read_only_fields = (
+            'id',
+        )
+        nested_serializers = [
+            {
+                'field': 'medication',
+                'serializer_class': MedicationSerializer,
+            },
+            {
+                'field': 'prescribing_practitioner',
+                'serializer_class': EmployeeProfileSerializer,
+            }
+        ]
 
 
 class PatientDashboardSerializer(serializers.ModelSerializer):
