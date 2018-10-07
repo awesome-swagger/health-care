@@ -1,14 +1,13 @@
 from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_haystack.viewsets import HaystackViewSet
-from haystack.query import EmptySearchQuerySet, SearchQuerySet
 from rest_framework import permissions, viewsets, status
-from rest_framework.decorators import action
 from rest_framework.generics import CreateAPIView, ListAPIView, GenericAPIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAdminUser
 
 from apps.plans.models import CareTeamMember
+from apps.tasks.permissions import IsEmployeeOrPatientReadOnly
 from care_adopt_backend import utils
 from care_adopt_backend.permissions import EmployeeOrReadOnly, IsEmployeeOnly
 
@@ -133,22 +132,62 @@ class PatientProcedureViewSet(viewsets.ModelViewSet):
 
 
 class PatientMedicationViewSet(viewsets.ModelViewSet):
+    """
+    Viewset for :model:`patients.PatientMedication`
+    ========
+
+    create:
+        Creates :model:`patients.PatientMedication` object.
+        Only admins and employees are allowed to perform this action.
+
+    update:
+        Updates :model:`patients.PatientMedication` object.
+        Only admins and employees who belong to the same care team are allowed
+        to perform this action.
+
+    partial_update:
+        Updates one or more fields of an existing patient medication object.
+        Only admins and employees who belong to the same care team are allowed
+        to perform this action.
+
+    retrieve:
+        Retrieves a :model:`patients.PatientMedication` instance.
+        Admins will have access to all medication objects. Employees will
+        only have access to those medicationes belonging to its own care team.
+        Patients will have access to all medicationes assigned to them.
+
+    list:
+        Returns list of all :model:`patients.PatientMedication` objects.
+        Admins will get all existing medication objects. Employees will get
+        the medication belonging to a certain care team. Patients will get all
+        medicationes belonging to them.
+
+    delete:
+        Deletes a :model:`patients.PatientMedication` instance.
+        Only admins and employees who belong to the same care team are allowed
+        to perform this action.
+    """
     serializer_class = PatientMedicationSerializer
-    permission_classes = (permissions.IsAuthenticated, EmployeeOrReadOnly, )
+    permission_classes = (
+        permissions.IsAuthenticated,
+        IsEmployeeOrPatientReadOnly,
+    )
     queryset = PatientMedication.objects.all()
 
     def get_queryset(self):
-        qs = self.queryset
-        employee_profile = utils.employee_profile_or_none(self.request.user)
-        patient_profile = utils.patient_profile_or_none(self.request.user)
+        queryset = super(PatientMedicationViewSet, self).get_queryset()
 
-        if employee_profile is not None:
-            # TODO: Only get medications for patients this employee has access to
-            return qs.all()
-        elif patient_profile is not None:
-            return qs.filter(patient__id=patient_profile.id)
-        else:
-            return qs.none()
+        if self.request.user.is_employee:
+            employee = self.request.user.employee_profile
+            queryset = queryset.filter(
+                Q(patient__facility__in=employee.facilities.all()) |
+                Q(patient__facility__in=employee.facilities_managed.all())
+            )
+        elif self.request.user.is_patient:
+            queryset = queryset.filter(
+                patient=self.request.user.patient_profile
+            )
+        return queryset
 
 
 ######################################
