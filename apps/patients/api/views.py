@@ -142,29 +142,29 @@ class PatientMedicationViewSet(viewsets.ModelViewSet):
 
     update:
         Updates :model:`patients.PatientMedication` object.
-        Only admins and employees who belong to the same care team are allowed
+        Only admins and employees who belong to the same facility are allowed
         to perform this action.
 
     partial_update:
         Updates one or more fields of an existing patient medication object.
-        Only admins and employees who belong to the same care team are allowed
+        Only admins and employees who belong to the same facility are allowed
         to perform this action.
 
     retrieve:
         Retrieves a :model:`patients.PatientMedication` instance.
         Admins will have access to all medication objects. Employees will
-        only have access to those medicationes belonging to its own care team.
-        Patients will have access to all medicationes assigned to them.
+        only have access to those medications belonging to its own facility.
+        Patients will have access to all medications assigned to them.
 
     list:
         Returns list of all :model:`patients.PatientMedication` objects.
         Admins will get all existing medication objects. Employees will get
-        the medication belonging to a certain care team. Patients will get all
-        medicationes belonging to them.
+        the medication belonging to a certain facility. Patients will get all
+        medications belonging to them.
 
     delete:
         Deletes a :model:`patients.PatientMedication` instance.
-        Only admins and employees who belong to the same care team are allowed
+        Only admins and employees who belong to the same facility are allowed
         to perform this action.
     """
     serializer_class = PatientMedicationSerializer
