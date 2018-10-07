@@ -1,3 +1,4 @@
+from drf_haystack.serializers import HaystackSerializerMixin
 from rest_framework import serializers
 
 from apps.accounts.serializers import SettingsUserForSerializers
@@ -7,6 +8,7 @@ from apps.core.models import (Diagnosis, EmployeeProfile, Facility,
                               ProviderTitle, Symptom)
 from care_adopt_backend import utils
 
+from ..search_indexes import SymptomIndex
 from .mixins import RepresentationMixin
 
 
@@ -247,3 +249,14 @@ class InvitedEmailTemplateSerializer(serializers.ModelSerializer):
             'message',
             'is_default',
         ]
+
+
+class SymptomSearchSerializer(HaystackSerializerMixin,
+                              SymptomSerializer):
+    """
+    Serializer to be used by the results returned by search
+    for symptoms.
+    """
+    class Meta(SymptomSerializer.Meta):
+        index_classes = [SymptomIndex]
+        search_fields = ('text', 'name')

@@ -1,10 +1,12 @@
-from django.db.models import Q
-from django.shortcuts import get_object_or_404
+from drf_haystack.viewsets import HaystackViewSet
 from rest_framework import mixins, permissions, viewsets
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.response import Response
 
-from apps.core.models import (Diagnosis, EmployeeProfile, Facility,
+from django.db.models import Q
+from django.shortcuts import get_object_or_404
+
+from apps.core.models import (Diagnosis, EmployeeProfile,
                               InvitedEmailTemplate, Medication, Organization,
                               Procedure, ProviderRole, ProviderSpecialty,
                               ProviderTitle, Symptom)
@@ -28,7 +30,8 @@ from .serializers import (DiagnosisSerializer, EmployeeProfileSerializer,
                           ProviderRoleSerializer, ProviderSpecialtySerializer,
                           ProviderTitleSerializer, SymptomSerializer,
                           InvitedEmailTemplateSerializer,
-                          OrganizationEmployeeSerializer)
+                          OrganizationEmployeeSerializer,
+                          SymptomSearchSerializer)
 
 
 class OrganizationViewSet(viewsets.ModelViewSet):
@@ -294,6 +297,14 @@ class SymptomViewSet(
     serializer_class = SymptomSerializer
     permission_classes = (permissions.AllowAny, )
     queryset = Symptom.objects.all()
+
+
+class SymptomSearchViewSet(HaystackViewSet):
+    """
+    Handles search feature for :model:`core.Symptom`
+    """
+    index_models = [Symptom]
+    serializer_class = SymptomSearchSerializer
 
 
 class InvitedEmailTemplateView(RetrieveAPIView):
