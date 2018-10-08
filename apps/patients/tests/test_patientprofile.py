@@ -5,6 +5,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from faker import Faker
+from rest_framework import status
 from rest_framework.test import APITestCase
 
 from ..models import PatientProfile
@@ -30,7 +31,13 @@ class TestPatientProfile(PlansMixin, APITestCase):
         self.patient = self.create_patient(**{
             'message_for_day': message
         })
+        self.care_plan = self.create_care_plan(self.patient)
+        self.empty_care_plan = self.create_care_plan(self.patient)
+
+        self.create_multiple_goals(self.care_plan)
+
         self.other_patient = self.create_patient()
+        self.other_care_plan = self.create_care_plan(self.other_patient)
         self.user = self.patient.user
 
         self.detail_url = reverse(
@@ -38,6 +45,10 @@ class TestPatientProfile(PlansMixin, APITestCase):
             kwargs={'pk': self.patient.id}
         )
         self.client.force_authenticate(user=self.user)
+
+    def create_multiple_goals(self, care_plan):
+        for i in range(5):
+            self.create_goal(**{'plan': self.care_plan})
 
     def test_get_patient_detail_with_facility(self):
         response = self.client.get(self.detail_url)
@@ -49,6 +60,27 @@ class TestPatientProfile(PlansMixin, APITestCase):
     def test_get_info_message(self):
         response = self.client.get(self.detail_url)
         self.assertIsNotNone(response.data['message_for_day']['text'])
+
+    def test_get_care_plan_count(self):
+        url = reverse(
+            'patient_profiles-care-plan-goals',
+            kwargs={'pk': self.patient.id})
+        response = self.client.get(url)
+        self.assertEqual(len(response.data), 1)
+
+    def test_get_care_plan_goals_count(self):
+        url = reverse(
+            'patient_profiles-care-plan-goals',
+            kwargs={'pk': self.patient.id})
+        response = self.client.get(url)
+        self.assertEqual(len(response.data[0]['goals']), 5)
+
+    def test_get_care_plan_goals_unauthorized(self):
+        url = reverse(
+            'patient_profiles-care-plan-goals',
+            kwargs={'pk': self.other_care_plan.id})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
 
 class TestPatientProfileUsingEmployee(PatientsMixin, APITestCase):

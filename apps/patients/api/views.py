@@ -2,11 +2,13 @@ from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_haystack.viewsets import HaystackViewSet
 from rest_framework import permissions, viewsets, status
+from rest_framework.decorators import action
 from rest_framework.generics import CreateAPIView, ListAPIView, GenericAPIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAdminUser
 
 from apps.plans.models import CareTeamMember
+from apps.plans.api.serializers import CarePlanGoalSerializer
 from apps.tasks.permissions import IsEmployeeOrPatientReadOnly
 from care_adopt_backend import utils
 from care_adopt_backend.permissions import EmployeeOrReadOnly, IsEmployeeOnly
@@ -77,6 +79,18 @@ class PatientProfileViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(user=user)
 
         return queryset
+
+    @action(methods=['get'], detail=True)
+    def care_plan_goals(self, request, *args, **kwargs):
+        """
+        This endpoint will return all care plans of the given patient
+        along with the corresponding goals for each care plans. This
+        endpoint will only return care plans with goals.
+        """
+        patient = self.get_object()
+        care_plans = patient.care_plans.filter(goals__isnull=False).distinct()
+        serializer = CarePlanGoalSerializer(care_plans, many=True)
+        return Response(serializer.data)
 
 
 class PatientDiagnosisViewSet(viewsets.ModelViewSet):

@@ -227,3 +227,39 @@ class GoalSerializer(serializers.ModelSerializer):
             'created',
             'modified',
         )
+
+
+class SimplifiedGoalSerializer(serializers.ModelSerializer):
+    """
+    Returns a simplified version of GoalSerializer with lesser fields
+    """
+    goal_name = serializers.SerializerMethodField()
+    latest_progress = SimplifiedGoalProgressSerializer(read_only=True)
+
+    class Meta:
+        model = Goal
+        fields = (
+            'id',
+            'goal_name',
+            'latest_progress',
+        )
+
+    def get_goal_name(self, obj):
+        return obj.goal_template.name
+
+
+class CarePlanGoalSerializer(serializers.ModelSerializer):
+    """
+    serializer to be used by :model:`plans.CarePlan` with
+    corresponding related goal objects.
+    """
+    goals = SimplifiedGoalSerializer(many=True)
+    plan_template = CarePlanTemplateSerializer(read_only=True)
+
+    class Meta:
+        model = CarePlan
+        fields = (
+            'id',
+            'plan_template',
+            'goals',
+        )
