@@ -125,13 +125,11 @@ class SimplifiedGoalProgressSerializer(serializers.ModelSerializer):
         model = GoalProgress
         fields = (
             'id',
-            'goal_name',
             'rating',
             'created',
         )
         read_only_fields = (
             'id',
-            'goal_name',
             'rating',
             'created',
         )
