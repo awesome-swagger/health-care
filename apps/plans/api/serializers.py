@@ -58,18 +58,40 @@ class GoalTemplateSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class InfoMessageQueueSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = InfoMessageQueue
-        fields = '__all__'
-
-
 class InfoMessageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = InfoMessage
-        fields = '__all__'
+        fields = (
+            'id',
+            'queue',
+            'text',
+        )
+        read_only_fields = (
+            'id',
+        )
+
+
+class InfoMessageQueueSerializer(serializers.ModelSerializer):
+
+    messages = InfoMessageSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = InfoMessageQueue
+        fields = (
+            'id',
+            'plan_template',
+            'name',
+            'type',
+            'messages',
+            'created',
+            'modified'
+        )
+        read_only_fields = (
+            'id',
+            'created',
+            'modified',
+        )
 
 
 class GoalProgressSerializer(serializers.ModelSerializer):
