@@ -57,6 +57,7 @@ class PatientProfileSerializer(RepresentationMixin,
             'emr_code',
             'status',
             'diagnosis',
+            'message_for_day',
             'created',
             'modified',
         )
@@ -240,7 +241,7 @@ class VerifyPatientSerializer(serializers.Serializer):
         patient = PatientProfile.objects.get(user__email=data.get('email'))
         serializer = VerifiedPatientSerializer(patient)
         return serializer.data
-        
+
 
 class ReminderEmailSerializer(serializers.ModelSerializer):
     class Meta:
