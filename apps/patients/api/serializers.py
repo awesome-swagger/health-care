@@ -9,10 +9,12 @@ from rest_framework.authtoken.models import Token
 from apps.accounts.forms import CustomSetPasswordForm
 from apps.accounts.serializers import SettingsUserForSerializers
 from apps.core.api.mixins import RepresentationMixin
+from apps.core.models import EmployeeProfile
 from apps.core.api.serializers import (
     FacilitySerializer,
     MedicationSerializer,
-    EmployeeProfileSerializer,
+    EmployeeUserInfo,
+    ProviderTitleSerializer,
 )
 from apps.patients.models import (PatientDiagnosis, PatientMedication,
                                   PatientProcedure, PatientProfile,
@@ -101,6 +103,30 @@ class PatientProcedureSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class SimplifiedEmployeeProfileSerializer(RepresentationMixin, serializers.ModelSerializer):
+
+    class Meta:
+        model = EmployeeProfile
+        fields = (
+            'id',
+            'user',
+            'title',
+        )
+        read_only_fields = (
+            'id',
+        )
+        nested_serializers = [
+            {
+                'field': 'user',
+                'serializer_class': EmployeeUserInfo,
+            },
+            {
+                'field': 'title',
+                'serializer_class': ProviderTitleSerializer,
+            },
+        ]
+
+
 class PatientMedicationSerializer(RepresentationMixin,
                                   serializers.ModelSerializer):
     class Meta:
@@ -112,8 +138,8 @@ class PatientMedicationSerializer(RepresentationMixin,
             'dose_mg',
             'date_prescribed',
             'duration_days',
-            'prescribing_practitioner',
             'instructions',
+            'prescribing_practitioner',
         )
         read_only_fields = (
             'id',
@@ -125,7 +151,7 @@ class PatientMedicationSerializer(RepresentationMixin,
             },
             {
                 'field': 'prescribing_practitioner',
-                'serializer_class': EmployeeProfileSerializer,
+                'serializer_class': SimplifiedEmployeeProfileSerializer,
             }
         ]
 
