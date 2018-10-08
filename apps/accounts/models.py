@@ -121,6 +121,7 @@ class EmailUser(AbstractBaseUser, PermissionsMixin):
         choices=TIMEZONE_CHOICES,
         default=settings.TIME_ZONE
     )
+    is_active = models.BooleanField(default=True, verbose_name='Active')
 
     # Account Validation
     date_joined = models.DateTimeField(_('date joined'), default=timezone.now)
