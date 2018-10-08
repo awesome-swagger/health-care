@@ -1,4 +1,6 @@
 from django.db.models import Q
+from django.utils.translation import ugettext_lazy as _
+
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_haystack.viewsets import HaystackViewSet
 from rest_framework import permissions, viewsets, status
@@ -24,7 +26,8 @@ from .serializers import (PatientDashboardSerializer,
                           PatientProfileSerializer,
                           ProblemAreaSerializer,
                           VerifyPatientSerializer,
-                          ReminderEmailSerializer)
+                          ReminderEmailSerializer,
+                          CreatePatientSerializer)
 
 
 class PatientProfileViewSet(viewsets.ModelViewSet):
@@ -91,6 +94,19 @@ class PatientProfileViewSet(viewsets.ModelViewSet):
         care_plans = patient.care_plans.filter(goals__isnull=False).distinct()
         serializer = CarePlanGoalSerializer(care_plans, many=True)
         return Response(serializer.data)
+
+    @action(methods=['post'], detail=False,
+            permission_classes=(permissions.IsAuthenticated, ))
+    def create_account(self, request, *args, **kwargs):
+        serializer = CreatePatientSerializer(
+            data=request.data,
+            context={'request': request}
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(
+            {"detail": _("Successfully created a patient account.")}
+        )
 
 
 class PatientDiagnosisViewSet(viewsets.ModelViewSet):
@@ -358,6 +374,7 @@ class PatientVerification(GenericAPIView):
     """
 
     serializer_class = VerifyPatientSerializer
+    permission_classes = (permissions.AllowAny, )
 
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)

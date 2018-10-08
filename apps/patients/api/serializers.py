@@ -6,6 +6,7 @@ from drf_haystack.serializers import HaystackSerializerMixin
 from rest_framework import serializers
 from rest_framework.authtoken.models import Token
 
+from apps.accounts.forms import CustomSetPasswordForm
 from apps.accounts.serializers import SettingsUserForSerializers
 from apps.core.api.mixins import RepresentationMixin
 from apps.core.api.serializers import (
@@ -178,6 +179,7 @@ class VerifiedUserSerializer(SettingsUserForSerializers,
 
     class Meta:
         fields = (
+            'id',
             'email',
             'first_name',
             'last_name',
@@ -241,6 +243,35 @@ class VerifyPatientSerializer(serializers.Serializer):
         patient = PatientProfile.objects.get(user__email=data.get('email'))
         serializer = VerifiedPatientSerializer(patient)
         return serializer.data
+
+
+class CreatePatientSerializer(serializers.Serializer):
+    """
+    Serializer for setting `preferred_name` and password for patients.
+    """
+    preferred_name = serializers.CharField(max_length=128, required=False)
+    new_password1 = serializers.CharField(max_length=128)
+    new_password2 = serializers.CharField(max_length=128)
+
+    set_password_form_class = CustomSetPasswordForm
+
+    def validate(self, attrs):
+        self._errors = {}
+
+        # Decode the uidb64 to uid to get User object
+        request = self.context.get('request')
+
+        # Construct SetPasswordForm instance
+        self.set_password_form = self.set_password_form_class(
+            user=request.user, data=attrs,
+        )
+        if not self.set_password_form.is_valid():
+            raise serializers.ValidationError(self.set_password_form.errors)
+
+        return attrs
+
+    def save(self):
+        return self.set_password_form.save()
 
 
 class ReminderEmailSerializer(serializers.ModelSerializer):

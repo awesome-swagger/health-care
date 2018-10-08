@@ -82,6 +82,17 @@ class TestPatientProfile(PlansMixin, APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
+    def test_create_patient_account(self):
+        password = self.fake.password(length=10)
+        payload = {
+            'preferred_name': self.fake.name(),
+            'new_password1': password,
+            'new_password2': password
+        }
+        url = reverse('patient_profiles-create-account')
+        response = self.client.post(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
 
 class TestPatientProfileUsingEmployee(PatientsMixin, APITestCase):
     """
