@@ -473,6 +473,13 @@ class VitalResponseViewSet(viewsets.ModelViewSet):
 
         return queryset
 
+    def get_serializer(self, *args, **kwargs):
+        if self.request.method == 'POST' and \
+           isinstance(self.request.data, list):
+            kwargs['many'] = True
+        return super(VitalResponseViewSet, self).get_serializer(
+            *args, **kwargs)
+
 
 ############################
 # ----- CUSTOM VIEWS ----- #
