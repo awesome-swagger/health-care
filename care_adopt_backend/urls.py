@@ -203,7 +203,10 @@ urlpatterns = [
     url(r'reset/(?P<reset_key>[a-z0-9\-]+)/$',
         ResetPassword.as_view(), name='reset-request'),
     url(r'validate/(?P<validation_key>[a-z0-9\-]+)/$',
-        ValidateUserView.as_view(), name='user-validation'),\
+        ValidateUserView.as_view(), name='user-validation'),
+
+    # Make sure this comes first before rest-auth URLs
+    url(r'^', include('django.contrib.auth.urls')),
 
     url(r'^rest-auth/', include('rest_auth.urls')),
 
