@@ -84,6 +84,35 @@ class TestSymptomTask(StateTestMixin, TasksMixin, APITestCase):
         response = self.client.get(filter_url)
         self.assertEqual(response.data['count'], count)
 
+    def test_filter_by_is_complete(self):
+        # create multiple SymptomTask without ratings
+        for i in range(3):
+            self.create_symptom_task()
+
+        # create one task with complete ratings
+        self.create_symptom_rating(**{
+            'symptom_task': self.symptom_task
+        })
+        filter_url = f'{self.url}?is_complete=True'
+        response = self.client.get(filter_url)
+        self.assertEqual(response.data['count'], 1)
+
+    def test_filter_by_is_not_complete(self):
+        # create multiple SymptomTask without ratings
+        for i in range(3):
+            self.create_symptom_task()
+
+        # create one task with complete ratings
+        self.create_symptom_rating(**{
+            'symptom_task': self.symptom_task
+        })
+        self.create_symptom_rating(**{
+            'symptom_task': self.other_task
+        })
+        filter_url = f'{self.url}?is_complete=False'
+        response = self.client.get(filter_url)
+        self.assertEqual(response.data['count'], 3)
+
     def test_get_symptom_ratings(self):
         count = 5
         for i in range(count):
