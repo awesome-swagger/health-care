@@ -121,7 +121,10 @@ class TeamTaskViewSet(viewsets.ModelViewSet):
 
 class MedicationTaskTemplateViewSet(viewsets.ModelViewSet):
     serializer_class = MedicationTaskTemplateSerializer
-    permission_classes = (permissions.IsAuthenticated, EmployeeOrReadOnly, )
+    permission_classes = (
+        permissions.IsAuthenticated,
+        IsEmployeeOrPatientReadOnly,
+    )
     queryset = MedicationTaskTemplate.objects.all()
 
 

@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from django.apps import apps
 
+from apps.plans.utils import create_tasks_from_template
+
 
 def assign_is_complete_to_assessment_task(instance):
     """
@@ -134,7 +136,14 @@ def medicationtasktemplate_post_save(sender, instance, created, **kwargs):
     :model:`tasks.MedicationTaskTemplate`
     """
     if created:
-        MedicationTask = apps.get_model('tasks', 'MedicationTask')
-        MedicationTask.objects.create(
-            medication_task_template=instance
+        duration_weeks = instance.plan.plan_template.duration_weeks
+        instance_model = apps.get_model('tasks', 'MedicationTask')
+        template_config = {
+            'medication_task_template': instance
+        }
+        create_tasks_from_template(
+            instance,
+            duration_weeks,
+            instance_model,
+            template_config
         )
