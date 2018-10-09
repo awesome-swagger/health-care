@@ -7,6 +7,59 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from .mixins import TasksMixin
+from apps.accounts.tests.factories import AdminUserFactory
+
+
+class TestVitalTask(TasksMixin, APITestCase):
+    """
+    Test cases for :model:`tasks.VitalTask`
+    """
+
+    def setUp(self):
+        self.fake = Faker()
+        self.user = AdminUserFactory()
+        self.vital_task = self.create_vital_task()
+        self.plan = self.vital_task.plan
+        self.template = self.vital_task.vital_task_template
+        self.url = reverse('vital_tasks-list')
+        self.detail_url = reverse(
+            'vital_tasks-detail',
+            kwargs={'pk': self.vital_task.id}
+        )
+        self.client.force_authenticate(user=self.user)
+
+    def test_filter_by_is_complete(self):
+        # create multiple VitalTask without ratings
+        for i in range(3):
+            self.create_vital_task()
+
+        # create one VitalTask with complete status
+        self.create_multiple_vital_questions(self.template)
+        for count, question in enumerate(self.template.questions.all()):
+            self.create_vital_response(**{
+                'vital_task': self.vital_task,
+                'question': question
+            })
+        filter_url = f'{self.url}?is_complete=True'
+        response = self.client.get(filter_url)
+        self.assertEqual(response.data['count'], 1)
+
+    def test_filter_by_is_not_complete(self):
+        # create multiple VitalTask without ratings
+        for i in range(3):
+            self.create_vital_task()
+
+        # create one VitalTask with complete status
+        self.create_multiple_vital_questions(self.template)
+        for count, question in enumerate(self.template.questions.all()):
+            self.create_vital_response(**{
+                'vital_task': self.vital_task,
+                'question': question
+            })
+
+        filter_url = f'{self.url}?is_complete=False'
+        response = self.client.get(filter_url)
+        self.assertEqual(response.data['count'], 3)
 
 
 class TestVitalTaskUsingEmployee(TasksMixin, APITestCase):
