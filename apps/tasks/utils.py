@@ -2,6 +2,8 @@ import datetime
 
 import pytz
 
+from dateutil.relativedelta import relativedelta
+
 from django.utils import timezone
 
 from .models import (
@@ -29,32 +31,37 @@ def calculate_task_percentage(patient):
         - :model:`tasks.PatientTask`
         - :model:`tasks.SymptomTask`
     """
+    now = timezone.now()
+    past_30_days = now - relativedelta(days=30)
+    kwargs = {
+        'appear_datetime__range': (past_30_days, now)
+    }
 
     # Patient tasks
     patient_tasks = PatientTask.objects.filter(
         plan__patient=patient,
-        appear_datetime__lte=timezone.now()
+        **kwargs
     )
     completed_patient_tasks = patient_tasks.filter(status='done')
 
     # Medication tasks
     medication_tasks = MedicationTask.objects.filter(
         medication_task_template__plan__patient=patient,
-        appear_datetime__lte=timezone.now()
+        **kwargs
     )
     completed_medication_tasks = medication_tasks.filter(status='done')
 
     # Symptom tasks
     symptom_tasks = SymptomTask.objects.filter(
         plan__patient=patient,
-        appear_datetime__lte=timezone.now()
+        **kwargs
     )
     completed_symptom_tasks = symptom_tasks.filter(is_complete=True)
 
     # Assessment tasks
     assessment_tasks = AssessmentTask.objects.filter(
         plan__patient=patient,
-        appear_datetime__lte=timezone.now()
+        **kwargs
     )
     completed_assessment_tasks = assessment_tasks.filter(is_complete=True)
 

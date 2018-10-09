@@ -2,6 +2,7 @@ from django.db.models import Avg
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
+from dateutil.relativedelta import relativedelta
 from drf_haystack.serializers import HaystackSerializerMixin
 from rest_framework import serializers
 from rest_framework.authtoken.models import Token
@@ -180,8 +181,9 @@ class PatientDashboardSerializer(serializers.ModelSerializer):
 
     def get_assessment_score(self, obj):
         now = timezone.now()
+        past_30_days = now - relativedelta(days=30)
         responses = AssessmentResponse.objects.filter(
-            assessment_task__appear_datetime__lte=now,
+            assessment_task__appear_datetime__range=(past_30_days, now),
             assessment_task__plan__patient=obj,
             assessment_task__assessment_task_template__tracks_outcome=True
         )
