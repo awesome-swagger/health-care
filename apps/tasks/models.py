@@ -181,7 +181,9 @@ class MedicationTaskTemplate(AbstractTaskTemplate):
 
 class MedicationTask(AbstractTask):
     medication_task_template = models.ForeignKey(
-        MedicationTaskTemplate, null=False, blank=False, on_delete=models.CASCADE)
+        MedicationTaskTemplate,
+        related_name='medication_tasks',
+        on_delete=models.CASCADE)
     STATUS_CHOICES = (
         ('undefined', 'Undefined'),
         ('missed', 'Missed'),
