@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from django.apps import apps
 
 
 def assign_is_complete_to_assessment_task(instance):
@@ -125,3 +126,15 @@ def vitalresponse_post_delete(sender, instance, **kwargs):
     if task.is_complete:
         task.is_complete = False
         task.save()
+
+
+def medicationtasktemplate_post_save(sender, instance, created, **kwargs):
+    """
+    Function to be used as signal (post_save) when saving
+    :model:`tasks.MedicationTaskTemplate`
+    """
+    if created:
+        MedicationTask = apps.get_model('tasks', 'MedicationTask')
+        MedicationTask.objects.create(
+            medication_task_template=instance
+        )

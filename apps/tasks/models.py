@@ -10,6 +10,7 @@ from .signals import (
     symptomrating_post_delete,
     assessmentresponse_post_delete,
     vitalresponse_post_delete,
+    medicationtasktemplate_post_save,
 )
 from care_adopt_backend.mixins import UUIDPrimaryKeyMixin
 from apps.core.models import (ProviderRole, Symptom, )
@@ -481,4 +482,8 @@ models.signals.post_delete.connect(
 models.signals.post_delete.connect(
     vitalresponse_post_delete,
     sender=VitalResponse
+)
+models.signals.post_save.connect(
+    medicationtasktemplate_post_save,
+    sender=MedicationTaskTemplate
 )
