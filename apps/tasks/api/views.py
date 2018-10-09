@@ -172,6 +172,7 @@ class SymptomTaskViewSet(viewsets.ModelViewSet):
         'plan__id',
         'symptom_task_template__id',
         'plan__patient__id',
+        'is_complete',
     )
 
     def get_queryset(self):
