@@ -364,6 +364,10 @@ class VitalTaskViewSet(viewsets.ModelViewSet):
         permissions.IsAuthenticated,
         IsEmployeeOrPatientReadOnly,
     )
+    filter_backends = (DjangoFilterBackend, )
+    filterset_fields = (
+        'is_complete',
+    )
     queryset = VitalTask.objects.all()
 
     def get_queryset(self):
