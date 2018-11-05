@@ -146,7 +146,8 @@ class PatientVerificationCode(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
         ordering = ('-created', )
 
     def __str__(self):
-        return f'{self.patient.user.get_full_name()}: {self.code}'
+        #return f'{self.patient.user.get_full_name()}: {self.code}'
+		return self.patient.user.get_full_name()
 
 
 class ReminderEmail(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
