@@ -1,0 +1,408 @@
+<div class="dashBg">
+  <div class="ssContainer dash">
+
+    <div class="flexHeader marBottom48">
+      <h1 class="noMargin">Dashboard</h1>
+      <div class="info info--dk info--horiz">
+        <div class="info__cell">
+          <label>Active Patients</label>
+          <a [routerLink]="['/patients/active']" class="link--big" *ngIf="patientsGrouped?.active">{{patientsGrouped?.active.length}}</a>
+          <a [routerLink]="['/patients/active']" class="link--big" *ngIf="!patientsGrouped?.active">0</a>
+        </div>
+        <div class="info__cell">
+          <label>Invited Patients</label>
+          <a [routerLink]="['/patients/invited']" class="link--big link--red" *ngIf="patientsGrouped?.invited">{{patientsGrouped?.invited.length}}</a>
+          <a [routerLink]="['/patients/invited']" class="link--big link--red" *ngIf="!patientsGrouped?.invited">0</a>
+        </div>
+        <div class="info__cell">
+          <label>Potential Patients</label>
+          <a [routerLink]="['/patients/potential']" class="link--big" *ngIf="patientsGrouped?.potential">{{patientsGrouped?.potential.length}}</a>
+          <a [routerLink]="['/patients/potential']" class="link--big" *ngIf="!patientsGrouped?.potential">0</a>
+        </div>
+      </div>
+      <div>
+        <label>Filter By User</label>
+        <div class="drop">
+            <div class="drop__input" (click)="multiOpen = !multiOpen">
+              All
+            </div>
+            <ul class="drop__dropdown drop__dropdown--right" [ngClass]="{ 'isOpen' : multiOpen }">
+              <div class="drop__buttons">
+                <button class="button button--iconText">
+                  <i class="ss-check ss-standard"></i> Check All
+                </button>
+                <button class="button button--iconText">
+                  <i class="ss-ban"></i> Uncheck All
+                </button>
+              </div>
+
+              <li class="drop__option">
+                <input class="input input--search drop__innerInput" type="text" placeholder="Search" />
+              </li>
+
+              <li class="drop__option">
+                <label class="drop__checkbox styledInput">
+                  <input type="checkbox" class="styledInput__input" />
+                  <span class="styledInput__box"></span>
+                  <div class="picName">
+                    <img class="picName__img" src="../../../assets/img/profile.svg" />Stephanie Wintergreen
+                  </div>
+                </label>
+              </li>
+              <li class="drop__option">
+                <label class="drop__checkbox styledInput">
+                  <input type="checkbox" class="styledInput__input" />
+                  <span class="styledInput__box"></span>
+                  <div class="picName">
+                    <img class="picName__img" src="../../../assets/img/profile.svg" />Val Zeeman
+                  </div>
+                </label>
+              </li>
+            </ul>
+          </div> <!--/.drop (multiselect for users)-->
+      </div>
+    </div> <!--/.flexHeader (for top row)-->
+
+    <div class="flex justifySpaceBetween">
+      <div class="dashLeft">
+        <div class="flex alignCenter">
+          <label class="noMargin">Patient Risk Levels</label>
+          <div class="tool">
+            <div class="tool__anchor">
+              <button class="button button--icon button--icon--small" (click)="dashTip1=!dashTip1">
+                <i class="ss-help"></i>
+              </button>
+              <div class="tool__tip" [ngClass]="{ 'isOpen' : dashTip1 }">
+                <div class="tool__text">
+                  Risk level is an average of engagement and outcome percentages. Engagement is the percentage of completed tasks and assessments. Outcome averages the results of patient well-being assessments. Risk levels are: On Track (90-100%), Low Risk (75-89%), Med Risk (51-74%), and High Risk (0-50%).
+                </div>
+              </div>
+            </div>
+          </div> <!--/.tool-->
+        </div>
+
+        <div class="dashRisk">
+          <div class="dashRisk__chart">
+            <!--TODO: replace fakeChart with actual js charts-->
+            <div class="fakeChart">
+              <div class="fakeChart__inner">
+                <div class="fakeChart__text">
+                  <h1 class="chart__number" *ngIf="patientsGrouped?.active">{{patientsGrouped?.active.length}}</h1>
+                  <h1 class="chart__desc">active patients</h1>
+                </div>
+              </div>
+            </div> <!--/.fakeChart-->
+          </div> <!--/.dashRisk__chart-->
+          <div class="dashRisk__key">
+            <table class="dashRisk__table">
+              <tbody>
+                <tr>
+                  <td>
+                    <div class="dashRisk__marker"></div>
+                  </td>
+                  <td>
+                    <h4 class="noMargin">On Track</h4>
+                  </td>
+                  <td>401</td>
+                  <td>65%</td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="dashRisk__marker dashRisk__marker--yellow"></div>
+                  </td>
+                  <td>
+                    <h4 class="noMargin">Low Risk</h4>
+                  </td>
+                  <td>110</td>
+                  <td>18%</td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="dashRisk__marker dashRisk__marker--red"></div>
+                  </td>
+                  <td>
+                    <h4 class="noMargin">Med Risk</h4>
+                  </td>
+                  <td>74</td>
+                  <td>12%</td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="dashRisk__marker dashRisk__marker--purple"></div>
+                  </td>
+                  <td>
+                    <h4 class="noMargin">High Risk</h4>
+                  </td>
+                  <td>31</td>
+                  <td>5%</td>
+                </tr>
+              </tbody>
+            </table>
+            <a [routerLink]="['/patients/active']" class="button button--iconText">
+              <i class="ss-standard ss-view"></i> View Active Patients
+          </a>
+          </div> <!--/.dashRisk__key-->
+        </div> <!--/.dashRisk-->
+      </div> <!--/.dashLeft (section with patient risk levels donut chart)-->
+
+      <div class="dashRight">
+        <label class="adopt__label">Patient Adoptions</label>
+        <div class="adopt">
+          <p class="adopt__text">Over the past 24 hours</p>
+          <h1 class="adopt__header">573</h1>
+          <p class="adopt__text">of 616 patients care plans used CareAdopt, for a</p>
+          <div class="adopt__numberWrap">
+            <h1 class="chart__number"><span class="percent">93</span></h1>
+          </div>
+          <p class="adopt__text">patient adoption rate.</p>
+        </div> <!--/.adopt-->
+      </div> <!--/.dashRight (section with adoption numbers)-->
+    </div> <!--/.flexHeader (for patient risk levels and adoption)-->
+
+    <div class="dashDivider"></div>
+
+    <h2>Past 30 Days</h2>
+    <div class="smallChartWrap">
+      <div class="smallChart">
+        <label>Avg Engagement</label>
+        <!--TODO: replace fakeChart with actual js charts-->
+        <div class="fakeChart">
+          <div class="fakeChart__inner">
+            <div class="fakeChart__text">
+              <h1 class="chart__number"><span class="percent">82</span></h1>
+            </div>
+          </div>
+        </div> <!--/.fakeChart-->
+        <p class="smallChart__desc">
+          Percentage of tasks and<br />
+          assessments completed
+        </p>
+      </div> <!--/.smallChart (the 1st one)-->
+      <div class="smallChart">
+        <label>Avg Outcome</label>
+        <!--TODO: replace fakeChart with actual js charts-->
+        <div class="fakeChart">
+          <div class="fakeChart__inner">
+            <div class="fakeChart__text">
+              <h1 class="chart__number"><span class="percent">72</span></h1>
+            </div>
+          </div>
+        </div> <!--/.fakeChart-->
+        <p class="smallChart__desc">
+          Results of well-being<br />
+          assessments
+        </p>
+      </div> <!--/.smallChart (the 2nd one)-->
+      <div class="smallChart">
+        <label>Avg Risk Level</label>
+        <!--TODO: replace fakeChart with actual js charts-->
+        <div class="fakeChart">
+          <div class="fakeChart__inner">
+            <div class="fakeChart__text">
+              <h1 class="chart__desc">
+                Low Risk<br />
+                <span class="percent">77</span>
+              </h1>
+            </div>
+          </div>
+        </div> <!--/.fakeChart-->
+        <p class="smallChart__desc">
+          Average of outcome %<br />
+          and engagement %
+        </p>
+      </div> <!--/.smallChart (the 3rd one)-->
+      <div class="smallChart">
+        <label>Satisfaction</label>
+        <!--TODO: replace fakeChart with actual js charts-->
+        <div class="fakeChart">
+          <div class="fakeChart__inner">
+            <div class="fakeChart__text">
+              <h1 class="chart__number"><span class="percent">91</span></h1>
+            </div>
+          </div>
+        </div> <!--/.fakeChart-->
+        <p class="smallChart__desc">
+          Results of satisfaction<br />
+          assessments
+        </p>
+      </div> <!--/.smallChart (the 4th one)-->
+    </div> <!--/.flex (for 30 days charts)-->
+
+    <div class="dashDivider"></div>
+
+    <div class="timeChart">
+    <h2>Patients Enrolled Over Time</h2>
+    <div>
+      <!--TODO: Get an option to style the date range text; in this instance it needs to be smaller-->
+      <app-date-range [datePickerOverrides]="datepickerOptions"></app-date-range>
+    </div>
+      <div class="timeChart__header">
+        <div class="flex">
+          <p class="timeChart__key timeChart__key--dotted">
+            Enrolled Patients
+          </p>
+          <p class="timeChart__key">
+            Billable Patients
+          </p>
+        </div> <!--/.flex (contains key for time chart)-->
+        <div class="flex">
+          <div class="timeChart__selectWrap">
+            <label>Filter By Facility</label>
+            <div class="drop">
+              <div class="drop__input" (click)="multi2Open = !multi2Open">
+                All
+              </div>
+              <ul class="drop__dropdown drop__dropdown--right" [ngClass]="{ 'isOpen' : multi2Open }">
+                <div class="drop__buttons">
+                  <button class="button button--iconText">
+                    <i class="ss-check ss-standard"></i> Check All
+                  </button>
+                  <button class="button button--iconText">
+                    <i class="ss-ban"></i> Uncheck All
+                  </button>
+                </div>
+
+                <li class="drop__option">
+                  <input class="input input--search drop__innerInput" type="text" placeholder="Search" />
+                </li>
+
+                <li class="drop__option">
+                  <label class="drop__checkbox styledInput">
+                    <input type="checkbox" class="styledInput__input" />
+                    <span class="styledInput__box"></span>
+                    Canyon View
+                  </label>
+                </li>
+                <li class="drop__option">
+                  <label class="drop__checkbox styledInput">
+                    <input type="checkbox" class="styledInput__input" />
+                    <span class="styledInput__box"></span>
+                    South Odgen Family Medicine
+                  </label>
+                </li>
+              </ul>
+            </div> <!--/.drop-->
+          </div> <!--/.timeChart__selectWrap (for facility filter)-->
+
+          <div class="timeChart__selectWrap">
+            <label>Filter By Risk Level</label>
+            <div class="drop">
+              <div class="drop__input" (click)="multi3Open = !multi3Open">
+                All
+              </div>
+              <ul class="drop__dropdown drop__dropdown--right" [ngClass]="{ 'isOpen' : multi3Open }">
+                <div class="drop__buttons">
+                  <button class="button button--iconText">
+                    <i class="ss-check ss-standard"></i> Check All
+                  </button>
+                  <button class="button button--iconText">
+                    <i class="ss-ban"></i> Uncheck All
+                  </button>
+                </div>
+
+                <li class="drop__option">
+                  <input class="input input--search drop__innerInput" type="text" placeholder="Search" />
+                </li>
+
+                <li class="drop__option">
+                  <label class="drop__checkbox styledInput">
+                    <input type="checkbox" class="styledInput__input" />
+                    <span class="styledInput__box"></span>
+                    On Track
+                  </label>
+                </li>
+                <li class="drop__option">
+                  <label class="drop__checkbox styledInput">
+                    <input type="checkbox" class="styledInput__input" />
+                    <span class="styledInput__box"></span>
+                    Low Risk
+                  </label>
+                </li>
+                <li class="drop__option">
+                  <label class="drop__checkbox styledInput">
+                    <input type="checkbox" class="styledInput__input" />
+                    <span class="styledInput__box"></span>
+                    Med Risk
+                  </label>
+                </li>
+                <li class="drop__option">
+                  <label class="drop__checkbox styledInput">
+                    <input type="checkbox" class="styledInput__input" />
+                    <span class="styledInput__box"></span>
+                    High Risk
+                  </label>
+                </li>
+              </ul>
+            </div> <!--/.drop-->
+          </div> <!--/.flex (contains 2 multi-selects)-->
+        </div> <!--/.flex (for row above the time chart)-->
+      </div> <!--/.timeChart__selectWrap (for risk level filter)-->
+
+      <div class="fakeTimeChart">
+        <!--TODO: Replace with real js chart-->
+      </div>
+
+    </div> <!--/.timeChart-->
+
+    <div class="dashDivider"></div>
+
+    <div class="flex justifySpaceBetween">
+      <app-date-range [datePickerOverrides]="datepickerOptions"></app-date-range>
+      <a [routerLink]="['/billing']" class="button button--iconText">
+        <i class="ss-standard ss-view"></i> View Billing Details
+      </a>
+    </div>
+    <div class="info info--dk info--horiz">
+      <div class="info__cell">
+        <label>Total Patients</label>
+        <h1 class="info__bigNumber">616</h1>
+      </div>
+      <div class="info__cell">
+        <label>Total Hours</label>
+        <h1 class="info__bigNumber">235:16</h1>
+      </div>
+      <div class="info__cell">
+        <label>Billable Patients</label>
+        <h1 class="info__bigNumber">545</h1>
+      </div>
+      <div class="info__cell">
+        <label>Billable Hours</label>
+        <h1 class="info__bigNumber">198:13</h1>
+      </div>
+      <div class="info__cell">
+        <label>Est. Month Total</label>
+        <h1 class="info__bigNumber">$56,123</h1>
+      </div>
+    </div> <!--/.info (for current month to date)-->
+
+    <div class="flex justifySpaceBetween">
+      <app-date-range [datePickerOverrides]="datepickerOptions"></app-date-range>
+      <a [routerLink]="['/billing']" class="button button--iconText">
+        <i class="ss-standard ss-view"></i> View Billing Details
+      </a>
+    </div>
+    <div class="info info--dk info--horiz">
+      <div class="info__cell">
+        <label>Total Patients</label>
+        <h1 class="info__bigNumber">548</h1>
+      </div>
+      <div class="info__cell">
+        <label>Total Hours</label>
+        <h1 class="info__bigNumber">178:01</h1>
+      </div>
+      <div class="info__cell">
+        <label>Billable Patients</label>
+        <h1 class="info__bigNumber">388</h1>
+      </div>
+      <div class="info__cell">
+        <label>Billable Hours</label>
+        <h1 class="info__bigNumber">107:22</h1>
+      </div>
+      <div class="info__cell">
+        <label>Est. Month Total</label>
+        <h1 class="info__bigNumber">$32,881</h1>
+      </div>
+    </div> <!--/.info (for past month)-->
+
+  </div> <!--/.ssContainer-->
+</div> <!--/.dashBg-->

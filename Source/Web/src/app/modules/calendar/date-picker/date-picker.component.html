@@ -1,0 +1,29 @@
+<div class="datePick">
+  <div class="datePick__navigate">
+    <button class="button button--icon" (click)="back()">
+      <i class="ss-standard ss-navigateleft"></i>
+    </button>
+    <h3 class="datePick__title">{{formatHeader()}}</h3>
+    <button class="button button--icon" (click)="forward()">
+      <i class="ss-standard ss-navigateright"></i>
+    </button>
+  </div>
+  <table class="datePick__calendar">
+    <thead>
+      <tr class="datePick__header">
+        <th>S</th>
+        <th>M</th>
+        <th>T</th>
+        <th>W</th>
+        <th>T</th>
+        <th>F</th>
+        <th>S</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let week of weekChunk()">
+        <td class="datePick__day" *ngFor="let day of week" [ngClass]="{'datePick__day--selected': dayIsSelected(day)}" (click)="clickDay(day)" [attr.data-day]="day">{{day}}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>

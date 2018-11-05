@@ -1,0 +1,56 @@
+@import '~scss/mixins';
+@import '~scss/variables';
+
+
+.popover {
+  background-color: white;
+  box-shadow: 0 4px 21px 3px rgba(0, 0, 0, 0.11);
+  border-radius: 4px;
+  color: $grayDk;
+  cursor: default;
+  font-size: 1em;
+  font-family: 'Roboto';
+  line-height: 1em;
+  position: absolute;
+  width: auto;
+  z-index: 10;
+  animation: dropIn .4s;
+
+  &__content {
+    position: relative;
+  }
+
+  &__overlay {
+    cursor: default;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    z-index: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5%);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes dropIn {
+  from {
+    opacity: 0;
+    transform: translateY(-.25rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

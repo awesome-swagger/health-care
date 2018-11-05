@@ -1,0 +1,74 @@
+<h1 class="modal__title">Add a User to Invite</h1>
+<!--TODO: When using this modal for editing (instead of adding) a user, hide the fields for first name, last name, and title-->
+<div class="flex justifySpaceBetween marBottom32">
+  <div class="marRight16">
+    <label>First Name</label>
+    <input type="text" class="input fullWidth" [(ngModel)]="firstNameInput" />
+  </div>
+  <div class="marRight32">
+    <label>Last Name</label>
+    <input type="text" class="input fullWidth" [(ngModel)]="lastNameInput" />
+  </div>
+  <div class="modal__inputWrap120">
+    <label>Title</label>
+    <div class="styledSelect">
+      <select class="styledSelect__select" [(ngModel)]="titleInput">
+        <option>- - - -</option>
+        <option *ngFor="let title of titles" [value]="title">{{title.abbreviation}}</option>
+      </select>
+    </div>
+  </div>
+</div> <!--/.flex (for first name, last name, title)-->
+<div class="flex justifySpaceBetween marBottom32">
+  <div class="modal__inputWrap marRight32">
+    <label>Email</label>
+    <input type="email" class="input fullWidth" [(ngModel)]="emailInput" />
+  </div>
+  <div class="modal__inputWrap160">
+    <label>Phone (opt)</label>
+    <input type="tel" class="input fullWidth" [(ngModel)]="phoneInput" />
+  </div>
+</div> <!--/.flex (for email, phone)-->
+<label>Employer</label>
+<div class="styledSelect marBottom16">
+  <select class="styledSelect__select" [(ngModel)]="organizationInput">
+    <option>- - - -</option>
+    <option *ngFor="let organization of organizations" [value]="organization">{{organization.name}}</option>
+  </select>
+</div>
+<div class="flex justifySpaceBetween">
+  <div class="modal__inputWrap marRight32">
+    <label class="label48">Specialty</label>
+    <div class="styledSelect">
+      <select class="styledSelect__select" [(ngModel)]="specialtyInput">
+        <option>- - - -</option>
+        <option *ngFor="let specialty of specialties" [value]="specialty">{{specialty.name}}</option>
+      </select>
+    </div>
+  </div>
+  <div>
+    <div class="tool">
+      <label class="noMargin">NPI (opt)</label>
+      <div class="tool__anchor">
+        <button class="button button--icon button--icon--small"
+        (click)="tooltipAUM0Open=!tooltipAUM0Open">
+          <i class="ss-help"></i>
+        </button>
+        <div class="tool__tip tool__tip--right" [ngClass]="{ 'isOpen' : tooltipAUM0Open }">
+          <div class="tool__text">
+            Listing the National Provider Identifier facilitates provider EMR/EHR integration.
+          </div>
+        </div>
+      </div>
+    </div> <!--/.tool-->
+    <input type="text" class="input" [(ngModel)]="npiInput" />
+  </div>
+</div> <!--/.flex (for speciality, npi)-->
+<div class="modal__buttons">
+  <button class="button button--2nd">
+    Cancel
+  </button>
+  <button class="button">
+    Save
+  </button>
+</div>

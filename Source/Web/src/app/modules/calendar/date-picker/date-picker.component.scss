@@ -1,0 +1,73 @@
+@import '~scss/mixins';
+@import '~scss/variables';
+
+.datePick {
+  @include shadow;
+  background: white;
+  border-radius: rem-calc(4);
+  padding: rem-calc(16);
+  width: rem-calc(368);
+
+  &__navigate {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &__title { margin-bottom: 0; }
+
+  &__header { height: rem-calc(32); }
+
+  &__calendar {
+    border-collapse: collapse;
+    // override default table margin-bottom
+    margin-bottom: 0;
+    table-layout: fixed;
+    width: 100%;
+  }
+
+  &__day {
+    color: $grayDk;
+    cursor: pointer;
+    font-size: rem-calc(12);
+    padding: rem-calc(8) 0;
+    text-align: center;
+    height: rem-calc(48);
+    @include transition;
+
+    &:hover {
+      background-color: rgba($green, .3);
+    }
+
+    &:empty:hover {
+      cursor: default;
+      background-color: transparent;
+    }
+
+    &--selected {
+      color: white;
+      position: relative;
+      z-index: 2;
+
+      &:hover {
+        background-color: transparent;
+      }
+
+      &:before {
+        content: attr(data-day);
+        color: white;
+        background-color: $blue;
+        border-radius: rem-calc(32);
+        position: absolute;
+        top: rem-calc(8);
+        left: rem-calc(8);
+        height: rem-calc(32);
+        width: rem-calc(32);
+        z-index: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+    }
+  }
+}

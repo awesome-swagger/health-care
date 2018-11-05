@@ -1,0 +1,7 @@
+@import '../../../../scss/variables.scss';
+@import '../../../../scss/mixins.scss';
+
+.user__infoDetails {
+  // additional padding on the right to accommodate edit button next to question icon
+  padding: rem-calc(24) rem-calc(48) rem-calc(24) rem-calc(24);
+}

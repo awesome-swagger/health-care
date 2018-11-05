@@ -1,0 +1,19 @@
+@import '../../../modules/modals/modal-outlet.component.scss';
+
+.stream {
+
+  &__row {
+    display: flex;
+    position: relative;
+    padding: rem-calc(8);
+    background: rgba($green, .25);
+
+    &:nth-child(even) { background: rgba($green, .1); }
+  }
+
+  &__textarea {
+    width: rem-calc(512);
+    // this height is to accommodate the confirm delete div height
+    height: rem-calc(112);
+  }
+}

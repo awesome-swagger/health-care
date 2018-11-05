@@ -1,0 +1,13 @@
+@import '../messaging/messaging.component.scss';
+
+.historyItem {
+  position: relative;
+
+  &__buttons {
+    position: absolute;
+    top: rem-calc(-16);
+    right: 0;
+    display: flex;
+  }
+
+}

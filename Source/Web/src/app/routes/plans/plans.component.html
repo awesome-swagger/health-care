@@ -1,0 +1,188 @@
+<div class="ssContainer ssContents">
+  <div class="flexHeader">
+    <div class="flex alignCenter">
+      <h1 class="noMargin marRight8">Care Plans ({{carePlanTemplates.length}})</h1>
+      <div class="tool__anchor">
+        <button class="button button--icon button--icon--small"
+        (click)="toolCPOpen=!toolCPOpen">
+          <i class="ss-help"></i>
+        </button>
+        <div class="tool__tip" [ngClass]="{ 'isOpen' : toolCPOpen }">
+          <div class="tool__text">
+            The Care Plans view provides an overview of all current care plans and care plan statistics across the entire organization.
+          </div>
+        </div>
+      </div> <!--/.tool__anchor-->
+    </div> <!--/.flex (for page title and tooltip)-->
+    <div class="flex">
+      <label class="styledInput marRight48">
+        <input type="checkbox" class="styledInput__input" [(ngModel)]="showInactive" (ngModelChange)="fetchPlanTemplates()" />
+        <span class="styledInput__box"></span>
+        View Inactive Plans
+      </label>
+      <button class="button button--iconText" (click)="addPlan()">
+        <i class="ss-plus"></i>
+        Add Care Plan
+      </button>
+    </div>
+  </div> <!--/.flexHeader-->
+
+  <label>Filter by Facility</label>
+  <div class="drop marBottom48">
+    <div class="drop__input" (click)="facilitiesOpen=!facilitiesOpen">
+      All
+    </div>
+    <app-popover [options]="facilitiesDropOptions" [(visible)]="facilitiesOpen">
+      <ul class="drop__dropdown isOpen">
+        <div class="drop__buttons">
+          <button class="button button--iconText" (click)="clickCheckAllFacilities()">
+            <i class="ss-check ss-standard"></i> Check All
+          </button>
+          <button class="button button--iconText" (click)="clickUncheckAllFacilities()">
+            <i class="ss-ban"></i> Uncheck All
+          </button>
+        </div>
+
+        <li class="drop__option">
+          <input class="input input--search drop__innerInput" type="text" placeholder="Search" />
+        </li>
+        <li class="drop__option" *ngFor="let facility of facilities">
+          <label class="drop__checkbox styledInput">
+            <input type="checkbox" class="styledInput__input" [(ngModel)]="facilitiesChecked[facility.id]" (ngModelChange)="applyFacilityFilter()" />
+            <span class="styledInput__box"></span>
+            {{facility.name}}
+          </label>
+        </li>
+      </ul>
+    </app-popover>
+  </div> <!--/.drop-->
+
+  <h2>Averages by Care Plan (Past 30 Days)</h2>
+  <div class="flex" *ngIf="averagesByCarePlan">
+    <div class="info info--horiz">
+      <div class="info__cell">
+        <label>Patients</label>
+        {{averagesByCarePlan.total_patients}}
+      </div>
+      <div class="info__cell">
+        <label>Facilities</label>
+        {{averagesByCarePlan.total_facilities}}
+      </div>
+      <div class="info__cell">
+        <label>Care Plans</label>
+        {{averagesByCarePlan.total_care_plans}}
+      </div>
+      <div class="info__cell">
+        <label>Avg Engagement</label>
+        <div class="pill pill--red">
+          {{averagesByCarePlan.average_engagement}}%
+        </div>
+      </div>
+      <div class="info__cell">
+        <label>Avg Outcome</label>
+        <div class="pill pill--yellow">
+          {{averagesByCarePlan.average_outcome}}%
+        </div>
+      </div>
+      <div class="info__cell">
+        <label>Avg Risk Level</label>
+        <div class="pill pill--yellow">
+          Low Risk {{averagesByCarePlan.risk_level}}%
+        </div>
+      </div>
+    </div> <!--/.info-->
+  </div> <!--/.flex-->
+
+  <div class="accordion" [ngClass]="{ 'isOpen' : accordionsOpen[plan.type] }" *ngFor="let plan of planTemplatesGrouped; let i = index">
+    <div class="accordion__head" (click)="accordionsOpen[plan.type]=!accordionsOpen[plan.type]">
+      <span class="accordion__title">{{plan.typeObj.name}} ({{plan.typeObj.acronym|uppercase}}) ({{plan.templates.length}})</span>
+      <div class="accordion__right">
+        <div class="pill pill--yellow marRight16">
+          {{plan.typeObj.acronym|uppercase}} 4:11
+        </div>
+        <div class="pill pill--red">
+          Med Risk 64%
+        </div>
+        <div class="accordion__arrow">
+          <i class="ss-standard ss-navigateright"></i>
+        </div>
+      </div>
+    </div> <!--/.accordion__head-->
+    <div class="accordion__body">
+      <div class="accordion__contents">
+        <table class="fullWidth">
+          <thead>
+            <tr>
+              <th class="thSortable">
+                <span class="thSortable__text thSortable__text--left">Care Plan</span>
+              </th>
+              <!--TODO: Only show status column when viewing inactive plans too-->
+              <th class="thSortable" *ngIf="showInactive">
+                <span class="thSortable__text thSortable__text--left">Status</span>
+              </th>
+              <th class="thSortable">
+                <span class="thSortable__text">Patients</span>
+              </th>
+              <th class="thSortable">
+                <span class="thSortable__text">Facilities</span>
+              </th>
+              <th class="thSortable">
+                <span class="thSortable__text">Monthly Time</span>
+              </th>
+              <th class="thSortable">
+                <span class="thSortable__text">Duration</span>
+              </th>
+              <th class="thSortable">
+                <span class="thSortable__text">Avg Engagement</span>
+              </th>
+              <th class="thSortable">
+                <span class="thSortable__text">Avg Outcome</span>
+              </th>
+              <th class="thSortable thSortable--sortDown thSortable--sortUp">
+                <span class="thSortable__text">Risk Level</span>
+              </th>
+              <!-- <th></th> -->
+            </tr>
+          </thead>
+          <tbody *ngFor="let item of plan.templates">
+            <tr>
+              <td class="left">
+                <a [routerLink]="['/plan', item.id, 'schedule']">{{item.name}}</a>
+              </td>
+              <td class="left" *ngIf="showInactive">{{item.is_active?'Active':'Inactive'}} </td>
+              <td>{{item.averages.total_patients}}</td>
+              <td>5</td>
+              <td>
+                <div class="pill pill--lime">
+                  121:10
+                </div>
+              </td>
+              <td>{{item.averages.duration_weeks}} weeks</td>
+              <td>
+                <div class="pill pill--lime">
+                  {{item.averages.average_engagement}}%
+                </div>
+              </td>
+              <td>
+                <div class="pill pill--lime">
+                  {{item.averages.average_outcome}}%
+                </div>
+              </td>
+              <td>
+                <div class="pill pill--lime">
+                  On Track {{item.averages.risk_level}}%
+                </div>
+              </td>
+              <!-- <td>
+                <button class="button button--icon"
+                (click)="copyPlan()">
+                  <i class="ss-files"></i>
+                </button>
+              </td> -->
+            </tr>
+          </tbody>
+        </table>
+      </div> <!--/.accordion__contents-->
+    </div> <!--/.accordion__body-->
+  </div> <!--/.accordion-->
+</div> <!--/.ssContainer-->

@@ -1,0 +1,97 @@
+<div class="flex alignCenter marBottom32" *ngIf="patient">
+  <div class="picName marRight24">
+    <img class="picName__img picName__img--big" src="../../../../assets/img/profile.svg" *ngIf="!patient.user.image_url" />
+    <img class="picName__img picName__img--big" [src]="patient.user.image_url" *ngIf="patient.user.image_url" />
+    <h1 class="noMargin">{{patient.user.first_name}} {{patient.user.last_name}}</h1>
+  </div>
+  <div class="drop">
+    <div class="drop__input drop__input--select" (click)="multi1Open=!multi1Open">
+      <h2 class="noMargin">Depression <i class="icomoon-cocm"></i> CoCM</h2>
+    </div>
+    <ul class="drop__dropdown drop__dropdown--select"
+    [ngClass]="{ 'isOpen' : multi1Open }"
+    (click)="multi1Open=!multi1Open">
+      <li class="drop__option drop__option--select">
+        <div class="iconText">
+          <span class="marRight8">Depression</span> <i class="icomoon-cocm iconText__icon iconText__icon--noTop"></i> CoCM
+        </div>
+      </li>
+      <li class="drop__option drop__option--select">
+        <div class="iconText">
+          <span class="marRight8">Heart Disease</span> <i class="ss-addheart iconText__icon"></i> CCCM
+        </div>
+      </li>
+    </ul>
+  </div>
+</div> <!--/.flex (for title area)-->
+
+<div class="info info--horiz" *ngIf="patient">
+  <div class="info__cell">
+    <label>Care Team</label>
+    <div class="flex alignCenter justifyCenter">
+      <div class="picName marRight8">
+        <img class="picName__img" src="../../../assets/img/profile.svg" />
+        Lori Ramirez, RN
+      </div>
+      <div class="tool__anchor">
+        <a class="flex alignCenter" (click)="tooltipP1Open=!tooltipP1Open">
+          <span class="marRight8">+2</span>
+          <img src="../../../assets/img/arrow-down.svg" />
+        </a>
+        <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipP1Open }">
+          <div class="tool__text">
+            <div class="picName marBottom16">
+              <img class="picName__img" src="../../../assets/img/profile--2.svg" />
+              Jason Hannigan, PA
+            </div>
+            <div class="picName">
+              <img class="picName__img" src="../../../assets/img/profile--2.svg" />
+              Melanie Benson, CRNA
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div> <!--/.info__cell (for care team)-->
+  <div class="info__cell">
+    <label>Progress</label>
+    <div class="progress marCenter">
+      Week 8 of 12
+      <div class="progress__bg">
+        <div class="progress__bar"></div>
+      </div>
+    </div>
+  </div>
+  <div class="info__cell">
+    <label>Last&nbsp;Contact</label>
+    <a href="" class="justifyCenter">2 days ago</a>
+  </div>
+  <div class="info__cell">
+    <label>Problems</label>
+    <a href="" class="justifyCenter">3</a>
+  </div>
+  <div class="info__cell">
+    <label class="tool info__tool justifyCenter">
+      Time
+      <div class="tool__anchor">
+        <button class="button button--icon button--icon--small" (click)="tooltipP2Open=!tooltipP2Open">
+          <i class="ss-info"></i>
+        </button>
+        <div class="tool__tip" [ngClass]="{ 'isOpen' : tooltipP2Open }">
+          <div class="tool__text">
+            This is the amount of time recorded for this patient on this care plan thus far this month.
+          </div>
+        </div>
+      </div>
+    </label>
+    <div class="pill pill--lime">
+      :57
+    </div>
+  </div> <!--/.info__cell (for time)-->
+  <div class="info__cell">
+    <label>Risk Level</label>
+    <div class="pill pill--yellow">
+      Low Risk 84%
+    </div>
+  </div>
+</div> <!--/.info-->

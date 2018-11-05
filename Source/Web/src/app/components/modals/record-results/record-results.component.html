@@ -1,0 +1,135 @@
+<h1 class="modal__title">Record Results</h1>
+<div class="divider modal__divider"></div>
+<h2 class="center">Theresa Beckstrom</h2>
+<div class="flex justifySpaceBetween">
+  <div>
+    <label>Date</label>
+    Apr 17, 2018
+  </div>
+  <div>
+    <label class="noMargin">Care Plan Type</label>
+    <div class="iconText">
+      <i class="iconText__icon iconText__icon--noTop icomoon-cocm"></i> CoCM
+    </div>
+  </div>
+  <div>
+    <label>Care Plan</label>
+    Depression
+  </div>
+</div> <!--/.flex (for date, type, care plan)-->
+
+<div class="divider"></div>
+
+<!--TODO: Show the following div if the modal was triggered from the patient details page-->
+<div>
+  <label>Task</label>
+  <p>CT Coordination Meeting</p>
+</div>
+
+<!--TODO: Show the following div if the modal was triggered from the patient history page-->
+<div *ngIf="">
+  <label>Action</label>
+  <div class="styledSelect">
+    <select class="styledSelect__select">
+      <option>Patient Call</option>
+      <option>Patient Email</option>
+      <option>Patient Message</option>
+    </select>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<div class="flex marBottom32">
+  <div>
+    <div class="tool">
+      <label class="noMargin">Time You Spent</label>
+      <div class="tool__anchor">
+        <button class="button button--icon button--icon--small"
+        (click)="tooltipRRM0Open=!tooltipRRM0Open">
+          <i class="ss-help"></i>
+        </button>
+        <div class="tool__tip" [ngClass]="{ 'isOpen' : tooltipRRM0Open }">
+          <div class="tool__text">
+            Even if others participated in the completion of this task, only record the time you spent on it.
+          </div>
+        </div>
+      </div>
+    </div>    <div class="flex alignCenter">
+      <input type="number" min="0" class="input input--small marRight8" />
+      <div>min</div>
+    </div>
+  </div>
+  <div>
+    <div class="tool">
+      <label class="noMargin">Sync</label>
+      <div class="tool__anchor">
+        <button class="button button--icon button--icon--small"
+        (click)="tooltipRRM1Open=!tooltipRRM1Open">
+          <i class="ss-help"></i>
+        </button>
+        <div class="tool__tip tool__tip--right" [ngClass]="{ 'isOpen' : tooltipRRM1Open }">
+          <div class="tool__text">
+            If this box is checked, this information will be added to the EHR system.
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="styledInput">
+      <input type="checkbox" class="styledInput__input" />
+      <span class="styledInput__box"></span> Sync to EHR
+    </label>
+  </div>
+</div> <!--/.flex for task/action, time spent, and sync to EHR-->
+
+<!--TODO: Only show the following div if the modal is triggered from the patient details page-->
+<div>
+  <div class="tool">
+    <label class="noMargin">With</label>
+    <div class="tool__anchor">
+      <button class="button button--icon button--icon--small"
+      (click)="tooltipRRM2Open=!tooltipRRM2Open">
+        <i class="ss-help"></i>
+      </button>
+      <div class="tool__tip tool__tip--left" [ngClass]="{ 'isOpen' : tooltipRRM2Open }">
+        <div class="tool__text">
+          All providers assigned to this task are listed here. Select those who participated with you in task completion. The time spent will be multiplied by the number of participants to get the total time.
+        </div>
+      </div>
+    </div>
+  </div> <!--/.tool-->
+  <ul class="nameList marBottom32">
+    <li class="nameList__item nameList__item--left">
+      <label class="styledInput">
+        <input type="checkbox" class="styledInput__input" />
+        <span class="styledInput__box"></span>
+        <div class="picName">
+          <img class="picName__img" src="../../assets/img/profile.svg" />
+          Montgomery Alexander, CRNA
+        </div>
+      </label>
+    </li>
+    <li class="nameList__item nameList__item--left">
+      <label class="styledInput">
+        <input type="checkbox" class="styledInput__input" />
+        <span class="styledInput__box"></span>
+        <div class="picName">
+          <img class="picName__img" src="../../assets/img/profile.svg" />
+          Lori Ramirez, RN
+        </div>
+      </label>
+    </li>
+  </ul>
+</div> <!--/with section-->
+
+<label>Notes (opt)</label>
+<textarea class="input input--textarea"></textarea>
+
+<div class="modal__buttons">
+  <button class="button button--2nd">
+    Cancel
+  </button>
+  <button class="button">
+    Save
+  </button>
+</div>

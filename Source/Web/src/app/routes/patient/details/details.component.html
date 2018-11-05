@@ -1,0 +1,1207 @@
+<div class="ssContainer ssContents">
+  <div class="flex alignCenter marBottom32">
+    <app-patient-header [patient]="patient"></app-patient-header>
+  </div> <!--/.flex-->
+
+  <div class="datepicker marBottom32">
+    <button class="button button--icon">
+      <i class="ss-standard ss-navigateleft"></i>
+    </button>
+    <div class="datepicker__date" (click)="showDate=!showDate">
+      Select Date
+    </div>
+    <app-date-picker class="datepicker__picker" [ngClass]="{ 'isOpen' : showDate }"></app-date-picker>
+    <button class="button button--icon">
+      <i class="ss-standard ss-navigateright"></i>
+    </button>
+  </div> <!--/.datepicker-->
+
+  <div class="accordion" [ngClass]="{ 'isOpen' : accordPD1Open }">
+    <div class="accordion__head" (click)="accordPD1Open=!accordPD1Open">
+      <span class="accordion__title">Care Plan Goals - Today (2)</span>
+      <div class="accordion__right">
+        <span class="marRight8">2 Goals</span>
+        <div class="pill pill--lime">
+          4.5/5
+        </div>
+        <div class="accordion__arrow">
+          <i class="ss-standard ss-navigateright"></i>
+        </div>
+      </div>
+    </div> <!--/.accordion__head-->
+    <div class="accordion__body">
+      <div class="accordion__contents">
+        <table>
+          <thead>
+            <tr>
+              <th class="thSortable thSortable--sortDown">
+                <span class="thSortable__text thSortable__text--left">Goal</span>
+              </th>
+              <th class="thSortable">
+                <span class="thSortable__text">Outcome</span>
+              </th>
+              <th class="thSortable">
+                <span class="thSortable__text">Last Updated</span>
+              </th>
+              <th class="thSortable">
+                <span class="thSortable__text">Comments</span>
+              </th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="left">Manage Depression Symptoms</td>
+              <td>
+                <div class="pill pill--yellow">
+                  4/5
+                </div>
+              </td>
+              <td>May 15, 2018</td>
+              <td>
+                <a class="button button--icon button--center relative"
+                (click)="openGoalComments()">
+                  <i class="ss-chats"></i>
+                  <div class="badge">
+                    2
+                  </div>
+                </a>
+              </td>
+              <td>
+                <button class="button button--iconText"
+                (click)="updateGoal()">
+                  <i class="ss-write"></i> Update
+                </button>
+              </td>
+            </tr>
+            <tr>
+              <td class="left">Healthier Eating Habits</td>
+              <td>
+                <div class="pill pill--lime">
+                  5/5
+                </div>
+              </td>
+              <td>Mar 24, 2018</td>
+              <td>
+                <a class="button button--icon button--center relative">
+                  <i class="ss-chats"></i>
+                </a>
+              </td>
+              <td>
+                <button class="button button--iconText">
+                  <i class="ss-write"></i> Update
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <button class="button button--iconText"
+        (click)="addGoal()">
+          <i class="ss-plus"></i> Add Goal
+        </button>
+      </div> <!--/.accordion__contents-->
+    </div> <!--/.accordion__body-->
+  </div> <!--/.accordion (for care plan goals)-->
+
+  <div class="accordion" [ngClass]="{ 'isOpen' : accordPD2Open }">
+    <div class="accordion__head" (click)="accordPD2Open=!accordPD2Open">
+      <span class="accordion__title">My Tasks - Today (2)</span>
+      <div class="accordion__right">
+        <span class="marRight8">1/2 Completed</span>
+        <div class="pill pill--red">
+          50%
+        </div>
+        <div class="accordion__arrow">
+          <i class="ss-standard ss-navigateright"></i>
+        </div>
+      </div>
+    </div> <!--/.accordion__head-->
+    <div class="accordion__body">
+      <div class="accordion__contents">
+        <table>
+          <thead>
+            <tr>
+              <th class="thSortable">
+                <span class="thSortable__text thSortable__text--left">Task</span>
+              </th>
+              <th class="thSortable thSortable--sortDown">
+                <span class="thSortable__text">Appear</span>
+              </th>
+              <th class="thSortable">
+                <span class="thSortable__text">Due</span>
+              </th>
+              <th class="thSortable">
+                <span class="thSortable__text">Status</span>
+              </th>
+              <th class="thSortable">
+                <div class="tool justifyCenter">
+                  <span class="thSortable__text">Occur</span>
+                  <div class="tool__anchor">
+                    <button class="button button--icon button--icon--small"
+                    (click)="tooltipPD200Open=!tooltipPD200Open">
+                      <i class="ss-help"></i>
+                    </button>
+                    <div class="tool__tip tool__tip--bottom tool__tip--right" [ngClass]="{ 'isOpen' : tooltipPD200Open }">
+                      <div class="tool__text">
+                        This is the number of times the provider has seen this item, out of the total times it will occurr in this care plan.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="left">Review Patient Data</td>
+              <td>8:00 AM</td>
+              <td>5:00 PM</td>
+              <td>
+                <div class="pill pill--lime">
+                  done
+                </div>
+              </td>
+              <td>1 of 12</td>
+              <td>
+                <button class="button button--iconText"
+                (click)="openRecordResults()">
+                  <i class="ss-write"></i> Edit Result
+                </button>
+              </td>
+            </tr>
+            <tr>
+              <td class="left">Follow up on labs</td>
+              <td>9:00 AM</td>
+              <td>10:00 PM</td>
+              <td>
+                <div class="pill pill--red">
+                  late
+                </div>
+              </td>
+              <td>1 of 1</td>
+              <td>
+                <button class="button button--iconText"
+                (click)="openRecordResults()">
+                  <i class="ss-write"></i> Record Result
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <button class="button button--iconText"
+        (click)="addCTTask()">
+          <i class="ss-plus"></i> Add Ad Hoc Task
+        </button>
+      </div> <!--/.accordion__contents-->
+    </div> <!--/.accordion__body-->
+  </div> <!--/.accordion (for my tasks)-->
+
+  <div class="accordion" [ngClass]="{ 'isOpen' : accordPD3Open }">
+    <div class="accordion__head" (click)="accordPD3Open=!accordPD3Open">
+      <span class="accordion__title">Care Team Tasks - Today (2)</span>
+      <div class="accordion__right">
+        <span class="marRight8">2/2 Completed</span>
+        <div class="pill pill--lime">
+          100%
+        </div>
+        <div class="accordion__arrow">
+          <i class="ss-standard ss-navigateright"></i>
+        </div>
+      </div>
+    </div> <!--/.accordion__head-->
+    <div class="accordion__body">
+      <div class="accordion__contents">
+        <table>
+          <thead>
+            <tr>
+              <th class="thSortable">
+                <span class="thSortable__text thSortable__text--left">Task</span>
+              </th>
+              <th class="thSortable thSortable--sortDown">
+                <span class="thSortable__text">Appear</span>
+              </th>
+              <th class="thSortable">
+                <span class="thSortable__text">Due</span>
+              </th>
+              <th class="thSortable">
+                <span class="thSortable__text">Status</span>
+              </th>
+              <th class="thSortable">
+                <div class="tool justifyCenter">
+                  <span class="thSortable__text">Occur</span>
+                  <div class="tool__anchor">
+                    <button class="button button--icon button--icon--small"
+                    (click)="tooltipPD300Open=!tooltipPD300Open">
+                      <i class="ss-help"></i>
+                    </button>
+                    <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipPD300Open }">
+                      <div class="tool__text">
+                        This is the number of times the provider has seen this item, out of the total times it will occur in this care plan.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </th>
+              <th class="left">Assignee (Role)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="left">Review Patient Data</td>
+              <td>8:00 AM</td>
+              <td>5:00 PM</td>
+              <td>
+                <div class="pill pill--lime">
+                  done
+                </div>
+              </td>
+              <td>1 of 12</td>
+              <td class="left">
+                John Phillips, MD (Psychiatric Consultant)<br />
+                Susan Jorgensen, CRNA (CM)
+              </td>
+            </tr>
+            <tr>
+              <td class="left">CT Coordination</td>
+              <td>9:00 AM</td>
+              <td>10:00 AM</td>
+              <td>
+                <div class="pill pill--lime">
+                  done
+                </div>
+              </td>
+              <td>1 of 12</td>
+              <td>
+                John Phillips, MD (Psychiatric Consultant)
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <button class="button button--iconText"
+        (click)="addCTTask()">
+          <i class="ss-plus"></i> Add Ad Hoc Task
+        </button>
+      </div> <!--/.accordion__contents-->
+    </div> <!--/.accordion__body-->
+  </div> <!--/.accordion (for care team tasks)-->
+
+  <div class="accordion" [ngClass]="{ 'isOpen' : accordPD4Open }">
+    <div class="accordion__head" (click)="accordPD4Open=!accordPD4Open">
+      <span class="accordion__title">Patient Tasks - Today (6)</span>
+      <div class="accordion__right">
+        <span class="marRight8">3/6 Completed</span>
+        <div class="pill pill--purple">
+          50%
+        </div>
+        <div class="accordion__arrow">
+          <i class="ss-standard ss-navigateright"></i>
+        </div>
+      </div>
+    </div> <!--/.accordion__head-->
+    <div class="accordion__body">
+      <div class="accordion__contents">
+        <table>
+          <thead>
+            <tr>
+              <th class="thSortable">
+                <span class="thSortable__text thSortable__text--left">Type</span>
+              </th>
+              <th class="thSortable">
+                <span class="thSortable__text thSortable__text--left">Name</span>
+              </th>
+              <th class="thSortable thSortable--sortDown">
+                <span class="thSortable__text">Appear</span>
+              </th>
+              <th class="thSortable">
+                <span class="thSortable__text">Due</span>
+              </th>
+              <th class="thSortable">
+                <span class="thSortable__text">Status</span>
+              </th>
+              <th class="thSortable">
+                <div class="tool justifyCenter">
+                  <span class="thSortable__text">Occur</span>
+                  <div class="tool__anchor">
+                    <button class="button button--icon button--icon--small"
+                    (click)="tooltipPD400Open=!tooltipPD400Open">
+                      <i class="ss-help"></i>
+                    </button>
+                    <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipPD400Open }">
+                      <div class="tool__text">
+                        This is the number of times the patient has seen this item, out of the total times it will occurr in this care plan.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </th>
+              <th class="thSortable">
+                <div class="tool justifyCenter">
+                  <span class="thSortable__text">Avg Eng</span>
+                  <div class="tool__anchor">
+                    <button class="button button--icon button--icon--small"
+                    (click)="tooltipPD401Open=!tooltipPD401Open">
+                      <i class="ss-help"></i>
+                    </button>
+                    <div class="tool__tip tool__tip--bottom tool__tip--right" [ngClass]="{ 'isOpen' : tooltipPD401Open }">
+                      <div class="tool__text">
+                        This number shows the patient’s average engagement with this item over the course of the care plan thus far.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="left">Medication</td>
+              <td class="left">Zoloft (10mg)</td>
+              <td>8:00 AM</td>
+              <td>8:30 AM</td>
+              <td>
+                <div class="pill pill--status pill--purple">
+                  missed
+                </div>
+              </td>
+              <td>37 of 56</td>
+              <td>
+                <div class="pill pill--lime">
+                  99%
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td class="left">Task</td>
+              <td class="left">30 min exercise</td>
+              <td>10:00 AM</td>
+              <td>5:00 PM</td>
+              <td>
+                <div class="pill pill--status pill--blue">
+                  open
+                </div>
+              </td>
+              <td>37 of 56</td>
+              <td>
+                <div class="pill pill--yellow">
+                  80%
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td class="left">Vital</td>
+              <td class="left">Blood Pressure</td>
+              <td>12:00 PM</td>
+              <td>12:30 PM</td>
+              <td>
+                <div class="pill pill--status pill--lime">
+                  done
+                </div>
+              </td>
+              <td>37 of 56</td>
+              <td>
+                <div class="pill pill--lime">
+                  90%
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td class="left">Vital</td>
+              <td class="left">Resting Heart Rate</td>
+              <td>12:00 PM</td>
+              <td>2:00 PM</td>
+              <td>
+                <div class="pill pill--status pill--red">
+                  late
+                </div>
+              </td>
+              <td>37 of 56</td>
+              <td>
+                <div class="pill pill--lime">
+                  90%
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td class="left">Symptoms</td>
+              <td class="left">Daily Symptoms Report</td>
+              <td>8:00 PM</td>
+              <td>8:30 PM</td>
+              <td>
+                <div class="pill">
+                  pending
+                </div>
+              </td>
+              <td>37 of 56</td>
+              <td>
+                <div class="pill pill--lime">
+                  92%
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td class="left">Assessment</td>
+              <td class="left">General Well-being</td>
+              <td>8:00 PM</td>
+              <td>8:30 PM</td>
+              <td>
+                <div class="pill pill--status">
+                  pending
+                </div>
+              </td>
+              <td>37 of 56</td>
+              <td>
+                <div class="pill pill--lime">
+                  92%
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div> <!--/.accordion__contents-->
+    </div> <!--/.accordion__body-->
+  </div> <!--/.accordion (for patient tasks)-->
+
+  <div class="accordion" [ngClass]="{ 'isOpen' : accordPD5Open }">
+    <div class="accordion__head" (click)="accordPD5Open=!accordPD5Open">
+      <span class="accordion__title">Assessment Results - Today (3)</span>
+      <div class="accordion__right">
+        <span class="marRight8">2 Outcome Questions</span>
+        <div class="pill pill--red marRight24">
+          3.5/5
+        </div>
+        <span class="marRight8">1 Satisfaction Question</span>
+        <div class="pill pill--lime">
+          5/5
+        </div>
+        <div class="accordion__arrow">
+          <i class="ss-standard ss-navigateright"></i>
+        </div>
+      </div>
+    </div> <!--/.accordion__head-->
+    <div class="accordion__body">
+      <div class="accordion__contents">
+
+        <div class="flex alignCenter">
+          <h3 class="noMargin marRight24">Depression Review</h3>
+          <h4 class="noMargin">Tracks Outcome</h4>
+          <div class="tool__anchor">
+            <button class="button button--icon button--icon--small"
+            (click)="tooltipPD500Open=!tooltipPD500Open">
+              <i class="ss-help"></i>
+            </button>
+            <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipPD500Open }">
+              <div class="tool__text">
+                Assessments that track outcome are included when calculating the patient’s outcomes.
+              </div>
+            </div>
+          </div>
+        </div>
+        <table class="marBottom48">
+          <thead>
+            <tr>
+              <th class="thSortable">
+                <span class="thSortable__text thSortable__text--left">Question</span>
+              </th>
+              <th class="thSortable thSortable--sortDown">
+                <span class="thSortable__text">Outcome</span>
+              </th>
+              <th class="thSortable">
+                <div class="tool justifyCenter">
+                  <span class="thSortable__text">Occur</span>
+                  <div class="tool__anchor">
+                    <button class="button button--icon button--icon--small"
+                    (click)="tooltipPD501Open=!tooltipPD501Open">
+                      <i class="ss-help"></i>
+                    </button>
+                    <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipPD501Open }">
+                      <div class="tool__text">
+                        This is the number of times the patient has seen this item, out of the total times it will occurr in this care plan.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </th>
+              <th class="thSortable">
+                <div class="tool justifyCenter">
+                  <span class="thSortable__text">Vs Prev</span>
+                  <div class="tool__anchor">
+                    <button class="button button--icon button--icon--small"
+                    (click)="tooltipPD502Open=!tooltipPD502Open">
+                      <i class="ss-help"></i>
+                    </button>
+                    <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipPD502Open }">
+                      <div class="tool__text">
+                        This column shows how these results compare to the patient’s previous response to these questions.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </th>
+              <th class="thSortable">
+                <div class="tool justifyCenter">
+                  <span class="thSortable__text">Vs Next</span>
+                  <div class="tool__anchor">
+                    <button class="button button--icon button--icon--small"
+                    (click)="tooltipPD503Open=!tooltipPD503Open">
+                      <i class="ss-help"></i>
+                    </button>
+                    <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipPD503Open }">
+                      <div class="tool__text">
+                        This column shows how these results compare to the patient’s next response to these questions.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </th>
+              <th class="thSortable">
+                <div class="tool justifyCenter">
+                  <span class="thSortable__text">Vs Care Plan</span>
+                  <div class="tool__anchor">
+                    <button class="button button--icon button--icon--small"
+                    (click)="tooltipPD504Open=!tooltipPD504Open">
+                      <i class="ss-help"></i>
+                    </button>
+                    <div class="tool__tip tool__tip--bottom tool__tip--right" [ngClass]="{ 'isOpen' : tooltipPD504Open }">
+                      <div class="tool__text">
+                        This column shows how these results compare to the patient's average responses to these questions over the course of the care plan.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="left">Rate your happiness level</td>
+              <td>
+                <div class="pill pill--yellow">
+                  4/5
+                </div>
+              </td>
+              <td>37 of 56</td>
+              <td>
+                <div class="iconText">
+                  <i class="iconText__icon iconText__icon--noTop ss-standard ss-up iconSmall iconLime"></i> better
+                </div>
+              </td>
+              <td>
+                n/a
+              </td>
+              <td>
+                <div class="iconText">
+                  <i class="iconText__icon iconText__icon--noTop ss-standard ss-hyphen iconSmall"></i> avg
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td class="left">Rate your pain level</td>
+              <td>
+                <div class="pill pill--red">
+                  3/5
+                </div>
+              </td>
+              <td>37 of 56</td>
+              <td>
+                <div class="iconText">
+                  <i class="iconText__icon iconText__icon--noTop ss-standard ss-down iconSmall iconRed"></i> worse
+                </div>
+              </td>
+              <td>
+                n/a
+              </td>
+              <td>
+                <div class="iconText">
+                  <i class="iconText__icon iconText__icon--noTop ss-standard ss-down iconSmall iconRed"></i> worse
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="flex alignCenter">
+          <h3 class="noMargin marRight24">Satisfaction Review</h3>
+          <h4 class="noMargin">Tracks Satisfaction</h4>
+          <div class="tool__anchor">
+            <button class="button button--icon button--icon--small"
+            (click)="tooltipPD505Open=!tooltipPD505Open">
+              <i class="ss-help"></i>
+            </button>
+            <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipPD505Open }">
+              <div class="tool__text">
+                Assessments that track satisfaction are included when calculating the patient’s satisfaction score.
+              </div>
+            </div>
+          </div>
+        </div>
+        <table class="marBottom48">
+          <thead>
+            <tr>
+              <th class="thSortable">
+                <span class="thSortable__text thSortable__text--left">Question</span>
+              </th>
+              <th class="thSortable thSortable--sortDown">
+                <span class="thSortable__text">Outcome</span>
+              </th>
+              <th class="thSortable">
+                <div class="tool justifyCenter">
+                  <span class="thSortable__text">Occur</span>
+                  <div class="tool__anchor">
+                    <button class="button button--icon button--icon--small"
+                    (click)="tooltipPD506Open=!tooltipPD506Open">
+                      <i class="ss-help"></i>
+                    </button>
+                    <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipPD506Open }">
+                      <div class="tool__text">
+                        This is the number of times the patient has seen this item, out of the total times it will occurr in this care plan.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </th>
+              <th class="thSortable">
+                <div class="tool justifyCenter">
+                  <span class="thSortable__text">Vs Prev</span>
+                  <div class="tool__anchor">
+                    <button class="button button--icon button--icon--small"
+                    (click)="tooltipPD507Open=!tooltipPD507Open">
+                      <i class="ss-help"></i>
+                    </button>
+                    <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipPD507Open }">
+                      <div class="tool__text">
+                        This column shows how these results compare to the patient’s previous response to these questions.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </th>
+              <th class="thSortable">
+                <div class="tool justifyCenter">
+                  <span class="thSortable__text">Vs Next</span>
+                  <div class="tool__anchor">
+                    <button class="button button--icon button--icon--small"
+                    (click)="tooltipPD508Open=!tooltipPD508Open">
+                      <i class="ss-help"></i>
+                    </button>
+                    <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipPD508Open }">
+                      <div class="tool__text">
+                        This column shows how these results compare to the patient’s next response to these questions.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </th>
+              <th class="thSortable">
+                <div class="tool justifyCenter">
+                  <span class="thSortable__text">Vs Care Plan</span>
+                  <div class="tool__anchor">
+                    <button class="button button--icon button--icon--small"
+                    (click)="tooltipPD509Open=!tooltipPD509Open">
+                      <i class="ss-help"></i>
+                    </button>
+                    <div class="tool__tip tool__tip--bottom tool__tip--right" [ngClass]="{ 'isOpen' : tooltipPD509Open }">
+                      <div class="tool__text">
+                        This column shows how these results compare to the patient's average responses to these questions over the course of the care plan.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="left">Rate your satisfaction</td>
+              <td>
+                <div class="pill pill--yellow">
+                  4/5
+                </div>
+              </td>
+              <td>37 of 56</td>
+              <td>
+                <div class="iconText">
+                  <i class="iconText__icon iconText__icon--noTop ss-standard ss-up iconSmall iconLime"></i> better
+                </div>
+              </td>
+              <td>
+                n/a
+              </td>
+              <td>
+                <div class="iconText">
+                  <i class="iconText__icon iconText__icon--noTop ss-standard ss-hyphen iconSmall"></i> avg
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3 class="noMargin">Daily Diet Count</h3>
+        <table>
+          <thead>
+            <tr>
+              <th class="thSortable">
+                <span class="thSortable__text thSortable__text--left">Question</span>
+              </th>
+              <th class="thSortable thSortable--sortDown">
+                <span class="thSortable__text">Outcome</span>
+              </th>
+              <th class="thSortable">
+                <div class="tool justifyCenter">
+                  <span class="thSortable__text">Occur</span>
+                  <div class="tool__anchor">
+                    <button class="button button--icon button--icon--small"
+                    (click)="tooltipPD510Open=!tooltipPD510Open">
+                      <i class="ss-help"></i>
+                    </button>
+                    <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipPD510Open }">
+                      <div class="tool__text">
+                        This is the number of times the patient has seen this item, out of the total times it will occurr in this care plan.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </th>
+              <th class="thSortable">
+                <div class="tool justifyCenter">
+                  <span class="thSortable__text">Vs Prev</span>
+                  <div class="tool__anchor">
+                    <button class="button button--icon button--icon--small"
+                    (click)="tooltipPD511Open=!tooltipPD511Open">
+                      <i class="ss-help"></i>
+                    </button>
+                    <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipPD511Open }">
+                      <div class="tool__text">
+                        This column shows how these results compare to the patient’s previous response to these questions.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </th>
+              <th class="thSortable">
+                <div class="tool justifyCenter">
+                  <span class="thSortable__text">Vs Next</span>
+                  <div class="tool__anchor">
+                    <button class="button button--icon button--icon--small"
+                    (click)="tooltipPD512Open=!tooltipPD512Open">
+                      <i class="ss-help"></i>
+                    </button>
+                    <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipPD512Open }">
+                      <div class="tool__text">
+                        This column shows how these results compare to the patient’s next response to these questions.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </th>
+              <th class="thSortable">
+                <div class="tool justifyCenter">
+                  <span class="thSortable__text">Vs Care Plan</span>
+                  <div class="tool__anchor">
+                    <button class="button button--icon button--icon--small"
+                    (click)="tooltipPD513Open=!tooltipPD513Open">
+                      <i class="ss-help"></i>
+                    </button>
+                    <div class="tool__tip tool__tip--bottom tool__tip--right" [ngClass]="{ 'isOpen' : tooltipPD513Open }">
+                      <div class="tool__text">
+                        This column shows how these results compare to the patient's average responses to these questions over the course of the care plan.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="left">How many vegetables did you eat today?</td>
+              <td>
+                <div class="pill pill--yellow">
+                  4/5
+                </div>
+              </td>
+              <td>37 of 56</td>
+              <td>
+                <div class="iconText">
+                  <i class="iconText__icon iconText__icon--noTop ss-standard ss-up iconSmall iconLime"></i> better
+                </div>
+              </td>
+              <td>
+                n/a
+              </td>
+              <td>
+                <div class="iconText">
+                  <i class="iconText__icon iconText__icon--noTop ss-standard ss-up iconSmall iconLime"></i> better
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div> <!--/.accordion__contents-->
+    </div> <!--/.accordion__body-->
+  </div> <!--/.accordion (for assessments)-->
+
+  <div class="accordion" [ngClass]="{ 'isOpen' : accordPD6Open }">
+    <div class="accordion__head" (click)="accordPD6Open=!accordPD6Open">
+      <span class="accordion__title">Symptoms - Today (3)</span>
+      <div class="accordion__right">
+        <span class="marRight8">3 Symptoms</span>
+        <div class="pill pill--purple">
+          2.3/5
+        </div>
+        <div class="accordion__arrow">
+          <i class="ss-standard ss-navigateright"></i>
+        </div>
+      </div>
+    </div> <!--/.accordion__head-->
+    <div class="accordion__body">
+      <div class="accordion__contents">
+
+        <table>
+          <thead>
+            <tr>
+              <th class="thSortable">
+                <span class="thSortable__text thSortable__text--left">Symptom</span>
+              </th>
+              <th class="thSortable thSortable--sortDown">
+                <span class="thSortable__text">Rating</span>
+              </th>
+              <th class="thSortable">
+                <div class="tool justifyCenter">
+                  <span class="thSortable__text">Reported</span>
+                  <div class="tool__anchor">
+                    <button class="button button--icon button--icon--small"
+                    (click)="tooltipPD600Open=!tooltipPD600Open">
+                      <i class="ss-help"></i>
+                    </button>
+                    <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipPD600Open }">
+                      <div class="tool__text">
+                        This is the number of times the patient has reported this symptom, out of the total times possible.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </th>
+              <th class="thSortable">
+                <div class="tool justifyCenter">
+                  <span class="thSortable__text">Vs Prev</span>
+                  <div class="tool__anchor">
+                    <button class="button button--icon button--icon--small"
+                    (click)="tooltipPD601Open=!tooltipPD601Open">
+                      <i class="ss-help"></i>
+                    </button>
+                    <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipPD601Open }">
+                      <div class="tool__text">
+                        This column shows how these results compare to the patient’s previous report of these symptoms.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </th>
+              <th class="thSortable">
+                <div class="tool justifyCenter">
+                  <span class="thSortable__text">Vs Next</span>
+                  <div class="tool__anchor">
+                    <button class="button button--icon button--icon--small"
+                    (click)="tooltipPD602Open=!tooltipPD602Open">
+                      <i class="ss-help"></i>
+                    </button>
+                    <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipPD602Open }">
+                      <div class="tool__text">
+                        This column shows how these results compare to the patient’s next report of these symptoms.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </th>
+              <th class="thSortable">
+                <div class="tool justifyCenter">
+                  <span class="thSortable__text">Vs Care Plan</span>
+                  <div class="tool__anchor">
+                    <button class="button button--icon button--icon--small"
+                    (click)="tooltipPD603Open=!tooltipPD603Open">
+                      <i class="ss-help"></i>
+                    </button>
+                    <div class="tool__tip tool__tip--bottom tool__tip--right" [ngClass]="{ 'isOpen' : tooltipPD603Open }">
+                      <div class="tool__text">
+                        This column shows how these results compare to the patient's average report of these symptoms over the course of the care plan.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="left">Fatigue</td>
+              <td>
+                <div class="pill pill--purple">
+                  2/5
+                </div>
+              </td>
+              <td>30 of 56</td>
+              <td>
+                <div class="iconText">
+                  <i class="iconText__icon iconText__icon--noTop ss-standard ss-hyphen iconSmall"></i> same
+                </div>
+              </td>
+              <td>
+                n/a
+              </td>
+              <td>
+                <div class="iconText">
+                  <i class="iconText__icon iconText__icon--noTop ss-standard ss-hyphen iconSmall"></i> avg
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td class="left">Headache</td>
+              <td>
+                <div class="pill pill--purple">
+                  1/5
+                </div>
+              </td>
+              <td>22 of 56</td>
+              <td>
+                <div class="iconText">
+                  <i class="iconText__icon iconText__icon--noTop ss-standard ss-down iconSmall iconRed"></i> worse
+                </div>
+              </td>
+              <td>
+                n/a
+              </td>
+              <td>
+                <div class="iconText">
+                  <i class="iconText__icon iconText__icon--noTop ss-standard ss-down iconSmall iconRed"></i> worse
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td class="left">Insomnia</td>
+              <td>
+                <div class="pill pill--yellow">
+                  4/5
+                </div>
+              </td>
+              <td>1 of 56</td>
+              <td>
+                <div class="iconText">
+                  <i class="iconText__icon iconText__icon--noTop ss-standard ss-hyphen iconSmall"></i> n/a
+                </div>
+              </td>
+              <td>
+                n/a
+              </td>
+              <td>
+                <div class="iconText">
+                  <i class="iconText__icon iconText__icon--noTop ss-standard ss-hyphen iconSmall"></i> new
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <label>Comment</label>
+        <p>
+          "I think this new medication makes my head hurt more."
+        </p>
+        <a [routerLink]="['/patient/asdf/messaging']" class="button button--iconText">
+          <i class="ss-chat"></i> Reply
+        </a>
+
+      </div> <!--/.accordion__contents-->
+    </div> <!--/.accordion__body-->
+  </div> <!--/.accordion (for symptoms)-->
+
+  <div class="accordion" [ngClass]="{ 'isOpen' : accordPD7Open }">
+    <div class="accordion__head" (click)="accordPD7Open=!accordPD7Open">
+      <span class="accordion__title">Vitals - Today (2)</span>
+      <div class="accordion__right">
+        <span class="marRight24">2 Updates</span>
+        <div class="accordion__arrow">
+          <i class="ss-standard ss-navigateright"></i>
+        </div>
+      </div>
+    </div> <!--/.accordion__head-->
+    <div class="accordion__body">
+      <div class="accordion__contents">
+
+        <h3 class="noMargin">Blood Pressure</h3>
+        <table>
+          <thead>
+            <tr>
+              <th class="thSortable">
+                <span class="thSortable__text thSortable__text--left">Metric</span>
+              </th>
+              <th class="thSortable thSortable--sortDown">
+                <span class="thSortable__text">Result</span>
+              </th>
+              <th class="thSortable">
+                <div class="tool justifyCenter">
+                  <span class="thSortable__text">Reported</span>
+                  <div class="tool__anchor">
+                    <button class="button button--icon button--icon--small"
+                    (click)="tooltipPD700Open=!tooltipPD700Open">
+                      <i class="ss-help"></i>
+                    </button>
+                    <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipPD700Open }">
+                      <div class="tool__text">
+                        This is the number of times the patient has reported these metrics, out of the total times possible.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </th>
+              <th class="thSortable">
+                <div class="tool justifyCenter">
+                  <span class="thSortable__text">Vs Prev</span>
+                  <div class="tool__anchor">
+                    <button class="button button--icon button--icon--small"
+                    (click)="tooltipPD701Open=!tooltipPD701Open">
+                      <i class="ss-help"></i>
+                    </button>
+                    <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipPD701Open }">
+                      <div class="tool__text">
+                        This column shows how these results compare to the patient’s previous report of these metrics.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </th>
+              <th class="thSortable">
+                <div class="tool justifyCenter">
+                  <span class="thSortable__text">Vs Next</span>
+                  <div class="tool__anchor">
+                    <button class="button button--icon button--icon--small"
+                    (click)="tooltipPD702Open=!tooltipPD702Open">
+                      <i class="ss-help"></i>
+                    </button>
+                    <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipPD702Open }">
+                      <div class="tool__text">
+                        This column shows how these results compare to the patient’s next report of these metrics.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </th>
+              <th class="thSortable">
+                <div class="tool justifyCenter">
+                  <span class="thSortable__text">Vs Care Plan</span>
+                  <div class="tool__anchor">
+                    <button class="button button--icon button--icon--small"
+                    (click)="tooltipPD703Open=!tooltipPD703Open">
+                      <i class="ss-help"></i>
+                    </button>
+                    <div class="tool__tip tool__tip--bottom tool__tip--right" [ngClass]="{ 'isOpen' : tooltipPD703Open }">
+                      <div class="tool__text">
+                        This column shows how these results compare to the patient's average report of these metrics over the course of the care plan.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="left">Diastolic</td>
+              <td>80</td>
+              <td>33 of 56</td>
+              <td>
+                <div class="iconText">
+                  <i class="iconText__icon iconText__icon--noTop ss-standard ss-up iconSmall"></i> higher
+                </div>
+              </td>
+              <td>
+                n/a
+              </td>
+              <td>
+                <div class="iconText">
+                  <i class="iconText__icon iconText__icon--noTop ss-standard ss-hyphen iconSmall"></i> avg
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td class="left">Systolic</td>
+              <td>130</td>
+              <td>33 of 56</td>
+              <td>
+                <div class="iconText">
+                  <i class="iconText__icon iconText__icon--noTop ss-standard ss-down iconSmall"></i> lower
+                </div>
+              </td>
+              <td>
+                n/a
+              </td>
+              <td>
+                <div class="iconText">
+                  <i class="iconText__icon iconText__icon--noTop ss-standard ss-hyphen iconSmall"></i> avg
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <label>Comment</label>
+        <p>
+          "My blood pressure seems to be stabilizing."
+        </p>
+        <a [routerLink]="['/patient/asdf/messaging']" class="button button--iconText">
+          <i class="ss-chat"></i> Reply
+        </a>
+
+      </div> <!--/.accordion__contents-->
+    </div> <!--/.accordion__body-->
+  </div> <!--/.accordion (for vitals)-->
+
+  <div class="accordion" [ngClass]="{ 'isOpen' : accordPD8Open }">
+    <div class="accordion__head" (click)="accordPD8Open=!accordPD8Open">
+      <span class="accordion__title">Messages - Today (1)</span>
+      <div class="accordion__right">
+        <div class="accordion__arrow">
+          <i class="ss-standard ss-navigateright"></i>
+        </div>
+      </div>
+    </div> <!--/.accordion__head-->
+    <div class="accordion__body">
+      <div class="accordion__contents">
+        <table>
+          <thead>
+            <tr>
+              <th class="left">Message</th>
+              <th>
+                <div class="tool justifyCenter">
+                  <span>Helpful</span>
+                  <div class="tool__anchor">
+                    <button class="button button--icon button--icon--small"
+                    (click)="tooltipPD800Open=!tooltipPD800Open">
+                      <i class="ss-help"></i>
+                    </button>
+                    <div class="tool__tip tool__tip--bottom tool__tip--right" [ngClass]="{ 'isOpen' : tooltipPD800Open }">
+                      <div class="tool__text">
+                        Patients can mark messages as helpful or not. They may also dismiss the message without a response.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </th>
+              <th class="left">Type</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="left">
+                Depression is both a brain disorder and a state of mind. The brain is unique—it is the only organ whose function we consciously experience because the brain is the organ of the mind.
+              </td>
+              <td>
+                <i class="ss-standard ss-like iconLime"></i>
+              </td>
+              <td class="left">Education</td>
+            </tr>
+          </tbody>
+        </table>
+      </div> <!--/.accordion__contents-->
+    </div> <!--/.accordion__body-->
+  </div> <!--/.accordion (for messages)-->
+
+</div> <!--/.ssContainer-->

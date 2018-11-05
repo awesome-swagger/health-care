@@ -1,0 +1,419 @@
+<div class="ssContainer ssContents">
+  <div class="flex alignCenter marBottom32">
+    <div class="picName marRight8">
+      <img class="picName__img picName__img--big" *ngIf="patient?.user.image_url" [src]="patient?.user.image_url" />
+      <img class="picName__img picName__img--big" *ngIf="!patient?.user.image_url" src="../../../assets/img/profile.svg" />
+      <div *ngIf="!editName" class="flex alignCenter">
+        <h1 class="noMargin marRight8">{{patient?.user.first_name}} {{patient?.user.last_name}}</h1>
+        <button class="button button--icon" (click)="editName=!editName">
+          <i class="ss-write"></i>
+        </button>
+      </div>
+      <form *ngIf="editName" class="flexForm">
+        <input type="text" class="input flexForm__input" placeholder="First Name" />
+        <input type="text" class="input flexForm__input" placeholder="Last Name" />
+        <button class="button button--icon button--flex" (click)="editName=!editName">
+          <i class="ss-undo"></i>
+        </button>
+        <button class="button button--icon button--flex" (click)="editName=!editName">
+          <i class="ss-floppydisk"></i>
+        </button>
+      </form>
+    </div>
+  </div> <!--/.flex (for title area)-->
+
+  <ng-container *ngFor="let plan of carePlans">
+    <div class="flex alignCenter justifySpaceBetween">
+      <div class="flex alignCenter">
+        <h2 class="noMargin marRight32">Plan Name <i class="icomoon-cocm"></i> CoCM</h2>
+        <a [routerLink]="['/patient', plan.patient, 'dashboard']" class="button button--iconText">
+          <i class="ss-standard ss-view"></i> View Care Plan
+        </a>
+      </div>
+      <div class="flex alignCenter">
+        <button class="button button--icon"
+        (click)="confirmPause()">
+          <i class="ss-pause"></i>
+        </button>
+        <button class="button button--icon"
+        (click)="confirmRemovePlan()">
+          <i class="ss-delete"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="info info--horiz">
+      <div class="info__cell">
+        <label>Care Team</label>
+        <div class="flex alignCenter justifyCenter">
+          <div class="picName marRight8">
+            <img class="picName__img" src="../../../assets/img/profile.svg" />
+            Lori Ramirez, RN
+          </div>
+          <div class="tool__anchor">
+            <a class="flex alignCenter" (click)="tooltipP1Open=!tooltipP1Open">
+              <span class="marRight8">+2</span>
+              <img src="../../../assets/img/arrow-down.svg" />
+            </a>
+            <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipP1Open }">
+              <div class="tool__text">
+                <div class="picName marBottom16">
+                  <img class="picName__img" src="../../../assets/img/profile--2.svg" />
+                  Jason Hannigan, PA
+                </div>
+                <div class="picName">
+                  <img class="picName__img" src="../../../assets/img/profile--2.svg" />
+                  Melanie Benson, CRNA
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div> <!--/.info__cell (for care team)-->
+      <div class="info__cell">
+        <label>Progress</label>
+        <div class="progress marCenter">
+          Week 8 of 12
+          <div class="progress__bg">
+            <div class="progress__bar"></div>
+          </div>
+        </div>
+      </div>
+      <div class="info__cell">
+        <label>Last&nbsp;Contact</label>
+        <a [routerLink]="['/patient/asdf/history']" class="justifyCenter">2 days ago</a>
+      </div>
+      <div class="info__cell">
+        <label>Problems</label>
+        <a class="justifyCenter" (click)="openProblemAreas()">3</a>
+      </div>
+      <div class="info__cell">
+        <label class="tool info__tool justifyCenter">
+          Time
+          <div class="tool__anchor">
+            <button class="button button--icon button--icon--small" (click)="openFinancialDetails()">
+              <i class="ss-info"></i>
+            </button>
+          </div>
+        </label>
+        <div class="pill pill--lime">
+          :57
+        </div>
+      </div> <!--/.info__cell (for time)-->
+      <div class="info__cell">
+        <label>Risk Level</label>
+        <div class="pill pill--yellow">
+          Low Risk 84%
+        </div>
+      </div>
+    </div> <!--/.info (for care plan instance)-->
+  </ng-container>
+  <button class="button button--iconText"
+  (click)="addPatientToPlan()">
+    <i class="ss-plus"></i> Add Care Plan
+  </button>
+
+  <div class="divider divider--bigMargin halfWidth marCenter"></div>
+
+  <div class="flex alignCenter marBottom16">
+    <h2 class="noMargin">Patient Statistics (Past 12 Months)</h2>
+    <div class="tool__anchor">
+      <button class="button button--icon button--icon--small"
+      (click)="tooltipPSOpen=!tooltipPSOpen">
+        <i class="ss-help"></i>
+      </button>
+      <div class="tool__tip" [ngClass]="{'isOpen' : tooltipPSOpen }">
+        <div class="tool__text">
+          Patient Statistics are key indicators of patient risk.
+        </div>
+      </div>
+    </div>
+  </div> <!--/.flex (for patient statistics header and tooltip)-->
+
+  <div class="info info--horiz">
+    <div class="info__cell">
+      <label>Readmits</label>
+      2
+    </div>
+    <div class="info__cell">
+      <label>Readmit %</label>
+      33.3%
+    </div>
+    <div class="info__cell">
+      <label>Cost of Readmits</label>
+      $10,975
+    </div>
+    <div class="info__cell">
+      <label>ED Visits</label>
+      3
+    </div>
+    <div class="info__cell">
+      <label>Opioid Use</label>
+      5
+    </div>
+  </div> <!--/.info (first one for patient stats)-->
+
+  <div class="info info--horiz">
+    <div class="info__cell">
+      <label>Admits</label>
+      5
+    </div>
+    <div class="info__cell">
+      <label>Avg Stay</label>
+      1.5 days
+    </div>
+    <div class="info__cell">
+      <label>PCP Visits</label>
+      5
+    </div>
+    <div class="info__cell">
+      <label>Specialist Visits</label>
+      3
+    </div>
+    <div class="info__cell">
+      <label>Total Cost</label>
+      $45,890
+    </div>
+  </div> <!--/.info (second one for patient stats)-->
+
+  <div class="divider divider--bigMargin halfWidth marCenter"></div>
+
+  <h2>Patient Info</h2>
+
+  <div class="cols">
+    <div class="cols__colBig marRight32">
+      <div class="info">
+        <div class="info__header">
+          <h3 class="noMargin">Profile</h3>
+          <button class="button button--icon button--icon--small"
+          (click)="editPatientProfile()">
+            <i class="ss-write"></i>
+          </button>
+        </div>
+        <div class="flex justifySpaceBetween">
+          <div>
+            <label class="info__label2">Age</label>
+            <p class="info__p">76</p>
+            <label class="info__label2">Insurance</label>
+            <p class="info__p">BCBS</p>
+            <label class="info__label2">Height</label>
+            <p class="info__p info__p--noMargin">5' 2"</p>
+          </div>
+          <div>
+            <label class="info__label2">Date of Birth</label>
+            <p class="info__p">May 23, 1959</p>
+            <label class="info__label2">Secondary Ins.</label>
+            <p class="info__p">Medicare</p>
+            <label class="info__label2">Ethnicity</label>
+            <p class="info__p info__p--noMargin">Hispanic</p>
+          </div>
+          <div>
+            <label class="info__label2">Gender</label>
+            <p class="info__p">Female</p>
+            <label class="info__label2">MRN</label>
+            <p class="info__p">345752671</p>
+            <label class="info__label2">Cognitive Ability</label>
+            <p class="info__p info__p--noMargin">High</p>
+          </div>
+        </div>
+      </div> <!--/.info (for profile)-->
+
+      <div class="info">
+        <div class="info__header">
+          <h3 class="noMargin">Address</h3>
+          <button class="button button--icon button--icon--small"
+          (click)="editPatientAddress()">
+            <i class="ss-write"></i>
+          </button>
+        </div>
+        <div class="flex justifySpaceBetween">
+          <div>
+            <label class="info__label2">Street</label>
+            <p class="info__p">518 E 3100 N</p>
+            <label class="info__label2">State</label>
+            <p class="info__p info__p--noMargin">UT</p>
+          </div>
+          <div>
+            <label class="info__label2">Apt #</label>
+            <p class="info__p">- -</p>
+            <label class="info__label2">ZIP</label>
+            <p class="info__p info__p--noMargin">84414</p>
+          </div>
+          <div>
+            <label class="info__label2">City</label>
+            <p class="info__p">North Ogden</p>
+          </div>
+        </div>
+      </div> <!--/.info (for address)-->
+    </div> <!--/.cols__colBig-->
+
+    <div class="cols__colSmall">
+      <div class="info">
+        <div class="info__header">
+          <h3 class="noMargin">Communication</h3>
+          <button class="button button--icon button--icon--small"
+          (click)="editPatientCommunication()">
+            <i class="ss-write"></i>
+          </button>
+        </div>
+        <label class="info__label2">Email</label>
+        <p class="info__p">
+          <a href="mailto:">theresa.beckstrom@gmail.com</a>
+        </p>
+        <div class="flex justifySpaceBetween">
+          <div class="marRight32">
+            <label class="info__label2">Phone</label>
+            <p class="info__p info__p--noMargin">
+              <a href="tel:">(801) 413-3206</a>
+            </p>
+          </div>
+          <div>
+            <label class="info__label2">Comm. Preference</label>
+            <p class="info__p info__p--noMargin">In-App Message</p>
+          </div>
+        </div>
+      </div> <!--/.info (for communication)-->
+
+      <div class="info">
+        <div class="info__header">
+          <h3 class="noMargin">Emergency Contact</h3>
+          <button class="button button--icon button--icon--small"
+          (click)="editPatientEmergencyContact()">
+            <i class="ss-write"></i>
+          </button>
+        </div>
+        <div class="flex justifySpaceBetween">
+          <div class="marRight32">
+            <label class="info__label2">Name</label>
+            <p class="info__p">Sally Beckstrom</p>
+          </div>
+          <div>
+            <label class="info__label2">Relationship</label>
+            <p class="info__p">Daughter</p>
+          </div>
+        </div>
+        <label class="info__label2">Phone</label>
+        <p class="info__p">
+          <a href="tel:">(801) 573-9020</a>
+        </p>
+        <label class="info__label2">Email</label>
+        <p class="info__p info__p--noMargin">
+          <a href="mailto:">sallybeck@gmail.com</a>
+        </p>
+      </div> <!--/.info (for emergency contact)-->
+
+    </div> <!--/.cols__colSmall-->
+  </div> <!--/.cols for profile, address, etc.-->
+
+  <div class="flex justifySpaceBetween">
+    <div class="info cols__colSmall marRight32">
+      <h3>Medications</h3>
+      <ul class="nameList nameList--dk marBottom16">
+        <li class="nameList__item">
+          <span>Zoloft</span>
+          <div class="flex">
+            <button class="button button--icon button--icon--small"
+            (click)="editMedication()">
+              <i class="ss-write"></i>
+            </button>
+            <button class="button button--icon button--icon--small"
+            (click)="deleteMedication()">
+              <i class="ss-delete"></i>
+            </button>
+          </div>
+        </li>
+        <li class="nameList__item">
+          <span>Lexapro</span>
+          <div class="flex">
+            <button class="button button--icon button--icon--small">
+              <i class="ss-write"></i>
+            </button>
+            <button class="button button--icon button--icon--small">
+              <i class="ss-delete"></i>
+            </button>
+          </div>
+        </li>
+      </ul>
+      <button class="button button--iconText"
+      (click)="addMedication()">
+        <i class="ss-plus"></i> Add Medication
+      </button>
+    </div> <!--/.info (for medications)-->
+
+    <div class="info cols__colSmall marRight32">
+      <h3>Diagnoses</h3>
+      <ul class="nameList nameList--dk marBottom16">
+        <li class="nameList__item">
+          <span class="asterisk">Depression</span>
+          <div class="flex">
+            <button class="button button--icon button--icon--small"
+            (click)="editDiagnosis()">
+              <i class="ss-write"></i>
+            </button>
+            <button class="button button--icon button--icon--small"
+            (click)="deleteDiagnosis()">
+              <i class="ss-delete"></i>
+            </button>
+          </div>
+        </li>
+      </ul>
+      <h5>* Chronic condition</h5>
+      <button class="button button--iconText"
+      (click)="addDiagnosis()">
+        <i class="ss-plus"></i> Add Diagnosis
+      </button>
+    </div> <!--/.info (for diagnoses)-->
+
+    <div class="info cols__colSmall">
+      <h3>Procedures</h3>
+      <ul class="nameList nameList--dk marBottom16">
+        <li class="nameList__item">
+          <span>Double Bypass</span>
+          <div class="flex">
+            <button class="button button--icon button--icon--small"
+            (click)="editProcedure()">
+              <i class="ss-write"></i>
+            </button>
+            <button class="button button--icon button--icon--small"
+            (click)="deleteProcedure()">
+              <i class="ss-delete"></i>
+            </button>
+          </div>
+        </li>
+        <li class="nameList__item">
+          <span>Bariatric Surgery</span>
+          <div class="flex">
+            <button class="button button--icon button--icon--small">
+              <i class="ss-write"></i>
+            </button>
+            <button class="button button--icon button--icon--small">
+              <i class="ss-delete"></i>
+            </button>
+          </div>
+        </li>
+        <li class="nameList__item">
+          <span>Hip Replacement</span>
+          <div class="flex">
+            <button class="button button--icon button--icon--small">
+              <i class="ss-write"></i>
+            </button>
+            <button class="button button--icon button--icon--small">
+              <i class="ss-delete"></i>
+            </button>
+          </div>
+        </li>
+      </ul>
+      <button class="button button--iconText"
+      (click)="addProcedure()">
+        <i class="ss-plus"></i> Add Procedure
+      </button>
+    </div> <!--/.info (for diagnoses)-->
+
+  </div> <!--/.flex (for medications, diagnoses, procedures)-->
+
+  <button class="button button--2nd"
+  (click)="confirmMakePatientInactive()">
+    Make Inactive
+  </button>
+
+</div> <!--/.ssContainer-->

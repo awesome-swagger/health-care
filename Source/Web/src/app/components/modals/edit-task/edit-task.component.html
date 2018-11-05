@@ -1,0 +1,222 @@
+<!--TODO: The "edit task" modal is triggered in several places, included the "add task" modals; need to wire that up-->
+<h1 class="modal__title">
+  <!--TODO: Hide if adding medication or symptom-->
+  <!--<span>Edit Task</span>-->
+  <!--TODO: Show if adding a medication task-->
+  <!--<span>Add Medication Task</span>-->
+  <!--TODO: Show if editing a medication task-->
+  <!--<span>Edit Medication Task</span>-->
+  <!--TODO: Show if adding a symptom-->
+  <!--<span>Add Symptom Report</span>-->
+  <!--TODO: Show if editing a symptom-->
+  <!-- <span>Edit {{data.is_manager_task ? 'CM' : 'CT'}} Task</span> -->
+</h1>
+<!--TODO: If editing a task on a care plan template, show the following-->
+<div class="iconText iconText--wrap iconText--autoHeight error marBottom32">
+  <i class="iconText__icon ss-alert"></i>
+  <span class="error__text">
+    Making changes here will affect 5 patients currently assigned to this care plan.
+  </span>
+</div>
+<!--TODO: If editing a task on a care plan instance, except for a medication task, show the following-->
+<h5 *ngIf="">NOTE: You are working on one patient's care plan. To do this for everyone, go to care plans.</h5>
+
+<!--TODO: Hide if medication or symptom-->
+<div >
+  <label class="noMargin">{{data.is_manager_task ? 'CM' : 'CT'}} Task</label>
+  <div class="flex alignCenter marBottom32">
+      <div *ngIf="!data.edit" class="flex alignCenter justifySpaceBetween fullWidth">
+          <h2 class="noMargin">{{data.name |titlecase}}</h2>
+          <div class="flex">
+            <button class="button button--icon button--icon--small"
+            (click)="data.edit=!data.edit">
+              <i class="ss-write"></i>
+            </button>
+          </div>
+        </div>
+        <form *ngIf="data.edit" class="nameList__form">
+          <div class="nameList__inputWrap">
+            <input type="text" class="input fullWidth" [(ngModel)]="data.name" [ngModelOptions]="{standalone: true}" />
+          </div>
+          <div class="flex">
+            <button class="button button--icon button--icon--small"
+            (click)="data.edit=!data.edit">
+              <i class="ss-undo"></i>
+            </button>
+            <button class="button button--icon button--icon--small"
+            (click)="data.edit=!data.edit; updateTaskName(data)">
+              <i class="ss-floppydisk"></i>
+            </button>
+          </div>
+        </form>
+    <!--TODO: Clicking "edit" triggers the corresponding "add task" modal-->
+    <!-- <button class="button button--icon button--icon--small">
+      <i class="ss-write"></i>
+    </button> -->
+  </div>
+</div>
+
+<!-- TODO: Show if medication task -->
+<!-- <div *ngIf="">
+  <h5>If a medication should be taken more than once a day, create a separate task for each instance.</h5>
+  <div class="tool">
+    <label class="noMargin">Medication</label>
+    <div class="tool__anchor">
+      <button class="button button--icon button--icon--small"
+      (click)="tooltip0Open=!tooltip0Open">
+        <i class="ss-help"></i>
+      </button>
+      <div class="tool__tip tool__tip--left tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltip0Open }">
+        <div class="tool__text tool__text--small">
+          Before creating a medication task, you must add the medication on the patient detail page. -->
+          <!--TODO: Clicking this link should dismiss the modal, and trigger the "add medication" modal-->
+          <!-- <a [routerLink]="['/patient/asdf/']" class="button button--iconText">
+            <i class="ss-plane"></i> Go Now
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="styledSelect marBottom32">
+    <select class="styledSelect__select">
+      <option>Ambedextren (1200mg)</option>
+      <option>Zoloft (10mg)</option>
+    </select>
+  </div>
+</div> -->
+<form [formGroup]="taskForm" (ngSubmit)="submitTask()">
+
+<div class="flex justifySpaceBetween marBottom32">
+  <div class="modal__inputWrap80 marRight32">
+    <label>Start Day</label>
+    <input  formControlName="start_on_day" type="number" min="0" class="input fullWidth" />
+  </div>
+  <div class="modal__inputWrap">
+    <label>Frequency</label>
+    <div class="styledSelect fullWidth">
+      <select class="styledSelect__select" formControlName="frequency" (change)="taskForm.controls.frequency.setValue($event.target.value)">
+        <option *ngFor="let option of frequencyOptions" [value]="option.value">{{option.displayName}}</option>
+      </select>
+    </div>
+  </div>
+</div> <!--/.flex (for start day and frequency)-->
+<label class="noMargin">Repeats </label>
+  <div class="flex marBottom24">
+  <label class="styledInput marRight32">
+    <input type="radio" class="styledInput__input" formControlName="repeat_amount" [value]="-1"  />
+    <span class="styledInput__radio"></span> Until&nbsp;Plan&nbsp;Ends 
+  </label>
+  <label class="styledInput">
+    <input type="radio" class="styledInput__input" formControlName="repeat_amount" [value]="taskForm.controls.repeat_amount_input.value"   />
+    <span class="styledInput__radio"></span>
+    <div class="modal__inputWrap70 marRight8">
+      <input type="number" formControlName="repeat_amount_input" class="input fullWidth" min="1" />
+    </div>
+    times
+  </label>
+</div> <!--/.flex (for radio buttons)-->
+
+<!--TODO: Hide appear and due times on care team tasks-->
+<div class="flex justifySpaceBetween marBottom24">
+  <div class="modal__inputWrap marRight32">
+    <div class="tool">
+      <label class="noMargin">Appear Time</label>
+      <div class="tool__anchor">
+        <button class="button button--icon button--icon--small"
+        (click)="tooltipETM0Open=!tooltipETM0Open">
+          <i class="ss-help"></i>
+        </button>
+        <div class="tool__tip" [ngClass]="{ 'isOpen' : tooltipETM0Open }">
+          <div class="tool__text tool__text--small">
+            Appear time is when a task becomes available for the patient to complete.
+          </div>
+        </div>
+      </div>
+    </div> <!--/.tool (for appear time)-->
+    <div class="styledSelect fullWidth">
+      <select class="styledSelect__select">
+        <option>9:00 AM</option>
+        <option>9:15 AM</option>
+        <option>9:30 AM</option>
+      </select>
+    </div>
+  </div>
+  <div class="modal__inputWrap">
+    <div class="tool">
+      <label class="noMargin">Due Time</label>
+      <div class="tool__anchor">
+        <button class="button button--icon button--icon--small"
+        (click)="tooltipETM1Open=!tooltipETM1Open">
+          <i class="ss-help"></i>
+        </button>
+        <div class="tool__tip tool__tip--right" [ngClass]="{ 'isOpen' : tooltipETM1Open }">
+          <div class="tool__text">
+            When a task is due, the patient sees a notification asking if they've completed the task or not.
+          </div>
+        </div>
+      </div>
+    </div> <!--/.tool (for due time)-->
+    <div class="styledSelect fullWidth">
+      <select class="styledSelect__select">
+        <option>5:00 PM</option>
+        <option>5:15 PM</option>
+        <option>5:30 PM</option>
+      </select>
+    </div>
+  </div>
+</div> <!--/.flex (for appear time and due time)-->
+
+<!--TODO: Only show category and role on care team tasks-->
+<div>
+  <div class="tool">
+    <label class="noMargin">Category</label>
+    <div class="tool__anchor">
+      <button class="button button--icon button--icon--small"
+      (click)="tooltipETM2Open=!tooltipETM2Open">
+        <i class="ss-help"></i>
+      </button>
+      <div class="tool__tip tool__tip--left" [ngClass]="{ 'isOpen' : tooltipETM2Open }">
+        <div class="tool__text">
+          By assigning the care team task a category, history and notes can be better organized.
+        </div>
+      </div>
+    </div>
+  </div> <!--/.tool (for due time)-->
+  <div class="styledSelect fullWidth marBottom24">
+    <select class="styledSelect__select" formControlName="category" (change)="taskForm.controls.category.setValue($event.target.value)">
+      <option [value]="data.category">{{data.category | titlecase}}</option>
+    </select>
+  </div>
+
+  <div class="tool">
+    <label class="noMargin">Role</label>
+    <div class="tool__anchor">
+      <button class="button button--icon button--icon--small"
+      (click)="tooltipETM3Open=!tooltipETM3Open">
+        <i class="ss-help"></i>
+      </button>
+      <div class="tool__tip tool__tip--left" [ngClass]="{ 'isOpen' : tooltipETM3Open }">
+        <div class="tool__text">
+          Roles are meant to identify the specific person on the care team who will be responsible for the task.
+        </div>
+      </div>
+    </div>
+  </div> <!--/.tool (for due time)-->
+  <div class="styledSelect fullWidth">
+    <select class="styledSelect__select">
+      <option>Care Manager</option>
+      <option>Pharmacist</option>
+      <option>Psychiatric Consultant</option>
+    </select>
+  </div>
+</div> <!--/ wrapper for category and role-->
+
+<div class="modal__buttons">
+  <button class="button button--2nd" (click)="close()">
+    Cancel
+  </button>
+  <button type="submit" class="button">
+    Save
+  </button>
+</div>
+</form>

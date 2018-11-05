@@ -1,0 +1,120 @@
+<div class="ssContainer ssContents">
+  <div class="flex alignCenter marBottom32">
+    <h1 class="noMargin">Inactive Patients (2)</h1>
+    <div class="tool__anchor">
+      <button class="button button--icon button--icon--small"
+      (click)="toolXP1Open=!toolXP1Open">
+        <i class="ss-help"></i>
+      </button>
+      <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : toolXP1Open }">
+        <div class="tool__text">
+          Inactive patients have an account, but don’t currently have a care plan, and have not been archived.
+        </div>
+      </div>
+    </div>
+  </div> <!--/.flex (for title and tooltip)-->
+
+  <div class="accordion" [ngClass]="{'isOpen': facilitiesOpen[facility.id]}" *ngFor="let facility of facilities">
+    <div class="accordion__head" (click)="facilitiesOpen[facility.id]=!facilitiesOpen[facility.id]">
+      <span class="accordion__title">{{facility.name}} (<span *ngIf="facility.inactivePatients">{{facility.inactivePatients.length}}</span>)</span>
+      <div class="accordion__right">
+        <div class="accordion__arrow">
+          <i class="ss-standard ss-navigateright"></i>
+        </div>
+      </div>
+    </div> <!--/.accordion__head-->
+    <div class="accordion__body">
+      <div class="accordion__contents">
+        <div class="tableWrap fullWidth">
+          <table class="fullWidth">
+            <thead>
+              <tr>
+                <th class="thSortable">
+                  <span class="thSortable__text thSortable__text--left">Patient</span>
+                </th>
+                <th class="thSortable">
+                  <span class="thSortable__text thSortable__text--left">Care Plan</span>
+                </th>
+                <th class="thSortable">
+                  <div class="tool justifyCenter">
+                    <span class="thSortable__text">Also</span>
+                    <div class="tool__anchor">
+                      <button class="button button--icon button--icon--small" (click)="tooltip2Open=!tooltip2Open">
+                        <i class="ss-help"></i>
+                      </button>
+                      <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltip2Open }">
+                        <div class="tool__text">This is the number of additional care plans a patient has. Click the number for details.</div>
+                      </div>
+                    </div>
+                  </div>
+                </th>
+                <th class="thSortable">
+                  <span class="thSortable__text thSortable__text--left">Last Contact</span>
+                </th>
+                <th class="thSortable thSortable--sortDown">
+                  <span class="thSortable__text thSortable__text--left">Last App Use</span>
+                </th>
+                <th class="thSortable">
+                  <span class="thSortable__text thSortable__text--left">Care Manager</span>
+                </th>
+                <th>Archive</th>
+              </tr>
+            </thead>
+            <tbody *ngIf="facility.inactivePatients">
+              <tr *ngFor="let inactivePatient of facility.inactivePatients">
+                <td class="left">
+                  <a [routerLink]="['/patient', inactivePatient.id]" class="picName">
+                    <img class="picName__img"  [src]="inactivePatient.image_url" />
+                    {{inactivePatient.patient}}
+                  </a>
+                </td>
+                <td>
+                  <div class="iconText" *ngIf="inactivePatient.care_plan">
+                    <i class="iconText__icon ss-addheart"></i> {{inactivePatient.care_plan}}
+                  </div>
+                </td>
+                <td>
+                  <a class="tool__anchor justifyCenter" (click)="tooltipPP2Open=!tooltipPP2Open">
+                    --
+                    <div class="tool__tip" [ngClass]="{ 'isOpen' : tooltipPP2Open }">
+                      <div class="iconText iconText--white iconText--autoHeight marBottom8">
+                        <i class="iconText__icon icomoon-cocm"></i> Anxiety
+                      </div>
+                    </div>
+                  </a>
+                </td>
+                <td class="left">--</td>
+                <td class="left">{{formatTimeFromNow(inactivePatient.last_app_use)}}</td>
+                <td class="left">{{inactivePatient.care_manager}}</td>
+                <td>
+                  <button class="button button--center button--icon"
+                  (click)="confirmArchive()">
+                    <i class="ss-filecabinet"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div> <!--/.tableWrap-->
+      </div> <!--/.accordion__contents-->
+    </div> <!--/.accordion__body-->
+  </div> <!--/.accordion-->
+
+  <div class="accordion" [ngClass]="{ 'isOpen' : accord2Open }">
+      <div class="accordion__head" (click)="accord2Open=!accord2Open">
+        <span class="accordion__title">South County Regional (0)</span>
+        <div class="accordion__right">
+          <div class="accordion__arrow">
+            <i class="ss-standard ss-navigateright"></i>
+          </div>
+        </div>
+      </div>
+      <div class="accordion__body">
+        <div class="accordion__contents">
+          <h2 class="center">No inactive patients for this facility.</h2>
+          <h5 class="center">Hint: If you're looking for an archived patient, use the search field in the header.</h5>
+        </div>
+      </div>
+    </div> <!--/.accordion-->
+
+</div> <!--/.ssContainer-->

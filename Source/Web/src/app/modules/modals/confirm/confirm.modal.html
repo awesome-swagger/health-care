@@ -1,0 +1,6 @@
+<h1 *ngIf="data?.title" class="modal__title">{{data?.title}}</h1>
+<p>{{data?.body}}</p>
+<div class="modal__buttons modal__buttons--full">
+  <button class="button button--2nd" type="button" (click)="modal.close(data?.cancelText)">{{data?.cancelText}}</button>
+  <button class="button" type="button" (click)="modal.close(data?.okText)">{{data?.okText}}</button>
+</div>

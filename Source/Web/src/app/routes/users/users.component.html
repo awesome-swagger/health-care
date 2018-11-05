@@ -1,0 +1,274 @@
+<div class="ssContainer ssContents">
+  <div class="flexHeader">
+    <h1 class="noMargin">User Accounts</h1>
+    <div class="tool">
+      <label class="labelLeft">Current Users</label>
+      {{employees?.length}} / 50
+      <div class="tool__anchor">
+        <button class="button button--icon button--icon--small" (click)="tooltipsOpen['currentUsers'] =! tooltipsOpen['currentUsers']"><i class="ss-help"></i></button>
+        <div class="tool__tip" [ngClass]="{ 'isOpen': tooltipsOpen['currentUsers'] }">
+          <div class="tool__text">
+            Your plan only has 5 available user accounts left. To upgrade now, call 801-555-5555 or email sales@careadopt.com.
+          </div>
+        </div>
+      </div>
+    </div> <!--/.tool-->
+    <a class="button button--iconText" [routerLink]="['/invite']">
+      <i class="ss-standard ss-mail"></i> Invite Users
+    </a>
+  </div> <!--/.flexHeader (for title, etc.)-->
+
+  <div class="flexHeader">
+    <div class="flex alignCenter">
+      <div class="drop">
+        <label>Search Users</label>
+        <input class="input input--search" type="text" (click)="searchOpen = !searchOpen" placeholder="Search" />
+        <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : searchOpen }" (click)="searchOpen = !searchOpen">
+          <li class="drop__option">
+            <a class="drop__link">
+              <div class="picName">
+                <img class="picName__img" src="../../../assets/img/profile.svg" />Adam Hancock
+              </div>
+            </a>
+          </li>
+          <li class="drop__option">
+            <a class="drop__link">
+              <div class="picName">
+                <img class="picName__img" src="../../../assets/img/profile.svg" />Hank Granowski
+              </div>
+            </a>
+          </li>
+          <li class="drop__option">
+            <a class="drop__link">
+              <div class="picName">
+                <img class="picName__img" src="../../../assets/img/profile.svg" />Samantha Hancock
+              </div>
+            </a>
+          </li>
+        </ul>
+      </div>
+      <label class="styledInput styledInput--inline">
+        <input type="checkbox" class="styledInput__input" [(ngModel)]="showInactive" />
+        <span class="styledInput__box"></span>
+        Show Inactive
+      </label>
+    </div>
+    <div>
+      <label>Org/Facility</label>
+      <div class="drop">
+        <div class="drop__input" (click)="facilitySelectOpen = !facilitySelectOpen">
+          All
+        </div>
+        <ul class="drop__dropdown drop__dropdown--right" [ngClass]="{'isOpen': facilitySelectOpen }">
+          <div class="drop__buttons">
+            <button class="button button--iconText" (click)="checkAllFacilities()">
+              <i class="ss-check ss-standard"></i> Check All
+            </button>
+            <button class="button button--iconText" (click)="uncheckAllFacilities()">
+              <i class="ss-ban"></i> Uncheck All
+            </button>
+          </div>
+          <li class="drop__option">
+            <input class="input input--search drop__innerInput" type="text" placeholder="Search" [(ngModel)]="facilitiesSearch" />
+          </li>
+          <li class="drop__option" *ngIf="facilitiesSearch.length < 1 || organizationSearchMatch()">
+            <label class="drop__checkbox styledInput">
+              <input type="checkbox" class="styledInput__input" [(ngModel)]="organizationChecked" />
+              <span class="styledInput__box"></span>
+              Organization: Ogden Clinic
+            </label>
+          </li>
+          <ng-container *ngFor="let facility of facilities">
+            <li class="drop__option" *ngIf="facilitySearchMatch(facility)">
+              <label class="drop__checkbox styledInput">
+                <input type="checkbox" class="styledInput__input" [(ngModel)]="facilitiesChecked[facility.id]" />
+                <span class="styledInput__box"></span>
+                Facility: {{facility.name}}
+              </label>
+            </li>
+          </ng-container>
+        </ul>
+      </div> <!--/.drop (for Multiselect)-->
+    </div>
+  </div> <!--/.flexHeader (for filters)-->
+
+
+  <div class="accordion" [ngClass]="{ 'isOpen': organizationAccordionOpen }" *ngIf="organization">
+    <div class="accordion__head" (click)="organizationAccordionOpen = !organizationAccordionOpen">
+      <span class="accordion__title">Organization: {{organization.name}} (<span *ngIf="organization.employees">{{organization.employees.length}}</span>)</span>
+      <div class="accordion__right">
+        <div class="accordion__arrow">
+          <i class="ss-standard ss-navigateright"></i>
+        </div>
+      </div>
+    </div>
+    <div class="accordion__body">
+      <div class="accordion__contents">
+        <div class="tableWrap">
+          <table>
+            <thead>
+              <tr>
+                <th class="left thSortable thSortable--sortDown">
+                  <span class="left thSortable__text">User</span>
+                </th>
+                <th class="thSortable">
+                    <span class="thSortable__text">Title</span>
+                </th>
+                <th class="thSortable">
+                    <span class="thSortable__text">Status</span>
+                </th>
+                <th class="thSortable tool">
+                  <span class="thSortable__text">Also</span>
+                  <div class="tool__anchor">
+                    <button class="button button--icon button--icon--small" (click)="tooltipsOpen['alsoOrg'] = !tooltipsOpen['alsoOrg']">
+                      <i class="ss-help"></i>
+                    </button>
+                    <div class="tool__tip tool__tip--bottom tool__tip--right" [ngClass]="{ 'isOpen': tooltipsOpen['alsoOrg'] }">
+                      <div class="tool__text">
+                        If a number shows in this column, it means this user has multiple assignments within this organization. Click on the number for details.
+                      </div>
+                    </div>
+                  </div>
+                </th>
+              </tr>
+            </thead>
+            <tbody *ngIf="organization.employees">
+              <tr *ngFor="let orgEmployee of organization.employees">
+                <td class="left hideOverflow">
+                  <a class="picName" (click)="routeToUserDetail(orgEmployee)">
+                    <img class="picName__img" src="../../../assets/img/profile.svg" *ngIf="!orgEmployee.image_url" />
+                    <img class="picName__img" [src]="orgEmployee.image_url" *ngIf="orgEmployee.image_url" />
+                    {{orgEmployee.full_name}}
+                  </a>
+                </td>
+                <td>{{orgEmployee.title}}</td>
+                <td>{{orgEmployee.status|titlecase}}</td>
+                <td>
+                  <a class="tool__anchor flex justifyCenter" (click)="tooltipsOpen[orgEmployee.id] = !tooltipsOpen[orgEmployee.id]">
+                    {{orgEmployee.facilities_count}}
+                      <div class="tool__tip tool__tip--bottom tool__tip--right" [ngClass]="{ 'isOpen': tooltipsOpen[orgEmployee.id] }">
+                        Facility: Canyon View
+                      </div>
+                  </a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div> <!--/.tableWrap-->
+      </div> <!--/.accordion__contents-->
+    </div> <!--/.accordion__body-->
+  </div> <!--/.accordion (for organization)-->
+
+  <div class="accordion" [ngClass]="{ 'isOpen': facilityAccordionsOpen[facility.id] }" *ngFor="let facility of facilities">
+    <div class="accordion__head" (click)="facilityAccordionsOpen[facility.id] = !facilityAccordionsOpen[facility.id]">
+      <span class="accordion__title">Facility: {{facility.name}} <span *ngIf="facility.employees">({{facility.employees.length}})</span></span>
+      <div class="accordion__right">
+        <div class="accordion__arrow">
+          <i class="ss-standard ss-navigateright"></i>
+        </div>
+      </div>
+    </div>
+    <div class="accordion__body">
+      <div class="accordion__contents">
+        <div class="tableWrap">
+          <table>
+            <thead>
+              <tr>
+                <th class="left thSortable thSortable--sortDown">
+                  <span class="left thSortable__text">User</span>
+                </th>
+                <th class="thSortable left">
+                  <span class="thSortable__text">Title</span>
+                </th>
+                <th class="thSortable">
+                  <span class="thSortable__text">Status</span>
+                </th>
+                <th class="thSortable left">
+                  <span class="thSortable__text">Employer</span>
+                </th>
+                <th class="thSortable">
+                  <span class="thSortable__text">Managing</span>
+                </th>
+                <th class="thSortable">
+                  <span class="thSortable__text">Care Team</span>
+                </th>
+                <th class="thSortable">
+                  <span class="thSortable__text">Admin</span>
+                </th>
+                <th class="thSortable tool">
+                  <span class="thSortable__text">Also</span>
+                  <div class="tool__anchor">
+                    <button class="button button--icon button--icon--small" (click)="tooltipsOpen['alsoFacility' + facility.id]=!tooltipsOpen['alsoFacility' + facility.id]">
+                      <i class="ss-help"></i>
+                    </button>
+                    <div class="tool__tip tool__tip--bottom tool__tip--right" [ngClass]="{ 'isOpen' : tooltipsOpen['alsoFacility' + facility.id] }">
+                      <div class="tool__text">
+                        If a number shows in this column, it means this user has multiple assignments within this organization. Click on the number for details.
+                      </div>
+                    </div>
+                  </div>
+                </th>
+              </tr>
+            </thead>
+            <tbody *ngIf="facility.employees">
+              <tr *ngFor="let facilityEmp of facility.employees">
+                <td class="left hideOverflow">
+                  <a class="picName" (click)="routeToUserDetail(facilityEmp)">
+                    <img class="picName__img" src="../../../assets/img/profile.svg" *ngIf="!facilityEmp.image_url" />
+                    <img class="picName__img" [src]="facilityEmp.image_url" *ngIf="facilityEmp.image_url" />
+                    {{facilityEmp.full_name}}
+                  </a>
+                </td>
+                <td class="left">{{facilityEmp.title}}</td>
+                <td>{{facilityEmp.status|titlecase}}</td>
+                <td class="left">--</td>
+                <td>{{facilityEmp.care_manager}}</td>
+                <td>{{facilityEmp.care_team}}</td>
+                <td><span *ngIf="facilityEmp.is_admin"><i class="ss-standard ss-check"></i></span></td>
+                <td>{{facilityEmp.other_facilities}}</td>
+              </tr>
+              <!-- <tr>
+                <td class="left hideOverflow">
+                  <a href="" class="picName">
+                    <img class="picName__img" src="../../../assets/img/profile.svg" />
+                    Jennifer Herriod
+                  </a>
+                </td>
+                <td class="left">Care Coordinator</td>
+                <td>Active</td>
+                <td class="left">CareAdopt</td>
+                <td>35</td>
+                <td>12</td>
+                <td></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td class="left hideOverflow">
+                  <a href="" class="picName">
+                    <img class="picName__img" src="../../../assets/img/profile.svg" />
+                    Kevin Porter
+                  </a>
+                </td>
+                <td class="left">MD</td>
+                <td>Active</td>
+                <td class="left">Ogden Clinic</td>
+                <td>- -</td>
+                <td>6</td>
+                <td><i class="ss-standard ss-check iconSmall"></i></td>
+                <td>
+                  <a class="tool__anchor flex justifyCenter" (click)="userTip5Open=!userTip5Open">
+                    1
+                      <div class="tool__tip tool__tip--bottom tool__tip--right" [ngClass]="{ 'isOpen' : userTip5Open }">
+                        Organization:&nbsp;Ogden&nbsp;Clinic
+                      </div>
+                  </a>
+                </td>
+              </tr> -->
+            </tbody>
+          </table>
+        </div> <!--/.tableWrap-->
+      </div> <!--/.accordion__contents-->
+    </div> <!--/.accordion__body-->
+  </div> <!--/.accordion (for facility)-->
+
+</div> <!--/.ssContainer-->

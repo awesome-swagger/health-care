@@ -1,0 +1,50 @@
+<h1 class="modal__title">
+  <!--TODO: If adding a care team member, show the following-->
+  <!--<span>Add Psychiatric Consultant</span>->
+  <!--TODO: If changing CM, show the following-->
+  <!--<span>Change Care Manager</span>-->
+  <!--TODO: If changing BP, show the following-->
+  <span>Change Billing Practitioner</span>
+</h1>
+<!--TODO: If changing BP/CM show the following-->
+<div class="iconText iconText--wrap iconText--autoHeight error marBottom32">
+  <i class="iconText__icon ss-alert"></i>
+  <span class="error__text">
+    This is a required role. Please select a new provider to replace the current one.
+  </span>
+</div>
+
+<div class="drop">
+  <input class="input input--search fullWidth" type="text" (click)="dropOpen = !dropOpen" placeholder="Search Providers" />
+  <ul class="drop__dropdown fullWidth" [ngClass]="{ 'isOpen' : dropOpen }" (click)="dropOpen = !dropOpen">
+    <li class="drop__option">
+      <a class="drop__link">
+        <div class="picName">
+          <img class="picName__img" src="../../../assets/img/profile.svg" />Adam Hancock
+        </div>
+      </a>
+    </li>
+    <li class="drop__option">
+      <a class="drop__link">
+        <div class="picName">
+          <img class="picName__img" src="../../../assets/img/profile.svg" />Hank Granowski
+        </div>
+      </a>
+    </li>
+    <li class="drop__option">
+      <a class="drop__link">
+        <div class="picName">
+          <img class="picName__img" src="../../../assets/img/profile.svg" />Samantha Hancock
+        </div>
+      </a>
+    </li>
+  </ul>
+</div>
+<div class="modal__buttons">
+  <button class="button button--2nd">
+    Cancel
+  </button>
+  <button class="button">
+    Save
+  </button>
+</div>

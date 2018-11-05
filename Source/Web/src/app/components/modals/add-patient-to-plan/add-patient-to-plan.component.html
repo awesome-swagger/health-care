@@ -1,0 +1,346 @@
+<h1 class="modal__title">
+  <span *ngIf="action === 'add'">Add a Patient to a Plan</span>
+  <span *ngIf="action === 'edit'">Edit Patient Details</span>
+</h1>
+
+<div class="drop" *ngIf="!patientKnown && patientInSystem">
+  <input type="text" class="input input--search fullWidth" placeholder="Search Patients" (click)="dropAPPM0Open=!dropAPPM0Open"/>
+  <ul class="drop__dropdown fullWidth" [ngClass]="{ 'isOpen' : dropAPPM0Open }" (click)="dropAPPM0Open=!dropAPPM0Open">
+    <li class="drop__option">
+      <a class="drop__link">
+        <div class="picName">
+          <img class="picName__img" src="../../../assets/img/profile.svg" />Adam Hancock
+        </div>
+      </a>
+      <a class="drop__link">
+        <div class="picName">
+          <img class="picName__img" src="../../../assets/img/profile.svg" />Elise Reynolds
+        </div>
+      </a>
+    </li>
+  </ul>
+</div>
+<!--TODO: Show the following div if the patient needs to be added to the system, or if editing new patient details-->
+<div *ngIf="action === 'add' && !patientInSystem" class="flex justifySpaceBetween">
+  <div class="modal__inputWrap marRight16">
+    <label>First Name</label>
+    <input class="input fullWidth" />
+  </div>
+  <div class="modal__inputWrap marRight32">
+    <label>Last Name</label>
+    <input class="input fullWidth" />
+  </div>
+  <div class="modal__inputWrap">
+    <label>Mobile Phone</label>
+    <input class="input fullWidth" />
+  </div>
+</div>
+<h2 *ngIf="patientKnown" class="center noMargin">Alexander Montgomery</h2>
+
+<div class="divider"></div>
+
+<div class="flex justifySpaceBetween">
+  <div class="modal__inputWrap marRight32">
+    <label>Insurance</label>
+    <div class="styledSelect">
+      <select class="styledSelect__select">
+        <option>Medicare</option>
+        <option>Medicaid</option>
+        <option>Humana</option>
+      </select>
+    </div>
+  </div>
+  <div class="modal__inputWrap0">
+    <label>Reimbursement</label>
+    <label class="styledInput">
+      <input type="checkbox" class="styledInput__input" />
+      <span class="styledInput__box"></span> Payer Reimburses
+    </label>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<div class="flex justifySpaceBetween">
+  <div class="modal__inputWrap marRight32">
+    <label>Care Plan Type</label>
+    <div class="styledSelect">
+      <select class="styledSelect__select">
+        <option>BHI</option>
+        <option>CCM</option>
+        <option>CCCM</option>
+        <option>CoCM</option>
+        <option>RPM</option>
+        <option>TCM</option>
+      </select>
+    </div>
+  </div>
+  <div *ngIf="!planKnown" class="modal__inputWrap">
+    <label>Care Plan</label>
+    <div class="styledSelect">
+      <select class="styledSelect__select">
+        <option>Anxiety</option>
+        <option>Depression</option>
+        <option>Heart Disease</option>
+      </select>
+    </div>
+  </div>
+  <div *ngIf="planKnown" class="modal__inputWrap">
+    <label>Care Plan</label>
+    <p class="height48 noMargin flex alignCenter">
+      Heart Disease
+    </p>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!--TODO: Show the following if "care plan type" is CCM or CCCM-->
+<div *ngIf="false">
+  <h5>
+  </h5>
+  <div class="iconText iconText--wrap iconText--autoHeight error">
+    <i class="iconText__icon ss-alert"></i>
+    <span class="error__text">
+      Patients must be diagnosed with 2 or more chronic conditions<br />
+      to qualify for CCM or CCCM plans.
+    </span>
+  </div>
+  <!--TODO: Show the following if the patient has one or more diagnoses.-->
+  <div>
+    <table class="marBottom8">
+      <thead>
+        <tr>
+          <th class="left">Diagnosis</th>
+          <th class="left">Chronic</th>
+          <th class="noPad"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="left">
+            <span *ngIf="!editAPPM0">Diabetes</span>
+            <form *ngIf="editAPPM0" class="flex">
+              <div class="drop">
+                <input type="text" class="input input--search fullWidth" placeholder="Search Diagnoses" (click)="dropAPPM5Open=!dropAPPM5Open"/>
+                <ul class="drop__dropdown fullWidth" [ngClass]="{ 'isOpen' : dropAPPM5Open }" (click)="dropAPPM5Open=!dropAPPM5Open">
+                  <li class="drop__option">
+                    <a class="drop__link">
+                      Common Cold
+                    </a>
+                    <a class="drop__link">
+                      Dyspepsia
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </form>
+          </td>
+          <td class="left">
+            <span *ngIf="!editAPPM0">Chronic</span>
+            <div *ngIf="editAPPM0" class="styledSelect">
+              <select class="styledSelect__select">
+                <option>None</option>
+                <option>Chronic</option>
+              </select>
+            </div>
+          </td>
+          <td class="noPad">
+            <!--TODO: Show help button if diagnosis was formerly assigned-->
+            <div class="tool__anchor flex justifyEnd">
+              <button class="button button--icon button--icon--small"
+              (click)="tooltipAPPM2=!tooltipAPPM2">
+                <i class="ss-help"></i>
+              </button>
+              <div class="tool__tip tool__tip--right" [ngClass]="{ 'isOpen' : tooltipAPPM2 }">
+                <div class="tool__text">
+                  Go to the patient profile to edit or remove previously added diagnoses.
+                </div>
+              </div>
+            </div>
+            <!--TODO: Show edit and delete buttons if the diagnosis was added after opening this modal-->
+            <!--
+            <div *ngIf="!editAPPM0" class="flex">
+              <button class="button button--icon button--icon--small"
+              (click)="editAPPM0=!editAPPM0">
+                <i class="ss-write"></i>
+              </button>
+              <button class="button button--icon button--icon--small">
+                <i class="ss-delete"></i>
+              </button>
+            </div>
+            <div *ngIf="editAPPM0" class="flex">
+              <button class="button button--icon button--icon--small"
+              (click)="editAPPM0=!editAPPM0">
+                <i class="ss-undo"></i>
+              </button>
+              <button class="button button--icon button--icon--small"
+              (click)="editAPPM0=!editAPPM0">
+                <i class="ss-floppydisk"></i>
+              </button>
+            </div>
+            -->
+          </td>
+        </tr>
+        <tr>
+          <td class="left">
+            <span *ngIf="!editAPPM1">Heart Disease</span>
+            <form *ngIf="editAPPM1" class="flex">
+              <div class="drop">
+                <input type="text" class="input input--search fullWidth" placeholder="Search Diagnoses" (click)="dropAPPM4Open=!dropAPPM4Open"/>
+                <ul class="drop__dropdown fullWidth" [ngClass]="{ 'isOpen' : dropAPPM4Open }" (click)="dropAPPM4Open=!dropAPPM4Open">
+                  <li class="drop__option">
+                    <a class="drop__link">
+                      Common Cold
+                    </a>
+                    <a class="drop__link">
+                      Dyspepsia
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </form>
+          </td>
+          <td class="left">
+            <span *ngIf="!editAPPM1"></span>
+            <div *ngIf="editAPPM1" class="styledSelect styledSelect--120">
+              <select class="styledSelect__select">
+                <option>None</option>
+                <option>Chronic</option>
+              </select>
+            </div>
+          </td>
+          <td class="noPad">
+            <!--TODO: Show help button if diagnosis was formerly assigned-->
+            <div *ngIf="" class="tool__anchor flex justifyEnd">
+              <button class="button button--icon button--icon--small"
+              (click)="tooltipAPPM2=!tooltipAPPM2">
+                <i class="ss-help"></i>
+              </button>
+              <div class="tool__tip tool__tip--right" [ngClass]="{ 'isOpen' : tooltipAPPM2 }">
+                <div class="tool__text">
+                  Go to the patient profile to edit or remove previously added diagnoses.
+                </div>
+              </div>
+            </div>
+            <!--TODO: Show edit and delete buttons if the diagnosis was added after opening this modal-->
+            <div *ngIf="!editAPPM1" class="flex">
+              <button class="button button--icon button--icon--small"
+              (click)="editAPPM1=!editAPPM1">
+                <i class="ss-write"></i>
+              </button>
+              <button class="button button--icon button--icon--small">
+                <i class="ss-delete"></i>
+              </button>
+            </div>
+            <div *ngIf="editAPPM1" class="flex">
+              <button class="button button--icon button--icon--small"
+              (click)="editAPPM1=!editAPPM1">
+                <i class="ss-undo"></i>
+              </button>
+              <button class="button button--icon button--icon--small"
+              (click)="editAPPM1=!editAPPM1">
+                <i class="ss-floppydisk"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <button *ngIf="!createDiagnosis" class="button button--iconText"
+  (click)="createDiagnosis=!createDiagnosis">
+    <i class="ss-plus"></i> Add Diagnosis
+  </button>
+  <form *ngIf="createDiagnosis" class="flex">
+    <div class="drop">
+      <input type="text" class="input input--search" placeholder="Search Diagnoses" (click)="dropAPPM3Open=!dropAPPM3Open"/>
+      <ul class="drop__dropdown fullWidth" [ngClass]="{ 'isOpen' : dropAPPM3Open }" (click)="dropAPPM3Open=!dropAPPM3Open">
+        <li class="drop__option">
+          <a class="drop__link">
+            Common Cold
+          </a>
+          <a class="drop__link">
+            Dyspepsia
+          </a>
+        </li>
+      </ul>
+    </div>
+    <div class="flex">
+      <button class="button button--icon button--icon--small"
+      (click)="createDiagnosis=!createDiagnosis">
+        <i class="ss-undo"></i>
+      </button>
+      <button class="button button--icon button--icon--small"
+      (click)="createDiagnosis=!createDiagnosis">
+        <i class="ss-plus"></i>
+      </button>
+    </div>
+  </form>
+  <div class="divider"></div>
+</div> <!--/ section for diagnoses-->
+
+<!--TODO: Hide BP section if "payer reimburses" is not checked-->
+<!--TODO: Disable BP input until care plan is selected-->
+<div>
+  <label>Billing Practitioner</label>
+  <div class="drop">
+    <input type="text" class="input input--search fullWidth marBottom32" placeholder="Search Providers" (click)="dropAPPM1Open=!dropAPPM1Open"/>
+    <ul class="drop__dropdown fullWidth" [ngClass]="{ 'isOpen' : dropAPPM1Open }" (click)="dropAPPM1Open=!dropAPPM1Open">
+      <li class="drop__option">
+        <a class="drop__link">
+          <div class="picName">
+            <img class="picName__img" src="../../../assets/img/profile.svg" />Adam Smith, PhD
+          </div>
+        </a>
+        <a class="drop__link">
+          <div class="picName">
+            <img class="picName__img" src="../../../assets/img/profile.svg" />Joshua Eller, MD
+          </div>
+        </a>
+      </li>
+    </ul>
+  </div>
+  <label>Care Plan Role (opt)</label>
+  <div class="styledSelect">
+    <select class="styledSelect__select">
+      <option>None</option>
+      <option>Care Manager</option>
+      <option>Primary Care Provider</option>
+      <option>Specialist</option>
+    </select>
+  </div>
+  <div class="divider"></div>
+</div> <!--/ section for BP-->
+
+<!--TODO: Hide CM section if BP role is CM-->
+<!--TODO: Disable CM input until care plan is selected-->
+<div>
+  <label>Care Manager</label>
+  <div class="drop">
+    <input type="text" class="input input--search fullWidth marBottom32" placeholder="Search Providers" (click)="dropAPPM2Open=!dropAPPM2Open"/>
+    <ul class="drop__dropdown fullWidth" [ngClass]="{ 'isOpen' : dropAPPM2Open }" (click)="dropAPPM2Open=!dropAPPM2Open">
+      <li class="drop__option">
+        <a class="drop__link">
+          <div class="picName">
+            <img class="picName__img" src="../../../assets/img/profile.svg" />Adam Smith, PhD
+          </div>
+        </a>
+        <a class="drop__link">
+          <div class="picName">
+            <img class="picName__img" src="../../../assets/img/profile.svg" />Joshua Eller, MD
+          </div>
+        </a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="modal__buttons">
+  <button class="button button--2nd">
+    Cancel
+  </button>
+  <button class="button">
+    Save
+  </button>
+</div>

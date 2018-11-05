@@ -1,0 +1,153 @@
+<h1 class="modal__title">
+  <!--TODO: If creating a stream, show the following-->
+  <!--<span>Create</span>-->
+  <!--TODO: If editing a stream, show the following-->
+  <span>Edit</span>
+  Message Stream
+</h1>
+
+<!--TODO: If on a care plan template, show the following-->
+<div class="marCenter marCenter--twoThirds">
+  <div class="iconText iconText--wrap iconText--autoHeight error marBottom32">
+    <i class="iconText__icon ss-alert"></i>
+    <span class="error__text">
+      Making changes here will affect X patients currently assigned to this care plan.
+    </span>
+  </div>
+</div>
+<!--TODO: If on a care plan instance, show the following-->
+<h5 *ngIf="" class="center">NOTE: You are working on one patient's care plan. To do this for everyone, go to care plans.</h5>
+
+<div class="flex justifySpaceBetween marBottom32">
+  <div class="modal__inputWrap marRight32">
+    <label class="label48">Message Stream Name</label>
+    <input type="text" class="input fullWidth" />
+  </div>
+  <div class="">
+    <div class="tool">
+      <label class="noMargin">Message Stream Type</label>
+      <div class="tool__anchor">
+        <button class="button button--icon button--icon--small"
+        (click)="tooltipCMS0Open=!tooltipCMS0Open">
+          <i class="ss-help"></i>
+        </button>
+        <div class="tool__tip tool__tip--right tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipCMS0Open }">
+          <div class="tool__text">
+            Message Streams can be for patient education, support or give help with medications.
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="styledSelect">
+      <select class="styledSelect__select">
+        <option>Education</option>
+        <option>Support</option>
+      </select>
+    </div>
+  </div>
+</div> <!--/.flex (for name and type)-->
+
+<div class="tool">
+  Messages
+  <div class="tool__anchor">
+    <button class="button button--icon button--icon--small"
+    (click)="tooltipCMS1Open=!tooltipCMS1Open">
+      <i class="ss-help"></i>
+    </button>
+    <div class="tool__tip tool__tip--left" [ngClass]="{ 'isOpen' : tooltipCMS1Open }">
+      <div class="tool__text">
+        Messages are intended to be quick thoughts that can be given to patients. The goal is to keep them short and sweet.
+      </div>
+    </div>
+  </div>
+</div>
+<div class="stream__row">
+  <textarea class="input input--textarea stream__textarea">Depression is both a brain disorder and a state of mind. The brain is unique—it is the only organ whose function we consciously experience because the brain is the organ of the mind.</textarea>
+  <button class="button button--icon button--icon--small"
+  (click)="deleteM0=!deleteM0">
+    <i class="ss-delete"></i>
+  </button>
+  <div *ngIf="deleteM0" class="problem__confirm problem__confirm--stream">
+    <p class="problem__question">
+      Are you sure you want to delete this message?<br />
+      This cannot be undone.
+    </p>
+    <div class="flex justifyEnd">
+      <button class="button marRight32" (click)="deleteM0=!deleteM0">
+        Cancel
+      </button>
+      <button class="button button--2nd">
+        Confirm
+      </button>
+    </div>
+  </div> <!--/.problem__confirm-->
+</div> <!--/.stream__row-->
+<div class="stream__row">
+  <textarea class="input input--textarea stream__textarea">Depression is worst at night.</textarea>
+  <button class="button button--icon button--icon--small"
+  (click)="deleteM1=!deleteM1">
+    <i class="ss-delete"></i>
+  </button>
+  <div *ngIf="deleteM1" class="problem__confirm problem__confirm--stream">
+    <p class="problem__question">
+      Are you sure you want to delete this message?<br />
+      This cannot be undone.
+    </p>
+    <div class="flex justifyEnd">
+      <button class="button marRight32" (click)="deleteM1=!deleteM1">
+        Cancel
+      </button>
+      <button class="button button--2nd">
+        Confirm
+      </button>
+    </div>
+  </div> <!--/.problem__confirm-->
+</div> <!--/.stream__row-->
+<div class="stream__row marBottom8">
+  <textarea class="input input--textarea stream__textarea">Depression will affect 1 in 4 adults in their lifetime it accounts for 99% of all mind-brain illness.</textarea>
+  <button class="button button--icon button--icon--small"
+  (click)="deleteM2=!deleteM2">
+    <i class="ss-delete"></i>
+  </button>
+  <div *ngIf="deleteM2" class="problem__confirm problem__confirm--stream">
+    <p class="problem__question">
+      Are you sure you want to delete this message?<br />
+      This cannot be undone.
+    </p>
+    <div class="flex justifyEnd">
+      <button class="button marRight32" (click)="deleteM2=!deleteM2">
+        Cancel
+      </button>
+      <button class="button button--2nd">
+        Confirm
+      </button>
+    </div>
+  </div> <!--/.problem__confirm-->
+</div> <!--/.stream__row-->
+
+<button *ngIf="!showAddMessageForm" class="button button--iconText"
+(click)="showAddMessageForm=!showAddMessageForm">
+  <i class="ss-plus"></i> Add Message
+</button>
+<div *ngIf="showAddMessageForm" class="flex">
+  <div class="modal__inputWrap">
+    <textarea class="input input--textarea"></textarea>
+  </div>
+  <button class="button button--icon button--icon--small"
+  (click)="showAddMessageForm=!showAddMessageForm">
+    <i class="ss-undo"></i>
+  </button>
+  <button class="button button--icon button--icon--small"
+  (click)="showAddMessageForm=!showAddMessageForm">
+    <i class="ss-floppydisk"></i>
+  </button>
+</div>
+
+<div class="modal__buttons">
+  <button class="button button--2nd">
+    Cancel
+  </button>
+  <button class="button">
+    Save
+  </button>
+</div>

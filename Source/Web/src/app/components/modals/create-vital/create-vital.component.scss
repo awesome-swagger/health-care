@@ -1,0 +1,50 @@
+@import '../../../modules/modals/modal-outlet.component.scss';
+
+.vitalGridWrap { margin-bottom: rem-calc(8); }
+
+.vitalGrid {
+  @include grid;
+  @include gridCols(2fr 1fr 104px 48px);
+
+  // style all rows (except header) to look like a table
+  &--row {
+    background: rgba($green, .25);
+
+    // because the first child is the header row, which has no bg color
+    &:nth-child(odd) { background: rgba($green, .1); }
+  }
+
+  &__cell {
+    padding: rem-calc(8);
+
+    &--noPadTop {
+      padding-top: 0;
+      padding-bottom: 0;
+    }
+
+    &--noPadSide {
+      padding-left: 0;
+      padding-right: 0;
+    }
+  }
+}
+
+.vital {
+
+  &__selectNumber {
+    width: 50%;
+    margin-right: rem-calc(8);
+  }
+
+  &__inputUnits {
+    width: calc(50% - #{rem-calc(8)});
+  }
+
+  &__insetRow {
+    display: flex;
+    padding-left: rem-calc(48);
+  }
+
+  &__metricWrap { flex: 0 0 rem-calc(192); }
+  &__operatorWrap { flex: 0 0 auto; }
+}

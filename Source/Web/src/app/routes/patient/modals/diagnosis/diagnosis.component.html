@@ -1,0 +1,139 @@
+<h1 class="modal__title">
+  <!--TODO: If adding diagnosis, show the following span-->
+  <!---->
+  <span>Add</span>
+  <!---->
+  <!--TODO: If editing diagnosis, show the following span-->
+  <!--
+  <span>Edit</span>
+  -->
+  Diagnosis
+</h1>
+
+<!--TODO: If adding diagnosis, show the following div-->
+<!---->
+<div>
+  <label>Diagnosis</label>
+  <div class="drop marBottom32">
+    <input class="input input--search fullWidth" type="text" (click)="dropADOpen = !dropADOpen" placeholder="Search by name or DX Code" />
+    <ul class="drop__dropdown fullWidth" [ngClass]="{ 'isOpen' : dropADOpen }" (click)="dropADOpen = !dropADOpen">
+      <li class="drop__option">
+        <a class="drop__link">Anxiety (1234567)</a>
+      </li>
+      <li class="drop__option">
+        <a class="drop__link">Bipolar (1234568)</a>
+      </li>
+      <li class="drop__option">
+        <a class="drop__link">Depression (1234569)</a>
+      </li>
+    </ul>
+  </div>
+</div>
+<!---->
+
+<div class="flex marBottom32">
+  <!--TODO: If editing diagnosis, show following div-->
+  <!--
+  <div class="marRight48">
+    <label class="label48">Diagnosis (DX Code)</label>
+    <p class="height48 flex alignCenter noMargin">Depression (1234569)</p>
+  </div>
+  -->
+  <div class="marRight48">
+    <div class="tool">
+      <label class="noMargin">Condition Type</label>
+      <div class="tool__anchor">
+        <button class="button button--icon button--icon--small"
+        (click)="toolADOpen=!toolADOpen">
+          <i class="ss-help"></i>
+        </button>
+        <div class="tool__tip tool__tip--left tool__tip--bottom" [ngClass]="{ 'isOpen' : toolADOpen }">
+          <div class="tool__text tool__text--small">
+            Patients must be diagnosed with 2 or more chronic conditions to qualify for CCM or CCCM plans.
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="styledInput">
+      <input type="checkbox" class="styledInput__input" />
+      <span class="styledInput__box"></span> Chronic Condition
+    </label>
+  </div>
+  <!--TODO: If adding diagnosis, show the following div-->
+  <!---->
+  <div>
+    <div class="tool">
+      <label class="noMargin">Recency</label>
+      <div class="tool__anchor">
+        <button class="button button--icon button--icon--small"
+        (click)="toolAD1Open=!toolAD1Open">
+          <i class="ss-help"></i>
+        </button>
+        <div class="tool__tip tool__tip--right tool__tip--bottom" [ngClass]="{ 'isOpen' : toolAD1Open }">
+          <div class="tool__text">
+            Leave unchecked if you recently diagnosed the patient with this condition yourself. If the diagnosis was made in the past or by another practitioner, check this box to enter date, diagnosing practitioner, and facility.
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="styledInput">
+      <input type="checkbox" class="styledInput__input"
+      (change)="editDiagnosisInfo=!editDiagnosisInfo" />
+      <span class="styledInput__box"></span> Previously Diagnosed
+    </label>
+  </div>
+  <!---->
+</div>
+
+<!--TODO: If editing diagnosis, show following div-->
+<!--
+<div>
+  <div *ngIf="!editDiagnosisInfo" class="info info--horiz">
+    <button class="info__edit button button--icon button--icon--small"
+    (click)="editDiagnosisInfo=!editDiagnosisInfo">
+      <i class="ss-write"></i>
+    </button>
+    <div class="info__cell info__cell--left">
+      <label>Diagnosed By</label>
+      Nathaniel Robinson, MD
+    </div>
+    <div class="info__cell info__cell--left">
+      <label>Date</label>
+      May 30, 2015
+    </div>
+    <div class="info__cell info__cell--left">
+      <label>Facility</label>
+      Ogden Clinic
+    </div>
+  </div>
+</div>
+-->
+
+<form *ngIf="editDiagnosisInfo">
+  <div class="flex justifySpaceBetween marBottom32">
+    <div class="modal__inputWrap marRight32">
+      <label>Diagnosed By</label>
+      <input type="text" class="input fullWidth" />
+    </div>
+    <div class="modal__inputWrap0">
+      <label>Date</label>
+      <div class="datepicker">
+        <div class="datepicker__date" (click)="showADDate=!showADDate">
+          Select Date
+        </div>
+        <app-date-picker class="datepicker__picker datepicker__picker--right" [ngClass]="{ 'isOpen' : showADDate }"></app-date-picker>
+      </div>
+    </div>
+  </div>
+  <label>Facility</label>
+  <input type="text" class="input fullWidth marBottom16" />
+</form>
+
+<div class="modal__buttons">
+  <button class="button button--2nd">
+    Cancel
+  </button>
+  <button class="button">
+    Save
+  </button>
+</div>

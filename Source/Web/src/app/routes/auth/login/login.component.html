@@ -1,0 +1,75 @@
+<div class="loginBg">
+  <div class="login">
+    <img src="../../assets/img/logo-color.svg" alt="">
+    <!-- Enter username and password -->
+    <div *ngIf="!resetState && !selectOrgState">
+      <form (submit)="login()">
+        <h2 class="login__title">Login</h2>
+        <!-- TODO: Show if coming from password reset -->
+        <!-- <h5>
+          Password reset successful!<br />
+          Log in with your new password.
+        </h5> -->
+        <input class="input login__input" type="email" name="username" [(ngModel)]="username" placeholder="Email Address">
+        <input class="input login__input" type="password" name="password" [(ngModel)]="password" placeholder="Password">
+        <p class="error" *ngIf="error">
+          Incorrect password. Please try again.
+        </p>
+        <button class="button login__button" type="submit" [disabled]="!username || !password">
+          Login
+        </button>
+      </form>
+      <!--Moved this button out of the form, because Edge was interpreting it as submitting the form-->
+      <button class="button button--iconText login__button--iconText" (click)="resetState = !resetState">
+        <i class="ss-help"></i> Forgot Password
+      </button>
+    </div>
+    <!-- Select organization -->
+    <form class="login__form" (submit)="selectOrganization()" *ngIf="!resetState && selectOrgState">
+      <h2 class="login__title">Login</h2>
+      <strong>{{user.email}}</strong>
+      <p>Select an organization</p>
+      <div class="styledSelect marBottom32">
+        <select class="styledSelect__select" [(ngModel)]="selectedOrganization" name="selectedOrganization">
+          <option *ngFor="let org of organizations" [ngValue]="org">{{org.name}}</option>
+        </select>
+      </div>
+      <button class="button login__button" [disabled]="!selectOrganization" type="submit">Next</button>
+      <button class="button button--iconText login__button--iconText" type="button" (click)="switchUser()">
+        <i class="ss-standard ss-navigateleft"></i> Switch User
+      </button>
+    </form>
+    <!-- Reset password -->
+    <form class="login__form" (submit)="resetPassword()" *ngIf="resetState && !selectOrgState">
+      <h2 class="login__title">Forgot Password</h2>
+      <h5>Enter your email, and we’ll send you a link to reset your password.</h5>
+      <input class="input login__input" type="email" name="username" placeholder="Email" [(ngModel)]="username">
+      <button type="submit" [disabled]="!username" class="button login__button">
+        Send Link
+      </button>
+      <button class="button button--iconText login__button--iconText" type="submit">
+        <i class="ss-standard ss-navigateleft"></i> Remember Password
+      </button>
+    </form>
+    <!-- Email Sent (to reset password) -->
+    <!--TODO: Set up state for this section-->
+    <div *ngIf="">
+      <p class="login__firstp">
+        We just sent a link to
+      </p>
+      <h4 class="login__email">montgomery.alexander@gmail.com</h4>
+      <p class="marBottom32">
+        that will allow you to reset your&nbsp;password.
+      </p>
+      <h5>(If you don't see it, check<br />
+        your spam folder!)</h5>
+      <div class="divider divider--dk"></div>
+      <p class="noMargin">
+        Not seeing that email?
+      </p>
+      <button type="button" class="button button--iconText login__button--iconText login__button--iconText--smallTop">
+        <i class="ss-standard ss-navigateleft"></i> Try Again
+      </button>
+    </div>
+  </div>
+</div> <!--/.loginBg-->

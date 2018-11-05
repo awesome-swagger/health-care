@@ -1,0 +1,144 @@
+<div class="ssContainer ssContents">
+  <div class="flexHeader">
+    <h1 class="noMargin">Invite Users</h1>
+    <div class="tool">
+      <label class="labelLeft">Current Users</label>
+      45 / 50
+      <div class="tool__anchor">
+        <button class="button button--icon button--icon--small" (click)="tooltipsOpen['currentUsers']=!tooltipsOpen['currentUsers']"><i class="ss-help"></i></button>
+        <div class="tool__tip" [ngClass]="{ 'isOpen' : tooltipsOpen['currentUsers'] }">
+          <div class="tool__text">
+            Your plan only has 5 available user accounts left. To upgrade now, call 801-555-5555 or email sales@careadopt.com.
+          </div>
+        </div>
+      </div>
+    </div> <!--/.tool-->
+    <div class="flex alignCenter">
+      <label class="styledInput">
+        <input type="file" class="styledInput__input" />
+        <div class="button button--iconText">
+          <i class="ss-upload"></i> Upload CSV
+        </div>
+      </label>
+      <div class="tool">
+        <div class="tool__anchor">
+          <button class="button button--icon button--icon--small" (click)="tooltipsOpen['csvHelp']=!tooltipsOpen['csvHelp']"><i class="ss-help"></i></button>
+          <div class="tool__tip tool__tip--right" [ngClass]="{ 'isOpen' : tooltipsOpen['csvHelp'] }">
+            <div class="tool__text">
+              You can upload a .csv file with the following column headers: User, Title, and Email. You’ll input the other information once the .csv has been uploaded.
+            </div>
+          </div>
+        </div>
+      </div> <!--/.tool-->
+    </div>
+  </div> <!--/.flexHeader (for title, etc.)-->
+
+  <table class="fullWidth" *ngIf="usersToInivite.length > 0">
+    <thead>
+      <tr>
+        <th class="left thSortable thSortable--sortDown">
+          <span class="thSortable__text">User</span>
+        </th>
+        <th class="left thSortable">
+          <span class="thSortable__text">Title</span>
+        </th>
+        <th class="left thSortable">
+          <span class="thSortable__text">Specialty</span>
+        </th>
+        <th class="left thSortable">
+          <span class="thSortable__text">Email</span>
+        </th>
+        <th class="left thSortable">
+          <span class="thSortable__text">Phone (opt)</span>
+        </th>
+        <th class="left thSortable">
+          <span class="thSortable__text">NPI (opt)</span>
+        </th>
+        <th class="left thSortable">
+          <span class="thSortable__text">Employer</span>
+        </th>
+        <th></th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="left">
+          Shirley Alphin
+        </td>
+        <td class="left hideOverflow">
+          Care Manager
+        </td>
+        <td class="left hideOverflow">
+          Care Management
+        </td>
+        <td class="left hideOverflow">
+          shirley.alphin@careadopt.com
+        </td>
+        <td class="left noWrap">
+          (801) 555-5798
+        </td>
+        <td class="left">
+          4862013611
+        </td>
+        <td class="left hideOverflow">
+          CareAdopt
+        </td>
+        <td class="noPad">
+          <button class="button button--icon button--icon--small" (click)="openEditUser()">
+            <i class="ss-write"></i>
+          </button>
+        </td>
+        <td class="noPad">
+          <button class="button button--icon button--icon--small"
+          (click)=confirmDelete()>
+            <i class="ss-delete"></i>
+          </button>
+        </td>
+      </tr>
+      <tr>
+        <td class="left">
+          Robert Jones
+        </td>
+        <td class="left hideOverflow">
+          CRNA
+        </td>
+        <td class="left hideOverflow">
+          Family Nursing
+        </td>
+        <td class="left hideOverflow">
+          rdj@yahoo.com
+        </td>
+        <td class="left noWrap">
+          (801) 555-5555
+        </td>
+        <td class="left">
+        </td>
+        <td class="left hideOverflow">
+          Ogden Clinic
+        </td>
+        <td class="noPad">
+          <button class="button button--icon button--icon--small">
+            <i class="ss-write"></i>
+          </button>
+        </td>
+        <td class="noPad">
+          <button class="button button--icon button--icon--small">
+            <i class="ss-delete"></i>
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <button class="button button--iconText marBottom64"
+    (click)="openAddUser()">
+      <i class="ss-plus"></i> Add User to Invite
+  </button>
+
+  <h2>Customize Message</h2>
+  <textarea class="input input--textarea marBottom32">Join us on CareAdopt! CareAdopt empowers patients to adopt care after discharge and in between visits improving care coordination and engagement, decreasing costs, and providing better outcomes. Click the link below to create your profile.</textarea>
+  <button class="button button--right">
+    Send Invitations
+  </button>
+</div> <!--/.ssContainer-->

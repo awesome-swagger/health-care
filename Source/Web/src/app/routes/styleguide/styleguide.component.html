@@ -1,0 +1,596 @@
+<div class="home">
+  <div class="ssContainer">
+
+    <app-time-picker></app-time-picker>
+
+    <h2>Links</h2>
+    <ul>
+      <li><a [routerLink]="['/dashboard']">Dashboard</a></li>
+      <li><a [routerLink]="['/billing']">Billing</a></li>
+      <li><a [routerLink]="['/facility']">Facility</a></li>
+      <li><a [routerLink]="['/invite']">Invite Users</a></li>
+      <li><a [routerLink]="['/organization']">Organization</a></li>
+      <li><a [routerLink]="['/patient/asdf/']">Patient</a></li>
+      <li><a [routerLink]="['/patient/asdf/dashboard']">Patient Dashboard</a></li>
+      <li><a [routerLink]="['/patient/asdf/details']">Patient Details</a></li>
+      <li><a [routerLink]="['/patient/asdf/history']">Patient History</a></li>
+      <li><a [routerLink]="['/patient/asdf/messaging']">Patient Messaging</a></li>
+      <li><a [routerLink]="['/patient/asdf/overview']">Patient Overview</a></li>
+      <li><a [routerLink]="['/patient/asdf/team']">Patient Care Team</a></li>
+      <li><a [routerLink]="['/patients/active']">Active Patients</a></li>
+      <li><a [routerLink]="['/patients/invited']">Invited Patients</a></li>
+      <li><a [routerLink]="['/patients/potential']">Potential Patients</a></li>
+      <li><a [routerLink]="['/patients/inactive']">Inactive Patients</a></li>
+      <li><a [routerLink]="['/plans']">Care Plans</a></li>
+      <li><a [routerLink]="['/plan/asdf/info']">Care Plan Info</a></li>
+      <li><a [routerLink]="['/plan/asdf/schedule']">Care Plan Schedule</a></li>
+      <li><a [routerLink]="['/users']">Users List</a></li>
+      <li><a [routerLink]="['/user/asdf']">User Detail</a></li>
+      <li><a [routerLink]="['/create-account']">Create Account</a></li>
+      <li><a [routerLink]="['/reset-password']">Reset Password</a></li>
+      <li><a [routerLink]="['/verify-email']">Verify Email</a></li>
+    </ul>
+
+    <div class="divider"></div>
+
+    <h2>Selected Modals</h2>
+    <ul>
+      <li>
+        <button class="button button--iconText"
+        (click)="editTask()">
+          <i class="ss-write"></i> Edit Task
+        </button>
+      </li>
+      <li>
+        <button class="button button--iconText"
+        (click)="previewVital()">
+          <i class="ss-standard ss-view"></i> Preview Vital
+        </button>
+      </li>
+      <li>
+        <button class="button button--iconText"
+        (click)="createVital()">
+          <i class="ss-plus"></i> Create Vital
+        </button>
+      </li>
+      <li>
+        <button class="button button--iconText" (click)="createAssessment()">
+          <i class="ss-plus"></i> Create Assessment
+        </button>
+      </li>
+      <li>
+        <button class="button button--iconText" (click)="createStream()">
+          <i class="ss-plus"></i> Create Message Stream
+        </button>
+      </li>
+      <li>
+        <button class="button button--iconText" (click)="enrollmentRequired()">
+          <i class="ss-alert"></i> Enrollment Required
+        </button>
+      </li>
+      <li>
+        <button class="button button--iconText" (click)="patientEnrolled()">
+          <i class="ss-battery"></i> Patient Enrolled
+        </button>
+      </li>
+      <li>
+        <button class="button button--iconText" (click)="planExpired()">
+          <i class="ss-ghost"></i> Plan Expired
+        </button>
+      </li>
+      <li>
+        <button class="button button--iconText" (click)="planLimitReached()">
+          <i class="ss-bomb"></i> Plan Limit Reached
+        </button>
+      </li>
+    </ul>
+
+    <div class="divider"></div>
+
+    <p *ngIf="(user | async)?.id">Logged in as {{ (user | async).email }}</p>
+
+    <button class="button" (click)="openConfirm()">Open Modal</button>
+
+    <div class="divider"></div>
+
+    <input class="input" type="text" placeholder="Text field" />
+
+    <div class="divider"></div>
+
+    <div class="dashBg">
+      <app-date-range [datePickerOverrides]="datepickerOptions"></app-date-range>
+    </div>
+
+    <div class="datepicker">
+      <div class="datepicker__date" (click)="showDate=!showDate">
+        Select Date
+      </div>
+      <app-date-picker class="datepicker__picker" [ngClass]="{ 'isOpen' : showDate }"></app-date-picker>
+    </div>
+
+    <div class="monthpicker">
+      <button class="button button--icon">
+        <i class="ss-standard ss-navigateleft"></i>
+      </button>
+      <h2 class="monthpicker__text">March 2018</h2>
+      <button class="button button--icon">
+        <i class="ss-standard ss-navigateright"></i>
+      </button>
+    </div>
+
+    <div class="divider"></div>
+
+    <h1>h1</h1>
+    <h2>h2</h2>
+    <h3>h3</h3>
+    <h4>h4</h4>
+    <h5>h5</h5>
+    <h6>h6</h6>
+    <label>label</label>
+    <p>
+      Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
+    </p>
+
+    <div class="divider"></div>
+
+    <div class="ssSpinner"></div>
+
+    <div class="divider"></div>
+    <button class="button" style="margin-bottom: 16px;">Primary</button>
+    <button class="button button--2nd">Secondary</button>
+    <button class="button button--iconText"><i class="ss-plus"></i> Add Metric</button>
+    <button class="button button--icon"><i class="ss-delete"></i></button>
+    <button class="button button--icon button--icon--small"><i class="ss-help"></i></button>
+    <button class="button button--dis" style="margin-bottom: 16px;">Primary</button>
+    <button class="button button--2nd button--2nd--dis">Secondary</button>
+    <button class="button button--iconText button--iconText--dis"><i class="ss-plus"></i> Add Metric</button>
+    <button class="button button--icon button--icon--dis"><i class="ss-delete"></i></button>
+    <button class="button button--icon  button--icon--dis button--icon--small"><i class="ss-help"></i></button>
+
+    <div class="divider"></div>
+
+    <label class="styledInput">
+      <input type="checkbox" class="styledInput__input" />
+      <span class="styledInput__box"></span>
+      Check here
+    </label>
+    <label class="styledInput">
+      <input type="checkbox" class="styledInput__input" />
+      <span class="styledInput__box"></span>
+      Now check here
+    </label>
+
+    <div class="divider"></div>
+
+    <label class="styledInput">
+      <input type="radio" class="styledInput__input" name="radioTest"/>
+      <span class="styledInput__radio"></span>
+      First
+    </label>
+    <label class="styledInput">
+      <input type="radio" class="styledInput__input" name="radioTest"/>
+      <span class="styledInput__radio"></span>
+      Second
+    </label>
+
+    <div class="divider"></div>
+
+    <label class="styledInput">
+      <input type="file" class="styledInput__input" />
+      <div class="button button--iconText">
+        <i class="ss-upload"></i> Upload File
+      </div>
+    </label>
+
+    <div class="divider"></div>
+
+    <div class="styledSelect" style="margin-bottom: 16px;">
+      <select class="styledSelect__select">
+        <option>Standard select</option>
+        <option>First option</option>
+        <option>Second option</option>
+        <option>Third really really really long option of all optional options</option>
+        <option>888</option>
+      </select>
+    </div>
+
+    <div class="drop" style="margin-bottom: 16px;">
+      <input class="input input--search" type="text" (click)="dropOpen = !dropOpen" placeholder="Search" />
+      <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : dropOpen }" (click)="dropOpen = !dropOpen">
+        <label class="drop__label">Recent Patients</label>
+        <li class="drop__option">
+          <a class="drop__link">
+            <div class="picName">
+              <img class="picName__img" src="../../../assets/img/profile.svg" />Adam Hancock
+            </div>
+          </a>
+        </li>
+        <li class="drop__option">
+          <a class="drop__link drop__link--dis">
+            <div class="picName">
+              <img class="picName__img" src="../../../assets/img/profile.svg" />Hank Granowski
+            </div>
+            <i class="drop__icon ss-filecabinet"></i>
+          </a>
+        </li>
+        <li class="drop__option">
+          <a class="drop__link">
+            <div class="picName">
+              <img class="picName__img" src="../../../assets/img/profile.svg" />Samantha Hancock
+            </div>
+          </a>
+        </li>
+
+        <label class="drop__label">Unread Messages</label>
+        <li class="drop__option">
+          <a class="drop__link drop__link--complex">
+            <h6 class="drop__date">2 days ago</h6>
+            <div class="picName">
+              <img class="picName__img" src="../../../assets/img/profile.svg" />Samantha Hancock(2)
+            </div>
+            <p class="drop__text">
+              What are we going to do about this goiter?
+            </p>
+          </a>
+        </li>
+
+        <label class="drop__label">Assignments</label>
+        <li class="drop__option">
+          <a class="drop__link drop__link--complex">
+            <h6 class="drop__date">4 days ago</h6>
+            <p class="drop__text">
+              You were removed/assigned as ROLE for
+            </p>
+            <div class="picName">
+              <img class="picName__img" src="../../../assets/img/profile.svg" />Samantha Hancock
+            </div>
+          </a>
+        </li>
+
+        <label class="drop__label">Other Links</label>
+        <li class="drop__option">
+          <a class="drop__link">Going Here</a>
+        </li>
+        <li class="drop__option">
+          <a class="drop__link">Going Over There Instead</a>
+        </li>
+        <li class="drop__option">
+          <a class="drop__link">Going Anywhere</a>
+        </li>
+        <li class="drop__option">
+          <a class="drop__link"><i class="drop__icon drop__icon--first ss-heart"></i>Going Anywhere</a>
+        </li>
+        <li class="drop__option">
+          <a class="drop__link">Going Anywhere <i class="drop__icon ss-heart"></i> CCM</a>
+        </li>
+      </ul>
+    </div>
+
+    <div class="drop">
+      <div class="drop__input" (click)="multiOpen = !multiOpen">
+        Multiselect
+      </div>
+      <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : multiOpen }">
+        <div class="drop__buttons">
+          <button class="button button--iconText">
+            <i class="ss-check ss-standard"></i> Check All
+          </button>
+          <button class="button button--iconText">
+            <i class="ss-ban"></i> Uncheck All
+          </button>
+        </div>
+
+        <li class="drop__option">
+          <input class="input input--search drop__innerInput" type="text" placeholder="Search" />
+        </li>
+
+        <li class="drop__option">
+          <label class="drop__checkbox styledInput">
+            <input type="checkbox" class="styledInput__input" />
+            <span class="styledInput__box"></span>
+            <div class="picName">
+              <img class="picName__img" src="../../../assets/img/profile.svg" />Stephanie Wintergreen
+            </div>
+          </label>
+        </li>
+        <li class="drop__option">
+          <label class="drop__checkbox styledInput">
+            <input type="checkbox" class="styledInput__input" />
+            <span class="styledInput__box"></span>
+            Just text, not a person's name
+          </label>
+        </li>
+        <li class="drop__option">
+          <label class="drop__checkbox styledInput">
+            <input type="checkbox" class="styledInput__input" />
+            <span class="styledInput__box"></span>
+            <i class="drop__icon drop__icon--first ss-addheart"></i> Complex Chronic Care
+          </label>
+        </li>
+        <li class="drop__option">
+          <label class="drop__checkbox styledInput">
+            <input type="checkbox" class="styledInput__input" />
+            <span class="styledInput__box"></span>
+            Check here
+          </label>
+        </li>
+      </ul>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="tool">
+      Get some information
+      <div class="tool__anchor">
+        <button class="button button--icon button--icon--small" (click)="tooltip1Open=!tooltip1Open"><i class="ss-info"></i></button>
+        <div class="tool__tip" [ngClass]="{ 'isOpen' : tooltip1Open }">
+          <div class="tool__text">
+            Here's the info that you need. It could be very helpful. Even include a link.
+          </div>
+          <button class="button button--iconText"><i class="ss-door"></i> Log Out</button>
+        </div>
+      </div>
+    </div>
+    <div class="tool">
+      Answer your questions
+      <div class="tool__anchor">
+        <button class="button button--icon button--icon--small" (click)="tooltip2Open=!tooltip2Open"><i class="ss-help"></i></button>
+        <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltip2Open }">
+          <div class="tool__text">
+            Here's the answer down below. Direct, helpful, and to the point.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="pillWrapper">
+      <div class="pill">n/a</div>
+      <div class="pill pill--lime pill--margin">On Track 92%</div>
+      <div class="pill pill--yellow pill--margin">Low Risk 85%</div>
+      <div class="pill pill--red pill--margin">Med Risk 70%</div>
+      <div class="pill pill--purple pill--margin">High Risk 32%</div>
+      <div class="pill pill--blue pill--margin">Open</div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="scale">
+      <div class="scale__hints">
+        <h5 class="noMargin">1 (worst outcome)</h5>
+        <h5 class="noMargin">5 (best outcome)</h5>
+      </div>
+      <div class="scale__numbers">
+        <label class="scale__label">
+          <input type="radio" class="scale__input" name="scale1" />
+          <div class="scale__number">
+            1
+          </div>
+        </label>
+        <label class="scale__label">
+          <input type="radio" class="scale__input" name="scale1" />
+          <div class="scale__number scale__number--2">
+            2
+          </div>
+        </label>
+        <label class="scale__label">
+          <input type="radio" class="scale__input" name="scale1" />
+          <div class="scale__number scale__number--3">
+            3
+          </div>
+        </label>
+        <label class="scale__label">
+          <input type="radio" class="scale__input" name="scale1" />
+          <div class="scale__number scale__number--4">
+            4
+          </div>
+        </label>
+        <label class="scale__label">
+          <input type="radio" class="scale__input" name="scale1" />
+          <div class="scale__number scale__number--5">
+            5
+          </div>
+        </label>
+      </div>
+    </div> <!--/.scale-->
+
+    <div class="divider"></div>
+
+    <div class="accordion" [ngClass]="{ 'isOpen' : accord1Open }">
+      <div class="accordion__head" (click)="accord1Open=!accord1Open">
+        <span class="accordion__title">Mountain Valley (3)</span>
+        <div class="accordion__right">
+          <span>2/4 completed</span>
+          <div class="pill pill--red pill--margin">50%</div>
+          <div class="pill pill--yellow pill--margin">Low Risk 89%</div>
+          <div class="accordion__arrow">
+            <i class="ss-standard ss-navigateright"></i>
+          </div>
+        </div>
+      </div>
+      <div class="accordion__body">
+        <div class="accordion__contents">
+          <div class="tableWrap">
+            <table>
+              <thead>
+                <tr>
+                  <th class="left thSortable thSortable--sortDown thSortable--sortUp">
+                    <span class="thSortable__text">Patient</span>
+                  </th>
+                  <th class="left thSortable">Care Plan</th>
+                  <th class="thSortable">
+                    <div class="tool">
+                      Also
+                      <div class="tool__anchor">
+                        <button class="button button--icon button--icon--small" (click)="tooltip3Open=!tooltip3Open"><i class="ss-info"></i></button>
+                        <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltip3Open }">
+                          <div class="tool__text">This is the number of additional care plans a patient has. Click the number for details.</div>
+                        </div>
+                      </div>
+                    </div>
+                  </th>
+                  <th class="thSortable">Time</th>
+                  <th class="thSortable">Progress</th>
+                  <th class="thSortable">Out.</th>
+                  <th class="thSortable">Eng.</th>
+                  <th class="thSortable">Risk Level</th>
+                  <th class="noPad"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="left hideOverflow">
+                    <a href="" class="picName">
+                      <img class="picName__img" src="../../../assets/img/profile.svg" />
+                      Montgomery Alexander
+                    </a>
+                  </td>
+                  <td class="left hideOverflow">
+                    <div class="iconText">
+                      <i class="iconText__icon ss-addheart"></i> Heart Disease
+                    </div>
+                  </td>
+                  <td>
+                    <a class="tool__anchor justifyCenter" (click)="tooltip4Open=!tooltip4Open">
+                      2
+                        <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltip4Open }">
+                          <div class="iconText iconText--white">
+                            <i class="iconText__icon ss-yarn"></i> Depression
+                          </div>
+                          <div class="iconText iconText--white">
+                            <i class="iconText__icon ss-heart"></i> Heart Diseases and Such
+                          </div>
+                        </div>
+                    </a>
+                  </td>
+                  <td><div class="pill pill--purple">:14</div></td>
+                  <td>Ongoing</td>
+                  <td><div class="pill pill--red">54%</div></td>
+                  <td><div class="pill pill--yellow">73%</div></td>
+                  <td><div class="pill pill--red">Med Risk 65%</div></td>
+                  <td class="noPad"><button class="button button--icon button--icon--small"><i class="ss-delete"></i></button></td>
+                </tr>
+                <tr>
+                  <td class="left hideOverflow">
+                    <a href="" class="picName">
+                      <img class="picName__img" src="../../../assets/img/profile.svg" />
+                      Harold Anderson
+                    </a>
+                  </td>
+                  <td class="left hideOverflow">
+                    <div class="iconText">
+                      <i class="iconText__icon ss-yarn"></i> Depression
+                    </div>
+                  </td>
+                  <td>
+                    <a class="tool__anchor justifyCenter" (click)="tooltip5Open=!tooltip5Open">
+                      1
+                        <div class="tool__tip" [ngClass]="{ 'isOpen' : tooltip5Open }">
+                          <div class="iconText iconText--white">
+                            <i class="iconText__icon ss-addheart"></i> Heart Disease
+                          </div>
+                        </div>
+                    </a>
+                  </td>
+                  <td><div class="pill pill--lime">1:01</div></td>
+                  <td>
+                    <div class="progress">
+                      Week 8 of 12
+                      <div class="progress__bg">
+                        <div class="progress__bar"></div>
+                      </div>
+                    </div>
+                  </td>
+                  <td><div class="pill pill--lime">91%</div></td>
+                  <td><div class="pill pill--yellow">77%</div></td>
+                  <td><div class="pill pill--yellow">Low Risk 83%</div></td>
+                  <td class="noPad"><button class="button button--icon button--icon--small"><i class="ss-delete"></i></button></td>
+                </tr>
+                <tr>
+                  <td class="left hideOverflow">
+                    <a href="" class="picName">
+                      <img class="picName__img" src="../../../assets/img/profile.svg" />
+                      Samantha Zollowkowksy
+                    </a>
+                  </td>
+                  <td class="left hideOverflow">
+                    <div class="iconText">
+                      <i class="iconText__icon ss-bbq"></i> Anxiety
+                    </div>
+                  </td>
+                  <td></td>
+                  <td><div class="pill pill--red">:22</div></td>
+                  <td>
+                    <div class="progress">
+                      Week 8 of 12
+                      <div class="progress__bg">
+                        <div class="progress__bar"></div>
+                      </div>
+                    </div>
+                  </td>
+                  <td><div class="pill pill--purple">36%</div></td>
+                  <td><div class="pill pill--red">55%</div></td>
+                  <td><div class="pill pill--purple">High Risk 44%</div></td>
+                  <td class="noPad"><button class="button button--icon button--icon--small"><i class="ss-delete"></i></button></td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div class="paginationWrap">
+              <button class="button button--iconText">
+                <i class="ss-plus"></i> Add Patient
+              </button>
+              <div class="pagination">
+                  <button class="button button--icon button--icon--dis">
+                      <i class="ss-standard ss-skipback"></i>
+                  </button>
+                  <button class="button button--icon button--icon--dis">
+                      <i class="ss-standard ss-directleft"></i>
+                  </button>
+                  <span>235 of 588</span>
+                  <button class="button button--icon">
+                      <i class="ss-standard ss-directright"></i>
+                  </button>
+                  <button class="button button--icon">
+                      <i class="ss-standard ss-skipforward"></i>
+                  </button>
+              </div>
+            </div>
+          </div> <!--/.tableWrap-->
+        </div> <!--/.accordion__contents-->
+      </div> <!--/.accordion__body-->
+    </div> <!--/.accordion-->
+
+    <div class="accordion" [ngClass]="{ 'isOpen' : accord2Open }">
+      <div class="accordion__head" (click)="accord2Open=!accord2Open">
+        <span class="accordion__title">South County Regional (0)</span>
+        <div class="accordion__right">
+          <div class="accordion__arrow">
+            <i class="ss-standard ss-navigateright"></i>
+          </div>
+        </div>
+      </div>
+      <div class="accordion__body">
+        <div class="accordion__contents">
+          <h2 class="center">No patients have been added to this care plan.</h2>
+          <button class="button button--center button--iconText">
+            <i class="ss-standard ss-mail"></i> Invite Patients
+          </button>
+        </div>
+      </div>
+    </div> <!--/.accordion-->
+
+    <div class="divider"></div>
+
+    <div class="iconText iconText--wrap iconText--autoHeight error marBottom32">
+      <i class="iconText__icon ss-alert"></i>
+      <span class="error__text">
+        Making changes here will affect X patients currently assigned to this care plan.
+      </span>
+    </div>
+
+    <div class="divider"></div>
+
+  </div>
+</div>

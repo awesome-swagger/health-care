@@ -1,0 +1,225 @@
+<div class="ssContainer ssContents">
+  <div class="chatWrap">
+
+    <div class="chatHead">
+      <app-patient-header [patient]="patient"></app-patient-header>
+
+       <div class="flexHeader">
+         <div class="flex alignCenter">
+           <div class="marRight32">
+             <label>Filter by Date</label>
+             <div class="datepicker">
+                 <div class="datepicker__date" (click)="showDatePH=!showDatePH">
+                   Select Date
+                 </div>
+                 <!--TODO: This datepicker needs a clear option when a date is selected.-->
+                 <app-date-picker class="datepicker__picker" [ngClass]="{ 'isOpen' : showDatePH }"></app-date-picker>
+               </div>
+           </div>
+           <div>
+             <label>Filter by Action</label>
+             <div class="drop">
+                 <div class="drop__input" (click)="multiOpenPH = !multiOpenPH">
+                   All
+                 </div>
+                 <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : multiOpenPH }">
+                   <div class="drop__buttons">
+                     <button class="button button--iconText">
+                       <i class="ss-check ss-standard"></i> Check All
+                     </button>
+                     <button class="button button--iconText">
+                       <i class="ss-ban"></i> Uncheck All
+                     </button>
+                   </div>
+
+                   <li class="drop__option">
+                     <input class="input input--search drop__innerInput" type="text" placeholder="Search" />
+                   </li>
+
+                   <li class="drop__option">
+                     <label class="drop__checkbox styledInput">
+                       <input type="checkbox" class="styledInput__input" />
+                       <span class="styledInput__box"></span>
+                       Care Plan Task
+                     </label>
+                   </li>
+                   <li class="drop__option">
+                     <label class="drop__checkbox styledInput">
+                       <input type="checkbox" class="styledInput__input" />
+                       <span class="styledInput__box"></span>
+                       Face to Face
+                     </label>
+                   </li>
+                   <li class="drop__option">
+                     <label class="drop__checkbox styledInput">
+                       <input type="checkbox" class="styledInput__input" />
+                       <span class="styledInput__box"></span>
+                       Notes
+                     </label>
+                   </li>
+                   <li class="drop__option">
+                     <label class="drop__checkbox styledInput">
+                       <input type="checkbox" class="styledInput__input" />
+                       <span class="styledInput__box"></span>
+                       Patient Call
+                     </label>
+                   </li>
+                 </ul>
+               </div>
+           </div>
+         </div> <!--/.flex (for filters)-->
+         <button class="button button--iconText"
+         (click)="openRecordResults()">
+           <i class="ss-plus"></i> Record Result
+         </button>
+       </div> <!--/.flexHeader-->
+    </div> <!--/.chatHead-->
+
+    <div class="chat chat--pad">
+      <div class="chat__side">
+        <div class="chat__threads">
+
+          <div class="chat__thread">
+            <div class="flex alignCenter justifySpaceBetween marBottom8">
+              <h5 class="noMargin">
+                Mar 15, 2018&ensp;|&ensp;8:02 AM
+              </h5>
+              <div class="pill">
+                :12
+              </div>
+            </div>
+            <div class="iconText iconText--wrap iconText--autoHeight marBottom8">
+              <i class="iconText__icon ss-chats"></i>
+              Action or Task Name
+            </div>
+            <h5 class="noMargin">
+              Added by Montgomery Alexander, CRNA
+            </h5>
+          </div> <!--/.chat__thread-->
+
+          <div class="chat__thread chat__thread--active">
+            <div class="flex alignCenter justifySpaceBetween marBottom8">
+              <h5 class="noMargin">
+                Mar 15, 2018&ensp;|&ensp;10:45 AM
+              </h5>
+              <div class="pill">
+                :12
+              </div>
+            </div>
+            <div class="iconText iconText--wrap iconText--autoHeight marBottom8">
+              <i class="iconText__icon ss-user"></i>
+              Action or Task Name
+            </div>
+            <h5 class="noMargin">
+              Added by Lori Ramirez, RN
+            </h5>
+          </div> <!--/.chat__thread-->
+
+          <div class="chat__thread">
+            <div class="flex alignCenter justifySpaceBetween marBottom8">
+              <h5 class="noMargin">
+                Mar 15, 2018&ensp;|&ensp;12:17 PM
+              </h5>
+              <div class="pill">
+                :12
+              </div>
+            </div>
+            <div class="iconText iconText--wrap iconText--autoHeight marBottom8">
+              <i class="iconText__icon ss-usergroup"></i>
+              Action or Task Name Could Get really long and what if, I mean what if?
+            </div>
+            <h5 class="noMargin">
+              Added by Montgomery Alexander, CRNA
+            </h5>
+          </div> <!--/.chat__thread-->
+
+          <div class="chat__thread">
+            <div class="flex alignCenter justifySpaceBetween marBottom8">
+              <h5 class="noMargin">
+                Mar 15, 2018&ensp;|&ensp;3:02 PM
+              </h5>
+              <div class="pill">
+                :12
+              </div>
+            </div>
+            <div class="iconText iconText--wrap iconText--autoHeight marBottom8">
+              <i class="iconText__icon ss-chats"></i>
+              Action or Task Name Could Get really long and
+            </div>
+            <h5 class="noMargin">
+              Added by Lori Ramirez, RN
+            </h5>
+          </div> <!--/.chat__thread-->
+
+        </div> <!--/.chat__threads-->
+      </div> <!--/.chat__side-->
+
+      <div class="chat__main">
+        <div class="chat__contents">
+          <div class="chat__innerContents">
+            <div class="historyItem">
+              <div class="historyItem__buttons">
+                <button class="button button--icon button--icon--small"
+                (click)="editResults()">
+                  <i class="ss-write"></i>
+                </button>
+                <!--TODO: Hide the delete button if the item is a care plan task-->
+                <button class="button button--icon button--icon--small"
+                (click)="confirmDelete()">
+                  <i class="ss-delete"></i>
+                </button>
+              </div>
+              <label>
+                <!--TODO: Show label that matches the result-->
+                <span>Care Plan Task</span>
+                <span *ngIf="">Action</span>
+              </label>
+              <h2 class="noMargin">Task or Action Name</h2>
+              <div class="divider divider--smallMargin"></div>
+              <h5>Added by Lori Ramirez, RN&emsp;Mar 15, 2018&ensp;|&ensp;10:45 AM</h5>
+              <h5 class="noMargin">Last edited by Montgomery Alexander, RN&emsp;Jul 3, 2018&ensp;|&ensp;5:18 PM</h5>
+              <div class="divider divider--smallTop"></div>
+
+              <label>Total Time</label>
+              <div class="pill marBottom32">
+                :12
+              </div>
+
+              <!--TODO: Hide the participants section if not a care plan task-->
+              <div class="marBottom32">
+                <label>Participants</label>
+                <ul class="nameList marBottom32">
+                  <li class="nameList__item nameList__item--left nameList__item--pad">
+                    <div class="picName">
+                      <img class="picName__img" src="../../assets/img/profile.svg" />
+                      Montgomery Alexander, CRNA
+                    </div>
+                  </li>
+                  <li class="nameList__item nameList__item--left nameList__item--pad">
+                    <div class="picName">
+                      <img class="picName__img" src="../../assets/img/profile.svg" />
+                      Lori Ramirez, RN
+                    </div>
+                  </li>
+                </ul>
+              </div> <!--/with section-->
+
+              <label>Notes</label>
+              <p class="marBottom32">
+                Any notes recorded will go here. Any notes recorded will go here. Any notes recorded will go here. Any notes recorded will go here. Any notes recorded will go here. Any notes recorded will go here.
+              </p>
+
+              <label class="noMargin">Syncing</label>
+              <div class="iconText">
+                <i class="iconText__icon ss-transfer"></i> Synced to EHR
+              </div>
+
+
+
+            </div> <!--/.historyItem-->
+          </div> <!--/.chat__innerContents-->
+        </div> <!--/.chat__contents-->
+      </div> <!--/.chat__main-->
+    </div> <!--/.chat-->
+  </div> <!--/.chatWrap-->
+</div> <!--/.ssContainer-->

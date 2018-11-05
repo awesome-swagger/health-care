@@ -1,0 +1,100 @@
+<!--TODO: If adding a care plan goal, show the following-->
+<h1 *ngIf="data.creatingTemplate" class="modal__title">Add Care Plan Goal</h1>
+
+<!--TODO: If editing a care plan goal, show the following-->
+<!--<h1 class="modal__title">Edit Care Plan Goal</h1>-->
+
+<!--TODO: Only show this div if adding or updating a goal on a care plan instance-->
+<!-- <div>
+  <h1 class="modal__title">Goal Update</h1>
+  <div class="divider"></div>
+  <h2 class="center">Theresa Beckstrom</h2>
+</div> -->
+
+<!--TODO: If adding a goal to a care plan instance, show the following-->
+<!-- <h5>NOTE: You are adding a goal to one patient's care plan. To add a goal for everyone, go to care plans.</h5> -->
+
+<div>
+  <label>Goal</label>
+  <input type="text" class="input fullWidth marBottom32" [(ngModel)]="nameInput" />
+  <label>Details</label>
+  <textarea type="text" class="input input--textarea fullWidth marBottom32" [(ngModel)]="descriptionInput"></textarea>
+  <label>Focus</label>
+  <input type="text" class="input fullWidth marBottom32" [(ngModel)]="focusInput" />
+  <div class="flex justifySpaceBetween">
+    <div class="modal__inputWrap80 marRight32">
+      <label>Start Day</label>
+      <input type="number" min="1" value="1" class="input fullWidth" [(ngModel)]="startDayInput" />
+    </div>
+    <div class="modal__inputWrap">
+      <label>Duration</label>
+      <div class="flex">
+        <label class="styledInput marRight32">
+          <input type="radio" class="styledInput__input" name="radioETM" [value]="0" [(ngModel)]="durationChoice" checked />
+          <span class="styledInput__radio"></span> Until&nbsp;Plan&nbsp;Ends
+        </label>
+        <label class="styledInput">
+          <input type="radio" class="styledInput__input" name="radioETM" [value]="1" [(ngModel)]="durationChoice" />
+          <span class="styledInput__radio"></span>
+          <div class="modal__inputWrap70 marRight8">
+            <input type="number" class="input fullWidth" min="1" value="1" [(ngModel)]="weeksInput" />
+          </div>
+          weeks
+        </label>
+      </div> <!--/.flex (for radio buttons)-->
+    </div>
+  </div>
+</div>
+
+<!--TODO: Only show this div if updating a goal on a care plan instance-->
+<!-- <div *ngIf="!data.creatingTemplate">
+  <div class="divider"></div>
+  <label>Progress</label>
+  <div class="scale">
+    <div class="scale__hints">
+      <h5 class="noMargin">1 (Not on Track)</h5>
+      <h5 class="noMargin">5 (On Track)</h5>
+    </div>
+    <div class="scale__numbers">
+      <label class="scale__label">
+        <input type="radio" class="scale__input" name="scaleGM1" />
+        <div class="scale__number">
+          1
+        </div>
+      </label>
+      <label class="scale__label">
+        <input type="radio" class="scale__input" name="scaleGM1" />
+        <div class="scale__number scale__number--2">
+          2
+        </div>
+      </label>
+      <label class="scale__label">
+        <input type="radio" class="scale__input" name="scaleGM1" />
+        <div class="scale__number scale__number--3">
+          3
+        </div>
+      </label>
+      <label class="scale__label">
+        <input type="radio" class="scale__input" name="scaleGM1" />
+        <div class="scale__number scale__number--4">
+          4
+        </div>
+      </label>
+      <label class="scale__label">
+        <input type="radio" class="scale__input" name="scaleGM1" />
+        <div class="scale__number scale__number--5">
+          5
+        </div>
+      </label>
+    </div>
+  </div>
+</div> -->
+
+<div class="modal__buttons">
+  <button class="button button--2nd" (click)="clickClose()">
+    Cancel
+  </button>
+  <button class="button" (click)="clickSave()">
+    Save
+  </button>
+</div>

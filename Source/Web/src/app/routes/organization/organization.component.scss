@@ -1,0 +1,54 @@
+@import '~scss/functions';
+@import '~scss/mixins';
+@import '~scss/variables';
+
+.alert {
+  background: $yellow;
+  width: 100%;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  border-radius: rem-calc(4);
+  margin-bottom: rem-calc(24);
+
+  &--red {
+    color: white;
+    background: $red;
+  }
+
+  &__text {
+    flex: 1 1 auto;
+  }
+
+  &__button {
+    flex: 0 0 rem-calc(48);
+  }
+}
+
+.org {
+  display: flex;
+  justify-content: space-between;
+
+  &__left {
+    flex: 1 1 auto;
+    margin-right: rem-calc(64);
+  }
+
+  &__right {
+    flex: 0 0 rem-calc(312);
+  }
+
+  &__title {
+    display: flex;
+    align-items: center;
+  }
+
+  &__subhead {
+    margin-top: rem-calc(64);
+  }
+
+  &__table {
+    width: 100%;
+    max-width: rem-calc(832);
+  }
+}

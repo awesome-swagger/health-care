@@ -1,0 +1,50 @@
+@import '~scss/variables.scss';
+@import '~scss/mixins.scss';
+
+.toasts {
+  position: fixed;
+  bottom: 64px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 400;
+  width: 280px;
+}
+
+.toast {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 16px;
+  margin-bottom: 8px;
+  border-radius: 4px;
+  color: white;
+  background-color: $grayDk;
+  @include shadow;
+  cursor: pointer;
+/*
+  &--success {
+    border-left-color: #5cb85c;
+  }
+
+  &--error {
+    border-left-color: #d9534f;
+  }
+
+  &--warning {
+    border-left-color: #f0ad4e;
+  }
+
+  &--info {
+    border-left-color: #0275d8;
+  }
+*/
+  &__close {
+    font-size: 1rem; // 16px
+    line-height: 0.6;
+
+    [class*="ss-"] {
+      color: $green;
+    }
+  }
+}

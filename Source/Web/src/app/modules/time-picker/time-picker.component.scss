@@ -1,0 +1,43 @@
+@import '~scss/mixins';
+:host {
+  display: block;
+  max-width: 120px;
+}
+.arrows {
+  font-size: 1em;
+  cursor: pointer;
+}
+
+.timePicker {
+  padding: .5rem;
+
+  &__optionRow {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+  }
+
+  &__option {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  &__value {
+    @include bold;
+    font-size: 1.25em;
+    margin: .75rem 0;
+    text-align: center;
+  }
+}
+
+.time-input {
+  text-align: center;
+  max-width: 100%;
+  &:disabled {
+    background-color: rgba(0,0,0,.1); 
+  }
+}

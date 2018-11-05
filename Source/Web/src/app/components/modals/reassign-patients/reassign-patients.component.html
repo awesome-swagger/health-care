@@ -1,0 +1,501 @@
+<h1 class="modal__title">Reassign Patients</h1>
+<h5 class="center">This change requires the following patients to be reassigned.</h5>
+
+<!--TODO: This modal is triggered when removing a CM or BP; or when deleting a care plan; we should show only the applicable fields for each instance; this may also require adjustments to tdWidth classes-->
+
+<div class="accordion" [ngClass]="{ 'isOpen' : accordRPM0Open }">
+  <div class="accordion__head" (click)="accordRPM0Open=!accordRPM0Open">
+    <span class="accordion__title">Mountain View (2)</span>
+    <div class=accordion__right>
+      <div class="accordion__arrow">
+        <i class="ss-standard ss-navigateright"></i>
+      </div>
+    </div>
+  </div> <!--/.accordion__head-->
+  <div class="accordion__body">
+    <div class="accordion__contents">
+      <!--TODO: When this is checked, only show one row of the table; hide "patient" and "also" cols, and show a "patients" col showing the total number of patients who will be reassigned-->
+      <label class="styledInput">
+        <input type="checkbox" class="styledInput__input" />
+        <span class="styledInput__box"></span> Reassign in Bulk
+      </label>
+      <div class="tableWrap fullWidth">
+        <table class="fullWidth fullWidth--scrollGuard">
+          <thead>
+            <tr>
+              <th class="left">Patient</th>
+              <th>
+                <div class="tool">
+                  Also
+                  <div class="tool__anchor">
+                    <button class="button button--icon button--icon--small" (click)="tooltipRPM00Open=!tooltipRPM00Open"><i class="ss-info"></i></button>
+                    <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipRPM00Open }">
+                      <div class="tool__text">
+                        This is the number of additional care plans a patient has. Click the number for details.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </th>
+              <th class="left">New Care Plan</th>
+              <th class="left">New Billing Practitioner</th>
+              <th class="left">New Care Manager</th>
+              <th class="left">Don't Reassign</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="left">
+                <div class="picName">
+                  <img class="picName__img" src="../../../assets/img/profile.svg" />
+                  Theresa Beckstrom
+                </div>
+              </td>
+              <td>
+                <a class="tool__anchor justifyCenter" (click)="tooltipRPM01Open=!tooltipRPM01Open">
+                  2
+                    <div class="tool__tip  tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipRPM01Open }">
+                      <div class="iconText iconText--white">
+                        <i class="iconText__icon ss-yarn"></i> Depression
+                      </div>
+                      <div class="iconText iconText--white">
+                        <i class="iconText__icon ss-heart"></i> Heart Diseases and Such
+                      </div>
+                    </div>
+                </a>
+              </td>
+              <td class="left">
+                <div class="tdWrap160">
+                  <div class="styledSelect">
+                    <select class="styledSelect__select">
+                      <option>Anxiety (BHI)</option>
+                      <option>Anxiety (CoCM)</option>
+                      <option>Depression (CoCM)</option>
+                    </select>
+                  </div>
+                </div> <!--/.tdWrap160-->
+              </td>
+              <td class="left">
+                <div class="tdWrap160">
+                  <div class="drop">
+                    <input class="input input--search fullWidth" type="text" (click)="dropRPM02Open = !dropRPM02Open" placeholder="Search" />
+                    <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : dropRPM02Open }" (click)="dropRPM02Open = !dropRPM02Open">
+                      <li class="drop__option">
+                        <a class="drop__link">
+                          <div class="picName">
+                            <img class="picName__img" src="../../../assets/img/profile.svg" />Montgomery Alexander, CRNA
+                          </div>
+                        </a>
+                      </li>
+                      <li class="drop__option">
+                        <a class="drop__link">
+                          <div class="picName">
+                            <img class="picName__img" src="../../../assets/img/profile.svg" />Sally Evans, MD
+                          </div>
+                        </a>
+                      </li>
+                      <li class="drop__option">
+                        <a class="drop__link">
+                          <div class="picName">
+                            <img class="picName__img" src="../../../assets/img/profile.svg" />Lori Ramirez, RN
+                          </div>
+                        </a>
+                      </li>
+                    </ul>
+                  </div> <!--/.drop-->
+                </div> <!--/.tdWrap160-->
+              </td>
+              <td class="left">
+                <div class="tdWrap160">
+                  <div class="drop">
+                    <input class="input input--search fullWidth" type="text" (click)="dropRPM03Open = !dropRPM03Open" placeholder="Search" />
+                    <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : dropRPM03Open }" (click)="dropRPM03Open = !dropRPM03Open">
+                      <li class="drop__option">
+                        <a class="drop__link">
+                          <div class="picName">
+                            <img class="picName__img" src="../../../assets/img/profile.svg" />Montgomery Alexander, CRNA
+                          </div>
+                        </a>
+                      </li>
+                      <li class="drop__option">
+                        <a class="drop__link">
+                          <div class="picName">
+                            <img class="picName__img" src="../../../assets/img/profile.svg" />Sally Evans, MD
+                          </div>
+                        </a>
+                      </li>
+                      <li class="drop__option">
+                        <a class="drop__link">
+                          <div class="picName">
+                            <img class="picName__img" src="../../../assets/img/profile.svg" />Lori Ramirez, RN
+                          </div>
+                        </a>
+                      </li>
+                    </ul>
+                  </div> <!--/.drop-->
+                </div> <!--/.tdWrap160-->
+              </td>
+              <td class="left">
+                <label class="styledInput">
+                  <input type="checkbox" class="styledInput__input" />
+                  <span class="styledInput__box"></span> Don't Reassign
+                </label>
+              </td>
+            </tr>
+            <tr>
+              <td class="left">
+                <div class="picName">
+                  <img class="picName__img" src="../../../assets/img/profile.svg" />
+                  Theresa Beckstrom
+                </div>
+              </td>
+              <td>
+                <a class="tool__anchor justifyCenter" (click)="tooltipRPM04Open=!tooltipRPM04Open">
+                  2
+                    <div class="tool__tip  tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipRPM04Open }">
+                      <div class="iconText iconText--white">
+                        <i class="iconText__icon ss-yarn"></i> Depression
+                      </div>
+                      <div class="iconText iconText--white">
+                        <i class="iconText__icon ss-heart"></i> Heart Diseases and Such
+                      </div>
+                    </div>
+                </a>
+              </td>
+              <td class="left">
+                <div class="tdWrap160">
+                  <div class="styledSelect">
+                    <select class="styledSelect__select">
+                      <option>Anxiety (BHI)</option>
+                      <option>Anxiety (CoCM)</option>
+                      <option>Depression (CoCM)</option>
+                    </select>
+                  </div>
+                </div> <!--/.tdWrap160-->
+              </td>
+              <td class="left">
+                <div class="tdWrap160">
+                  <div class="drop">
+                    <input class="input input--search fullWidth" type="text" (click)="dropRPM05Open = !dropRPM05Open" placeholder="Search" />
+                    <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : dropRPM05Open }" (click)="dropRPM05Open = !dropRPM05Open">
+                      <li class="drop__option">
+                        <a class="drop__link">
+                          <div class="picName">
+                            <img class="picName__img" src="../../../assets/img/profile.svg" />Montgomery Alexander, CRNA
+                          </div>
+                        </a>
+                      </li>
+                      <li class="drop__option">
+                        <a class="drop__link">
+                          <div class="picName">
+                            <img class="picName__img" src="../../../assets/img/profile.svg" />Sally Evans, MD
+                          </div>
+                        </a>
+                      </li>
+                      <li class="drop__option">
+                        <a class="drop__link">
+                          <div class="picName">
+                            <img class="picName__img" src="../../../assets/img/profile.svg" />Lori Ramirez, RN
+                          </div>
+                        </a>
+                      </li>
+                    </ul>
+                  </div> <!--/.drop-->
+                </div> <!--/.tdWrap160-->
+              </td>
+              <td class="left">
+                <div class="tdWrap160">
+                  <div class="drop">
+                    <input class="input input--search fullWidth" type="text" (click)="dropRPM06Open = !dropRPM06Open" placeholder="Search" />
+                    <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : dropRPM06Open }" (click)="dropRPM06Open = !dropRPM06Open">
+                      <li class="drop__option">
+                        <a class="drop__link">
+                          <div class="picName">
+                            <img class="picName__img" src="../../../assets/img/profile.svg" />Montgomery Alexander, CRNA
+                          </div>
+                        </a>
+                      </li>
+                      <li class="drop__option">
+                        <a class="drop__link">
+                          <div class="picName">
+                            <img class="picName__img" src="../../../assets/img/profile.svg" />Sally Evans, MD
+                          </div>
+                        </a>
+                      </li>
+                      <li class="drop__option">
+                        <a class="drop__link">
+                          <div class="picName">
+                            <img class="picName__img" src="../../../assets/img/profile.svg" />Lori Ramirez, RN
+                          </div>
+                        </a>
+                      </li>
+                    </ul>
+                  </div> <!--/.drop-->
+                </div> <!--/.tdWrap160-->
+              </td>
+              <td class="left">
+                <label class="styledInput">
+                  <input type="checkbox" class="styledInput__input" />
+                  <span class="styledInput__box"></span> Don't Reassign
+                </label>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div> <!--/.tableWrap-->
+    </div> <!--/.accordion__contents-->
+  </div> <!--/.accordion__body-->
+</div> <!--/.accordion-->
+
+<div class="accordion" [ngClass]="{ 'isOpen' : accordRPM1Open }">
+  <div class="accordion__head" (click)="accordRPM1Open=!accordRPM1Open">
+    <span class="accordion__title">South Ogden Family Medicine (2)</span>
+    <div class=accordion__right>
+      <div class="accordion__arrow">
+        <i class="ss-standard ss-navigateright"></i>
+      </div>
+    </div>
+  </div> <!--/.accordion__head-->
+  <div class="accordion__body">
+    <div class="accordion__contents">
+      <!--TODO: When this is checked, only show one row of the table; hide "patient" and "also" cols, and show a "patients" col showing the total number of patients who will be reassigned-->
+      <label class="styledInput">
+        <input type="checkbox" class="styledInput__input" />
+        <span class="styledInput__box"></span> Reassign in Bulk
+      </label>
+      <div class="tableWrap fullWidth">
+        <table class="fullWidth fullWidth--scrollGuard">
+          <thead>
+            <tr>
+              <th class="left">Patient</th>
+              <th>
+                <div class="tool">
+                  Also
+                  <div class="tool__anchor">
+                    <button class="button button--icon button--icon--small" (click)="tooltipRPM10Open=!tooltipRPM10Open"><i class="ss-info"></i></button>
+                    <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipRPM10Open }">
+                      <div class="tool__text">
+                        This is the number of additional care plans a patient has. Click the number for details.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </th>
+              <th class="left">New Care Plan</th>
+              <th class="left">New Billing Practitioner</th>
+              <th class="left">New Care Manager</th>
+              <th class="left">Don't Reassign</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="left">
+                <div class="picName">
+                  <img class="picName__img" src="../../../assets/img/profile.svg" />
+                  Theresa Beckstrom
+                </div>
+              </td>
+              <td>
+                <a class="tool__anchor justifyCenter" (click)="tooltipRPM11Open=!tooltipRPM11Open">
+                  2
+                    <div class="tool__tip  tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipRPM11Open }">
+                      <div class="iconText iconText--white">
+                        <i class="iconText__icon ss-yarn"></i> Depression
+                      </div>
+                      <div class="iconText iconText--white">
+                        <i class="iconText__icon ss-heart"></i> Heart Diseases and Such
+                      </div>
+                    </div>
+                </a>
+              </td>
+              <td class="left">
+                <div class="tdWrap160">
+                  <div class="styledSelect">
+                    <select class="styledSelect__select">
+                      <option>Anxiety (BHI)</option>
+                      <option>Anxiety (CoCM)</option>
+                      <option>Depression (CoCM)</option>
+                    </select>
+                  </div>
+                </div> <!--/.tdWrap160-->
+              </td>
+              <td class="left">
+                <div class="tdWrap160">
+                  <div class="drop">
+                    <input class="input input--search fullWidth" type="text" (click)="dropRPM10Open = !dropRPM10Open" placeholder="Search" />
+                    <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : dropRPM10Open }" (click)="dropRPM10Open = !dropRPM10Open">
+                      <li class="drop__option">
+                        <a class="drop__link">
+                          <div class="picName">
+                            <img class="picName__img" src="../../../assets/img/profile.svg" />Montgomery Alexander, CRNA
+                          </div>
+                        </a>
+                      </li>
+                      <li class="drop__option">
+                        <a class="drop__link">
+                          <div class="picName">
+                            <img class="picName__img" src="../../../assets/img/profile.svg" />Sally Evans, MD
+                          </div>
+                        </a>
+                      </li>
+                      <li class="drop__option">
+                        <a class="drop__link">
+                          <div class="picName">
+                            <img class="picName__img" src="../../../assets/img/profile.svg" />Lori Ramirez, RN
+                          </div>
+                        </a>
+                      </li>
+                    </ul>
+                  </div> <!--/.drop-->
+                </div> <!--/.tdWrap160-->
+              </td>
+              <td class="left">
+                <div class="tdWrap160">
+                  <div class="drop">
+                    <input class="input input--search fullWidth" type="text" (click)="dropRPM12Open = !dropRPM12Open" placeholder="Search" />
+                    <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : dropRPM12Open }" (click)="dropRPM12Open = !dropRPM12Open">
+                      <li class="drop__option">
+                        <a class="drop__link">
+                          <div class="picName">
+                            <img class="picName__img" src="../../../assets/img/profile.svg" />Montgomery Alexander, CRNA
+                          </div>
+                        </a>
+                      </li>
+                      <li class="drop__option">
+                        <a class="drop__link">
+                          <div class="picName">
+                            <img class="picName__img" src="../../../assets/img/profile.svg" />Sally Evans, MD
+                          </div>
+                        </a>
+                      </li>
+                      <li class="drop__option">
+                        <a class="drop__link">
+                          <div class="picName">
+                            <img class="picName__img" src="../../../assets/img/profile.svg" />Lori Ramirez, RN
+                          </div>
+                        </a>
+                      </li>
+                    </ul>
+                  </div> <!--/.drop-->
+                </div> <!--/.tdWrap160-->
+              </td>
+              <td class="left">
+                <label class="styledInput">
+                  <input type="checkbox" class="styledInput__input" />
+                  <span class="styledInput__box"></span> Don't Reassign
+                </label>
+              </td>
+            </tr>
+            <tr>
+              <td class="left">
+                <div class="picName">
+                  <img class="picName__img" src="../../../assets/img/profile.svg" />
+                  Theresa Beckstrom
+                </div>
+              </td>
+              <td>
+                <a class="tool__anchor justifyCenter" (click)="tooltipRPM13Open=!tooltipRPM13Open">
+                  2
+                    <div class="tool__tip  tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipRPM13Open }">
+                      <div class="iconText iconText--white">
+                        <i class="iconText__icon ss-yarn"></i> Depression
+                      </div>
+                      <div class="iconText iconText--white">
+                        <i class="iconText__icon ss-heart"></i> Heart Diseases and Such
+                      </div>
+                    </div>
+                </a>
+              </td>
+              <td class="left">
+                <div class="tdWrap160">
+                  <div class="styledSelect">
+                    <select class="styledSelect__select">
+                      <option>Anxiety (BHI)</option>
+                      <option>Anxiety (CoCM)</option>
+                      <option>Depression (CoCM)</option>
+                    </select>
+                  </div>
+                </div> <!--/.tdWrap160-->
+              </td>
+              <td class="left">
+                <div class="tdWrap160">
+                  <div class="drop">
+                    <input class="input input--search fullWidth" type="text" (click)="dropRPM14Open = !dropRPM14Open" placeholder="Search" />
+                    <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : dropRPM14Open }" (click)="dropRPM14Open = !dropRPM14Open">
+                      <li class="drop__option">
+                        <a class="drop__link">
+                          <div class="picName">
+                            <img class="picName__img" src="../../../assets/img/profile.svg" />Montgomery Alexander, CRNA
+                          </div>
+                        </a>
+                      </li>
+                      <li class="drop__option">
+                        <a class="drop__link">
+                          <div class="picName">
+                            <img class="picName__img" src="../../../assets/img/profile.svg" />Sally Evans, MD
+                          </div>
+                        </a>
+                      </li>
+                      <li class="drop__option">
+                        <a class="drop__link">
+                          <div class="picName">
+                            <img class="picName__img" src="../../../assets/img/profile.svg" />Lori Ramirez, RN
+                          </div>
+                        </a>
+                      </li>
+                    </ul>
+                  </div> <!--/.drop-->
+                </div> <!--/.tdWrap160-->
+              </td>
+              <td class="left">
+                <div class="tdWrap160">
+                  <div class="drop">
+                    <input class="input input--search fullWidth" type="text" (click)="dropRPM15Open = !dropRPM15Open" placeholder="Search" />
+                    <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : dropRPM15Open }" (click)="dropRPM15Open = !dropRPM15Open">
+                      <li class="drop__option">
+                        <a class="drop__link">
+                          <div class="picName">
+                            <img class="picName__img" src="../../../assets/img/profile.svg" />Montgomery Alexander, CRNA
+                          </div>
+                        </a>
+                      </li>
+                      <li class="drop__option">
+                        <a class="drop__link">
+                          <div class="picName">
+                            <img class="picName__img" src="../../../assets/img/profile.svg" />Sally Evans, MD
+                          </div>
+                        </a>
+                      </li>
+                      <li class="drop__option">
+                        <a class="drop__link">
+                          <div class="picName">
+                            <img class="picName__img" src="../../../assets/img/profile.svg" />Lori Ramirez, RN
+                          </div>
+                        </a>
+                      </li>
+                    </ul>
+                  </div> <!--/.drop-->
+                </div> <!--/.tdWrap160-->
+              </td>
+              <td class="left">
+                <label class="styledInput">
+                  <input type="checkbox" class="styledInput__input" />
+                  <span class="styledInput__box"></span> Don't Reassign
+                </label>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div> <!--/.tableWrap-->
+    </div> <!--/.accordion__contents-->
+  </div> <!--/.accordion__body-->
+</div> <!--/.accordion-->
+
+<div class="modal__buttons">
+  <div class="button button--2nd">
+    Cancel
+  </div>
+  <div class="button">
+    Save
+  </div>
+</div>

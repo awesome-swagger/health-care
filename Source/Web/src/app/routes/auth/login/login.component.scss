@@ -1,0 +1,51 @@
+@import '~scss/variables';
+@import '~scss/mixins';
+@import '~scss/functions';
+
+.loginBg {
+    background: url("../../../../assets/img/landscape2-optimized.jpg") no-repeat center;
+    background-size: cover;
+    height: 100vh;
+    min-height: rem-calc(768);
+    width: 100vw;
+    min-width: rem-calc(1024);
+    padding: rem-calc(48);
+    // z-index: -1;
+}
+
+.login {
+  background-color: rgba(255,255,255,.8);
+  border-radius: rem-calc(4);
+  margin: 0 auto;
+  width: rem-calc(320);
+  padding: rem-calc(32);
+  text-align: center;
+
+  &--wide { width: rem-calc(384); }
+
+  &__title {
+    margin: rem-calc(32) 0;
+  }
+
+  &__input {
+    width: 100%;
+    margin-bottom: rem-calc(32);
+  }
+
+  &__email { letter-spacing: normal; }
+
+  &__button {
+    width: 100%;
+
+    &--iconText {
+      width: auto;
+      margin: rem-calc(32) auto 0;
+
+      &--smallTop { margin: rem-calc(8) auto 0; }
+    }
+  }
+
+  &__firstp {
+    margin-top: rem-calc(32);
+  }
+}

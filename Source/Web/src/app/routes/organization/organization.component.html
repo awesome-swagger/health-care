@@ -1,0 +1,159 @@
+<div class="ssContainer ssContents">
+  <!-- <div class="alert">
+    <span class="alert__text">Your plan will expire in 89 days. To renew now, call 801-555-5555 or email accounting@careadopt.com.</span>
+    <button class="button button--icon button--icon--small button--icon--white alert__button">
+      <i class="ss-delete"></i>
+    </button>
+  </div> -->
+
+  <!-- <div class="alert alert--red">
+    <span class="alert__text">Your plan only has 5 available user accounts left. To upgrade now, call 801-555-5555 or email sales@careadopt.com.</span>
+    <button class="button button--icon button--icon--small button--icon--white alert__button">
+      <i class="ss-delete"></i>
+    </button>
+  </div> -->
+
+  <div class="org">
+    <div class="org__left">
+      <h1 class="org__title">Organization Details
+        <button class="button button--icon">
+          <i class="ss-write" (click)="clickEditOrganization()"></i>
+        </button>
+      </h1>
+
+      <div class="cols cols--left">
+        <div class="marRight48">
+          <label>Name</label>
+          {{organization?.name}}
+        </div>
+        <div *ngIf="organization?.addr_street">
+          <label>Address</label>
+          {{organization?.addr_street}}<br />
+          {{organization?.addr_city}}, {{organization?.addr_state}} {{organization?.addr_zip}}
+        </div>
+      </div>
+
+      <h2 class="org__subhead">Facilities ({{facilities.length}})</h2>
+      <table class="org__table">
+        <thead>
+          <tr>
+            <th class="left thSortable thSortable--sortDown">
+              <span class="thSortable__text">Facility</span>
+            </th>
+            <th class="left">
+              Address
+            </th>
+            <th class="noPad"></th>
+            <th class="noPad"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let facility of facilities">
+            <td class="left">
+              {{facility.name}}
+            </td>
+            <td class="left">
+              {{facility.addr_street}}<br />
+              {{facility.addr_city}}, {{facility.addr_state}} {{facility.addr_zip}}
+            </td>
+            <td class="noPad">
+              <button class="button button--icon button--icon--small" (click)="openEditFacility(facility)">
+                <i class="ss-write"></i>
+              </button>
+            </td>
+            <td class="noPad">
+              <button class="button button--icon button--icon--small" (click)="deleteFacility(facility)">
+                <i class="ss-delete"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <button class="button button--iconText" (click)="openAddFacility(false)">
+        <i class="ss-plus"></i> Add Facility
+      </button>
+
+      <h2 class="org__subhead">Affiliates ({{affiliates.length}})</h2>
+      <table class="org__table">
+        <thead>
+          <tr>
+            <th class="left thSortable thSortable--sortDown">
+              <span class="thSortable__text">Affiliate</span>
+            </th>
+            <th class="left">
+              Address
+            </th>
+            <th class="noPad"></th>
+            <th class="noPad"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let facility of affiliates">
+            <td class="left">
+              {{facility.name}}
+            </td>
+            <td class="left">
+              {{facility.addr_street}}<br />
+              {{facility.addr_city}}, {{facility.addr_state}} {{facility.addr_zip}}
+            </td>
+            <td class="noPad">
+              <button class="button button--icon button--icon--small" (click)="openEditFacility(facility)">
+                <i class="ss-write"></i>
+              </button>
+            </td>
+            <td class="noPad">
+              <button class="button button--icon button--icon--small" (click)="deleteFacility(facility)">
+                <i class="ss-delete"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <button class="button button--iconText" (click)="openAddFacility(true)">
+        <i class="ss-plus"></i> Add Affiliate
+      </button>
+
+    </div> <!--/.org__left-->
+
+    <div class="org__right">
+      <div class="info">
+        <h2>Plan Details</h2>
+        <div class="cols">
+          <div>
+            <label>Current Users</label>
+            45 / 50
+          </div>
+          <div>
+            <label>Renewal Date</label>
+            Apr 15, 2018
+          </div>
+        </div>
+
+        <div class="divider divider--dk"></div>
+
+        <h2>Questions?</h2>
+        <label>Billing Questions</label>
+        <div class="iconText">
+          <i class="iconText__icon ss-standard ss-phone"></i> 801-555-5555
+        </div>
+        <a class="iconText" href="mailto:email@exampl.com">
+          <i class="iconText__icon ss-standard ss-mail"></i> accounting@careadopt.com
+        </a>
+        <label class="info__label">Sales Questions</label>
+        <div class="iconText">
+          <i class="iconText__icon ss-standard ss-phone"></i> 801-555-5555
+        </div>
+        <a class="iconText" href="mailto:email@exampl.com">
+          <i class="iconText__icon ss-standard ss-mail"></i> sales@careadopt.com
+        </a>
+        <label class="info__label">General Questions</label>
+        <div class="iconText">
+          <i class="iconText__icon ss-standard ss-phone"></i> 801-555-5555
+        </div>
+        <a class="iconText" href="mailto:email@exampl.com">
+          <i class="iconText__icon ss-standard ss-mail"></i> help@careadopt.com
+        </a>
+      </div> <!--/.info-->
+    </div> <!--/.org__right-->
+  </div> <!--/.org-->
+</div> <!--/.ssContainer-->

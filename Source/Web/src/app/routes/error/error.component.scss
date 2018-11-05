@@ -1,0 +1,8 @@
+@import '~scss/mixins';
+@import '~scss/breakpoints';
+@import '~scss/variables';
+
+.fore {
+    text-align: center;
+    padding-top: rem-calc(128);
+}

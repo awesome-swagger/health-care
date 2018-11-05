@@ -1,0 +1,83 @@
+<h1 class="modal__title">Create Assessment</h1>
+<div class="flex justifySpaceBetween marBottom32">
+  <div class="modal__inputWrap marRight32">
+    <label class="label48">Assessment Name</label>
+    <input type="text" class="input fullWidth" />
+  </div>
+  <div class="">
+    <div class="tool">
+      <label class="noMargin">assessment tracks</label>
+      <div class="tool__anchor">
+        <button class="button button--icon button--icon--small"
+        (click)="tooltipCAM0Open=!tooltipCAM0Open">
+          <i class="ss-help"></i>
+        </button>
+        <div class="tool__tip tool__tip--right tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipCAM0Open }">
+          <div class="tool__text">
+            When an assessment tracks an outcome, it factors into the patient's outcome %. When an assessment tracks satisfaction, it applies to the patient's satisfaction score.
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="styledSelect">
+      <select class="styledSelect__select">
+        <option>None</option>
+        <option>Outcome</option>
+        <option>Satisfaction</option>
+      </select>
+    </div>
+  </div>
+</div> <!--/.flex (for assessment name and tracking)-->
+
+<table>
+  <thead>
+    <tr>
+      <th class="left">Question</th>
+      <th class="left">Label 1 (Worst Outcome)</th>
+      <th class="left">Label 5 (Best Outcome)</th>
+      <th class="noPad">Order</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <input type="text" class="input assessment__name" />
+      </td>
+      <td>
+        <input type="text" class="input fullWidth" value="Worst" />
+      </td>
+      <td>
+        <input type="text" class="input fullWidth" value="Best" />
+      </td>
+      <td class="noPad">
+        <div class="flex">
+          <button class="button button--icon">
+            <i class="ss-standard ss-navigateup"></i>
+          </button>
+          <button class="button button--icon">
+            <i class="ss-standard ss-navigatedown"></i>
+          </button>
+        </div>
+      </td>
+      <td class="noPad">
+        <button class="button button--icon button--icon--small">
+          <i class="ss-delete"></i>
+        </button>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<button class="button button--iconText">
+  <i class="ss-plus"></i> Add Question
+</button>
+
+<div class="modal__buttons">
+  <button class="button button--2nd">
+    Cancel
+  </button>
+  <button class="button">
+    Save
+  </button>
+</div>

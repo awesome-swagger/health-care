@@ -1,0 +1,138 @@
+<div class="ssContainer ssContents">
+  <div class="flex alignCenter marBottom32">
+    <h1 class="noMargin">Potential Patients (16)</h1>
+    <div class="tool__anchor">
+      <button class="button button--icon button--icon--small"
+      (click)="toolPP1Open=!toolPP1Open">
+        <i class="ss-help"></i>
+      </button>
+      <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : toolPP1Open }">
+        <div class="tool__text">
+          Potential patients have been identfied in the EHR, from CareInsight, or added individually as candidates for care management.
+        </div>
+      </div>
+    </div>
+  </div> <!--/.flex (for title and tooltip)-->
+
+  <div class="accordion" [ngClass]="{ 'isOpen' : accord1Open }" *ngIf="potentialPatients">
+    <div class="accordion__head" (click)="accord1Open=!accord1Open">
+      <span class="accordion__title">TODO Filter By Facility ({{potentialPatients.length}})</span>
+      <div class="accordion__right">
+        <div class="accordion__arrow">
+          <i class="ss-standard ss-navigateright"></i>
+        </div>
+      </div>
+    </div> <!--/.accordion__head-->
+    <div class="accordion__body">
+      <div class="accordion__contents">
+        <div class="tableWrap fullWidth">
+          <table class="fullWidth">
+            <thead>
+              <tr>
+                <th class="thSortable thSortable--sortDown">
+                  <span class="thSortable__text thSortable__text--left">Patient</span>
+                </th>
+                <th class="thSortable">
+                  <span class="thSortable__text thSortable__text--left">Care Plan</span>
+                </th>
+                <th class="thSortable">
+                  <div class="tool justifyCenter">
+                    <span class="thSortable__text">Also</span>
+                    <div class="tool__anchor">
+                      <button class="button button--icon button--icon--small" (click)="tooltip2Open=!tooltip2Open">
+                        <i class="ss-help"></i>
+                      </button>
+                      <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltip2Open }">
+                        <div class="tool__text">This is the number of additional care plans a patient has. Click the number for details.</div>
+                      </div>
+                    </div>
+                  </div>
+                </th>
+                <th class="thSortable">
+                  <span class="thSortable__text thSortable__text--left">Source</span>
+                </th>
+                <th class="thSortable">
+                  <span class="thSortable__text thSortable__text--left">Added</span>
+                </th>
+                <th class="thSortable">
+                  <span class="thSortable__text thSortable__text--left">Phone</span>
+                </th>
+                <th class="thSortable">
+                  <span class="thSortable__text">Enroll</span>
+                </th>
+                <th class="noPad"></th>
+                <th class="noPad"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let potentialPatient of potentialPatients">
+                <td class="left">{{potentialPatient.first_name}} {{potentialPatient.last_name}}</td>
+                <td>
+                  <div class="iconText"> <!-- TODO: Switch icon for care plan type -->
+                    <i class="iconText__icon ss-addheart"></i> {{potentialPatient.care_plan}}
+                  </div>
+                </td>
+                <td>
+                  <a class="tool__anchor justifyCenter" (click)="tooltipPP2Open=!tooltipPP2Open">
+                    --
+                    <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipPP2Open }">
+                      <div class="iconText iconText--white iconText--autoHeight marBottom8">
+                        <i class="iconText__icon iconText__icon--noTop icomoon-cocm"></i> Anxiety
+                      </div>
+                    </div>
+                  </a>
+                </td>
+                <td class="left">--</td>
+                <td class="left">{{formatTimeAdded(potentialPatient.created)}}</td>
+                <td class="left">{{potentialPatient.phone}}</td>
+                <td>
+                  <button class="button button--center button--icon"
+                  (click)="enrollPotentialPatient(potentialPatient)">
+                    <i class="ss-adduser"></i>
+                  </button>
+                </td>
+                <td class="noPad">
+                  <button class="button button--center button--icon button--icon--small"
+                  (click)="editPotentialPatient(potentialPatient)">
+                    <i class="ss-write"></i>
+                  </button>
+                </td>
+                <td class="noPad">
+                  <button class="button button--center button--icon button--icon--small"
+                  (click)="removePotentialPatient(potentialPatient)">
+                    <i class="ss-delete"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <button class="button button--iconText"
+          (click)="addPatientToPlan()">
+            <i class="ss-plus"></i> Add Patient
+          </button>
+        </div> <!--/.tableWrap-->
+      </div> <!--/.accordion__contents-->
+    </div> <!--/.accordion__body-->
+  </div> <!--/.accordion-->
+
+  <div class="accordion" [ngClass]="{ 'isOpen' : accord2Open }">
+      <div class="accordion__head" (click)="accord2Open=!accord2Open">
+        <span class="accordion__title">South County Regional (0)</span>
+        <div class="accordion__right">
+          <div class="accordion__arrow">
+            <i class="ss-standard ss-navigateright"></i>
+          </div>
+        </div>
+      </div>
+      <div class="accordion__body">
+        <div class="accordion__contents">
+          <h2 class="center">No potential patients have been added to this facility.</h2>
+          <button class="button button--center button--iconText"
+          (click)="addPatientToPlan()">
+            <i class="ss-plus"></i> Add Patient
+          </button>
+        </div>
+      </div>
+    </div> <!--/.accordion-->
+
+</div> <!--/.ssContainer-->

@@ -1,0 +1,12 @@
+@import '../../../../modules/modals/modal-outlet.component.scss';
+
+
+.durationWeeks {
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+  .input {
+    margin-right: 1rem;
+    width: 80px;
+  }
+}

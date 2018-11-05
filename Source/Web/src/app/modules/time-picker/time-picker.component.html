@@ -1,0 +1,23 @@
+<input class="input time-input" [disabled]="disabled" [value]="value" (focus)="openTimePicker()" readonly>
+<app-popover [visible]="timePickerVisible" (visibleChange)="timePickerVisible = $event;" [options]="popoverOptions">
+  <div class="timePicker">
+    <div class="timePicker__optionRow">
+      <div class="timePicker__option">
+        <i class="arrows ss-standard ss-navigateup" (click)="incrementHour()"></i>
+        <div class="timePicker__value">{{zeroPad(hourValue)}}</div>
+        <i class="arrows ss-standard ss-navigatedown" (click)="decrementHour()"></i>
+      </div>
+      :
+      <div class="timePicker__option">
+        <i class="arrows ss-standard ss-navigateup" (click)="incrementMinute()"></i>
+        <div class="timePicker__value">{{zeroPad(minuteValue)}}</div>
+        <i class="arrows ss-standard ss-navigatedown" (click)="decrementMinute()"></i>
+      </div>
+      <div class="timePicker__option">
+        <i class="arrows ss-standard ss-navigateup" (click)="incrementPeriod()"></i>
+        <div class="timePicker__value">{{periodValue|uppercase}}</div>
+        <i class="arrows ss-standard ss-navigatedown" (click)="decrementPeriod()"></i>
+      </div>
+    </div>
+  </div>
+</app-popover>

@@ -1,0 +1,255 @@
+<div class="nav" *ngIf="nav.visible">
+  <div class="ssContainer">
+    <div class="nav__top">
+
+      <div class="nav__left">
+        <a [routerLink]="['/dashboard']"><img src="../../../assets/img/logo-white.svg" alt="CareAdopt"></a>
+        <!-- <div class="drop">
+          <a class="nav__appSwitcher drop__arrowWhite" (click)="appListOpen = !appListOpen">
+            Care Management
+          </a>
+          <app-popover [visible]="appListOpen" (visibleChange)="appListOpen = $event;" [options]="appListOptions">
+            <ul class="drop__dropdown isOpen" (click)="appListOpen = !appListOpen">
+              <label class="drop__label">Switch Applications</label>
+              <li class="drop__option">
+                <a class="drop__link">
+                  Patient Health Analytics
+                </a>
+              </li>
+            </ul>
+          </app-popover>
+        </div> -->
+      </div> <!--/.nav__left-->
+
+      <div class="nav__right">
+        <div class="drop">
+          <input class="input input--nav" type="text" (keyup)="searchChange($event.target.value)" placeholder="Search Patients" />
+          <app-popover [visible]="searchOpen" (visibleChange)="searchOpen = $event;">
+            <ul class="drop__dropdown isOpen">
+              <ng-container *ngFor="let patient of searchResults">
+                <li class="drop__option">
+                  <a class="drop__link" [routerLink]="['/patient', patient.id]">
+                    <div class="picName">
+                      <img class="picName__img" src="../../../assets/img/profile.svg" />{{patient.user.first_name}} {{patient.user.last_name}}
+                    </div>
+                  </a>
+                </li>
+              </ng-container>
+              <!-- <li class="drop__option">
+                <a class="drop__link drop__link--dis"
+                (click)="confirmUnarchive()">
+                  <div class="picName">
+                    <img class="picName__img" src="../../../assets/img/profile.svg" />Hank Granowski
+                  </div>
+                  <i class="drop__icon ss-filecabinet"></i>
+                </a>
+              </li> -->
+            </ul>
+          </app-popover>
+        </div> <!--/.drop (for search)-->
+
+        <div class="drop">
+          <div class="badge">8</div>
+          <button class="button button--icon button--icon--nav" (click)="taskDropOpen = !taskDropOpen">
+            <i class="ss-standard ss-list"></i>
+          </button>
+          <app-popover [visible]="taskDropOpen" (visibleChange)="taskDropOpen = $event;" [options]="taskDropOptions">
+            <ul class="drop__dropdown isOpen">
+              <label class="drop__label">My Tasks Due Today</label>
+              <li class="drop__option">
+                <a class="drop__link">
+                  <div class="picName">
+                    <img class="picName__img" src="../../../assets/img/profile.svg" />Bradley Rosenburg (3)
+                  </div>
+                </a>
+              </li>
+              <li class="drop__option">
+                <a class="drop__link">
+                  <div class="picName">
+                    <img class="picName__img" src="../../../assets/img/profile.svg" />Samantha Stevens (5)
+                  </div>
+                </a>
+              </li>
+            </ul>
+          </app-popover>
+        </div> <!--/.drop (for tasks list)-->
+
+        <div class="drop">
+          <div class="badge">12</div>
+          <button class="button button--icon button--icon--nav"  (click)="notificationsDropOpen = !notificationsDropOpen">
+            <i class="ss-notifications"></i>
+          </button>
+          <app-popover [visible]="notificationsDropOpen" (visibleChange)="notificationsDropOpen = $event;" [options]="notificationsDropOptions">
+            <ul class="drop__dropdown drop__dropdown--notifications isOpen">
+              <label class="drop__label">Unread Messages</label>
+              <li class="drop__option">
+                <a class="drop__link drop__link--complex">
+                  <h6 class="drop__date">2 days ago</h6>
+                  <div class="picName">
+                    <img class="picName__img" src="../../../assets/img/profile.svg" />Samantha Hancock(2)
+                  </div>
+                  <p class="drop__text">
+                    What are we going to do about this goiter?
+                  </p>
+                </a>
+              </li>
+
+              <label class="drop__label">Assignments</label>
+              <li class="drop__option">
+                <a class="drop__link drop__link--complex">
+                  <h6 class="drop__date">4 days ago</h6>
+                  <p class="drop__text">
+                    You were removed/assigned as ROLE for
+                  </p>
+                  <div class="picName">
+                    <img class="picName__img" src="../../../assets/img/profile.svg" />Samantha Hancock
+                  </div>
+                </a>
+              </li>
+            </ul>
+          </app-popover>
+        </div> <!--/.drop (for notifications)-->
+
+        <!--Login will happen in a separate component.
+        <a *ngIf="!user?.id" [routerLink]="['login']"><i class="ss-door"></i> Login</a>-->
+
+        <div class="drop">
+          <button class="button button--icon button--icon--nav" (click)="logoutOpen=!logoutOpen">
+            <i class="ss-door"></i>
+          </button>
+          <app-popover [visible]="logoutOpen" (visibleChange)="logoutOpen = $event;" [options]="logoutDropOptions">
+            <ul class="drop__dropdown isOpen">
+              <li class="drop__option">
+                <a class="drop__link" (click)="logout()">
+                  <div class="iconText">
+                    <i class="iconText__icon ss-door"></i> Log Out
+                  </div>
+                </a>
+              </li>
+              <ng-container *ngIf="selectableOrganizations && selectableOrganizations.length > 0">
+                <label class="drop__label">Other Organizations</label>
+                <li class="drop__option">
+                  <a class="drop__link drop__link" *ngFor="let organization of selectableOrganizations" (click)="switchOrganization(organization)">
+                    {{organization.name}}
+                  </a>
+                </li>
+              </ng-container>
+            </ul>
+          </app-popover>
+        </div> <!--/.drop (for logout, switch org)-->
+
+        <a (click)="routeToProfile()">
+          <img class="nav__profile" *ngIf="!employee?.user.image_url" src="../../../assets/img/profile--2.svg" />
+          <img class="nav__profile" *ngIf="employee?.user.image_url" [src]="employee?.user.image_url" />
+        </a>
+      </div> <!--/.nav__right-->
+    </div> <!--/.nav__top-->
+  </div> <!--/.ssContainer-->
+
+  <div class="nav__bottom" *ngIf="normalState">
+    <div class="ssContainer nav__container">
+      <div class="nav__links">
+        <a [routerLink]="['/dashboard']" [routerLinkActive]="['nav__link--current']" class="nav__link">
+          Dashboard
+        </a>
+        <a [routerLink]="['/billing']" [routerLinkActive]="['nav__link--current']" class="nav__link">
+          Billing
+        </a>
+        <a class="nav__link drop drop__arrowWhite" [ngClass]="{'nav__link--current': patientsDropOpen}" (click)="patientsDropOpen=!patientsDropOpen">
+          Patients
+          <app-popover [options]="patientsDropOptions" [visible]="patientsDropOpen">
+            <ul class="drop__dropdown isOpen">
+              <li class="drop__option">
+                <a [routerLink]="['/patients/potential']" class="button button--iconText drop__button">
+                  <i class="ss-plus"></i> Add Patient
+                </a>
+              </li>
+              <label class="drop__label" *ngIf="nav.recentPatients.length > 0">Recent Patients</label>
+              <li class="drop__option" *ngFor="let patient of nav.recentPatients">
+                <a class="drop__link" (click)="routeToPatient(patient)">
+                  <div class="picName">
+                    <img class="picName__img" src="../../../assets/img/profile.svg" *ngIf="!patient.user.image_url" />
+                    <img class="picName__img" [src]="patient.user.image_url" *ngIf="patient.user.image_url" />
+                    {{patient.user.first_name}} {{patient.user.last_name}}
+                  </div>
+                </a>
+              </li>
+              <label class="drop__label">Patients Lists</label>
+              <li class="drop__option">
+                <a class="drop__link" [routerLink]="['/patients/active']">
+                  Active Patients (1,982)
+                </a>
+              </li>
+              <li class="drop__option">
+                <a class="drop__link" [routerLink]="['/patients/invited']">
+                  Invited Patients (2)
+                </a>
+              </li>
+              <li class="drop__option">
+                <a class="drop__link" [routerLink]="['/patients/potential']">
+                  Potential Patients (9)
+                </a>
+              </li>
+              <li class="drop__option">
+                <a class="drop__link" [routerLink]="['/patients/inactive']">
+                  Inactive Patients (248)
+                </a>
+              </li>
+            </ul>
+          </app-popover>
+        </a>
+        <a [routerLink]="['/plans']" [routerLinkActive]="['nav__link--current']" class="nav__link">
+          Care Plans
+        </a>
+        <a [routerLink]="['/organization']" [routerLinkActive]="['nav__link--current']" class="nav__link" *ngIf="organization?.is_manager">
+          Account
+        </a>
+        <a [routerLink]="['/users']" [routerLinkActive]="['nav__link--current']" class="nav__link" *ngIf="organization?.is_manager">
+          Users
+        </a>
+      </div>
+    </div> <!--/.ssContainer-->
+  </div> <!--/.nav__bottom-->
+  <div class="nav__bottom" *ngIf="planDetailState">
+    <div class="ssContainer nav__container">
+      <div class="nav__links">
+        <a [routerLink]="['/plans']" class="nav__link">
+          <i class="ss-standard ss-navigateleft"></i> To Care Plans
+        </a>
+        <a [routerLink]="['/plan', nav.planDetailId, 'info']" [routerLinkActive]="['nav__link--current']" class="nav__link">
+          Care Plan Info
+        </a>
+        <a [routerLink]="['/plan', nav.planDetailId, 'schedule']" [routerLinkActive]="['nav__link--current']" class="nav__link">
+          Care Plan Schedule
+        </a>
+      </div>
+    </div> <!--/.ssContainer-->
+  </div> <!--/.nav__bottom-->
+  <div class="nav__bottom" *ngIf="patientDetailState">
+    <div class="ssContainer nav__container">
+      <div class="nav__links">
+        <a (click)="nav.routeToPatients()" class="nav__link">
+          <i class="ss-standard ss-navigateleft"></i> To Patients
+        </a>
+        <a [routerLink]="['/patient', nav.patientDetailId, 'dashboard']" [routerLinkActive]="['nav__link--current']" class="nav__link">
+          Dashboard
+        </a>
+        <a [routerLink]="['/patient', nav.patientDetailId, 'details']" [routerLinkActive]="['nav__link--current']" class="nav__link">
+          Details
+        </a>
+        <a [routerLink]="['/patient', nav.patientDetailId, 'history']" [routerLinkActive]="['nav__link--current']" class="nav__link">
+          History
+        </a>
+        <a [routerLink]="['/patient', nav.patientDetailId, 'overview']" [routerLinkActive]="['nav__link--current']" class="nav__link">
+          Overview
+        </a>
+        <a [routerLink]="['/patient', nav.patientDetailId, 'team']" [routerLinkActive]="['nav__link--current']" class="nav__link">
+          Care Team
+        </a>
+        <a [routerLink]="['/patient', nav.patientDetailId, 'messaging']" [routerLinkActive]="['nav__link--current']" class="nav__link">
+          Messages
+        </a>
+      </div>
+    </div>
+  </div>
+</div> <!--/.nav-->

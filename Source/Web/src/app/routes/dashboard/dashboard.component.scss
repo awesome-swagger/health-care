@@ -1,0 +1,198 @@
+@import '~scss/mixins';
+@import '~scss/variables';
+@import '~scss/functions';
+
+.dash {
+  padding-bottom: rem-calc(24);
+}
+
+.dashDivider {
+  margin: rem-calc(96) auto rem-calc(64);
+  width: 50%;
+  border-bottom: 1px solid $borderDker;
+}
+
+.dashLeft {
+  flex: 4 1 auto;
+}
+
+.dashRight {
+  flex: 1 1 rem-calc(256);
+  padding-left: rem-calc(72);
+}
+
+.dashRisk {
+  display: flex;
+
+  &__chart {
+    flex: 3 0 320px;
+    margin-right: rem-calc(32);
+  }
+
+  &__key {
+    flex: 2 0 rem-calc(256);
+  }
+
+  &__table {
+    width: 100%;
+    tbody tr {
+      background: transparent;
+      border-top: 1px solid $borderDker;
+
+      &:last-child { border-bottom: 1px solid $borderDker; }
+    }
+
+    td { padding: 16px 8px; }
+  }
+
+  &__marker {
+    width: rem-calc(24);
+    height: rem-calc(24);
+    border: 1px solid white;
+    border-radius: 100%;
+    background: $lime;
+
+    &--yellow { background: $yellow; }
+
+    &--red { background: $red; }
+
+    &--purple { background: $purple; }
+  }
+
+}
+
+.fakeChart {
+  width: 100%;
+  padding-top: 100%; // hack to get a square
+  border-radius: 100%;
+  background: $grayDk;
+  position: relative;
+
+  &__inner {
+    width: calc(100% - #{rem-calc(32)});
+    padding-top: calc(100% - #{rem-calc(32)});
+    border-radius: 100%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: $grayDker;
+  }
+
+  &__text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    text-align: center;
+  }
+}
+
+.chart__number {
+  font-size: rem-calc(64);
+  margin-bottom: 0;
+  @include thin;
+}
+
+.chart__desc {
+    @include thin;
+    margin-bottom: 0;
+}
+
+.adopt {
+  width: 100%;
+  background: $green;
+  border-radius: rem-calc(4);
+  text-align: center;
+
+  &__label {
+    margin-top: rem-calc(16);
+  }
+
+  &__text {
+    color: $grayDk;
+    padding: rem-calc(16) rem-calc(24);
+    margin: 0;
+  }
+
+  &__header {
+    background: $greenDk;
+    color: white;
+    @include black;
+    font-size: rem-calc(40);
+    padding: rem-calc(4) 0;
+    letter-spacing: 1px;
+    margin: 0;
+  }
+
+  &__numberWrap {
+    background: $grayDker;
+    border-radius: rem-calc(4);
+    color: white;
+    padding: rem-calc(8) rem-calc(24);
+    width: 60%;
+    margin: 0 auto;
+  }
+}
+
+.smallChartWrap {
+  display: flex;
+  justify-content: space-between;
+  // hack to stop horizontal page overflow in IE11 and Edge
+  overflow: hidden;
+}
+
+.smallChart {
+  width: 20%;
+
+  &:last-child {
+    padding-right: 0;
+  }
+
+  &__desc {
+    text-align: center;
+    margin: rem-calc(24) 0 0;
+  }
+}
+
+.timeChart {
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin: rem-calc(24) 0;
+  }
+
+  &__selectWrap:first-child { margin-right: rem-calc(32); }
+
+  &__key {
+    margin: 0 rem-calc(24) 0 0;
+    display: flex;
+    align-items: center;
+
+    &::before {
+      content: '';
+      width: rem-calc(24);
+      border-top: 4px solid $offWhite;
+      margin-right: rem-calc(8);
+    }
+
+    &--dotted::before {
+      border-top-style: dotted;
+    }
+  }
+
+  &__weekSelect {
+    width: rem-calc(128);
+  }
+
+}
+
+.fakeTimeChart {
+  width: 100%;
+  height: rem-calc(320);
+  border-radius: rem-calc(4);
+  background: $grayDker;
+}

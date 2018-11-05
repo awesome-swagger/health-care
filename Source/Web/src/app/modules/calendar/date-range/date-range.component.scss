@@ -1,0 +1,26 @@
+@import '~scss/mixins';
+@import '~scss/variables';
+
+:host {
+  display: inline-block;
+}
+
+.dateRange {
+  display: flex;
+  align-items: center;
+
+  &__text {
+    margin: 0;
+    margin-right: rem-calc(8);
+  }
+
+  &__anchor {
+    position: relative;
+  }
+
+  &__popover {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+}

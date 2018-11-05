@@ -1,0 +1,72 @@
+import {
+  ComponentFactoryResolver,
+  ComponentRef,
+  Injectable,
+  ViewChild,
+} from '@angular/core';
+import { Observable } from 'rxjs/Observable';
+import { Subject } from 'rxjs/Subject';
+import { ModalOutletComponent } from './modal-outlet.component';
+
+export interface DialogPosition {
+  type?: string; // Fixed, absolute, relative, etc.
+  top?: string;
+  bottom?: string;
+  left?: string;
+  right?: string;
+}
+
+@Injectable()
+export class ModalService {
+
+  public result: Subject<any> = new Subject();
+  private outlet: ModalOutletComponent;
+
+  public optionDefaults = {
+    backdropDisabled: true,
+    closeDisabled: false,
+    height: '',
+    width: '',
+    minWidth: '',
+    animation: 'slideInTop .6s', // scaleIn, slideInTop, etc...
+    position: null,
+    data: null,
+  };
+
+  constructor(
+    private cfr: ComponentFactoryResolver
+  ) { }
+
+  public open(type, options = {}) {
+    let meta = {
+      'type': type,
+      'options': Object.assign({}, this.optionDefaults, options)
+    };
+    if (this.outlet.active) {
+      this.outlet.active.destroy();
+    }
+    let factory = this.cfr.resolveComponentFactory(meta.type);
+    this.outlet.active = this.outlet.content.createComponent(factory);
+    this.outlet.active.instance.data = meta.options.data;
+    this.outlet.options = meta.options;
+    this.outlet.visible = true;
+    document.querySelector('body').classList.add('noscroll');
+    return this.result;
+  }
+
+  public close(data) {
+    if (this.outlet.active) {
+      this.outlet.active.destroy();
+    }
+    this.outlet.active = null;
+    this.outlet.visible = false;
+    document.querySelector('body').classList.remove('noscroll');
+    this.result.next(data);
+    this.result.complete();
+    this.result = new Subject();
+  }
+
+  public setOutlet(_outlet) {
+    this.outlet = _outlet;
+  }
+}

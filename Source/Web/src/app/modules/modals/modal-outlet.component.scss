@@ -1,0 +1,194 @@
+@import '~scss/breakpoints';
+@import '~scss/variables';
+@import '~scss/mixins';
+
+.modal {
+  position: fixed;
+  z-index: 200;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: rem-calc(24);
+  background-color: $grayDker;
+  background-color: rgba($grayDker, .8);
+
+  &--noBackdrop {
+    background-color: transparent;
+  }
+
+  &__content {
+    // position set in js
+    margin: 0 auto;
+    z-index: 100;
+    overflow: auto;
+    max-width: 1392px; // content max-width of 1440, minus 48px padding
+    min-width: 280px;
+    max-height: 100%;
+    // Remove bottom padding in favor of bottom margin on .modal__buttons (fix for Firefox bug)
+    padding: rem-calc(32) rem-calc(32) 0;
+    border-radius: 4px;
+    background-color: #ffffff;
+    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.4);
+  }
+
+  &__close {
+    position: absolute;
+    top: 0;
+    right: 0;
+  }
+
+  &__back {
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+
+  &__title {
+    text-align: center;
+  }
+
+  &__buttons {
+    // need top and bottom margin for Firefox
+    margin: rem-calc(32) 0;
+    display: flex;
+    justify-content: flex-end;
+
+    .button:first-child { margin-right: rem-calc(32); }
+
+    &--full .button {
+      width: calc(50% - #{rem-calc(16)});
+      padding: 0;
+    }
+
+    &--marBottom48 { margin: rem-calc(32) 0 rem-calc(48); }
+  }
+
+  &__inputWrap { flex: 1 1 auto; }
+  &__inputWrap0 { flex: 0 0 auto; }
+  &__inputWrap70 { flex: 0 0 rem-calc(70); }
+  &__inputWrap80 { flex: 0 0 rem-calc(80); }
+  &__inputWrap100 { flex: 0 0 rem-calc(100); }
+  &__inputWrap120 { flex: 0 0 rem-calc(120); }
+  &__inputWrap140 { flex: 0 0 rem-calc(140); }
+  &__inputWrap160 { flex: 0 0 rem-calc(160); }
+
+  &__input {
+    width: 100%;
+    margin-bottom: rem-calc(32);
+  }
+
+  &__divider {
+    margin-top: 0;
+  }
+
+  &__details {
+    border-top: 1px solid $border;
+    border-bottom: 1px solid $border;
+    padding: rem-calc(8) 0;
+    margin-bottom: rem-calc(32);
+  }
+
+  &__empty {
+    color: $grayLt;
+    padding: rem-calc(64);
+    text-align: center;
+  }
+}
+
+/*
+@include breakpoint(840 down) {
+  .modal {
+    padding: 2rem;
+  }
+}
+@include breakpoint(600 down) {
+  .modal {
+    padding: 1rem 0;
+  }
+
+  .modal__content {
+    margin: 0 1rem;
+    width: auto !important;
+  }
+}
+*/
+@keyframes scaleIn {
+  from {
+    opacity: .8;
+    transform: scale(.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slideInTop {
+  // removed vh and vw because IE doesn't handle them well
+  0% { transform: translateY(-100%); }
+  70% { transform: translateY(.5rem); }
+  100% { transform: translateY(0); }
+}
+
+@keyframes slideInBottom {
+  0% { transform: translateY(100%); }
+  70% { transform: translateY(-.5rem); }
+  100% { transform: translateY(0); }
+}
+
+@keyframes slideInLeft {
+  0% { transform: translateX(-100%); }
+  70% { transform: translateX(.5rem); }
+  100% { transform: translateX(0); }
+}
+
+@keyframes slideInRight {
+  0% { transform: translateX(100%); }
+  70% { transform: translateX(-.5rem); }
+  100% { transform: translateX(0); }
+}
+
+
+/* Problem Areas (also used in Create Stream) */
+
+.problem {
+
+  &__item {
+    border-bottom: solid 1px $border;
+    padding-bottom: rem-calc(16);
+    position: relative;
+
+    &:first-child { border-top: solid 1px $border; }
+  }
+
+  &__label {
+    margin: 0;
+    text-transform: none;
+    letter-spacing: normal;
+  }
+
+  &__edit {
+    padding-top: rem-calc(16);
+  }
+
+  &__confirm {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba($grayDker, .85);
+    padding: rem-calc(24);
+
+    &--stream { padding: rem-calc(8) rem-calc(24); }
+  }
+
+  &__question {
+    text-align: center;
+    @include bold;
+    color: white;
+    letter-spacing: 1px;
+  }
+}

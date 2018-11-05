@@ -1,0 +1,150 @@
+<div class="ssContainer ssContents">
+  <app-patient-header [patient]="patient"></app-patient-header>
+  <!--/ patient header section-->
+</div> <!--/.ssContainer (for patient header section)-->
+
+<div class="dashBg">
+  <div class="ssContainer ssContents">
+    <h2>Past 30 Days</h2>
+    <div class="smallChartWrap">
+      <div class="smallChart">
+        <label>Avg Engagement</label>
+        <!--TODO: replace fakeChart with actual js charts-->
+        <div class="fakeChart">
+          <div class="fakeChart__inner">
+            <div class="fakeChart__text">
+              <h1 class="chart__number"><span class="percent">82</span></h1>
+            </div>
+          </div>
+        </div> <!--/.fakeChart-->
+        <p class="smallChart__desc">
+          Percentage of tasks and<br />
+          assessments completed
+        </p>
+      </div> <!--/.smallChart (the 1st one)-->
+      <div class="smallChart">
+        <label>Avg Outcome</label>
+        <!--TODO: replace fakeChart with actual js charts-->
+        <div class="fakeChart">
+          <div class="fakeChart__inner">
+            <div class="fakeChart__text">
+              <h1 class="chart__number"><span class="percent">72</span></h1>
+            </div>
+          </div>
+        </div> <!--/.fakeChart-->
+        <p class="smallChart__desc">
+          Results of well-being<br />
+          assessments
+        </p>
+      </div> <!--/.smallChart (the 2nd one)-->
+      <div class="smallChart">
+        <label>Avg Risk Level</label>
+        <!--TODO: replace fakeChart with actual js charts-->
+        <div class="fakeChart">
+          <div class="fakeChart__inner">
+            <div class="fakeChart__text">
+              <h1 class="chart__desc">
+                Low Risk<br />
+                <span class="percent">77</span>
+              </h1>
+            </div>
+          </div>
+        </div> <!--/.fakeChart-->
+        <p class="smallChart__desc">
+          Average of outcome %<br />
+          and engagement %
+        </p>
+      </div> <!--/.smallChart (the 3rd one)-->
+      <div class="smallChart">
+        <label>Satisfaction</label>
+        <!--TODO: replace fakeChart with actual js charts-->
+        <div class="fakeChart">
+          <div class="fakeChart__inner">
+            <div class="fakeChart__text">
+              <h1 class="chart__number"><span class="percent">91</span></h1>
+            </div>
+          </div>
+        </div> <!--/.fakeChart-->
+        <p class="smallChart__desc">
+          Results of satisfaction<br />
+          assessments
+        </p>
+      </div> <!--/.smallChart (the 4th one)-->
+    </div> <!--/.flex (for 30 days charts)-->
+
+    <div class="dashDivider"></div>
+
+    <div class="timeChart">
+      <h2>Results Over Time</h2>
+      <div class="timeChart__header">
+        <div class="flex alignCenter">
+          <label class="noMargin marRight8">Viewing</label>
+          <div class="styledSelect timeChart__weekSelect marRight32">
+            <select class="styledSelect__select">
+              <option>All Weeks</option>
+              <option>Week 1</option>
+              <option>Week 2</option>
+              <option>Week 3</option>
+            </select>
+          </div>
+          <p class="timeChart__key timeChart__key--dotted">
+            Engagement
+          </p>
+          <p class="timeChart__key">
+            Outcomes
+          </p>
+        </div> <!--/.flex (contains key for time chart)-->
+
+      </div> <!--/.timeChart__header-->
+
+      <div class="fakeTimeChart">
+        <!--TODO: Replace with real js chart-->
+      </div>
+
+    </div> <!--/.timeChart-->
+
+    <div class="dashDivider"></div>
+
+    <div class="flex justifySpaceBetween">
+      <app-date-range [datePickerOverrides]="datepickerOptions"></app-date-range>
+      <a [routerLink]="['/billing']" class="button button--iconText">
+        <i class="ss-standard ss-view"></i> View Billing Details
+      </a>
+    </div>
+    <div class="info info--dk info--horiz">
+      <div class="info__cell">
+        <label>Total Hours</label>
+        <h1 class="info__bigNumber">1:16</h1>
+      </div>
+      <div class="info__cell">
+        <label>Billable Hours</label>
+        <h1 class="info__bigNumber">:57</h1>
+      </div>
+      <div class="info__cell">
+        <label>Est. Month Total</label>
+        <h1 class="info__bigNumber">$145.00</h1>
+      </div>
+    </div> <!--/.info (for current month to date)-->
+
+    <div class="flex justifySpaceBetween">
+      <app-date-range [datePickerOverrides]="datepickerOptions"></app-date-range>
+      <a [routerLink]="['/billing']" class="button button--iconText">
+        <i class="ss-standard ss-view"></i> View Billing Details
+      </a>
+    </div>
+    <div class="info info--dk info--horiz">
+      <div class="info__cell">
+        <label>Total Hours</label>
+        <h1 class="info__bigNumber">1:19</h1>
+      </div>
+      <div class="info__cell">
+        <label>Billable Hours</label>
+        <h1 class="info__bigNumber">1:07</h1>
+      </div>
+      <div class="info__cell">
+        <label>Est. Month Total</label>
+        <h1 class="info__bigNumber">$98.00</h1>
+      </div>
+    </div> <!--/.info (for past month)-->
+  </div> <!--/.ssContainer (for patient dashboard section)-->
+</div> <!--/.dashBg-->

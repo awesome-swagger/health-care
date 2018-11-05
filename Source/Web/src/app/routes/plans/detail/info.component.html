@@ -1,0 +1,228 @@
+<div class="ssContainer ssContents">
+  <app-plan-header></app-plan-header>
+  <div class="accordion" [ngClass]="{ 'isOpen' : accord1Open }">
+    <div class="accordion__head" (click)="accord1Open=!accord1Open">
+      <span class="accordion__title">Mountain View (21)</span>
+      <div class="accordion__right">
+        <div class="pill pill--red marRight16">
+          CoCM 2:17
+        </div>
+        <div class="pill pill--purple">
+          High Risk 28%
+        </div>
+        <div class="accordion__arrow">
+          <i class="ss-standard ss-navigateright"></i>
+        </div>
+      </div>
+    </div> <!--/.accordion__head-->
+    <div class="accordion__body">
+      <div class="accordion__contents">
+        <div class="tableWrap fullWidth">
+          <table class="fullWidth">
+            <thead>
+              <tr>
+                <th class="thSortable">
+                  <span class="thSortable__text thSortable__text--left">Patient</span>
+                </th>
+                <th class="thSortable">
+                  <div class="tool">
+                    <span class="thSortable__text">Other Plans</span>
+                    <div class="tool__anchor">
+                      <button class="button button--icon button--icon--small" (click)="tooltip3Open=!tooltip3Open"><i class="ss-info"></i></button>
+                      <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltip3Open }">
+                        <div class="tool__text">This is the number of additional care plans a patient has. Click the number for details.</div>
+                      </div>
+                    </div>
+                  </div>
+                </th>
+                <th class="thSortable">
+                  <span class="thSortable__text">Monthly Time</span>
+                </th>
+                <th class="thSortable">
+                  <span class="thSortable__text">My Tasks This Week</span>
+                </th>
+                <th class="thSortable">
+                  <span class="thSortable__text">Progress</span>
+                </th>
+                <th class="thSortable">
+                  <span class="thSortable__text">Last Contact</span>
+                </th>
+                <th class="thSortable">
+                  <span class="thSortable__text">Engagement</span>
+                </th>
+                <th class="thSortable">
+                  <span class="thSortable__text">Outcomes</span>
+                </th>
+                <th class="thSortable thSortable--sortDown">
+                  <span class="thSortable__text">Risk Level</span>
+                </th>
+                <th class="noPad"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="left hideOverflow">
+                  <a [routerLink]="['/patient/asdf/']" class="picName">
+                    <img class="picName__img" src="../../../assets/img/profile.svg" />
+                    Montgomery Alexander
+                  </a>
+                </td>
+                <td>
+                  <a class="tool__anchor justifyCenter" (click)="tooltip1Open=!tooltip1Open">
+                    2
+                    <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltip1Open }">
+                      <div class="iconText iconText--white iconText--autoHeight marBottom8">
+                        <i class="iconText__icon iconText__icon--noTop icomoon-cocm"></i> Anxiety
+                      </div>
+                      <div class="iconText iconText--white iconText--autoHeight">
+                        <i class="iconText__icon ss-heart"></i> Heart Diseases and Such
+                      </div>
+                    </div>
+                  </a>
+                </td>
+                <td><div class="pill pill--purple">:14</div>
+                </td>
+                <td>
+                  <!--TODO: This link should also open the care team tasks accordion on the plan instance overview page-->
+                  <a [routerLink]="['/patient/asdf/overview']" class="justifyCenter">4</a>
+                </td>
+                <td>
+                  <div class="progress">
+                    Week 8 of 12
+                    <div class="progress__bg">
+                      <div class="progress__bar"></div>
+                    </div>
+                  </div>
+                </td>
+                <td>7 Days</td>
+                <td><div class="pill pill--lime">93%</div></td>
+                <td><div class="pill pill--yellow">73%</div></td>
+                <td><div class="pill pill--yellow">Low Risk 83%</div></td>
+                <td class="noPad">
+                  <button class="button button--icon button--icon--small"
+                  (click)="openReassignPatients()">
+                    <i class="ss-delete"></i>
+                  </button>
+                </td>
+              </tr>
+              <tr>
+                <td class="left hideOverflow">
+                  <a [routerLink]="['/patient/asdf/']" class="picName">
+                    <img class="picName__img" src="../../../assets/img/profile.svg" />
+                    Theresa Beckstrom
+                  </a>
+                </td>
+                <td>
+                  <a class="tool__anchor justifyCenter" (click)="tooltip2Open=!tooltip2Open">
+                    1
+                    <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltip2Open }">
+                      <div class="iconText iconText--white iconText--autoHeight">
+                        <i class="iconText__icon icomoon-cocm"></i> Anxiety
+                      </div>
+                    </div>
+                  </a>
+                </td>
+                <td><div class="pill pill--yellow">:10</div>
+                </td>
+                <td>
+                  <a [routerLink]="['/patient/asdf/overview']" class="justifyCenter">1</a>
+                </td>
+                <td>
+                  <div class="progress">
+                    Week 8 of 12
+                    <div class="progress__bg">
+                      <div class="progress__bar"></div>
+                    </div>
+                  </div>
+                </td>
+                <td>2 Days</td>
+                <td><div class="pill pill--yellow">73%</div></td>
+                <td><div class="pill pill--yellow">77%</div></td>
+                <td><div class="pill pill--yellow">Low Risk 75%</div></td>
+                <td class="noPad">
+                  <button class="button button--icon button--icon--small"
+                  (click)="openReassignPatients()">
+                    <i class="ss-delete"></i>
+                  </button>
+                </td>
+              </tr>
+              <tr>
+                <td class="left hideOverflow">
+                  <a [routerLink]="['/patient/asdf/']" class="picName">
+                    <img class="picName__img" src="../../../assets/img/profile.svg" />
+                    Jennifer Samuelson
+                  </a>
+                </td>
+                <td></td>
+                <td><div class="pill pill--yellow">:10</div>
+                </td>
+                <td>
+                  <a [routerLink]="['/patient/asdf/overview']" class="justifyCenter">1</a>
+                </td>
+                <td>
+                  <div class="progress">
+                    Week 8 of 12
+                    <div class="progress__bg">
+                      <div class="progress__bar"></div>
+                    </div>
+                  </div>
+                </td>
+                <td>2 Days</td>
+                <td><div class="pill pill--yellow">73%</div></td>
+                <td><div class="pill pill--yellow">77%</div></td>
+                <td><div class="pill pill--yellow">Low Risk 75%</div></td>
+                <td class="noPad">
+                  <button class="button button--icon button--icon--small"
+                  (click)="openReassignPatients()">
+                    <i class="ss-delete"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="paginationWrap">
+            <button class="button button--iconText"
+            (click)="addPatientToPlan()">
+              <i class="ss-plus"></i> Add Patient
+            </button>
+            <div class="pagination">
+                <button class="button button--icon button--icon--dis">
+                    <i class="ss-standard ss-skipback"></i>
+                </button>
+                <button class="button button--icon button--icon--dis">
+                    <i class="ss-standard ss-directleft"></i>
+                </button>
+                <span>235 of 588</span>
+                <button class="button button--icon">
+                    <i class="ss-standard ss-directright"></i>
+                </button>
+                <button class="button button--icon">
+                    <i class="ss-standard ss-skipforward"></i>
+                </button>
+            </div> <!--/.pagination-->
+          </div> <!--/.paginationWrap-->
+        </div> <!--/.tableWrap-->
+      </div> <!--/.accordion__contents-->
+    </div> <!--/.accordion__body-->
+  </div> <!--/.accordion-->
+
+  <div class="accordion" [ngClass]="{ 'isOpen' : accord2Open }">
+      <div class="accordion__head" (click)="accord2Open=!accord2Open">
+        <span class="accordion__title">South County Regional (0)</span>
+        <div class="accordion__right">
+          <div class="accordion__arrow">
+            <i class="ss-standard ss-navigateright"></i>
+          </div>
+        </div>
+      </div>
+      <div class="accordion__body">
+        <div class="accordion__contents">
+          <h2 class="center">No patients have been added to this care plan.</h2>
+          <button class="button button--center button--iconText"
+          (click)="addPatientToPlan()">
+            <i class="ss-plus"></i> Add Patient
+          </button>
+        </div>
+      </div>
+    </div> <!--/.accordion-->
+</div> <!--/.ssContainer-->

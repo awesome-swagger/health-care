@@ -1,0 +1,561 @@
+<div class="ssContainer ssContents">
+  <app-plan-header [planTemplate]="planTemplate"></app-plan-header>
+  <h5 class="marBottom32">Note: Certain aspects of care plans, including individual goals and medication tasks, will be added after a patients is assigned to a care plan, as needed.</h5>
+
+  <div class="accordion" [ngClass]="{'isOpen': accordionsOpen['goals']}">
+    <div class="accordion__head" (click)="accordionsOpen['goals'] = !accordionsOpen['goals']">
+      <span class="accordion__title">Care Plan Goals ({{goalTemplates.length}})</span>
+      <div class="accordion__right">
+        <div class="accordion__arrow">
+          <i class="ss-standard ss-navigateright"></i>
+        </div>
+      </div>
+    </div> <!--/.accordion__head-->
+    <div class="accordion__body">
+      <div class="accordion__contents">
+        <table>
+          <thead>
+            <tr>
+              <th class="thSortable thSortable--sortDown">
+                <div class="tool">
+                  <span class="thSortable__text thSortable__text--left">Goal Name</span>
+                  <div class="tool__anchor">
+                    <button class="button button--icon button--icon--small"
+                      (click)="tooltipsOpen['goalFieldHelp'] = !tooltipsOpen['goalFieldHelp']">
+                        <i class="ss-help"></i>
+                    </button>
+                    <div class="tool__tip tool__tip--bottom tool__tip--left" [ngClass]="{'isOpen': tooltipsOpen['goalFieldHelp'] }">
+                      <div class="tool__text">
+                        Goals provide direction and purpose for the patient and Care Team. Goals can be changed for individual patients on the Patient Care Plan view.
+                      </div>
+                    </div>
+                  </div> <!--/.tool__anchor-->
+                </div> <!--/.tool-->
+              </th>
+              <th class="thSortable">
+                <span class="thSortable__text thSortable__text--left">Duration</span>
+              </th>
+              <th class="thSortable">
+                <span class="thSortable__text">Start Day</span>
+              </th>
+
+              <th class="noPad"></th>
+              <th class="noPad"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let goal of goalTemplates">
+              <td class="left">{{goal.name}}</td>
+              <td class="left">{{goal.duration_weeks != -1 ? goal.duration_weeks + ' Weeks' : 'Until Plan Ends'}} </td>
+              <td>{{goal.start_on_day}}</td>
+              <td class="noPad">
+                <button class="button button--icon button--icon--small"
+                (click)="editGoal(goal)">
+                  <i class="ss-write"></i>
+                </button>
+              </td>
+              <td class="noPad">
+                <button class="button button--icon button--icon--small"
+                (click)="confirmDeleteGoal()">
+                  <i class="ss-delete"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <button class="button button--iconText"
+        (click)="openGoal()">
+          <i class="ss-plus"></i> Add Goal
+        </button>
+      </div> <!--/.accordion__contents-->
+    </div> <!--/.accordion__body-->
+  </div> <!--/.accordion (for care plan goals)-->
+
+  <div class="accordion" [ngClass]="{ 'isOpen' : accordionsOpen['teamTasks'] }">
+    <div class="accordion__head" (click)="accordionsOpen['teamTasks']=!accordionsOpen['teamTasks']">
+      <span class="accordion__title">Care Manager and Team Tasks ({{teamTaskTemplates.length}})</span>
+      <div class="accordion__right">
+        <div class="accordion__arrow">
+          <i class="ss-standard ss-navigateright"></i>
+        </div>
+      </div>
+    </div> <!--/.accordion__head-->
+    <div class="accordion__body">
+      <div class="accordion__contents">
+        <table *ngIf="teamMemberTemplates.length > 0">
+          <thead>
+            <tr>
+              <th class="thSortable thSortable--sortDown">
+                <div class="tool">
+                  <span class="thSortable__text thSortable__text--left">Task</span>
+                  <div class="tool__anchor">
+                    <button class="button button--icon button--icon--small"
+                    (click)="tooltipsOpen['managerTaskFieldHelp'] = !tooltipsOpen['managerTaskFieldHelp']">
+                      <i class="ss-help"></i>
+                    </button>
+                    <div class="tool__tip tool__tip--bottom tool__tip--left" [ngClass]="{'isOpen': tooltipsOpen['managerTaskFieldHelp'] }">
+                      <div class="tool__text">
+                        Care Team tasks can be assigned to one or more members of the Care Team.
+                      </div>
+                    </div>
+                  </div> <!--/.tool__anchor-->
+                </div>
+              </th>
+              <th class="left">
+                <span>Roles</span>
+              </th>
+              <th class="thSortable">
+                <span class="thSortable__text">Start Day</span>
+              </th>
+              <th class="thSortable">
+                <span class="thSortable__text thSortable__text--left">Frequency</span>
+              </th>
+              <th class="thSortable">
+                <span class="thSortable__text thSortable__text--left">Repeats</span>
+              </th>
+              <th class="thSortable">
+                <span class="thSortable__text">Appears</span>
+              </th>
+              <th class="thSortable">
+                <span class="thSortable__text">Due</span>
+              </th>
+              <th class="noPad"></th>
+              <th class="noPad"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let task of teamMemberTemplates">
+              <td class="left">{{task.name | titlecase}} </td>
+              <td class="left">{{task.is_manager_task ? 'CM':'CT'}}</td>
+              <td>{{task.start_on_day}}</td>
+              <td class="left">{{task.frequency | frequencyTransform | titlecase}}</td>
+              <td class="left"> {{task.repeat_amount != -1 ? task.repeat_amount :'Until Plan Ends'}}</td>
+              <td>{{task.appear_time | timeTransform | date: 'shortTime' }}</td>
+              <td>{{task.due_time | timeTransform | date: 'shortTime'}}</td>
+              <td class="noPad">
+                <button class="button button--icon button--icon--small"
+                (click)="editCTTask(task)">
+                  <i class="ss-write"></i>
+                </button>
+              </td>
+              <td class="noPad">
+                <button class="button button--icon button--icon--small"
+                (click)="confirmDeleteCTTask(task)">
+                  <i class="ss-delete"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <button class="button button--iconText"
+        (click)="addCTTask()" >
+          <i class="ss-plus"></i> Add Care Team Task
+        </button>
+      </div> <!--/.accordion__contents-->
+    </div> <!--/.accordion__body-->
+  </div> <!--/.accordion (for CT tasks)-->
+
+  <div class="accordion" [ngClass]="{'isOpen': accordionsOpen['patientTasks'] }">
+    <div class="accordion__head" (click)="accordionsOpen['patientTasks'] = !accordionsOpen['patientTasks']">
+      <span class="accordion__title">Patient Tasks (4)</span>
+      <div class="accordion__right">
+        <div class="accordion__arrow">
+          <i class="ss-standard ss-navigateright"></i>
+        </div>
+      </div>
+    </div> <!--/.accordion__head-->
+    <div class="accordion__body">
+      <div class="accordion__contents">
+
+        <div class="flex alignCenter">
+          <h3 class="noMargin">Tasks ({{patientTaskTemplates.length}})</h3>
+          <div class="tool__anchor">
+            <button class="button button--icon button--icon--small"
+            (click)="tooltipsOpen['patientTasksHelp'] = !tooltipsOpen['patientTasksHelp']">
+              <i class="ss-help"></i>
+            </button>
+            <div class="tool__tip tool__tip--bottom tool__tip--left" [ngClass]="{'isOpen': tooltipsOpen['patientTasksHelp'] }">
+              <div class="tool__text">
+                Tasks include any task not specific to reporting vitals or symptoms.
+              </div>
+            </div>
+          </div> <!--/.tool__anchor-->
+        </div> <!--/.flex (for table title and tooltip)-->
+
+        <table>
+          <thead>
+            <tr>
+              <th class="thSortable thSortable--sortDown">
+                <span class="thSortable__text thSortable__text--left">Task</span>
+              </th>
+              <th class="thSortable">
+                <span class="thSortable__text">Start Day</span>
+              </th>
+              <th class="thSortable">
+                <span class="thSortable__text thSortable__text--left">Frequency</span>
+              </th>
+              <th class="thSortable">
+                <span class="thSortable__text thSortable__text--left">Repeats</span>
+              </th>
+              <th class="thSortable">
+                <span class="thSortable__text">Appears</span>
+              </th>
+              <th class="thSortable">
+                <span class="thSortable__text">Due</span>
+              </th>
+              <th class="noPad"></th>
+              <th class="noPad"></th>
+            </tr>
+          </thead>
+          <tbody *ngFor="let pTask of patientTaskTemplates">
+            <tr>
+              <td class="left">{{pTask.name | titlecase}}</td>
+              <td>{{pTask.start_on_day}}</td>
+              <td class="left">{{pTask.frequency | frequencyTransform | titlecase}}</td>
+              <td class="left">{{pTask.repeat_amount != -1 ? pTask.repeat_amount :'Until Plan Ends'}}</td>
+              <td>{{pTask.appear_time | timeTransform | date: 'shortTime'}}</td>
+              <td>{{pTask.due_time | timeTransform | date: 'shortTime'}}</td>
+              <td class="noPad">
+                <button class="button button--icon button--icon--small"
+                (click)="editTask(pTask)">
+                  <i class="ss-write"></i>
+                </button>
+              </td>
+              <td class="noPad">
+                <button class="button button--icon button--icon--small"
+                (click)="confirmDeleteTask(pTask)">
+                  <i class="ss-delete"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <button class="button button--iconText marBottom48"
+        (click)="addTask()">
+          <i class="ss-plus"></i> Add Task
+        </button>
+        <!--/ patient tasks: tasks section-->
+
+        <div class="flex alignCenter">
+          <h3 class="noMargin">Assessments ({{assessmentTemplates.length}})</h3>
+          <div class="tool__anchor">
+            <button class="button button--icon button--icon--small"
+            (click)="toolPTAOpen=!toolPTAOpen">
+              <i class="ss-help"></i>
+            </button>
+            <div class="tool__tip tool__tip--bottom tool__tip--left" [ngClass]="{ 'isOpen' : toolPTAOpen }">
+              <div class="tool__text">
+                Assessments provide a 1-5 scale for patients to give feedback. 1 is the worst result; 5 is the best. The average score from a patient’s outcome assessments shows as their outcome %. The average score from a patient’s satisfaction assessments shows as their satisfaction %.
+              </div>
+            </div>
+          </div> <!--/.tool__anchor-->
+        </div> <!--/.flex (for table title and tooltip)-->
+
+        <table>
+          <thead>
+            <tr>
+              <th class="thSortable thSortable--sortDown">
+                <span class="thSortable__text thSortable__text--left">Assessment</span>
+              </th>
+              <th class="thSortable">
+                <span class="thSortable__text">Start Day</span>
+              </th>
+              <th class="thSortable">
+                <span class="thSortable__text thSortable__text--left">Frequency</span>
+              </th>
+              <th class="thSortable">
+                <span class="thSortable__text thSortable__text--left">Repeats</span>
+              </th>
+              <th class="thSortable">
+                <span class="thSortable__text">Appears</span>
+              </th>
+              <th class="thSortable">
+                <span class="thSortable__text">Due</span>
+              </th>
+              <th class="thSortable">
+                <div class="tool">
+                  <span class="thSortable__text">Outcome</span>
+                  <div class="tool__anchor">
+                    <button class="button button--icon button--icon--small"
+                    (click)="toolPTA2Open=!toolPTA2Open">
+                      <i class="ss-help"></i>
+                    </button>
+                    <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : toolPTA2Open }">
+                      <div class="tool__text">
+                        The average score from a patient’s outcome assessments shows as their outcome %.
+                      </div>
+                    </div>
+                  </div> <!--/.tool__anchor-->
+                </div> <!--/.tool-->
+              </th>
+              <th class="thSortable">
+                <div class="tool">
+                  <span class="thSortable__text">Satisfaction</span>
+                  <div class="tool__anchor">
+                    <button class="button button--icon button--icon--small"
+                    (click)="toolPTA3Open=!toolPTA3Open">
+                      <i class="ss-help"></i>
+                    </button>
+                    <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : toolPTA3Open }">
+                      <div class="tool__text">
+                        The average score from a patient’s satisfaction assessments shows as their satisfaction %.
+                      </div>
+                    </div>
+                  </div> <!--/.tool__anchor-->
+                </div> <!--/.tool-->
+              </th>
+              <th class="noPad"></th>
+              <th class="noPad"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let asmt of planAssessements">
+              <td class="left">{{asmt.name | titlecase}}</td>
+
+              <td>{{asmt.start_on_day}}</td>
+              <td class="left">{{asmt.frequency | frequencyTransform | titlecase}}</td>
+              <td class="left">{{asmt.repeat_amount != -1 ? asmt.repeat_amount :'Until Plan Ends'}}</td>
+              <td>{{asmt.appear_time | timeTransform | date: 'shortTime'}}</td>
+              <td>{{asmt.due_time | timeTransform | date: 'shortTime'}}</td>
+              <td><i class="ss-standard ss-check iconSmall"></i></td>
+              <td></td>
+              <td class="noPad">
+                <button class="button button--icon button--icon--small"
+                (click)="editAssessment()">
+                  <i class="ss-write"></i>
+                </button>
+              </td>
+              <td class="noPad">
+                <button class="button button--icon button--icon--small"
+                (click)="confirmDeleteAssessment()">
+                  <i class="ss-delete"></i>
+                </button>
+              </td>
+            </tr>
+            <!-- <tr>
+              <td class="left">Evening Assessment</td>
+              <td>1</td>
+              <td class="left">Daily</td>
+              <td class="left">Until Plan Ends</td>
+              <td>7:45&nbsp;PM</td>
+              <td>8:00&nbsp;PM</td>
+              <td></td>
+              <td><i class="ss-standard ss-check iconSmall"></i></td>
+              <td class="noPad">
+                <button class="button button--icon button--icon--small"
+                (click)="editAssessment()">
+                  <i class="ss-write"></i>
+                </button>
+              </td>
+              <td class="noPad">
+                <button class="button button--icon button--icon--small"
+                (click)="confirmDeleteAssessment()">
+                  <i class="ss-delete"></i>
+                </button>
+              </td>
+            </tr> -->
+          </tbody>
+        </table>
+        <button class="button button--iconText marBottom48"
+        (click)="addAssessment()">
+          <i class="ss-plus"></i> Add Assessment
+        </button>
+        <!--/ patient tasks: assessments section-->
+
+        <div class="flex alignCenter">
+          <h3 class="noMargin">Symptom Reports (1)</h3>
+          <div class="tool__anchor">
+            <button class="button button--icon button--icon--small"
+            (click)="toolPTSOpen=!toolPTSOpen">
+              <i class="ss-help"></i>
+            </button>
+            <div class="tool__tip tool__tip--bottom tool__tip--left" [ngClass]="{ 'isOpen' : toolPTSOpen }">
+              <div class="tool__text">
+                Symptom reports allow the patient to list any symptoms they are experiencing, along with the severity of those symptoms.
+              </div>
+            </div>
+          </div> <!--/.tool__anchor-->
+        </div> <!--/.flex (for table title and tooltip)-->
+
+        <table>
+          <thead>
+            <tr>
+              <th class="thSortable thSortable--sortDown">
+                <span class="thSortable__text">Start Day</span>
+              </th>
+              <th class="thSortable">
+                <span class="thSortable__text thSortable__text--left">Frequency</span>
+              </th>
+              <th class="thSortable">
+                <span class="thSortable__text thSortable__text--left">Repeats</span>
+              </th>
+              <th class="thSortable">
+                <span class="thSortable__text">Appears</span>
+              </th>
+              <th class="thSortable">
+                <span class="thSortable__text">Due</span>
+              </th>
+              <th class="noPad"></th>
+              <th class="noPad"></th>
+            </tr>
+          </thead>
+          <tbody *ngFor="let sympt of symptomTemplates">
+            <tr>
+              <td>{{sympt.start_on_day}}</td>
+              <td class="left">{{sympt.frequency | frequencyTransform | titlecase}}</td>
+              <td class="left">{{sympt.repeat_amount != -1 ? sympt.repeat_amount :'Until Plan Ends'}}</td>
+              <td>{{sympt.appear_time | timeTransform | date: 'shortTime'}}</td>
+              <td>{{sympt.due_time | timeTransform | date: 'shortTime'}}</td>
+              <td class="noPad">
+                <button class="button button--icon button--icon--small"
+                (click)="editSymptom(sympt)">
+                  <i class="ss-write"></i>
+                </button>
+              </td>
+              <td class="noPad">
+                <button class="button button--icon button--icon--small"
+                (click)="confirmDeleteSymptom(sympt)">
+                  <i class="ss-delete"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <button class="button button--iconText marBottom48"
+        (click)="addSymptom()">
+          <i class="ss-plus"></i> Add Symptom Report
+        </button>
+        <!--/ patient tasks: symptoms section-->
+
+        <div class="flex alignCenter">
+          <h3 class="noMargin">Vitals (1)</h3>
+          <div class="tool__anchor">
+            <button class="button button--icon button--icon--small"
+            (click)="toolPTVOpen=!toolPTVOpen">
+              <i class="ss-help"></i>
+            </button>
+            <div class="tool__tip tool__tip--bottom tool__tip--left" [ngClass]="{ 'isOpen' : toolPTVOpen }">
+              <div class="tool__text">
+                Vitals are reports on specific, measurable aspects of a patient’s health, like blood pressure.
+              </div>
+            </div>
+          </div> <!--/.tool__anchor-->
+        </div> <!--/.flex (for table title and tooltip)-->
+
+        <table>
+          <thead>
+            <tr>
+              <th class="thSortable thSortable--sortDown">
+                <span class="thSortable__text thSortable__text--left">Vital</span>
+              </th>
+              <th class="thSortable">
+                <span class="thSortable__text">Start Day</span>
+              </th>
+              <th class="thSortable">
+                <span class="thSortable__text thSortable__text--left">Frequency</span>
+              </th>
+              <th class="thSortable">
+                <span class="thSortable__text thSortable__text--left">Repeats</span>
+              </th>
+              <th class="thSortable">
+                <span class="thSortable__text">Appears</span>
+              </th>
+              <th class="thSortable">
+                <span class="thSortable__text">Due</span>
+              </th>
+              <th class="noPad"></th>
+              <th class="noPad"></th>
+            </tr>
+          </thead>
+          <tbody *ngFor="let vital of vitalTemplates">
+            <tr>
+              <td class="left">{{vital.name}}</td>
+              <td>1</td>
+              <td class="left">{{vital.frequency | frequencyTransform | titlecase}}</td>
+              <td class="left">{{vital.repeat_amount != -1 ? vital.repeat_amount :'Until Plan Ends'}}</td>
+              <td>{{vital.appear_time | timeTransform | date: 'shortTime'}}</td>
+              <td>{{vital.due_time | timeTransform | date: 'shortTime'}}</td>
+              <td class="noPad">
+                <button class="button button--icon button--icon--small"
+                (click)="editVital(vital)">
+                  <i class="ss-write"></i>
+                </button>
+              </td>
+              <td class="noPad">
+                <button class="button button--icon button--icon--small"
+                (click)="confirmDeleteVital(vital)">
+                  <i class="ss-delete"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <button class="button button--iconText marBottom48"
+        (click)="addVital(vitalTemplates)">
+          <i class="ss-plus"></i> Add Vital
+        </button>
+        <!--/ patient tasks: vitals section-->
+
+        <div class="flex alignCenter">
+          <h3 class="noMargin">Message Streams (1)</h3>
+          <div class="tool__anchor">
+            <button class="button button--icon button--icon--small"
+            (click)="toolPTMOpen=!toolPTMOpen">
+              <i class="ss-help"></i>
+            </button>
+            <div class="tool__tip tool__tip--bottom tool__tip--left" [ngClass]="{ 'isOpen' : toolPTMOpen }">
+              <div class="tool__text">
+                One message is deployed to the patient each day they complete all of their tasks.
+              </div>
+            </div>
+          </div> <!--/.tool__anchor-->
+        </div> <!--/.flex (for table title and tooltip)-->
+
+        <table>
+          <thead>
+            <tr>
+              <th class="thSortable thSortable--sortDown">
+                <span class="thSortable__text thSortable__text--left">Stream</span>
+              </th>
+              <th class="thSortable">
+                <span class="thSortable__text thSortable__text--left">Type</span>
+              </th>
+              <th class="thSortable">
+                <span class="thSortable__text">Messages</span>
+              </th>
+              <th class="noPad"></th>
+              <th class="noPad"></th>
+            </tr>
+          </thead>
+          <tbody *ngFor="let msg of messageQueues">
+            <tr>
+              <td class="left">{{msg.name }}</td>
+              <td class="left">{{msg.type}}</td>
+              <td>3</td>
+              <td class="noPad">
+                <button class="button button--icon button--icon--small"
+                (click)="editStream()">
+                  <i class="ss-write"></i>
+                </button>
+              </td>
+              <td class="noPad">
+                <button class="button button--icon button--icon--small"
+                (click)="confirmDeleteStream()">
+                  <i class="ss-delete"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <button class="button button--iconText"
+        (click)="addStream()">
+          <i class="ss-plus"></i> Add Message Stream
+        </button>
+        <!--/ patient tasks: messages section-->
+
+
+      </div> <!--/.accordion__contents-->
+    </div> <!--/.accordion__body-->
+  </div> <!--/.accordion (for patient tasks)-->
+
+</div> <!--/.ssContainer-->

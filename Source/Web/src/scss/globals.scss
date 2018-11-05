@@ -1,0 +1,1554 @@
+/* APP-SPECIFIC GLOBAL RULES
+(imported into app.component.ts styleUrls, right after defaults and typography)
+---------------------------------------- */
+@import 'functions';
+@import 'mixins';
+@import 'variables';
+
+/* Helper Classes
+---------------------------------------- */
+
+/* Flexbox Helpers */
+
+.flex { display: flex; }
+
+.alignCenter { align-items: center; }
+.alignEnd { align-items: flex-end;; }
+
+.justifyCenter { justify-content: center; }
+.justifySpaceAround { justify-content: space-around; }
+.justifySpaceBetween { justify-content: space-between; }
+.justifyEnd { justify-content: flex-end; }
+
+.wrap { flex-wrap: wrap; }
+
+.flexHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: rem-calc(32);
+}
+
+.cols {
+  display: flex;
+  justify-content: space-between;
+
+  &--left {
+    justify-content: flex-start;
+  }
+
+  &__colBig {
+    flex: 2 1 auto;
+  }
+
+  &__colSmall {
+    flex: 1 1 auto;
+  }
+}
+
+
+/* Text Alignment Helpers */
+
+.left { text-align: left; }
+
+.center { text-align: center; }
+
+.right { text-align: right; }
+
+
+/* Padding & Margin Helpers */
+
+.noPad { padding: 0; }
+
+.noMargin { margin: 0; }
+
+.marCenter {
+    margin-left: auto;
+    margin-right: auto;
+
+    &--twoThirds { width: 66.67%; }
+}
+
+.marRight8 { margin-right: rem-calc(8); }
+.marRight16 { margin-right: rem-calc(16); }
+.marRight24 { margin-right: rem-calc(24); }
+.marRight32 { margin-right: rem-calc(32); }
+.marRight48 { margin-right: rem-calc(48); }
+.marRight96 { margin-right: rem-calc(96); }
+
+.marBottom8 { margin-bottom: rem-calc(8); }
+.marBottom16 { margin-bottom: rem-calc(16); }
+.marBottom24 { margin-bottom: rem-calc(24); }
+.marBottom32 { margin-bottom: rem-calc(32); }
+.marBottom48 { margin-bottom: rem-calc(48); }
+.marBottom64 { margin-bottom: rem-calc(64); }
+
+
+/* Position Helpers */
+
+.relative { position: relative; }
+
+
+/* Misc. Helpers */
+
+.fullWidth {
+  width: 100%;
+
+  &--scrollGuard {
+    width: calc(100% - #{rem-calc(24)});
+  }
+}
+
+.halfWidth { width: 50%; }
+
+.height48 { height: 48px; }
+
+.red { color: $red; }
+
+.asterisk::after { content: '*'; }
+
+// style uls to browser default
+.disc { @include disc; }
+
+
+/* Links */
+
+a {
+  color: $green;
+  text-decoration: none;
+  @include transition;
+  display: flex;
+  align-items: center;
+  // min-height and min-width required for min click target; had to change this to height for IE
+  height: rem-calc(48);
+  min-width: rem-calc(48);
+
+  [class*="ss-"] { color: inherit; }
+
+  &:link, &:visited {
+    color: $green;
+  }
+
+  &:hover, &:active {
+    color: $greenDk;
+  }
+}
+
+.link {
+
+  &--big {
+    font-size: rem-calc(24);
+    display: block;
+    margin: 0 auto;
+  }
+
+  &--red {
+    color: $red;
+
+    &:link, &:visited { color: $red; }
+
+    &:hover, &:active { color: darken($red, 10%); }
+  }
+}
+
+/* Errors */
+
+.error {
+  color: $red;
+
+  [class*="ss-"], [class*="iconmoon-"] {
+    color: $red;
+  }
+
+  &__text {
+    @include bold;
+    font-size: rem-calc(12);
+  }
+}
+
+/* PicName and IconText */
+
+/* PicName is a profile pic followed by a name; it may or may not be a link. If it's a link, apply the class to the <a> tag.  */
+
+.picName {
+  display: flex;
+  align-items: center;
+
+  &__img {
+    // All profile pics should be squares; ergo, no need to set height here
+    width: rem-calc(32); // needed for Chrome
+    flex: 0 0 rem-calc(32); // needed for Firefox
+    border-radius: 100%;
+    margin-right: rem-calc(8);
+
+    &--med {
+      width: rem-calc(48);
+      flex: 0 0 rem-calc(48);
+    }
+
+    &--big {
+        width: rem-calc(64); // needed for Chrome
+        flex: 0 0 rem-calc(64); // needed for Firefox
+        margin-right: rem-calc(16);
+    }
+  }
+}
+
+/* IconText is an icon followed by text; it may or may not be a link. If it's a link, apply the class to the <a> tag.  */
+
+.iconText {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  height: rem-calc(48);
+
+  &--autoHeight { height: auto; }
+
+  &--wrap { white-space: normal; }
+
+  &--truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 300px;
+  }
+
+  &__icon {
+    margin-right: rem-calc(8);
+    // hack to address line-height weirdness of ss icon fonts
+    margin-top: rem-calc(8);
+
+    // for use with icmoon icons
+    &--noTop {
+      margin-top: 0;
+    }
+
+    &--big {
+      font-size: rem-calc(32);
+    }
+  }
+
+  &--white {
+    color: white;
+
+    [class*="ss-"], [class*="icomoon-"] { color: white; }
+  }
+}
+
+
+/* Buttons */
+
+.button {
+  // font-family declaration necessary for Firefox in Windows
+  font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  @include bold;
+  letter-spacing: rem-calc(2);
+  text-transform: uppercase;
+  text-align: center;
+  font-size: 1rem;
+  border-radius: rem-calc(4);
+  border: none;
+  color: white;
+  background-color: $green;
+  line-height: 1;
+  padding: 0 rem-calc(32);
+  height: rem-calc(48);
+  white-space: nowrap;
+  @include transition;
+
+  &:-moz-focusring {
+    color: transparent;
+    text-shadow: 0 0 0 $grayDk; // same as text color
+  }
+
+  &:hover, &:active {
+    background-color: $greenDk;
+  }
+
+  &--center {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  &--right {
+    margin-left: auto;
+  }
+
+  &:disabled {
+      background-color: $greenLt;
+      cursor: default;
+
+      &:hover, &:active {
+        background-color: $greenLt;
+      }
+  }
+
+  &--2nd {
+    color: $green;
+    border: 1px solid $green;
+    background-color: white;
+
+    &:hover, &:active {
+      background-color: white;
+      color: $greenDk;
+      border-color: $greenDk;
+    }
+
+    &:disabled {
+        color: $greenLt;
+        border-color: $greenLt;
+        cursor: default;
+
+        &:hover, &:active {
+          color: $greenLt;
+          border-color: $greenLt;
+        }
+    }
+  }
+
+  &--icon {
+    background-color: transparent;
+    padding: 0;
+    width: rem-calc(48);
+    font-size: rem-calc(24);
+
+    // nested class for icons within buttons
+    [class*="ss-"] {
+      // hack to vertically center icon font properly
+      margin-top: rem-calc(6);
+      color: $green;
+      @include transition;
+    }
+
+    &:hover, &:active {
+      background-color: transparent;
+
+      [class*="ss-"] { color: $greenDk; }
+    }
+
+    &:disabled {
+        cursor: default;
+
+        [class*="ss-"] { color: $greenLt; }
+
+        &:hover, &:active {
+          [class*="ss-"] { color: $greenLt; }
+        }
+    }
+
+    &--small {
+
+      [class*="ss-"] {
+        font-size: rem-calc(16);
+        // hack to vertically center icon font properly
+        margin-top: rem-calc(4);
+      }
+    }
+
+    &--nav {
+      height: rem-calc(64);
+
+      [class*="ss-"] { color: white; }
+
+      &:hover, &:active {
+        [class*="ss-"] { color: $offWhite; }
+      }
+    }
+
+    &--white {
+      [class*="ss-"] { color: white; }
+
+      &:hover, &:active {
+        [class*="ss-"] { color: $offWhite; }
+      }
+    }
+  }
+
+  &--iconText {
+    color: $green;
+    background-color: transparent;
+    //padding: 0 0 0 2rem;
+    padding: 0;
+    justify-content: flex-start;
+    //position: relative;
+
+    // nested class for icons within buttons
+    [class*="ss-"] {
+      // hack to vertically center icon font properly
+      //position: absolute;
+      margin-top: rem-calc(6);
+      margin-right: rem-calc(8);
+      //left: 0;
+      color: $green;
+      @include transition;
+    }
+
+    &:hover, &:active {
+      background-color: transparent;
+      color: $greenDk;
+
+      [class*="ss-"] { color: $greenDk; }
+
+    }
+
+    &:disabled {
+      color: $greenLt;
+      cursor: default;
+
+      [class*="ss-"] { color: $greenLt; }
+
+      &:hover, &:active {
+        color: $greenLt;
+
+        [class*="ss-"] { color: $greenLt; }
+      }
+    }
+  }
+
+  // for showing buttons inline with form elements
+  &--flex {
+    flex: 0 0 rem-calc(48);
+  }
+}
+
+
+/* Dividers */
+
+.divider {
+  border: none;
+  border-bottom: 1px solid $border;
+  margin-top: rem-calc(32);
+  margin-bottom: rem-calc(32);
+
+  &--dk {
+    border-bottom: 1px solid $borderDk;
+  }
+
+  &--bigMargin {
+    margin-top: rem-calc(48);
+    margin-bottom: rem-calc(48);
+  }
+
+  &--smallMargin {
+    margin-top: rem-calc(16);
+    margin-bottom: rem-calc(16);
+  }
+
+  &--smallTop {
+    margin-top: rem-calc(16);
+  }
+}
+
+
+/* Text Inputs */
+
+.input {
+  border-radius: rem-calc(4);
+  background: white;
+  border: 1px solid $borderDk;
+  font-size: rem-calc(16);
+  display: flex;
+  align-items: center;
+  height: rem-calc(48);
+  padding: 0 rem-calc(16);
+  @include placeholderColor($gray);
+  @include transition;
+  // need font-family to override Firefox textarea font
+  font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  outline: transparent;
+
+  &:focus {
+    border-color: $borderDkest;
+  }
+
+  &--search {
+    background: white url("../assets/img/search.svg") no-repeat right;
+    padding-right: rem-calc(48);
+  }
+
+  &--nav {
+    background: transparent url("../assets/img/search--white.svg") no-repeat right;
+    padding-right: rem-calc(64);
+    margin-right: rem-calc(8);
+    height: rem-calc(64);
+    color: white;
+    border: none;
+    border-left: 1px solid $offWhite;
+    border-right: 1px solid $offWhite;
+    border-radius: 0;
+    @include placeholderColor($offWhite);
+
+    &:focus {
+      border-left-color: white;
+      border-right-color: white;
+    }
+  }
+
+  &--textarea {
+    width: 100%;
+    height: auto;
+    resize: none;
+    padding: rem-calc(16);
+    line-height: 1.4;
+  }
+
+  &--small {
+    width: 50%;
+  }
+}
+
+/* Checkboxes & Radio Buttons */
+
+.styledInput {
+  display: flex;
+  align-items: center;
+  height: rem-calc(48);
+  cursor: pointer;
+  // reset styling because it's all wrapped in a label
+  font-size: rem-calc(16);
+  text-transform: none;
+  color: $grayDk;
+  @include regular;
+  letter-spacing: normal;
+  margin-bottom: 0;
+
+  &--inline {
+    margin-left: rem-calc(24);
+    align-self: flex-end;
+  }
+
+  &--marBottom32 { margin-bottom: rem-calc(32); }
+
+  &__input {
+    display: none;
+
+    &:checked {
+
+      &+ .styledInput__box {
+        background-color: $green;
+        border-color: $green;
+      }
+
+      &+ .styledInput__radio {
+        background-color: $green;
+        border-color: $green;
+      }
+
+    }
+  }
+
+  &__box {
+    width: rem-calc(24);
+    height: rem-calc(24);
+    background: white url('../assets/img/check.svg') center no-repeat;
+    border: 1px solid $borderDk;
+    border-radius: rem-calc(4);
+    margin-right: rem-calc(8);
+    @include transition;
+    flex: 0 0 rem-calc(24);
+  }
+
+  &__radio {
+    width: rem-calc(24);
+    height: rem-calc(24);
+    background: white;
+    border: 1px solid $borderDk;
+    border-radius: 50%;
+    margin-right: rem-calc(8);
+    @include transition(all, .2s, linear);
+    flex: 0 0 rem-calc(24);
+    position: relative;
+
+    &::after {
+      content: "";
+      width: rem-calc(8);
+      height: rem-calc(8);
+      background: white;
+      border-radius: 50%;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+  }
+}
+
+
+/* Selects */
+
+.styledSelect {
+  height: rem-calc(48);
+  width: 100%;
+  max-width: rem-calc(800);
+  min-width: rem-calc(80);
+  position: relative;
+  border: 1px solid $borderDk;
+  border-radius: rem-calc(4);
+  overflow: hidden;
+  background: white;
+
+  &::before {
+    content: '';
+    background: white url('../assets/img/arrow-down.svg') rem-calc(8) center no-repeat;
+    pointer-events: none;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    width: rem-calc(32);
+  }
+
+  &--120 { width: rem-calc(120); }
+
+  &__select {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    height: 100%;
+    width: calc(100%);
+    font-size: rem-calc(16);
+    -webkit-appearance: none;
+    padding-left: rem-calc(16);
+    // need font-family to override Firefox Windows font
+    font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    cursor: pointer;
+    &:-moz-focusring {
+      color: transparent;
+      text-shadow: 0 0 0 $grayDk; // same as text color
+    }
+    &:focus {
+      outline: none !important;
+      box-shadow: 0,0,0,transparent;
+      &::-ms-value {
+        background-color: transparent;
+        color: $grayDk; // same as text color
+      }
+    }
+  }
+}
+
+
+/* Flex (i.e. inline) Forms */
+
+.flexForm {
+  display: flex;
+  align-items: center;
+
+  &__input {
+    // for some reason settting width with flex broke the container
+    width: rem-calc(136);
+    margin-right: rem-calc(16);
+  }
+
+  &__title {
+    // for some reason settting width with flex broke the container
+    width: 96px;
+  }
+
+  &__search {
+    width: calc(100% - #{rem-calc(48)});
+  }
+}
+
+
+/* Dropdowns */
+
+.drop {
+  position: relative;
+
+  &__input {
+    @include likeInput(arrow-down-bg);
+    min-width: rem-calc(256);
+    max-width: rem-calc(320);
+
+    &--select {
+      min-width: rem-calc(320);
+    }
+  }
+
+  &__dropdown {
+    display: none;
+    position: absolute;
+    z-index: 100;
+    top: 100%;
+    left: 0;
+    background: white;
+    border-radius: rem-calc(4);
+    min-width: rem-calc(256);
+    @include shadow;
+    animation: dropIn .2s;
+
+    &--right {
+      left: auto;
+      right: 0;
+    }
+
+    &--notifications {
+      min-width: rem-calc(480);
+    }
+
+    // used for stylable options for care plan select in patient header
+    &--select {
+      min-width: rem-calc(320);
+    }
+
+    &.isOpen {
+      display: block;
+    }
+  }
+
+  &__option {
+    border-bottom: 1px solid $border;
+    // clip border-radius of drop__link
+    overflow: hidden;
+
+    // used for stylable options for care plan select in patient header
+    &--select {
+      padding: 0 rem-calc(16);
+      cursor: pointer;
+      @include transition;
+
+      &:hover, &:active {
+        color: white;
+        background-color: $green;
+
+        [class*="ss-"], [class*="icomoon-"] {
+          @include transition;
+          color: white;
+        }
+      }
+    }
+
+    &:first-child {
+      border-radius: rem-calc(4) rem-calc(4) 0 0;
+    }
+
+    &:last-child {
+      border-radius: 0 0 rem-calc(4) rem-calc(4);
+      border-bottom: none;
+    }
+  }
+
+  &__innerInput {
+    width: calc(100% - #{rem-calc(32)});
+    margin: rem-calc(8) rem-calc(16);
+  }
+
+  &__link {
+    display: flex;
+    min-height: rem-calc(48);
+    padding: rem-calc(8) rem-calc(16);
+    align-items: center;
+    color: $grayDker;
+    @include regular;
+    text-transform: none;
+    letter-spacing: normal;
+
+    [class*="ss-"] {
+      @include transition;
+    }
+
+    // when it's too complex for regular flex
+    &--complex {
+      display: block;
+      height: auto;
+    }
+
+    // for inactive patients
+    &--dis {
+      opacity: .5;
+
+      &:hover, &:active {
+        opacity: 1;
+      }
+    }
+
+    &:hover, &:active {
+      color: white;
+      background: $green;
+
+      .drop__date { color: white; }
+
+      [class*="ss-"] { color: white; }
+    }
+  }
+
+  &__label {
+    margin: 0;
+    padding: rem-calc(24) rem-calc(16) rem-calc(8);
+    border-bottom: 1px solid $border;
+
+    &:first-child { padding-top: rem-calc(16); }
+  }
+
+  &__icon {
+    margin: 0 rem-calc(8) 0 rem-calc(16);
+
+    &--first { margin-left: 0; }
+  }
+
+  &__date {
+    color: $gray;
+  }
+
+  &__text {
+    font-size: rem-calc(14);
+    margin-top: rem-calc(16);
+  }
+
+  &__checkbox {
+    min-height: rem-calc(48);
+    padding: 0 rem-calc(16);
+  }
+
+  &__button {
+    margin-left: rem-calc(16);
+  }
+
+  &__buttons {
+    padding: rem-calc(8) rem-calc(16);
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px solid $border;
+
+    .button:first-child {
+      margin-right: rem-calc(24);
+    }
+  }
+
+  &__arrowWhite {
+    &::after {
+      content: "";
+      background: url("../assets/img/arrow-down-white.svg") center no-repeat;
+      width: 9px;
+      height: 6px;
+      margin-left: rem-calc(8);
+    }
+  }
+}
+
+@keyframes dropIn {
+  from {
+    opacity: 0;
+    transform: translateY(-.25rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+/* Tooltips */
+
+.tool {
+  display: flex;
+  align-items: center;
+
+  &__anchor {
+    position: relative;
+  }
+
+  &__tip {
+    display: none;
+    position: absolute;
+    z-index: 100;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: rem-calc(12);
+    border-radius: rem-calc(4);
+    background: $grayDk;
+    color: white;
+    // font styles to override parent element styles
+    font-size: rem-calc(14);
+    @include regular;
+    text-transform: none;
+    text-align: left;
+    letter-spacing: normal;
+
+    &.isOpen {
+      display: block;
+    }
+
+    &--bottom {
+      bottom: auto;
+      top: 100%;
+    }
+
+    &--left {
+      left: 0;
+      transform: translateX(0);
+    }
+
+    &--right {
+      left: auto;
+      right: 0;
+      transform: translateX(0);
+    }
+  }
+  // this controls tooltip width when it only contains text
+  &__text {
+    width: 240px;
+    hyphens: auto;
+
+    &--small {
+      width: 160px;
+    }
+  }
+
+}
+
+/* Pills */
+
+// just a utility class for display; TODO: delete later
+.pillWrapper {
+  display: flex;
+  align-items: center;
+}
+
+.pill {
+  min-width: rem-calc(48);
+  padding: rem-calc(6) rem-calc(16);
+  border-radius: rem-calc(32);
+  background: $gray;
+  color: white;
+  font-size: rem-calc(14);
+  white-space: nowrap;
+  @include bold;
+  display: inline-block;
+  text-align: center;
+
+  &--margin {
+    margin-left:rem-calc(8);
+  }
+
+  // keep all status pills uniform width
+  &--status {
+    width: rem-calc(88);
+  }
+
+  &--lime {
+    color: $grayDker;
+    background: $lime;
+  }
+
+  &--yellow {
+    color: $grayDker;
+    background: $yellow;
+  }
+
+  &--red { background: $red; }
+
+  &--purple { background: $purple; }
+
+  &--blue { background: $blue; }
+}
+
+
+/* Progress Bars */
+
+.progress {
+  text-align: center;
+  width: rem-calc(102);
+
+  &__bg {
+    width: 100%;
+    height: rem-calc(8);
+    background: rgba($grayDker, .2);
+    border-radius: rem-calc(8);
+  }
+
+  &__bar {
+    height: 100%;
+    width: 66%; // TODO: make width dynamic
+    border-radius: rem-calc(8);
+    background: $blue;
+  }
+}
+
+
+/* Tables */
+
+table {
+  border-collapse: collapse;
+  max-width: 100%;
+  margin-bottom: rem-calc(24);
+}
+
+tbody tr {
+  background: rgba($green, .25);
+
+  &:nth-child(even) { background: rgba($green, .1); }
+}
+
+// Use for clickable rows
+.clickRow {
+  cursor: pointer;
+
+  &:-moz-focusring {
+    color: transparent;
+    text-shadow: 0 0 0 $grayDk; // same as text color
+  }
+
+  &:focus {
+    outline: none !important;
+    box-shadow: 0,0,0,transparent;
+
+    &::-ms-value {
+      background-color: transparent;
+      color: $grayDk; // same as text color
+    }
+  }
+}
+
+// NOTE: there is some th styling in typography.scss
+
+td, th {
+  padding: rem-calc(8);
+  text-align: center;
+  height: 48px;
+}
+
+.thSortable {
+  cursor: pointer;
+
+  //add sort arrow after column header name
+  &--sortDown .thSortable__text::after {
+    display: inline-block;
+    content: "";
+    background: url("../assets/img/arrow-down.svg") no-repeat center;
+    width: 9px;
+    height: 6px;
+    margin-left: rem-calc(8);
+  }
+
+  // switch sort arrow direction to up (adding class thSortable--sortUp to thSortable--sortDown (not replacing a class))
+  &--sortDown.thSortable--sortUp .thSortable__text::after {
+    transform: rotate(180deg);
+  }
+
+  &__text {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &--left {
+      justify-content: flex-start;
+    }
+  }
+}
+
+.hideOverflow { overflow: hidden; }
+
+.noWrap { white-space: nowrap; }
+
+// tableWrap is to center pagination with tables, which will vary in max-width; also to provide horizontal scrolling if there's overflow
+.tableWrap {
+  display: inline-block;
+  overflow: auto;
+}
+
+// paginationWrap is necessary to align a button with the pagination widget, which will often be necessary
+.paginationWrap {
+  margin: rem-calc(32) 0;
+  position: relative;
+}
+
+.pagination {
+  width: rem-calc(272);
+  display: flex;
+  align-items: center;
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.tdWrap80 { min-width: rem-calc(80); }
+.tdWrap120 { min-width: rem-calc(120); }
+.tdWrap160 { min-width: rem-calc(160); }
+
+
+/* Accordions */
+
+.accordion {
+  margin-bottom: rem-calc(2);
+
+  &.isOpen {
+    > .accordion__body {
+      height: auto;
+      opacity: 1;
+      overflow: visible;
+    }
+    > .accordion__head .accordion__arrow {
+      transform: rotate(90deg) translateY(25%);
+
+      &--lt {
+        transform: rotate(90deg) translateY(10%);
+      }
+    }
+  }
+
+  &__head {
+    display: flex;
+    height: rem-calc(48);
+    align-items: center;
+    background: $grayDker;
+    padding: 0 rem-calc(24);
+    color: white;
+    cursor: pointer;
+
+    &--lt {
+      background: transparent;
+      color: $grayDk;
+    }
+  }
+
+  &__title {
+    font-size: rem-calc(18);
+    @include bold;
+    letter-spacing: 1px;
+  }
+
+  //label is used in place of title on accordion__head--lt
+  &__label {
+    margin: 0;
+    // maintain cursor pointer over label
+    pointer-events: none;
+  }
+
+  &__right {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+  }
+
+  &__arrow {
+    //hack to vertically center icon font element
+    margin-top: rem-calc(6);
+    margin-left: rem-calc(24);
+
+    [class*="ss-"] {
+      color: white;
+      font-size: rem-calc(16);
+    }
+
+    &--lt {
+      margin-top: 0;
+      margin-left: rem-calc(12);
+
+      [class*="ss-"] {
+        color: $grayDk;
+        font-size: rem-calc(12);
+      }
+    }
+  }
+
+  &__body {
+    overflow: hidden;
+    opacity: 0;
+    height: 0;
+    @include transition;
+  }
+
+  &__contents {
+    padding: rem-calc(24) rem-calc(24) rem-calc(48);
+
+    &--lt {
+      padding-top: 0;
+      padding-bottom: 0;
+    }
+  }
+}
+
+
+/* Badges */
+// Badges show the number of notifications on a nav element
+.badge {
+  position: absolute;
+  top: rem-calc(10);
+  right: 0;
+  color: white;
+  font-size: rem-calc(12);
+  @include black;
+  text-align: center;
+  background: $grayDker;
+  padding: rem-calc(1) rem-calc(4);
+  min-width: rem-calc(20);
+  border-radius: rem-calc(16);
+  // override letter-spacing when badge is inside a button
+  letter-spacing: normal;
+
+  &--chat {
+    position: static;
+    margin-left: rem-calc(8);
+  }
+}
+
+
+/* Datepickers */
+
+// NOTE: Not to be confused with .datePick, which is a separate component
+.datepicker {
+  position: relative;
+  display: flex;
+
+  &__date {
+    @include likeInput(calendar);
+    width: rem-calc(176);
+
+    &--fullWidth { width: 100%; }
+  }
+
+  &__picker {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 100;
+
+    &--right {
+      left: auto;
+      right: 0;
+    }
+
+    &--top {
+      top: auto;
+      bottom: 100%;
+    }
+
+    &.isOpen {
+      display: block;
+    }
+  }
+}
+
+.monthpicker {
+  display: flex;
+  align-items: center;
+
+  &__text {
+    margin: 0;
+  }
+}
+
+// this is a utility class for the date range picker, a separate component
+.dashBg {
+  color: white;
+  background-image: radial-gradient(circle at 50% 53%, #32555f, #2f3d45);
+  min-width: rem-calc(1024);
+}
+
+
+/* Info Boxes */
+// These are the light gray (or dark gray) boxes used throughout the app
+
+.info {
+  background: rgba($grayLter, .5);
+  border-radius: rem-calc(4);
+  padding: rem-calc(24);
+  margin-bottom: rem-calc(32);
+  position: relative;
+
+  &--dk {
+    background: rgba(0,0,0,.1);
+  }
+
+  &--green {
+    background: rgba($green, .25);
+  }
+
+  &--horiz {
+    display: flex;
+  }
+
+  &--team {
+    width: rem-calc(304);
+    margin-right: rem-calc(16);
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid $borderDk;
+    padding-bottom: rem-calc(8);
+    margin-bottom: rem-calc(32);
+  }
+
+  &__label {
+    // To use in vertical layout, not horizontal
+    margin-top: rem-calc(24);
+  }
+
+  &__label2 {
+    margin-bottom: rem-calc(8);
+  }
+
+  &__subhead {
+    text-align: center;
+    @include bold;
+    font-size: rem-calc(14);
+    margin-bottom: rem-calc(32);
+  }
+
+  &__cell {
+    text-align: center;
+    padding: 0 rem-calc(24);
+    border-right: 1px solid $borderDk;
+    flex: 1 1 auto;
+
+    &--left {
+      text-align: left;
+    }
+
+    &:first-of-type {
+      padding-left: 0;
+    }
+
+    &:last-of-type {
+      padding-right: 0;
+      border-right: none;
+    }
+  }
+
+  &__bigNumber {
+    font-size: rem-calc(40);
+    @include thin;
+  }
+
+  // when there's a tooltip by the label, offset margins to align with other cells
+  &__tool {
+    margin: rem-calc(-16) 0 rem-calc(0);
+  }
+
+  &__edit {
+    position: absolute;
+    top: 0;
+    right: 0;
+  }
+
+  &__p {
+    display: flex;
+    align-items: center;
+    // to align properly with links
+    height: rem-calc(48);
+    margin-bottom: rem-calc(48);
+
+    &--noMargin {
+      margin-bottom: 0;
+    }
+  }
+
+  &__pill {
+      position: absolute;
+      top: rem-calc(24);
+      left: rem-calc(24);
+  }
+
+  &__pic {
+    display: block;
+    width: rem-calc(48);
+    border-radius: 100%;
+    margin: 0 auto rem-calc(24);
+  }
+
+  &__contact {
+    // override default margins for .info
+    margin: 0 rem-calc(-24) rem-calc(-24);
+    border-top: 1px solid $border;
+    display: flex;
+
+    &Inner {
+      flex: 1 1 auto;
+      display: flex;
+      justify-content: center;
+
+      &:first-of-type {
+        border-right: 1px solid $border;
+      }
+    }
+  }
+}
+
+
+/* Name Lists (lists of items, with actions) */
+
+.nameList {
+
+  &--dk {
+    .nameList__item {
+      border-top-color: $borderDk;
+
+      &:last-of-type {
+        border-bottom-color: $borderDk;
+      }
+    }
+  }
+
+  &__item {
+    border-top: 1px solid $border;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    &:last-of-type {
+      border-bottom: 1px solid $border;
+    }
+
+    &--left { justify-content: flex-start; }
+
+    &--pad { padding: rem-calc(8) 0; }
+    &--padLeft { padding-left: rem-calc(16); }
+
+    &--target {
+      @include transition;
+      cursor: pointer;
+
+      &:hover, &:active {
+        background: $green;
+        color: white;
+
+        [class*="ss-"], [class*="icomoon-"] {
+          @include transition;
+          color: white;
+        }
+      }
+
+      &--active {
+        cursor: default;
+        background: $green;
+        color: white;
+
+        [class*="ss-"], [class*="icomoon-"] {
+          @include transition;
+          color: white;
+        }
+      }
+    }
+  }
+
+  &__form {
+    padding: rem-calc(8) 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  // input must be wrapped in nameList__inputWrap to avoid overflow in Firefox
+  &__inputWrap {
+    flex: 1 1 auto;
+  }
+}
+
+.listBox {
+  height: rem-calc(288);
+  border: 1px solid $border;
+  border-radius: rem-calc(4);
+  margin-bottom: rem-calc(16);
+  overflow: auto;
+}
+
+/* Scales (1-5 scale for assessments, etc.) */
+
+@mixin scaleNumber($color) {
+  color: $color;
+  border: 1px solid $color;
+  background-color: transparent;
+}
+
+@mixin scaleNumberChecked($color) {
+  cursor: default;
+  background-color: $color;
+  color: white;
+  @if ($color==$lime or $color==$yellow) {
+    color: $grayDk;
+  }
+}
+
+.scale {
+  display: inline-block;
+
+  &__hints {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: rem-calc(8);
+  }
+
+  &__label {
+    margin-right: rem-calc(8);
+
+    &:last-child { margin-right: 0; }
+  }
+
+  &__input {
+    display: none;
+
+    &:checked {
+
+      &+ .scale__number {
+        @include scaleNumberChecked($purple);
+
+        &--2 { @include scaleNumberChecked($red); }
+        &--3 { @include scaleNumberChecked($orange); }
+        &--4 { @include scaleNumberChecked($yellow); }
+        &--5 { @include scaleNumberChecked($lime); }
+      }
+    }
+  }
+
+  &__numbers {
+    display: flex;
+  }
+
+  &__number {
+    width: rem-calc(48);
+    height: rem-calc(48);
+    border-radius: rem-calc(4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    // override default button font-size
+    font-size: rem-calc(16);
+    @include bold;
+    @include transition;
+    // color defaults are set for the first number
+    @include scaleNumber($purple);
+
+    &--2 { @include scaleNumber($red); }
+    &--3 { @include scaleNumber($orange); }
+    &--4 { @include scaleNumber($yellow); }
+    &--5 { @include scaleNumber($lime); }
+  }
+}
+
+
+/* Grids */
+
+.grid2col {
+  @include grid;
+  @include gridCols(1fr 1fr);
+
+  &--6030 { @include gridCols(2fr 1fr); }
+}
+
+.gridCell {
+  // required for proper grid placement in IE11 :/
+  &--11 { @include gridPlace(1, 1); }
+  &--21 { @include gridPlace(2, 1); }
+  &--31 { @include gridPlace(3, 1); }
+  &--41 { @include gridPlace(4, 1); }
+  &--12 { @include gridPlace(1, 2); }
+  &--22 { @include gridPlace(2, 2); }
+
+  &--padRight { padding-right: rem-calc(32); }
+  &--padBottom { padding-bottom: rem-calc(32); }
+
+  &--spanCols2 { @include gridColSpan(2); }
+}

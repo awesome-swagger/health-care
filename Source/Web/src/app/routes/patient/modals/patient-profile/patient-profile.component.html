@@ -1,0 +1,176 @@
+<h1 class="modal__title">Edit Patient Profile</h1>
+<form>
+  <div class="flex justifySpaceBetween marBottom32">
+    <div class="modal__inputWrap80 marRight32">
+      <label>Age</label>
+      <input type="number" class="input fullWidth" min="0" />
+    </div>
+    <div class="modal__inputWrap marRight32">
+      <!--NOTE: Our datepicker is not ideal for picking a birth date. So I came up with another option.-->
+      <label>Date of Birth</label>
+      <div class="flex">
+        <div class="styledSelect marRight8">
+          <select class="styledSelect__select">
+            <option>Jan</option>
+            <option>Feb</option>
+            <option>Mar</option>
+            <option>Apr</option>
+            <option>May</option>
+            <option>Jun</option>
+            <option>Jul</option>
+            <option>Aug</option>
+            <option>Sep</option>
+            <option>Oct</option>
+            <option>Nov</option>
+            <option>Dec</option>
+          </select>
+        </div>
+        <div class="styledSelect marRight8">
+          <select class="styledSelect__select">
+            <option>1</option>
+            <option>2</option>
+            <option>3</option>
+            <option>4</option>
+            <option>5</option>
+            <option>6</option>
+            <option>7</option>
+            <option>8</option>
+            <option>9</option>
+            <option>10</option>
+            <option>11</option>
+            <option>12</option>
+            <option>13</option>
+            <option>14</option>
+            <option>15</option>
+            <option>16</option>
+            <option>17</option>
+            <option>18</option>
+            <option>19</option>
+            <option>20</option>
+            <option>21</option>
+            <option>22</option>
+            <option>23</option>
+            <option>24</option>
+            <option>25</option>
+            <option>26</option>
+            <option>27</option>
+            <option>28</option>
+            <option>29</option>
+            <option>30</option>
+            <option>31</option>
+          </select>
+        </div>
+        <div class="modal__inputWrap100">
+          <input type="number" class="input fullWidth" placeholder="YYYY" min="1900"/>
+        </div>
+      </div>
+    </div>
+    <div class="modal__inputWrap">
+      <label>Gender</label>
+      <div class="styledSelect">
+        <select class="styledSelect__select">
+          <option>F</option>
+          <option>M</option>
+          <option>Other</option>
+        </select>
+      </div>
+    </div>
+  </div> <!--/.flex (for age, date of birth, gender)-->
+  <div class="flex justifySpaceBetween marBottom32">
+    <div class="modal__inputWrap160 marRight32">
+      <label>Insurance</label>
+      <div class="styledSelect">
+        <select class="styledSelect__select">
+          <option>Humana</option>
+          <option>Medicaid</option>
+          <option>Medicare</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal__inputWrap160 marRight32">
+      <label>Secondary Ins. (opt)</label>
+      <div class="styledSelect">
+        <select class="styledSelect__select">
+          <option>Humana</option>
+          <option>Medicaid</option>
+          <option>Medicare</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal__inputWrap">
+      <label>MRN (opt)</label>
+      <input type="number" class="input fullWidth" min="0" />
+    </div>
+  </div> <!--/.flex (for insurance, 2nd ins., and MRN)-->
+  <div class="flex justifySpaceBetween">
+    <div class="modal__inputWrap marRight32">
+      <label>Height (opt)</label>
+      <div class="flex">
+        <div class="styledSelect marRight8">
+          <select class="styledSelect__select">
+            <option>- -</option>
+            <option>7'</option>
+            <option>6'</option>
+            <option>5'</option>
+            <option>4'</option>
+            <option>3'</option>
+            <option>2'</option>
+            <option>1'</option>
+            <option>0'</option>
+          </select>
+        </div>
+        <div class="styledSelect">
+          <select class="styledSelect__select">
+            <option>- -</option>
+            <option>11"</option>
+            <option>10"</option>
+            <option>9"</option>
+            <option>8"</option>
+            <option>7"</option>
+            <option>6"</option>
+            <option>5"</option>
+            <option>4"</option>
+            <option>3"</option>
+            <option>2"</option>
+            <option>1"</option>
+            <option>0"</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal__inputWrap marRight32">
+      <label>Ethnicity (opt)</label>
+      <div class="styledSelect">
+        <select class="styledSelect__select">
+          <option>- - - - - - - -</option>
+          <option>Asian</option>
+          <option>Black</option>
+          <option>Hispanic</option>
+          <option>Middle Eastern</option>
+          <option>Native American</option>
+          <option>White</option>
+          <option>Multiracial</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal__inputWrap140">
+      <label>Cog. Ability (opt)</label>
+      <div class="styledSelect">
+        <select class="styledSelect__select">
+          <option>- - - - - - - -</option>
+          <option>Low</option>
+          <option>Medium</option>
+          <option>High</option>
+        </select>
+      </div>
+    </div>
+  </div> <!--/.flex (for height, ethnicity, and cognitive ability)-->
+  <div class="modal__buttons">
+    <button class="button button--2nd">
+      Cancel
+    </button>
+    <button class="button">
+      Save
+    </button>
+  </div>
+</form>

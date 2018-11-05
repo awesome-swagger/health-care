@@ -1,0 +1,46 @@
+<h1 class="modal__title">Edit User Details</h1>
+<label>Employer</label>
+<div class="styledSelect marBottom32">
+  <select class="styledSelect__select">
+    <option>Ogden Clinic</option>
+    <option>CareAdopt</option>
+  </select>
+</div>
+<label>Specialty</label>
+<div class="styledSelect marBottom32">
+  <select class="styledSelect__select">
+    <option>Family Medicine</option>
+    <option>Something Else</option>
+  </select>
+</div>
+<div class="flex justifySpaceBetween">
+  <div class="modal__inputWrap marRight32">
+    <label class="height48 flex alignCenter noMargin">Phone</label>
+    <input type="text" class="input fullWidth" />
+  </div>
+  <div class="modal__inputWrap">
+    <div class="tool">
+      <label class="noMargin">NPI (opt)</label>
+      <div class="tool__anchor">
+        <button class="button button--icon button--icon--small"
+        (click)="tooltipEUDMOpen=!tooltipEUDMOpen">
+          <i class="ss-help"></i>
+        </button>
+        <div class="tool__tip tool__tip--right" [ngClass]="{ 'isOpen' : tooltipEUDMOpen }">
+          <div class="tool__text">
+            By adding the NPI number to the user profile, we can link providers to the electronic medical records (EMR). If the user is not a provider they won't have an NPI number.
+          </div>
+        </div>
+      </div>
+    </div>
+    <input type="text" class="input fullWidth" />
+  </div>
+</div>
+<div class="modal__buttons">
+  <button class="button button--2nd">
+    Cancel
+  </button>
+  <button class="button">
+    Save
+  </button>
+</div>

@@ -1,0 +1,449 @@
+<div class="ssContainer ssContents">
+  <div class="flexHeader">
+    <div class="flex alignCenter">
+      <h1 class="noMargin marRight24">Billing</h1>
+      <div class="monthpicker">
+        <button class="button button--icon">
+          <i class="ss-standard ss-navigateleft"></i>
+        </button>
+        <h2 class="monthpicker__text">March 2018</h2>
+        <button class="button button--icon">
+          <i class="ss-standard ss-navigateright"></i>
+        </button>
+      </div> <!--/.monthpicker-->
+    </div>
+    <div class="flex alignCenter">
+      <button class="button button--iconText button--iconText--dis">
+        <i class="ss-upload"></i> Sync Billing
+      </button>
+      <div class="tool__anchor">
+        <button class="button button--icon button--icon--small"
+        (click)="tooltip1Open=!tooltip1Open">
+          <i class="ss-help"></i>
+        </button>
+        <div class="tool__tip tool__tip--right tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltip1Open }">
+          <div class="tool__text">
+            An organization can sync their billing to their billing system. If your billing isn’t getting synced, and you would like this fuctionality, please contact CareAdopt to begin this process.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div> <!--/.flexHeader-->
+
+  <h2>Filter Results</h2>
+  <div class="flex marBottom48">
+    <div class="marRight32">
+      <!--TODO: If the user only has access to one facility, hide this filter-->
+      <label>Facility</label>
+      <div class="drop">
+          <div class="drop__input" (click)="multi1Open = !multi1Open">
+            All
+          </div>
+          <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : multi1Open }">
+            <div class="drop__buttons">
+              <button class="button button--iconText">
+                <i class="ss-check ss-standard"></i> Check All
+              </button>
+              <button class="button button--iconText">
+                <i class="ss-ban"></i> Uncheck All
+              </button>
+            </div>
+
+            <li class="drop__option">
+              <input class="input input--search drop__innerInput" type="text" placeholder="Search" />
+            </li>
+
+            <li class="drop__option">
+              <label class="drop__checkbox styledInput">
+                <input type="checkbox" class="styledInput__input" />
+                <span class="styledInput__box"></span>
+                Canyon View
+              </label>
+            </li>
+            <li class="drop__option">
+              <label class="drop__checkbox styledInput">
+                <input type="checkbox" class="styledInput__input" />
+                <span class="styledInput__box"></span>
+                South Ogden Family Medicine
+              </label>
+            </li>
+
+          </ul>
+        </div>
+    </div> <!--/ container for facility filter-->
+
+    <div class="marRight32">
+      <label>Care Plan Type</label>
+      <div class="drop">
+          <div class="drop__input" (click)="multi2Open = !multi2Open">
+            All
+          </div>
+          <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : multi2Open }">
+            <div class="drop__buttons">
+              <button class="button button--iconText">
+                <i class="ss-check ss-standard"></i> Check All
+              </button>
+              <button class="button button--iconText">
+                <i class="ss-ban"></i> Uncheck All
+              </button>
+            </div>
+
+            <li class="drop__option">
+              <input class="input input--search drop__innerInput" type="text" placeholder="Search" />
+            </li>
+
+            <li class="drop__option">
+              <label class="drop__checkbox styledInput"
+              title="Behavioral Health Initiative">
+                <input type="checkbox" class="styledInput__input" />
+                <span class="styledInput__box"></span>
+                <i class="drop__icon drop__icon--first icomoon-bhi"></i>
+                BHI
+              </label>
+            </li>
+            <li class="drop__option">
+              <label class="drop__checkbox styledInput"
+              title="Chronic Care Management">
+                <input type="checkbox" class="styledInput__input" />
+                <span class="styledInput__box"></span>
+                <i class="drop__icon drop__icon--first ss-heart"></i>
+                CCM
+              </label>
+            </li>
+            <li class="drop__option">
+              <label class="drop__checkbox styledInput"
+              title="Complex Chronic Care Management">
+                <input type="checkbox" class="styledInput__input" />
+                <span class="styledInput__box"></span>
+                <i class="drop__icon drop__icon--first ss-addheart"></i>
+                CCCM
+              </label>
+            </li>
+            <li class="drop__option">
+              <label class="drop__checkbox styledInput"
+              title="Psychiatric Collaborative Care Management">
+                <input type="checkbox" class="styledInput__input" />
+                <span class="styledInput__box"></span>
+                <i class="drop__icon drop__icon--first icomoon-cocm"></i>
+                CoCM
+              </label>
+            </li>
+            <li class="drop__option">
+              <label class="drop__checkbox styledInput"
+              title="Remote Patient Monitoring">
+                <input type="checkbox" class="styledInput__input" />
+                <span class="styledInput__box"></span>
+                <i class="drop__icon drop__icon--first ss-satellitedish"></i>
+                RPM
+              </label>
+            </li>
+            <li class="drop__option">
+              <label class="drop__checkbox styledInput"
+              title="Transitional Care Management">
+                <input type="checkbox" class="styledInput__input" />
+                <span class="styledInput__box"></span>
+                <i class="drop__icon drop__icon--first ss-signpost"></i>
+                TCM
+              </label>
+            </li>
+          </ul>
+        </div>
+    </div> <!--/ container for care plan type filter-->
+
+    <div class="drop">
+      <label>Search Users</label>
+      <input class="input input--search" type="text" (click)="dropOpen = !dropOpen" placeholder="Search" />
+      <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : dropOpen }" (click)="dropOpen = !dropOpen">
+        <li class="drop__option">
+          <a class="drop__link">
+            <div class="picName">
+              <img class="picName__img" src="../../../assets/img/profile.svg" />Adam Hancock
+            </div>
+          </a>
+        </li>
+        <li class="drop__option">
+          <a class="drop__link">
+            <div class="picName">
+              <img class="picName__img" src="../../../assets/img/profile.svg" />Samantha Hancock
+            </div>
+          </a>
+        </li>
+      </ul>
+    </div> <!--/ container for search users filter-->
+  </div> <!--/.flex (for filters)-->
+
+  <div class="info info--horiz marBottom48">
+    <div class="info__cell">
+      <label class="tool info__tool justifyCenter">
+        Billable Patients
+        <div class="tool__anchor">
+          <button class="button button--icon button--icon--small"
+          (click)="tooltip2Open=!tooltip2Open">
+            <i class="ss-help"></i>
+          </button>
+          <div class="tool__tip" [ngClass]="{ 'isOpen' : tooltip2Open }">
+            <div class="tool__text">
+              Billable patients qualify for reimbursement.
+            </div>
+          </div>
+        </div>
+      </label>
+      338
+    </div>
+    <div class="info__cell">
+      <label>Facilities</label>
+      5
+    </div>
+    <div class="info__cell">
+      <label>Practitioners</label>
+      24
+    </div>
+    <div class="info__cell">
+      <label>Total Hours</label>
+      <div class="pill pill--lime">
+        107:22
+      </div>
+    </div>
+    <div class="info__cell">
+      <label>Total $</label>
+      <div class="pill pill--yellow">
+        $32,881
+      </div>
+    </div>
+  </div>
+
+  <h2 class="marBottom8">Canyon View</h2>
+  <h5 class="marBottom24">Billing Practitioners (BPs) (3)&ensp;|&ensp;Billable Patients (78)</h5>
+
+  <div class="accordion" [ngClass]="{ 'isOpen' : accord1Open }">
+    <div class="accordion__head" (click)="accord1Open=!accord1Open">
+      <span class="accordion__title">BP: John Smith, MD</span>
+      <div class="accordion__right">
+        <div class="pill pill--purple">
+          Billed 14 / 33
+        </div>
+        <div class="accordion__arrow">
+          <i class="ss-standard ss-navigateright"></i>
+        </div>
+      </div>
+    </div> <!--/.accordion__head-->
+    <div class="accordion__body">
+      <div class="accordion__contents">
+
+        <div class="info" [ngClass]="{ 'info--green' : isBilled1 }">
+          <div class="flex justifySpaceBetween marBottom24">
+            <div>
+              <label>Patient</label>
+              <a [routerLink]="['/patient/asdf/']" class="picName">
+                <img class="picName__img" src="../../../assets/img/profile.svg" />
+                Adam Sanderson
+              </a>
+            </div>
+            <div>
+              <label>Care Plan Type</label>
+              <div class="iconText" title="Behavioral Health Initiative">
+                <i class="iconText__icon iconText__icon--noTop iconText__icon--big icomoon-bhi"></i>
+                BHI
+              </div>
+            </div>
+            <div>
+              <label>Care Manager</label>
+              <a class="picName" [routerLink]="['/user/asdf']">
+                <img class="picName__img" src="../../../assets/img/profile.svg" />
+                Lori Ramirez, RN
+              </a>
+            </div>
+            <div>
+              <label>Status</label>
+              <label class="styledInput">
+                <input type="checkbox" class="styledInput__input"
+                [checked]="isBilled1" (change)="isBilled1=!isBilled1" />
+                <span class="styledInput__box"></span>
+                Billed
+              </label>
+            </div>
+            <div>
+              <label>Total</label>
+              <h1 class="noMargin">$145.00</h1>
+            </div>
+          </div> <!--/ top row of billing info-->
+
+          <table class="fullWidth">
+            <thead>
+              <tr>
+                <th class="left">Title</th>
+                <th>CPT Code</th>
+                <th>Duration</th>
+                <th>Date</th>
+                <th>Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="left">Initial Visit</td>
+                <td>99490</td>
+                <td>1:10</td>
+                <td>Mar 19</td>
+                <td>$145.00</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="accordion" [ngClass]="{ 'isOpen' : accordInner1Open }">
+            <div class="accordion__head accordion__head--lt" (click)="accordInner1Open=!accordInner1Open">
+              <label class="accordion__label">Details of Service</label>
+              <div class="accordion__arrow accordion__arrow--lt">
+                <i class="ss-standard ss-navigateright"></i>
+              </div>
+            </div> <!--/.accordion__head-->
+            <div class="accordion__body">
+              <div class="accordion__contents accordion__contents--lt">
+                <table class="fullWidth">
+                  <thead>
+                    <tr>
+                      <th class="left">Action</th>
+                      <th class="left">Provider</th>
+                      <th class="left">Date & Time</th>
+                      <th>Duration</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="left">Call with Patient</td>
+                      <td class="left">
+                        <a [routerLink]="['/user/asdf']" class="picName">
+                          <img class="picName__img" src="../../../assets/img/profile.svg" />
+                          Lori Ramirez, RN
+                        </a>
+                      </td>
+                      <td class="left">Mar 19, 9:05 AM</td>
+                      <td>1:00</td>
+                    </tr>
+                    <tr>
+                      <td class="left">In-Person Visit</td>
+                      <td class="left">
+                        <a [routerLink]="['/user/asdf']" class="picName">
+                          <img class="picName__img" src="../../../assets/img/profile.svg" />
+                          Lori Ramirez, RN
+                        </a>
+                      </td>
+                      <td class="left">Mar 19, 12:55 PM</td>
+                      <td>:10</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div> <!--/.accordion__contents (details of service)-->
+            </div> <!--/.accordion__body (details of service)-->
+          </div> <!--/.accordion (details of service)-->
+        </div> <!--/.info-->
+
+        <div class="info" [ngClass]="{ 'info--green' : isBilled2 }">
+          <div class="flex justifySpaceBetween marBottom24">
+            <div>
+              <label>Patient</label>
+              <a class="picName">
+                <img class="picName__img" src="../../../assets/img/profile.svg" />
+                Janice Goodwin
+              </a>
+            </div>
+            <div>
+              <label>Care Plan Type</label>
+              <div class="iconText" title="Complex Chronic Care Management">
+                <i class="iconText__icon iconText__icon--noTop iconText__icon--big ss-addheart"></i>
+                CCCM
+              </div>
+            </div>
+            <div>
+              <label>Care Manager</label>
+              <a class="picName">
+                <img class="picName__img" src="../../../assets/img/profile.svg" />
+                Lori Ramirez, RN
+              </a>
+            </div>
+            <div>
+              <label>Status</label>
+              <label class="styledInput">
+                <input type="checkbox" class="styledInput__input"
+                [checked]="isBilled2" (change)="isBilled2=!isBilled2" />
+                <span class="styledInput__box"></span>
+                Billed
+              </label>
+            </div>
+            <div>
+              <label>Total</label>
+              <h1 class="noMargin">$145.00</h1>
+            </div>
+          </div> <!--/ top row of billing info-->
+
+          <table class="fullWidth">
+            <thead>
+              <tr>
+                <th class="left">Title</th>
+                <th>CPT Code</th>
+                <th>Duration</th>
+                <th>Date</th>
+                <th>Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="left">Initial Visit</td>
+                <td>99490</td>
+                <td>1:10</td>
+                <td>Mar 19</td>
+                <td>$145.00</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="accordion" [ngClass]="{ 'isOpen' : accordInner2Open }">
+            <div class="accordion__head accordion__head--lt" (click)="accordInner2Open=!accordInner2Open">
+              <label class="accordion__label">Details of Service</label>
+              <div class="accordion__arrow accordion__arrow--lt">
+                <i class="ss-standard ss-navigateright"></i>
+              </div>
+            </div> <!--/.accordion__head-->
+            <div class="accordion__body">
+              <div class="accordion__contents accordion__contents--lt">
+                <table class="fullWidth">
+                  <thead>
+                    <tr>
+                      <th class="left">Action</th>
+                      <th class="left">Provider</th>
+                      <th class="left">Date & Time</th>
+                      <th>Duration</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="left">Call with Patient</td>
+                      <td class="left">
+                        <a class="picName">
+                          <img class="picName__img" src="../../../assets/img/profile.svg" />
+                          Lori Ramirez, RN
+                        </a>
+                      </td>
+                      <td class="left">Mar 19, 9:05 AM</td>
+                      <td>1:00</td>
+                    </tr>
+                    <tr>
+                      <td class="left">In-Person Visit</td>
+                      <td class="left">
+                        <a class="picName">
+                          <img class="picName__img" src="../../../assets/img/profile.svg" />
+                          Lori Ramirez, RN
+                        </a>
+                      </td>
+                      <td class="left">Mar 19, 12:55 PM</td>
+                      <td>:10</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div> <!--/.accordion__contents (details of service)-->
+            </div> <!--/.accordion__body (details of service)-->
+          </div> <!--/.accordion (details of service)-->
+        </div> <!--/.info-->
+      </div> <!--/.accordion__contents (for BP)-->
+    </div> <!--/.accordion__body (for BP)-->
+  </div> <!--/.accordion (for BP)-->
+</div> <!--/.ssContainer-->

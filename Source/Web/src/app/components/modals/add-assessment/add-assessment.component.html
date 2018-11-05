@@ -1,0 +1,212 @@
+<h1 class="modal__title">Add Assessment</h1>
+<!--TODO: If adding an assessment to a care plan template, show the following-->
+<div class="marCenter marCenter--twoThirds">
+  <div *ngIf="" class="iconText iconText--wrap iconText--autoHeight error marBottom32">
+    <i class="iconText__icon ss-alert"></i>
+    <span class="error__text">
+      Making changes here will affect X patients currently assigned to this care plan.
+    </span>
+  </div>
+</div>
+<!--TODO: If adding an assessment to a care plan instance, show the following-->
+<h5>NOTE: You are adding an assessment to one patient's care plan. To add an assessment for everyone, go to care&nbsp;plans.</h5>
+<div class="grid2col">
+  <div class="gridCell--11 marRight32">
+    <input type="text" class="input input--search fullWidth marBottom32" placeholder="Search Assessments" />
+    <div class="listBox">
+      <ul class="nameList">
+        <li class="nameList__item nameList__item--padLeft nameList__item--target">
+          <div class="flex alignCenter justifySpaceBetween fullWidth">
+            <span class="assessment--outcome">Diet Report</span>
+            <div class="flex">
+              <button class="button button--icon button--icon--small">
+                <i class="ss-write"></i>
+              </button>
+              <button class="button button--icon button--icon--small">
+                <i class="ss-delete"></i>
+              </button>
+            </div>
+          </div>
+        </li>
+        <li class="nameList__item nameList__item--padLeft nameList__item--target nameList__item--target--active">
+          <div class="flex alignCenter justifySpaceBetween fullWidth">
+            <span class="assessment--outcome">General Well-being</span>
+            <div class="flex">
+              <button class="button button--icon button--icon--small">
+                <i class="ss-write"></i>
+              </button>
+              <button class="button button--icon button--icon--small">
+                <i class="ss-delete"></i>
+              </button>
+            </div>
+          </div>
+        </li>
+        <li class="nameList__item nameList__item--padLeft nameList__item--target">
+          <div class="flex alignCenter justifySpaceBetween fullWidth">
+            <span class="assessment--satisfaction">Patient Satisfaction</span>
+            <div class="flex">
+              <button class="button button--icon button--icon--small">
+                <i class="ss-write"></i>
+              </button>
+              <button class="button button--icon button--icon--small">
+                <i class="ss-delete"></i>
+              </button>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </div> <!--/.listBox-->
+
+    <button class="button button--iconText marBottom24">
+      <i class="ss-plus"></i> Create New Assessment
+    </button>
+
+    <h5>* Indicates an assessment used to calculate outcome %.</h5>
+    <h5>** Indicates an assessment used to calculate satisfaction %.</h5>
+
+    <div class="modal__buttons modal__buttons--full">
+      <button class="button button--2nd">
+        Cancel
+      </button>
+      <!--TODO: Clicking "next" triggers the edit-task modal, for scheduling the assessment within the care plan-->
+      <button class="button">
+        Next
+      </button>
+    </div>
+  </div> <!--/.gridCell--11-->
+
+  <div class="gridCell--21">
+    <div class="modal__details">
+      <!--TODO: Show the following if no assessment is selected-->
+      <h2 *ngIf="" class="modal__empty">Select an assessment to see details</h2>
+
+      <!--TODO: Show the following div when an assessment is selected-->
+      <div>
+        <h2 class="marBottom8">General Well-being</h2>
+        <h4 class="marBottom24">Tracks Outcome</h4>
+        <h5 class="marBottom32">Note: Each assessment includes an optional notes field (not shown here) for the patient to provide feedback.</h5>
+
+        <p>How are you feeling physically?</p>
+        <div class="scale marBottom32">
+          <div class="scale__hints">
+            <h5 class="noMargin">1 (Weak/Sick)</h5>
+            <h5 class="noMargin">5 (Strong/Healthy)</h5>
+          </div>
+          <div class="scale__numbers">
+            <label class="scale__label">
+              <input type="radio" class="scale__input" name="scale1" />
+              <div class="scale__number">
+                1
+              </div>
+            </label>
+            <label class="scale__label">
+              <input type="radio" class="scale__input" name="scale1" />
+              <div class="scale__number scale__number--2">
+                2
+              </div>
+            </label>
+            <label class="scale__label">
+              <input type="radio" class="scale__input" name="scale1" />
+              <div class="scale__number scale__number--3">
+                3
+              </div>
+            </label>
+            <label class="scale__label">
+              <input type="radio" class="scale__input" name="scale1" />
+              <div class="scale__number scale__number--4">
+                4
+              </div>
+            </label>
+            <label class="scale__label">
+              <input type="radio" class="scale__input" name="scale1" />
+              <div class="scale__number scale__number--5">
+                5
+              </div>
+            </label>
+          </div>
+        </div> <!--/.scale-->
+
+        <p>Rate your happiness level</p>
+        <div class="scale marBottom32">
+          <div class="scale__hints">
+            <h5 class="noMargin">1 (Very Sad)</h5>
+            <h5 class="noMargin">5 (Very Happy)</h5>
+          </div>
+          <div class="scale__numbers">
+            <label class="scale__label">
+              <input type="radio" class="scale__input" name="scale2" />
+              <div class="scale__number">
+                1
+              </div>
+            </label>
+            <label class="scale__label">
+              <input type="radio" class="scale__input" name="scale2" />
+              <div class="scale__number scale__number--2">
+                2
+              </div>
+            </label>
+            <label class="scale__label">
+              <input type="radio" class="scale__input" name="scale2" />
+              <div class="scale__number scale__number--3">
+                3
+              </div>
+            </label>
+            <label class="scale__label">
+              <input type="radio" class="scale__input" name="scale2" />
+              <div class="scale__number scale__number--4">
+                4
+              </div>
+            </label>
+            <label class="scale__label">
+              <input type="radio" class="scale__input" name="scale2" />
+              <div class="scale__number scale__number--5">
+                5
+              </div>
+            </label>
+          </div>
+        </div> <!--/.scale-->
+
+        <p>Rate your overall sense of well-being</p>
+        <div class="scale">
+          <div class="scale__hints">
+            <h5 class="noMargin">1 (Very Poor)</h5>
+            <h5 class="noMargin">5 (Very Good)</h5>
+          </div>
+          <div class="scale__numbers">
+            <label class="scale__label">
+              <input type="radio" class="scale__input" name="scale3" />
+              <div class="scale__number">
+                1
+              </div>
+            </label>
+            <label class="scale__label">
+              <input type="radio" class="scale__input" name="scale3" />
+              <div class="scale__number scale__number--2">
+                2
+              </div>
+            </label>
+            <label class="scale__label">
+              <input type="radio" class="scale__input" name="scale3" />
+              <div class="scale__number scale__number--3">
+                3
+              </div>
+            </label>
+            <label class="scale__label">
+              <input type="radio" class="scale__input" name="scale3" />
+              <div class="scale__number scale__number--4">
+                4
+              </div>
+            </label>
+            <label class="scale__label">
+              <input type="radio" class="scale__input" name="scale3" />
+              <div class="scale__number scale__number--5">
+                5
+              </div>
+            </label>
+          </div>
+        </div> <!--/.scale-->
+
+      </div>
+    </div> <!--/.modal__details-->
+  </div> <!--/.gridCell--21-->
+</div> <!--/.grid2col-->

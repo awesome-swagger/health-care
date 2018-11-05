@@ -1,0 +1,111 @@
+<h1 class="modal__title">Add Message Stream</h1>
+
+<!--TODO: If on a care plan template, show the following-->
+<div *ngIf="" class="marCenter marCenter--twoThirds">
+  <div class="iconText iconText--wrap iconText--autoHeight error marBottom32">
+    <i class="iconText__icon ss-alert"></i>
+    <span class="error__text">
+      Making changes here will affect X patients currently assigned to this care plan.
+    </span>
+  </div>
+</div>
+<!--TODO: If on a care plan instance, show the following-->
+<h5 class="center">NOTE: You are working on one patient's care plan. To do this for everyone, go to care plans.</h5>
+
+<div class="grid2col">
+  <div class="gridCell--11 marRight32">
+    <input type="text" class="input input--search fullWidth marBottom32" placeholder="Search Message Streams" />
+    <div class="listBox">
+      <ul class="nameList">
+        <li class="nameList__item nameList__item--padLeft nameList__item--target">
+          <div class="flex alignCenter justifySpaceBetween fullWidth">
+            <span>Anxiety</span>
+            <div class="flex">
+              <button class="button button--icon button--icon--small">
+                <i class="ss-write"></i>
+              </button>
+              <button class="button button--icon button--icon--small">
+                <i class="ss-delete"></i>
+              </button>
+            </div>
+          </div>
+        </li>
+        <li class="nameList__item nameList__item--padLeft nameList__item--target nameList__item--target--active">
+          <div class="flex alignCenter justifySpaceBetween fullWidth">
+            <span>Depression</span>
+            <div class="flex">
+              <button class="button button--icon button--icon--small">
+                <i class="ss-write"></i>
+              </button>
+              <button class="button button--icon button--icon--small">
+                <i class="ss-delete"></i>
+              </button>
+            </div>
+          </div>
+        </li>
+        <li class="nameList__item nameList__item--padLeft nameList__item--target">
+          <div class="flex alignCenter justifySpaceBetween fullWidth">
+            <span>Heart Disease</span>
+            <div class="flex">
+              <button class="button button--icon button--icon--small">
+                <i class="ss-write"></i>
+              </button>
+              <button class="button button--icon button--icon--small">
+                <i class="ss-delete"></i>
+              </button>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </div> <!--/.listBox-->
+
+    <button class="button button--iconText marBottom24">
+      <i class="ss-plus"></i> Create New Stream
+    </button>
+
+    <div class="modal__buttons modal__buttons--full">
+      <button class="button button--2nd">
+        Cancel
+      </button>
+      <button class="button">
+        Save
+      </button>
+    </div>
+  </div> <!--/.gridCell--11-->
+
+  <div class="gridCell--21">
+    <div class="modal__details">
+      <!--TODO: Show the following if no stream is selected-->
+      <h2 *ngIf="" class="modal__empty">Select a message stream to see details</h2>
+
+      <!--TODO: Show the following div when a stream is selected-->
+      <div>
+        <h2>Depression</h2>
+        <table class="fullWidth">
+          <thead>
+            <tr>
+              <th class="left">Messages</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="left">
+                Depression is both a brain disorder and a state of mind. The brain is unique—it is the only organ whose function we consciously experience because the brain is the organ of the mind.
+              </td>
+            </tr>
+            <tr>
+              <td class="left">
+                Depression is worst in the night.
+              </td>
+            </tr>
+            <tr>
+              <td class="left">
+                Depression will affect 1 in 4 adults in their lifetime it accounts for 99% of all mind-brain illness.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div> <!--/.modal__details-->
+  </div> <!--/.gridCell--21-->
+</div> <!--/.grid2col-->

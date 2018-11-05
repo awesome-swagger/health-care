@@ -1,0 +1,29 @@
+<div class="dateRange">
+  <h2 class="dateRange__text">{{startDate | date:'MMM d, y'}} &ndash; {{endDate | date:'MMM d, y'}}</h2>
+  <div class="dateRange__anchor">
+    <button class="button button--icon" (click)="openDatePicker()">
+        <i class="ss-standard ss-calendar"></i>
+    </button>
+    <app-popover [(visible)]="datePickerVisible" [options]="datePickerOptions">
+      <div class="dateRange__popover">
+        <app-date-picker [(selected)]="startDate"></app-date-picker>
+        <app-date-picker [(selected)]="endDate"></app-date-picker>
+      </div>
+    </app-popover>
+  </div>
+</div>
+
+<!-- Could be useful, but not included in any designs currently.
+<div (click)="openDateSegment()">
+  <div>{{selectedRange()}}</div>
+  <i class="ss-navigatedown"></i>
+</div>
+<app-popover [(visible)]="dateSegmentVisible" [options]="dropdownOptions">
+  <div class="popover__item" (click)="setRange('today')">Today</div>
+  <div class="popover__item" (click)="setRange('week')">This Week</div>
+  <div class="popover__item" (click)="setRange('month')">This Month</div>
+  <div class="popover__item" (click)="setRange('year')">This Year</div>
+  <div class="popover__item" (click)="setRange('twoWeeks')">Two weeks</div>
+  <div class="popover__item" (click)="setRange('all')">All</div>
+</app-popover>
+-->

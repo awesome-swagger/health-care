@@ -1,0 +1,12 @@
+<h1 class="modal__title">Plan Expired</h1>
+<!--TODO: If user is org admin, show the following-->
+<p class="center">
+  Your plan has expired. To renew, call
+  <a href="tel:801-555-5555" class="justifyCenter">801-555-5555</a>
+  or email
+  <a href="mailto:accounting@careadopt.com" class="justifyCenter">accounting@careadopt.com</a>
+</p>
+<!--TODO: If user is not org admin, show the following-->
+<p *ngIf="" class="center">
+  Your organization’s plan has expired. Please contact an administrator about renewal.
+</p>

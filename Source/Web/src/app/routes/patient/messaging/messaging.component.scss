@@ -1,0 +1,196 @@
+@import '~scss/variables';
+@import '~scss/functions';
+@import '~scss/mixins';
+
+.chatWrap {
+  height: calc(100vh - #{rem-calc(160)});
+  min-height: rem-calc(608);
+  display: flex;
+  flex-direction: column;
+}
+
+.chatHead {
+  flex: 0 0 auto; // 255px is the height
+}
+
+.chat {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: rem-calc(355);
+
+  &--pad { padding-bottom: rem-calc(16); }
+
+  &__side {
+    flex: 0 0 rem-calc(320);
+    border: 1px solid $border;
+    border-radius: rem-calc(4) 0 0 rem-calc(4);
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__main {
+    flex: 1 0 rem-calc(656);
+    border: 1px solid $border;
+    border-radius: 0 rem-calc(4) rem-calc(4) 0;
+    border-left: none;
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__contents {
+    overflow: auto;
+    flex: 1 1 auto;
+  }
+
+  &__innerContents {
+    padding: rem-calc(32);
+  }
+
+  &__threads {
+    overflow: auto;
+    flex: 1 1 auto;
+  }
+
+  &__thread {
+    padding: rem-calc(16);
+    border-bottom: 1px solid $border;
+    cursor: pointer;
+    @include transition;
+
+    &:hover, &:active {
+      background: rgba($green, .25);
+    }
+
+    &--active {
+      background: rgba($green, .5);
+      cursor: default;
+
+      &:hover, &:active {
+        background: rgba($green, .5);
+      }
+    }
+  }
+
+  &__preview {
+    margin: 0;
+    width: rem-calc(288);
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  /* This was for the section at the bottom of the threads list to add a thread. Keeping it in case we bring it back later
+  &__addThread {
+    border-top: 1px solid $border;
+    flex: 0 0 auto;
+    padding: rem-calc(8) rem-calc(16);
+  }
+  */
+
+  &__picBubble {
+    display: flex;
+    align-items: flex-end;
+    margin-bottom: rem-calc(8);
+  }
+
+  &__img {
+    width: rem-calc(32); // needed for Chrome
+    flex: 0 0 rem-calc(32); // needed for Firefox
+    border-radius: 100%;
+  }
+
+  &__bubble {
+    padding: rem-calc(16);
+    border-radius: rem-calc(4) rem-calc(4) rem-calc(4) 0;
+    color: white;
+    background: $gray;
+    hyphens: auto;
+    position: relative;
+    margin: 0 rem-calc(16);
+
+    &::before {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      // overlap the triangle a little because Edge sometimes shows a gap
+      right: calc(100% - 2px);
+      border-top: 4px solid transparent;
+      border-left: 6px solid transparent;
+      border-right: 6px solid $gray;
+      border-bottom: 4px solid $gray;
+    }
+  }
+
+  &__info {
+    margin: 0;
+  }
+
+  &__message {
+    margin-bottom: rem-calc(16);
+
+    &:last-child { margin-bottom: 0; }
+
+    /*separate styling for messages from self
+    muy much nesting :( But it makes it easy to change one class on .chat__message */
+    &--right {
+      margin-left: auto;
+      align-self: flex-end;
+
+      .chat__picBubble {
+        flex-direction: row-reverse;
+      }
+
+      .chat__bubble {
+        background: $blue;
+        border-radius: rem-calc(4) rem-calc(4) 0 rem-calc(4);
+
+        &::before {
+          right: auto;
+          // overlap the triangle a little because Edge sometimes shows a gap
+          left: calc(100% - 2px);
+          border-left-color: $blue;
+          border-bottom-color: $blue;
+          border-right-color: transparent;
+        }
+      }
+
+      .chat__info { text-align: right; }
+    }
+  }
+
+  &__dayDivider {
+    position: relative;
+    margin: rem-calc(48) 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:first-child { margin-top: rem-calc(0); }
+  }
+
+  &__divider {
+    border-top: 1px solid $border;
+    width: 100%;
+  }
+
+  &__date {
+    @include bold;
+    letter-spacing: 1px;
+    color: $gray;
+    text-transform: uppercase;
+    font-size: rem-calc(14);
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    // background must match main bg
+    background: white;
+    padding: 0 rem-calc(16);
+  }
+
+  &__form {
+    border-top: 1px solid $border;
+    padding: rem-calc(32) rem-calc(32) rem-calc(8);
+    flex: 0 0 auto;
+  }
+}

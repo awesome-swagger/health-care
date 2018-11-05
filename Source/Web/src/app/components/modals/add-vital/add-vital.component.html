@@ -1,0 +1,91 @@
+<h1 class="modal__title">Add Vital Report</h1>
+<!--TODO: If adding the vital to a care plan template, show the following.-->
+<div *ngIf="" class="marCenter marCenter--twoThirds">
+  <div class="iconText iconText--wrap iconText--autoHeight error marBottom32">
+    <i class="iconText__icon ss-alert"></i>
+    <span class="error__text">
+      Making changes here will affect X patients currently assigned to this care plan.
+    </span>
+  </div>
+</div>
+<!--TODO: If adding the vital to a care plan instance, show the following-->
+<h5 class="center">NOTE: You are adding a vital to one patient's care plan. To add a vital for everyone, go to care plans.</h5>
+
+<div class="grid2col">
+  <div class="gridCell--11 marRight32">
+    <input type="text" class="input input--search fullWidth marBottom32" placeholder="Search Tasks" />
+    <div class="listBox">
+      <ul class="nameList">
+        <li class="nameList__item nameList__item--padLeft nameList__item--target" [ngClass]="{'nameList__item--target--active':vitalTemplatePreview.vital == vital}" *ngFor="let vital of vitalTemplates" (click)="showVitalPreview(vital)">
+          <div class="flex alignCenter justifySpaceBetween fullWidth">
+            <div>
+              <span class="marRight32">{{vital.name}}</span>
+              <i class="iconSmall ss-transfer"></i>
+            </div>
+            <div class="flex">
+              <button class="button button--icon button--icon--small" (click)="editVitalTemplate($event,vital)">
+                <i class="ss-write"></i>
+              </button>
+              <button class="button button--icon button--icon--small">
+                <i class="ss-delete"></i>
+              </button>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </div> <!--/.listBox-->
+
+    <button class="button button--iconText">
+      <i class="ss-plus"></i> Create New Vital
+    </button>
+
+    <div class="modal__buttons modal__buttons--full">
+      <button class="button button--2nd" (click)="close()">
+        Cancel
+      </button>
+      <!--TODO: Clicking "next" triggers the edit-task modal, for scheduling the vital within the care plan-->
+      <button class="button">
+        Next
+      </button>
+    </div>
+  </div> <!--/.gridCell--11-->
+
+  <div class="gridCell--21">
+    <div class="modal__details">
+      <!--TODO: Show the following if no vital is selected-->
+      <h2 *ngIf="vitalTemplatePreview.vitals.length <= 0" class="modal__empty">Select a vital report to see details</h2>
+
+      <!--TODO: Show the following div when a vital is selected-->
+      <div  *ngIf="vitalTemplatePreview.vitals.length > 0">
+        <div class="flex alignCenter justifySpaceBetween marBottom8">
+          <div class="flex alignCenter">
+            <h2 class="noMargin marRight32">{{vitalTemplatePreview.vital.name}}</h2>
+            <i class="iconSmall ss-transfer"></i>
+          </div>
+          <button class="button button--icon" (click)="openFullPreview(vitalTemplatePreview.vital)">
+            <i class="ss-standard ss-view"></i>
+          </button>
+        </div>
+        <h5 class="marBottom32">Note: Each vital report includes an optional notes field (not shown here) for the patient to provide feedback.</h5>
+        <label>Instructions</label>
+        <p class="marBottom24">
+          When you get up in the morning, record the time you went to bed, and the time you got up, as well as the number of times you awoke during the night.
+        </p>
+        <table class="fullWidth" style="display: block; max-height: 200px; overflow-y: auto">
+          <thead>
+            <tr>
+              <th class="left">Metric</th>
+              <th class="left">Type</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let vp of vitalTemplatePreview.vitals">
+              <td class="left">{{vp.prompt |titlecase}}</td>
+              <td class="left">{{vp.answer_type|titlecase}}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div> <!--/.modal__details-->
+  </div> <!--/.gridCell-21-->
+</div> <!--/.grid2col-->

@@ -1,0 +1,25 @@
+@import '../../../../../modules/modals/modal-outlet.component.scss';
+@import '../../../messaging/messaging.component.scss';
+
+.goalChat {
+  border: 1px solid $border;
+  border-radius: rem-calc(4);
+  display: flex;
+  flex-direction: column;
+  margin-bottom: rem-calc(32);
+  // IE requires height (not max-height) for overflow; 288px is also for IE;
+  height: calc(100vh - 288px);
+  min-height: rem-calc(448);
+
+  &__form {
+    display: flex;
+    padding: rem-calc(16) 0 rem-calc(16) rem-calc(16);
+  }
+
+  &__subtitle {
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}

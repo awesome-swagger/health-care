@@ -1,0 +1,47 @@
+<h1 class="modal__title">{{action}} {{model}}</h1>
+<form (submit)="submit()">
+  <label>Name</label>
+  <input class="input modal__input" type="text" name="name" placeholder="Name" [(ngModel)]="data.facility.name" />
+  <div class="cols">
+    <div class="modal__inputWrap marRight32">
+      <label>Street</label>
+      <input class="input modal__input" type="text" name="addr_street" placeholder="Street" [(ngModel)]="data.facility.addr_street" />
+    </div>
+    <div class="modal__inputWrap80">
+      <label>Suite (opt)</label>
+      <input class="input modal__input" type="text" name="addr_suite" placeholder="Suite" [(ngModel)]="data.facility.addr_suite" />
+    </div>
+  </div>
+  <div class="cols">
+    <div class="modal__inputWrap marRight32">
+      <label>City</label>
+      <input class="input modal__input" type="text" name="addr_city" placeholder="City" [(ngModel)]="data.facility.addr_city" />
+    </div>
+    <div class="modal__inputWrap80 marRight32">
+      <label>State</label>
+      <div class="styledSelect">
+        <select class="styledSelect__select" name="addr_state" [(ngModel)]="data.facility.addr_state">
+          <option [ngValue]="'AL'">AL</option>
+          <option [ngValue]="'AK'">AK</option>
+          <option [ngValue]="'UT'">UT</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal__inputWrap80">
+      <label>Zip</label>
+      <input class="input modal__input" type="text" name="addr_zip" placeholder="ZIP" [(ngModel)]="data.facility.addr_zip" />
+    </div>
+  </div>
+
+  <ng-container *ngIf="!data.isOrganization">
+    <div class="divider modal__divider"></div>
+
+    <label>Parent Company (opt)</label>
+    <input class="input modal__input" type="text" name="parent_company" placeholder="Parent Company" [(ngModel)]="data.facility.parent_company" />
+  </ng-container>
+
+  <div class="modal__buttons">
+    <button class="button button--2nd" type="button" (click)="modals.close(data?.cancelText)">Cancel</button>
+    <button class="button" type="submit">Save</button>
+  </div>
+</form>
