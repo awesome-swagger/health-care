@@ -8,3 +8,4 @@ WORKDIR /care_adopt_backend
 ADD requirements.txt /care_adopt_backend/requirements.txt
 
 ADD . /care_adopt_backend
+ADD server /server

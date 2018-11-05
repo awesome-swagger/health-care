@@ -13,7 +13,7 @@ backend:
   links:
   - database
   ports:
-  - "8000:8000"
+  - "8900:8000"
   environment:
     DB_HOST: database
     PYTHONUNBUFFERED: 1
