@@ -9,7 +9,7 @@ backend:
   build: .
   command: bash /care_adopt_backend/server/django_devserver.sh
   volumes:
-    - careadopt-volume:/care_adopt_backend
+    - careadopt-backend-volume:/care_adopt_backend
   links:
   - database
   ports:
