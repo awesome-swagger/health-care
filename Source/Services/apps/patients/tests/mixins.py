@@ -7,6 +7,7 @@ from .factories import (
     PatientProfileFactory,
     ProblemAreaFactory,
     PatientMedicationFactory,
+    PotentialPatientFactory,
 )
 from apps.accounts.tests.factories import RegularUserFactory
 from apps.core.tests.mixins import CoreMixin
@@ -23,9 +24,14 @@ class PatientsMixin(CoreMixin):
                 'facility': self.create_facility()
             })
 
-        if 'status' not in kwargs:
+        if 'is_invited' not in kwargs:
             kwargs.update({
-                'status': 'active'
+                'is_invited': True
+            })
+
+        if 'is_active' not in kwargs:
+            kwargs.update({
+                'is_active': True
             })
 
         return PatientProfileFactory(
@@ -78,3 +84,30 @@ class PatientsMixin(CoreMixin):
                 'instructions': self.fake.sentence(nb_words=10)
             })
         return PatientMedicationFactory(**kwargs)
+
+    def create_potential_patient(self, **kwargs):
+        if 'first_name' not in kwargs:
+            kwargs.update({
+                'first_name': self.fake.first_name()
+            })
+
+        if 'last_name' not in kwargs:
+            kwargs.update({
+                'last_name': self.fake.last_name()
+            })
+
+        if 'care_plan' not in kwargs:
+            kwargs.update({
+                'care_plan': self.fake.name()
+            })
+
+        if 'phone' not in kwargs:
+            kwargs.update({
+                'phone': self.fake.phone_number()[:16]
+            })
+
+        facility = kwargs.pop('facility', [self.create_facility()])
+
+        patient = PotentialPatientFactory(**kwargs)
+        patient.facility.add(*facility)
+        return patient

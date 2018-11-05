@@ -5,17 +5,20 @@ import random
 from datetime import datetime, time, timedelta
 
 from django.apps import apps
+from django.db.models import Avg
 from django.urls import reverse
 from django.utils import timezone
 
 from dateutil import rrule
 from dateutil.relativedelta import relativedelta
 from faker import Faker
+from rest_framework import status
 from rest_framework.test import APITestCase
 
 from .mixins import PlansMixin
 from apps.tasks.models import (
     PatientTask,
+    MedicationTask,
     TeamTask,
     SymptomTask,
     AssessmentTask,
@@ -25,7 +28,7 @@ from apps.tasks.tests.mixins import TasksMixin
 from apps.accounts.tests.factories import RegularUserFactory
 
 
-class TestCarePlanUsingEmployee(PlansMixin, APITestCase):
+class TestCarePlanUsingEmployee(TasksMixin, APITestCase):
     """
     Test cases for :model:`plans.CarePlan1 using an employee as the logged in
     user.
@@ -71,6 +74,322 @@ class TestCarePlanUsingEmployee(PlansMixin, APITestCase):
             expected_start_on_datetime,
             delta=timedelta(seconds=1),
         )
+
+    def test_care_plan_average_total_patient(self):
+        facility = self.create_facility()
+        organization = facility.organization
+        total_patients = 5
+
+        for i in range(total_patients):
+            patient = self.create_patient(**{
+                'facility': facility
+            })
+            self.create_care_plan(patient)
+
+        # Create patients for other facility
+        for i in range(3):
+            self.create_patient()
+
+        url = reverse('care_plans-average')
+        avg_url = f'{url}?patient__facility__organization={organization.id}'
+        response = self.client.get(avg_url)
+        self.assertEqual(response.data['total_patients'], total_patients)
+
+    def test_care_plan_average_total_facility(self):
+        organization = self.create_organization()
+        total_facilities = 5
+
+        for i in range(total_facilities):
+            facility = self.create_facility(organization)
+            patient = self.create_patient(**{
+                'facility': facility
+            })
+            self.create_care_plan(patient)
+
+        # Create patients for other organization
+        for i in range(3):
+            self.create_patient()
+
+        url = reverse('care_plans-average')
+        avg_url = f'{url}?patient__facility__organization={organization.id}'
+        response = self.client.get(avg_url)
+        self.assertEqual(response.data['total_patients'], total_facilities)
+
+    def test_care_plan_average_total_care_plans(self):
+        organization = self.create_organization()
+        total_care_plans = 5
+
+        for i in range(total_care_plans):
+            facility = self.create_facility(organization)
+            patient = self.create_patient(**{
+                'facility': facility
+            })
+            self.create_care_plan(patient)
+
+        # Create patients for other organization
+        for i in range(3):
+            self.create_care_plan()
+
+        url = reverse('care_plans-average')
+        avg_url = f'{url}?patient__facility__organization={organization.id}'
+        response = self.client.get(avg_url)
+        self.assertEqual(response.data['total_patients'], total_care_plans)
+
+    def generate_average_outcome_records(self, organization):
+        total_facilities = 3
+        total_care_plans = 5
+        total_patients = 6
+        num_assessment_tasks = 3
+        plans = []
+
+        for i in range(total_facilities):
+            facility = self.create_facility(organization)
+            for p in range(total_patients):
+                patient = self.create_patient(**{
+                    'facility': facility
+                })
+                for c in range(total_care_plans):
+                    plan = self.create_care_plan(patient)
+                    plans.append(plan)
+
+                    for t in range(num_assessment_tasks):
+                        template = self.create_assessment_task_template(**{
+                            'tracks_outcome': True
+                        })
+                        task = self.create_assessment_task(**{
+                            'plan': plan,
+                            'assessment_task_template': template
+                        })
+                        questions = template.questions.all()
+                        self.create_responses_to_multiple_questions(template,
+                                                                    task,
+                                                                    questions)
+
+        outcome_tasks = AssessmentTask.objects.filter(
+            plan__in=plans,
+            assessment_task_template__tracks_outcome=True
+        ).aggregate(outcome_average=Avg('responses__rating'))
+        average = outcome_tasks['outcome_average'] or 0
+        average_outcome = round((average / 5) * 100)
+
+        # Create dummy record
+        for i in range(5):
+            template = self.create_assessment_task_template(**{
+                'tracks_outcome': True
+            })
+            task = self.create_assessment_task(**{
+                'assessment_task_template': template
+            })
+            self.create_multiple_assessment_questions(template)
+            questions = template.questions.all()
+            self.create_responses_to_multiple_questions(
+                template, task, questions)
+
+        return average_outcome
+
+    def generate_assessment_tasks(self, plan, due_datetime):
+        template = self.create_assessment_task_template()
+        task = self.create_assessment_task(**{
+            'plan': plan,
+            'assessment_task_template': template,
+            'due_datetime': due_datetime
+        })
+        questions = template.questions.all()
+        self.create_responses_to_multiple_questions(template,
+                                                    task,
+                                                    questions)
+
+        # create incomplete assessment tasks
+        incomplete_template = self.create_assessment_task_template()
+        self.create_assessment_task(**{
+            'plan': plan,
+            'assessment_task_template': incomplete_template,
+            'due_datetime': due_datetime
+        })
+
+    def generate_vital_tasks(self, plan, due_datetime):
+        template = self.create_vital_task_template()
+        task = self.create_vital_task(**{
+            'plan': plan,
+            'vital_task_template': template,
+            'due_datetime': due_datetime
+        })
+        self.create_responses_to_multiple_vital_questions(template,
+                                                          task)
+
+        # create incomplete vital tasks
+        incomplete_template = self.create_vital_task_template()
+        self.create_vital_task(**{
+            'plan': plan,
+            'vital_task_template': incomplete_template,
+            'due_datetime': due_datetime
+        })
+
+    def generate_patient_tasks(self, plan, due_datetime):
+        template = self.create_patient_task_template()
+        self.create_patient_task(**{
+            'plan': plan,
+            'patient_task_template': template,
+            'due_datetime': due_datetime,
+            'status': 'done'
+        })
+
+        incomplete_template = self.create_patient_task_template()
+        self.create_patient_task(**{
+            'plan': plan,
+            'patient_task_template': incomplete_template,
+            'due_datetime': due_datetime
+        })
+
+    def generate_medication_tasks(self, plan, due_datetime):
+        template = self.create_medication_task_template(plan)
+        self.create_medication_task(**{
+            'medication_task_template': template,
+            'due_datetime': due_datetime,
+            'status': 'done'
+        })
+
+        incomplete_template = self.create_medication_task_template(plan)
+        self.create_medication_task(**{
+            'medication_task_template': incomplete_template,
+            'due_datetime': due_datetime
+        })
+
+    def generate_symptom_tasks(self, plan, due_datetime):
+        template = self.create_symptom_task_template()
+        symptom_task = self.create_symptom_task(**{
+            'plan': plan,
+            'symptom_task_template': template,
+            'due_datetime': due_datetime,
+        })
+        self.create_symptom_rating(symptom_task)
+
+        incomplete_template = self.create_symptom_task_template()
+        self.create_symptom_task(**{
+            'plan': plan,
+            'symptom_task_template': incomplete_template,
+            'due_datetime': due_datetime
+        })
+
+    def generate_average_engagement_records(self, organization):
+        total_facilities = 3
+        total_care_plans = 5
+        total_patients = 6
+        plans = []
+        now = timezone.now()
+        due_datetime = now - relativedelta(days=3)
+
+        for i in range(total_facilities):
+            facility = self.create_facility(organization)
+            for p in range(total_patients):
+                patient = self.create_patient(**{
+                    'facility': facility
+                })
+                for c in range(total_care_plans):
+                    plan = self.create_care_plan(patient)
+                    plans.append(plan)
+
+                    self.generate_assessment_tasks(plan, due_datetime)
+                    self.generate_patient_tasks(plan, due_datetime)
+                    self.generate_medication_tasks(plan, due_datetime)
+                    self.generate_symptom_tasks(plan, due_datetime)
+                    self.generate_vital_tasks(plan, due_datetime)
+
+        assessment_tasks = AssessmentTask.objects.filter(
+            plan__in=plans,
+            due_datetime__lte=now
+        )
+        patient_tasks = PatientTask.objects.filter(
+            plan__in=plans,
+            due_datetime__lte=now
+        )
+        medication_tasks = MedicationTask.objects.filter(
+            medication_task_template__plan__in=plans,
+            due_datetime__lte=now
+        )
+        symptom_tasks = SymptomTask.objects.filter(
+            plan__in=plans,
+            due_datetime__lte=now
+        )
+        vital_tasks = VitalTask.objects.filter(
+            plan__in=plans,
+            due_datetime__lte=now
+        )
+        total_patient_tasks = patient_tasks.count()
+        total_medication_tasks = medication_tasks.count()
+        total_symptom_tasks = symptom_tasks.count()
+        total_assessment_tasks = assessment_tasks.count()
+        total_vital_tasks = vital_tasks.count()
+
+        completed_patient_tasks = patient_tasks.filter(
+            status__in=['missed', 'done']).count()
+        completed_medication_tasks = medication_tasks.filter(
+            status__in=['missed', 'done']).count()
+        completed_symptom_tasks = symptom_tasks.filter(
+            is_complete=True).count()
+        completed_assessment_tasks = assessment_tasks.filter(
+            is_complete=True).count()
+        completed_vital_tasks = vital_tasks.filter(
+            is_complete=True).count()
+        total_completed = (completed_patient_tasks +
+                           completed_medication_tasks +
+                           completed_symptom_tasks +
+                           completed_assessment_tasks +
+                           completed_vital_tasks)
+        total_tasks = (total_patient_tasks +
+                       total_medication_tasks +
+                       total_symptom_tasks +
+                       total_assessment_tasks +
+                       total_vital_tasks)
+        return round(total_completed / total_tasks) if total_tasks > 0 else 0
+
+    def test_care_plan_average_outcome(self):
+        organization = self.create_organization()
+        average_outcome = self.generate_average_outcome_records(organization)
+
+        url = reverse('care_plans-average')
+        avg_url = f'{url}?patient__facility__organization={organization.id}'
+        response = self.client.get(avg_url)
+        self.assertEqual(response.data['average_outcome'], average_outcome)
+
+    def test_care_plan_average_engagement(self):
+        organization = self.create_organization()
+        average_engagement = self.generate_average_engagement_records(
+            organization)
+
+        url = reverse('care_plans-average')
+        avg_url = f'{url}?patient__facility__organization={organization.id}'
+        response = self.client.get(avg_url)
+        self.assertEqual(
+            response.data['average_engagement'],
+            average_engagement
+        )
+
+    def test_care_plan_average_risk_level(self):
+        organization = self.create_organization()
+        average_outcome = self.generate_average_outcome_records(organization)
+        average_engagement = self.generate_average_engagement_records(
+            organization)
+        risk_level = round((average_outcome + average_engagement) / 2)
+
+        url = reverse('care_plans-average')
+        avg_url = f'{url}?patient__facility__organization={organization.id}'
+        response = self.client.get(avg_url)
+        self.assertAlmostEqual(response.data['risk_level'], risk_level)
+
+    def test_care_plan_average_unauthorized(self):
+        self.client.logout()
+        url = reverse('care_plans-average')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_care_plan_average_patient_unauthorized(self):
+        self.client.logout()
+        patient = self.create_patient()
+        self.client.force_authenticate(patient.user)
+        url = reverse('care_plans-average')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
 
 class TestCarePlanPostSaveSignalFrequencyOnce(TasksMixin, APITestCase):

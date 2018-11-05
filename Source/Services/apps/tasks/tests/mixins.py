@@ -171,14 +171,23 @@ class TasksMixin(PlansMixin):
 
         return SymptomTaskFactory(**kwargs)
 
-    def create_symptom_rating(self, symptom_task=None):
+    def create_symptom_rating(self, symptom_task=None, **kwargs):
         if symptom_task is None:
             symptom_task = self.create_symptom_task()
 
+        if 'symptom' not in kwargs:
+            kwargs.update({
+                'symptom': self.create_symptom()
+            })
+
+        if 'rating' not in kwargs:
+            kwargs.update({
+                'rating': random.randint(1, 5)
+            })
+
         return SymptomRatingFactory(
             symptom_task=symptom_task,
-            symptom=self.create_symptom(),
-            rating=random.randint(1, 5)
+            **kwargs
         )
 
     def create_assessment_task_template(self, **kwargs):

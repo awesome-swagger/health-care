@@ -171,6 +171,15 @@ class EmailUser(AbstractBaseUser, PermissionsMixin):
         return hasattr(self, 'employee_profile') and \
             self.employee_profile is not None
 
+    @property
+    def user_type(self) -> str:
+        _type = ''
+        if self.is_employee:
+            _type = 'employee'
+        elif self.is_patient:
+            _type = 'patient'
+        return _type
+
     # Some nice conveniences
     @property
     def age(self) -> int:
@@ -292,4 +301,5 @@ class EmailUser(AbstractBaseUser, PermissionsMixin):
 def validate_new_user(sender, instance, created, **kwargs):
     """Send a validation email when a new user is created."""
     if created and not instance.validated_at:
-        instance.send_validation_email()
+        instance.validated_at = timezone.now()
+        instance.save()

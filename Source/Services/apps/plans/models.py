@@ -1,9 +1,5 @@
-from datetime import timedelta
-
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-from django.dispatch import receiver
-from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
 from apps.core.models import EmployeeProfile, ProviderRole
@@ -12,19 +8,32 @@ from care_adopt_backend.mixins import CreatedModifiedMixin, UUIDPrimaryKeyMixin
 
 from .signals import careplan_post_save
 
-PLAN_TYPE_CHOICES = (
-    ('rpm', 'Remote Patient Management'),
-    ('bhi', 'Behavioral Health Initiative'),
-    ('cocm', 'Psychiatric Collaberative Care Management'),
-    ('ccm', 'Chronic Care Management'),
-    ('cccm', 'Complex Chronic Care Management'),
-    ('tcm', 'Transitional Care Management'),
-)
+
+class CarePlanTemplateType(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
+    """
+    Stores information about types of CarePlanTemplate
+    """
+    name = models.CharField(max_length=128)
+    acronym = models.CharField(max_length=16)
+
+    class Meta:
+        ordering = ('-created', )
+        verbose_name = _('Care Plan Template Type')
+        verbose_name_plural = _('Care Plan Template Types')
+
+    def __str__(self):
+        return f'{self.acronym}: {self.name}'
 
 
 class CarePlanTemplate(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
     name = models.CharField(max_length=120)
-    type = models.CharField(max_length=10, choices=PLAN_TYPE_CHOICES)
+    type = models.ForeignKey(
+        'plans.CarePlanTemplateType',
+        related_name='care_plan_templates',
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True
+    )
     duration_weeks = models.IntegerField(null=False, blank=False)
     is_active = models.BooleanField(default=True)
 
@@ -76,6 +85,7 @@ class CareTeamMember(UUIDPrimaryKeyMixin):
     plan = models.ForeignKey(
         CarePlan, null=False, blank=False, related_name="care_team_members",
         on_delete=models.CASCADE)
+    is_manager = models.BooleanField(default=False)
 
     def __str__(self):
         return '{} {}, {} for {}'.format(
@@ -177,6 +187,7 @@ class GoalComment(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
     class Meta:
         verbose_name = _('Goal Comment')
         verbose_name_plural = _('Goal Comments')
+        ordering = ('-created', )
 
     def __str__(self):
         return f'{self.goal} - {self.user}: {self.content}'

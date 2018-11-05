@@ -26,7 +26,10 @@ from ..models import (
 )
 from apps.core.api.mixins import RepresentationMixin
 from apps.core.api.serializers import SymptomSerializer
-from apps.patients.api.serializers import PatientMedicationSerializer
+from apps.patients.api.serializers import (
+    PatientMedicationSerializer,
+    BasicPatientSerializer,
+)
 
 
 class PatientTaskTemplateSerializer(serializers.ModelSerializer):
@@ -85,6 +88,39 @@ class PatientTaskTodaySerializer(serializers.ModelSerializer):
 
     def get_name(self, obj):
         return obj.patient_task_template.name
+
+
+class TeamTaskTodaySerializer(serializers.ModelSerializer):
+    """
+    This is a simplified serializer of :model:`tasks.TeamTask`. This
+    will be primarily used in :view:`tasks.TodaysTasksAPIView`.
+    """
+    type = serializers.SerializerMethodField()
+    name = serializers.SerializerMethodField()
+    patient = serializers.SerializerMethodField()
+
+    class Meta:
+        model = TeamTask
+        fields = (
+            'id',
+            'type',
+            'name',
+            'state',
+            'patient',
+            'appear_datetime',
+            'due_datetime',
+        )
+
+    def get_type(self, obj):
+        return 'team_task'
+
+    def get_name(self, obj):
+        return obj.team_task_template.name
+
+    def get_patient(self, obj):
+        patient = obj.plan.patient
+        serializer = BasicPatientSerializer(patient)
+        return serializer.data
 
 
 class TeamTaskTemplateSerializer(serializers.ModelSerializer):
@@ -168,7 +204,7 @@ class MedicationTaskTodaySerializer(serializers.ModelSerializer):
         )
 
     def get_type(self, obj):
-        return 'patient_task'
+        return 'medication_task'
 
     def get_name(self, obj):
         medication = obj.medication_task_template.patient_medication

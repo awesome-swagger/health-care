@@ -10,9 +10,57 @@ from rest_framework.test import APITestCase
 from .mixins import TasksMixin
 
 
-class TestTodaysTask(TasksMixin, APITestCase):
+class TestTodaysTaskForEmployee(TasksMixin, APITestCase):
     """
-    Test cases for :view:`tasks.TodaysTasksAPIView`
+    Test cases for :view:`tasks.TodaysTasksAPIView` using employee
+    """
+
+    def setUp(self):
+        self.fake = Faker()
+        self.employee = self.create_employee()
+        self.role = self.employee.roles.first()
+        self.patient = self.create_patient()
+        self.plan = self.create_care_plan(self.patient)
+        self.create_care_team_member(**{
+            'employee_profile': self.employee,
+            'role': self.role,
+            'plan': self.plan
+        })
+
+        self.create_care_team_member(**{
+            'employee_profile': self.employee,
+            'plan': self.plan
+        })
+
+        self.user = self.employee.user
+        self.url = reverse('todays_tasks')
+        self.client.force_authenticate(user=self.user)
+
+    def create_team_task_due_today(self, **kwargs):
+        appear_datetime = pytz.utc.localize(
+            self.fake.past_datetime(start_date="-1d")
+        )
+        kwargs.update({
+            'plan': self.plan,
+            'appear_datetime': appear_datetime,
+            'due_datetime': timezone.now()
+        })
+        return self.create_team_task(**kwargs)
+
+    def test_get_all_tasks_today(self):
+        self.create_team_task_due_today()
+        response = self.client.get(self.url)
+        self.assertEqual(len(response.data), 1)
+
+    def test_unauthenticated_user_access(self):
+        self.client.logout()
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+class TestTodaysTaskForPatient(TasksMixin, APITestCase):
+    """
+    Test cases for :view:`tasks.TodaysTasksAPIView` using patient
     """
 
     def setUp(self):

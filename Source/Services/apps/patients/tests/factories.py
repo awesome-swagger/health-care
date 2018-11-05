@@ -27,3 +27,12 @@ class PatientMedicationFactory(factory.django.DjangoModelFactory):
 
     class Meta:
         model = 'patients.PatientMedication'
+
+
+class PotentialPatientFactory(factory.django.DjangoModelFactory):
+    """
+    Factory for :model:`patients.PotentialPatient`
+    """
+
+    class Meta:
+        model = 'patients.PotentialPatient'

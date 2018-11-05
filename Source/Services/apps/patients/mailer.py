@@ -46,7 +46,7 @@ class PatientsMailer(BaseMailer):
             "verification_code": verification_code,
             "admin_email": settings.DEFAULT_FROM_EMAIL,
         }
-        email_template = 'profiles/email/verification_code.html'
+        email_template = 'patients/email/verification_code.html'
         return self.send_mail(
             subject,
             email_template,

@@ -48,16 +48,23 @@ class FacilityPermissions(permissions.BasePermission):
         return False
 
     def has_object_permission(self, request, view, obj):
-        if request.method in permissions.SAFE_METHODS:
+        if request.user.is_superuser:
             return True
-        employee_profile = utils.employee_profile_or_none(request.user)
-        if employee_profile is None:
-            return False
-        if request.method == "PUT" or request.method == "PATCH" or request.method == "DELETE":
-            return obj in employee_profile.facilities_managed.all()
+
+        if request.user.is_employee:
+            employee = request.user.employee_profile
+
+            if request.method in permissions.SAFE_METHODS:
+                return obj in employee.facilities_managed.all() or \
+                    obj in employee.facilities.all()
+
+            elif request.method == "PUT" or request.method == "PATCH" or \
+                    request.method == "DELETE":
+                return obj in employee.facilities_managed.all()
+
         return False
 
- 
+
 class EmployeeProfilePermissions(permissions.BasePermission):
 
     def has_permission(self, request, view):

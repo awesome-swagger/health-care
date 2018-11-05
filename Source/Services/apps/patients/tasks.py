@@ -1,10 +1,16 @@
+import datetime
+import logging
 import random
+
+import pytz
 
 from datetime import timedelta
 
 from celery import shared_task
 from celery.schedules import crontab
 from celery.task import PeriodicTask
+from django.db.models import Count, Q
+from django.utils import timezone
 
 from apps.core.models import InvitedEmailTemplate
 from apps.plans.models import InfoMessage
@@ -12,6 +18,7 @@ from apps.plans.models import InfoMessage
 from .models import PatientProfile, ReminderEmail
 
 DAYS_PASSED_BEFORE_SENDING_INVITE_REMINDER = 7
+logger = logging.getLogger(__name__)
 
 
 @shared_task
@@ -21,19 +28,37 @@ def remind_invited_patients():
     """
     reminder_template = InvitedEmailTemplate.objects.get(is_default=True)
     date_today = timezone.now().date()
+    today_min = datetime.datetime.combine(date_today,
+                                          datetime.time.min,
+                                          tzinfo=pytz.utc)
+    today_max = datetime.datetime.combine(date_today,
+                                          datetime.time.max,
+                                          tzinfo=pytz.utc)
     creation_date = date_today - timedelta(days=DAYS_PASSED_BEFORE_SENDING_INVITE_REMINDER)
-    invited_patients = PatientProfile.objects.filter(
-        status=PatientProfile.INVITED,
-        created__date=creation_date,
+    creation_date_min = datetime.datetime.combine(creation_date,
+                                                  datetime.time.min,
+                                                  tzinfo=pytz.utc)
+    creation_date_max = datetime.datetime.combine(creation_date,
+                                                  datetime.time.max,
+                                                  tzinfo=pytz.utc)
+    count_reminders_sent_today = Count('reminder_emails', filter=Q(reminder_emails__created__range=(today_min, today_max)))
+
+    invited_patients = (
+        PatientProfile.objects
+                      .annotate(num_reminders_sent_today=count_reminders_sent_today)
+                      .filter(is_invited=True,
+                              is_active=False,
+                              created__range=(creation_date_min, creation_date_max),
+                              num_reminders_sent_today=0)
     )
 
+    logging.info('Sending email reminders to %s invited patients.' % invited_patients.count())
     for patient in invited_patients:
-        if not ReminderEmail.objects.filter(patient=patient, created__date=date_today).exists():
-            ReminderEmail.objects.create(
-                patient=patient,
-                subject=reminder_template.subject,
-                message=reminder_template.message,
-            )
+        ReminderEmail.objects.create(
+            patient=patient,
+            subject=reminder_template.subject,
+            message=reminder_template.message,
+        )
 
 
 class DailyInfoMessage(PeriodicTask):

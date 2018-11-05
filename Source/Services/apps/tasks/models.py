@@ -12,7 +12,7 @@ from .signals import (
     vitalresponse_post_delete,
     medicationtasktemplate_post_save,
 )
-from care_adopt_backend.mixins import UUIDPrimaryKeyMixin
+from care_adopt_backend.mixins import UUIDPrimaryKeyMixin, CreatedModifiedMixin
 from apps.core.models import (ProviderRole, Symptom, )
 from apps.patients.models import (PatientMedication, )
 from apps.plans.models import (CarePlanTemplate, CarePlan, )
@@ -246,7 +246,7 @@ class SymptomTask(AbstractTask):
         )
 
 
-class SymptomRating(UUIDPrimaryKeyMixin):
+class SymptomRating(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
     symptom_task = models.ForeignKey(
         SymptomTask,
         related_name='ratings',
@@ -300,7 +300,9 @@ class AssessmentQuestion(UUIDPrimaryKeyMixin):
 
 class AssessmentTask(AbstractTask):
     plan = models.ForeignKey(
-        CarePlan, null=False, blank=False, on_delete=models.CASCADE)
+        CarePlan,
+        related_name='assessment_tasks',
+        on_delete=models.CASCADE)
     assessment_task_template = models.ForeignKey(
         AssessmentTaskTemplate, null=False, blank=False,
         on_delete=models.CASCADE)

@@ -6,11 +6,12 @@ from apps.patients.models import (
     PatientProcedure,
     PatientMedication,
     PatientVerificationCode,
+    PotentialPatient,
 )
 
 
 class PatientProfileAdmin(admin.ModelAdmin):
-    list_display = ('user', 'facility', 'status', )
+    list_display = ('user', 'facility', 'is_invited', 'is_active')
 
 
 class ProblemAreaAdmin(admin.ModelAdmin):
@@ -41,9 +42,14 @@ class PatientVerificationCodeAdmin(admin.ModelAdmin):
     )
 
 
+class PotentialPatientAdmin(admin.ModelAdmin):
+    list_display = ('first_name', 'last_name', 'phone', 'patient_profile')
+
+
 admin.site.register(PatientProfile, PatientProfileAdmin)
 admin.site.register(ProblemArea, ProblemAreaAdmin)
 admin.site.register(PatientDiagnosis, PatientDiagnosisAdmin)
 admin.site.register(PatientProcedure, PatientProcedureAdmin)
 admin.site.register(PatientMedication, PatientMedicationAdmin)
 admin.site.register(PatientVerificationCode, PatientVerificationCodeAdmin)
+admin.site.register(PotentialPatient, PotentialPatientAdmin)

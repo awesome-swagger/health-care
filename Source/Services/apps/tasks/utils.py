@@ -12,6 +12,7 @@ from .models import (
     PatientTask,
     SymptomTask,
     VitalTask,
+    TeamTask,
 )
 from .api.serializers import (
     PatientTaskTodaySerializer,
@@ -19,6 +20,7 @@ from .api.serializers import (
     SymptomTaskTodaySerializer,
     AssessmentTaskTodaySerializer,
     VitalTaskTodaySerializer,
+    TeamTaskTodaySerializer,
 )
 
 
@@ -93,7 +95,8 @@ def get_all_tasks_of_patient_today(patient):
 
     patient_tasks = PatientTask.objects.filter(
         plan__patient__id=patient.id,
-        due_datetime__range=(today_min, today_max))
+        due_datetime__range=(today_min, today_max)
+        )
     medication_tasks = MedicationTask.objects.filter(
         medication_task_template__plan__patient__id=patient.id,
         due_datetime__range=(today_min, today_max))
@@ -141,4 +144,93 @@ def get_all_tasks_of_patient_today(patient):
             many=True
         )
         tasks += serializer.data
+    return tasks
+
+
+def get_all_tasks_for_today(user):
+    """
+    Retrieves all tasks for the given user that are due for current day.
+    """
+    tasks = []
+    today = timezone.now().date()
+    today_min = datetime.datetime.combine(today,
+                                          datetime.time.min,
+                                          tzinfo=pytz.utc)
+    today_max = datetime.datetime.combine(today,
+                                          datetime.time.max,
+                                          tzinfo=pytz.utc)
+
+    if user.is_employee:
+        employee = user.employee_profile
+        team_tasks = TeamTask.objects.filter(
+            plan__care_team_members__employee_profile=employee,
+            plan__care_team_members__role__in=employee.roles.all(),
+            due_datetime__range=(today_min, today_max)
+        ).exclude(status='done')
+
+        if team_tasks.exists():
+            serializer = TeamTaskTodaySerializer(
+                team_tasks.all(),
+                many=True
+            )
+            tasks += serializer.data
+
+    elif user.is_patient:
+        patient = user.patient_profile
+        patient_tasks = PatientTask.objects.filter(
+            plan__patient__id=patient.id,
+            due_datetime__range=(today_min, today_max)
+            ).exclude(status='done')
+        medication_tasks = MedicationTask.objects.filter(
+            medication_task_template__plan__patient__id=patient.id,
+            due_datetime__range=(today_min, today_max)
+            ).exclude(status='done')
+        symptom_tasks = SymptomTask.objects.filter(
+            plan__patient__id=patient.id,
+            due_datetime__range=(today_min, today_max),
+            is_complete=False)
+        assessment_tasks = AssessmentTask.objects.filter(
+            plan__patient__id=patient.id,
+            due_datetime__range=(today_min, today_max),
+            is_complete=False)
+        vital_tasks = VitalTask.objects.filter(
+            plan__patient__id=patient.id,
+            due_datetime__range=(today_min, today_max),
+            is_complete=False)
+
+        if patient_tasks.exists():
+            serializer = PatientTaskTodaySerializer(
+                patient_tasks.all(),
+                many=True
+            )
+            tasks += serializer.data
+
+        if medication_tasks.exists():
+            serializer = MedicationTaskTodaySerializer(
+                medication_tasks.all(),
+                many=True
+            )
+            tasks += serializer.data
+
+        if symptom_tasks.exists():
+            serializer = SymptomTaskTodaySerializer(
+                symptom_tasks.all(),
+                many=True
+            )
+            tasks += serializer.data
+
+        if assessment_tasks.exists():
+            serializer = AssessmentTaskTodaySerializer(
+                assessment_tasks.all(),
+                many=True
+            )
+            tasks += serializer.data
+
+        if vital_tasks.exists():
+            serializer = VitalTaskTodaySerializer(
+                vital_tasks.all(),
+                many=True
+            )
+            tasks += serializer.data
+
     return tasks

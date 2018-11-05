@@ -1,0 +1,62 @@
+[
+{
+    "model": "plans.careplantemplatetype",
+    "pk": "134e83df-646a-420a-bdd3-e1b04083cb5a",
+    "fields": {
+        "created": "2018-10-26T00:59:23.699Z",
+        "modified": "2018-10-26T00:59:23.699Z",
+        "name": "Transitional Care Management",
+        "acronym": "TCM"
+    }
+},
+{
+    "model": "plans.careplantemplatetype",
+    "pk": "1b827fe4-4bec-40e9-a6f2-acb9059f9e6a",
+    "fields": {
+        "created": "2018-10-26T01:00:18.872Z",
+        "modified": "2018-10-26T01:00:18.872Z",
+        "name": "Psychiatric Collaberative Care Management",
+        "acronym": "CoCM"
+    }
+},
+{
+    "model": "plans.careplantemplatetype",
+    "pk": "85ee911d-0347-40b0-a69f-0c61f27f5c2b",
+    "fields": {
+        "created": "2018-10-26T01:00:29.620Z",
+        "modified": "2018-10-26T01:00:29.620Z",
+        "name": "Behavioral Health Initiative",
+        "acronym": "BHI"
+    }
+},
+{
+    "model": "plans.careplantemplatetype",
+    "pk": "9f7bb703-fbe4-4d33-adbc-de534e5dcb43",
+    "fields": {
+        "created": "2018-10-26T01:00:02.224Z",
+        "modified": "2018-10-26T01:00:02.224Z",
+        "name": "Chronic Care Management",
+        "acronym": "CCM"
+    }
+},
+{
+    "model": "plans.careplantemplatetype",
+    "pk": "cff60f7e-6a14-4c8d-8358-17de2728de4e",
+    "fields": {
+        "created": "2018-10-26T01:00:40.557Z",
+        "modified": "2018-10-26T01:00:40.557Z",
+        "name": "Remote Patient Management",
+        "acronym": "RPM"
+    }
+},
+{
+    "model": "plans.careplantemplatetype",
+    "pk": "ea23c324-abc4-4ce6-9d84-87bf9037e850",
+    "fields": {
+        "created": "2018-10-26T00:59:48.395Z",
+        "modified": "2018-10-26T00:59:48.395Z",
+        "name": "Complex Chronic Care Management",
+        "acronym": "CCCM"
+    }
+}
+]

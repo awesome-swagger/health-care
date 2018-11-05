@@ -49,6 +49,10 @@ class TestGoalCommentUsingEmployee(PlansMixin, APITestCase):
         response = self.client.get(self.detail_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    def test_get_goal_comment_detail_user_type(self):
+        response = self.client.get(self.detail_url)
+        self.assertEqual(response.data['user']['user_type'], 'employee')
+
     def test_get_goal_comment_detail_unauthenticated(self):
         self.client.logout()
         response = self.client.get(self.detail_url)
@@ -174,6 +178,10 @@ class TestGoalCommentUsingPatient(PlansMixin, APITestCase):
     def test_get_goal_comment_detail(self):
         response = self.client.get(self.detail_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_goal_comment_detail_user_type(self):
+        response = self.client.get(self.detail_url)
+        self.assertEqual(response.data['user']['user_type'], 'patient')
 
     def test_get_goal_comment_detail_unauthenticated(self):
         self.client.logout()

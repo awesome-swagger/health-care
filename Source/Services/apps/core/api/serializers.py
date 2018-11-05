@@ -1,3 +1,5 @@
+from django.db.models import Q
+
 from drf_haystack.serializers import HaystackSerializerMixin
 from rest_framework import serializers
 
@@ -189,11 +191,15 @@ class OrganizationEmployeeSerializer(serializers.ModelSerializer):
     """
     full_name = serializers.SerializerMethodField()
     facilities_count = serializers.SerializerMethodField()
+    image_url = serializers.ReadOnlyField(source='user.image_url')
+    title = serializers.ReadOnlyField(source='title.name')
 
     class Meta:
         model = EmployeeProfile
         fields = (
+            'id',
             'full_name',
+            'image_url',
             'title',
             'status',
             'facilities_count',
@@ -203,11 +209,63 @@ class OrganizationEmployeeSerializer(serializers.ModelSerializer):
         return obj.user.get_full_name()
 
     def get_facilities_count(self, obj):
-        facilities = obj.facilities.values_list('id', flat=True).distinct()
-        facilities_managed = obj.facilities_managed.values_list(
-            'id', flat=True).distinct()
-        ids = set(list(facilities) + list(facilities_managed))
-        return len(ids)
+        queryset = Facility.objects.filter(
+            Q(id__in=obj.facilities.all()) |
+            Q(id__in=obj.facilities_managed.all()),
+        ).distinct()
+        return queryset.count()
+
+
+class FacilityEmployeeSerializer(serializers.ModelSerializer):
+    """
+    Serializer to be used for employees inside a facility
+    """
+    full_name = serializers.SerializerMethodField()
+    care_manager = serializers.SerializerMethodField()
+    care_team = serializers.SerializerMethodField()
+    is_admin = serializers.SerializerMethodField()
+    other_facilities = serializers.SerializerMethodField()
+    image_url = serializers.SerializerMethodField()
+    title = serializers.ReadOnlyField(source='title.name')
+
+    class Meta:
+        model = EmployeeProfile
+        fields = (
+            'id',
+            'full_name',
+            'image_url',
+            'title',
+            'status',
+            'care_manager',
+            'care_team',
+            'is_admin',
+            'other_facilities',
+        )
+
+    def get_full_name(self, obj):
+        return obj.user.get_full_name()
+
+    def get_image_url(self, obj):
+        return obj.user.get_image_url()
+
+    def get_care_manager(self, obj):
+        return obj.assigned_roles.filter(is_manager=True).count()
+
+    def get_care_team(self, obj):
+        return obj.assigned_roles.filter(is_manager=False).count()
+
+    def get_is_admin(self, obj):
+        facility = self.context['facility']
+        return facility.organization in obj.organizations_managed.all() or \
+            facility in obj.facilities_managed.all()
+
+    def get_other_facilities(self, obj):
+        facility = self.context['facility']
+        queryset = Facility.objects.filter(
+            Q(id__in=obj.facilities.all()) |
+            Q(id__in=obj.facilities_managed.all()),
+        ).exclude(id=facility.id).distinct()
+        return queryset.count()
 
 
 class DiagnosisSerializer(serializers.ModelSerializer):

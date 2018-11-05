@@ -1,9 +1,16 @@
-from rest_framework import viewsets, permissions
+from dateutil.relativedelta import relativedelta
+
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import viewsets, permissions, mixins
 from rest_framework.decorators import action
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.response import Response
+from rest_framework_extensions.mixins import NestedViewSetMixin
+
+from django.db.models import Avg
 
 from ..models import (
+    CarePlanTemplateType,
     CarePlanTemplate,
     CarePlan,
     PlanConsent,
@@ -16,6 +23,7 @@ from ..models import (
     CareTeamMember,
 )
 from .serializers import (
+    CarePlanTemplateTypeSerializer,
     CarePlanTemplateSerializer,
     CarePlanSerializer,
     PlanConsentSerializer,
@@ -26,13 +34,64 @@ from .serializers import (
     GoalCommentSerializer,
     InfoMessageQueueSerializer,
     InfoMessageSerializer,
+    CarePlanTemplateAverageSerializer,
 )
-from apps.core.models import ProviderRole
+from apps.core.api.mixins import ParentViewSetPermissionMixin
+from apps.core.models import Organization
 from apps.core.api.serializers import ProviderRoleSerializer
+from apps.core.api.views import OrganizationViewSet
+from apps.core.models import ProviderRole
+from apps.tasks.models import (
+    AssessmentTask,
+    PatientTask,
+    MedicationTask,
+    SymptomTask,
+    VitalTask,
+)
 from apps.tasks.permissions import IsEmployeeOrPatientReadOnly
 from care_adopt_backend import utils
-from care_adopt_backend.permissions import EmployeeOrReadOnly
+from care_adopt_backend.permissions import (
+    EmployeeOrReadOnly,
+    IsAdminOrEmployee,
+)
 from django.utils import timezone
+
+
+class CarePlanTemplateTypeViewSet(viewsets.ModelViewSet):
+    """
+    Viewset for :model:`plans.CarePlanTemplateType`
+    ========
+
+    create:
+        Creates :model:`plans.CarePlanTemplateType` object.
+        Only admins and employees are allowed to perform this action.
+
+    update:
+        Updates :model:`plans.CarePlanTemplateType` object.
+        Only admins and employees are allowed to perform this action.
+
+    partial_update:
+        Updates one or more fields of an existing plan template type object.
+        Only admins and employees are allowed to perform this action.
+
+    retrieve:
+        Retrieves a :model:`plans.CarePlanTemplateType` instance.
+        All users will have access to all template type objects.
+
+    list:
+        Returns list of all :model:`plans.CarePlanTemplateType` objects.
+        All users will have access to all template type objects.
+
+    delete:
+        Deletes a :model:`plans.CarePlanTemplateType` instance.
+        Only admins and employees are allowed to perform this action.
+    """
+    serializer_class = CarePlanTemplateTypeSerializer
+    permission_classes = (
+        permissions.IsAuthenticated,
+        IsEmployeeOrPatientReadOnly,
+    )
+    queryset = CarePlanTemplateType.objects.all()
 
 
 class CarePlanTemplateViewSet(viewsets.ModelViewSet):
@@ -77,6 +136,10 @@ class CarePlanTemplateViewSet(viewsets.ModelViewSet):
         IsEmployeeOrPatientReadOnly,
     )
     queryset = CarePlanTemplate.objects.all()
+    filter_backends = (DjangoFilterBackend, )
+    filterset_fields = (
+        'care_plans__patient__facility__organization',
+    )
 
     def get_queryset(self):
         queryset = super(CarePlanTemplateViewSet, self).get_queryset()
@@ -95,6 +158,36 @@ class CarePlanTemplateViewSet(viewsets.ModelViewSet):
 
         return queryset
 
+    @action(methods=['get'],
+            detail=True,
+            permission_classes=(permissions.IsAuthenticated,
+                                IsAdminOrEmployee))
+    def average(self, request, pk, *args, **kwargs):
+        """
+        Returns aggregated number of patients, time count, outcome,
+        engagemment, and risk level of the given care plan template.
+
+        IMPORTANT NOTE:
+        ---
+        - Make sure to pass the {organization ID} when sending requests to this
+        endpoint to filter care plans for a specific organization. Otherwise,
+        this endpoint will return all care plan templates in all organizations.
+        - The URL parameter to be used is:
+            - **care_plans__patient__facility__organization**
+
+        SAMPLE REQUEST:
+        ---
+        ```
+        GET /api/care_plan_templates/{uuid}/average/?care_plans__patient__facility__organization=<uuid>
+        ```
+        """
+
+        queryset = self.get_queryset()
+        filtered_queryset = self.filter_queryset(queryset).distinct()
+        template = filtered_queryset.get(pk=pk)
+        serializer = CarePlanTemplateAverageSerializer(template)
+        return Response(serializer.data)
+
 
 class CarePlanViewSet(viewsets.ModelViewSet):
     """
@@ -105,6 +198,11 @@ class CarePlanViewSet(viewsets.ModelViewSet):
     """
     serializer_class = CarePlanSerializer
     permission_classes = (permissions.IsAuthenticated, )
+    filter_backends = (DjangoFilterBackend, )
+    filterset_fields = (
+        'patient',
+        'patient__facility__organization',
+    )
 
     def get_queryset(self):
         qs = CarePlan.objects.all()
@@ -136,6 +234,107 @@ class CarePlanViewSet(viewsets.ModelViewSet):
             id__in=list(set(all_roles) - set(assigned_roles)))
         serializer = ProviderRoleSerializer(available_roles, many=True)
         return Response(serializer.data)
+
+    def calculate_average_outcome(self, queryset):
+        tasks = AssessmentTask.objects.filter(
+            plan__in=queryset,
+            assessment_task_template__tracks_outcome=True
+        ).aggregate(average=Avg('responses__rating'))
+        average = tasks['average'] or 0
+        avg = round((average / 5) * 100)
+        return avg
+
+    def calculate_average_engagement(self, queryset):
+        now = timezone.now()
+        patient_tasks = PatientTask.objects.filter(
+            plan__in=queryset,
+            due_datetime__lte=now)
+        medication_tasks = MedicationTask.objects.filter(
+            medication_task_template__plan__in=queryset,
+            due_datetime__lte=now)
+        symptom_tasks = SymptomTask.objects.filter(
+            plan__in=queryset,
+            due_datetime__lte=now)
+        assessment_tasks = AssessmentTask.objects.filter(
+            plan__in=queryset,
+            due_datetime__lte=now)
+        vital_tasks = VitalTask.objects.filter(
+            plan__in=queryset,
+            due_datetime__lte=now)
+
+        total_patient_tasks = patient_tasks.count()
+        total_medication_tasks = medication_tasks.count()
+        total_symptom_tasks = symptom_tasks.count()
+        total_assessment_tasks = assessment_tasks.count()
+        total_vital_tasks = vital_tasks.count()
+
+        completed_patient_tasks = patient_tasks.filter(
+            status__in=['missed', 'done']).count()
+        completed_medication_tasks = medication_tasks.filter(
+            status__in=['missed', 'done']).count()
+        completed_symptom_tasks = symptom_tasks.filter(
+            is_complete=True).count()
+        completed_assessment_tasks = assessment_tasks.filter(
+            is_complete=True).count()
+        completed_vital_tasks = vital_tasks.filter(
+            is_complete=True).count()
+
+        total_completed = (completed_patient_tasks +
+                           completed_medication_tasks +
+                           completed_symptom_tasks +
+                           completed_assessment_tasks +
+                           completed_vital_tasks)
+        total_tasks = (total_patient_tasks +
+                       total_medication_tasks +
+                       total_symptom_tasks +
+                       total_assessment_tasks +
+                       total_vital_tasks)
+        return round((total_completed / total_tasks) * 100) if total_tasks > 0 else 0
+
+    @action(methods=['get'],
+            detail=False,
+            permission_classes=(permissions.IsAuthenticated,
+                                IsAdminOrEmployee))
+    def average(self, request, *args, **kwargs):
+        """
+        Returns aggregated number of patients, facilities, care plans, outcome,
+        engagemment, and risk level of care plans for the past 30 days.
+
+        IMPORTANT NOTE:
+        ---
+        - Make sure to pass the {organization ID} when sending requests to this
+        endpoint to filter care plans for a specific organization. Otherwise,
+        this endpoint will return all care plans in all organizations.
+        - The URL parameter to be used is **patient__facility__organization**
+
+        SAMPLE REQUEST:
+        ---
+        ```
+        GET /api/care_plans/average/?patient__facility__organization=<uuid>
+        ```
+        """
+        now = timezone.now()
+        last_30 = now - relativedelta(days=30)
+
+        base_queryset = self.get_queryset().filter(created__gte=last_30)
+        queryset = self.filter_queryset(base_queryset)
+        total_patients = queryset.values_list('patient',
+                                              flat=True).distinct().count()
+        total_facilities = queryset.values_list('patient__facility',
+                                                flat=True).distinct().count()
+        total_care_plans = queryset.count()
+        average_outcome = self.calculate_average_outcome(queryset=queryset)
+        average_engagement = self.calculate_average_engagement(queryset)
+        risk_level = round((average_outcome + average_engagement) / 2)
+        data = {
+            'total_patients': total_patients,
+            'total_facilities': total_facilities,
+            'total_care_plans': total_care_plans,
+            'average_outcome': average_outcome,
+            'average_engagement': average_engagement,
+            'risk_level': risk_level
+        }
+        return Response(data)
 
 
 class PlanConsentViewSet(viewsets.ModelViewSet):
@@ -491,6 +690,50 @@ class GoalTemplatesByPlanTemplate(RetrieveAPIView):
 
     def retrieve(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_goal_templates())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+
+class CarePlanTemplateByType(ParentViewSetPermissionMixin,
+                             NestedViewSetMixin,
+                             RetrieveAPIView):
+    """
+    Returns list of :model:`plans.CarePlanTemplate` related to the given type.
+    This will also be based on the parent organization.
+    """
+    serializer_class = CarePlanTemplateAverageSerializer
+    permission_classes = (
+        permissions.IsAuthenticated,
+        IsAdminOrEmployee,
+    )
+    parent_lookup = [
+        (
+            'care_plans__patient__facility__organization',
+            Organization,
+            OrganizationViewSet
+        )
+    ]
+
+    def get_queryset(self):
+        """
+        Override `get_queryset` so it will not filter for the parent object.
+        Return all CarePlanTemplateType objects.
+        """
+        return CarePlanTemplateType.objects.all()
+
+    def get_care_plan_templates(self):
+        instance = self.get_object()
+        queryset = instance.care_plan_templates.all()
+        return self.filter_queryset_by_parents_lookups(queryset).distinct()
+
+    def retrieve(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_care_plan_templates())
 
         page = self.paginate_queryset(queryset)
         if page is not None:

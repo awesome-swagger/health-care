@@ -27,7 +27,7 @@ from ..permissions import (
     IsPatientOrEmployeeReadOnly,
     IsEmployeeOrPatientReadOnly,
 )
-from ..utils import get_all_tasks_of_patient_today
+from ..utils import get_all_tasks_for_today
 from .filters import DurationFilter
 from . serializers import (
     PatientTaskTemplateSerializer,
@@ -51,7 +51,6 @@ from . serializers import (
 from care_adopt_backend import utils
 from care_adopt_backend.permissions import (
     EmployeeOrReadOnly,
-    IsPatientOnly,
 )
 
 
@@ -494,8 +493,8 @@ class VitalResponseViewSet(viewsets.ModelViewSet):
 ############################
 
 class TodaysTasksAPIView(APIView):
-    permission_classes = (permissions.IsAuthenticated, IsPatientOnly)
+    permission_classes = (permissions.IsAuthenticated, )
 
     def get(self, request, format=None):
-        tasks = get_all_tasks_of_patient_today(request.user.patient_profile)
+        tasks = get_all_tasks_for_today(request.user)
         return Response(data=tasks)

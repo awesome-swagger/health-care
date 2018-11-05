@@ -14,11 +14,20 @@ from apps.core.api.views import (
     OrganizationViewSet, FacilityViewSet, EmployeeProfileViewSet,
     ProviderTitleViewSet, ProviderRoleViewSet, ProviderSpecialtyViewSet,
     DiagnosisViewSet,  MedicationViewSet, ProcedureViewSet, SymptomViewSet,
-    OrganizationEmployeeViewSet, SymptomSearchViewSet)
+    OrganizationEmployeeViewSet, SymptomSearchViewSet, FacilityEmployeeViewSet,
+    OrganizationFacilityViewSet)
 from apps.patients.api.views import (
-    PatientProfileViewSet, PatientDiagnosisViewSet, ProblemAreaViewSet,
-    PatientProcedureViewSet, PatientMedicationViewSet, PatientProfileSearchViewSet)
+    PatientProfileViewSet,
+    PatientDiagnosisViewSet,
+    ProblemAreaViewSet,
+    PatientProcedureViewSet,
+    PatientMedicationViewSet,
+    PatientProfileSearchViewSet,
+    PotentialPatientViewSet,
+    FacilityInactivePatientViewSet,
+)
 from apps.plans.api.views import (
+    CarePlanTemplateTypeViewSet,
     CarePlanTemplateViewSet,
     CarePlanViewSet,
     PlanConsentViewSet,
@@ -74,9 +83,31 @@ organization_routes.register(
     base_name='organization-employees',
     parents_query_lookups=['organizations']
 )
+organization_routes.register(
+    r'facilities',
+    OrganizationFacilityViewSet,
+    base_name='organization-facilities',
+    parents_query_lookups=['organization']
+)
 
+facility_routes = router.register(
+    r'facilities',
+    FacilityViewSet,
+    base_name='facilities'
+)
+facility_routes.register(
+    r'employee_profiles',
+    FacilityEmployeeViewSet,
+    base_name='facility-employees',
+    parents_query_lookups=['facilities']
+)
+facility_routes.register(
+    r'inactive_patients',
+    FacilityInactivePatientViewSet,
+    base_name='facility-inactive-patients',
+    parents_query_lookups=['facility']
+)
 
-router.register(r'facilities', FacilityViewSet, base_name='facilities')
 router.register(
     r'employee_profiles', EmployeeProfileViewSet, base_name='employee_profiles')
 router.register(r'provider_titles', ProviderTitleViewSet, base_name='provider_titles')
@@ -109,6 +140,10 @@ router.register(
     r'patient_medications', PatientMedicationViewSet, base_name='patient_medications')
 # Plans
 router.register(
+    r'care_plan_template_types',
+    CarePlanTemplateTypeViewSet,
+    base_name='care_plan_template_types')
+router.register(
     r'care_plan_templates', CarePlanTemplateViewSet, base_name='care_plan_templates')
 router.register(
     r'care_plans', CarePlanViewSet, base_name='care_plans')
@@ -128,6 +163,10 @@ router.register(
     r'info_message_queues', InfoMessageQueueViewSet, base_name='info_message_queues')
 router.register(
     r'info_messages', InfoMessageViewSet, base_name='info_messages')
+router.register(
+    r'potential_patients',
+    PotentialPatientViewSet,
+    base_name='potential_patients')
 # Tasks
 router.register(
     r'patient_task_templates',

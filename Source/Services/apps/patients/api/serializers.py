@@ -16,13 +16,14 @@ from apps.core.api.serializers import (
     MedicationSerializer,
     EmployeeUserInfo,
     ProviderTitleSerializer,
+    SymptomSerializer,
 )
 from apps.patients.models import (PatientDiagnosis, PatientMedication,
                                   PatientProcedure, PatientProfile,
                                   ProblemArea, PatientVerificationCode,
-                                  ReminderEmail)
+                                  ReminderEmail, PotentialPatient)
 from apps.plans.api.serializers import InfoMessageSerializer
-from apps.tasks.models import AssessmentResponse
+from apps.tasks.models import AssessmentResponse, SymptomRating
 
 from ..search_indexes import PatientProfileIndex
 
@@ -49,6 +50,29 @@ class PatientSearchSerializer(serializers.ModelSerializer):
         fields = ('id', 'user', )
 
 
+class BasicPatientSerializer(serializers.ModelSerializer):
+    """
+    Consists only the patient's name and ID
+    """
+
+    first_name = serializers.SerializerMethodField()
+    last_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = PatientProfile
+        fields = (
+            'id',
+            'first_name',
+            'last_name',
+        )
+
+    def get_first_name(self, obj):
+        return obj.user.first_name
+
+    def get_last_name(self, obj):
+        return obj.user.last_name
+
+
 class PatientProfileSerializer(RepresentationMixin,
                                serializers.ModelSerializer):
 
@@ -59,7 +83,9 @@ class PatientProfileSerializer(RepresentationMixin,
             'user',
             'facility',
             'emr_code',
-            'status',
+            'is_active',
+            'is_invited',
+            'last_app_use',
             'diagnosis',
             'message_for_day',
             'created',
@@ -232,6 +258,7 @@ class VerifiedPatientSerializer(serializers.ModelSerializer):
         fields = (
             'id',
             'user',
+            'is_active',
         )
 
 
@@ -266,6 +293,12 @@ class VerifyPatientSerializer(serializers.Serializer):
                     'database.')
             )
         return data
+
+    def save(self):
+        email = self.validated_data.get('email')
+
+        patient = PatientProfile.objects.get(user__email=email)
+        patient.set_active()
 
     def to_representation(self, data):
         patient = PatientProfile.objects.get(user__email=data.get('email'))
@@ -310,3 +343,97 @@ class ReminderEmailSerializer(serializers.ModelSerializer):
             'subject',
             'message',
         ]
+
+
+class PotentialPatientSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = PotentialPatient
+        fields = (
+            'id',
+            'first_name',
+            'last_name',
+            'care_plan',
+            'phone',
+            'facility',
+            'patient_profile',
+            'created',
+            'modified',
+        )
+        read_only_fields = (
+            'id',
+            'created',
+            'modified',
+        )
+
+
+class FacilityInactivePatientSerializer(serializers.ModelSerializer):
+    """
+    serializer to be used for inactive patients in a facility
+    """
+    full_name = serializers.SerializerMethodField()
+    image_url = serializers.SerializerMethodField()
+    care_plan = serializers.SerializerMethodField()
+    care_manager = serializers.SerializerMethodField()
+
+    class Meta:
+        model = PatientProfile
+        fields = (
+            'id',
+            'full_name',
+            'image_url',
+            'care_plan',
+            'last_app_use',
+            'care_manager',
+        )
+
+    def get_full_name(self, obj):
+        return obj.user.get_full_name()
+
+    def get_image_url(self, obj):
+        return obj.user.get_image_url()
+
+    def get_care_plan(self, obj):
+        latest_plan = obj.latest_care_plan
+        return latest_plan.plan_template.name if latest_plan else ''
+
+    def get_care_manager(self, obj):
+        latest_plan = obj.latest_care_plan
+        if latest_plan:
+            manager = latest_plan.care_team_members.filter(
+                is_manager=True).first()
+            if manager:
+                return manager.employee_profile.user.get_full_name()
+        return ''
+
+
+class LatestPatientSymptomSerializer(serializers.ModelSerializer):
+    """
+    Serializer to be used for displaying latest symptom data per patient.
+    """
+    symptom = SymptomSerializer(read_only=True)
+    behavior = serializers.SerializerMethodField()
+
+    class Meta:
+        model = SymptomRating
+        fields = (
+            'id',
+            'symptom',
+            'rating',
+            'behavior',
+            'created',
+            'modified',
+        )
+
+    def get_behavior(self, obj):
+        value = "increasing"
+        second_rating = SymptomRating.objects.filter(
+            symptom_task__plan__patient=obj.symptom_task.plan.patient,
+            symptom=obj.symptom).exclude(id=obj.id).order_by(
+            '-created').first()
+        if second_rating:
+            if obj.rating < second_rating.rating:
+                value = "decreasing"
+            elif obj.rating == second_rating.rating:
+                value = "equal"
+        return value

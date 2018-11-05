@@ -3,20 +3,15 @@ from django.utils.translation import ugettext_lazy as _
 
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_haystack.viewsets import HaystackViewSet
-from rest_framework import permissions, viewsets, status
+from rest_framework import permissions, viewsets, status, mixins
 from rest_framework.decorators import action
 from rest_framework.generics import CreateAPIView, ListAPIView, GenericAPIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAdminUser
-
-from apps.plans.models import CareTeamMember
-from apps.plans.api.serializers import CarePlanGoalSerializer
-from apps.tasks.permissions import IsEmployeeOrPatientReadOnly
-from care_adopt_backend import utils
-from care_adopt_backend.permissions import EmployeeOrReadOnly, IsEmployeeOnly
+from rest_framework_extensions.mixins import NestedViewSetMixin
 
 from ..models import (PatientDiagnosis, PatientMedication, PatientProcedure,
-                      PatientProfile, ProblemArea)
+                      PatientProfile, ProblemArea, PotentialPatient)
 from ..permissions import PatientProfilePermissions, PatientSearchPermissions
 from .serializers import (PatientDashboardSerializer,
                           PatientDiagnosisSerializer,
@@ -27,7 +22,24 @@ from .serializers import (PatientDashboardSerializer,
                           ProblemAreaSerializer,
                           VerifyPatientSerializer,
                           ReminderEmailSerializer,
-                          CreatePatientSerializer)
+                          CreatePatientSerializer,
+                          PotentialPatientSerializer,
+                          FacilityInactivePatientSerializer,
+                          LatestPatientSymptomSerializer)
+from apps.core.api.views import FacilityViewSet
+from apps.core.api.mixins import ParentViewSetPermissionMixin
+from apps.core.api.pagination import OrganizationEmployeePagination
+from apps.core.models import Facility
+from apps.plans.models import CareTeamMember
+from apps.plans.api.serializers import CarePlanGoalSerializer
+from apps.tasks.models import SymptomRating
+from apps.tasks.permissions import IsEmployeeOrPatientReadOnly
+from care_adopt_backend import utils
+from care_adopt_backend.permissions import (
+    EmployeeOrReadOnly,
+    IsEmployeeOnly,
+    IsAdminOrEmployee,
+)
 
 
 class PatientProfileViewSet(viewsets.ModelViewSet):
@@ -62,7 +74,8 @@ class PatientProfileViewSet(viewsets.ModelViewSet):
     queryset = PatientProfile.objects.all()
     filter_backends = (DjangoFilterBackend, )
     filterset_fields = (
-        'status',
+        'is_active',
+        'is_invited',
     )
 
     def get_queryset(self):
@@ -107,6 +120,25 @@ class PatientProfileViewSet(viewsets.ModelViewSet):
         return Response(
             {"detail": _("Successfully created a patient account.")}
         )
+
+    @action(methods=['get'], detail=True)
+    def latest_symptoms(self, request, *args, **kwargs):
+        """
+        This endpoint will return latest updates to the patient's symptoms.
+        """
+        patient = self.get_object()
+        symptoms = SymptomRating.objects.filter(
+            symptom_task__plan__patient=patient
+        ).values_list('symptom', flat=True).distinct()
+        ratings = []
+        for symptom in symptoms:
+            rating = SymptomRating.objects.filter(
+                symptom_task__plan__patient=patient,
+                symptom=symptom).order_by('-created').first()
+            if rating:
+                ratings.append(rating)
+        serializer = LatestPatientSymptomSerializer(ratings, many=True)
+        return Response(serializer.data)
 
 
 class PatientDiagnosisViewSet(viewsets.ModelViewSet):
@@ -379,6 +411,7 @@ class PatientVerification(GenericAPIView):
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        serializer.save()
         return Response(
             serializer.data,
             status=status.HTTP_200_OK
@@ -388,3 +421,86 @@ class PatientVerification(GenericAPIView):
 class ReminderEmailCreateView(CreateAPIView):
     serializer_class = ReminderEmailSerializer
     permission_classes = (IsAdminUser, )
+
+
+class PotentialPatientViewSet(viewsets.ModelViewSet):
+    """
+    Viewset for :model:`patients.PotentialPatient`
+    ========
+
+    create:
+        Creates :model:`patients.PotentialPatient` object.
+        Only admins and employees are allowed to perform this action.
+
+    update:
+        Updates :model:`patients.PotentialPatient` object.
+        Only admins and employees who belong to the same facility are allowed
+        to perform this action.
+
+    partial_update:
+        Updates one or more fields of an existing patient object.
+        Only admins and employees who belong to the same facility are allowed
+        to perform this action.
+
+    retrieve:
+        Retrieves a :model:`patients.PotentialPatient` instance.
+        Admins will have access to all patient objects. Employees will
+        only have access to those patients belonging to its own facility.
+        Patients will have access to all patients assigned to them.
+
+    list:
+        Returns list of all :model:`patients.PotentialPatient` objects.
+        Admins will get all existing patient objects. Employees will get
+        the patient belonging to a certain facility. Patients will get all
+        patients belonging to them.
+
+    delete:
+        Deletes a :model:`patients.PotentialPatient` instance.
+        Only admins and employees who belong to the same facility are allowed
+        to perform this action.
+    """
+    serializer_class = PotentialPatientSerializer
+    permission_classes = (
+        permissions.IsAuthenticated,
+        IsEmployeeOrPatientReadOnly,
+    )
+    queryset = PotentialPatient.objects.all()
+    filter_backends = (DjangoFilterBackend, )
+    filterset_fields = {
+        'patient_profile': ['isnull']
+    }
+
+    def get_queryset(self):
+        queryset = super(PotentialPatientViewSet, self).get_queryset()
+        user = self.request.user
+
+        # If user is a employee, get all organizations that they belong to
+        if user.is_employee:
+            employee = user.employee_profile
+            queryset = queryset.filter(
+                Q(facility__in=employee.facilities.all()) |
+                Q(facility__in=employee.facilities_managed.all())
+            )
+
+        elif user.is_patient:
+            queryset = queryset.filter(patient_profile=user.patient_profile)
+
+        return queryset
+
+
+class FacilityInactivePatientViewSet(ParentViewSetPermissionMixin,
+                                     NestedViewSetMixin,
+                                     mixins.ListModelMixin,
+                                     viewsets.GenericViewSet):
+    """
+    Displays all inactive patients in a parent facility.
+    """
+
+    serializer_class = FacilityInactivePatientSerializer
+    permission_clases = (permissions.IsAuthenticated, IsAdminOrEmployee)
+    queryset = PatientProfile.objects.filter(
+        is_active=False).order_by('last_app_use')
+    parent_lookup = [
+        ('facility', Facility, FacilityViewSet)
+    ]
+    pagination_class = OrganizationEmployeePagination

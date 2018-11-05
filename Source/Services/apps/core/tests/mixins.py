@@ -23,6 +23,7 @@ class CoreMixin(object):
                                 [self.create_facility()])
         facilities_managed = kwargs.pop('facilities_managed',
                                         [self.create_facility()])
+        roles = kwargs.pop('roles', [self.create_provider_role()])
 
         employee = EmployeeProfileFactory(
             user=user,
@@ -32,6 +33,7 @@ class CoreMixin(object):
         employee.organizations_managed.add(*organizations_managed)
         employee.facilities.add(*facilities)
         employee.facilities_managed.add(*facilities_managed)
+        employee.roles.add(*roles)
 
         return employee
 

@@ -94,3 +94,81 @@ class TestEmployeeOrganization(CoreMixin, APITestCase):
         )
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+
+class TestOrganizationFacility(CoreMixin, APITestCase):
+    """
+    Test cases for :model:`core.Facility` using an employee
+    as the logged in user.
+    """
+
+    def setUp(self):
+        self.fake = Faker()
+        self.facility = self.create_facility()
+        self.organization = self.facility.organization
+        self.employee = self.create_employee(**{
+            'organizations': [self.organization],
+        })
+        self.user = self.employee.user
+
+        self.url = reverse(
+            'organization-facilities-list',
+            kwargs={'parent_lookup_organization': self.organization.id}
+        )
+        self.client.force_authenticate(user=self.user)
+
+    def test_number_of_facilities_in_organization(self):
+        for i in range(2):
+            self.create_facility(self.organization)
+        self.create_facility()
+        response = self.client.get(self.url)
+        self.assertEqual(response.data['count'], 3)
+
+    def test_organization_facilities_unauthorized(self):
+        other_facility = self.create_facility()
+        organization = other_facility.organization
+        url = reverse(
+            'organization-facilities-list',
+            kwargs={'parent_lookup_organization': organization.id}
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+
+class TestFacilityEmployee(CoreMixin, APITestCase):
+    """
+    Test cases for :model:`tasks.EmployeeProfile` using an employee
+    as the logged in user.
+    """
+
+    def setUp(self):
+        self.fake = Faker()
+        self.facility = self.create_facility()
+        self.employee = self.create_employee(**{
+            'facilities': [self.facility],
+        })
+        self.user = self.employee.user
+
+        self.url = reverse(
+            'facility-employees-list',
+            kwargs={'parent_lookup_facilities': self.facility.id}
+        )
+        self.client.force_authenticate(user=self.user)
+
+    def test_number_of_employees_in_facility(self):
+        for i in range(2):
+            self.create_employee(**{
+                'facilities': [self.facility],
+            })
+        response = self.client.get(self.url)
+        self.assertEqual(response.data['count'], 3)
+
+    def test_facility_employees_unauthorized(self):
+        other_employee = self.create_employee()
+        facility = other_employee.facilities.first()
+        url = reverse(
+            'facility-employees-list',
+            kwargs={'parent_lookup_facilities': facility.id}
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)

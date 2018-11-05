@@ -1,3 +1,5 @@
+import random
+
 from unittest import mock
 
 from django.db.models import Avg
@@ -19,7 +21,7 @@ from apps.tasks.utils import (
 )
 
 
-class TestPatientProfile(PlansMixin, APITestCase):
+class TestPatientProfile(TasksMixin, APITestCase):
     """
     Test cases for :model:`tasks.PatientProfile` using a patient
     as the logged in user.
@@ -93,6 +95,107 @@ class TestPatientProfile(PlansMixin, APITestCase):
         response = self.client.post(url, payload)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    def test_latest_symptoms(self):
+        first_symptom = self.create_symptom()
+        second_symptom = self.create_symptom()
+
+        first_task = self.create_symptom_task(**{
+            'plan': self.care_plan
+        })
+        second_task = self.create_symptom_task(**{
+            'plan': self.care_plan
+        })
+
+        self.create_symptom_rating(first_task, **{
+            'symptom': first_symptom,
+            'rating': random.randint(1, 5)
+        })
+        self.create_symptom_rating(second_task, **{
+            'symptom': second_symptom,
+            'rating': random.randint(1, 5)
+        })
+        url = reverse(
+            'patient_profiles-latest-symptoms',
+            kwargs={'pk': self.patient.id}
+        )
+        response = self.client.get(url)
+        self.assertEqual(len(response.data), 2)
+
+    def test_latest_symptoms_behavior_decreasing(self):
+        symptom = self.create_symptom()
+
+        first_task = self.create_symptom_task(**{
+            'plan': self.care_plan
+        })
+        second_task = self.create_symptom_task(**{
+            'plan': self.care_plan
+        })
+
+        self.create_symptom_rating(first_task, **{
+            'symptom': symptom,
+            'rating': 5
+        })
+        self.create_symptom_rating(second_task, **{
+            'symptom': symptom,
+            'rating': 3
+        })
+        url = reverse(
+            'patient_profiles-latest-symptoms',
+            kwargs={'pk': self.patient.id}
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.data[0]['behavior'], 'decreasing')
+
+    def test_latest_symptoms_behavior_increasing(self):
+        symptom = self.create_symptom()
+
+        first_task = self.create_symptom_task(**{
+            'plan': self.care_plan
+        })
+        second_task = self.create_symptom_task(**{
+            'plan': self.care_plan
+        })
+
+        self.create_symptom_rating(first_task, **{
+            'symptom': symptom,
+            'rating': 1
+        })
+        self.create_symptom_rating(second_task, **{
+            'symptom': symptom,
+            'rating': 3
+        })
+        url = reverse(
+            'patient_profiles-latest-symptoms',
+            kwargs={'pk': self.patient.id}
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.data[0]['behavior'], 'increasing')
+
+    def test_latest_symptoms_behavior_equal(self):
+        symptom = self.create_symptom()
+
+        first_task = self.create_symptom_task(**{
+            'plan': self.care_plan
+        })
+        second_task = self.create_symptom_task(**{
+            'plan': self.care_plan
+        })
+
+        self.create_symptom_rating(first_task, **{
+            'symptom': symptom,
+            'rating': 3
+        })
+        self.create_symptom_rating(second_task, **{
+            'symptom': symptom,
+            'rating': 3
+        })
+        url = reverse(
+            'patient_profiles-latest-symptoms',
+            kwargs={'pk': self.patient.id}
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.data[0]['behavior'], 'equal')
+
 
 class TestPatientProfileUsingEmployee(PatientsMixin, APITestCase):
     """
@@ -108,13 +211,15 @@ class TestPatientProfileUsingEmployee(PatientsMixin, APITestCase):
 
     def test_create_verification_code_on_invite(self):
         patient = self.create_patient(**{
-            'status': 'invited'
+            'is_invited': True,
+            'is_active': False,
         })
         self.assertTrue(patient.verification_codes.exists())
 
     def test_verification_code_valid(self):
         patient = self.create_patient(**{
-            'status': 'invited'
+            'is_invited': True,
+            'is_active': False,
         })
         code = patient.verification_codes.first()
         payload = {
@@ -124,6 +229,20 @@ class TestPatientProfileUsingEmployee(PatientsMixin, APITestCase):
         url = reverse('patient-verification')
         response = self.client.post(url, payload)
         self.assertIsNotNone(response.data['user']['token'])
+
+    def test_verification_code_valid_set_patient_active(self):
+        patient = self.create_patient(**{
+            'is_invited': True,
+            'is_active': False,
+        })
+        code = patient.verification_codes.first()
+        payload = {
+            'email': patient.user.email,
+            'code': code.code
+        }
+        url = reverse('patient-verification')
+        response = self.client.post(url, payload)
+        self.assertTrue(response.data['is_active'])
 
 
 class TestPatientProfileSearchViewSet(PatientsMixin, APITestCase):
@@ -277,3 +396,48 @@ class TestPatientProfileDashboard(TasksMixin, APITestCase):
         filter_url = f'{self.dashboard_url}?id={self.patient.id}'
         response = self.client.get(filter_url)
         self.assertEqual(response.data['count'], 1)
+
+
+class TestFacilityInactivePatient(PlansMixin, APITestCase):
+    """
+    Test cases for :view:`patients.FacilityInactivePatientViewSet` using an
+    employee as the logged in user.
+    """
+
+    def setUp(self):
+        self.fake = Faker()
+        self.facility = self.create_facility()
+        self.employee = self.create_employee(**{
+            'facilities': [self.facility]
+        })
+        self.patient_count = 3
+
+        for i in range(self.patient_count):
+            patient = self.create_patient(**{
+                'facility': self.facility,
+                'is_active': False
+            })
+
+            for plan in range(5):
+                self.create_care_plan(patient)
+
+        self.user = self.employee.user
+
+        self.url = reverse(
+            'facility-inactive-patients-list',
+            kwargs={'parent_lookup_facility': self.facility.id}
+        )
+        self.client.force_authenticate(user=self.user)
+
+    def create_multiple_goals(self, care_plan):
+        for i in range(5):
+            self.create_goal(**{'plan': self.care_plan})
+
+    def test_get_inactive_patients_list(self):
+
+        # Create patients from different facility
+        for i in range(5):
+            self.create_patient()
+
+        response = self.client.get(self.url)
+        self.assertEqual(response.data['count'], self.patient_count)

@@ -26,7 +26,7 @@ class CoreTestCase(APITestCase):
         self.employee_profile.organizations.add(self.organization)
         self.employee_profile.facilities.add(self.facility)
         self.patient_profile = PatientProfile.objects.create(
-            user=self.patient_user, facility=self.facility, status="active")
+            user=self.patient_user, facility=self.facility, is_active=True)
 
     def test_authentication_required(self):
         # Assert that a list request will fail

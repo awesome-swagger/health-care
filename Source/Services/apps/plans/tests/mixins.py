@@ -7,6 +7,7 @@ from apps.patients.tests.mixins import PatientsMixin
 
 from .factories import (
     CarePlanFactory,
+    CarePlanTemplateTypeFactory,
     CarePlanTemplateFactory,
     CareTeamMemberFactory,
     GoalTeamplateFactory,
@@ -33,6 +34,19 @@ class PlansMixin(PatientsMixin):
             **kwargs
         )
 
+    def create_care_plan_template_type(self, **kwargs):
+        if 'name' not in kwargs:
+            kwargs.update({
+                'name': self.fake.name()
+            })
+
+        if 'acronym' not in kwargs:
+            kwargs.update({
+                'acronym': self.fake.word()
+            })
+
+        return CarePlanTemplateTypeFactory(**kwargs)
+
     def create_care_plan_template(self, **kwargs):
         if 'name' not in kwargs:
             kwargs.update({
@@ -41,7 +55,7 @@ class PlansMixin(PatientsMixin):
 
         if 'type' not in kwargs:
             kwargs.update({
-                'type': 'ccm'
+                'type': self.create_care_plan_template_type()
             })
 
         if 'duration_weeks' not in kwargs:

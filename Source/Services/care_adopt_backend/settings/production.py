@@ -26,6 +26,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     # CUSTOM MIDDLEWARES
     'care_adopt_backend.middleware.TimezoneMiddleware',
+    'care_adopt_backend.middleware.PatientLastAppUseMiddleware',
 ]
 
 INSTALLED_APPS = (

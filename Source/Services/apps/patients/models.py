@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.db import models
+from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
 from .signals import patientprofile_post_save
@@ -14,27 +15,11 @@ from apps.core.models import (
     Medication,
 )
 
-from apps.accounts.models import EmailUser
-from care_adopt_backend.mixins import CreatedModifiedMixin, UUIDPrimaryKeyMixin
-
 from .signals import reminder_email_post_save
 
 
 class PatientProfile(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
-    PRE_POTENTIAL = 'pre-potential'
-    POTENTIAL = 'potential'
-    INVITED = 'invited'
-    DELINQUENT = 'delinquent'
-    INACTIVE = 'inactive'
-    ACTIVE = 'active'
-    STATUS_CHOICES = (
-        (PRE_POTENTIAL, 'Pre Potential'),
-        (POTENTIAL, 'Potential'),
-        (INVITED, 'Invited'),
-        (DELINQUENT, 'Delinquent'),
-        (INACTIVE, 'Inactive'),
-        (ACTIVE, 'Active'),
-    )
+
     user = models.OneToOneField(
         EmailUser, on_delete=models.CASCADE, related_name='patient_profile')
     facility = models.ForeignKey(
@@ -45,8 +30,6 @@ class PatientProfile(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
         "patients to the electronic medical records (EMR). If the user is "
         "not in the emr they won't have an emr number.")
 
-    status = models.CharField(
-        max_length=20, choices=STATUS_CHOICES, default='pre-potential')
     diagnosis = models.ManyToManyField('PatientDiagnosis', blank=True)
     message_for_day = models.ForeignKey(
         'plans.InfoMessage',
@@ -55,6 +38,9 @@ class PatientProfile(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
         blank=True,
         null=True
     )
+    is_invited = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=False)
+    last_app_use = models.DateTimeField(default=timezone.now)
 
     class Meta:
         ordering = ('user', )
@@ -62,9 +48,14 @@ class PatientProfile(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
     def __str__(self):
         return '{} {}'.format(self.user.first_name, self.user.last_name)
 
+    def set_active(self):
+        if not self.is_active:
+            self.is_active = True
+            self.save(update_fields=['is_active'])
+
     @property
-    def has_been_invited(self):
-        return self.status == 'invited'
+    def latest_care_plan(self):
+        return self.care_plans.order_by('created').last()
 
 
 class ProblemArea(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
@@ -164,6 +155,7 @@ class ReminderEmail(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
         null=False,
         blank=False,
         on_delete=models.CASCADE,
+        related_name='reminder_emails',
     )
     subject = models.CharField(
         max_length=140,
@@ -187,6 +179,35 @@ class ReminderEmail(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
             from_email=settings.DEFAULT_FROM_EMAIL,
         )
         email.send()
+
+
+class PotentialPatient(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
+    """
+    Stores information about potential patients
+    """
+    first_name = models.CharField(_('first name'), max_length=30)
+    last_name = models.CharField(_('last name'), max_length=30)
+    care_plan = models.CharField(_('Care plan'), max_length=64)
+    phone = models.CharField(_('Phone number'), max_length=16)
+    facility = models.ManyToManyField('core.Facility', blank=True)
+    patient_profile = models.OneToOneField(
+        'patients.PatientProfile',
+        blank=True,
+        null=True,
+        on_delete=models.CASCADE
+    )
+
+    class Meta:
+        verbose_name = _('Potential Patient')
+        verbose_name_plural = _('Potential Patients')
+        ordering = ('first_name', 'last_name')
+
+    def __str__(self):
+        return self.full_name
+
+    @property
+    def full_name(self):
+        return f'{self.first_name} {self.last_name}'
 
 
 # Signals

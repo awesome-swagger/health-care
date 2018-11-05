@@ -9,7 +9,7 @@ from django.shortcuts import get_object_or_404
 from apps.core.models import (Diagnosis, EmployeeProfile,
                               InvitedEmailTemplate, Medication, Organization,
                               Procedure, ProviderRole, ProviderSpecialty,
-                              ProviderTitle, Symptom)
+                              ProviderTitle, Symptom, Facility)
 
 from rest_framework_extensions.mixins import NestedViewSetMixin
 
@@ -24,6 +24,7 @@ from care_adopt_backend.permissions import IsAdminOrEmployee
 from ..utils import get_facilities_for_user
 from .filters import RelatedOrderingFilter
 from .mixins import ParentViewSetPermissionMixin
+from .pagination import OrganizationEmployeePagination
 from .serializers import (DiagnosisSerializer, EmployeeProfileSerializer,
                           FacilitySerializer, MedicationSerializer,
                           OrganizationSerializer, ProcedureSerializer,
@@ -31,7 +32,7 @@ from .serializers import (DiagnosisSerializer, EmployeeProfileSerializer,
                           ProviderTitleSerializer, SymptomSerializer,
                           InvitedEmailTemplateSerializer,
                           OrganizationEmployeeSerializer,
-                          SymptomSearchSerializer)
+                          SymptomSearchSerializer, FacilityEmployeeSerializer)
 
 
 class OrganizationViewSet(viewsets.ModelViewSet):
@@ -337,6 +338,49 @@ class OrganizationEmployeeViewSet(ParentViewSetPermissionMixin,
     serializer_class = OrganizationEmployeeSerializer
     permission_clases = (permissions.IsAuthenticated, IsAdminOrEmployee)
     queryset = EmployeeProfile.objects.all()
-    parent_objects = [
+    parent_lookup = [
         ('organizations', Organization, OrganizationViewSet)
     ]
+    pagination_class = OrganizationEmployeePagination
+
+
+class OrganizationFacilityViewSet(ParentViewSetPermissionMixin,
+                                  NestedViewSetMixin,
+                                  mixins.ListModelMixin,
+                                  viewsets.GenericViewSet):
+    """
+    Displays all facilities in a parent organization.
+    """
+
+    serializer_class = FacilitySerializer
+    permission_clases = (permissions.IsAuthenticated, IsAdminOrEmployee)
+    queryset = Facility.objects.all()
+    parent_lookup = [
+        ('organization', Organization, OrganizationViewSet)
+    ]
+    pagination_class = OrganizationEmployeePagination
+
+
+class FacilityEmployeeViewSet(ParentViewSetPermissionMixin,
+                              NestedViewSetMixin,
+                              mixins.ListModelMixin,
+                              viewsets.GenericViewSet):
+    """
+    Displays all employees in a parent organization.
+    """
+
+    serializer_class = FacilityEmployeeSerializer
+    permission_clases = (permissions.IsAuthenticated, IsAdminOrEmployee)
+    queryset = EmployeeProfile.objects.all()
+    parent_field = 'facilities'
+    parent_lookup = [
+        ('facilities', Facility, FacilityViewSet)
+    ]
+    pagination_class = OrganizationEmployeePagination
+
+    def get_serializer_context(self):
+        context = super(FacilityEmployeeViewSet, self).get_serializer_context()
+        context.update({
+            'facility': self.parent_obj
+        })
+        return context
