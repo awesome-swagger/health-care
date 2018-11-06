@@ -148,7 +148,6 @@ class PatientVerificationCode(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
     def __str__(self):
         return f'{self.patient.user.get_full_name()}: {self.code}'
 
-
 class ReminderEmail(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
     patient = models.ForeignKey(
         PatientProfile,

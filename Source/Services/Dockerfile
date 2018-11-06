@@ -1,6 +1,6 @@
-FROM python:3.5
+FROM python:3.7.1
 
-ENV CPATH=/usr/local/include/python3.5m
+ENV CPATH=/usr/local/include/python3.7.1m
 
 RUN mkdir /care_adopt_backend
 WORKDIR /care_adopt_backend

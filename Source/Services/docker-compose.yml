@@ -8,12 +8,10 @@ database:
 backend:
   build: .
   command: bash /care_adopt_backend/server/django_devserver.sh
-  volumes:
-  - .:/care_adopt_backend
   links:
   - database
   ports:
   - "8000:8000"
   environment:
-    DB_HOST: database
+    DB_HOST: services_database_1
     PYTHONUNBUFFERED: 1
