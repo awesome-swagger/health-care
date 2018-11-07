@@ -1,7 +1,7 @@
 # Basic .gitattributes for a python repo.
 
 # Having crlf is causing problems in the container, so forcing everything to LF
-*			text eol=lf
+*			text=auto
 
 # Source files
 # ============
@@ -10,6 +10,8 @@
 *.py3 		text diff=python
 *.pyw 		text diff=python
 *.pyx  		text diff=python
+
+*.sh		text eol=lf
 
 # Binary files
 # ============
