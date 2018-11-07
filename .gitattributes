@@ -27,6 +27,7 @@
 *.png		binary
 *.tiff		binary
 *.gif		binary
+*.ico		binary
 
 # Note: .db, .p, and .pkl files are associated
 # with the python modules ``pickle``, ``dbm.*``,
