@@ -52,6 +52,11 @@ _(Note: make certain you are using **python3** for this - python2 is no longer s
     ```bash
     docker-compose up -d
     ```
+1. Default SuperAdmin User/Pass:
+    ```
+    User: Admin@MindfireTechnology.com
+    Pass: admin-password
+    ```
 
 1. Create a superuser to access the admin:
 
@@ -64,9 +69,9 @@ _(Note: make certain you are using **python3** for this - python2 is no longer s
     Then bash in the container
 
     ```bash
-    source my_env/bin/activate
+    source backend_env/bin/activate
 
-    manage.py createsuperuser
+    python manage.py createsuperuser
     ```
 1. Reset everything.
 

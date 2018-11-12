@@ -13,4 +13,5 @@ pip install -r requirements.txt
 
 echo Running server on port 8000
 python manage.py migrate --noinput
+echo "from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.create_superuser('$ADMIN_USER', '$ADMIN_PASS')" | python manage.py shell
 python manage.py runserver 0.0.0.0:8000

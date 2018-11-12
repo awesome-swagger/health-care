@@ -15,3 +15,5 @@ backend:
   environment:
     DB_HOST: services_database_1
     PYTHONUNBUFFERED: 1
+    ADMIN_USER: admin@mindfiretechnology.com
+    ADMIN_PASS: admin-password

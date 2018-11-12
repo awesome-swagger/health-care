@@ -119,3 +119,4 @@ $RECYCLE.BIN/
 /backend_env
 
 foo/*
+**/node_modules
