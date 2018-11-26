@@ -22,7 +22,7 @@ export class AddCTTaskComponent implements OnInit {
 
   public ngOnInit() {
     console.log(this.data);
-    this.tasks=this.data.careTeamTasks;
+    this.tasks=this.data ? this.data.careTeamTasks : [];
   }
   public updateTaskName(task) {
     this.store.TeamTaskTemplate.update(task.id,task).subscribe((resp)=> {
@@ -40,13 +40,15 @@ export class AddCTTaskComponent implements OnInit {
       appear_time: '00:00:00',
       due_time: '00:00:00',
       name: taskName,
-      plan_template: this.data.planTemplateId,
+      plan_template: this.data && this.data.planTemplateId,
       category: 'interaction'
     }
-    this.store.TeamTaskTemplate.create(task).subscribe((resp) =>{
-      this.tasks.push(resp);
-      this.newTaskName = '';
-    });
+    this.tasks.push(task);
+    this.newTaskName = '';
+    // this.store.TeamTaskTemplate.create(task).subscribe((resp) =>{
+    //   this.tasks.push(resp);
+    //   this.newTaskName = '';
+    // });
   }
   public next(task) {
     this.modal.close(task);

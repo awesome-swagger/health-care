@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { ModalService, } from '../../../modules/modals';
 
 @Component({
   selector: 'app-plan-duration',
@@ -9,11 +10,15 @@ export class PlanDurationComponent implements OnInit {
 
   public data = null;
 
-  constructor() {
-
-  }
+  constructor(
+    private modals: ModalService,
+  ) { }
 
   public ngOnInit() {
     console.log(this.data);
+  }
+
+  public close() {
+    this.modals.close(null);
   }
 }

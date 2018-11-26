@@ -23,7 +23,7 @@ export class GoalComponent implements OnInit {
 
   public ngOnInit() {
     console.log(this.data);
-    if (this.data.goalTemplate) {
+    if (this.data && this.data.goalTemplate) {
       let g = this.data.goalTemplate;
       this.nameInput = g.name;
       this.descriptionInput = g.description;

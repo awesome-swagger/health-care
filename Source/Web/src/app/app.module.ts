@@ -110,10 +110,13 @@ import {
   DeleteMedicationComponent,
   DeleteDiagnosisComponent,
   EditUserDetailsComponent,
+  AllModalsComponent,
 } from './routes';
 
 import { FrequencyTransformPipe } from './pipes/frequency-transform.pipe';
 import { TimeTransformPipe } from './pipes/time-transform.pipe';
+import { ReassignBillingPractitionerComponent } from './routes/users/modals/reassign-billing-practitioner/reassign-billing-practitioner.component';
+import { DeletePlanComponent } from './routes/plans/modals/delete-plan/delete-plan.component';
 
 @NgModule({
   imports: [
@@ -204,6 +207,9 @@ import { TimeTransformPipe } from './pipes/time-transform.pipe';
     EditUserDetailsComponent,
     FrequencyTransformPipe,
     TimeTransformPipe,
+    AllModalsComponent,
+    ReassignBillingPractitionerComponent,
+    DeletePlanComponent,
   ],
   providers: [
     {provide: APP_BASE_HREF, useValue: '/'},
@@ -261,6 +267,8 @@ import { TimeTransformPipe } from './pipes/time-transform.pipe';
     DeleteMedicationComponent,
     DeleteDiagnosisComponent,
     EditUserDetailsComponent,
+    ReassignBillingPractitionerComponent,
+    DeletePlanComponent,
   ],
 })
 export class AppModule { }

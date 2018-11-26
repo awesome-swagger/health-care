@@ -1,12 +1,33 @@
 @import '../../../../modules/modals/modal-outlet.component.scss';
+@import '../../../../../scss/variables.scss';
 
+label {
+  border: none;
+}
 
-.durationWeeks {
-  align-items: center;
-  display: flex;
-  flex-direction: row;
-  .input {
-    margin-right: 1rem;
-    width: 80px;
+li {
+  border: none;
+
+  &:hover {
+    background: $grayLtest;
   }
+}
+
+.iconText {
+
+  i {
+    margin-left: 10px;
+  }
+}
+
+.drop__input {
+  max-width: none;
+  padding-left: 0px;
+}
+
+p {
+  padding: 5px;
+  margin-top: 18px;
+  font-size: rem-calc(14);
+  line-height: rem-calc(24);
 }

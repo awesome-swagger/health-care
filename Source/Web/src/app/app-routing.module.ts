@@ -28,6 +28,7 @@ import {
   StyleguideComponent,
   UserComponent,
   UsersComponent,
+  AllModalsComponent,
 } from './routes';
 import { CanActivateViaAuthGuard } from './services';
 
@@ -36,6 +37,11 @@ const routes: Routes = [
     path: '',
     component: StyleguideComponent,
     data: { title: 'Styleguide' },
+  },
+  {
+    path: 'modals',
+    component: AllModalsComponent,
+    data: { title: 'Modals' },
   },
   {
     path: 'dashboard',

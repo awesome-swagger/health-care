@@ -44,3 +44,4 @@ export * from './users/detail/modals/change-password/change-password.component';
 export * from './users/detail/modals/edit-user-details/edit-user-details.component';
 export * from './users/invite/invite.component';
 export * from './users/invite/modals/add-user.component';
+export * from './all-modals/all-modals.component';

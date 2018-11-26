@@ -5,147 +5,32 @@
 <!--TODO: If copying a care plan, prepopulate the name field with the previous care plan name and a number (either 2 or increment the previous number by 1)-->
 <label>Name</label>
 <input type="text" class="input fullWidth marBottom32" placeholder="Care Plan Name" [(ngModel)]="nameInput" />
-<label>Duration</label>
-<div class="durationWeeks marBottom32">
-  <input type="number" class="input" min="1" max="100" [(ngModel)]="durationInput">
-  <div>Weeks</div>
-</div>
 
 <label class="marBottom8">Care Plan Type</label>
-<!--TODO: If copying a care plan, preselect the same type as the previous care plan-->
-<div class="tool">
-  <label class="styledInput">
-    <input type="radio" class="styledInput__input" name="radioAPM" [value]="'bhi'" [(ngModel)]="selectedType" />
-    <span class="styledInput__radio"></span>
-    <div class="iconText">
-      <i class="iconText__icon iconText__icon--noTop icomoon-bhi"></i>
-      Behavioral Health Initiative
-    </div>
-  </label>
-  <div class="tool__anchor">
-    <button class="button button--icon button--icon--small"
-    (click)="tooltipAPM0Open=!tooltipAPM0Open">
-      <i class="ss-help"></i>
-    </button>
-    <div class="tool__tip tool__tip--right" [ngClass]="{ 'isOpen' : tooltipAPM0Open }">
-      <div class="tool__text">
-        Behavioral Health Initiative (BHI) care plans are designed for behavioral health care management between one provider and one patient.
+<div class="drop">
+  <div class="drop__input" (click)="multiOpen = !multiOpen">
+    <label class="styledInput drop__label">
+      <div class="iconText">
+        {{selectedPlan.name}}
+        <i class="iconText__icon iconText__icon--noTop" [ngClass]="selectedPlan.icon"></i>
       </div>
-    </div>
+    </label>
   </div>
-</div> <!--/.tool (for BHI)-->
+  <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : multiOpen }">
+    <li *ngFor="let plan of plans" class="drop__option" (click)="selectedPlan = plan; multiOpen = !multiOpen">
+      <label class="styledInput drop__label">
+        <div class="iconText">
+          {{plan.name}}
+          <i class="iconText__icon iconText__icon--noTop" [ngClass]="plan.icon"></i>
+        </div>
+      </label>
+    </li>
+  </ul>
+</div>
 
-<div class="tool">
-  <label class="styledInput">
-    <input type="radio" class="styledInput__input" name="radioAPM" [value]="'ccm'" [(ngModel)]="selectedType" />
-    <span class="styledInput__radio"></span>
-    <div class="iconText">
-      <i class="iconText__icon ss-heart"></i>
-      Chronic Care Management
-    </div>
-  </label>
-  <div class="tool__anchor">
-    <button class="button button--icon button--icon--small"
-    (click)="tooltipAPM1Open=!tooltipAPM1Open">
-      <i class="ss-help"></i>
-    </button>
-    <div class="tool__tip tool__tip--right" [ngClass]="{ 'isOpen' : tooltipAPM1Open }">
-      <div class="tool__text">
-        Chronic Care Mangement (CCM) care plans are for patients with two or more chornic conditions who are not considered complex patients.
-      </div>
-    </div>
-  </div>
-</div> <!--/.tool (for CCM)-->
+<p>{{selectedPlan.description}}</p>
 
-<div class="tool">
-  <label class="styledInput">
-    <input type="radio" class="styledInput__input" name="radioAPM" [value]="'cccm'" [(ngModel)]="selectedType"/>
-    <span class="styledInput__radio"></span>
-    <div class="iconText">
-      <i class="iconText__icon ss-addheart"></i>
-      Complex Chronic Care Management
-    </div>
-  </label>
-  <div class="tool__anchor">
-    <button class="button button--icon button--icon--small"
-    (click)="tooltipAPM2Open=!tooltipAPM2Open">
-      <i class="ss-help"></i>
-    </button>
-    <div class="tool__tip tool__tip--right" [ngClass]="{ 'isOpen' : tooltipAPM2Open }">
-      <div class="tool__text">
-        Complex Chronic Care Management (CCCM) care plans are designed for patients with two or more chronic conditions who are considered complex patients.
-      </div>
-    </div>
-  </div>
-</div> <!--/.tool (for CCCM)-->
-
-<div class="tool">
-  <label class="styledInput">
-    <input type="radio" class="styledInput__input" name="radioAPM" [value]="'cocm'" [(ngModel)]="selectedType"/>
-    <span class="styledInput__radio"></span>
-    <div class="iconText">
-      <i class="iconText__icon iconText__icon--noTop icomoon-cocm"></i>
-      Psychiatric Collaborative Care Mangement
-    </div>
-  </label>
-  <div class="tool__anchor">
-    <button class="button button--icon button--icon--small"
-    (click)="tooltipAPM3Open=!tooltipAPM3Open">
-      <i class="ss-help"></i>
-    </button>
-    <div class="tool__tip tool__tip--right" [ngClass]="{ 'isOpen' : tooltipAPM3Open }">
-      <div class="tool__text">
-        Psychiatric Collaborative Care Management (CoCM) care plans are for a tiad of care between a PCP, behavioral health care manager, and psychiatric consultant.
-      </div>
-    </div>
-  </div>
-</div> <!--/.tool (for CoCM)-->
-
-<div class="tool">
-  <label class="styledInput">
-    <input type="radio" class="styledInput__input" name="radioAPM" [value]="'rpm'" [(ngModel)]="selectedType"/>
-    <span class="styledInput__radio"></span>
-    <div class="iconText">
-      <i class="iconText__icon ss-satellitedish"></i>
-      Remote Patient Management
-    </div>
-  </label>
-  <div class="tool__anchor">
-    <button class="button button--icon button--icon--small"
-    (click)="tooltipAPM4Open=!tooltipAPM4Open">
-      <i class="ss-help"></i>
-    </button>
-    <div class="tool__tip tool__tip--right" [ngClass]="{ 'isOpen' : tooltipAPM4Open }">
-      <div class="tool__text">
-        Remote Patient Managment (RPM) care plans are designed to allow care givers to monitor patient health data.
-      </div>
-    </div>
-  </div>
-</div> <!--/.tool (for RPM)-->
-
-<div class="tool">
-  <label class="styledInput">
-    <input type="radio" class="styledInput__input" name="radioAPM" [value]="'tcm'" [(ngModel)]="selectedType"/>
-    <span class="styledInput__radio"></span>
-    <div class="iconText">
-      <i class="iconText__icon ss-signpost"></i>
-      Transitional Care Management
-    </div>
-  </label>
-  <div class="tool__anchor">
-    <button class="button button--icon button--icon--small"
-    (click)="tooltipAPM5Open=!tooltipAPM5Open">
-      <i class="ss-help"></i>
-    </button>
-    <div class="tool__tip tool__tip--right" [ngClass]="{ 'isOpen' : tooltipAPM5Open }">
-      <div class="tool__text">
-        Transitional Care Management (TCM) care plans are designed to support the patient between the transition of care from one care provider to another.
-      </div>
-    </div>
-  </div>
-</div> <!--/.tool (for RPM)-->
-
-<div class="modal__buttons">
+<div class="modal__buttons padBottom32">
   <button class="button button--2nd" (click)="clickCancel()">
     Cancel
   </button>

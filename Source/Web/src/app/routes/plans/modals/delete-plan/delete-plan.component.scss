@@ -1,0 +1,13 @@
+@import '~scss/mixins';
+@import '~scss/variables';
+@import '../../../../modules/modals/modal-outlet.component.scss';
+
+p {
+  padding: 5px;
+  font-size: rem-calc(14);
+  line-height: rem-calc(24);
+}
+
+select {
+    width: 200px;
+}
