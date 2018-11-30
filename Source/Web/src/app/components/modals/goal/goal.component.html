@@ -1,5 +1,10 @@
 <!--TODO: If adding a care plan goal, show the following-->
-<h1 class="modal__title">Add Care Plan Goal</h1>
+<h1 class="modal__title">{{data?.update ? 'Goal Update' : 'Add Care Plan Goal'}}</h1>
+
+<div *ngIf="data?.update && data?.patientName">
+  <div class="divider"></div>
+  <h2 class="modal__title">{{data?.patientName}}</h2>
+</div>
 
 <!--TODO: If editing a care plan goal, show the following-->
 <!--<h1 class="modal__title">Edit Care Plan Goal</h1>-->
@@ -47,9 +52,10 @@
 </div> -->
 
 <!--TODO: Only show this div if updating a goal on a care plan instance-->
-<!-- <div *ngIf="!data.creatingTemplate">
+<div *ngIf="data?.update" class="center">
   <div class="divider"></div>
   <label>Progress</label>
+  <p>How is the patient's progress towards the goal?</p>
   <div class="scale">
     <div class="scale__hints">
       <h5 class="noMargin">1 (Not on Track)</h5>
@@ -88,7 +94,7 @@
       </label>
     </div>
   </div>
-</div> -->
+</div>
 
 <div class="modal__buttons">
   <button class="button button--2nd" (click)="clickClose()">

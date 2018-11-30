@@ -1,0 +1,39 @@
+<h1 class="modal__title">Procedure Details</h1>
+<div class="modal__inputWrap marBottom32">
+  <label>Procedure</label>
+  <input type="text" class="input fullWidth" [(ngModel)]="emailInput" />
+</div>
+<div class="flex justifySpaceBetween marBottom32">
+  <div class="modal__inputWrap marRight32">
+    <label>PX Code</label>
+    <input type="text" class="input fullWidth" [(ngModel)]="emailInput" />
+  </div>
+  <div class="modal__inputWrap">
+    <label>Date of Procedure</label>
+    <app-date-picker-input></app-date-picker-input>
+  </div>
+</div>
+<div class="flex justifySpaceBetween marBottom32">
+  <div class="modal__inputWrap marRight32">
+    <label>Attending Practitioner</label>
+    <div class="styledSelect fullWidth">
+      <select class="styledSelect__select">
+      </select>
+    </div>
+  </div>
+  <div class="modal__inputWrap">
+    <label>Facility</label>
+    <div class="styledSelect fullWidth">
+      <select class="styledSelect__select">
+      </select>
+    </div>
+  </div>
+</div>
+<div class="modal__buttons">
+  <button class="button button--2nd" (click)="close()">
+    Cancel
+  </button>
+  <button class="button">
+    Save
+  </button>
+</div>

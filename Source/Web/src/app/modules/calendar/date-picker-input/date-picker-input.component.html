@@ -1,0 +1,10 @@
+<div class="modal__inputWrap float-container">
+  <input class="input" (focus)="openDatePicker()" [(ngModel)]="formattedDate" />
+  <div class="overlay" (click)="closeDatePicker()" *ngIf="datePickerOpen"></div>
+  <app-date-picker
+    class="floating"
+    *ngIf="datePickerOpen"
+    [ngClass]="{top: top, bottom: !top}"
+    [(selected)]="selectedDate"
+  ></app-date-picker>
+</div>

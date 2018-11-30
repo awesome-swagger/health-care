@@ -1,1 +1,11 @@
 @import "../../../modules/modals/modal-outlet.component.scss";
+
+.center {
+    margin: auto;
+}
+
+p {
+  padding: 5px;
+  font-size: rem-calc(14);
+  line-height: rem-calc(24);
+}

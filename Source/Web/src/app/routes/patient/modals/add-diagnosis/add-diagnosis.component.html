@@ -1,0 +1,22 @@
+<h1 class="modal__title">Add Diagnosis</h1>
+<input type="text" class="input input--search fullWidth marBottom32" placeholder="placeholder" />
+<label class="styledInput">
+  <input type="radio" class="styledInput__input" name="radioPDM" />
+  <span class="styledInput__radio"></span>Chronic Condition
+</label>
+<label class="styledInput">
+  <input type="radio" class="styledInput__input" name="radioPDM" />
+  <span class="styledInput__radio"></span>Complex Chronic Condition
+</label>
+<label class="styledInput">
+  <input type="radio" class="styledInput__input" name="radioPDM" />
+  <span class="styledInput__radio"></span>Neither
+</label>
+<div class="modal__buttons">
+  <button class="button button--2nd" (click)="close()">
+    Cancel
+  </button>
+  <button class="button">
+    Save
+  </button>
+</div>

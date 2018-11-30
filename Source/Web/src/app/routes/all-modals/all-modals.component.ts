@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { NavbarService, StoreService } from '../../services';
 import { EditFacilityComponent } from '../organization/modals/edit-facility.component';
 import { AddUserComponent } from '../users/invite/modals/add-user.component';
 import { ChangeEmailComponent } from '../users/detail/modals/change-email/change-email.component';
@@ -21,6 +23,18 @@ import { ReminderEmailComponent } from '../patients/invited/modals/reminder-emai
 import { AddPatientToPlanComponent } from '../../components/modals/add-patient-to-plan/add-patient-to-plan.component';
 import { ModalService, ConfirmModalComponent } from '../../modules/modals';
 import { ReassignBillingPractitionerComponent } from '../users/modals/reassign-billing-practitioner/reassign-billing-practitioner.component';
+import { EnrollPatientComponent } from '../patient/modals/enroll-patient/enroll-patient.component';
+import { CarePlanConsentComponent } from '../patient/modals/care-plan-consent/care-plan-consent.component';
+import { FinancialDetailsComponent } from '../patient/modals/financial-details/financial-details.component';
+import { ProblemAreasComponent } from '../patient/modals/problem-areas/problem-areas.component';
+import { AddDiagnosisComponent } from '../patient/modals/add-diagnosis/add-diagnosis.component';
+import { EditDiagnosisComponent } from '../patient/modals/edit-diagnosis/edit-diagnosis.component';
+import { AddProcedureComponent } from '../patient/modals/add-procedure/add-procedure.component';
+import { EditProcedureComponent } from '../patient/modals/edit-procedure/edit-procedure.component';
+import { MedicationComponent } from '../patient/modals/medication/medication.component';
+import { AddCtComponent } from '../patient/modals/add-ct/add-ct.component';
+import { EditBillingPractitionerComponent } from '../patient/modals/edit-billing-practitioner/edit-billing-practitioner.component';
+import { EditCcmComponent } from '../patient/modals/edit-ccm/edit-ccm.component';
 
 @Component({
   selector: 'app-all-modals',
@@ -30,7 +44,11 @@ import { ReassignBillingPractitionerComponent } from '../users/modals/reassign-b
 export class AllModalsComponent implements OnInit {
 
   constructor(
+    private route: ActivatedRoute,
+    private router: Router,
     private modals: ModalService,
+    private store: StoreService,
+    private nav: NavbarService,
   ) { }
 
   ngOnInit() {
@@ -188,4 +206,109 @@ export class AllModalsComponent implements OnInit {
       width: '741px',
     })
   }
+
+  public openEnrollPatient() {
+    this.modals.open(EnrollPatientComponent, {
+      width: '512px',
+      overflowX: 'visible',
+      data: {
+        patientName: 'Alexander Montgomery',
+        patientPhone: '(555)555-5555',
+        carePlan: 'Heart Disease',
+        carePlanType: 'RPM',
+      }
+    })
+  }
+
+  public openCarePlanConsent() {
+    this.modals.open(CarePlanConsentComponent, {
+      width: '512px',
+      data: {
+        patientName: 'Alexander Montgomery',
+      },
+    })
+  }
+
+  public openFinancialDetails() {
+    this.modals.open(FinancialDetailsComponent, {
+      width: '440px',
+      data: {
+        carePlan: 'CoCM',
+      },
+    })
+  }
+
+  public openProblemAreas() {
+    this.modals.open(ProblemAreasComponent, {
+      width: '741px',
+      data: {
+        currentUser: 'Lori Ramirez, RN',
+      }
+    })
+  }
+
+  public openAddDiagnosis() {
+    this.modals.open(AddDiagnosisComponent, {
+      width: '440px',
+    })
+  }
+
+  public openEditDiagnosis() {
+    this.modals.open(EditDiagnosisComponent, {
+      width: '512px',
+    })
+  }
+
+  public openAddProcedure() {
+    this.modals.open(AddProcedureComponent, {
+      width: '440px',
+    })
+  }
+
+  public openEditProcedure() {
+    this.modals.open(EditProcedureComponent, {
+      width: '512px',
+    })
+  }
+
+  public openGoalUpdate() {
+    this.modals.open(GoalComponent, {
+      width: '512px',
+      data: {
+        update: true,
+        patientName: 'Theresa Beckstrom',
+      },
+    })
+  }
+
+  public openRecordResults() {
+    this.modals.open(RecordResultsComponent, {
+      width: '512px',
+    })
+  }
+
+  public openEditMedication() {
+    this.modals.open(MedicationComponent, {
+      width: '512px',
+    })
+  }
+
+  public openAddCt() {
+    this.modals.open(AddCtComponent, {
+      width: '440px',
+    })
+  }
+
+  public openEditBillingPractitioner() {
+    this.modals.open(EditBillingPractitionerComponent, {
+      width: '440px',
+    })
+  }
+
+  public openEditCmm() {
+    this.modals.open(EditCcmComponent, {
+      width: '440px',
+    })
+  }
+
 }

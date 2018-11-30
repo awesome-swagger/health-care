@@ -1,0 +1,23 @@
+@import '~scss/mixins';
+@import '~scss/variables';
+@import '../../../../modules/modals/modal-outlet.component.scss';
+
+p {
+  padding: 5px;
+  font-size: rem-calc(14);
+  line-height: rem-calc(24);
+}
+
+.listHead {
+    font-size: rem-calc(12);
+    font-weight: 900;
+}
+
+label {
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+}
+
+.styledSelect {
+    width: 208px;
+}
