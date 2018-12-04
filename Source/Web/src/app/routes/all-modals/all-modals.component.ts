@@ -1,3 +1,5 @@
+//TODO: Delete this component for prod. Keeping it now for debugging modals.
+
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NavbarService, StoreService } from '../../services';

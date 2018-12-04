@@ -3,7 +3,7 @@
 @import '~scss/mixins';
 
 .modal {
-  position: fixed;
+  position: absolute;
   z-index: 200;
   top: 0;
   left: 0;
@@ -24,7 +24,7 @@
     overflow: auto;
     max-width: 1392px; // content max-width of 1440, minus 48px padding
     min-width: 280px;
-    max-height: 100%;
+    // max-height: 100%;
     // Remove bottom padding in favor of bottom margin on .modal__buttons (fix for Firefox bug)
     padding: rem-calc(32) rem-calc(32) 0;
     border-radius: 4px;

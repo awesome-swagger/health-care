@@ -29,7 +29,9 @@ export class ModalService {
     width: '',
     minWidth: '',
     animation: 'slideInTop .6s', // scaleIn, slideInTop, etc...
-    position: null,
+    position: {
+      top: '',
+    },
     data: null,
   };
 
@@ -45,12 +47,16 @@ export class ModalService {
     if (this.outlet.active) {
       this.outlet.active.destroy();
     }
+    if (meta.options.position) {
+      meta.options.position.top = window.scrollY + 'px';
+    }
     let factory = this.cfr.resolveComponentFactory(meta.type);
     this.outlet.active = this.outlet.content.createComponent(factory);
     this.outlet.active.instance.data = meta.options.data;
     this.outlet.options = meta.options;
     this.outlet.visible = true;
     document.querySelector('body').classList.add('noscroll');
+    document.querySelector('body').classList.add('relative');
     return this.result;
   }
 
@@ -61,6 +67,7 @@ export class ModalService {
     this.outlet.active = null;
     this.outlet.visible = false;
     document.querySelector('body').classList.remove('noscroll');
+    document.querySelector('body').classList.remove('relative');
     this.result.next(data);
     this.result.complete();
     this.result = new Subject();
