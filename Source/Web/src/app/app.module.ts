@@ -110,10 +110,22 @@ import {
   DeleteMedicationComponent,
   DeleteDiagnosisComponent,
   EditUserDetailsComponent,
+  AllModalsComponent,
 } from './routes';
 
 import { FrequencyTransformPipe } from './pipes/frequency-transform.pipe';
 import { TimeTransformPipe } from './pipes/time-transform.pipe';
+import { ReassignBillingPractitionerComponent } from './routes/users/modals/reassign-billing-practitioner/reassign-billing-practitioner.component';
+import { DeletePlanComponent } from './routes/plans/modals/delete-plan/delete-plan.component';
+import { EnrollPatientComponent } from './routes/patient/modals/enroll-patient/enroll-patient.component';
+import { CarePlanConsentComponent } from './routes/patient/modals/care-plan-consent/care-plan-consent.component';
+import { AddDiagnosisComponent } from './routes/patient/modals/add-diagnosis/add-diagnosis.component';
+import { EditDiagnosisComponent } from './routes/patient/modals/edit-diagnosis/edit-diagnosis.component';
+import { AddProcedureComponent } from './routes/patient/modals/add-procedure/add-procedure.component';
+import { EditProcedureComponent } from './routes/patient/modals/edit-procedure/edit-procedure.component';
+import { AddCtComponent } from './routes/patient/modals/add-ct/add-ct.component';
+import { EditBillingPractitionerComponent } from './routes/patient/modals/edit-billing-practitioner/edit-billing-practitioner.component';
+import { EditCcmComponent } from './routes/patient/modals/edit-ccm/edit-ccm.component';
 
 @NgModule({
   imports: [
@@ -204,6 +216,18 @@ import { TimeTransformPipe } from './pipes/time-transform.pipe';
     EditUserDetailsComponent,
     FrequencyTransformPipe,
     TimeTransformPipe,
+    AllModalsComponent,
+    ReassignBillingPractitionerComponent,
+    DeletePlanComponent,
+    EnrollPatientComponent,
+    CarePlanConsentComponent,
+    AddDiagnosisComponent,
+    EditDiagnosisComponent,
+    AddProcedureComponent,
+    EditProcedureComponent,
+    AddCtComponent,
+    EditBillingPractitionerComponent,
+    EditCcmComponent,
   ],
   providers: [
     {provide: APP_BASE_HREF, useValue: '/'},
@@ -261,6 +285,17 @@ import { TimeTransformPipe } from './pipes/time-transform.pipe';
     DeleteMedicationComponent,
     DeleteDiagnosisComponent,
     EditUserDetailsComponent,
+    ReassignBillingPractitionerComponent,
+    DeletePlanComponent,
+    EnrollPatientComponent,
+    CarePlanConsentComponent,
+    AddDiagnosisComponent,
+    EditDiagnosisComponent,
+    AddProcedureComponent,
+    EditProcedureComponent,
+    AddCtComponent,
+    EditBillingPractitionerComponent,
+    EditCcmComponent,
   ],
 })
 export class AppModule { }

@@ -34,6 +34,7 @@ export class EditTaskComponent implements OnInit {
 
     this.initForm(this.data);
     this.task = this.data;
+    this.data = this.data || {};
   }
 
   public close() {
@@ -41,6 +42,7 @@ export class EditTaskComponent implements OnInit {
   }
 
   public initForm(data) {
+    data = data || {};
     this.taskForm = new FormGroup({
       appear_time: new FormControl(data.appear_time),
       category: new FormControl(data.category),

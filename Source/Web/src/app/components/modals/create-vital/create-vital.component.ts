@@ -9,6 +9,8 @@ export class CreateVitalComponent implements OnInit {
 
   public data = null;
 
+  public measures = [];
+
   constructor() {
 
   }

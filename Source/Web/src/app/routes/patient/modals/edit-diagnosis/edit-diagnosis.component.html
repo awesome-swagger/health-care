@@ -1,0 +1,44 @@
+<h1 class="modal__title">Diagnosis Details</h1>
+<div class="flex justifySpaceBetween marBottom32">
+  <div class="modal__inputWrap marRight32">
+    <label>Diagnosis</label>
+    <input type="email" class="input fullWidth" [(ngModel)]="emailInput" />
+  </div>
+  <div class="modal__inputWrap">
+    <label>DX Code</label>
+    <input type="email" class="input fullWidth" [(ngModel)]="emailInput" />
+  </div>
+</div>
+<label class="styledInput">
+  <input type="checkbox" class="styledInput__input" [(ngModel)]="box4" />
+  <span class="styledInput__box"></span>
+  Chronic Condition
+</label>
+<div class="modal__inputWrap">
+  <label>Date Identified</label>
+  <app-date-picker-input></app-date-picker-input>
+</div>
+<div class="flex justifySpaceBetween marBottom32">
+  <div class="modal__inputWrap marRight32">
+    <label>Diagnosing Practitioner</label>
+    <div class="styledSelect fullWidth">
+      <select class="styledSelect__select">
+      </select>
+    </div>
+  </div>
+  <div class="modal__inputWrap">
+    <label>Facility</label>
+    <div class="styledSelect fullWidth">
+      <select class="styledSelect__select">
+      </select>
+    </div>
+  </div>
+</div>
+<div class="modal__buttons">
+  <button class="button button--2nd" (click)="close()">
+    Cancel
+  </button>
+  <button class="button">
+    Save
+  </button>
+</div>

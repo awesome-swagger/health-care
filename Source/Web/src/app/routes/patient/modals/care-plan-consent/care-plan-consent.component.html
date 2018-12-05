@@ -1,0 +1,46 @@
+<h1 class="modal__title">Care Plan Consent</h1>
+<hr />
+<h2 class="modal__title">{{data?.patientName}}</h2> 
+<div>
+  <p class="fullWidth">Patients can be enrolled without meeting reimbursement requirements. However, they won’t be eligible to receive reimbursement until requirements have been meet.</p>
+  <label class="styledInput listHead">REIMBURSEMENT REQUIREMENTS (OPT)</label>
+  <label class="styledInput">
+    <input type="checkbox" class="styledInput__input" [(ngModel)]="box1" />
+    <span class="styledInput__box"></span>
+    Patient has verbally consented to begin care plan.
+  </label>
+  <label class="styledInput">
+    <input type="checkbox" class="styledInput__input" [(ngModel)]="box2" />
+    <span class="styledInput__box"></span>
+    Patient has been seen by the billing practitioner within the past year.
+  </label>
+  <label class="styledInput">
+    <input type="checkbox" class="styledInput__input" [(ngModel)]="box3" />
+    <span class="styledInput__box"></span>
+    Patient understands the potential co-pay.
+  </label>
+  <label class="styledInput listHead">PATIENT COMMITMENT (OPT)</label>
+  <label class="styledInput">
+    <input type="checkbox" class="styledInput__input" [(ngModel)]="box4" />
+    <span class="styledInput__box"></span>
+    Use the mobile app.
+  </label>
+  <label class="styledInput">
+    <input type="checkbox" class="styledInput__input" [(ngModel)]="box5" />
+    <span class="styledInput__box"></span>
+    Interact with care team.
+  </label>
+  <label class="styledInput">
+    <input type="checkbox" class="styledInput__input" [(ngModel)]="box6" />
+    <span class="styledInput__box"></span>
+    Complete daily tasks.
+  </label>
+</div>
+<div class="modal__buttons padBottom32">
+  <button class="button button--2nd" (click)="clickCancel()">
+    Cancel
+  </button>
+  <button class="button" (click)="clickNext()">
+    Next
+  </button>
+</div>

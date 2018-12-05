@@ -1,5 +1,5 @@
 <!--TODO: The "edit task" modal is triggered in several places, included the "add task" modals; need to wire that up-->
-<h1 class="modal__title">
+<h1 class="modal__title">Edit CM Task
   <!--TODO: Hide if adding medication or symptom-->
   <!--<span>Edit Task</span>-->
   <!--TODO: Show if adding a medication task-->
@@ -23,7 +23,7 @@
 
 <!--TODO: Hide if medication or symptom-->
 <div >
-  <label class="noMargin">{{data.is_manager_task ? 'CM' : 'CT'}} Task</label>
+  <label class="noMargin">CM Task</label>
   <div class="flex alignCenter marBottom32">
       <div *ngIf="!data.edit" class="flex alignCenter justifySpaceBetween fullWidth">
           <h2 class="noMargin">{{data.name |titlecase}}</h2>

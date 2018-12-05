@@ -1,0 +1,86 @@
+<h1 class="modal__title">Delete Plan <br> {{data.planType}} - {{data.planName}}</h1>
+<!--TODO: When using this modal for editing (instead of adding) a user, hide the fields for first name, last name, and title-->
+<div class="justifySpaceBetween marBottom32">
+  <p>To remove this user as a billing practitioner their patients must be reassigned a new billing practitioner or made inactive.</p>
+  <div
+    *ngFor="let facility of facilities; let i = index"
+    class="accordion"
+    [ngClass]="{ 'isOpen': accordianStatuses[i] }"
+  >
+    <div class="accordion__head" (click)="accordianStatuses[i] = !accordianStatuses[i]">
+      <span class="accordion__title">{{facility.name}} ({{facility.patients.length}})</span>
+      <div class="accordion__right">
+        <div class="accordion__arrow">
+          <i class="ss-standard ss-navigateright"></i>
+        </div>
+      </div>
+    </div>
+    <div class="accordion__body">
+      <div class="accordion__contents">
+        <label class="styledInput">
+          <input type="checkbox" class="styledInput__input" />
+          <span class="styledInput__box"></span>
+          Reassign in Bulk
+        </label>
+        <div class="tableWrap">
+          <table>
+            <thead>
+              <tr>
+                <th class="left thSortable thSortable--sortDown">
+                  <span class="left thSortable__text">Patient</span>
+                </th>
+                <th class="thSortable">
+                    <span class="thSortable__text">Also</span>
+                </th>
+                <th class="thSortable">
+                    <span class="thSortable__text">Care Plan</span>
+                </th>
+                <th class="thSortable">
+                    <span class="thSortable__text">Care Manager</span>
+                </th>
+                <th class="thSortable">
+                    <span class="thSortable__text">Remove from Plans</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let patient of facility.patients">
+                <td class="left hideOverflow">
+                  <a class="picName">
+                    <img class="picName__img" src="../../../assets/img/profile.svg" />
+                    {{patient.name}}
+                  </a>
+                </td>
+                <td></td>
+                <td>
+                  <div class="modal__inputWrap marRight32">
+                    <div class="styledSelect">
+                      <select class="styledSelect__select">
+                        <option>Anxiety</option>
+                        <option>Depression</option>
+                        <option>Heart Attack</option>
+                      </select>
+                    </div>
+                  </div>
+                </td>
+                <td><div class="model__input"><input type="text" class="input" /></div></td>
+                <td>
+                  <label class="styledInput">
+                    <input type="checkbox" class="styledInput__input" />
+                    <span class="styledInput__box"></span>
+                    Make Inactive
+                  </label>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div> <!--/.tableWrap-->
+      </div> <!--/.accordion__contents-->
+    </div> <!--/.accordion__body-->
+  </div> <!--/.accordion (for organization)-->
+  <div class="modal__buttons">
+    <button class="button button--2nd" type="button" (click)="close()">Cancel</button>
+    <button class="button" type="submit">Save</button>
+  </div>
+</div>
+

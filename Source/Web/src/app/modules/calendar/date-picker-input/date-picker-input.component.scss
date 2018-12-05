@@ -1,0 +1,29 @@
+@import '~scss/mixins';
+@import '~scss/variables';
+@import '../../modals/modal-outlet.component.scss';
+
+.float-container {
+    position: relative;
+    display: inline-block;
+}
+
+.floating {
+    position: absolute;
+    z-index: 1000;
+}
+
+.top {
+    bottom: 50px;
+}
+
+.bottom {
+    top: 50px;
+}
+
+.overlay {
+    position: fixed;
+    top: 0px;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
+}
