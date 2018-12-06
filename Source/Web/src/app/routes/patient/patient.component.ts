@@ -14,6 +14,7 @@ import { PatientEmergencyContactComponent } from './modals/patient-emergency-con
 import { DeleteMedicationComponent } from './modals/delete-medication/delete-medication.component';
 import { DeleteDiagnosisComponent } from './modals/delete-diagnosis/delete-diagnosis.component';
 import { NavbarService, StoreService } from '../../services';
+import patientData from './patientdata.js';
 
 @Component({
   selector: 'app-patient',
@@ -24,6 +25,7 @@ export class PatientComponent implements OnDestroy, OnInit {
 
   public patient = null;
   public carePlans = [];
+  public teamListOpen = -1;
 
   private routeSub = null;
 
@@ -43,6 +45,9 @@ export class PatientComponent implements OnDestroy, OnInit {
         this.getCarePlans(this.patient.id).then((carePlans: any) => {
           this.carePlans = carePlans;
         });
+      }).catch(() => {
+        this.patient = patientData.patient;
+        this.carePlans = patientData.carePlans;
       });
     });
   }
@@ -250,5 +255,17 @@ export class PatientComponent implements OnDestroy, OnInit {
     }).subscribe(() => {
     // do something with result
     });
+  }
+
+  get riskLevelText() {
+    return this.carePlans.map((plan) => {
+      if (plan.riskLevel >= 80) {
+        return 'High Risk';
+      } else if (plan.riskLevel >= 40) {
+        return 'Some Risk';
+      } else {
+        return 'Low Risk';
+      }
+    })
   }
 }

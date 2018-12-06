@@ -22,10 +22,10 @@
     </div>
   </div> <!--/.flex (for title area)-->
 
-  <ng-container *ngFor="let plan of carePlans">
+  <ng-container *ngFor="let plan of carePlans; let i = index">
     <div class="flex alignCenter justifySpaceBetween">
       <div class="flex alignCenter">
-        <h2 class="noMargin marRight32">Plan Name <i class="icomoon-cocm"></i> CoCM</h2>
+        <h2 class="noMargin marRight32">{{plan.name}} ({{plan.type}})</h2>
         <a [routerLink]="['/patient', plan.patient, 'dashboard']" class="button button--iconText">
           <i class="ss-standard ss-view"></i> View Care Plan
         </a>
@@ -48,22 +48,18 @@
         <div class="flex alignCenter justifyCenter">
           <div class="picName marRight8">
             <img class="picName__img" src="../../../assets/img/profile.svg" />
-            Lori Ramirez, RN
+            {{plan.careTeam[0]}}
           </div>
           <div class="tool__anchor">
-            <a class="flex alignCenter" (click)="tooltipP1Open=!tooltipP1Open">
+            <a class="flex alignCenter" (click)="teamListOpen === i ? teamListOpen = -1 : teamListOpen = i">
               <span class="marRight8">+2</span>
               <img src="../../../assets/img/arrow-down.svg" />
             </a>
-            <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipP1Open }">
+            <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : teamListOpen === i }">
               <div class="tool__text">
-                <div class="picName marBottom16">
+                <div *ngFor="let practitioner of plan.careTeam.slice(1)" class="picName marBottom16">
                   <img class="picName__img" src="../../../assets/img/profile--2.svg" />
-                  Jason Hannigan, PA
-                </div>
-                <div class="picName">
-                  <img class="picName__img" src="../../../assets/img/profile--2.svg" />
-                  Melanie Benson, CRNA
+                  {{practitioner}}
                 </div>
               </div>
             </div>
@@ -73,19 +69,19 @@
       <div class="info__cell">
         <label>Progress</label>
         <div class="progress marCenter">
-          Week 8 of 12
+          Week {{plan.week}} of {{plan.totalWeeks}}
           <div class="progress__bg">
-            <div class="progress__bar"></div>
+            <div class="progress__bar" [ngStyle]="{width: (plan.week / plan.totalWeeks) * 100 + '%'}"></div>
           </div>
         </div>
       </div>
       <div class="info__cell">
         <label>Last&nbsp;Contact</label>
-        <a [routerLink]="['/patient/asdf/history']" class="justifyCenter">2 days ago</a>
+        <a [routerLink]="['/patient/asdf/history']" class="justifyCenter">{{plan.daysSinceContact}} days ago</a>
       </div>
       <div class="info__cell">
         <label>Problems</label>
-        <a class="justifyCenter" (click)="openProblemAreas()">3</a>
+        <a class="justifyCenter" (click)="openProblemAreas()">{{plan.problems}}</a>
       </div>
       <div class="info__cell">
         <label class="tool info__tool justifyCenter">
@@ -97,13 +93,20 @@
           </div>
         </label>
         <div class="pill pill--lime">
-          :57
+          {{plan.time}}
         </div>
       </div> <!--/.info__cell (for time)-->
       <div class="info__cell">
         <label>Risk Level</label>
-        <div class="pill pill--yellow">
-          Low Risk 84%
+        <div
+          class="pill"
+          [ngClass]="{
+            'pill--red': plan.riskLevel >= 80,
+            'pill--yellow': plan.riskLevel < 80 && plan.riskLevel >= 40,
+            'pill--lime': plan.riskLevel < 40
+          }"
+        >
+          {{riskLevelText[i]}} {{plan.riskLevel}}%
         </div>
       </div>
     </div> <!--/.info (for care plan instance)-->
@@ -114,7 +117,7 @@
   </button>
 
   <div class="divider divider--bigMargin halfWidth marCenter"></div>
-
+<div class="background-radial">
   <div class="flex alignCenter marBottom16">
     <h2 class="noMargin">Patient Statistics (Past 12 Months)</h2>
     <div class="tool__anchor">
@@ -133,48 +136,49 @@
   <div class="info info--horiz">
     <div class="info__cell">
       <label>Readmits</label>
-      2
+      {{patient?.statistics?.readmits}}
     </div>
     <div class="info__cell">
       <label>Readmit %</label>
-      33.3%
+      {{patient?.statistics?.readmitPercent}}
     </div>
     <div class="info__cell">
       <label>Cost of Readmits</label>
-      $10,975
+      {{patient?.statistics?.readmitCost}}
     </div>
     <div class="info__cell">
       <label>ED Visits</label>
-      3
+      {{patient?.statistics?.edVisits}}
     </div>
     <div class="info__cell">
       <label>Opioid Use</label>
-      5
+      {{patient?.statistics?.opioidUse}}
     </div>
   </div> <!--/.info (first one for patient stats)-->
 
   <div class="info info--horiz">
     <div class="info__cell">
       <label>Admits</label>
-      5
+      {{patient?.statistics?.admits}}
     </div>
     <div class="info__cell">
       <label>Avg Stay</label>
-      1.5 days
+      {{patient?.statistics?.avgStay}}
     </div>
     <div class="info__cell">
       <label>PCP Visits</label>
-      5
+      {{patient?.statistics?.pcpVisits}}
     </div>
     <div class="info__cell">
       <label>Specialist Visits</label>
-      3
+      {{patient?.statistics?.specialistVisits}}
     </div>
     <div class="info__cell">
       <label>Total Cost</label>
-      $45,890
+      {{patient?.statistics?.totalCost}}
     </div>
   </div> <!--/.info (second one for patient stats)-->
+</div>
 
   <div class="divider divider--bigMargin halfWidth marCenter"></div>
 
@@ -193,27 +197,27 @@
         <div class="flex justifySpaceBetween">
           <div>
             <label class="info__label2">Age</label>
-            <p class="info__p">76</p>
+            <p class="info__p">{{patient?.profile?.age}}</p>
             <label class="info__label2">Insurance</label>
-            <p class="info__p">BCBS</p>
+            <p class="info__p">{{patient?.profile?.insurance}}</p>
             <label class="info__label2">Height</label>
-            <p class="info__p info__p--noMargin">5' 2"</p>
+            <p class="info__p info__p--noMargin">{{patient?.profile?.height}}</p>
           </div>
           <div>
             <label class="info__label2">Date of Birth</label>
-            <p class="info__p">May 23, 1959</p>
+            <p class="info__p">{{patient?.profile?.dob}}</p>
             <label class="info__label2">Secondary Ins.</label>
-            <p class="info__p">Medicare</p>
+            <p class="info__p">{{patient?.profile?.secondaryIns}}</p>
             <label class="info__label2">Ethnicity</label>
-            <p class="info__p info__p--noMargin">Hispanic</p>
+            <p class="info__p info__p--noMargin">{{patient?.profile?.ethnicity}}</p>
           </div>
           <div>
             <label class="info__label2">Gender</label>
-            <p class="info__p">Female</p>
+            <p class="info__p">{{patient?.profile?.gender}}</p>
             <label class="info__label2">MRN</label>
-            <p class="info__p">345752671</p>
+            <p class="info__p">{{patient?.profile?.MRN}}</p>
             <label class="info__label2">Cognitive Ability</label>
-            <p class="info__p info__p--noMargin">High</p>
+            <p class="info__p info__p--noMargin">{{patient?.profile?.cognitiveAbility}}</p>
           </div>
         </div>
       </div> <!--/.info (for profile)-->
@@ -229,19 +233,19 @@
         <div class="flex justifySpaceBetween">
           <div>
             <label class="info__label2">Street</label>
-            <p class="info__p">518 E 3100 N</p>
+            <p class="info__p">{{patient?.address?.street}}</p>
             <label class="info__label2">State</label>
-            <p class="info__p info__p--noMargin">UT</p>
+            <p class="info__p info__p--noMargin">{{patient?.address?.state}}</p>
           </div>
           <div>
             <label class="info__label2">Apt #</label>
-            <p class="info__p">- -</p>
+            <p class="info__p">{{patient?.address?.apt ? patient?.address?.apt : '- -'}}</p>
             <label class="info__label2">ZIP</label>
-            <p class="info__p info__p--noMargin">84414</p>
+            <p class="info__p info__p--noMargin">{{patient?.address?.zip}}</p>
           </div>
           <div>
             <label class="info__label2">City</label>
-            <p class="info__p">North Ogden</p>
+            <p class="info__p">{{patient?.address?.city}}</p>
           </div>
         </div>
       </div> <!--/.info (for address)-->
@@ -258,18 +262,18 @@
         </div>
         <label class="info__label2">Email</label>
         <p class="info__p">
-          <a href="mailto:">theresa.beckstrom@gmail.com</a>
+          <a href="mailto:">{{patient?.communication?.email}}</a>
         </p>
         <div class="flex justifySpaceBetween">
           <div class="marRight32">
             <label class="info__label2">Phone</label>
             <p class="info__p info__p--noMargin">
-              <a href="tel:">(801) 413-3206</a>
+              <a href="tel:">{{patient?.communication?.phone}}</a>
             </p>
           </div>
           <div>
             <label class="info__label2">Comm. Preference</label>
-            <p class="info__p info__p--noMargin">In-App Message</p>
+            <p class="info__p info__p--noMargin">{{patient?.communication?.commPreference}}</p>
           </div>
         </div>
       </div> <!--/.info (for communication)-->
@@ -285,20 +289,20 @@
         <div class="flex justifySpaceBetween">
           <div class="marRight32">
             <label class="info__label2">Name</label>
-            <p class="info__p">Sally Beckstrom</p>
+            <p class="info__p">{{patient?.emergencyContact?.name}}</p>
           </div>
           <div>
             <label class="info__label2">Relationship</label>
-            <p class="info__p">Daughter</p>
+            <p class="info__p">{{patient?.emergencyContact?.relationship}}</p>
           </div>
         </div>
         <label class="info__label2">Phone</label>
         <p class="info__p">
-          <a href="tel:">(801) 573-9020</a>
+          <a href="tel:">{{patient?.emergencyContact?.phone}}</a>
         </p>
         <label class="info__label2">Email</label>
         <p class="info__p info__p--noMargin">
-          <a href="mailto:">sallybeck@gmail.com</a>
+          <a href="mailto:">{{patient?.emergencyContact?.email}}</a>
         </p>
       </div> <!--/.info (for emergency contact)-->
 
@@ -309,8 +313,8 @@
     <div class="info cols__colSmall marRight32">
       <h3>Medications</h3>
       <ul class="nameList nameList--dk marBottom16">
-        <li class="nameList__item">
-          <span>Zoloft</span>
+        <li *ngFor="let medication of patient?.medications" class="nameList__item">
+          <span>{{medication}}</span>
           <div class="flex">
             <button class="button button--icon button--icon--small"
             (click)="editMedication()">
@@ -318,17 +322,6 @@
             </button>
             <button class="button button--icon button--icon--small"
             (click)="deleteMedication()">
-              <i class="ss-delete"></i>
-            </button>
-          </div>
-        </li>
-        <li class="nameList__item">
-          <span>Lexapro</span>
-          <div class="flex">
-            <button class="button button--icon button--icon--small">
-              <i class="ss-write"></i>
-            </button>
-            <button class="button button--icon button--icon--small">
               <i class="ss-delete"></i>
             </button>
           </div>
@@ -343,8 +336,8 @@
     <div class="info cols__colSmall marRight32">
       <h3>Diagnoses</h3>
       <ul class="nameList nameList--dk marBottom16">
-        <li class="nameList__item">
-          <span class="asterisk">Depression</span>
+        <li class="nameList__item" *ngFor="let diagnosis of patient?.diagnoses">
+          <span class="asterisk">{{diagnosis}}</span>
           <div class="flex">
             <button class="button button--icon button--icon--small"
             (click)="editDiagnosis()">
@@ -367,8 +360,8 @@
     <div class="info cols__colSmall">
       <h3>Procedures</h3>
       <ul class="nameList nameList--dk marBottom16">
-        <li class="nameList__item">
-          <span>Double Bypass</span>
+        <li class="nameList__item" *ngFor="let procedure of patient?.procedures">
+          <span>{{procedure}}</span>
           <div class="flex">
             <button class="button button--icon button--icon--small"
             (click)="editProcedure()">
@@ -376,28 +369,6 @@
             </button>
             <button class="button button--icon button--icon--small"
             (click)="deleteProcedure()">
-              <i class="ss-delete"></i>
-            </button>
-          </div>
-        </li>
-        <li class="nameList__item">
-          <span>Bariatric Surgery</span>
-          <div class="flex">
-            <button class="button button--icon button--icon--small">
-              <i class="ss-write"></i>
-            </button>
-            <button class="button button--icon button--icon--small">
-              <i class="ss-delete"></i>
-            </button>
-          </div>
-        </li>
-        <li class="nameList__item">
-          <span>Hip Replacement</span>
-          <div class="flex">
-            <button class="button button--icon button--icon--small">
-              <i class="ss-write"></i>
-            </button>
-            <button class="button button--icon button--icon--small">
               <i class="ss-delete"></i>
             </button>
           </div>
