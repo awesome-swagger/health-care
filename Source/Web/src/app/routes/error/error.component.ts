@@ -9,7 +9,7 @@ import { Router } from '@angular/router';
 export class ErrorComponent implements OnDestroy, OnInit {
 
   private interval: any;
-  private remainingSeconds = 5;
+  public remainingSeconds = 5;
 
   public constructor(
     private router: Router,

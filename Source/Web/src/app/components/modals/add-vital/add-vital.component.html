@@ -53,10 +53,10 @@
   <div class="gridCell--21">
     <div class="modal__details">
       <!--TODO: Show the following if no vital is selected-->
-      <h2 *ngIf="vitalTemplatePreview.vitals.length <= 0" class="modal__empty">Select a vital report to see details</h2>
+      <h2 *ngIf="true" class="modal__empty">Select a vital report to see details</h2>
 
       <!--TODO: Show the following div when a vital is selected-->
-      <div  *ngIf="vitalTemplatePreview.vitals.length > 0">
+      <div  *ngIf="false">
         <div class="flex alignCenter justifySpaceBetween marBottom8">
           <div class="flex alignCenter">
             <h2 class="noMargin marRight32">{{vitalTemplatePreview.vital.name}}</h2>

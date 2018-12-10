@@ -9,6 +9,9 @@ export class CreateVitalComponent implements OnInit {
 
   public data = null;
 
+  public tooltipCVM0Open;
+  public tooltipCVM1Open;
+
   public measures = [];
 
   constructor() {

@@ -9,6 +9,8 @@ export class AddCtComponent implements OnInit {
 
   constructor() { }
 
+  public close;
+
   ngOnInit() {
   }
 

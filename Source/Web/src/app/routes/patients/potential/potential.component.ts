@@ -14,6 +14,12 @@ export class PotentialPatientsComponent implements OnDestroy, OnInit {
   public facilities = [];
   public potentialPatients = [];
 
+  public accord1Open;
+  public tooltip2Open;
+  public tooltipPP2Open;
+  public accord2Open;
+  public toolPP1Open;
+
   private facilitiesSub = null;
 
   constructor(

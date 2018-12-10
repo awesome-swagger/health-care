@@ -21,7 +21,18 @@ import { PlanLimitReachedComponent } from '../../components/modals/plan-limit-re
 })
 export class StyleguideComponent implements OnInit {
 
-  private user: Observable<any> = this.auth.user$;
+  public user: Observable<any> = this.auth.user$;
+
+  public showDate;
+  public multiOpen;
+  public dropOpen;
+  public tooltip1Open;
+  public tooltip2Open;
+  public accord1Open;
+  public tooltip3Open;
+  public tooltip4Open;
+  public tooltip5Open;
+  public accord2Open;
 
   public datepickerOptions = {
     //relativeLeft: '-310px',

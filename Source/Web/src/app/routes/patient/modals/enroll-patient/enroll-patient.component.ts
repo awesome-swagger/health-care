@@ -23,6 +23,8 @@ export class EnrollPatientComponent implements OnInit {
   public box5 = false;
   public box6 = false;
 
+  public clickCancel;
+
   ngOnInit() {
   }
 

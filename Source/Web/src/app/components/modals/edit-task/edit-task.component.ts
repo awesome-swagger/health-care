@@ -22,6 +22,11 @@ export class EditTaskComponent implements OnInit {
   public task;
   public taskForm:FormGroup;
 
+  public tooltipETM0Open;
+  public tooltipETM1Open;
+  public tooltipETM2Open;
+  public tooltipETM3Open;
+
 
   constructor(    
     private modal: ModalService,

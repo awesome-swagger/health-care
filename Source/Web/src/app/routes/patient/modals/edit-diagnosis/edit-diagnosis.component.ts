@@ -9,6 +9,10 @@ export class EditDiagnosisComponent implements OnInit {
 
   constructor() { }
 
+  public emailInput;
+  public box4;
+  public close;
+
   ngOnInit() {
   }
 

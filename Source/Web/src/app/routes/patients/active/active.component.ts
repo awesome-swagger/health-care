@@ -17,6 +17,11 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
 
   public accordionsOpen = [];
 
+  public toolAP1Open;
+  public multi1Open;
+  public multi2Open;
+  public multi3Open;
+
   constructor(
     private router: Router,
     private modals: ModalService,

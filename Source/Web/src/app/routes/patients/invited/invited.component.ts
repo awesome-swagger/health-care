@@ -9,6 +9,12 @@ import { ReminderEmailComponent } from './modals/reminder-email/reminder-email.c
 })
 export class InvitedPatientsComponent implements OnDestroy, OnInit {
 
+  public toolIP1Open;
+  public accord1Open;
+  public tooltip2Open;
+  public tooltipPP2Open;
+  public accord2Open;
+
   constructor(
     private modals: ModalService,
   ) { }

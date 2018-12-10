@@ -14,6 +14,8 @@ export class AddCTTaskComponent implements OnInit {
   public tasks = [];
   public newTaskName: string = '';
 
+  public createTask;
+
   constructor(
     private modal: ModalService,
     private store: StoreService

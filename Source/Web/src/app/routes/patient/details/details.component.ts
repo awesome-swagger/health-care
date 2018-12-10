@@ -14,6 +14,45 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
 
   public patient = null;
 
+  public showDate;
+  public accordPD1Open;
+  public accordPD2Open;
+  public tooltipPD200Open;
+  public accordPD3Open;
+  public tooltipPD300Open;
+  public accordPD4Open;
+  public tooltipPD400Open;
+  public tooltipPD401Open;
+  public accordPD5Open;
+  public tooltipPD500Open;
+  public tooltipPD501Open;
+  public tooltipPD502Open;
+  public tooltipPD503Open;
+  public tooltipPD504Open;
+  public tooltipPD505Open;
+  public tooltipPD506Open;
+  public tooltipPD507Open;
+  public tooltipPD508Open;
+  public tooltipPD509Open;
+  public tooltipPD510Open;
+  public tooltipPD511Open;
+  public tooltipPD512Open;
+  public tooltipPD513Open;
+  public accordPD6Open;
+  public tooltipPD600Open;
+  public tooltipPD601Open;
+  public tooltipPD602Open;
+  public tooltipPD603Open;
+  public accordPD7Open;
+  public tooltipPD700Open;
+  public tooltipPD701Open;
+  public tooltipPD702Open;
+  public tooltipPD703Open;
+  public accordPD8Open;
+  public tooltipPD800Open;
+
+
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,

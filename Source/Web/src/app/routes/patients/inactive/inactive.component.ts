@@ -13,6 +13,12 @@ export class InactivePatientsComponent implements OnDestroy, OnInit {
   public facilities = [];
   public facilitiesOpen = [];
 
+  public toolXP1Open;
+  public accord1Open;
+  public tooltip2Open;
+  public tooltipPP2Open;
+  public accord2Open;
+
   constructor(
     private modals: ModalService,
     private auth: AuthService,

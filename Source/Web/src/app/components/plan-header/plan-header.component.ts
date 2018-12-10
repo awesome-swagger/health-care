@@ -15,6 +15,10 @@ export class PlanHeaderComponent implements OnInit, OnDestroy {
   private organization = null;
   public carePlanAverage = null;
 
+  public editName;
+  public openPlanDuration;
+  public openReassignPatients;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,

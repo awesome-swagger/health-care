@@ -9,6 +9,13 @@ export class CreateStreamComponent implements OnInit {
 
   public data = null;
 
+  public tooltipCMS0Open
+  public tooltipCMS1Open
+  public deleteM0;
+  public deleteM1;
+  public deleteM2;
+  public showAddMessageForm;
+
   constructor() {
 
   }

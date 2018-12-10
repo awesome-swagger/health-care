@@ -35,6 +35,14 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
   public accordionsOpen = [];
   public tooltipsOpen = [];
 
+  public toolPTAOpen;
+  public toolPTA2Open
+  public toolPTA3Open;
+  public planAssessements;
+  public toolPTSOpen;
+  public toolPTVOpen;
+  public toolPTMOpen;
+
   constructor(
     private route: ActivatedRoute,
     private modals: ModalService,

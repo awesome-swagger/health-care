@@ -9,6 +9,8 @@ export class CreateAssessmentComponent implements OnInit {
 
   public data = null;
 
+  public tooltipCAM0Open;
+
   constructor() {
 
   }

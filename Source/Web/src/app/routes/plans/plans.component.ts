@@ -29,6 +29,10 @@ export class PlansComponent implements OnDestroy, OnInit {
 
   private organizationSub = null;
 
+  public toolCPOpen;
+
+  public fetchPlanTemplates;
+
   constructor(
     private modals: ModalService,
     private auth: AuthService,

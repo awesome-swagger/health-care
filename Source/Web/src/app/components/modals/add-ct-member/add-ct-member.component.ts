@@ -9,6 +9,8 @@ export class AddCTMemberComponent implements OnInit {
 
   public data = null;
 
+  public dropOpen;
+
   constructor() {
 
   }

@@ -9,6 +9,17 @@ export class CarePlanConsentComponent implements OnInit {
 
   constructor() { }
 
+  public data = null;
+  
+  public box1;
+  public box2;
+  public box3;
+  public box4;
+  public box5;
+  public box6;
+  public clickCancel;
+  public clickNext;
+
   ngOnInit() {
   }
 

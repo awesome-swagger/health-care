@@ -12,6 +12,8 @@ export class AddPlanComponent implements OnInit {
 
   public data = null;
 
+  public multiOpen;
+
   public planTypes = [];
   public plans = [
     {

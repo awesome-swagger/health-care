@@ -18,6 +18,15 @@ export class UserComponent implements OnDestroy, OnInit {
   public employee: any = null;
   private paramsSub: Subscription = null;
 
+  public tooltip1Open;
+  public isOrgAdmin;
+  public tooltip2Open;
+  public isProvider;
+  public tooltip3Open;
+  public isBC;
+  public tooltip4Open;
+  public editName;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,

@@ -12,6 +12,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
   public patients = null;
   public patientsGrouped = null;
 
+  public multiOpen;
+  public dashTip1;
+  public multi2Open;
+  public multi3Open;
+
   public datepickerOptions = {
      relativeTop: '-368px',
    };

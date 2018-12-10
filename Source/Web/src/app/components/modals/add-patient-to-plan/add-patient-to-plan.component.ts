@@ -27,6 +27,8 @@ export class AddPatientToPlanComponent implements OnInit {
   ];
   public editDiagnosisIndex = -1;
 
+  public dropAPPM2Open;
+
   constructor() {
 
   }
