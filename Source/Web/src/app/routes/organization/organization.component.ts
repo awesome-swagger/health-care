@@ -74,7 +74,9 @@ export class OrganizationComponent implements OnDestroy, OnInit {
         isOrganization: false,
       },
       width: '512px',
-    }).subscribe(() => {});
+    }).subscribe((res) => {
+      this.facilities.push(res);
+    });
   }
 
   public openEditFacility(facility) {
