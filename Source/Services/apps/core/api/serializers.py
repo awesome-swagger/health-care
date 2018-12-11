@@ -31,6 +31,7 @@ from ..search_indexes import (
     ProviderTitleIndex,
     SymptomIndex,
 )
+from ..utils import get_facilities_for_user
 from .mixins import RepresentationMixin
 
 
@@ -86,15 +87,21 @@ class OrganizationPatientOverviewSerializer(serializers.ModelSerializer):
         )
 
     def get_active_patients(self, obj):
+        user = self.context.get('request').user
+        facilities = get_facilities_for_user(user, obj.id)
         return PatientProfile.objects.filter(
-            facility__organization=obj, is_active=True).count()
+            facility__in=facilities, is_active=True).count()
 
     def get_total_facilities(self, obj):
-        return obj.facility_set.all().count()
+        user = self.context.get('request').user
+        facilities = get_facilities_for_user(user, obj.id)
+        return facilities.count()
 
     def get_average_outcome(self, obj):
+        user = self.context.get('request').user
+        facilities = get_facilities_for_user(user, obj.id)
         tasks = AssessmentTask.objects.filter(
-            plan__patient__facility__organization=obj,
+            plan__patient__facility__in=facilities,
             assessment_task_template__tracks_outcome=True
         ).aggregate(average=Avg('responses__rating'))
         average = tasks['average'] or 0
@@ -103,20 +110,22 @@ class OrganizationPatientOverviewSerializer(serializers.ModelSerializer):
 
     def get_average_engagement(self, obj):
         now = timezone.now()
+        user = self.context.get('request').user
+        facilities = get_facilities_for_user(user, obj.id)
         patient_tasks = PatientTask.objects.filter(
-            plan__patient__facility__organization=obj,
+            plan__patient__facility__in=facilities,
             due_datetime__lte=now)
         medication_tasks = MedicationTask.objects.filter(
-            medication_task_template__plan__patient__facility__organization=obj,
+            medication_task_template__plan__patient__facility__in=facilities,
             due_datetime__lte=now)
         symptom_tasks = SymptomTask.objects.filter(
-            plan__patient__facility__organization=obj,
+            plan__patient__facility__in=facilities,
             due_datetime__lte=now)
         assessment_tasks = AssessmentTask.objects.filter(
-            plan__patient__facility__organization=obj,
+            plan__patient__facility__in=facilities,
             due_datetime__lte=now)
         vital_tasks = VitalTask.objects.filter(
-            plan__patient__facility__organization=obj,
+            plan__patient__facility__in=facilities,
             due_datetime__lte=now)
 
         total_patient_tasks = patient_tasks.count()
