@@ -91,7 +91,8 @@ class OrganizationViewSet(viewsets.ModelViewSet):
             return qs.all()
         return qs.none()
 
-    @action(methods=['get'], detail=True)
+    @action(methods=['get'], detail=True,
+            permission_classes=(IsAdminOrEmployee, ))
     def active_patients_overview(self, request, *args, **kwargs):
         """
         Returns the following data in a specific organization:
@@ -103,7 +104,8 @@ class OrganizationViewSet(viewsets.ModelViewSet):
             - risk level
         """
         organization = self.get_object()
-        serializer = OrganizationPatientOverviewSerializer(organization)
+        serializer = OrganizationPatientOverviewSerializer(
+            organization, context={'request': request})
         return Response(serializer.data)
 
 

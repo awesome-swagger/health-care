@@ -87,19 +87,19 @@ class OrganizationPatientOverviewSerializer(serializers.ModelSerializer):
         )
 
     def get_active_patients(self, obj):
-        user = self.context.get('request').user
-        facilities = get_facilities_for_user(user, obj.id)
+        request = self.context['request']
+        facilities = get_facilities_for_user(request.user, obj.id)
         return PatientProfile.objects.filter(
             facility__in=facilities, is_active=True).count()
 
     def get_total_facilities(self, obj):
-        user = self.context.get('request').user
-        facilities = get_facilities_for_user(user, obj.id)
+        request = self.context['request']
+        facilities = get_facilities_for_user(request.user, obj.id)
         return facilities.count()
 
     def get_average_outcome(self, obj):
-        user = self.context.get('request').user
-        facilities = get_facilities_for_user(user, obj.id)
+        request = self.context['request']
+        facilities = get_facilities_for_user(request.user, obj.id)
         tasks = AssessmentTask.objects.filter(
             plan__patient__facility__in=facilities,
             assessment_task_template__tracks_outcome=True
@@ -110,8 +110,8 @@ class OrganizationPatientOverviewSerializer(serializers.ModelSerializer):
 
     def get_average_engagement(self, obj):
         now = timezone.now()
-        user = self.context.get('request').user
-        facilities = get_facilities_for_user(user, obj.id)
+        request = self.context['request']
+        facilities = get_facilities_for_user(request.user, obj.id)
         patient_tasks = PatientTask.objects.filter(
             plan__patient__facility__in=facilities,
             due_datetime__lte=now)
