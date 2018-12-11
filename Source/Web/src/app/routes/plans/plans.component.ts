@@ -12,7 +12,6 @@ import { groupBy as _groupBy } from 'lodash';
 })
 export class PlansComponent implements OnDestroy, OnInit {
 
-  public showInactive = false;
   public organization = null;
   public facilities = [];
   public facilitiesOpen = false;
@@ -23,9 +22,11 @@ export class PlansComponent implements OnDestroy, OnInit {
   public carePlanTemplates = [];
   public planTemplatesGrouped = [];
 
-  public accordionsOpen = [];
+  public showServiceLineHelp = false;
+  public showCarePlanHelp = false;
+  public showAveragesHelp = false;
 
-  public activePatients = [];
+  public accordionsOpen = [];
 
   private organizationSub = null;
 
@@ -149,7 +150,6 @@ export class PlansComponent implements OnDestroy, OnInit {
           item.averages = templateAverages;
           itemsProcessed++;
           if (itemsProcessed === array.length) {
-            console.log('done');
             resolve(templates);
           }
         }).catch((err) => {
