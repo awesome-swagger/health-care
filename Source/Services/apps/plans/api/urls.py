@@ -5,6 +5,7 @@ from django.conf.urls import url
 from .views import (
 
     CarePlanTemplateByType,
+    CarePlanTemplateByServiceArea,
 
     # GoalTemplate
     GoalTemplatesByPlanTemplate,
@@ -23,5 +24,10 @@ urlpatterns = [
         r'^organizations/(?P<parent_lookup_care_plans__patient__facility__organization>[0-9a-f-]+)/care_plan_template_types/(?P<pk>[0-9a-f-]+)/templates/$',
         CarePlanTemplateByType.as_view(),
         name='type-plan-templates'
+    ),
+    url(
+        r'^organizations/(?P<parent_lookup_care_plans__patient__facility__organization>[0-9a-f-]+)/service_areas/(?P<pk>[0-9a-f-]+)/templates/$',
+        CarePlanTemplateByServiceArea.as_view(),
+        name='service-area-plan-templates'
     ),
 ]

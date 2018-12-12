@@ -25,12 +25,29 @@ class CarePlanTemplateType(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
         return f'{self.acronym}: {self.name}'
 
 
+class ServiceArea(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
+    name = models.CharField(max_length=128)
+
+    class Meta:
+        ordering = ('name', )
+
+    def __str__(self):
+        return f'{self.name}'
+
+
 class CarePlanTemplate(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
     name = models.CharField(max_length=120)
     type = models.ForeignKey(
         'plans.CarePlanTemplateType',
         related_name='care_plan_templates',
         on_delete=models.CASCADE,
+        blank=True,
+        null=True
+    )
+    service_area = models.ForeignKey(
+        ServiceArea,
+        related_name='care_plan_templates',
+        on_delete=models.SET_NULL,
         blank=True,
         null=True
     )
