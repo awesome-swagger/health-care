@@ -3,7 +3,7 @@ import { ModalService, ConfirmModalComponent } from '../../modules/modals';
 import { PopoverOptions } from '../../modules/popover';
 import { AuthService, StoreService } from '../../services';
 import { AddPlanComponent } from './modals/add-plan/add-plan.component';
-import { groupBy as _groupBy } from 'lodash';
+import { groupBy as _groupBy, sumBy as _sumBy } from 'lodash';
 
 @Component({
   selector: 'app-plans',
@@ -22,7 +22,7 @@ export class PlansComponent implements OnDestroy, OnInit {
   public carePlanTemplates = [];
   public planTemplatesGrouped = [];
 
-  public showServiceLineHelp = false;
+  public showServiceAreaHelp = false;
   public showCarePlanHelp = false;
   public showAveragesHelp = false;
 
@@ -52,10 +52,15 @@ export class PlansComponent implements OnDestroy, OnInit {
         this.getAllTemplateAverages(this.organization, templates).then((templatesWithAverages: any) => {
           this.carePlanTemplates = templatesWithAverages;
           let templatesGrouped = _groupBy(this.carePlanTemplates, (obj) => {
-            return obj.type.id;
+            return obj.service_area.id;
           });
           this.planTemplatesGrouped = Object.keys(templatesGrouped).map((key: any) => {
-            return {type: key, typeObj: templatesGrouped[key][0].type, templates: templatesGrouped[key]};
+            return {
+              serviceArea: key,
+              serviceAreaObj: templatesGrouped[key][0].service_area,
+              totalPatients: _sumBy(templatesGrouped[key], (o) => o.averages.total_patients),
+              templates: templatesGrouped[key],
+            };
           });
         });
       });
@@ -202,5 +207,17 @@ export class PlansComponent implements OnDestroy, OnInit {
 
   public applyFacilityFilter() {
     this.facilitiesFiltered = Object.keys(this.facilitiesChecked);
+  }
+
+  public getPillColor(percentage) {
+    if (percentage >= 90) {
+      return '#4caf50';
+    } else if (percentage <= 89 && percentage >= 70) {
+      return '#ff9800';
+    } else if (percentage <= 69 && percentage >= 50) {
+       return '#ca2c4e';
+    } else {
+      return '#880e4f';
+    }
   }
 }

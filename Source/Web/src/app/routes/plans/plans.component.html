@@ -12,13 +12,13 @@
   </div>
   <div class="flexHeader">
     <div class="flex alignCenter">
-      <h1 class="noMargin marRight8">Service Areas ({{carePlanTemplates.length}})</h1>
+      <h1 class="noMargin marRight8">Service Areas (0)</h1>
       <div class="tool__anchor">
         <button class="button button--icon button--icon--small"
-        (click)="showServiceLineHelp = !showServiceLineHelp">
+        (click)="showServiceAreaHelp = !showServiceAreaHelp">
           <i class="ss-help"></i>
         </button>
-        <div class="tool__tip" [ngClass]="{'isOpen': showServiceLineHelp}">
+        <div class="tool__tip" [ngClass]="{'isOpen': showServiceAreaHelp}">
           <div class="tool__text">
             Service Areas contain a group of care plans based on an area of service line.
           </div>
@@ -100,31 +100,30 @@
       </div>
       <div class="info__cell">
         <label>Avg Outcomes</label>
-        <div class="pill pill--yellow">
+        <div class="pill" [ngStyle]="{'background': getPillColor(averagesByCarePlan.average_outcome)}">
           {{averagesByCarePlan.average_outcome}}%
         </div>
       </div>
       <div class="info__cell">
         <label>Avg Engagement</label>
-        <div class="pill pill--red">
+        <div class="pill" [ngStyle]="{'background': getPillColor(averagesByCarePlan.average_engagement)}">
           {{averagesByCarePlan.average_engagement}}%
         </div>
       </div>
       <div class="info__cell">
         <label>Risk Level</label>
-        <div class="pill pill--yellow">
+        <div class="pill" [ngStyle]="{'background': getPillColor(averagesByCarePlan.risk_level)}">
           Low Risk {{averagesByCarePlan.risk_level}}%
         </div>
       </div>
     </div> <!--/.info-->
   </div> <!--/.flex-->
-
-  <div class="accordion" [ngClass]="{ 'isOpen' : accordionsOpen[plan.type] }" *ngFor="let plan of planTemplatesGrouped; let i = index">
-    <div class="accordion__head" (click)="accordionsOpen[plan.type]=!accordionsOpen[plan.type]">
-      <span class="accordion__title">{{plan.typeObj.name}} ({{plan.typeObj.acronym|uppercase}}) ({{plan.templates.length}})</span>
+  <div class="accordion" [ngClass]="{ 'isOpen' : accordionsOpen[plan.serviceArea] }" *ngFor="let plan of planTemplatesGrouped; let i = index">
+    <div class="accordion__head" (click)="accordionsOpen[plan.serviceArea]=!accordionsOpen[plan.serviceArea]">
+      <span class="accordion__title">{{plan.serviceAreaObj.name}} ({{plan.templates.length}}) ({{plan.totalPatients}})</span>
       <div class="accordion__right">
         <div class="pill pill--yellow marRight16">
-          {{plan.typeObj.acronym|uppercase}} 4:11
+          {{plan.serviceAreaObj.acronym|uppercase}} 4:11
         </div>
         <div class="pill pill--red">
           Med Risk 64%
@@ -185,17 +184,17 @@
               </td>
               <td>{{item.averages.duration_weeks}} weeks</td>
               <td>
-                <div class="pill pill--lime">
+                <div class="pill" [ngStyle]="{'background': getPillColor(item.averages.average_engagement)}">
                   {{item.averages.average_engagement}}%
                 </div>
               </td>
               <td>
-                <div class="pill pill--lime">
+                <div class="pill" [ngStyle]="{'background': getPillColor(item.averages.average_outcome)}">
                   {{item.averages.average_outcome}}%
                 </div>
               </td>
               <td>
-                <div class="pill pill--lime">
+                <div class="pill" [ngStyle]="{'background': getPillColor(item.averages.risk_level)}">
                   On Track {{item.averages.risk_level}}%
                 </div>
               </td>
