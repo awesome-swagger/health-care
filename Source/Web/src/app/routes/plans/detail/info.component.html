@@ -1,5 +1,5 @@
 <div class="ssContainer ssContents">
-  <app-plan-header></app-plan-header>
+  <app-plan-header [planTemplate]="planTemplate"></app-plan-header>
   <div class="accordion" [ngClass]="{ 'isOpen' : accord1Open }">
     <div class="accordion__head" (click)="accord1Open=!accord1Open">
       <span class="accordion__title">Mountain View (21)</span>

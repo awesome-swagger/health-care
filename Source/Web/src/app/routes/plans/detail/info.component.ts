@@ -36,7 +36,7 @@ export class PlanInfoComponent implements OnDestroy, OnInit {
           this.nav.planDetailState(this.planTemplateId);
         },
         (err) => {
-          this.router.navigate(['/error'])
+          this.router.navigate(['/error']);
         }
       );
     });

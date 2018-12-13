@@ -1,9 +1,8 @@
 <div class="flexHeader marBottom16">
   <div class="flex alignCenter">
-    <i class="icomoon-cocm iconText__icon iconText__icon--noTop iconText__icon--big"></i>
     <div *ngIf="!editName" class="flex alignCenter">
       <h1 class="noMargin marRight8">
-        <span title="Psychiatric Collaborative Care Management">{{planTemplate?.type.acronym|uppercase}}</span> {{planTemplate?.name}}
+        <span>{{planTemplate?.service_area.name}},</span> {{planTemplate?.name}}
       </h1>
       <button class="button button--icon" (click)="editName=!editName">
         <i class="ss-write"></i>
