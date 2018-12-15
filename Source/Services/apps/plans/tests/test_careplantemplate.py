@@ -587,7 +587,8 @@ class TestCarePlanTemplateAverage(TasksMixin, APITestCase):
                        total_symptom_tasks +
                        total_assessment_tasks +
                        total_vital_tasks)
-        return round((total_completed / total_tasks) * 100) if total_tasks > 0 else 0
+        return round((total_completed / total_tasks) * 100) \
+            if total_tasks > 0 else 0
 
     def test_care_plan_average_outcome(self):
         organization = self.create_organization()
