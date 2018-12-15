@@ -1,7 +1,7 @@
-from care_adopt_backend.permissions import EmployeeOrReadOnly
+from care_adopt_backend.permissions import IsAdminOrEmployee
 
 
-class CareTeamMemberPermissions(EmployeeOrReadOnly):
+class CareTeamMemberPermissions(IsAdminOrEmployee):
 
     def has_object_permission(self, request, view, obj):
 
