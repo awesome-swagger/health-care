@@ -11,8 +11,10 @@ class CareTeamMemberPermissions(IsAdminOrEmployee):
 
             if request.user.is_employee:
                 employee = request.user.employee_profile
-                manager_role = employee.assigned_roles.filter(is_manager=True)
+                manager_role = employee.assigned_roles.filter(
+                    plan=obj.plan, is_manager=True
+                )
                 if manager_role.exists():
                     return True
 
-        return True
+        return False
