@@ -22,6 +22,7 @@ from ..models import (
     InfoMessage,
     CareTeamMember,
 )
+from ..permissions import CareTeamMemberPermissions
 from .serializers import (
     CarePlanTemplateTypeSerializer,
     CarePlanTemplateSerializer,
@@ -359,7 +360,10 @@ class PlanConsentViewSet(viewsets.ModelViewSet):
 
 class CareTeamMemberViewSet(viewsets.ModelViewSet):
     serializer_class = CareTeamMemberSerializer
-    permission_classes = (permissions.IsAuthenticated, EmployeeOrReadOnly, )
+    permission_classes = (
+        permissions.IsAuthenticated,
+        CareTeamMemberPermissions,
+    )
 
     def get_queryset(self):
         qs = CareTeamMember.objects.all()
