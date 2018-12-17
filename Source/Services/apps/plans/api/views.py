@@ -45,6 +45,7 @@ from apps.tasks.api.serializers import (
     PatientTaskTemplateSerializer,
     AssessmentTaskTemplateSerializer,
     SymptomTaskTemplateSerializer,
+    TeamTaskTemplateSerializer,
     VitalTaskTemplateSerializer,
 )
 from apps.tasks.models import (
@@ -55,6 +56,7 @@ from apps.tasks.models import (
     MedicationTask,
     SymptomTask,
     SymptomTaskTemplate,
+    TeamTaskTemplate,
     VitalTask,
     VitalTaskTemplate,
 )
@@ -833,6 +835,52 @@ class VitalTaskTemplateByCarePlanTemplate(ParentViewSetPermissionMixin,
     """
     serializer_class = VitalTaskTemplateSerializer
     queryset = VitalTaskTemplate.objects.all()
+    permission_classes = (
+        permissions.IsAuthenticated,
+        IsAdminOrEmployee,
+    )
+    parent_lookup = [
+        (
+            'plan_template',
+            CarePlanTemplate,
+            CarePlanTemplateViewSet
+        )
+    ]
+
+
+class TeamTaskTemplateByCarePlanTemplate(ParentViewSetPermissionMixin,
+                                         NestedViewSetMixin,
+                                         mixins.ListModelMixin,
+                                         viewsets.GenericViewSet):
+    """
+    Returns list of :model:`tasks.TeamTaskTemplate` related to the given
+    care plan template.
+    """
+    serializer_class = TeamTaskTemplateSerializer
+    queryset = TeamTaskTemplate.objects.all()
+    permission_classes = (
+        permissions.IsAuthenticated,
+        IsAdminOrEmployee,
+    )
+    parent_lookup = [
+        (
+            'plan_template',
+            CarePlanTemplate,
+            CarePlanTemplateViewSet
+        )
+    ]
+
+
+class ManagerTaskTemplateByCarePlanTemplate(ParentViewSetPermissionMixin,
+                                            NestedViewSetMixin,
+                                            mixins.ListModelMixin,
+                                            viewsets.GenericViewSet):
+    """
+    Returns list of :model:`tasks.TeamTaskTemplate` having `is_manager_task`
+    as True and related to the given care plan template.
+    """
+    serializer_class = TeamTaskTemplateSerializer
+    queryset = TeamTaskTemplate.objects.filter(is_manager_task=True)
     permission_classes = (
         permissions.IsAuthenticated,
         IsAdminOrEmployee,

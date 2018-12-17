@@ -38,10 +38,12 @@ from apps.plans.api.views import (
     GoalCommentViewSet,
     InfoMessageQueueViewSet,
     InfoMessageViewSet,
+    ManagerTaskTemplateByCarePlanTemplate,
     PatientTaskTemplateByCarePlanTemplate,
     AssessmentTaskTemplateByCarePlanTemplate,
     SymptomTaskTemplateByCarePlanTemplate,
     VitalTaskTemplateByCarePlanTemplate,
+    TeamTaskTemplateByCarePlanTemplate,
 )
 from apps.tasks.api.views import (
     PatientTaskTemplateViewSet,
@@ -154,6 +156,12 @@ care_plan_template_routes = router.register(
     base_name='care_plan_templates'
 )
 care_plan_template_routes.register(
+    r'manager_task_templates',
+    ManagerTaskTemplateByCarePlanTemplate,
+    base_name='manager-task-templates-by-care-plan-templates',
+    parents_query_lookups=['plan_template']
+)
+care_plan_template_routes.register(
     r'patient_task_templates',
     PatientTaskTemplateByCarePlanTemplate,
     base_name='patient-task-templates-by-care-plan-templates',
@@ -169,6 +177,12 @@ care_plan_template_routes.register(
     r'symptom_task_templates',
     SymptomTaskTemplateByCarePlanTemplate,
     base_name='symptom-task-templates-by-care-plan-templates',
+    parents_query_lookups=['plan_template']
+)
+care_plan_template_routes.register(
+    r'team_task_templates',
+    TeamTaskTemplateByCarePlanTemplate,
+    base_name='team-task-templates-by-care-plan-templates',
     parents_query_lookups=['plan_template']
 )
 care_plan_template_routes.register(
