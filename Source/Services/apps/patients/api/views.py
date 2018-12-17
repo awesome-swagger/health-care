@@ -70,9 +70,10 @@ class PatientProfileViewSet(viewsets.ModelViewSet):
 
     Care Plans
     =================
-    `GET` to `/api/patient_profiles/care_plans/?id=<id_here>`
+    `GET` to `/api/patient_profiles/care_plans/?id=<id>`
+    `GET` to `/api/patient_profiles/{id}/care_plans/`
 
-    This returns care plans for patient with id <id_here>
+    Returns care plans for patient with id
 
     """
     serializer_class = PatientProfileSerializer
@@ -116,6 +117,19 @@ class PatientProfileViewSet(viewsets.ModelViewSet):
         care_plans = patient.care_plans.filter(goals__isnull=False).distinct()
         serializer = CarePlanGoalSerializer(care_plans, many=True)
         return Response(serializer.data)
+
+    @action(methods=['get'], detail=True)
+    def care_plan(self, request, *args, **kwargs):
+        """
+        This endpoint will return all care plans of the given patient
+        along with the corresponding goals for each care plans. This
+        endpoint will only return care plans with goals.
+        """
+        patient = self.get_object()
+        care_plans = patient.care_plans.all()
+        serializer = CarePlanGoalSerializer(care_plans, many=True)
+        return Response(serializer.data)
+
 
     @action(methods=['post'], detail=False,
             permission_classes=(permissions.IsAuthenticated, ))

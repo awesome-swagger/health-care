@@ -19,8 +19,6 @@ urlpatterns = [
         name='patient-dashboard'
     ),
     url(
-        # BAM I decided against this because I couldn't get it working.
-        #r'^patient_profiles/([-a-zA-Z0-9]+)/care_plans/$',
         r'^patient_profiles/care_plans/$',
         PatientProfileCarePlan.as_view(),
         name='patient-care_plans'
