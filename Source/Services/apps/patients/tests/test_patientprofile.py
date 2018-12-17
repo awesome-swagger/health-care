@@ -68,6 +68,7 @@ class TestPatientProfile(TasksMixin, APITestCase):
             'patient_profiles-care-plan-goals',
             kwargs={'pk': self.patient.id})
         response = self.client.get(url)
+        #print('response.data = %s',response.data)
         self.assertEqual(len(response.data), 1)
 
     def test_get_care_plan_goals_count(self):
@@ -202,9 +203,19 @@ class TestPatientProfile(TasksMixin, APITestCase):
         response = self.client.get(filter_url)
         id_str = self.patient.id.urn[9:]
         self.assertEqual( response.data['id'], id_str )
-        filter_url = f'{self.detail_url}?id=0'
-        response = self.client.get(filter_url)
-        print("response.data.id = %s",response.data['id'])
+        #filter_url = f'{self.detail_url}?id=0'
+        #response = self.client.get(filter_url)
+        #print("response.data.id = ",response.data['id'])
+
+
+    def test_get_care_plan(self):
+        url = reverse(
+            'patient_profiles-care-plan',
+            kwargs={'pk': self.patient.id})
+        response = self.client.get(url)
+        self.assertEqual(len(response.data), 2)
+        self.assertNotEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
 
 
 class TestPatientProfileUsingEmployee(PatientsMixin, APITestCase):
