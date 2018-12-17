@@ -481,3 +481,51 @@ class TestFacilityInactivePatient(PlansMixin, APITestCase):
         else:
             self.assertEqual(len(response.data), self.patient_count)
 
+
+class TestFacilityActivePatient(PlansMixin, APITestCase):
+    """
+    Test cases for :view:`patients.FacilityActivePatientViewSet` using an
+    employee as the logged in user.
+    """
+
+    def setUp(self):
+        self.fake = Faker()
+        self.facility = self.create_facility()
+        self.employee = self.create_employee(**{
+            'facilities': [self.facility]
+        })
+        self.patient_count = 3
+
+        for i in range(self.patient_count):
+            patient = self.create_patient(**{
+                'facility': self.facility,
+                'is_active': False
+            })
+
+            for plan in range(5):
+                self.create_care_plan(patient)
+
+        self.user = self.employee.user
+
+        self.url = reverse(
+            'facility-active-patients-list',
+            kwargs={'parent_lookup_facility': self.facility.id}
+        )
+        self.client.force_authenticate(user=self.user)
+
+    def create_multiple_goals(self, care_plan):
+        for i in range(5):
+            self.create_goal(**{'plan': self.care_plan})
+
+    def test_get_active_patients_list(self):
+
+        # Create patients from different facility
+        for i in range(5):
+            self.create_patient()
+
+        response = self.client.get(self.url)
+        if 'count' in response.data:
+            self.assertEqual(response.data['count'], self.patient_count)
+        else:
+            self.assertEqual(len(response.data), self.patient_count)
+

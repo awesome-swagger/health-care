@@ -26,6 +26,7 @@ from .serializers import (PatientDashboardSerializer,
                           CreatePatientSerializer,
                           PotentialPatientSerializer,
                           FacilityInactivePatientSerializer,
+                          FacilityActivePatientSerializer,
                           LatestPatientSymptomSerializer)
 from apps.core.api.views import FacilityViewSet
 from apps.core.api.mixins import ParentViewSetPermissionMixin
@@ -71,6 +72,7 @@ class PatientProfileViewSet(viewsets.ModelViewSet):
     Care Plans
     =================
     `GET` to `/api/patient_profiles/care_plans/?id=<id>`
+
     `GET` to `/api/patient_profiles/{id}/care_plans/`
 
     Returns care plans for patient with id
@@ -527,6 +529,25 @@ class FacilityInactivePatientViewSet(ParentViewSetPermissionMixin,
         ('facility', Facility, FacilityViewSet)
     ]
     pagination_class = OrganizationEmployeePagination
+
+
+class FacilityActivePatientViewSet(ParentViewSetPermissionMixin,
+                                     NestedViewSetMixin,
+                                     mixins.ListModelMixin,
+                                     viewsets.GenericViewSet):
+    """
+    Displays all inactive patients in a parent facility.
+    """
+
+    serializer_class = FacilityActivePatientSerializer
+    permission_clases = (permissions.IsAuthenticated, IsAdminOrEmployee)
+    queryset = PatientProfile.objects.filter(
+        is_active=True).order_by('last_app_use')
+    parent_lookup = [
+        ('facility', Facility, FacilityViewSet)
+    ]
+    pagination_class = OrganizationEmployeePagination
+
 
 
 
