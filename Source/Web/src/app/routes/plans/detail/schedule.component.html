@@ -1,6 +1,6 @@
 <div class="ssContainer ssContents">
   <app-plan-header [planTemplate]="planTemplate"></app-plan-header>
-  <h5 class="marBottom32">Note: Certain aspects of care plans, including individual goals and medication tasks, will be added after a patients is assigned to a care plan, as needed.</h5>
+  <h5 class="marBottom32">Note: Certain aspects of a care plan: billing type, check-in dates, individual goals, medications, problem areas, diagnosis, and appointment tasks will be added on their individual care plan as needed.</h5>
 
   <div class="accordion" [ngClass]="{'isOpen': accordionsOpen['goals']}">
     <div class="accordion__head" (click)="accordionsOpen['goals'] = !accordionsOpen['goals']">
@@ -13,10 +13,10 @@
     </div> <!--/.accordion__head-->
     <div class="accordion__body">
       <div class="accordion__contents">
-        <table>
+        <table class="fullWidth">
           <thead>
             <tr>
-              <th class="thSortable thSortable--sortDown">
+              <th class="thSortable thSortable--sortDown" width="50%">
                 <div class="tool">
                   <span class="thSortable__text thSortable__text--left">Goal Name</span>
                   <div class="tool__anchor">
@@ -36,7 +36,7 @@
                 <span class="thSortable__text thSortable__text--left">Duration</span>
               </th>
               <th class="thSortable">
-                <span class="thSortable__text">Start Day</span>
+                <span class="thSortable__text">Start</span>
               </th>
 
               <th class="noPad"></th>
@@ -73,7 +73,7 @@
 
   <div class="accordion" [ngClass]="{ 'isOpen' : accordionsOpen['teamTasks'] }">
     <div class="accordion__head" (click)="accordionsOpen['teamTasks']=!accordionsOpen['teamTasks']">
-      <span class="accordion__title">Care Manager and Team Tasks ({{teamTaskTemplates.length}})</span>
+      <span class="accordion__title">Care Manager and Care Team Tasks ({{teamTaskTemplates.length}})</span>
       <div class="accordion__right">
         <div class="accordion__arrow">
           <i class="ss-standard ss-navigateright"></i>
@@ -157,7 +157,7 @@
 
   <div class="accordion" [ngClass]="{'isOpen': accordionsOpen['patientTasks'] }">
     <div class="accordion__head" (click)="accordionsOpen['patientTasks'] = !accordionsOpen['patientTasks']">
-      <span class="accordion__title">Patient Tasks (4)</span>
+      <span class="accordion__title">Patient Tasks ({{patientTasksCount()}})</span>
       <div class="accordion__right">
         <div class="accordion__arrow">
           <i class="ss-standard ss-navigateright"></i>
@@ -495,9 +495,22 @@
           <i class="ss-plus"></i> Add Vital
         </button>
         <!--/ patient tasks: vitals section-->
-
+      </div> <!--/.accordion__contents-->
+    </div> <!--/.accordion__body-->
+  </div> <!--/.accordion (for patient tasks)-->
+  <div class="accordion" [ngClass]="{'isOpen': accordionsOpen['careMessages'] }">
+    <div class="accordion__head" (click)="accordionsOpen['careMessages'] = !accordionsOpen['careMessages']">
+      <span class="accordion__title">Care Messages ({{patientTasksCount()}})</span>
+      <div class="accordion__right">
+        <div class="accordion__arrow">
+          <i class="ss-standard ss-navigateright"></i>
+        </div>
+      </div>
+    </div> <!--/.accordion__head-->
+    <div class="accordion__body">
+      <div class="accordion__contents">
         <div class="flex alignCenter">
-          <h3 class="noMargin">Message Streams (1)</h3>
+          <h3 class="noMargin">Care Messages ({{patientTasksCount()}})</h3>
           <div class="tool__anchor">
             <button class="button button--icon button--icon--small"
             (click)="toolPTMOpen=!toolPTMOpen">
@@ -549,11 +562,9 @@
         </table>
         <button class="button button--iconText"
         (click)="addStream()">
-          <i class="ss-plus"></i> Add Message Stream
+          <i class="ss-plus"></i> Add Care Message
         </button>
         <!--/ patient tasks: messages section-->
-
-
       </div> <!--/.accordion__contents-->
     </div> <!--/.accordion__body-->
   </div> <!--/.accordion (for patient tasks)-->

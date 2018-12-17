@@ -396,7 +396,13 @@ class CareTeamMemberViewSet(viewsets.ModelViewSet):
 class GoalTemplateViewSet(viewsets.ModelViewSet):
     serializer_class = GoalTemplateSerializer
     permission_classes = (permissions.IsAuthenticated, EmployeeOrReadOnly, )
-    queryset = GoalTemplate.objects.all()
+    filter_backends = (DjangoFilterBackend, )
+    filterset_fields = (
+        'plan_template__id',
+    )
+
+    def get_queryset(self):
+        return GoalTemplate.objects.all()
 
 
 class GoalViewSet(viewsets.ModelViewSet):
@@ -606,6 +612,10 @@ class InfoMessageQueueViewSet(viewsets.ModelViewSet):
         IsEmployeeOrPatientReadOnly,
     )
     queryset = InfoMessageQueue.objects.all()
+    filter_backends = (DjangoFilterBackend, )
+    filterset_fields = (
+        'plan_template__id',
+    )
 
     def get_queryset(self):
         queryset = super(InfoMessageQueueViewSet, self).get_queryset()

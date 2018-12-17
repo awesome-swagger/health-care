@@ -26,7 +26,7 @@
   <textarea type="text" class="input input--textarea fullWidth marBottom32" [(ngModel)]="descriptionInput"></textarea>
   <label>Focus</label>
   <input type="text" class="input fullWidth marBottom32" [(ngModel)]="focusInput" />
-<!-- <div class="flex justifySpaceBetween">
+<div class="flex justifySpaceBetween">
     <div class="modal__inputWrap80 marRight32">
       <label>Start Day</label>
       <input type="number" min="1" value="1" class="input fullWidth" [(ngModel)]="startDayInput" />
@@ -49,7 +49,7 @@
       </div>
     </div>
   </div>
-</div> -->
+</div>
 
 <!--TODO: Only show this div if updating a goal on a care plan instance-->
 <div *ngIf="data?.update" class="center">

@@ -1,14 +1,14 @@
 <!--TODO: Use this modal for adding care team tasks, and patient tasks-->
 <h1 class="modal__title">Add CM Task</h1>
-<!--TODO: If adding a task to a care plan template, show the following-->
-<div *ngIf="" class="iconText iconText--wrap iconText--autoHeight error marBottom32">
+<!-- TODO: If adding a task to a care plan template, show the following -->
+<div class="iconText iconText--wrap iconText--autoHeight error marBottom32">
   <i class="iconText__icon ss-alert"></i>
   <span class="error__text">
     Making changes here will affect X patients currently assigned to this care plan.
   </span>
 </div>
 <!--TODO: If adding a task to a care plan instance, show the following-->
-<h5>NOTE: You are adding a task to one patient's care plan. To add a task for everyone, go to care plans.</h5>
+<!-- <h5>NOTE: You are adding a task to one patient's care plan. To add a task for everyone, go to care plans.</h5> -->
 <input type="text" class="input input--search fullWidth marBottom32" placeholder="Search Tasks" />
 <div class="listBox">
   <ul class="nameList">
@@ -27,7 +27,7 @@
           </button>
         </div>
       </div>
-    </label>        
+    </label>
       <form *ngIf="task.edit" class="nameList__form">
         <div class="nameList__inputWrap">
           <input type="text" class="input fullWidth" [(ngModel)]="task.name" [ngModelOptions]="{standalone: true}" />
@@ -60,7 +60,7 @@
     (click)="createTask=!createTask">
       <i class="ss-undo"></i>
     </button>
-    <button class="button button--icon button--icon--small" 
+    <button class="button button--icon button--icon--small"
     (click)="createTask=!createTask; addTask(newTaskName)">
       <i class="ss-plus"></i>
     </button>

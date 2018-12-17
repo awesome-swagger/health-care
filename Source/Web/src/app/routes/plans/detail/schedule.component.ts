@@ -49,47 +49,52 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       this.store.CarePlanTemplate.read(this.planTemplateId).subscribe((planTemplate) => {
         this.planTemplate = planTemplate;
       });
-    });
-    this.store.GoalTemplate.readListPaged({
-      plan_template: this.planTemplateId,
-    }).subscribe((goals) => {
-      this.goalTemplates = goals;
-    });
-    this.store.TeamTaskTemplate.readListPaged({
-      plan_template: this.planTemplateId,
-    }).subscribe((teamTaskTemplates) => {
-      this.teamTaskTemplates = teamTaskTemplates;
-      this.teamManagerTemplates = teamTaskTemplates.filter(task => task.is_manager_task);
-      this.teamMemberTemplates = teamTaskTemplates.filter(task => !task.is_manager_task);
-    });
-    this.store.SymptomTaskTemplate.readListPaged({
-      plan_template: this.planTemplateId,
-    }).subscribe((symptoms) => {
-      this.symptomTemplates = symptoms;
-    });
-    this.store.InfoMessageQueue.readListPaged({
-      plan_template: this.planTemplateId,
-    }).subscribe((messages) => {
-      this.messageQueues = messages;
-    });
-    this.store.VitalsTaskTemplate.readListPaged({
-      plan_template: this.planTemplateId,
-    }).subscribe((vitals) => {
-      this.vitalTemplates = vitals;
-    });
-    this.store.PatientTaskTemplate.readListPaged({
-      plan_template: this.planTemplateId,
-    }).subscribe((patientTasks) => {
-      this.patientTaskTemplates = patientTasks;
-    });
-    this.store.AssessmentTaskTemplate.readListPaged({
-      plan_template: this.planTemplateId,
-    }).subscribe((assessments) => {
-      this.assessmentTemplates = assessments;
+      this.store.GoalTemplate.readListPaged({
+        plan_template__id: this.planTemplateId,
+      }).subscribe((goals) => {
+        this.goalTemplates = goals;
+      });
+      this.store.TeamTaskTemplate.readListPaged({
+        plan_template__id: this.planTemplateId,
+      }).subscribe((teamTaskTemplates) => {
+        this.teamTaskTemplates = teamTaskTemplates;
+        this.teamManagerTemplates = teamTaskTemplates.filter((task) => task.is_manager_task);
+        this.teamMemberTemplates = teamTaskTemplates.filter((task) => !task.is_manager_task);
+      });
+      this.store.SymptomTaskTemplate.readListPaged({
+        plan_template__id: this.planTemplateId,
+      }).subscribe((symptoms) => {
+        this.symptomTemplates = symptoms;
+      });
+      this.store.InfoMessageQueue.readListPaged({
+        plan_template__id: this.planTemplateId,
+      }).subscribe((messages) => {
+        this.messageQueues = messages;
+      });
+      this.store.VitalsTaskTemplate.readListPaged({
+        plan_template__id: this.planTemplateId,
+      }).subscribe((vitals) => {
+        this.vitalTemplates = vitals;
+      });
+      this.store.PatientTaskTemplate.readListPaged({
+        plan_template__id: this.planTemplateId,
+        start_on_day: 1,
+      }).subscribe((patientTasks) => {
+        this.patientTaskTemplates = patientTasks;
+      });
+      this.store.AssessmentTaskTemplate.readListPaged({
+        plan_template__id: this.planTemplateId,
+      }).subscribe((assessments) => {
+        this.assessmentTemplates = assessments;
+      });
     });
   }
 
   public ngOnDestroy() { }
+
+  public patientTasksCount() {
+    return this.symptomTemplates.length + this.vitalTemplates.length + this.patientTaskTemplates.length + this.assessmentTemplates.length;
+  }
 
   public openGoal() {
     this.modals.open(GoalComponent, {
@@ -107,7 +112,9 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
           focus: results.focus,
           duration_weeks: results.duration_weeks,
           start_on_day: results.start_on_day,
-        }).subscribe((goal) => {});
+        }).subscribe((goal) => {
+          this.goalTemplates.push('');
+        });
       }
     });
   }
@@ -287,7 +294,6 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
         default:
              break;
       }
-
     });
   }
 
