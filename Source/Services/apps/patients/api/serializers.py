@@ -1,3 +1,5 @@
+import logging
+
 from django.db.models import Avg
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
@@ -220,6 +222,25 @@ class PatientDashboardSerializer(serializers.ModelSerializer):
         from apps.tasks.utils import get_all_tasks_of_patient_today
         return get_all_tasks_of_patient_today(obj)
 
+
+class PatientCarePlanSerializer(serializers.ModelSerializer):
+
+    care_plans = serializers.SerializerMethodField()
+    class Meta:
+        model = PatientProfile
+        fields = (            
+            'id',
+            'care_plans',
+        )
+        read_only_fields = (
+            'id',
+        )
+
+    def get_care_plans(self, obj):
+        logger = logging.getLogger(__name__)
+        logger.info("in PatientCarePlanSerialiser::get_care_plans obj = %s", obj)
+        from apps.patients.utils import get_all_plans_for_patient
+        return get_all_plans_for_patient(obj)
 
 class PatientProfileSearchSerializer(HaystackSerializerMixin, PatientSearchSerializer):
     class Meta(PatientSearchSerializer.Meta):
