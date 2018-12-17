@@ -40,6 +40,8 @@ from apps.plans.api.views import (
     InfoMessageViewSet,
     PatientTaskTemplateByCarePlanTemplate,
     AssessmentTaskTemplateByCarePlanTemplate,
+    SymptomTaskTemplateByCarePlanTemplate,
+    VitalTaskTemplateByCarePlanTemplate,
 )
 from apps.tasks.api.views import (
     PatientTaskTemplateViewSet,
@@ -161,6 +163,18 @@ care_plan_template_routes.register(
     r'assessment_task_templates',
     AssessmentTaskTemplateByCarePlanTemplate,
     base_name='assessment-task-templates-by-care-plan-templates',
+    parents_query_lookups=['plan_template']
+)
+care_plan_template_routes.register(
+    r'symptom_task_templates',
+    SymptomTaskTemplateByCarePlanTemplate,
+    base_name='symptom-task-templates-by-care-plan-templates',
+    parents_query_lookups=['plan_template']
+)
+care_plan_template_routes.register(
+    r'vital_task_templates',
+    VitalTaskTemplateByCarePlanTemplate,
+    base_name='vital-task-templates-by-care-plan-templates',
     parents_query_lookups=['plan_template']
 )
 router.register(

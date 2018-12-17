@@ -44,6 +44,8 @@ from apps.core.models import ProviderRole
 from apps.tasks.api.serializers import (
     PatientTaskTemplateSerializer,
     AssessmentTaskTemplateSerializer,
+    SymptomTaskTemplateSerializer,
+    VitalTaskTemplateSerializer,
 )
 from apps.tasks.models import (
     AssessmentTask,
@@ -52,7 +54,9 @@ from apps.tasks.models import (
     PatientTaskTemplate,
     MedicationTask,
     SymptomTask,
+    SymptomTaskTemplate,
     VitalTask,
+    VitalTaskTemplate,
 )
 from apps.tasks.permissions import IsEmployeeOrPatientReadOnly
 from care_adopt_backend import utils
@@ -783,6 +787,52 @@ class AssessmentTaskTemplateByCarePlanTemplate(ParentViewSetPermissionMixin,
     """
     serializer_class = AssessmentTaskTemplateSerializer
     queryset = AssessmentTaskTemplate.objects.all()
+    permission_classes = (
+        permissions.IsAuthenticated,
+        IsAdminOrEmployee,
+    )
+    parent_lookup = [
+        (
+            'plan_template',
+            CarePlanTemplate,
+            CarePlanTemplateViewSet
+        )
+    ]
+
+
+class SymptomTaskTemplateByCarePlanTemplate(ParentViewSetPermissionMixin,
+                                            NestedViewSetMixin,
+                                            mixins.ListModelMixin,
+                                            viewsets.GenericViewSet):
+    """
+    Returns list of :model:`tasks.SymptomTaskTemplate` related to the given
+    care plan template.
+    """
+    serializer_class = SymptomTaskTemplateSerializer
+    queryset = SymptomTaskTemplate.objects.all()
+    permission_classes = (
+        permissions.IsAuthenticated,
+        IsAdminOrEmployee,
+    )
+    parent_lookup = [
+        (
+            'plan_template',
+            CarePlanTemplate,
+            CarePlanTemplateViewSet
+        )
+    ]
+
+
+class VitalTaskTemplateByCarePlanTemplate(ParentViewSetPermissionMixin,
+                                          NestedViewSetMixin,
+                                          mixins.ListModelMixin,
+                                          viewsets.GenericViewSet):
+    """
+    Returns list of :model:`tasks.VitalTaskTemplate` related to the given
+    care plan template.
+    """
+    serializer_class = VitalTaskTemplateSerializer
+    queryset = VitalTaskTemplate.objects.all()
     permission_classes = (
         permissions.IsAuthenticated,
         IsAdminOrEmployee,
