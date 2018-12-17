@@ -23,6 +23,7 @@ from apps.core.api.serializers import (
     ProviderRoleSerializer,
     EmployeeProfileSerializer,
 )
+from apps.patients.api.serializers import PatientProfileSerializer
 from apps.tasks.models import (
     AssessmentTask,
     PatientTask,
@@ -427,6 +428,93 @@ class CarePlanTemplateAverageSerializer(serializers.ModelSerializer):
             due_datetime__lte=now)
         vital_tasks = VitalTask.objects.filter(
             plan__plan_template=obj,
+            due_datetime__lte=now)
+
+        total_patient_tasks = patient_tasks.count()
+        total_medication_tasks = medication_tasks.count()
+        total_symptom_tasks = symptom_tasks.count()
+        total_assessment_tasks = assessment_tasks.count()
+        total_vital_tasks = vital_tasks.count()
+
+        completed_patient_tasks = patient_tasks.filter(
+            status__in=['missed', 'done']).count()
+        completed_medication_tasks = medication_tasks.filter(
+            status__in=['missed', 'done']).count()
+        completed_symptom_tasks = symptom_tasks.filter(
+            is_complete=True).count()
+        completed_assessment_tasks = assessment_tasks.filter(
+            is_complete=True).count()
+        completed_vital_tasks = vital_tasks.filter(
+            is_complete=True).count()
+
+        total_completed = (completed_patient_tasks +
+                           completed_medication_tasks +
+                           completed_symptom_tasks +
+                           completed_assessment_tasks +
+                           completed_vital_tasks)
+        total_tasks = (total_patient_tasks +
+                       total_medication_tasks +
+                       total_symptom_tasks +
+                       total_assessment_tasks +
+                       total_vital_tasks)
+        return round((total_completed / total_tasks) * 100) if total_tasks > 0 else 0
+
+    def get_risk_level(self, obj):
+        outcome = self.get_average_outcome(obj)
+        engagement = self.get_average_engagement(obj)
+        return round((outcome + engagement) / 2)
+
+
+class CarePlanTemplatePatientsSerializer(RepresentationMixin,
+                                         serializers.ModelSerializer):
+    """
+    serializer to be used by :model:`plans.CarePlan` with
+    data relevant in dashboard average endpoint
+    """
+    average_outcome = serializers.SerializerMethodField()
+    average_engagement = serializers.SerializerMethodField()
+    risk_level = serializers.SerializerMethodField()
+
+    class Meta:
+        model = CarePlan
+        fields = (
+            'patient',
+            'average_outcome',
+            'average_engagement',
+            'risk_level',
+        )
+        nested_serializers = [
+            {
+                'field': 'patient',
+                'serializer_class': PatientProfileSerializer,
+            }
+        ]
+
+    def get_average_outcome(self, obj):
+        tasks = AssessmentTask.objects.filter(
+            plan=obj,
+            assessment_task_template__tracks_outcome=True
+        ).aggregate(average=Avg('responses__rating'))
+        average = tasks['average'] or 0
+        avg = round((average / 5) * 100)
+        return avg
+
+    def get_average_engagement(self, obj):
+        now = timezone.now()
+        patient_tasks = PatientTask.objects.filter(
+            plan=obj,
+            due_datetime__lte=now)
+        medication_tasks = MedicationTask.objects.filter(
+            medication_task_template__plan=obj,
+            due_datetime__lte=now)
+        symptom_tasks = SymptomTask.objects.filter(
+            plan=obj,
+            due_datetime__lte=now)
+        assessment_tasks = AssessmentTask.objects.filter(
+            plan=obj,
+            due_datetime__lte=now)
+        vital_tasks = VitalTask.objects.filter(
+            plan=obj,
             due_datetime__lte=now)
 
         total_patient_tasks = patient_tasks.count()
