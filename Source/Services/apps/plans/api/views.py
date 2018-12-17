@@ -41,9 +41,15 @@ from apps.core.models import Organization
 from apps.core.api.serializers import ProviderRoleSerializer
 from apps.core.api.views import OrganizationViewSet
 from apps.core.models import ProviderRole
+from apps.tasks.api.serializers import (
+    PatientTaskTemplateSerializer,
+    AssessmentTaskTemplateSerializer,
+)
 from apps.tasks.models import (
     AssessmentTask,
+    AssessmentTaskTemplate,
     PatientTask,
+    PatientTaskTemplate,
     MedicationTask,
     SymptomTask,
     VitalTask,
@@ -742,3 +748,49 @@ class CarePlanTemplateByType(ParentViewSetPermissionMixin,
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+
+
+class PatientTaskTemplateByCarePlanTemplate(ParentViewSetPermissionMixin,
+                                            NestedViewSetMixin,
+                                            mixins.ListModelMixin,
+                                            viewsets.GenericViewSet):
+    """
+    Returns list of :model:`tasks.PatientTaskTemplate` related to the given
+    care plan template.
+    """
+    serializer_class = PatientTaskTemplateSerializer
+    queryset = PatientTaskTemplate.objects.all()
+    permission_classes = (
+        permissions.IsAuthenticated,
+        IsAdminOrEmployee,
+    )
+    parent_lookup = [
+        (
+            'plan_template',
+            CarePlanTemplate,
+            CarePlanTemplateViewSet
+        )
+    ]
+
+
+class AssessmentTaskTemplateByCarePlanTemplate(ParentViewSetPermissionMixin,
+                                               NestedViewSetMixin,
+                                               mixins.ListModelMixin,
+                                               viewsets.GenericViewSet):
+    """
+    Returns list of :model:`tasks.AssessmentTaskTemplate` related to the given
+    care plan template.
+    """
+    serializer_class = AssessmentTaskTemplateSerializer
+    queryset = AssessmentTaskTemplate.objects.all()
+    permission_classes = (
+        permissions.IsAuthenticated,
+        IsAdminOrEmployee,
+    )
+    parent_lookup = [
+        (
+            'plan_template',
+            CarePlanTemplate,
+            CarePlanTemplateViewSet
+        )
+    ]

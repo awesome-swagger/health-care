@@ -37,7 +37,10 @@ from apps.plans.api.views import (
     GoalProgressViewSet,
     GoalCommentViewSet,
     InfoMessageQueueViewSet,
-    InfoMessageViewSet, )
+    InfoMessageViewSet,
+    PatientTaskTemplateByCarePlanTemplate,
+    AssessmentTaskTemplateByCarePlanTemplate,
+)
 from apps.tasks.api.views import (
     PatientTaskTemplateViewSet,
     PatientTaskViewSet,
@@ -143,8 +146,23 @@ router.register(
     r'care_plan_template_types',
     CarePlanTemplateTypeViewSet,
     base_name='care_plan_template_types')
-router.register(
-    r'care_plan_templates', CarePlanTemplateViewSet, base_name='care_plan_templates')
+care_plan_template_routes = router.register(
+    r'care_plan_templates',
+    CarePlanTemplateViewSet,
+    base_name='care_plan_templates'
+)
+care_plan_template_routes.register(
+    r'patient_task_templates',
+    PatientTaskTemplateByCarePlanTemplate,
+    base_name='patient-task-templates-by-care-plan-templates',
+    parents_query_lookups=['plan_template']
+)
+care_plan_template_routes.register(
+    r'assessment_task_templates',
+    AssessmentTaskTemplateByCarePlanTemplate,
+    base_name='assessment-task-templates-by-care-plan-templates',
+    parents_query_lookups=['plan_template']
+)
 router.register(
     r'care_plans', CarePlanViewSet, base_name='care_plans')
 router.register(
