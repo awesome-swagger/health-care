@@ -23,7 +23,7 @@
         </div>
       </div>
     </div> <!--/.accordion__head-->
-    <div class="accordion__body">
+    <div class="accordion__body" *ngIf="facility.inactivePatients && facility.inactivePatients.length">
       <div class="accordion__contents">
         <div class="tableWrap fullWidth">
           <table class="fullWidth">
@@ -64,8 +64,7 @@
               <tr *ngFor="let inactivePatient of facility.inactivePatients">
                 <td class="left">
                   <a [routerLink]="['/patient', inactivePatient.id]" class="picName">
-                    <img class="picName__img"  [src]="inactivePatient.image_url" />
-                    {{inactivePatient.patient}}
+                    {{inactivePatient.full_name}}
                   </a>
                 </td>
                 <td>
@@ -98,23 +97,12 @@
         </div> <!--/.tableWrap-->
       </div> <!--/.accordion__contents-->
     </div> <!--/.accordion__body-->
+    <div class="accordion__body" *ngIf="facility.inactivePatients && facility.inactivePatients.length === 0">
+      <div class="accordion__contents">
+        <h2 class="center">No inactive patients for this facility.</h2>
+        <h5 class="center">Hint: If you're looking for an archived patient, use the search field in the header.</h5>
+      </div>
+    </div>
+
   </div> <!--/.accordion-->
-
-  <div class="accordion" [ngClass]="{ 'isOpen' : accord2Open }">
-      <div class="accordion__head" (click)="accord2Open=!accord2Open">
-        <span class="accordion__title">South County Regional (0)</span>
-        <div class="accordion__right">
-          <div class="accordion__arrow">
-            <i class="ss-standard ss-navigateright"></i>
-          </div>
-        </div>
-      </div>
-      <div class="accordion__body">
-        <div class="accordion__contents">
-          <h2 class="center">No inactive patients for this facility.</h2>
-          <h5 class="center">Hint: If you're looking for an archived patient, use the search field in the header.</h5>
-        </div>
-      </div>
-    </div> <!--/.accordion-->
-
 </div> <!--/.ssContainer-->

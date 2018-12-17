@@ -3,7 +3,18 @@ import { Router } from '@angular/router';
 import { ModalService, ConfirmModalComponent } from '../../../modules/modals';
 import { AddPatientToPlanComponent } from '../../../components';
 import { StoreService } from '../../../services';
-import { uniqBy as _uniqBy, groupBy as _groupBy } from 'lodash';
+import { UtilsService } from '../../../services';
+import {
+  uniqBy as _uniqBy,
+  groupBy as _groupBy,
+  filter as _filter,
+  map as _map,
+  flattenDeep as _flattenDeep,
+  mean as _mean,
+  sum as _sum
+} from 'lodash';
+import * as moment from 'moment';
+import patientsData from './patients-data';
 
 @Component({
   selector: 'app-active',
@@ -17,18 +28,33 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
 
   public accordionsOpen = [];
 
+  public openAlsoTip = {};
+  public activeServiceAreas = {};
+  public activeCarePlans = {};
+
   constructor(
     private router: Router,
     private modals: ModalService,
     private store: StoreService,
+    private utils: UtilsService,
   ) { }
 
   public ngOnInit() {
     this.activePatients = [];
     this.activePatientsGrouped = [];
     this.getPatients().then((patients: any) => {
-      this.activePatients = patients;
+      patients = patientsData.results; // TODO: remove
+      this.activePatients = _filter(patients, p => p.is_active);
       this.activePatientsGrouped = this.groupPatientsByFacility(patients);
+
+      this.allServiceAreas.forEach(serviceArea => {
+        this.activeServiceAreas[serviceArea] = true;
+      });
+
+      this.allCarePlans.forEach(carePlan => {
+        this.activeCarePlans[carePlan] = true;
+      });
+
       console.log(this.uniqueFacilities());
       console.log(this.activePatientsGrouped);
     });
@@ -109,5 +135,110 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
 
   public routeToPatient(patient) {
     this.router.navigate(['patient', patient.id, 'overview']);
+  }
+
+  public getAlsoPlans(i, patient) {
+    if (patient && patient.care_plans) {
+      const plans = patient.care_plans.slice();
+      plans.splice(i, 1);
+      return _map(plans, p => p.name);
+    }
+    return [];
+  }
+
+  public formatTime(minutes) {
+    if (!minutes) return '';
+    const h = `${Math.floor(minutes / 60) || ''}`;
+    const m = `${minutes % 60}`;
+    return `${h}:${m.length === 1 ? '0' : ''}${minutes % 60}`
+  }
+
+  public riskLevelText(x) {
+    if (x < 50) {
+      return 'High Risk';
+    } else if (x < 70) {
+      return 'Med Risk';
+    } else if (x <= 90) {
+      return 'Low Risk';
+    } else {
+      return 'On Track';
+    }
+  }
+
+  get allPlans() {
+    if (this.activePatients) {
+      return _flattenDeep(_map(this.activePatients, p => p.care_plans));
+    }
+  }
+
+  get avgTimeInMinutes() {
+    return Math.floor(_mean(_map(this.allPlans, p => p.time_in_minutes)));
+  }
+
+  get avgEngagement() {
+    return Math.floor(_mean(_map(this.allPlans, p => p.engagement)))
+  }
+
+  get avgOutcomes() {
+    return Math.floor(_mean(_map(this.allPlans, p => p.outcomes)))
+  }
+
+  get avgRiskLevel() {
+    return Math.floor(_mean(_map(this.allPlans, p => p.risk_level)))
+  }
+
+  public facilityPlans(i) {
+    if (this.getPatientsForFacility(i)) {
+      return _flattenDeep(_map(this.getPatientsForFacility(i), p => p.care_plans));
+    }
+  }
+
+  public avgFacilityTimeInMinutes(i) {
+    return Math.floor(_mean(_map(this.facilityPlans(i), p => p.time_in_minutes)));
+  }
+
+  public avgFacilityRiskLevel(i) {
+    return Math.floor(_mean(_map(this.facilityPlans(i), p => p.risk_level)));
+  }
+
+  get allServiceAreas() {
+    const plans = this.allPlans;
+    return _uniqBy(_map(plans, p => p.service_area));
+  }
+
+  get allCarePlans() {
+    const plans = _filter(this.allPlans, p => this.activeServiceAreas[p.service_area]);
+    return _uniqBy(_map(plans, p => p.name));
+  }
+
+  public toggleAllServiceAreas(status) {
+    Object.keys(this.activeServiceAreas).forEach(area => {
+      this.activeServiceAreas[area] = status;
+    })
+  }
+
+  public toggleAllCarePlans(status) {
+    Object.keys(this.activeServiceAreas).forEach(area => {
+      this.activeServiceAreas[area] = status;
+    })
+  }
+
+  public timePillColor(plan) {
+    const allotted = plan.allotted_time || 30;
+    return this.utils.timePillColor(plan.time_in_minutes, allotted);
+  }
+
+  public avgTimePillColor() {
+    const avgTime = _sum(_map(this.allPlans, p => p.time_in_minutes)) / this.allPlans.length;
+    const avgAllotted = _sum(_map(this.allPlans, p => p.allotted_time || 30)) / this.allPlans.length;
+    return this.utils.timePillColor(avgTime, avgAllotted);
+  }
+
+  public avgFacilityTimeColor(facility) {
+    if (this.facilityPlans(facility)) {
+      const avgTime = _sum(_map(this.facilityPlans(facility), p => p.time_in_minutes)) / this.facilityPlans(facility).length;
+      const avgAllotted = _sum(_map(this.facilityPlans(facility), p => p.allotted_time || 30)) / this.facilityPlans(facility).length;
+      return this.utils.timePillColor(avgTime, avgAllotted);
+    }
   }
 }
