@@ -1,144 +1,28 @@
-<h1 class="modal__title noMargin">Financial Details</h1>
+<h1 class="modal__title noMargin">Billing Details</h1>
 <div class="divider"></div>
-<h2 class="iconText justifyCenter marBottom8">
-  <!--TODO: If BHI use following icon and span-->
-  <!--
-  <i class="iconText__icon iconText__icon--noTop icomoon-bhi"></i>
-  <span>BHI</span>
-  -->
-  <!--TODO: If CCM use following icon and span-->
-  <!--
-  <i class="iconText__icon ss-heart"></i>
-  <span>CCM</span>
-  -->
-  <!--TODO: If CCCM use following icon and span-->
-  <!--
-  <i class="iconText__icon ss-addheart"></i>
-  <span>CCCM</span>
-  -->
-  <!--TODO: If CoCM use following icon and span-->
-  <!--
-  <i class="iconText__icon iconText__icon--noTop icomoon-cocm"></i>
-  <span>CoCM</span>
-  -->
-  <!--TODO: If RPM use following icon and span-->
-  <!--
-  <i class="iconText__icon ss-satellitedish"></i>
-  <span>RPM</span>
-  -->
-  <!--TODO: If TCM use following icon and span-->
-  <!---->
-  <span>{{data?.carePlan}}</span>
-  <!---->
-</h2>
-<h5 class="center marBottom32">
-  <!--TODO: If BHI use following span-->
-  <!--
-  <span>Behavioral Health Initiative</span>
-  -->
-  <!--TODO: If CCM use following span-->
-  <!--
-  <span>Chronic Care Management</span>
-  -->
-  <!--TODO: If CCCM use following span-->
-  <!--
-  <span>Complex Chronic Care Management</span>
-  -->
-  <!--TODO: If CoCM use following span-->
-  <!--
-  <span>Psychiatric Collaborative Care Management</span>
-  -->
-  <!--TODO: If RPM use following span-->
-  <!--
-  <span>Remote Patient Management</span>
-  -->
-  <!--TODO: If TCM use following span-->
-  <!---->
-  <span>{{carePlanFull}}</span>
-  <!---->
-</h5>
 <label class="styledInput styledInput--marBottom32">
   <input type="checkbox" class="styledInput__input" />
   <span class="styledInput__box"></span>
   Tracking Reimbursements
 </label>
+<div class="modal__inputWrap marRight32 marBottom32">
+  <label>Billing Type</label>
+  <div class="styledSelect">
+    <select class="styledSelect__select" [(ngModel)]="selectedPlanType">
+      <option *ngFor="let billingType of billingTypes" [ngValue]="billingType.abr">{{billingType.name}} ({{billingType.abr}})</option>
+    </select>
+  </div>
+</div>
+
 <label class="marBottom24">Reimbursement CPT Codes and Details</label>
-
-<!--TODO: If BHI use following div-->
-<!--
 <div>
-  <h4>99484</h4>
-  <p>
-    At least 20 minutes per month of behavioral health care by the care provider
-  </p>
+  <ng-container *ngFor="let cpt of billingTypeByAbr(selectedPlanType).cpt">
+    <h4>{{cpt.code}}</h4>
+    <p class="marBottom32">
+      {{cpt.text}}
+    </p>
+  </ng-container>
 </div>
--->
-
-<!--TODO: If CCM use following div-->
-<!--
-<div>
-  <h4>99490</h4>
-  <p>
-    20 minutes of clinical staff time per month directed by the physician or qualified staff
-  </p>
-</div>
--->
-
-<!--TODO: If CCCM use following div-->
-<!--
-<div>
-  <h4>99487</h4>
-  <p class="marBottom32">
-    60 minutes of clinical staff time per month directed by physician or qualified staff
-  </p>
-  <h4>99489</h4>
-  <p>
-    Each additional 30 minutes of clinical staff time per month
-  </p>
-</div>
--->
-
-<!--TODO: If CoCM use following div-->
-<!--
-<div>
-  <h4>99492</h4>
-  <p class="marBottom32">
-    70 minutes per month of care for first month of care plan
-  </p>
-  <h4>99493</h4>
-  <p class="marBottom32">
-    60 minutes of care for each month after the first month of care
-  </p>
-  <h4>99494</h4>
-  <p>
-    Each additional 30 minutes of care per calendar month
-  </p>
-</div>
-<!---->
-
-<!--TODO: If RPM use following div-->
-<!--
-<div>
-  <h4>99091</h4>
-  <p>
-    Bill for 30 minutes of reviewing patient health data per month
-  </p>
-</div>
--->
-
-<!--TODO: If TCM use following div-->
-<!---->
-<div>
-  <h4>99495</h4>
-  <p class="marBottom32">
-    TCM services with moderate medical decision-making complexity.
-  </p>
-  <h4>99496</h4>
-  <p>
-    TCM services with high medical decision-making complexity.
-  </p>
-</div>
-<!---->
 
 <div class="modal__buttons">
   <button class="button button--2nd">

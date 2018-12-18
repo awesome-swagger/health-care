@@ -14,6 +14,7 @@ export class AddPatientToPlanComponent implements OnInit {
   public createDiagnosis = false;
   public planKnown = false;
   public payerReimburses = false;
+  public enrollPatientChecked = false;
   public planTypes = ['BHI', 'CCM', 'CCCM', 'CoCM', 'RPM', 'TCM'];
   public selectedPlanType = 'BHI';
   public newDiagnosis = '';
