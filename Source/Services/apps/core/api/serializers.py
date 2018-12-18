@@ -103,7 +103,13 @@ class ProviderTitleSerializer(serializers.ModelSerializer):
 class ProviderRoleSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProviderRole
-        fields = '__all__'
+        fields = (
+            'id',
+            'name',
+        )
+        read_only_fields = (
+            'id',
+        )
 
 
 class ProviderSpecialtySerializer(serializers.ModelSerializer):
@@ -125,7 +131,8 @@ class EmployeeUserInfo(SettingsUserForSerializers, serializers.ModelSerializer):
                    'image', )
 
 
-class EmployeeProfileSerializer(RepresentationMixin, serializers.ModelSerializer):
+class EmployeeProfileSerializer(RepresentationMixin,
+                                serializers.ModelSerializer):
 
     class Meta:
         model = EmployeeProfile
@@ -161,6 +168,11 @@ class EmployeeProfileSerializer(RepresentationMixin, serializers.ModelSerializer
             {
                 'field': 'title',
                 'serializer_class': ProviderTitleSerializer,
+            },
+            {
+                'field': 'roles',
+                'serializer_class': ProviderRoleSerializer,
+                'many': True,
             },
             {
                 'field': 'organizations',
