@@ -166,7 +166,7 @@ care_plan_template_routes.register(
     r'patients',
     PatientByCarePlanTemplate,
     base_name='patients-by-care-plan-templates',
-    parents_query_lookups=['plan_template']
+    parents_query_lookups=['care_plans__plan_template']
 )
 care_plan_template_routes.register(
     r'patient_task_templates',
