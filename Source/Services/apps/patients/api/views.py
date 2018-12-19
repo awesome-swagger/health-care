@@ -348,7 +348,8 @@ class PatientProfileSearchViewSet(HaystackViewSet):
     ====================
     `GET` to `/api/patient_profiles/search/`
 
-    `PatientProfile`s can be searched via: `email`, `first_name`, `last_name`, `preferred_name` or `emr_code`.
+    `PatientProfile`s can be searched via: `email`, `first_name`, `last_name`,
+    or `preferred_name`.
 
         {
             "q": "Alfa One"
