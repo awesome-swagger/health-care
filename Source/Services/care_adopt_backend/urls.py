@@ -125,7 +125,7 @@ router.register(
 router.register(r'symptoms', SymptomViewSet, base_name='symptoms')
 # Patients
 router.register(
-    'patient_profiles/search',
+    r'patient_profiles/search',
     PatientProfileSearchViewSet,
     base_name='patient_profiles_search',
 )
