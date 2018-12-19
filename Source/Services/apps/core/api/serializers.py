@@ -10,7 +10,7 @@ from apps.core.models import (Diagnosis, EmployeeProfile, Facility,
                               ProviderTitle, Symptom)
 from care_adopt_backend import utils
 
-from ..search_indexes import SymptomIndex
+from ..search_indexes import DiagnosisIndex, SymptomIndex
 from .mixins import RepresentationMixin
 
 
@@ -272,6 +272,17 @@ class DiagnosisSerializer(serializers.ModelSerializer):
     class Meta:
         model = Diagnosis
         fields = '__all__'
+
+
+class DiagnosisSearchSerializer(HaystackSerializerMixin,
+                                DiagnosisSerializer):
+    """
+    Serializer to be used by the results returned by search
+    for diagnosis.
+    """
+    class Meta(DiagnosisSerializer.Meta):
+        index_classes = [DiagnosisIndex]
+        search_fields = ('text', 'name', 'dx_code')
 
 
 class MedicationSerializer(serializers.ModelSerializer):
