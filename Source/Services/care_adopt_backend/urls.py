@@ -114,12 +114,12 @@ router.register(r'provider_titles', ProviderTitleViewSet, base_name='provider_ti
 router.register(r'provider_roles', ProviderRoleViewSet, base_name='provider_roles')
 router.register(
     r'provider_specialties', ProviderSpecialtyViewSet, base_name='provider_specialties')
-router.register(r'diagnosis', DiagnosisViewSet, base_name='diagnosis')
 router.register(
     r'diagnosis/search',
     DiagnosisSearchViewSet,
     base_name="diagnosis-search"
 )
+router.register(r'diagnosis', DiagnosisViewSet, base_name='diagnosis')
 router.register(r'medications', MedicationViewSet, base_name='medications')
 router.register(r'procedures', ProcedureViewSet, base_name='procedures')
 router.register(

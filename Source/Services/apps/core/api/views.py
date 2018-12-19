@@ -295,7 +295,7 @@ class DiagnosisSearchViewSet(HaystackViewSet):
     """
     index_models = [Diagnosis]
     serializer_class = DiagnosisSearchSerializer
-    permission_clases = (permissions.IsAuthenticated, IsAdminOrEmployee)
+    permission_classes = (permissions.IsAuthenticated, IsAdminOrEmployee)
 
 
 class MedicationViewSet(
