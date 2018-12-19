@@ -6,7 +6,7 @@ from .models import Diagnosis, Symptom
 class DiagnosisIndex(indexes.SearchIndex, indexes.Indexable):
     text = indexes.CharField(document=True, use_template=True)
     name = indexes.CharField(model_attr='name')
-    dx_code = indexes.CharField(model_attr='dx_code')
+    dx_code = indexes.CharField(model_attr='dx_code', null=True)
 
     def get_model(self):
         return Diagnosis
