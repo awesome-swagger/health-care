@@ -16,7 +16,7 @@ from apps.core.api.views import (
     DiagnosisViewSet,  MedicationViewSet, ProcedureViewSet, SymptomViewSet,
     OrganizationEmployeeViewSet, SymptomSearchViewSet, FacilityEmployeeViewSet,
     OrganizationFacilityViewSet, DiagnosisSearchViewSet,
-    ProviderTitleSearchViewSet)
+    ProviderTitleSearchViewSet, ProviderRoleSearchViewSet)
 from apps.patients.api.views import (
     PatientProfileViewSet,
     PatientDiagnosisViewSet,
@@ -117,6 +117,11 @@ router.register(
     base_name="provider_titles-search"
 )
 router.register(r'provider_titles', ProviderTitleViewSet, base_name='provider_titles')
+router.register(
+    r'provider_roles/search',
+    ProviderRoleSearchViewSet,
+    base_name="provider_roles-search"
+)
 router.register(r'provider_roles', ProviderRoleViewSet, base_name='provider_roles')
 router.register(
     r'provider_specialties', ProviderSpecialtyViewSet, base_name='provider_specialties')

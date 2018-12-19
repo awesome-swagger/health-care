@@ -34,7 +34,8 @@ from .serializers import (DiagnosisSerializer, EmployeeProfileSerializer,
                           OrganizationEmployeeSerializer,
                           SymptomSearchSerializer, FacilityEmployeeSerializer,
                           DiagnosisSearchSerializer,
-                          ProviderTitleSearchSerializer)
+                          ProviderTitleSearchSerializer,
+                          ProviderRoleSearchSerializer)
 
 
 class OrganizationViewSet(viewsets.ModelViewSet):
@@ -210,6 +211,33 @@ class ProviderRoleViewSet(
     serializer_class = ProviderRoleSerializer
     permission_classes = (permissions.AllowAny, )
     queryset = ProviderRole.objects.all()
+
+
+class ProviderRoleSearchViewSet(HaystackViewSet):
+    """
+    Handles search feature for :model:`core.ProviderRole`
+
+    Provider roles can be search by `name`.
+
+    Sample Call:
+    ---
+   `GET /api/provider_roles/search/?q=<query-here>`
+
+    Sample Response:
+    ---
+        [
+            ...
+            {
+                "id": "78d5472b-32d4-4b15-8dd1-f14a65070da4",
+                "name": "Provider Role name",
+                "abbreviation": "abbrev"
+            }
+            ...
+        ]
+    """
+    index_models = [ProviderRole]
+    serializer_class = ProviderRoleSearchSerializer
+    permission_classes = (permissions.IsAuthenticated, IsAdminOrEmployee)
 
 
 class ProviderSpecialtyViewSet(
