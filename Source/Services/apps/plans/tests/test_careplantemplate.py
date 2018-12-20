@@ -192,6 +192,49 @@ class TestCarePlanTemplateUsingEmployee(TasksMixin, APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.data['count'], 5)
 
+    def test_get_patients(self):
+        for i in range(5):
+            self.create_care_plan(**{
+                'plan_template': self.template,
+            })
+
+        # create dummy records
+        for i in range(5):
+            self.create_care_plan()
+
+        url = reverse(
+            'patients-by-care-plan-templates-list',
+            kwargs={
+                'parent_lookup_care_plans__plan_template': self.template.id
+            }
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.data['count'], 5)
+
+    def test_get_patients_duplicates(self):
+        for i in range(5):
+            patient = self.create_patient()
+
+            # create multiple plans for a single patient
+            for i in range(3):
+                self.create_care_plan(**{
+                    'patient': patient,
+                    'plan_template': self.template,
+                })
+
+        # create dummy records
+        for i in range(5):
+            self.create_care_plan()
+
+        url = reverse(
+            'patients-by-care-plan-templates-list',
+            kwargs={
+                'parent_lookup_care_plans__plan_template': self.template.id
+            }
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.data['count'], 5)
+
 
 class TestCarePlanTemplateUsingPatient(TasksMixin, APITestCase):
     """
@@ -544,7 +587,7 @@ class TestCarePlanTemplateAverage(TasksMixin, APITestCase):
                        total_symptom_tasks +
                        total_assessment_tasks +
                        total_vital_tasks)
-        return round(total_completed / total_tasks) if total_tasks > 0 else 0
+        return round((total_completed / total_tasks) * 100) if total_tasks > 0 else 0
 
     def test_care_plan_average_outcome(self):
         organization = self.create_organization()

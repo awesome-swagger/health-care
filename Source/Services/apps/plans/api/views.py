@@ -41,6 +41,8 @@ from apps.core.models import Organization
 from apps.core.api.serializers import ProviderRoleSerializer
 from apps.core.api.views import OrganizationViewSet
 from apps.core.models import ProviderRole
+from apps.patients.api.serializers import PatientProfileSerializer
+from apps.patients.models import PatientProfile
 from apps.tasks.api.serializers import (
     PatientTaskTemplateSerializer,
     AssessmentTaskTemplateSerializer,
@@ -892,3 +894,32 @@ class ManagerTaskTemplateByCarePlanTemplate(ParentViewSetPermissionMixin,
             CarePlanTemplateViewSet
         )
     ]
+
+
+class PatientByCarePlanTemplate(ParentViewSetPermissionMixin,
+                                NestedViewSetMixin,
+                                mixins.ListModelMixin,
+                                viewsets.GenericViewSet):
+    """
+    Returns list of :model:`patients.PatientProfile` related to the given care
+    plan template.
+    """
+    serializer_class = PatientProfileSerializer
+    queryset = PatientProfile.objects.all()
+    permission_classes = (
+        permissions.IsAuthenticated,
+        IsAdminOrEmployee,
+    )
+    parent_lookup = [
+        (
+            'care_plans__plan_template',
+            CarePlanTemplate,
+            CarePlanTemplateViewSet
+        )
+    ]
+
+    def get_queryset(self):
+        queryset = super(PatientByCarePlanTemplate, self).get_queryset()
+
+        # call distinct() to prevent duplicates
+        return queryset.distinct()
