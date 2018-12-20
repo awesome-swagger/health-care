@@ -20,6 +20,7 @@ export class PlansComponent implements OnDestroy, OnInit {
   public facilitiesFiltered = [];
   public averagesByCarePlan = null;
   public carePlanTemplates = [];
+  public serviceAreas = [];
   public planTemplatesGrouped = [];
 
   public showServiceAreaHelp = false;
@@ -51,6 +52,9 @@ export class PlansComponent implements OnDestroy, OnInit {
       this.getPlanTemplates(this.organization).then((templates: any) => {
         this.getAllTemplateAverages(this.organization, templates).then((templatesWithAverages: any) => {
           this.carePlanTemplates = templatesWithAverages;
+          this.serviceAreas = this.carePlanTemplates.map((obj) => {
+            return obj.service_area;
+          });
           let templatesGrouped = _groupBy(this.carePlanTemplates, (obj) => {
             return obj.service_area.id;
           });

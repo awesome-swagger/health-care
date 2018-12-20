@@ -1,10 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { ModalService } from '../../../modules/modals';
-import { FormGroup,FormControl } from '@angular/forms';
+import { FormGroup, FormControl } from '@angular/forms';
 import { ERROR_COLLECTOR_TOKEN } from '@angular/platform-browser-dynamic/src/compiler_factory';
 import { StoreService } from '../../../services';
-
-
 
 @Component({
   selector: 'app-edit-task',
@@ -17,57 +15,47 @@ export class EditTaskComponent implements OnInit {
   public frequencyOptions: Array<any> = [
     {displayName: 'Daily', value: 'daily'},
     {displayName: 'Weekly', value: 'weekly'},
-    {displayName: 'Other', value: 'other'},  
+    {displayName: 'Other', value: 'other'},
   ];
   public task;
-  public taskForm:FormGroup;
+  public taskForm: FormGroup;
 
-
-  constructor(    
+  constructor(
     private modal: ModalService,
     private store: StoreService
-  ) {
-
-  }
+  ) { }
 
   public ngOnInit() {
-
-    this.initForm(this.data);
-    this.task = this.data;
     this.data = this.data || {};
+    this.task = this.data && this.data.task ? this.data.task : {};
+    this.initForm(this.task);
   }
 
   public close() {
     this.modal.close(null);
   }
 
-  public initForm(data) {
-    data = data || {};
+  public initForm(task) {
     this.taskForm = new FormGroup({
-      appear_time: new FormControl(data.appear_time),
-      category: new FormControl(data.category),
-      due_time: new FormControl(data.due_time),
-      frequency: new FormControl(data.frequency),
-      is_manager_task: new FormControl(data.is_manager_task),
-      name: new FormControl(data.name),
-      plan_template: new FormControl(data.plan_template),
-      repeat_amount_input: new FormControl(data.repeat_amount >=0? data.repeat_amount: 0),
-      repeat_amount: new FormControl(data.repeat_amount),
-      role: new FormControl(data.role),
-      start_on_day: new FormControl(data.start_on_day)
+      name: new FormControl(task.name),
+      plan_template: new FormControl(task.plan_template),
+      start_on_day: new FormControl(task.start_on_day),
+      frequency: new FormControl(task.frequency),
+      repeat_amount_input: new FormControl(task.repeat_amount >=0? task.repeat_amount: 0),
+      repeat_amount: new FormControl(task.repeat_amount),
+      appear_time: new FormControl(task.appear_time),
+      due_time: new FormControl(task.due_time),
+      category: new FormControl(task.category),
+      role: new FormControl(task.role),
+      is_manager_task: new FormControl(task.is_manager_task),
     });
   }
-  public updateTaskName(task) {
-    this.store.TeamTaskTemplate.update(task.id,task).subscribe((resp)=> {
-       console.log(resp);
-    });
 
-  }
-  public submitTask() {
+  public updateRepeatAmount() {
     let keys = Object.keys(this.task);
     keys.forEach((key) => {
      if (this.taskForm.value[key] != undefined) {
-        if(key === 'repeat_amount' && this.taskForm.value['repeat_amount'] != -1){
+        if (key === 'repeat_amount' && this.taskForm.value['repeat_amount'] != -1){
           this.task[key] = this.taskForm.value['repeat_amount_input'];
         }
         else {
@@ -75,10 +63,18 @@ export class EditTaskComponent implements OnInit {
         }
       }
     });
-    this.store.TeamTaskTemplate.update(this.task.id, this.task).subscribe((r) => {
-      this.modal.close(r);
-    })
- 
- 
+  }
+
+  public updateTaskName(task) {
+    this.store.TeamTaskTemplate.update(task.id,task).subscribe((resp)=> {
+       console.log(resp);
+    });
+  }
+
+  public submitTask() {
+    this.updateRepeatAmount();
+    // Since this modal is used to update all task types it will close the modal with the updated task as the response.
+    // It will then be up to the activated route to decide how to update the template.
+    this.modal.close(this.task);
   }
 }

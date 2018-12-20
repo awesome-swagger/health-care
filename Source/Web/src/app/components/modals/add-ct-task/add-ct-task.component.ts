@@ -21,7 +21,7 @@ export class AddCTTaskComponent implements OnInit {
 
   public ngOnInit() {
     console.log(this.data);
-    this.tasks=this.data ? this.data.careTeamTasks : [];
+    this.tasks = this.data ? this.data.taskList : [];
   }
 
   public updateTaskName(task) {
@@ -42,7 +42,7 @@ export class AddCTTaskComponent implements OnInit {
       plan_template: this.data && this.data.planTemplateId,
       category: 'interaction'
     }
-    this.store.TeamTaskTemplate.create(task).subscribe((resp) =>{
+    this.data.dataModel.create(task).subscribe((resp) =>{
       this.tasks.push(resp);
       this.newTaskName = '';
     });

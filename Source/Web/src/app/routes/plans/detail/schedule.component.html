@@ -38,7 +38,9 @@
               <th class="thSortable">
                 <span class="thSortable__text">Start</span>
               </th>
-
+              <th class="thSortable">
+                <span class="thSortable__text">End</span>
+              </th>
               <th class="noPad"></th>
               <th class="noPad"></th>
             </tr>
@@ -46,8 +48,9 @@
           <tbody>
             <tr *ngFor="let goal of goalTemplates">
               <td class="left">{{goal.name}}</td>
-              <td class="left">{{goal.duration_weeks != -1 ? goal.duration_weeks + ' Weeks' : 'Until Plan Ends'}} </td>
-              <td>{{goal.start_on_day}}</td>
+              <td class="left">{{goal.duration_weeks != -1 ? goal.duration_weeks + ' Weeks' : 'Entire Plan'}} </td>
+              <td>{{formatStartOnDay(goal.start_on_day)}}</td>
+              <td>{{formatEndOnDay(goal.start_on_day, goal.duration_weeks)}}</td>
               <td class="noPad">
                 <button class="button button--icon button--icon--small"
                 (click)="editGoal(goal)">
@@ -82,7 +85,7 @@
     </div> <!--/.accordion__head-->
     <div class="accordion__body">
       <div class="accordion__contents">
-        <table *ngIf="teamMemberTemplates.length > 0">
+        <table *ngIf="teamMemberTemplates.length > 0" class="fullWidth">
           <thead>
             <tr>
               <th class="thSortable thSortable--sortDown">
@@ -182,7 +185,7 @@
           </div> <!--/.tool__anchor-->
         </div> <!--/.flex (for table title and tooltip)-->
 
-        <table>
+        <table class="fullWidth">
           <thead>
             <tr>
               <th class="thSortable thSortable--sortDown">
@@ -251,7 +254,7 @@
           </div> <!--/.tool__anchor-->
         </div> <!--/.flex (for table title and tooltip)-->
 
-        <table>
+        <table class="fullWidth">
           <thead>
             <tr>
               <th class="thSortable thSortable--sortDown">
@@ -309,7 +312,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let asmt of planAssessements">
+            <tr *ngFor="let asmt of assessmentTemplates">
               <td class="left">{{asmt.name | titlecase}}</td>
 
               <td>{{asmt.start_on_day}}</td>
@@ -317,11 +320,11 @@
               <td class="left">{{asmt.repeat_amount != -1 ? asmt.repeat_amount :'Until Plan Ends'}}</td>
               <td>{{asmt.appear_time | timeTransform | date: 'shortTime'}}</td>
               <td>{{asmt.due_time | timeTransform | date: 'shortTime'}}</td>
-              <td><i class="ss-standard ss-check iconSmall"></i></td>
-              <td></td>
+              <td><i *ngIf="asmt.tracks_outcome" class="ss-standard ss-check iconSmall"></i></td>
+              <td><i *ngIf="asmt.tracks_satisfaction" class="ss-standard ss-check iconSmall"></i></td>
               <td class="noPad">
                 <button class="button button--icon button--icon--small"
-                (click)="editAssessment()">
+                (click)="editAssessment(asmt)">
                   <i class="ss-write"></i>
                 </button>
               </td>
@@ -377,7 +380,7 @@
           </div> <!--/.tool__anchor-->
         </div> <!--/.flex (for table title and tooltip)-->
 
-        <table>
+        <table class="fullWidth">
           <thead>
             <tr>
               <th class="thSortable thSortable--sortDown">
@@ -442,7 +445,7 @@
           </div> <!--/.tool__anchor-->
         </div> <!--/.flex (for table title and tooltip)-->
 
-        <table>
+        <table class="fullWidth">
           <thead>
             <tr>
               <th class="thSortable thSortable--sortDown">
@@ -524,7 +527,7 @@
           </div> <!--/.tool__anchor-->
         </div> <!--/.flex (for table title and tooltip)-->
 
-        <table>
+        <table class="fullWidth">
           <thead>
             <tr>
               <th class="thSortable thSortable--sortDown">

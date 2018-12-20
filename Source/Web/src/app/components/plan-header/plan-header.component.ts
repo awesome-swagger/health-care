@@ -1,6 +1,8 @@
 import { Component, Input, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import * as moment from 'moment';
+import { ModalService } from '../../modules/modals';
+import { PlanDurationComponent } from '../../components';
 import { AuthService, StoreService } from '../../services';
 
 @Component({
@@ -18,6 +20,7 @@ export class PlanHeaderComponent implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
+    private modals: ModalService,
     private auth: AuthService,
     private store: StoreService,
   ) {
@@ -47,6 +50,22 @@ export class PlanHeaderComponent implements OnInit, OnDestroy {
   public ngOnInit() { }
 
   public ngOnDestroy() { }
+
+  public openPlanDuration() {
+    let modalSub = this.modals.open(PlanDurationComponent, {
+      closeDisabled: true,
+      data: {},
+      width: '384px',
+    }).subscribe(
+      (data) => {
+        console.log(data);
+      },
+      (err) => {},
+      () => {
+        modalSub.unsubscribe();
+      }
+    );
+  }
 
   public getAverages(organization, planId) {
     let promise = new Promise((resolve, reject) => {

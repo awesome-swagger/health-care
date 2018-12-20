@@ -6,10 +6,12 @@ import {
   AddCTTaskComponent,
   AddStreamComponent,
   AddVitalComponent,
+  CreateAssessmentComponent,
   EditTaskComponent,
   GoalComponent,
   PreviewVitalComponent,
   CreateVitalComponent,
+  PlanDurationComponent,
 } from '../../../components';
 import { NavbarService, StoreService } from '../../../services';
 
@@ -96,48 +98,95 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
     return this.symptomTemplates.length + this.vitalTemplates.length + this.patientTaskTemplates.length + this.assessmentTemplates.length;
   }
 
+  public formatStartOnDay(day) {
+    if (day === 0) {
+      return 'Plan Start';
+    } else if (day >= 7) {
+      return `Week ${day/7}`;
+    } else {
+      return `Day ${day}`;
+    }
+  }
+
+  public formatEndOnDay(day, duration) {
+    if (duration === -1) {
+      return 'Until Plan Ends';
+    } else {
+      return `Week ${Math.round((day/7) + duration)}`;
+    }
+  }
+
   public openGoal() {
-    this.modals.open(GoalComponent, {
+    let modalSub = this.modals.open(GoalComponent, {
       closeDisabled: true,
       data: {
         creatingTemplate: true,
       },
       width: '512px',
-    }).subscribe((results) => {
-      if (results !== null) {
-        this.store.GoalTemplate.create({
-          name: results.name,
-          plan_template: this.planTemplateId,
-          description: results.description,
-          focus: results.focus,
-          duration_weeks: results.duration_weeks,
-          start_on_day: results.start_on_day,
-        }).subscribe((goal) => {
-          this.goalTemplates.push('');
-        });
+    }).subscribe(
+      (results) => {
+        if (results !== null) {
+          let createSub = this.store.GoalTemplate.create({
+            name: results.name,
+            plan_template: this.planTemplateId,
+            description: results.description,
+            focus: results.focus,
+            duration_weeks: results.duration_weeks,
+            start_on_day: results.start_on_day,
+          }).subscribe(
+            (goal) => {
+              this.goalTemplates.push(goal);
+            },
+            (err) => {},
+            () => {
+              createSub.unsubscribe();
+            }
+          );
+        }
+      },
+      (err) => {},
+      () => {
+        modalSub.unsubscribe();
       }
-    });
+    );
   }
 
   public editGoal(goal) {
-    this.modals.open(GoalComponent, {
+    let goalIndex = this.goalTemplates.indexOf((obj) => {
+      return obj.id === goal.id;
+    });
+    let modalSub = this.modals.open(GoalComponent, {
       closeDisabled: true,
       data: {
         creatingTemplate: false,
         goalTemplate: goal,
       },
       width: '512px',
-    }).subscribe((results) => {
-      if (results !== null) {
-        this.store.GoalTemplate.update(goal.id, {
-          name: results.name,
-          description: results.description,
-          focus: results.focus,
-          duration_weeks: results.duration_weeks,
-          start_on_day: results.start_on_day,
-        }, true).subscribe((goal) => {});
+    }).subscribe(
+      (results) => {
+        if (results !== null) {
+          let updateSub = this.store.GoalTemplate.update(goal.id, {
+            name: results.name,
+            description: results.description,
+            focus: results.focus,
+            duration_weeks: results.duration_weeks,
+            start_on_day: results.start_on_day,
+          }, true).subscribe(
+            (updatedGoal) => {
+              this.goalTemplates[goalIndex] = updatedGoal;
+            },
+            (err) => {},
+            () => {
+              updateSub.unsubscribe();
+            }
+          );
+        }
+      },
+      (err) => {},
+      () => {
+        modalSub.unsubscribe();
       }
-    });
+    );
   }
 
   public confirmDeleteGoal() {
@@ -160,20 +209,28 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       closeDisabled: true,
       width: '384px',
       data: {careTeamTasks:this.teamTaskTemplates, planTemplateId: this.planTemplateId},
-    }).subscribe((data) => {
-      if (data !== null) {
-        this.editCTTask(data);
+    }).subscribe((task) => {
+      if (task !== null) {
+        this.editCTTask(task);
       }
     });
   }
 
-  public editCTTask(data) {
+  public editCTTask(task) {
     this.modals.open(EditTaskComponent, {
       closeDisabled: true,
       width: '384px',
-      data: data,
-    }).subscribe((resp) => {
-      console.log(resp);
+      data: {
+        task: task,
+      },
+    }).subscribe((task) => {
+      let updateSub = this.store.TeamTaskTemplate.update(task.id, task, true).subscribe(
+        (res) => {},
+        (err) => {},
+        () => {
+          updateSub.unsubscribe();
+        }
+      );
     });
   }
 
@@ -199,15 +256,33 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
   public addTask() {
     this.modals.open(AddCTTaskComponent, {
       closeDisabled: true,
+      data: {taskList: this.patientTaskTemplates, planTemplateId: this.planTemplateId, dataModel: this.store.PatientTaskTemplate},
       width: '384px',
-    }).subscribe(() => {});
+    }).subscribe((task) => {
+      if (task !== null) {
+        this.editTask(task);
+      }
+    });
   }
 
-  public editTask() {
+  public editTask(task) {
     this.modals.open(EditTaskComponent, {
       closeDisabled: true,
+      data: {
+        task: task,
+      },
       width: '384px',
-    }).subscribe(() => {});
+    }).subscribe((task) => {
+      if (task !== null) {
+        let updateSub = this.store.PatientTaskTemplate.update(task.id, task, true).subscribe(
+          (task) => {},
+          (err) => {},
+          () => {
+            updateSub.unsubscribe();
+          },
+        );
+      }
+    });
   }
 
   public confirmDeleteTask() {
@@ -226,14 +301,32 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
   public addAssessment() {
     this.modals.open(AddAssessmentComponent, {
       closeDisabled: true,
+      data: {
+        editingTemplate: true,
+        assessmentsList: this.assessmentTemplates,
+        planTemplateId: this.planTemplateId,
+      },
       width: '768px',
-    }).subscribe(() => {});
+    }).subscribe((res) => {
+      if (!res) {
+        return;
+      }
+      if (res === 'create-new') {
+        this.editAssessment(null);
+      } else {
+        this.editAssessment(res);
+      }
+    });
   }
 
-  public editAssessment() {
-    this.modals.open(EditTaskComponent, {
+  public editAssessment(assessment) {
+    this.modals.open(CreateAssessmentComponent, {
       closeDisabled: true,
-      width: '384px',
+      data: {
+        assessment: assessment,
+        planTemplateId: this.planTemplateId,
+      },
+      width: '864px',
     }).subscribe(() => {});
   }
 
@@ -304,6 +397,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       data: vital
     }).subscribe(() => {});
   }
+
   public previewVital(vital) {
     this.modals.open(PreviewVitalComponent, {
       closeDisabled: true,

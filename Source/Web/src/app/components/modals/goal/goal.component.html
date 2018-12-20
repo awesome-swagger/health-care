@@ -17,7 +17,7 @@
 </div> -->
 
 <!--TODO: If adding a goal to a care plan instance, show the following-->
-<!-- <h5>NOTE: You are adding a goal to one patient's care plan. To add a goal for everyone, go to care plans.</h5> -->
+<h5 *ngIf="data?.update">NOTE: You are adding a goal to one patient's care plan. To add a goal for everyone, go to care plans.</h5>
 
 <div>
   <label>Goal</label>
@@ -29,7 +29,7 @@
 <div class="flex justifySpaceBetween">
     <div class="modal__inputWrap80 marRight32">
       <label>Start Day</label>
-      <input type="number" min="1" value="1" class="input fullWidth" [(ngModel)]="startDayInput" />
+      <input type="number" min="0" value="0" class="input fullWidth" [(ngModel)]="startDayInput" />
     </div>
     <div class="modal__inputWrap">
       <label>Duration</label>

@@ -2,7 +2,7 @@
 <div class="flex justifySpaceBetween marBottom32">
   <div class="modal__inputWrap marRight32">
     <label class="label48">Assessment Name</label>
-    <input type="text" class="input fullWidth" />
+    <input type="text" class="input fullWidth" [(ngModel)]="assessment.name" />
   </div>
   <div class="">
     <div class="tool">
@@ -20,10 +20,10 @@
       </div>
     </div>
     <div class="styledSelect">
-      <select class="styledSelect__select">
-        <option>None</option>
-        <option>Outcome</option>
-        <option>Satisfaction</option>
+      <select class="styledSelect__select" [(ngModel)]="assessmentTracking">
+        <option [value]="null">None</option>
+        <option [value]="'outcome'">Outcome</option>
+        <option [value]="'satisfaction'">Satisfaction</option>
       </select>
     </div>
   </div>
@@ -40,15 +40,15 @@
     </tr>
   </thead>
   <tbody>
-    <tr>
+    <tr *ngFor="let question of assessment.questions">
       <td>
-        <input type="text" class="input assessment__name" />
+        <input type="text" class="input assessment__name" [(ngModel)]="question.prompt" />
       </td>
       <td>
-        <input type="text" class="input fullWidth" value="Worst" />
+        <input type="text" class="input fullWidth" value="Worst" [(ngModel)]="question.worst_label" />
       </td>
       <td>
-        <input type="text" class="input fullWidth" value="Best" />
+        <input type="text" class="input fullWidth" value="Best" [(ngModel)]="question.best_label" />
       </td>
       <td class="noPad">
         <div class="flex">
@@ -69,15 +69,15 @@
   </tbody>
 </table>
 
-<button class="button button--iconText">
+<button class="button button--iconText" (click)="addQuestionLine()">
   <i class="ss-plus"></i> Add Question
 </button>
 
 <div class="modal__buttons">
-  <button class="button button--2nd">
+  <button class="button button--2nd" (click)="clickCancel()">
     Cancel
   </button>
-  <button class="button">
+  <button class="button" (click)="clickSave()">
     Save
   </button>
 </div>

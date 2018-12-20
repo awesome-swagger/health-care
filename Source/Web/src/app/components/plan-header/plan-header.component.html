@@ -19,24 +19,22 @@
     </form>
   </div>
   <div class="flex alignCenter">
-    <h2 class="noMargin marRight8">{{planTemplate?.duration_weeks}} weeks</h2>
-    <button class="button button--icon"
-    (click)="openPlanDuration()">
-      <i class="ss-write"></i>
-    </button>
-  </div>
-  <div class="flex">
-    <!-- <button class="button button--iconText marRight32"
+      <h2 class="noMargin marRight8">{{planTemplate?.duration_weeks}} weeks</h2>
+      <button class="button button--icon marRight24"
+        (click)="openPlanDuration()">
+        <i class="ss-write"></i>
+      </button>
+    <button class="button button--iconText marRight32"
     (click)="addPlan()">
       <i class="ss-files"></i> Duplicate
-    </button> -->
+    </button>
     <button class="button button--iconText"
     (click)="openReassignPatients()">
       <i class="ss-ban"></i> Make Inactive
     </button>
   </div>
 </div> <!--/.flexHeader-->
-<h5 class="marBottom32">Lasted edited {{moment(planTemplate?.modified).format('MMM D, YYYY')}}</h5>
+<!-- <h5 class="marBottom32">Lasted edited {{moment(planTemplate?.modified).format('MMM D, YYYY')}}</h5> -->
 <!-- <h5 class="marBottom32">Lasted edited by Stacy Smith, PhD&ensp;|&ensp;Jun 15, 2018</h5> -->
 
 <div class="flex" *ngIf="carePlanAverage">

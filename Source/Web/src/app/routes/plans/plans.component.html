@@ -12,7 +12,7 @@
   </div>
   <div class="flexHeader">
     <div class="flex alignCenter">
-      <h1 class="noMargin marRight8">Service Areas (0)</h1>
+      <h1 class="noMargin marRight8">Service Areas ({{serviceAreas?.length}})</h1>
       <div class="tool__anchor">
         <button class="button button--icon button--icon--small"
         (click)="showServiceAreaHelp = !showServiceAreaHelp">
@@ -141,7 +141,6 @@
               <th class="thSortable">
                 <span class="thSortable__text thSortable__text--left">Pathways</span>
               </th>
-              <!--TODO: Only show status column when viewing inactive plans too-->
               <th class="thSortable">
                 <span class="thSortable__text thSortable__text--left">Status</span>
               </th>
@@ -172,7 +171,7 @@
           <tbody *ngFor="let item of plan.templates">
             <tr>
               <td class="left">
-                <a [routerLink]="['/plan', item.id, 'schedule']">{{item.name}}</a>
+                <a [routerLink]="['/plan', item.id, 'info']">{{item.name}}</a>
               </td>
               <td class="left">{{item.is_active?'Active':'Inactive'}} </td>
               <td>{{item.averages.total_patients}}</td>
