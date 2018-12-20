@@ -19,11 +19,13 @@ class TestEmployeeProfile(CoreMixin, APITestCase):
         self.organization_managed = self.create_organization()
         self.facility = self.create_facility()
         self.facility_managed = self.create_facility()
+        self.role = self.create_provider_role()
         self.employee = self.create_employee(**{
             'organizations': [self.organization],
             'organizations_managed': [self.organization_managed],
             'facilities': [self.facility],
             'facilities_managed': [self.facility_managed],
+            'roles': [self.role]
         })
         self.user = self.employee.user
 
@@ -55,6 +57,10 @@ class TestEmployeeProfile(CoreMixin, APITestCase):
     def test_get_employee_detail_with_facilities_managed(self):
         response = self.client.get(self.detail_url)
         self.assertIsNotNone(response.data['facilities_managed'])
+
+    def test_get_employee_detail_with_roles(self):
+        response = self.client.get(self.detail_url)
+        self.assertIsNotNone(response.data['roles'][0]['name'])
 
 
 class TestEmployeeOrganization(CoreMixin, APITestCase):
