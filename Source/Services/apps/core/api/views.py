@@ -32,7 +32,10 @@ from .serializers import (DiagnosisSerializer, EmployeeProfileSerializer,
                           ProviderTitleSerializer, SymptomSerializer,
                           InvitedEmailTemplateSerializer,
                           OrganizationEmployeeSerializer,
-                          SymptomSearchSerializer, FacilityEmployeeSerializer)
+                          SymptomSearchSerializer, FacilityEmployeeSerializer,
+                          DiagnosisSearchSerializer,
+                          ProviderTitleSearchSerializer,
+                          ProviderRoleSearchSerializer)
 
 
 class OrganizationViewSet(viewsets.ModelViewSet):
@@ -163,6 +166,33 @@ class ProviderTitleViewSet(
     queryset = ProviderTitle.objects.all()
 
 
+class ProviderTitleSearchViewSet(HaystackViewSet):
+    """
+    Handles search feature for :model:`core.ProviderTitle`
+
+    Provider titles can be search by `name`.
+
+    Sample Call:
+    ---
+   `GET /api/provider_titles/search/?q=<query-here>`
+
+    Sample Response:
+    ---
+        [
+            ...
+            {
+                "id": "78d5472b-32d4-4b15-8dd1-f14a65070da4",
+                "name": "Provider Title name",
+                "abbreviation": "abbrev"
+            }
+            ...
+        ]
+    """
+    index_models = [ProviderTitle]
+    serializer_class = ProviderTitleSearchSerializer
+    permission_classes = (permissions.IsAuthenticated, IsAdminOrEmployee)
+
+
 class ProviderRoleViewSet(
     mixins.RetrieveModelMixin,
     mixins.ListModelMixin,
@@ -181,6 +211,33 @@ class ProviderRoleViewSet(
     serializer_class = ProviderRoleSerializer
     permission_classes = (permissions.AllowAny, )
     queryset = ProviderRole.objects.all()
+
+
+class ProviderRoleSearchViewSet(HaystackViewSet):
+    """
+    Handles search feature for :model:`core.ProviderRole`
+
+    Provider roles can be search by `name`.
+
+    Sample Call:
+    ---
+   `GET /api/provider_roles/search/?q=<query-here>`
+
+    Sample Response:
+    ---
+        [
+            ...
+            {
+                "id": "78d5472b-32d4-4b15-8dd1-f14a65070da4",
+                "name": "Provider Role name",
+                "abbreviation": "abbrev"
+            }
+            ...
+        ]
+    """
+    index_models = [ProviderRole]
+    serializer_class = ProviderRoleSearchSerializer
+    permission_classes = (permissions.IsAuthenticated, IsAdminOrEmployee)
 
 
 class ProviderSpecialtyViewSet(
@@ -268,6 +325,33 @@ class DiagnosisViewSet(
     serializer_class = DiagnosisSerializer
     permission_classes = (permissions.AllowAny, )
     queryset = Diagnosis.objects.all()
+
+
+class DiagnosisSearchViewSet(HaystackViewSet):
+    """
+    Handles search feature for :model:`core.Diagnosis`
+
+    Diagnosis can be search by `name` and `dx_code`.
+
+    Sample Call:
+    ---
+   `GET /api/diagnosis/search/?q=<query-here>`
+
+    Sample Response:
+    ---
+        [
+            ...
+            {
+                "id": "78d5472b-32d4-4b15-8dd1-f14a65070da4",
+                "name": "Diagnosis name",
+                "dx_code": "DX code"
+            }
+            ...
+        ]
+    """
+    index_models = [Diagnosis]
+    serializer_class = DiagnosisSearchSerializer
+    permission_classes = (permissions.IsAuthenticated, IsAdminOrEmployee)
 
 
 class MedicationViewSet(

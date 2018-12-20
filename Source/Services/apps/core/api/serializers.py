@@ -10,7 +10,12 @@ from apps.core.models import (Diagnosis, EmployeeProfile, Facility,
                               ProviderTitle, Symptom)
 from care_adopt_backend import utils
 
-from ..search_indexes import SymptomIndex
+from ..search_indexes import (
+    DiagnosisIndex,
+    ProviderRoleIndex,
+    ProviderTitleIndex,
+    SymptomIndex,
+)
 from .mixins import RepresentationMixin
 
 
@@ -97,13 +102,48 @@ class FacilitySerializer(RepresentationMixin, serializers.ModelSerializer):
 class ProviderTitleSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProviderTitle
-        fields = '__all__'
+        fields = (
+            'id',
+            'name',
+            'abbreviation',
+        )
+        read_only_fields = (
+            'id',
+        )
+
+
+class ProviderTitleSearchSerializer(HaystackSerializerMixin,
+                                    ProviderTitleSerializer):
+    """
+    Serializer to be used by the results returned by search
+    for provider titles.
+    """
+    class Meta(ProviderTitleSerializer.Meta):
+        index_classes = [ProviderTitleIndex]
+        search_fields = ('text', 'name')
 
 
 class ProviderRoleSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProviderRole
-        fields = '__all__'
+        fields = (
+            'id',
+            'name',
+        )
+        read_only_fields = (
+            'id',
+        )
+
+
+class ProviderRoleSearchSerializer(HaystackSerializerMixin,
+                                   ProviderRoleSerializer):
+    """
+    Serializer to be used by the results returned by search
+    for provider roles.
+    """
+    class Meta(ProviderRoleSerializer.Meta):
+        index_classes = [ProviderRoleIndex]
+        search_fields = ('text', 'name')
 
 
 class ProviderSpecialtySerializer(serializers.ModelSerializer):
@@ -272,6 +312,17 @@ class DiagnosisSerializer(serializers.ModelSerializer):
     class Meta:
         model = Diagnosis
         fields = '__all__'
+
+
+class DiagnosisSearchSerializer(HaystackSerializerMixin,
+                                DiagnosisSerializer):
+    """
+    Serializer to be used by the results returned by search
+    for diagnosis.
+    """
+    class Meta(DiagnosisSerializer.Meta):
+        index_classes = [DiagnosisIndex]
+        search_fields = ('text', 'name', 'dx_code')
 
 
 class MedicationSerializer(serializers.ModelSerializer):
