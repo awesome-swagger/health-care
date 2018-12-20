@@ -22,6 +22,7 @@ from ..models import (
     InfoMessage,
     CareTeamMember,
 )
+from ..permissions import CareTeamMemberPermissions
 from .serializers import (
     CarePlanTemplateTypeSerializer,
     CarePlanTemplateSerializer,
@@ -372,28 +373,62 @@ class PlanConsentViewSet(viewsets.ModelViewSet):
 
 
 class CareTeamMemberViewSet(viewsets.ModelViewSet):
+    """
+    Viewset for :model:`plans.CareTeamMember`
+    ========
+
+    create:
+        Creates :model:`plans.CareTeamMember` object.
+        Only admins and employees are allowed to perform this action.
+
+    update:
+        Updates :model:`plans.CareTeamMember` object.
+        Only admins and employees who belong to the same care team are allowed
+        to perform this action.
+
+    partial_update:
+        Updates one or more fields of an existing care team member object.
+        Only admins and employees who belong to the same care team are allowed
+        to perform this action.
+
+    retrieve:
+        Retrieves a :model:`plans.CareTeamMember` instance.
+        Admins will have access to all care team member objects. Employees will
+        only have access to those members belonging to its own care team.
+        Patients will have access to all members assigned to them.
+
+    list:
+        Returns list of all :model:`plans.CareTeamMember` objects.
+        Admins will get all existing care team member objects. Employees will
+        get the members belonging to a certain care team. Patients will get all
+        members belonging to them.
+
+    delete:
+        Deletes a :model:`plans.CareTeamMember` instance.
+        Only admins and employees who is a manager to the same care team are
+        allowed to perform this action.
+    """
     serializer_class = CareTeamMemberSerializer
-    permission_classes = (permissions.IsAuthenticated, EmployeeOrReadOnly, )
+    permission_classes = (
+        permissions.IsAuthenticated,
+        CareTeamMemberPermissions,
+    )
+    filter_backends = (DjangoFilterBackend, )
+    filterset_fields = (
+        'employee_profile',
+        'plan',
+    )
 
     def get_queryset(self):
-        qs = CareTeamMember.objects.all()
+        queryset = CareTeamMember.objects.all()
 
-        plan = self.request.query_params.get('plan')
-        if plan:
-            qs = qs.filter(plan=plan)
-        employee_param = self.request.query_params.get('employee')
-        if employee_param:
-            qs = qs.filter(employee_profile=employee_param)
+        if self.request.user.is_superuser or self.request.user.is_employee:
+            return queryset
 
-        employee_profile = utils.employee_profile_or_none(self.request.user)
-        patient_profile = utils.patient_profile_or_none(self.request.user)
-        if employee_profile is not None:
-            qs = qs.all()
-        elif patient_profile is not None:
-            qs = qs.filter(plan__patient=patient_profile)
-        else:
-            return qs.none()
-        return qs
+        else:  # filter members based on patient
+            return queryset.filter(
+                plan__patient=self.request.user.patient_profile
+            )
 
 
 class GoalTemplateViewSet(viewsets.ModelViewSet):
