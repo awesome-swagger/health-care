@@ -31,6 +31,7 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
   public openAlsoTip = {};
   public activeServiceAreas = {};
   public activeCarePlans = {};
+  public users = null;
 
   constructor(
     private router: Router,
@@ -58,6 +59,18 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
       console.log(this.uniqueFacilities());
       console.log(this.activePatientsGrouped);
     });
+
+    let employeesSub = this.store.EmployeeProfile.readListPaged().subscribe(
+      (employees) => {
+        this.users = employees;
+      },
+      (err) => {
+
+      },
+      () => {
+        employeesSub.unsubscribe();
+      }
+    )
   }
 
   public ngOnDestroy() { }

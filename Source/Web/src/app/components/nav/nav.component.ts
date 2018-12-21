@@ -108,9 +108,7 @@ export class NavComponent implements OnDestroy, OnInit {
           this.searchOpen = false;
           return;
         }
-        let searchSub = this.store.PatientProfile.listRoute('post', 'search', {
-          name: searchStr,
-        }).subscribe(
+        let searchSub = this.store.PatientProfileSearch(searchStr).readListPaged().subscribe(
           (searchResults: any) => {
             this.searchResults = searchResults;
             if (this.searchResults.length > 0) {

@@ -3,6 +3,10 @@ import * as moment  from 'moment';
 import { ModalService, ConfirmModalComponent } from '../../../modules/modals';
 import { AddPatientToPlanComponent, EnrollmentComponent } from '../../../components/';
 import { AuthService, StoreService } from '../../../services';
+import {
+  uniq as _uniq,
+  map as _map
+} from 'lodash';
 
 @Component({
   selector: 'app-potential',
@@ -13,6 +17,8 @@ export class PotentialPatientsComponent implements OnDestroy, OnInit {
 
   public facilities = [];
   public potentialPatients = [];
+  public activeCarePlans = {};
+  public users = null;
 
   private facilitiesSub = null;
 
@@ -34,6 +40,9 @@ export class PotentialPatientsComponent implements OnDestroy, OnInit {
         (potentialPatients) => {
           console.log(potentialPatients);
           this.potentialPatients = potentialPatients;
+          this.carePlans.forEach((p) => {
+            this.activeCarePlans[p] = true;
+          })
         },
         (err) => {},
         () => {
@@ -41,6 +50,18 @@ export class PotentialPatientsComponent implements OnDestroy, OnInit {
         }
       );
     });
+
+    let employeesSub = this.store.EmployeeProfile.readListPaged().subscribe(
+      (employees) => {
+        this.users = employees;
+      },
+      (err) => {
+
+      },
+      () => {
+        employeesSub.unsubscribe();
+      }
+    )
   }
 
   public ngOnDestroy() {
@@ -57,7 +78,9 @@ export class PotentialPatientsComponent implements OnDestroy, OnInit {
         planKnown: false,
       },
       width: '576px',
-    }).subscribe(() => {});
+    }).subscribe((data) => {
+      this.potentialPatients.push(data)
+    });
   }
 
   public enrollPotentialPatient(potentialPatient) {
@@ -97,5 +120,12 @@ export class PotentialPatientsComponent implements OnDestroy, OnInit {
 
   public formatTimeAdded(time) {
     return moment(time).fromNow();
+  }
+
+  get carePlans() {
+    if (this.potentialPatients && this.potentialPatients.length) {
+      return _uniq(_map(this.potentialPatients, p => p.care_plan));
+    }
+    return [];
   }
 }

@@ -24,11 +24,11 @@
 <div *ngIf="action === 'add' && !patientInSystem" class="flex justifySpaceBetween">
   <div class="modal__inputWrap marRight16">
     <label>First Name</label>
-    <input class="input fullWidth" />
+    <input class="input fullWidth" [(ngModel)]="firstName" />
   </div>
   <div class="modal__inputWrap marRight32">
     <label>Last Name</label>
-    <input class="input fullWidth" />
+    <input class="input fullWidth" [(ngModel)]="lastName"/>
   </div>
 </div>
 <h2 *ngIf="patientKnown" class="center noMargin">Alexander Montgomery</h2>
@@ -38,7 +38,7 @@
 <div class="flex justifySpaceBetween">
   <div class="modal__inputWrap marRight32 fullWidth">
     <label>Mobile Phone</label>
-    <input class="input fullWidth" />
+    <input class="input fullWidth" [(ngModel)]="phoneNumber" />
   </div>
   <div class="modal__inputWrap marRight32 fullWidth">
     <label>Source</label>
@@ -62,7 +62,9 @@
   <div *ngIf="!planKnown" class="modal__inputWrap">
     <label>Care Plan</label>
     <div class="styledSelect">
-      <select class="styledSelect__select">
+      <select class="styledSelect__select" [(ngModel)]="selectedPlan">
+        <option value=""></option>
+        <option *ngFor="let plan of carePlans" [ngValue]="plan.name">{{plan.name}}</option>
       </select>
     </div>
   </div>
@@ -274,7 +276,7 @@
   <button class="button button--2nd">
     Cancel
   </button>
-  <button class="button">
+  <button class="button" (click)="handleSubmit()">
     Save
   </button>
 </div>
