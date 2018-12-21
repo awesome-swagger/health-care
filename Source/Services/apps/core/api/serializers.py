@@ -1,109 +1,15 @@
-from django.db.models import Q
-
-from drf_haystack.serializers import HaystackSerializerMixin
-from rest_framework import serializers
-
-from apps.accounts.serializers import SettingsUserForSerializers
-from apps.core.models import (Diagnosis, EmployeeProfile, Facility,
-                              InvitedEmailTemplate, Medication, Organization,
-                              Procedure, ProviderRole, ProviderSpecialty,
-                              ProviderTitle, Symptom)
-from care_adopt_backend import utils
-
-from ..search_indexes import SymptomIndex
-from .mixins import RepresentationMixin
 
 
-class OrganizationSerializer(serializers.ModelSerializer):
-    is_manager = serializers.SerializerMethodField()
+class ProviderRoleSearchSerializer(HaystackSerializerMixin,
+                                   ProviderRoleSerializer):
+    """
+    Serializer to be used by the results returned by search
+    for provider roles.
+    """
+    class Meta(ProviderRoleSerializer.Meta):
+        index_classes = [ProviderRoleIndex]
+        search_fields = ('text', 'name')
 
-    def get_is_manager(self, obj):
-        request = self.context['request']
-        employee_profile = utils.employee_profile_or_none(request.user)
-        if employee_profile is None:
-            return False
-        return obj in employee_profile.organizations_managed.all()
-
-    class Meta:
-        model = Organization
-        fields = (
-            'id',
-            'name',
-            'is_manager',
-            'addr_street',
-            'addr_suite',
-            'addr_city',
-            'addr_state',
-            'addr_zip',
-            'created',
-            'modified',
-        )
-        read_only_fields = (
-            'id',
-            'created',
-            'modified',
-        )
-
-
-# TODO: DELETE on a facility should mark it inactive rather than removing it
-# from the database.
-class FacilitySerializer(RepresentationMixin, serializers.ModelSerializer):
-    is_manager = serializers.SerializerMethodField()
-
-    def get_is_manager(self, obj):
-        request = self.context['request']
-        employee_profile = utils.employee_profile_or_none(request.user)
-        if not employee_profile:
-            return False
-        return obj in request.user.employee_profile.facilities_managed.all()
-
-    def create(self, validated_data):
-        instance = super(FacilitySerializer, self).create(validated_data)
-        user = self.context['request'].user
-        user.employee_profile.facilities_managed.add(instance)
-        return instance
-
-    class Meta:
-        model = Facility
-        fields = (
-            'id',
-            'name',
-            'organization',
-            'is_affiliate',
-            'is_manager',
-            'parent_company',
-            'addr_street',
-            'addr_suite',
-            'addr_city',
-            'addr_state',
-            'addr_zip',
-            'created',
-            'modified',
-        )
-        read_only_fields = (
-            'id',
-            'is_manager',
-            'created',
-            'modified',
-        )
-        nested_serializers = [
-            {
-                'field': 'organization',
-                'serializer_class': OrganizationSerializer,
-            }
-        ]
-
-
-class ProviderTitleSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ProviderTitle
-        fields = '__all__'
-
-
-class ProviderRoleSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ProviderRole
-        fields = '__all__'
 
 
 class ProviderSpecialtySerializer(serializers.ModelSerializer):
@@ -125,7 +31,8 @@ class EmployeeUserInfo(SettingsUserForSerializers, serializers.ModelSerializer):
                    'image', )
 
 
-class EmployeeProfileSerializer(RepresentationMixin, serializers.ModelSerializer):
+class EmployeeProfileSerializer(RepresentationMixin,
+                                serializers.ModelSerializer):
 
     class Meta:
         model = EmployeeProfile
@@ -161,6 +68,11 @@ class EmployeeProfileSerializer(RepresentationMixin, serializers.ModelSerializer
             {
                 'field': 'title',
                 'serializer_class': ProviderTitleSerializer,
+            },
+            {
+                'field': 'roles',
+                'serializer_class': ProviderRoleSerializer,
+                'many': True,
             },
             {
                 'field': 'organizations',
@@ -272,6 +184,17 @@ class DiagnosisSerializer(serializers.ModelSerializer):
     class Meta:
         model = Diagnosis
         fields = '__all__'
+
+
+class DiagnosisSearchSerializer(HaystackSerializerMixin,
+                                DiagnosisSerializer):
+    """
+    Serializer to be used by the results returned by search
+    for diagnosis.
+    """
+    class Meta(DiagnosisSerializer.Meta):
+        index_classes = [DiagnosisIndex]
+        search_fields = ('text', 'name', 'dx_code')
 
 
 class MedicationSerializer(serializers.ModelSerializer):

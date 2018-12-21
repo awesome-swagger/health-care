@@ -25,7 +25,7 @@ from ..models import (
     VitalResponse,
 )
 from apps.core.api.mixins import RepresentationMixin
-from apps.core.api.serializers import SymptomSerializer
+from apps.core.api.serializers import SymptomSerializer, ProviderRoleSerializer
 from apps.patients.api.serializers import (
     PatientMedicationSerializer,
     BasicPatientSerializer,
@@ -123,11 +123,30 @@ class TeamTaskTodaySerializer(serializers.ModelSerializer):
         return serializer.data
 
 
-class TeamTaskTemplateSerializer(serializers.ModelSerializer):
+class TeamTaskTemplateSerializer(RepresentationMixin,
+                                 serializers.ModelSerializer):
 
     class Meta:
         model = TeamTaskTemplate
-        fields = '__all__'
+        fields = (
+            'id',
+            'plan_template',
+            'name',
+            'is_manager_task',
+            'category',
+            'role',
+            'start_on_day',
+            'frequency',
+            'repeat_amount',
+            'appear_time',
+            'due_time',
+        )
+        nested_serializers = [
+            {
+                'field': 'role',
+                'serializer_class': ProviderRoleSerializer,
+            }
+        ]
 
 
 class TeamTaskSerializer(serializers.ModelSerializer):

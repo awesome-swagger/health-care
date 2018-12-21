@@ -15,7 +15,8 @@ from apps.core.api.views import (
     ProviderTitleViewSet, ProviderRoleViewSet, ProviderSpecialtyViewSet,
     DiagnosisViewSet,  MedicationViewSet, ProcedureViewSet, SymptomViewSet,
     OrganizationEmployeeViewSet, SymptomSearchViewSet, FacilityEmployeeViewSet,
-    OrganizationFacilityViewSet)
+    OrganizationFacilityViewSet, DiagnosisSearchViewSet,
+    ProviderTitleSearchViewSet, ProviderRoleSearchViewSet)
 from apps.patients.api.views import (
     PatientProfileViewSet,
     PatientDiagnosisViewSet,
@@ -37,7 +38,15 @@ from apps.plans.api.views import (
     GoalProgressViewSet,
     GoalCommentViewSet,
     InfoMessageQueueViewSet,
-    InfoMessageViewSet, )
+    InfoMessageViewSet,
+    ManagerTaskTemplateByCarePlanTemplate,
+    PatientByCarePlanTemplate,
+    PatientTaskTemplateByCarePlanTemplate,
+    AssessmentTaskTemplateByCarePlanTemplate,
+    SymptomTaskTemplateByCarePlanTemplate,
+    VitalTaskTemplateByCarePlanTemplate,
+    TeamTaskTemplateByCarePlanTemplate,
+)
 from apps.tasks.api.views import (
     PatientTaskTemplateViewSet,
     PatientTaskViewSet,
@@ -110,10 +119,25 @@ facility_routes.register(
 
 router.register(
     r'employee_profiles', EmployeeProfileViewSet, base_name='employee_profiles')
+router.register(
+    r'provider_titles/search',
+    ProviderTitleSearchViewSet,
+    base_name="provider_titles-search"
+)
 router.register(r'provider_titles', ProviderTitleViewSet, base_name='provider_titles')
+router.register(
+    r'provider_roles/search',
+    ProviderRoleSearchViewSet,
+    base_name="provider_roles-search"
+)
 router.register(r'provider_roles', ProviderRoleViewSet, base_name='provider_roles')
 router.register(
     r'provider_specialties', ProviderSpecialtyViewSet, base_name='provider_specialties')
+router.register(
+    r'diagnosis/search',
+    DiagnosisSearchViewSet,
+    base_name="diagnosis-search"
+)
 router.register(r'diagnosis', DiagnosisViewSet, base_name='diagnosis')
 router.register(r'medications', MedicationViewSet, base_name='medications')
 router.register(r'procedures', ProcedureViewSet, base_name='procedures')
@@ -125,7 +149,7 @@ router.register(
 router.register(r'symptoms', SymptomViewSet, base_name='symptoms')
 # Patients
 router.register(
-    'patient_profiles/search',
+    r'patient_profiles/search',
     PatientProfileSearchViewSet,
     base_name='patient_profiles_search',
 )
@@ -143,8 +167,53 @@ router.register(
     r'care_plan_template_types',
     CarePlanTemplateTypeViewSet,
     base_name='care_plan_template_types')
-router.register(
-    r'care_plan_templates', CarePlanTemplateViewSet, base_name='care_plan_templates')
+care_plan_template_routes = router.register(
+    r'care_plan_templates',
+    CarePlanTemplateViewSet,
+    base_name='care_plan_templates'
+)
+care_plan_template_routes.register(
+    r'manager_task_templates',
+    ManagerTaskTemplateByCarePlanTemplate,
+    base_name='manager-task-templates-by-care-plan-templates',
+    parents_query_lookups=['plan_template']
+)
+care_plan_template_routes.register(
+    r'patients',
+    PatientByCarePlanTemplate,
+    base_name='patients-by-care-plan-templates',
+    parents_query_lookups=['care_plans__plan_template']
+)
+care_plan_template_routes.register(
+    r'patient_task_templates',
+    PatientTaskTemplateByCarePlanTemplate,
+    base_name='patient-task-templates-by-care-plan-templates',
+    parents_query_lookups=['plan_template']
+)
+care_plan_template_routes.register(
+    r'assessment_task_templates',
+    AssessmentTaskTemplateByCarePlanTemplate,
+    base_name='assessment-task-templates-by-care-plan-templates',
+    parents_query_lookups=['plan_template']
+)
+care_plan_template_routes.register(
+    r'symptom_task_templates',
+    SymptomTaskTemplateByCarePlanTemplate,
+    base_name='symptom-task-templates-by-care-plan-templates',
+    parents_query_lookups=['plan_template']
+)
+care_plan_template_routes.register(
+    r'team_task_templates',
+    TeamTaskTemplateByCarePlanTemplate,
+    base_name='team-task-templates-by-care-plan-templates',
+    parents_query_lookups=['plan_template']
+)
+care_plan_template_routes.register(
+    r'vital_task_templates',
+    VitalTaskTemplateByCarePlanTemplate,
+    base_name='vital-task-templates-by-care-plan-templates',
+    parents_query_lookups=['plan_template']
+)
 router.register(
     r'care_plans', CarePlanViewSet, base_name='care_plans')
 router.register(
