@@ -1,3 +1,5 @@
+import logging
+
 from django.db.models import Avg
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
@@ -221,6 +223,25 @@ class PatientDashboardSerializer(serializers.ModelSerializer):
         return get_all_tasks_of_patient_today(obj)
 
 
+class PatientCarePlanSerializer(serializers.ModelSerializer):
+
+    care_plans = serializers.SerializerMethodField()
+    class Meta:
+        model = PatientProfile
+        fields = (            
+            'id',
+            'care_plans',
+        )
+        read_only_fields = (
+            'id',
+        )
+
+    def get_care_plans(self, obj):
+        logger = logging.getLogger(__name__)
+        logger.info("in PatientCarePlanSerialiser::get_care_plans obj = %s", obj)
+        from apps.patients.utils import get_all_plans_for_patient
+        return get_all_plans_for_patient(obj)
+
 class PatientProfileSearchSerializer(HaystackSerializerMixin, PatientSearchSerializer):
     class Meta(PatientSearchSerializer.Meta):
         index_classes = [PatientProfileIndex]
@@ -405,6 +426,48 @@ class FacilityInactivePatientSerializer(serializers.ModelSerializer):
             if manager:
                 return manager.employee_profile.user.get_full_name()
         return ''
+
+
+#BAM
+class FacilityActivePatientSerializer(serializers.ModelSerializer):
+    """
+    serializer to be used for inactive patients in a facility
+    """
+    full_name = serializers.SerializerMethodField()
+    image_url = serializers.SerializerMethodField()
+    care_plan = serializers.SerializerMethodField()
+    care_manager = serializers.SerializerMethodField()
+
+    class Meta:
+        model = PatientProfile
+        fields = (
+            'id',
+            'full_name',
+            'image_url',
+            'care_plan',
+            'last_app_use',
+            'care_manager',
+        )
+
+    def get_full_name(self, obj):
+        return obj.user.get_full_name()
+
+    def get_image_url(self, obj):
+        return obj.user.get_image_url()
+
+    def get_care_plan(self, obj):
+        latest_plan = obj.latest_care_plan
+        return latest_plan.plan_template.name if latest_plan else ''
+
+    def get_care_manager(self, obj):
+        latest_plan = obj.latest_care_plan
+        if latest_plan:
+            manager = latest_plan.care_team_members.filter(
+                is_manager=True).first()
+            if manager:
+                return manager.employee_profile.user.get_full_name()
+        return ''
+
 
 
 class LatestPatientSymptomSerializer(serializers.ModelSerializer):

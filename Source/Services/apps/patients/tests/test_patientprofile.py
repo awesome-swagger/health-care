@@ -68,6 +68,7 @@ class TestPatientProfile(TasksMixin, APITestCase):
             'patient_profiles-care-plan-goals',
             kwargs={'pk': self.patient.id})
         response = self.client.get(url)
+        #print('response.data = %s',response.data)
         self.assertEqual(len(response.data), 1)
 
     def test_get_care_plan_goals_count(self):
@@ -196,6 +197,27 @@ class TestPatientProfile(TasksMixin, APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.data[0]['behavior'], 'equal')
 
+    #BAM
+    def test_get_patient_care_plans(self):
+        filter_url = f'{self.detail_url}?id={self.patient.id}'
+        response = self.client.get(filter_url)
+        id_str = self.patient.id.urn[9:]
+        self.assertEqual( response.data['id'], id_str )
+        #filter_url = f'{self.detail_url}?id=0'
+        #response = self.client.get(filter_url)
+        #print("response.data.id = ",response.data['id'])
+
+
+    def test_get_care_plans(self):
+        url = reverse(
+            'patient_profiles-care-plans',
+            kwargs={'pk': self.patient.id})
+        print("care plan url = %s", url)
+        response = self.client.get(url)
+        self.assertEqual(len(response.data), 2)
+        self.assertNotEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+
 
 class TestPatientProfileUsingEmployee(PatientsMixin, APITestCase):
     """
@@ -283,7 +305,10 @@ class TestPatientProfileSearchViewSet(PatientsMixin, APITestCase):
 
         self.assertFalse(get_searchable_patients.called)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data['count'], 0)
+        if 'count' in response.data:
+            self.assertEqual(response.data['count'], 0)
+        else:
+            self.assertEqual(len(response.data),0)
 
 
 class TestPatientProfileDashboard(TasksMixin, APITestCase):
@@ -368,7 +393,10 @@ class TestPatientProfileDashboard(TasksMixin, APITestCase):
     def test_get_patient_dashboard_task_percentage(self):
         percentage = calculate_task_percentage(self.patient)
         response = self.client.get(self.dashboard_url)
-        patient = response.data['results'][0]
+        if 'results' in response.data:
+            patient = response.data['results'][0]
+        else:
+            patient = response.data[0]
         self.assertEqual(patient['task_percentage'], percentage)
 
     def test_get_assessment_score(self):
@@ -381,13 +409,19 @@ class TestPatientProfileDashboard(TasksMixin, APITestCase):
         average = responses.aggregate(score=Avg('rating'))
         score = round(average['score']) if average['score'] else 0
         response = self.client.get(self.dashboard_url)
-        patient = response.data['results'][0]
+        if 'results' in response.data:
+            patient = response.data['results'][0]
+        else:
+            patient = response.data[0]
         self.assertEqual(patient['assessment_score'], score)
 
     def test_get_tasks_today(self):
         tasks = get_all_tasks_of_patient_today(self.patient)
         response = self.client.get(self.dashboard_url)
-        patient = response.data['results'][0]
+        if 'results' in response.data:
+            patient = response.data['results'][0]
+        else:
+            patient = response.data[0]
         self.assertEqual(len(patient['tasks_today']), len(tasks))
 
     def test_filter_patient_dashboard_by_id(self):
@@ -401,7 +435,10 @@ class TestPatientProfileDashboard(TasksMixin, APITestCase):
 
         filter_url = f'{self.dashboard_url}?id={self.patient.id}'
         response = self.client.get(filter_url)
-        self.assertEqual(response.data['count'], 1)
+        if 'count' in response.data:
+            self.assertEqual(response.data['count'], 1)
+        else:
+            self.assertEqual(len(response.data),1)
 
 
 class TestFacilityInactivePatient(PlansMixin, APITestCase):
@@ -446,4 +483,56 @@ class TestFacilityInactivePatient(PlansMixin, APITestCase):
             self.create_patient()
 
         response = self.client.get(self.url)
-        self.assertEqual(response.data['count'], self.patient_count)
+        if 'count' in response.data:
+            self.assertEqual(response.data['count'], self.patient_count)
+        else:
+            self.assertEqual(len(response.data), self.patient_count)
+
+
+class TestFacilityActivePatient(PlansMixin, APITestCase):
+    """
+    Test cases for :view:`patients.FacilityActivePatientViewSet` using an
+    employee as the logged in user.
+    """
+
+    def setUp(self):
+        self.fake = Faker()
+        self.facility = self.create_facility()
+        self.employee = self.create_employee(**{
+            'facilities': [self.facility]
+        })
+        self.patient_count = 3
+
+        for i in range(self.patient_count):
+            patient = self.create_patient(**{
+                'facility': self.facility,
+                'is_active': False
+            })
+
+            for plan in range(5):
+                self.create_care_plan(patient)
+
+        self.user = self.employee.user
+
+        self.url = reverse(
+            'facility-active-patients-list',
+            kwargs={'parent_lookup_facility': self.facility.id}
+        )
+        self.client.force_authenticate(user=self.user)
+
+    def create_multiple_goals(self, care_plan):
+        for i in range(5):
+            self.create_goal(**{'plan': self.care_plan})
+
+    def test_get_active_patients_list(self):
+
+        # Create patients from different facility
+        for i in range(5):
+            self.create_patient()
+
+        response = self.client.get(self.url)
+        if 'count' in response.data:
+            self.assertEqual(response.data['count'], 0)
+        else:
+            self.assertEqual(len(response.data), 0)
+

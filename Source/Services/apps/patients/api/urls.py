@@ -7,6 +7,7 @@ from .views import (
     PatientProfileDashboard,
     PatientVerification,
     ReminderEmailCreateView,
+    PatientProfileCarePlan,
 )
 
 urlpatterns = [
@@ -16,6 +17,11 @@ urlpatterns = [
         r'^patient_profiles/dashboard/$',
         PatientProfileDashboard.as_view(),
         name='patient-dashboard'
+    ),
+    url(
+        r'^patient_profiles/care_plans/$',
+        PatientProfileCarePlan.as_view(),
+        name='patient-care_plans'
     ),
     url(
         r'^patient_profiles/verification/$',
