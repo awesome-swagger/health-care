@@ -9,7 +9,6 @@ from faker import Faker
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from .mixins import PlansMixin
 from apps.tasks.models import (
     PatientTask,
     MedicationTask,
@@ -20,7 +19,7 @@ from apps.tasks.models import (
 from apps.tasks.tests.mixins import TasksMixin
 
 
-class TestCarePlanTemplateUsingEmployee(PlansMixin, APITestCase):
+class TestCarePlanTemplateUsingEmployee(TasksMixin, APITestCase):
     """
     Test cases for :model:`plans.CarePlanTemplate` using an employee
     as the logged in user.
@@ -88,8 +87,156 @@ class TestCarePlanTemplateUsingEmployee(PlansMixin, APITestCase):
         response = self.client.delete(self.detail_url, {})
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
+    def test_get_patient_task_templates(self):
+        for i in range(5):
+            self.create_patient_task_template(**{
+                'plan_template': self.template
+            })
 
-class TestCarePlanTemplateUsingPatient(PlansMixin, APITestCase):
+        # create dummy records
+        for i in range(5):
+            self.create_patient_task_template()
+
+        url = reverse(
+            'patient-task-templates-by-care-plan-templates-list',
+            kwargs={'parent_lookup_plan_template': self.template.id}
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.data['count'], 5)
+
+    def test_get_assessment_task_templates(self):
+        for i in range(5):
+            self.create_assessment_task_template(**{
+                'plan_template': self.template
+            })
+
+        # create dummy records
+        for i in range(5):
+            self.create_assessment_task_template()
+
+        url = reverse(
+            'assessment-task-templates-by-care-plan-templates-list',
+            kwargs={'parent_lookup_plan_template': self.template.id}
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.data['count'], 5)
+
+    def test_get_symptom_task_templates(self):
+        for i in range(5):
+            self.create_symptom_task_template(**{
+                'plan_template': self.template
+            })
+
+        # create dummy records
+        for i in range(5):
+            self.create_symptom_task_template()
+
+        url = reverse(
+            'symptom-task-templates-by-care-plan-templates-list',
+            kwargs={'parent_lookup_plan_template': self.template.id}
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.data['count'], 5)
+
+    def test_get_vital_task_templates(self):
+        for i in range(5):
+            self.create_vital_task_template(**{
+                'plan_template': self.template
+            })
+
+        # create dummy records
+        for i in range(5):
+            self.create_vital_task_template()
+
+        url = reverse(
+            'vital-task-templates-by-care-plan-templates-list',
+            kwargs={'parent_lookup_plan_template': self.template.id}
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.data['count'], 5)
+
+    def test_get_team_task_templates(self):
+        for i in range(5):
+            self.create_team_task_template(**{
+                'plan_template': self.template
+            })
+
+        # create dummy records
+        for i in range(5):
+            self.create_team_task_template()
+
+        url = reverse(
+            'team-task-templates-by-care-plan-templates-list',
+            kwargs={'parent_lookup_plan_template': self.template.id}
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.data['count'], 5)
+
+    def test_get_manager_task_templates(self):
+        for i in range(5):
+            self.create_team_task_template(**{
+                'plan_template': self.template,
+                'is_manager_task': True
+            })
+
+        # create dummy records
+        for i in range(5):
+            self.create_team_task_template(**{
+                'is_manager_task': True
+            })
+
+        url = reverse(
+            'manager-task-templates-by-care-plan-templates-list',
+            kwargs={'parent_lookup_plan_template': self.template.id}
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.data['count'], 5)
+
+    def test_get_patients(self):
+        for i in range(5):
+            self.create_care_plan(**{
+                'plan_template': self.template,
+            })
+
+        # create dummy records
+        for i in range(5):
+            self.create_care_plan()
+
+        url = reverse(
+            'patients-by-care-plan-templates-list',
+            kwargs={
+                'parent_lookup_care_plans__plan_template': self.template.id
+            }
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.data['count'], 5)
+
+    def test_get_patients_duplicates(self):
+        for i in range(5):
+            patient = self.create_patient()
+
+            # create multiple plans for a single patient
+            for i in range(3):
+                self.create_care_plan(**{
+                    'patient': patient,
+                    'plan_template': self.template,
+                })
+
+        # create dummy records
+        for i in range(5):
+            self.create_care_plan()
+
+        url = reverse(
+            'patients-by-care-plan-templates-list',
+            kwargs={
+                'parent_lookup_care_plans__plan_template': self.template.id
+            }
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.data['count'], 5)
+
+
+class TestCarePlanTemplateUsingPatient(TasksMixin, APITestCase):
     """
     Test cases for :model:`plans.CarePlanTemplate` using a patient
     as the logged in user.
@@ -440,7 +587,7 @@ class TestCarePlanTemplateAverage(TasksMixin, APITestCase):
                        total_symptom_tasks +
                        total_assessment_tasks +
                        total_vital_tasks)
-        return round(total_completed / total_tasks) if total_tasks > 0 else 0
+        return round((total_completed / total_tasks) * 100) if total_tasks > 0 else 0
 
     def test_care_plan_average_outcome(self):
         organization = self.create_organization()

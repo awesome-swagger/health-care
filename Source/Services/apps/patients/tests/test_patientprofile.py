@@ -268,7 +268,8 @@ class TestPatientProfileUsingEmployee(PatientsMixin, APITestCase):
 
 class TestPatientProfileSearchViewSet(PatientsMixin, APITestCase):
     """
-    Test cases for :view:`patients.PatientProfileSearchViewSet` using an employee as the logged in user.
+    Test cases for :view:`patients.PatientProfileSearchViewSet` using an
+    employee as the logged in user.
     """
     def setUp(self):
         self.fake = Faker()
@@ -276,11 +277,14 @@ class TestPatientProfileSearchViewSet(PatientsMixin, APITestCase):
         self.client.force_authenticate(user=self.employee.user)
 
     @mock.patch('apps.patients.api.views.get_searchable_patients')
-    def test_search_patients_via_haystack_with_search_query(self, get_searchable_patients):
+    def test_search_patients_via_haystack_with_search_query(
+            self, get_searchable_patients):
         """
-        search view should call `get_searchable_patients` function if the GET request has `q` data
+        search view should call `get_searchable_patients` function if the GET
+        request has `q` data
         """
-        search_url = reverse('patient_profiles_search-list') + '?q=' + 'Patient Name'
+        base_url = reverse('patient_profiles_search-list')
+        search_url = f'{base_url}?q={self.fake.name()}'
 
         response = self.client.get(search_url)
 
@@ -288,9 +292,11 @@ class TestPatientProfileSearchViewSet(PatientsMixin, APITestCase):
         self.assertTrue(get_searchable_patients.called)
 
     @mock.patch('apps.patients.api.views.get_searchable_patients')
-    def test_search_patients_via_haystack_without_search_query(self, get_searchable_patients):
+    def test_search_patients_via_haystack_without_search_query(
+            self, get_searchable_patients):
         """
-        search view should return no data if the GET request does not contain `q` data
+        search view should return no data if the GET request does not contain
+        `q` data
         """
         search_url = reverse('patient_profiles_search-list')
 
