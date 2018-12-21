@@ -4,16 +4,16 @@
       <h1 class="noMargin marRight8">
         <span>{{planTemplate?.service_area.name}},</span> {{planTemplate?.name}}
       </h1>
-      <button class="button button--icon" (click)="editName=!editName">
+      <button class="button button--icon" (click)="clickEditName()">
         <i class="ss-write"></i>
       </button>
     </div>
-    <form *ngIf="editName" class="flex">
-      <input type="text" class="input" placeholder="Care Plan Name" />
-      <button class="button button--icon button--flex" (click)="editName=!editName">
+    <form *ngIf="editName" class="flex" (submit)="saveEditName">
+      <input type="text" class="input" placeholder="Care Plan Name" [(ngModel)]="newPlanName" [ngModelOptions]="{standalone: true}" />
+      <button class="button button--icon button--flex" type="button" (click)="cancelEditName()">
         <i class="ss-undo"></i>
       </button>
-      <button class="button button--icon button--flex" (click)="editName=!editName">
+      <button class="button button--icon button--flex" type="submit" (click)="saveEditName()">
         <i class="ss-floppydisk"></i>
       </button>
     </form>

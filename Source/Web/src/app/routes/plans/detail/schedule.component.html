@@ -59,7 +59,7 @@
               </td>
               <td class="noPad">
                 <button class="button button--icon button--icon--small"
-                (click)="confirmDeleteGoal()">
+                (click)="confirmDeleteGoal(goal)">
                   <i class="ss-delete"></i>
                 </button>
               </td>
@@ -85,7 +85,76 @@
     </div> <!--/.accordion__head-->
     <div class="accordion__body">
       <div class="accordion__contents">
-        <table *ngIf="teamMemberTemplates.length > 0" class="fullWidth">
+        <!-- MANAGER TASKS -->
+        <h3 class="noMargin">Care Manager Tasks (CM) ({{teamManagerTemplates.length}})</h3>
+        <table class="fullWidth">
+          <thead>
+            <tr>
+              <th class="thSortable thSortable--sortDown">
+                <div class="tool">
+                  <span class="thSortable__text thSortable__text--left">CM Task</span>
+                  <div class="tool__anchor">
+                    <button class="button button--icon button--icon--small"
+                    (click)="tooltipsOpen['managerTaskFieldHelp'] = !tooltipsOpen['managerTaskFieldHelp']">
+                      <i class="ss-help"></i>
+                    </button>
+                    <div class="tool__tip tool__tip--bottom tool__tip--left" [ngClass]="{'isOpen': tooltipsOpen['managerTaskFieldHelp'] }">
+                      <div class="tool__text">
+                        Care Manager tasks are tasks specifically assigned for the Care Manager to complete.
+                      </div>
+                    </div>
+                  </div> <!--/.tool__anchor-->
+                </div>
+              </th>
+              <th class="thSortable">
+                <span class="thSortable__text">Start Day</span>
+              </th>
+              <th class="thSortable">
+                <span class="thSortable__text thSortable__text--left">Frequency</span>
+              </th>
+              <th class="thSortable">
+                <span class="thSortable__text thSortable__text--left">Repeats</span>
+              </th>
+              <th class="thSortable">
+                <span class="thSortable__text">Appears</span>
+              </th>
+              <th class="thSortable">
+                <span class="thSortable__text">Due</span>
+              </th>
+              <th class="noPad"></th>
+              <th class="noPad"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let task of teamManagerTemplates">
+              <td class="left">{{task.name | titlecase}} </td>
+              <td>{{task.start_on_day}}</td>
+              <td class="left">{{task.frequency | frequencyTransform | titlecase}}</td>
+              <td class="left"> {{task.repeat_amount != -1 ? task.repeat_amount + ' times' :'Until Plan Ends'}}</td>
+              <td>{{task.appear_time | timeTransform | date: 'shortTime' }}</td>
+              <td>{{task.due_time | timeTransform | date: 'shortTime'}}</td>
+              <td class="noPad">
+                <button class="button button--icon button--icon--small"
+                (click)="editCMTask(task)">
+                  <i class="ss-write"></i>
+                </button>
+              </td>
+              <td class="noPad">
+                <button class="button button--icon button--icon--small"
+                (click)="confirmDeleteCTTask(task, true)">
+                  <i class="ss-delete"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <button class="button button--iconText marBottom64"
+          (click)="addCMTask()" >
+            <i class="ss-plus"></i> Add CM Task
+        </button>
+        <h3 class="noMargin">Care Team Tasks (CT) ({{teamMemberTemplates.length}})</h3>
+        <!-- TEAM TASKS -->
+        <table class="fullWidth">
           <thead>
             <tr>
               <th class="thSortable thSortable--sortDown">
@@ -93,10 +162,10 @@
                   <span class="thSortable__text thSortable__text--left">Task</span>
                   <div class="tool__anchor">
                     <button class="button button--icon button--icon--small"
-                    (click)="tooltipsOpen['managerTaskFieldHelp'] = !tooltipsOpen['managerTaskFieldHelp']">
+                    (click)="tooltipsOpen['teamTaskFieldHelp'] = !tooltipsOpen['teamTaskFieldHelp']">
                       <i class="ss-help"></i>
                     </button>
-                    <div class="tool__tip tool__tip--bottom tool__tip--left" [ngClass]="{'isOpen': tooltipsOpen['managerTaskFieldHelp'] }">
+                    <div class="tool__tip tool__tip--bottom tool__tip--left" [ngClass]="{'isOpen': tooltipsOpen['teamTaskFieldHelp'] }">
                       <div class="tool__text">
                         Care Team tasks can be assigned to one or more members of the Care Team.
                       </div>
@@ -143,7 +212,7 @@
               </td>
               <td class="noPad">
                 <button class="button button--icon button--icon--small"
-                (click)="confirmDeleteCTTask(task)">
+                (click)="confirmDeleteCTTask(task, false)">
                   <i class="ss-delete"></i>
                 </button>
               </td>
@@ -152,7 +221,7 @@
         </table>
         <button class="button button--iconText"
         (click)="addCTTask()" >
-          <i class="ss-plus"></i> Add Care Team Task
+          <i class="ss-plus"></i> Add CT Task
         </button>
       </div> <!--/.accordion__contents-->
     </div> <!--/.accordion__body-->
@@ -324,13 +393,13 @@
               <td><i *ngIf="asmt.tracks_satisfaction" class="ss-standard ss-check iconSmall"></i></td>
               <td class="noPad">
                 <button class="button button--icon button--icon--small"
-                (click)="editAssessment(asmt)">
+                (click)="editAssessmentTime(asmt)">
                   <i class="ss-write"></i>
                 </button>
               </td>
               <td class="noPad">
                 <button class="button button--icon button--icon--small"
-                (click)="confirmDeleteAssessment()">
+                (click)="confirmDeleteAssessment(asmt)">
                   <i class="ss-delete"></i>
                 </button>
               </td>
@@ -366,7 +435,7 @@
         <!--/ patient tasks: assessments section-->
 
         <div class="flex alignCenter">
-          <h3 class="noMargin">Symptom Reports (1)</h3>
+          <h3 class="noMargin">Symptom Reports ({{symptomTemplates.length}})</h3>
           <div class="tool__anchor">
             <button class="button button--icon button--icon--small"
             (click)="toolPTSOpen=!toolPTSOpen">
@@ -431,7 +500,7 @@
         <!--/ patient tasks: symptoms section-->
 
         <div class="flex alignCenter">
-          <h3 class="noMargin">Vitals (1)</h3>
+          <h3 class="noMargin">Vitals ({{vitalTemplates.length}})</h3>
           <div class="tool__anchor">
             <button class="button button--icon button--icon--small"
             (click)="toolPTVOpen=!toolPTVOpen">
@@ -473,28 +542,27 @@
           <tbody *ngFor="let vital of vitalTemplates">
             <tr>
               <td class="left">{{vital.name}}</td>
-              <td>1</td>
+              <td>{{vital.start_on_day}}</td>
               <td class="left">{{vital.frequency | frequencyTransform | titlecase}}</td>
               <td class="left">{{vital.repeat_amount != -1 ? vital.repeat_amount :'Until Plan Ends'}}</td>
               <td>{{vital.appear_time | timeTransform | date: 'shortTime'}}</td>
               <td>{{vital.due_time | timeTransform | date: 'shortTime'}}</td>
               <td class="noPad">
                 <button class="button button--icon button--icon--small"
-                (click)="editVital(vital)">
+                  (click)="editVitalTime(vital)">
                   <i class="ss-write"></i>
                 </button>
               </td>
               <td class="noPad">
                 <button class="button button--icon button--icon--small"
-                (click)="confirmDeleteVital(vital)">
+                  (click)="confirmDeleteVital(vital)">
                   <i class="ss-delete"></i>
                 </button>
               </td>
             </tr>
           </tbody>
         </table>
-        <button class="button button--iconText marBottom48"
-        (click)="addVital(vitalTemplates)">
+        <button class="button button--iconText marBottom48" (click)="addVital(vitalTemplates)">
           <i class="ss-plus"></i> Add Vital
         </button>
         <!--/ patient tasks: vitals section-->
@@ -564,7 +632,7 @@
           </tbody>
         </table>
         <button class="button button--iconText"
-        (click)="addStream()">
+          (click)="addStream()">
           <i class="ss-plus"></i> Add Care Message
         </button>
         <!--/ patient tasks: messages section-->

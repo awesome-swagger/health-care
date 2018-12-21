@@ -1492,15 +1492,17 @@ td, th {
   &__input {
     display: none;
 
-    &:checked {
+    &:not(.scale__input--unselectable) {
+      &:checked {
 
-      &+ .scale__number {
-        @include scaleNumberChecked($purple);
+        &+ .scale__number {
+          @include scaleNumberChecked($purple);
 
-        &--2 { @include scaleNumberChecked($red); }
-        &--3 { @include scaleNumberChecked($orange); }
-        &--4 { @include scaleNumberChecked($yellow); }
-        &--5 { @include scaleNumberChecked($lime); }
+          &--2 { @include scaleNumberChecked($red); }
+          &--3 { @include scaleNumberChecked($orange); }
+          &--4 { @include scaleNumberChecked($yellow); }
+          &--5 { @include scaleNumberChecked($lime); }
+        }
       }
     }
   }

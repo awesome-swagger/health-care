@@ -9,35 +9,36 @@
   <!--<span>Edit</span>-->
   Vital
 </h1>
-<div class="flex justifySpaceBetween marBottom32">
-  <div class="modal__inputWrap marRight32">
-    <label class="label48">Vital Name</label>
-    <input type="text" class="input fullWidth" />
-  </div>
-  <div class="">
-    <div class="tool">
-      <label class="noMargin">Syncing</label>
-      <div class="tool__anchor">
-        <button class="button button--icon button--icon--small"
-        (click)="tooltipCVM0Open=!tooltipCVM0Open">
-          <i class="ss-help"></i>
-        </button>
-        <div class="tool__tip tool__tip--right" [ngClass]="{ 'isOpen' : tooltipCVM0Open }">
-          <div class="tool__text">
-            Check this box to save this data to the EHR.
+<form [formGroup]="vitalForm">
+  <div class="flex justifySpaceBetween marBottom32">
+    <div class="modal__inputWrap marRight32">
+      <label class="label48">Vital Name</label>
+      <input type="text" class="input fullWidth" formControlName="name" />
+    </div>
+    <div class="">
+      <div class="tool">
+        <label class="noMargin">Syncing</label>
+        <div class="tool__anchor">
+          <button class="button button--icon button--icon--small"
+          (click)="tooltipCVM0Open=!tooltipCVM0Open">
+            <i class="ss-help"></i>
+          </button>
+          <div class="tool__tip tool__tip--right" [ngClass]="{ 'isOpen' : tooltipCVM0Open }">
+            <div class="tool__text">
+              Check this box to save this data to the EHR.
+            </div>
           </div>
         </div>
       </div>
+      <label class="styledInput">
+        <input type="checkbox" class="styledInput__input" />
+        <span class="styledInput__box"></span> Sync to EHR
+      </label>
     </div>
-    <label class="styledInput">
-      <input type="checkbox" class="styledInput__input" />
-      <span class="styledInput__box"></span> Sync to EHR
-    </label>
   </div>
-</div>
-<label>Instructions (opt)</label>
-<textarea class="input input--textarea marBottom16"></textarea>
-
+  <label>Instructions (opt)</label>
+  <textarea class="input input--textarea marBottom16"></textarea>
+</form>
 <div class="vitalGridWrap">
   <div class="vitalGrid">
     <div class="vitalGrid__cell vitalGrid__cell--noPadTop gridCell--11">
@@ -84,25 +85,28 @@
     </div>
   </div> <!--/.vitalGrid (for "table" headers)-->
 
-  <div class="vitalGrid vitalGrid--row">
+  <div class="vitalGrid vitalGrid--row" *ngFor="let question of vital?.questions">
     <div class="vitalGrid__cell gridCell--11">
-      <input type="text" class="input fullWidth"  />
+      <input type="text" class="input fullWidth" [(ngModel)]="question.prompt" />
     </div>
     <div class="vitalGrid__cell gridCell--21">
       <div class="flex">
         <!--TODO: If selected option is number, add "vital__selectNumber" class to the "styledSelect" div; otherwise, add "fullWidth" class-->
-        <div class="styledSelect vital__selectNumber">
-          <select class="styledSelect__select fullWidth">
-            <option>Number</option>
-            <option>Date</option>
-            <option>Time</option>
-            <option>Either/Or</option>
-            <option>Scale</option>
-            <option>Free Response</option>
+        <div class="styledSelect" [ngClass]="{'vital__selectNumber': answerTypeIsNumber(question.answer_type), 'fullWidth': !answerTypeIsNumber(question.answer_type)}">
+          <select class="styledSelect__select" [(ngModel)]="question.answer_type">
+            <option [value]="'boolean'">True/False</option>
+            <option [value]="'time'">Time</option>
+            <option [value]="'number'">Number</option>
+            <option [value]="'scale'">Scale</option>
+            <option [value]="'string'">Free Response</option>
           </select>
         </div>
-        <!--TODO: Only show the "units" input if selected option is number-->
-        <input type="text" class="input vital__inputUnits" placeholder="Units (opt)" />
+        <div class="styledSelect" *ngIf="answerTypeIsNumber(question.answer_type)">
+          <select class="styledSelect__select" [(ngModel)]="question.number_type">
+            <option [value]="'integer'">Integer</option>
+            <option [value]="'float'">Decimal</option>
+          </select>
+        </div>
       </div>
     </div>
     <div class="vitalGrid__cell vitalGrid__cell--noPadSide gridCell--31">
@@ -120,173 +124,18 @@
         <i class="ss-delete"></i>
       </button>
     </div>
-    <!--TODO: If type is set to "scale" show the following div-->
-    <div *ngIf="" class="vitalGrid__cell gridCell--12 gridCell--spanCols2">
-      <div class="vital__insetRow">
-        <div class="vital__metricWrap marRight16">
-          <label class="labelBottom8">Label 1 (Worst Outcome)</label>
-          <input type="text" class="input fullWidth" value="Worst" />
-        </div>
-        <div class="vital__metricWrap">
-          <label class="labelBottom8">Label 5 (Best Outcome)</label>
-          <input type="text" class="input fullWidth" value="Best" />
-        </div>
-      </div>
-    </div> <!--/ inset form for "scale"-->
-    <!--TODO: If type is set to "either/or" show the following div-->
-    <div *ngIf="" class="vitalGrid__cell gridCell--12 gridCell--spanCols2">
-      <div class="vital__insetRow">
-        <div class="vital__metricWrap marRight16">
-          <label class="labelBottom8">Option 1</label>
-          <input type="text" class="input fullWidth" value="Worst" />
-        </div>
-        <div class="vital__metricWrap">
-          <label class="labelBottom8">Option 2</label>
-          <input type="text" class="input fullWidth" value="Best" />
-        </div>
-      </div>
-    </div> <!--/ inset form for "either/or"-->
   </div> <!--/.vitalGrid--row-->
-
-  <div class="vitalGrid vitalGrid--row">
-    <div class="vitalGrid__cell gridCell--11">
-      <input type="text" class="input fullWidth"  />
-    </div>
-    <div class="vitalGrid__cell gridCell--21">
-      <div class="flex">
-        <!--TODO: If selected option is number, add "vital__selectNumber" class to the "styledSelect" div; otherwise, add "fullWidth" class-->
-        <div class="styledSelect fullWidth">
-          <select class="styledSelect__select fullWidth">
-            <option>Number</option>
-            <option>Date</option>
-            <option>Time</option>
-            <option>Either/Or</option>
-            <option selected>Scale</option>
-            <option>Free Response</option>
-          </select>
-        </div>
-        <!--TODO: Only show the "units" input if selected option is number-->
-        <input *ngIf="" type="text" class="input vital__inputUnits" placeholder="Units (opt)" />
-      </div>
-    </div>
-    <div class="vitalGrid__cell vitalGrid__cell--noPadSide gridCell--31">
-      <div class="flex">
-        <button class="button button--icon">
-          <i class="ss-standard ss-navigateup"></i>
-        </button>
-        <button class="button button--icon">
-          <i class="ss-standard ss-navigatedown"></i>
-        </button>
-      </div>
-    </div>
-    <div class="vitalGrid__cell vitalGrid__cell--noPadSide gridCell--41">
-      <button class="button button--icon button--icon--small">
-        <i class="ss-delete"></i>
-      </button>
-    </div>
-    <!--TODO: If type is set to "scale" show the following div-->
-    <div class="vitalGrid__cell gridCell--12 gridCell--spanCols2">
-      <div class="vital__insetRow">
-        <div class="vital__metricWrap marRight16">
-          <label class="labelBottom8">Label 1 (Worst Outcome)</label>
-          <input type="text" class="input fullWidth" value="Worst" />
-        </div>
-        <div class="vital__metricWrap">
-          <label class="labelBottom8">Label 5 (Best Outcome)</label>
-          <input type="text" class="input fullWidth" value="Best" />
-        </div>
-      </div>
-    </div> <!--/ inset form for "scale"-->
-    <!--TODO: If type is set to "either/or" show the following div-->
-    <div *ngIf="" class="vitalGrid__cell gridCell--12 gridCell--spanCols2">
-      <div class="vital__insetRow">
-        <div class="vital__metricWrap marRight16">
-          <label class="labelBottom8">Option 1</label>
-          <input type="text" class="input fullWidth" value="Worst" />
-        </div>
-        <div class="vital__metricWrap">
-          <label class="labelBottom8">Option 2</label>
-          <input type="text" class="input fullWidth" value="Best" />
-        </div>
-      </div>
-    </div> <!--/ inset form for "either/or"-->
-  </div> <!--/.vitalGrid--row-->
-
-  <div class="vitalGrid vitalGrid--row">
-    <div class="vitalGrid__cell gridCell--11">
-      <input type="text" class="input fullWidth"  />
-    </div>
-    <div class="vitalGrid__cell gridCell--21">
-      <div class="flex">
-        <!--TODO: If selected option is number, add "vital__selectNumber" class to the "styledSelect" div; otherwise, add "fullWidth" class-->
-        <div class="styledSelect fullWidth">
-          <select class="styledSelect__select fullWidth">
-            <option>Number</option>
-            <option>Date</option>
-            <option>Time</option>
-            <option selected>Either/Or</option>
-            <option>Scale</option>
-            <option>Free Response</option>
-          </select>
-        </div>
-        <!--TODO: Only show the "units" input if selected option is number-->
-        <input *ngIf="" type="text" class="input vital__inputUnits" placeholder="Units (opt)" />
-      </div>
-    </div>
-    <div class="vitalGrid__cell vitalGrid__cell--noPadSide gridCell--31">
-      <div class="flex">
-        <button class="button button--icon">
-          <i class="ss-standard ss-navigateup"></i>
-        </button>
-        <button class="button button--icon">
-          <i class="ss-standard ss-navigatedown"></i>
-        </button>
-      </div>
-    </div>
-    <div class="vitalGrid__cell vitalGrid__cell--noPadSide gridCell--41">
-      <button class="button button--icon button--icon--small">
-        <i class="ss-delete"></i>
-      </button>
-    </div>
-    <!--TODO: If type is set to "scale" show the following div-->
-    <div *ngIf="" class="vitalGrid__cell gridCell--12 gridCell--spanCols2">
-      <div class="vital__insetRow">
-        <div class="vital__metricWrap marRight16">
-          <label class="labelBottom8">Label 1 (Worst Outcome)</label>
-          <input type="text" class="input fullWidth" value="Worst" />
-        </div>
-        <div class="vital__metricWrap">
-          <label class="labelBottom8">Label 5 (Best Outcome)</label>
-          <input type="text" class="input fullWidth" value="Best" />
-        </div>
-      </div>
-    </div> <!--/ inset form for "scale"-->
-    <!--TODO: If type is set to "either/or" show the following div-->
-    <div class="vitalGrid__cell gridCell--12 gridCell--spanCols2">
-      <div class="vital__insetRow">
-        <div class="vital__metricWrap marRight16">
-          <label class="labelBottom8">Option 1</label>
-          <input type="text" class="input fullWidth" />
-        </div>
-        <div class="vital__metricWrap">
-          <label class="labelBottom8">Option 2</label>
-          <input type="text" class="input fullWidth" />
-        </div>
-      </div>
-    </div> <!--/ inset form for "either/or"-->
-  </div> <!--/.vitalGrid--row-->
-
 </div> <!--/.vitalGridWrap-->
 
-<button class="button button--iconText">
+<button class="button button--iconText" (click)="addMetricLine()">
   <i class="ss-plus"></i> Add Metric
 </button>
 
 <div class="modal__buttons">
-  <button class="button button--2nd">
+  <button class="button button--2nd" (click)="clickCancel()">
     Cancel
   </button>
-  <button class="button">
+  <button class="button" (click)="clickSave()">
     Save
   </button>
 </div>

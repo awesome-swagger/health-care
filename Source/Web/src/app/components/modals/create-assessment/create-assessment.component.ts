@@ -13,6 +13,7 @@ export class CreateAssessmentComponent implements OnInit {
   public data = null;
   public assessment = null;
   public assessmentTracking = null;
+  public nameInput = '';
 
   constructor(
     private modal: ModalService,
@@ -24,8 +25,9 @@ export class CreateAssessmentComponent implements OnInit {
   public ngOnInit() {
     console.log(this.data);
     if (this.data) {
-      this.assessment = this.data.assessment ? this.data.assessment : null;
+      this.assessment = this.data.assessment ? this.data.assessment : {};
       if (this.assessment) {
+        this.nameInput = this.assessment.name;
         if (this.assessment.tracks_outcome) {
           this.assessmentTracking = 'outcome';
         } else if (this.assessment.tracks_satisfaction) {
@@ -40,7 +42,6 @@ export class CreateAssessmentComponent implements OnInit {
       this.assessment.questions = [];
     }
     this.assessment.questions.push({
-      assessment_task_template: this.assessment.id,
       prompt: '',
       worst_label: '',
       best_label: '',
@@ -79,6 +80,7 @@ export class CreateAssessmentComponent implements OnInit {
     }
     let promises = [];
     this.assessment.questions.forEach((question, i) => {
+      question.assessment_task_template = this.assessment.id;
       if (!question.id) {
         promises.push(this.createQuestion(question));
       } else {
@@ -92,29 +94,52 @@ export class CreateAssessmentComponent implements OnInit {
     let promise = new Promise((resolve, reject) => {
       let tracksOutcome = this.assessmentTracking === 'outcome';
       let tracksSatisfaction = this.assessmentTracking === 'satisfaction';
-      this.assessment.tracks_outcome = tracksOutcome;
-      this.assessment.tracks_satisfaction = tracksSatisfaction;
+      this.assessment = Object.assign({}, this.assessment, {
+        name: this.nameInput,
+        plan_template: this.data.planTemplateId,
+        start_on_day: 0,
+        appear_time: '00:00:00',
+        due_time: '00:00:00',
+        tracks_outcome: tracksOutcome,
+        tracks_satisfaction: tracksSatisfaction,
+      });
       let assessmentWithoutQuestions = _omit(this.assessment, 'questions');
-      let updateSub = this.store.AssessmentTaskTemplate.update(assessmentWithoutQuestions.id, assessmentWithoutQuestions, true)
-        .subscribe(
-          (res) => resolve(res),
-          (err) => reject(err),
-          () => {
-            updateSub.unsubscribe();
-          }
-        );
+      if (this.assessment.id) {
+        let updateSub = this.store.AssessmentTaskTemplate.update(assessmentWithoutQuestions.id, assessmentWithoutQuestions, true)
+          .subscribe(
+            (res) => resolve(res),
+            (err) => reject(err),
+            () => {
+              updateSub.unsubscribe();
+            }
+          );
+      } else {
+        let createSub = this.store.AssessmentTaskTemplate.create(assessmentWithoutQuestions)
+          .subscribe(
+            (res) => resolve(res),
+            (err) => reject(err),
+            () => {
+              createSub.unsubscribe();
+            }
+          );
+      }
     });
     return promise;
   }
 
   public clickSave() {
-    if (!this.assessment.questions || !this.assessment.name) {
+    if (!this.assessment.questions || !this.nameInput) {
       return;
     }
-    this.updateAssessment().then(() => {
+    this.updateAssessment().then((assessment: any) => {
+      this.assessment.id = assessment.id;
       this.createOrUpdateAllQuestions().then(() => {
         this.modal.close(null);
       });
     });
+  }
+
+  public clickCancel() {
+    this.modal.close(null);
   }
 }

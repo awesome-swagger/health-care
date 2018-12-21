@@ -11,8 +11,15 @@ export class AddVitalComponent implements OnInit {
 
   public data = null;
   public vitalTemplates: Array<any> = [];
-  public vitalTemplatePreview: object = {vital:{},vitals:[]};
-  private modalRespData = { 
+  public searchInput = '';
+  public vitalTemplatesShown = [];
+  public vitalTemplatePreview = {
+    vital: null,
+    vitals: []
+  };
+  public createVital = false;
+  public newVitalName = '';
+  private modalRespData = {
     nextAction: null,
     data:null
   }
@@ -23,51 +30,66 @@ export class AddVitalComponent implements OnInit {
     due_time:''
   };
 
-  private exampleData: object = {
-   
-      "id": "6b6df74f-1f39-44ef-8555-81f0a9aa8923",
-      "plan_template": "719563fb-6394-47b8-89e0-3f6f4fad9c9f",
-      "name": "Sleep Report",
-      "start_on_day": 0,
-      "frequency": "daily",
-      "repeat_amount": -1,
-      "appear_time": "01:00:00",
-      "due_time": "15:03:00"
-  };
   constructor(
     private modal: ModalService,
     private store: StoreService
-  ) {
-  
-  }
+  ) { }
+
   public ngOnInit() {
     console.log(this.data);
-    this.vitalTemplates = this.data;
+    if (this.data) {
+      this.vitalTemplates = this.data.taskList;
+      this.vitalTemplatesShown = this.vitalTemplates;
+    }
+  }
+
+  public filterVitals() {
+    this.vitalTemplatesShown = this.vitalTemplates.filter((obj) => {
+      return obj.name.toLowerCase().indexOf(this.searchInput.toLowerCase()) >= 0;
+    });
+  }
+
+  public createNewVital() {
+    this.store.VitalsTaskTemplate.create({
+      plan_template: this.data.planTemplateId,
+      start_on_day: 0,
+      appear_time: '00:00:00',
+      due_time: '00:00:00',
+      name: this.newVitalName,
+    }).subscribe(
+      (vitalTemplate) => {
+        this.modalRespData.nextAction = 'editVital';
+        this.modalRespData.data = vitalTemplate;
+        this.modal.close(this.modalRespData);
+      },
+      (err) => {},
+      () => {}
+    );
+  }
+
+  public showVitalPreview(vital) {
+    this.vitalTemplatePreview['vital'] = vital;
+    this.store.VitalsQuestions.readListPaged({
+      vital_task_template: vital.id
+    }).subscribe((resp) => {
+      this.vitalTemplatePreview['vitals'] = resp;
+    })
+  }
+
+  public editVitalTemplate(e, vital) {
+    e.stopPropagation();
+    this.modalRespData.nextAction = 'editVital';
+    this.modalRespData.data = this.vitalTemplatePreview.vital;
+    this.modal.close(this.modalRespData);
+  }
+
+  public openFullPreview(vital) {
+    this.modalRespData.nextAction = 'fullVitalPreview';
+    this.modalRespData.data = this.vitalTemplatePreview.vital;
+    this.modal.close(this.modalRespData);
   }
 
   public close() {
     this.modal.close(null);
   }
-
-  public showVitalPreview(vital) {
-    this.vitalTemplatePreview['vital'] = vital;
-    this.store.VitalsQuestions.readListPaged({vital_task_template: vital.id}).subscribe((resp)=>{
-      this.vitalTemplatePreview['vitals'] = resp;
-    })
-  }
-
-  public editVitalTemplate(e,vital) {
-    e.stopPropagation();
-    this.modalRespData.nextAction = 'editVital';
-    this.modalRespData.data = this.vitalTemplatePreview;
-    this.modal.close(this.modalRespData);  
-  }
-
-  public openFullPreview(vital) {
-    this.modalRespData.nextAction = 'fullVitalPreview';
-    this.modalRespData.data = this.vitalTemplatePreview;
-    this.modal.close(this.modalRespData);
-  }
-
-
 }

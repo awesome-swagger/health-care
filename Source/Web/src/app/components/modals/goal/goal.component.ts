@@ -30,7 +30,7 @@ export class GoalComponent implements OnInit {
       this.focusInput = g.focus;
       this.startDayInput = g.start_on_day;
       this.durationChoice = g.duration_weeks !== -1 ? 1 : 0;
-      this.weeksInput = g.duration_weeks !== -1 ? g.duration_weeks : null;
+      this.weeksInput = g.duration_weeks !== -1 ? g.duration_weeks : 1;
     }
   }
 

@@ -10,9 +10,29 @@ import { StoreService } from '../../../services';
 export class AddCTTaskComponent implements OnInit {
 
   public data = null;
-  public selectedTask = null;
   public tasks = [];
-  public newTaskName: string = '';
+  public searchInput = '';
+  public tasksShown = [];
+  public selectedTask = null;
+  public createTask = false;
+
+  public typeChoices = [
+    {
+      type: 'manager',
+      title: 'Add CM Task',
+      dataModel: this.store.TeamTaskTemplate,
+    },
+    {
+      type: 'team',
+      title: 'Add CT Task',
+      dataModel: this.store.TeamTaskTemplate,
+    },
+    {
+      type: 'patient',
+      title: 'Add Patient Task',
+      dataModel: this.store.PatientTaskTemplate,
+    },
+  ];
 
   constructor(
     private modal: ModalService,
@@ -21,13 +41,32 @@ export class AddCTTaskComponent implements OnInit {
 
   public ngOnInit() {
     console.log(this.data);
-    this.tasks = this.data ? this.data.taskList : [];
+    if (this.data) {
+      this.tasks = this.data.taskList ? this.data.taskList : [];
+      this.tasksShown = this.tasks;
+    }
+  }
+
+  public getTaskType() {
+    if (!this.data || !this.data.type) {
+      return this.typeChoices[0];
+    } else {
+      return this.typeChoices.find((obj) => obj.type === this.data.type);
+    }
   }
 
   public updateTaskName(task) {
-    this.store.TeamTaskTemplate.update(task.id,task).subscribe((resp)=> {
-       console.log(resp);
-    });
+    let updateSub = this.getTaskType().dataModel.update(task.id, {
+      name: task.name,
+    }, true).subscribe(
+      (resp) => {
+        task.edit = false;
+      },
+      (err) => {},
+      () => {
+        updateSub.unsubscribe();
+      }
+    );
   }
 
   public addTask(taskName) {
@@ -39,16 +78,36 @@ export class AddCTTaskComponent implements OnInit {
       appear_time: '00:00:00',
       due_time: '00:00:00',
       name: taskName,
-      plan_template: this.data && this.data.planTemplateId,
-      category: 'interaction'
+      plan_template: this.data.planTemplateId,
+      category: 'interaction',
+      is_manager_task: false,
     }
-    this.data.dataModel.create(task).subscribe((resp) =>{
-      this.tasks.push(resp);
-      this.newTaskName = '';
+    if (this.getTaskType().type === 'manager') {
+      task.is_manager_task = true;
+    }
+    let createSub = this.getTaskType().dataModel.create(task).subscribe(
+      (resp) =>{
+        this.tasks.push(resp);
+        this.createTask = false;
+        this.modal.close(resp);
+      },
+      (err) => {},
+      () => {
+        createSub.unsubscribe();
+      }
+    );
+  }
+
+  public filterTasks() {
+    this.tasksShown = this.tasks.filter((obj) => {
+      return obj.name.toLowerCase().indexOf(this.searchInput.toLowerCase()) >= 0;
     });
   }
 
   public next(task) {
+    if (!this.selectedTask) {
+      return;
+    }
     this.modal.close(task);
   }
 

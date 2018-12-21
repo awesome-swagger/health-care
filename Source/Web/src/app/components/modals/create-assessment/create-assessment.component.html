@@ -2,7 +2,7 @@
 <div class="flex justifySpaceBetween marBottom32">
   <div class="modal__inputWrap marRight32">
     <label class="label48">Assessment Name</label>
-    <input type="text" class="input fullWidth" [(ngModel)]="assessment.name" />
+    <input type="text" class="input fullWidth" [(ngModel)]="nameInput" />
   </div>
   <div class="">
     <div class="tool">
@@ -77,7 +77,7 @@
   <button class="button button--2nd" (click)="clickCancel()">
     Cancel
   </button>
-  <button class="button" (click)="clickSave()">
+  <button class="button" [disabled]="!this.assessment.questions || !this.nameInput" (click)="clickSave()">
     Save
   </button>
 </div>

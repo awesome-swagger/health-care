@@ -2,7 +2,7 @@ import { Component, Input, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import * as moment from 'moment';
 import { ModalService } from '../../modules/modals';
-import { PlanDurationComponent } from '../../components';
+import { PlanDurationComponent } from '../../components/modals/plan-duration/plan-duration.component';
 import { AuthService, StoreService } from '../../services';
 
 @Component({
@@ -15,6 +15,8 @@ export class PlanHeaderComponent implements OnInit, OnDestroy {
   public moment = moment;
   private _planTemplate = null;
   private organization = null;
+  public editName = false;
+  public newPlanName = '';
   public carePlanAverage = null;
 
   constructor(
@@ -34,6 +36,8 @@ export class PlanHeaderComponent implements OnInit, OnDestroy {
             this.organization = organization;
             this.getAverages(this.organization, params.id).then((carePlanAverage) => {
               this.carePlanAverage = carePlanAverage;
+            }).catch((e) => {
+              this.carePlanAverage = null;
             });
           },
           (err) => {},
@@ -51,10 +55,36 @@ export class PlanHeaderComponent implements OnInit, OnDestroy {
 
   public ngOnDestroy() { }
 
+  public clickEditName() {
+    this.editName = true;
+    this.newPlanName = this.planTemplate.name;
+  }
+
+  public cancelEditName() {
+    this.editName = false;
+  }
+
+  public saveEditName() {
+    this.store.CarePlanTemplate.update(this.planTemplate.id, {
+      name: this.newPlanName,
+    }, true).subscribe(
+      (data) => {
+        this.planTemplate.name = this.newPlanName;
+        this.newPlanName = '';
+        this.editName = false;
+      },
+      (err) => {},
+      () => {}
+    );
+  }
+
   public openPlanDuration() {
     let modalSub = this.modals.open(PlanDurationComponent, {
       closeDisabled: true,
-      data: {},
+      data: {
+        planTemplate: this.planTemplate,
+        numPatients: this.carePlanAverage ? this.carePlanAverage.total_patients : 0,
+      },
       width: '384px',
     }).subscribe(
       (data) => {
