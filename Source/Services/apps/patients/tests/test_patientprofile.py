@@ -525,7 +525,7 @@ class TestFacilityActivePatient(PlansMixin, APITestCase):
 
         response = self.client.get(self.url)
         if 'count' in response.data:
-            self.assertEqual(response.data['count'], self.patient_count)
+            self.assertEqual(response.data['count'], 0)
         else:
-            self.assertEqual(len(response.data), self.patient_count)
+            self.assertEqual(len(response.data), 0)
 
