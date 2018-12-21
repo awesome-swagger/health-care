@@ -208,10 +208,11 @@ class TestPatientProfile(TasksMixin, APITestCase):
         #print("response.data.id = ",response.data['id'])
 
 
-    def test_get_care_plan(self):
+    def test_get_care_plans(self):
         url = reverse(
-            'patient_profiles-care-plan',
+            'patient_profiles-care-plans',
             kwargs={'pk': self.patient.id})
+        print("care plan url = %s", url)
         response = self.client.get(url)
         self.assertEqual(len(response.data), 2)
         self.assertNotEqual(response.status_code, status.HTTP_404_NOT_FOUND)
