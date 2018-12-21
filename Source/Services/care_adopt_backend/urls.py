@@ -175,14 +175,12 @@ router.register(
     r'care_plan_template_types',
     CarePlanTemplateTypeViewSet,
     base_name='care_plan_template_types')
-<<<<<<< HEAD
 router.register(
     r'service_areas',
     ServiceAreaViewSet,
     base_name='service_areas')
 router.register(
     r'care_plan_templates', CarePlanTemplateViewSet, base_name='care_plan_templates')
-=======
 care_plan_template_routes = router.register(
     r'care_plan_templates',
     CarePlanTemplateViewSet,
@@ -230,7 +228,6 @@ care_plan_template_routes.register(
     base_name='vital-task-templates-by-care-plan-templates',
     parents_query_lookups=['plan_template']
 )
->>>>>>> master
 router.register(
     r'care_plans', CarePlanViewSet, base_name='care_plans')
 router.register(
