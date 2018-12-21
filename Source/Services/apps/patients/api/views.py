@@ -121,7 +121,7 @@ class PatientProfileViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     @action(methods=['get'], detail=True)
-    def care_plan(self, request, *args, **kwargs):
+    def care_plans(self, request, *args, **kwargs):
         """
         This endpoint will return all care plans of the given patient
         along with the corresponding goals for each care plans. This
