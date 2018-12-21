@@ -19,12 +19,14 @@ from .serializers import (PatientDashboardSerializer,
                           PatientProcedureSerializer,
                           PatientProfileSearchSerializer,
                           PatientProfileSerializer,
+                          PatientCarePlanSerializer,
                           ProblemAreaSerializer,
                           VerifyPatientSerializer,
                           ReminderEmailSerializer,
                           CreatePatientSerializer,
                           PotentialPatientSerializer,
                           FacilityInactivePatientSerializer,
+                          FacilityActivePatientSerializer,
                           LatestPatientSymptomSerializer)
 from apps.core.api.views import FacilityViewSet
 from apps.core.api.mixins import ParentViewSetPermissionMixin
@@ -65,6 +67,16 @@ class PatientProfileViewSet(viewsets.ModelViewSet):
 
     Employees can add a query param to filter by patient id, e.g:
     `/api/patient_profiles/dashboard/?id=<id_here>`
+
+
+    Care Plans
+    =================
+    `GET` to `/api/patient_profiles/care_plans/?id=<id>`
+
+    `GET` to `/api/patient_profiles/{id}/care_plans/`
+
+    Returns care plans for patient with id
+
     """
     serializer_class = PatientProfileSerializer
     permission_classes = (
@@ -107,6 +119,19 @@ class PatientProfileViewSet(viewsets.ModelViewSet):
         care_plans = patient.care_plans.filter(goals__isnull=False).distinct()
         serializer = CarePlanGoalSerializer(care_plans, many=True)
         return Response(serializer.data)
+
+    @action(methods=['get'], detail=True)
+    def care_plan(self, request, *args, **kwargs):
+        """
+        This endpoint will return all care plans of the given patient
+        along with the corresponding goals for each care plans. This
+        endpoint will only return care plans with goals.
+        """
+        patient = self.get_object()
+        care_plans = patient.care_plans.all()
+        serializer = CarePlanGoalSerializer(care_plans, many=True)
+        return Response(serializer.data)
+
 
     @action(methods=['post'], detail=False,
             permission_classes=(permissions.IsAuthenticated, ))
@@ -301,23 +326,25 @@ class PatientProfileDashboard(ListAPIView):
 
 def get_searchable_patients(user):
     """
-    Returns searchable `PatientProfile`s depending if the user is an Employee or a Patient.
+    Returns searchable `PatientProfile`s depending if the user is an Employee
+    or a Patient.
     """
-    employee_profile = utils.employee_profile_or_none(user)
     queryset = PatientProfile.objects.none()
 
-    if employee_profile:
+    if user.is_employee:
+        employee = user.employee_profile
         queryset = PatientProfile.objects.all()
-        # Admins to an organization can search for any patient tied to a facility in the organization.
-        if employee_profile.organizations_managed.exists():
-            organizations = employee_profile.organizations_managed.all()
+        # Admins to an organization can search for any patient tied to a
+        # facility in the organization.
+        if employee.organizations_managed.exists():
+            organizations = employee.organizations_managed.all()
             queryset = queryset.filter(
                 facility__organization__in=organizations,
             )
 
-        # Admins to a facility can search for any patient within their facility.
-        elif employee_profile.facilities_managed.exists():
-            facilities = employee_profile.facilities_managed.all()
+        # Admins to a facility can search for any patient within their facility
+        elif employee.facilities_managed.exists():
+            facilities = employee.facilities_managed.all()
             queryset = queryset.filter(
                 facility__in=facilities,
             )
@@ -326,9 +353,9 @@ def get_searchable_patients(user):
         # they are care managers for or a member of the care team for.
         # All other patients are not searchable or accessible to the user
         else:
-            care_plans = employee_profile.assigned_roles.values_list('plan')
-            patient_medications = employee_profile.patientmedication_set.all()
-            problem_areas = employee_profile.problemarea_set.all()
+            care_plans = employee.assigned_roles.values_list('plan')
+            patient_medications = employee.patientmedication_set.all()
+            problem_areas = employee.problemarea_set.all()
             queryset = queryset.filter(
                 Q(care_plans__id__in=care_plans) |
                 Q(patientmedication__id__in=patient_medications) |
@@ -346,7 +373,8 @@ class PatientProfileSearchViewSet(HaystackViewSet):
     ====================
     `GET` to `/api/patient_profiles/search/`
 
-    `PatientProfile`s can be searched via: `email`, `first_name`, `last_name`, `preferred_name` or `emr_code`.
+    `PatientProfile`s can be searched via: `email`, `first_name`, `last_name`,
+    or `preferred_name`.
 
         {
             "q": "Alfa One"
@@ -381,7 +409,8 @@ class PatientProfileSearchViewSet(HaystackViewSet):
         search_str = self.request.GET.get('q')
 
         if search_str:
-            searchable_patient_ids = get_searchable_patients(self.request.user).values_list('id', flat=True)
+            searchable_patient_ids = get_searchable_patients(
+                self.request.user).values_list('id', flat=True).distinct()
             queryset = super(PatientProfileSearchViewSet, self).get_queryset(
                 index_models,
             ).filter(id__in=searchable_patient_ids)
@@ -504,3 +533,60 @@ class FacilityInactivePatientViewSet(ParentViewSetPermissionMixin,
         ('facility', Facility, FacilityViewSet)
     ]
     pagination_class = OrganizationEmployeePagination
+
+
+class FacilityActivePatientViewSet(ParentViewSetPermissionMixin,
+                                     NestedViewSetMixin,
+                                     mixins.ListModelMixin,
+                                     viewsets.GenericViewSet):
+    """
+    Displays all inactive patients in a parent facility.
+    """
+
+    serializer_class = FacilityActivePatientSerializer
+    permission_clases = (permissions.IsAuthenticated, IsAdminOrEmployee)
+    queryset = PatientProfile.objects.filter(
+        is_active=True).order_by('last_app_use')
+    parent_lookup = [
+        ('facility', Facility, FacilityViewSet)
+    ]
+    pagination_class = OrganizationEmployeePagination
+
+
+
+
+class PatientProfileCarePlan(ListAPIView):
+    """
+    Patient Care Plan
+    =================
+    This endpoint will display patient care plans
+
+    """
+    serializer_class = PatientCarePlanSerializer
+    queryset = PatientProfile.objects.all()
+    permission_classes = (
+        permissions.IsAuthenticated,
+        PatientProfilePermissions,
+    )
+    filter_backends = (DjangoFilterBackend, )
+    filterset_fields = (
+        'id',
+    )
+
+    def get_queryset(self):
+        queryset = super(PatientProfileCarePlan, self).get_queryset()
+        user = self.request.user
+
+        # If user is a employee, get all organizations that they belong to
+        if user.is_employee:
+            employee = user.employee_profile
+            queryset = queryset.filter(
+                Q(facility__in=employee.facilities.all()) |
+                Q(facility__in=employee.facilities_managed.all())
+            )
+        # If user is a patient, only return the organization their facility
+        # belongs to
+        elif user.is_patient:
+            queryset = queryset.filter(user=user)
+
+        return queryset

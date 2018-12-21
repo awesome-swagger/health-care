@@ -23,6 +23,7 @@ from ..models import (
     InfoMessage,
     CareTeamMember,
 )
+from ..permissions import CareTeamMemberPermissions
 from .serializers import (
     CarePlanTemplateTypeSerializer,
     ServiceAreaSerializer,
@@ -43,12 +44,26 @@ from apps.core.models import Organization
 from apps.core.api.serializers import ProviderRoleSerializer
 from apps.core.api.views import OrganizationViewSet
 from apps.core.models import ProviderRole
+from apps.patients.api.serializers import PatientProfileSerializer
+from apps.patients.models import PatientProfile
+from apps.tasks.api.serializers import (
+    PatientTaskTemplateSerializer,
+    AssessmentTaskTemplateSerializer,
+    SymptomTaskTemplateSerializer,
+    TeamTaskTemplateSerializer,
+    VitalTaskTemplateSerializer,
+)
 from apps.tasks.models import (
     AssessmentTask,
+    AssessmentTaskTemplate,
     PatientTask,
+    PatientTaskTemplate,
     MedicationTask,
     SymptomTask,
+    SymptomTaskTemplate,
+    TeamTaskTemplate,
     VitalTask,
+    VitalTaskTemplate,
 )
 from apps.tasks.permissions import IsEmployeeOrPatientReadOnly
 from care_adopt_backend import utils
@@ -369,28 +384,62 @@ class PlanConsentViewSet(viewsets.ModelViewSet):
 
 
 class CareTeamMemberViewSet(viewsets.ModelViewSet):
+    """
+    Viewset for :model:`plans.CareTeamMember`
+    ========
+
+    create:
+        Creates :model:`plans.CareTeamMember` object.
+        Only admins and employees are allowed to perform this action.
+
+    update:
+        Updates :model:`plans.CareTeamMember` object.
+        Only admins and employees who belong to the same care team are allowed
+        to perform this action.
+
+    partial_update:
+        Updates one or more fields of an existing care team member object.
+        Only admins and employees who belong to the same care team are allowed
+        to perform this action.
+
+    retrieve:
+        Retrieves a :model:`plans.CareTeamMember` instance.
+        Admins will have access to all care team member objects. Employees will
+        only have access to those members belonging to its own care team.
+        Patients will have access to all members assigned to them.
+
+    list:
+        Returns list of all :model:`plans.CareTeamMember` objects.
+        Admins will get all existing care team member objects. Employees will
+        get the members belonging to a certain care team. Patients will get all
+        members belonging to them.
+
+    delete:
+        Deletes a :model:`plans.CareTeamMember` instance.
+        Only admins and employees who is a manager to the same care team are
+        allowed to perform this action.
+    """
     serializer_class = CareTeamMemberSerializer
-    permission_classes = (permissions.IsAuthenticated, EmployeeOrReadOnly, )
+    permission_classes = (
+        permissions.IsAuthenticated,
+        CareTeamMemberPermissions,
+    )
+    filter_backends = (DjangoFilterBackend, )
+    filterset_fields = (
+        'employee_profile',
+        'plan',
+    )
 
     def get_queryset(self):
-        qs = CareTeamMember.objects.all()
+        queryset = CareTeamMember.objects.all()
 
-        plan = self.request.query_params.get('plan')
-        if plan:
-            qs = qs.filter(plan=plan)
-        employee_param = self.request.query_params.get('employee')
-        if employee_param:
-            qs = qs.filter(employee_profile=employee_param)
+        if self.request.user.is_superuser or self.request.user.is_employee:
+            return queryset
 
-        employee_profile = utils.employee_profile_or_none(self.request.user)
-        patient_profile = utils.patient_profile_or_none(self.request.user)
-        if employee_profile is not None:
-            qs = qs.all()
-        elif patient_profile is not None:
-            qs = qs.filter(plan__patient=patient_profile)
-        else:
-            return qs.none()
-        return qs
+        else:  # filter members based on patient
+            return queryset.filter(
+                plan__patient=self.request.user.patient_profile
+            )
 
 
 class GoalTemplateViewSet(viewsets.ModelViewSet):
@@ -809,3 +858,170 @@ class CarePlanTemplateByServiceArea(
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+
+
+class PatientTaskTemplateByCarePlanTemplate(ParentViewSetPermissionMixin,
+                                            NestedViewSetMixin,
+                                            mixins.ListModelMixin,
+                                            viewsets.GenericViewSet):
+    """
+    Returns list of :model:`tasks.PatientTaskTemplate` related to the given
+    care plan template.
+    """
+    serializer_class = PatientTaskTemplateSerializer
+    queryset = PatientTaskTemplate.objects.all()
+    permission_classes = (
+        permissions.IsAuthenticated,
+        IsAdminOrEmployee,
+    )
+    parent_lookup = [
+        (
+            'plan_template',
+            CarePlanTemplate,
+            CarePlanTemplateViewSet
+        )
+    ]
+
+
+class AssessmentTaskTemplateByCarePlanTemplate(ParentViewSetPermissionMixin,
+                                               NestedViewSetMixin,
+                                               mixins.ListModelMixin,
+                                               viewsets.GenericViewSet):
+    """
+    Returns list of :model:`tasks.AssessmentTaskTemplate` related to the given
+    care plan template.
+    """
+    serializer_class = AssessmentTaskTemplateSerializer
+    queryset = AssessmentTaskTemplate.objects.all()
+    permission_classes = (
+        permissions.IsAuthenticated,
+        IsAdminOrEmployee,
+    )
+    parent_lookup = [
+        (
+            'plan_template',
+            CarePlanTemplate,
+            CarePlanTemplateViewSet
+        )
+    ]
+
+
+class SymptomTaskTemplateByCarePlanTemplate(ParentViewSetPermissionMixin,
+                                            NestedViewSetMixin,
+                                            mixins.ListModelMixin,
+                                            viewsets.GenericViewSet):
+    """
+    Returns list of :model:`tasks.SymptomTaskTemplate` related to the given
+    care plan template.
+    """
+    serializer_class = SymptomTaskTemplateSerializer
+    queryset = SymptomTaskTemplate.objects.all()
+    permission_classes = (
+        permissions.IsAuthenticated,
+        IsAdminOrEmployee,
+    )
+    parent_lookup = [
+        (
+            'plan_template',
+            CarePlanTemplate,
+            CarePlanTemplateViewSet
+        )
+    ]
+
+
+class VitalTaskTemplateByCarePlanTemplate(ParentViewSetPermissionMixin,
+                                          NestedViewSetMixin,
+                                          mixins.ListModelMixin,
+                                          viewsets.GenericViewSet):
+    """
+    Returns list of :model:`tasks.VitalTaskTemplate` related to the given
+    care plan template.
+    """
+    serializer_class = VitalTaskTemplateSerializer
+    queryset = VitalTaskTemplate.objects.all()
+    permission_classes = (
+        permissions.IsAuthenticated,
+        IsAdminOrEmployee,
+    )
+    parent_lookup = [
+        (
+            'plan_template',
+            CarePlanTemplate,
+            CarePlanTemplateViewSet
+        )
+    ]
+
+
+class TeamTaskTemplateByCarePlanTemplate(ParentViewSetPermissionMixin,
+                                         NestedViewSetMixin,
+                                         mixins.ListModelMixin,
+                                         viewsets.GenericViewSet):
+    """
+    Returns list of :model:`tasks.TeamTaskTemplate` related to the given
+    care plan template.
+    """
+    serializer_class = TeamTaskTemplateSerializer
+    queryset = TeamTaskTemplate.objects.all()
+    permission_classes = (
+        permissions.IsAuthenticated,
+        IsAdminOrEmployee,
+    )
+    parent_lookup = [
+        (
+            'plan_template',
+            CarePlanTemplate,
+            CarePlanTemplateViewSet
+        )
+    ]
+
+
+class ManagerTaskTemplateByCarePlanTemplate(ParentViewSetPermissionMixin,
+                                            NestedViewSetMixin,
+                                            mixins.ListModelMixin,
+                                            viewsets.GenericViewSet):
+    """
+    Returns list of :model:`tasks.TeamTaskTemplate` having `is_manager_task`
+    as True and related to the given care plan template.
+    """
+    serializer_class = TeamTaskTemplateSerializer
+    queryset = TeamTaskTemplate.objects.filter(is_manager_task=True)
+    permission_classes = (
+        permissions.IsAuthenticated,
+        IsAdminOrEmployee,
+    )
+    parent_lookup = [
+        (
+            'plan_template',
+            CarePlanTemplate,
+            CarePlanTemplateViewSet
+        )
+    ]
+
+
+class PatientByCarePlanTemplate(ParentViewSetPermissionMixin,
+                                NestedViewSetMixin,
+                                mixins.ListModelMixin,
+                                viewsets.GenericViewSet):
+    """
+    Returns list of :model:`patients.PatientProfile` related to the given care
+    plan template.
+    """
+    serializer_class = PatientProfileSerializer
+    queryset = PatientProfile.objects.all()
+    permission_classes = (
+        permissions.IsAuthenticated,
+        IsAdminOrEmployee,
+    )
+    parent_lookup = [
+        (
+            'care_plans__plan_template',
+            CarePlanTemplate,
+            CarePlanTemplateViewSet
+        )
+    ]
+
+    def get_queryset(self):
+        queryset = super(PatientByCarePlanTemplate, self).get_queryset()
+
+        # call distinct() to prevent duplicates
+        return queryset.distinct()
