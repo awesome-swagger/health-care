@@ -1,4 +1,11 @@
+import datetime
+import urllib
+
+import pytz
+
 from datetime import timedelta
+
+from dateutil.relativedelta import relativedelta
 
 from django.urls import reverse
 from django.utils import timezone
@@ -188,7 +195,50 @@ class TestGoalUsingEmployee(PlansMixin, APITestCase):
                 'plan': self.plan
             })
 
-        filter_url = f'{self.url}?plan__patient={patient.id}&goal_template__plan_template={plan_template.id}'
+        query_params = urllib.parse.urlencode({
+            'plan__patient': patient.id,
+            'goal_template__plan_template': plan_template.id
+        })
+
+        filter_url = f'{self.url}?{query_params}'
+        response = self.client.get(filter_url)
+        self.assertEqual(response.data['count'], 5)
+
+    def test_get_goal_care_plan_template_patient_and_start_on_datetime(self):
+        plan_template = self.plan.plan_template
+        patient = self.plan.patient
+        days_ago = timezone.now() - relativedelta(days=5)
+        days_ago_min = datetime.datetime.combine(days_ago,
+                                                 datetime.time.min,
+                                                 tzinfo=pytz.utc)
+        days_ago_max = datetime.datetime.combine(days_ago,
+                                                 datetime.time.max,
+                                                 tzinfo=pytz.utc)
+
+        for i in range(5):
+            goal_template = self.create_goal_template(**{
+                'plan_template': plan_template
+            })
+            self.create_goal(**{
+                'goal_template': goal_template,
+                'plan': self.plan,
+                'start_on_datetime': days_ago,
+            })
+
+        # create dummy goals for the patient
+        for i in range(5):
+            self.create_goal(**{
+                'plan': self.plan
+            })
+
+        query_params = urllib.parse.urlencode({
+            'plan__patient': patient.id,
+            'goal_template__plan_template': plan_template.id,
+            'start_on_datetime__lte': days_ago_max,
+            'start_on_datetime__gte': days_ago_min
+        })
+
+        filter_url = f'{self.url}?{query_params}'
         response = self.client.get(filter_url)
         self.assertEqual(response.data['count'], 5)
 
