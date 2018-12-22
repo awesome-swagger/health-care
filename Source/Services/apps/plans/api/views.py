@@ -1,3 +1,7 @@
+import datetime
+
+import pytz
+
 from dateutil.relativedelta import relativedelta
 
 from django_filters.rest_framework import DjangoFilterBackend
@@ -577,6 +581,27 @@ class GoalViewSet(viewsets.ModelViewSet):
             )
         elif user.is_patient:
             queryset = queryset.filter(plan__patient=user.patient_profile)
+
+        return queryset
+
+    def filter_queryset(self, queryset):
+        queryset = super(GoalViewSet, self).filter_queryset(queryset)
+
+        query_parameters = self.request.query_params.keys()
+        if 'plan__patient' in query_parameters and \
+           'goal_template__plan_template' in query_parameters and \
+           'start_on_datetime__gte' not in query_parameters and \
+           'start_on_datetime__lte' not in query_parameters:
+            today = timezone.now().date()
+            today_min = datetime.datetime.combine(today,
+                                                  datetime.time.min,
+                                                  tzinfo=pytz.utc)
+            today_max = datetime.datetime.combine(today,
+                                                  datetime.time.max,
+                                                  tzinfo=pytz.utc)
+            queryset = queryset.filter(
+                start_on_datetime__range=(today_min, today_max)
+            )
 
         return queryset
 
