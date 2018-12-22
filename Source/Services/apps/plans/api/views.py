@@ -569,7 +569,9 @@ class GoalViewSet(viewsets.ModelViewSet):
         if not include_future_goals:
             queryset = queryset.exclude(start_on_datetime__gte=timezone.now())
 
-        if user.is_employee:
+        if user.is_superuser:
+            pass
+        elif user.is_employee:
             queryset = queryset.filter(
                 plan__care_team_members__employee_profile=user.employee_profile
             )
