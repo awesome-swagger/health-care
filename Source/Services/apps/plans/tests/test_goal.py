@@ -170,12 +170,8 @@ class TestGoalUsingEmployee(PlansMixin, APITestCase):
         self.assertEqual(len(response.data['comments']), count)
 
     def test_get_goal_by_care_plan_template_and_patient(self):
-        plan_template = self.create_care_plan_template()
-        patient = self.create_patient()
-        plan = self.create_care_plan(**{
-            'plan_template': plan_template,
-            'patient': patient
-        })
+        plan_template = self.plan.plan_template
+        patient = self.plan.patient
 
         for i in range(5):
             goal_template = self.create_goal_template(**{
@@ -183,20 +179,17 @@ class TestGoalUsingEmployee(PlansMixin, APITestCase):
             })
             self.create_goal(**{
                 'goal_template': goal_template,
-                'plan': plan
+                'plan': self.plan
             })
 
         # create dummy goals for the patient
         for i in range(5):
             self.create_goal(**{
-                'plan': plan
+                'plan': self.plan
             })
 
-        url = reverse('goal-by-plan-templates', kwargs={
-            'parent_lookup_plan__patient': patient.id,
-            'pk': plan_template.id
-        })
-        response = self.client.get(url)
+        filter_url = f'{self.url}?plan__patient={patient.id}&goal_template__plan_template={plan_template.id}'
+        response = self.client.get(filter_url)
         self.assertEqual(response.data['count'], 5)
 
 
