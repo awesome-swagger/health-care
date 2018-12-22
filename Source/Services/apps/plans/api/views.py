@@ -48,6 +48,7 @@ from apps.core.api.serializers import ProviderRoleSerializer
 from apps.core.api.views import OrganizationViewSet, FacilityViewSet
 from apps.core.models import ProviderRole
 from apps.patients.api.serializers import PatientProfileSerializer
+from apps.patients.api.views import PatientProfileViewSet
 from apps.patients.models import PatientProfile
 from apps.tasks.api.serializers import (
     PatientTaskTemplateSerializer,
@@ -1016,7 +1017,6 @@ class CarePlanByTemplateFacility(ParentViewSetPermissionMixin,
 
     def retrieve(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_care_plans())
-
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
@@ -1026,6 +1026,48 @@ class CarePlanByTemplateFacility(ParentViewSetPermissionMixin,
         return Response(serializer.data)
 
 
+class GoalsByCarePlanTemplate(ParentViewSetPermissionMixin,
+                              NestedViewSetMixin,
+                              RetrieveAPIView):
+    """
+    Returns list of :model:`plans.Goal` related to the given care plan template
+    This will also be based on the parent patient profile.
+    """
+    serializer_class = GoalSerializer
+    permission_classes = (
+        permissions.IsAuthenticated,
+        IsAdminOrEmployee,
+    )
+    parent_lookup = [
+        (
+            'plan__patient',
+            PatientProfile,
+            PatientProfileViewSet
+        )
+    ]
+
+    def get_queryset(self):
+        """
+        Override `get_queryset` so it will not filter for the parent object.
+        Return all CarePlanTemplateType objects.
+        """
+        return CarePlanTemplate.objects.all()
+
+    def get_goals(self):
+        instance = self.get_object()
+        queryset = instance.goals.goals.all()
+        return self.filter_queryset_by_parents_lookups(queryset).distinct()
+
+    def retrieve(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_goals())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
 
 class PatientTaskTemplateByCarePlanTemplate(ParentViewSetPermissionMixin,
