@@ -555,6 +555,12 @@ class GoalViewSet(viewsets.ModelViewSet):
         IsEmployeeOrPatientReadOnly,
     )
     queryset = Goal.objects.all()
+    filter_backends = (DjangoFilterBackend, )
+    filterset_fields = {
+        'plan__patient': ['exact'],
+        'goal_template__plan_template': ['exact'],
+        'start_on_datetime': ['lte', 'gte']
+    }
 
     def get_queryset(self):
         queryset = super(GoalViewSet, self).get_queryset()
