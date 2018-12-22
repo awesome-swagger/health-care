@@ -48,7 +48,6 @@ from apps.core.api.serializers import ProviderRoleSerializer
 from apps.core.api.views import OrganizationViewSet, FacilityViewSet
 from apps.core.models import ProviderRole
 from apps.patients.api.serializers import PatientProfileSerializer
-from apps.patients.api.views import PatientProfileViewSet
 from apps.patients.models import PatientProfile
 from apps.tasks.api.serializers import (
     PatientTaskTemplateSerializer,

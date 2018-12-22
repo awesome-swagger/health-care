@@ -10,7 +10,6 @@ from .views import (
 
     # GoalTemplate
     GoalTemplatesByPlanTemplate,
-    GoalsByCarePlanTemplate,
 
 )
 
