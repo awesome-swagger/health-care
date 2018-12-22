@@ -1055,7 +1055,7 @@ class GoalsByCarePlanTemplate(ParentViewSetPermissionMixin,
 
     def get_goals(self):
         instance = self.get_object()
-        queryset = instance.goals.goals.all()
+        queryset = Goal.objects.filter(goal_template__in=instance.goals.all())
         return self.filter_queryset_by_parents_lookups(queryset).distinct()
 
     def retrieve(self, request, *args, **kwargs):
