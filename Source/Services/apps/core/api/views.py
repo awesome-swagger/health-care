@@ -386,7 +386,10 @@ class EmployeeProfileViewSet(viewsets.ModelViewSet):
             )
 
         employee.roles.remove(role)
-        serializer = self.get_serializer()
+        ctx = {
+            'context': self.get_serializer_context()
+        }
+        serializer = self.get_serializer_class()(employee, **ctx)
         return Response(
             data=serializer.data,
             status=status.HTTP_204_NO_CONTENT

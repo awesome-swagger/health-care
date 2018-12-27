@@ -77,6 +77,22 @@ class TestEmployeeProfile(CoreMixin, APITestCase):
         response = self.client.post(url, payload)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
+    def test_remove_role_from_employee(self):
+        role = self.create_provider_role()
+        new_employee = self.create_employee(**{
+            'facilities': [self.facility_managed],
+            'roles': [role, self.role]
+        })
+        url = reverse(
+            'employee_profiles-remove-role',
+            kwargs={'pk': new_employee.id}
+        )
+        payload = {
+            'role': role.id
+        }
+        response = self.client.delete(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
 
 class TestEmployeeOrganization(CoreMixin, APITestCase):
     """
