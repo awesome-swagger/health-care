@@ -443,6 +443,8 @@ class OrganizationAffiliatesViewSet(ParentViewSetPermissionMixin,
         ('organization', Organization, OrganizationViewSet)
     ]
     pagination_class = OrganizationEmployeePagination
+    filter_backends = (RelatedOrderingFilter, )
+    ordering = ('name', )
 
 
 class FacilityEmployeeViewSet(ParentViewSetPermissionMixin,
