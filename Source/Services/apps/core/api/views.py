@@ -354,6 +354,44 @@ class EmployeeProfileViewSet(viewsets.ModelViewSet):
             status=status.HTTP_201_CREATED
         )
 
+    @action(methods=['DELETE'],
+            detail=True,
+            permission_classes=(permissions.IsAuthenticated,
+                                IsAdminOrEmployee))
+    def remove_role(self, request, pk, *args, **kwargs):
+        """
+        Removes role from the given employee.
+
+        Request data should contain the `role` ID. For example:
+
+            POST /api/employee_profiles/<employee-id>/remove_role/
+            {
+                'role': <uuid-here>
+            }
+        """
+        employee = self.get_object()
+
+        if 'role' not in request.data:
+            raise serializers.ValidationError(_('Role ID is required.'))
+
+        role_id = request.data['role']
+        try:
+            role = ProviderRole.objects.get(id=role_id)
+        except ProviderRole.DoesNotExist:
+            raise serializers.ValidationError(_('Role does not exist.'))
+
+        if role not in employee.roles.all():
+            raise serializers.ValidationError(
+                _('Employee does not have that role.')
+            )
+
+        employee.roles.remove(role)
+        serializer = self.get_serializer()
+        return Response(
+            data=serializer.data,
+            status=status.HTTP_204_NO_CONTENT
+        )
+
 
 class DiagnosisViewSet(
     mixins.RetrieveModelMixin,
