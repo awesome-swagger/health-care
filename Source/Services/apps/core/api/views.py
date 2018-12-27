@@ -445,6 +445,23 @@ class OrganizationFacilityViewSet(ParentViewSetPermissionMixin,
     pagination_class = OrganizationEmployeePagination
 
 
+class OrganizationAffiliatesViewSet(ParentViewSetPermissionMixin,
+                                    NestedViewSetMixin,
+                                    mixins.ListModelMixin,
+                                    viewsets.GenericViewSet):
+    """
+    Displays all affiliates in a parent organization.
+    """
+
+    serializer_class = FacilitySerializer
+    permission_clases = (permissions.IsAuthenticated, IsAdminOrEmployee)
+    queryset = Facility.objects.filter(is_affiliate=True)
+    parent_lookup = [
+        ('organization', Organization, OrganizationViewSet)
+    ]
+    pagination_class = OrganizationEmployeePagination
+
+
 class FacilityEmployeeViewSet(ParentViewSetPermissionMixin,
                               NestedViewSetMixin,
                               mixins.ListModelMixin,
