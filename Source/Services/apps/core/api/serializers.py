@@ -203,6 +203,11 @@ class EmployeeProfileSerializer(RepresentationMixin, serializers.ModelSerializer
                 'serializer_class': ProviderTitleSerializer,
             },
             {
+                'field': 'roles',
+                'serializer_class': ProviderRoleSerializer,
+                'many': True,
+            },
+            {
                 'field': 'organizations',
                 'serializer_class': OrganizationSerializer,
                 'many': True,

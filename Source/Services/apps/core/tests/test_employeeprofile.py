@@ -62,6 +62,21 @@ class TestEmployeeProfile(CoreMixin, APITestCase):
         response = self.client.get(self.detail_url)
         self.assertIsNotNone(response.data['roles'][0]['name'])
 
+    def test_add_role_to_employee(self):
+        new_employee = self.create_employee(**{
+            'facilities': [self.facility_managed]
+        })
+        url = reverse(
+            'employee_profiles-add-role',
+            kwargs={'pk': new_employee.id}
+        )
+        role = self.create_provider_role()
+        payload = {
+            'role': role.id
+        }
+        response = self.client.post(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
 
 class TestEmployeeOrganization(CoreMixin, APITestCase):
     """

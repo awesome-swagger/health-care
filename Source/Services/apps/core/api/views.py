@@ -345,10 +345,13 @@ class EmployeeProfileViewSet(viewsets.ModelViewSet):
             raise serializers.ValidationError(_('Role already exists.'))
 
         employee.roles.add(role)
-        serializer = self.serializer_class(employee)
+        ctx = {
+            'context': self.get_serializer_context()
+        }
+        serializer = self.get_serializer_class()(employee, **ctx)
         return Response(
             data=serializer.data,
-            status_code=status.HTTP_201_CREATED
+            status=status.HTTP_201_CREATED
         )
 
 
