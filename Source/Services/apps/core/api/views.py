@@ -1,6 +1,6 @@
 from drf_haystack.viewsets import HaystackViewSet
 from rest_framework import mixins, permissions, viewsets
-from rest_framework.generics import ListAPIView, RetrieveAPIView
+from rest_framework.generics import RetrieveAPIView
 from rest_framework.response import Response
 
 from django.db.models import Q
@@ -127,23 +127,6 @@ class FacilityViewSet(viewsets.ModelViewSet):
             self.request.user,
             self.request.query_params.get('organization_id'),
         )
-
-
-class AffiliateFacilityListView(ListAPIView):
-    """
-    Returns list of all :model:`core.Facility` objects where `is_affiliate` is `True`.
-    """
-    serializer_class = FacilitySerializer
-    permission_classes = (permissions.IsAuthenticated, FacilityPermissions, )
-    filter_backends = (RelatedOrderingFilter, )
-    ordering = ('name', )
-
-    def get_queryset(self):
-        queryset = get_facilities_for_user(
-            self.request.user,
-            self.request.query_params.get('organization_id'),
-        )
-        return queryset.filter(is_affiliate=True)
 
 
 class ProviderTitleViewSet(

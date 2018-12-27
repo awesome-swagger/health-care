@@ -39,29 +39,6 @@ class TestFacilityViewSet(CoreMixin, APITestCase):
         )
 
 
-class TestAffiliateFacilityListView(CoreMixin, APITestCase):
-    def setUp(self):
-        self.fake = Faker()
-        self.employee = self.create_employee()
-        self.user = self.employee.user
-        self.affiliate_facility_list_url = reverse('affiliate_facilities')
-        self.client.force_authenticate(user=self.user)
-
-    def test_get_affiliate_facility_list(self):
-        user_facility = get_facilities_for_user(self.user)[0]
-        user_facility.is_affiliate = True
-        user_facility.save()
-
-        response = self.client.get(self.affiliate_facility_list_url)
-
-        expected_facility_count = 1
-
-        self.assertEqual(
-            expected_facility_count,
-            response.data['count'],
-        )
-
-
 class TestOrganizationAffiliates(CoreMixin, APITestCase):
 
     def setUp(self):
