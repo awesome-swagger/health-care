@@ -1,10 +1,12 @@
 from drf_haystack.viewsets import HaystackViewSet
-from rest_framework import mixins, permissions, viewsets
+from rest_framework import mixins, permissions, serializers, status, viewsets
+from rest_framework.decorators import action
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.response import Response
 
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
+from django.utils.translation import ugettext_lazy as _
 
 from apps.core.models import (Diagnosis, EmployeeProfile,
                               InvitedEmailTemplate, Medication, Organization,
@@ -315,6 +317,29 @@ class EmployeeProfileViewSet(viewsets.ModelViewSet):
                 'employee_profile', flat=True).distinct()
             return qs.filter(id__in=list(care_team_members))
         return qs.none()
+
+    @action(methods=['post'], detail=True)
+    def add_role(self, request, *args, **kwargs):
+        employee = self.get_object()
+
+        if 'role' not in request.data:
+            raise serializers.ValidationError(_('Role ID is required.'))
+
+        role_id = request.data['role']
+        try:
+            role = ProviderRole.objects.get(id=role_id)
+        except ProviderRole.DoesNotExist:
+            raise serializers.ValidationError(_('Role does not exist.'))
+
+        if role in employee.roles.all():
+            raise serializers.ValidationError(_('Role already exists.'))
+
+        employee.roles.add(role)
+        serializer = self.serializer_class(employee)
+        return Response(
+            data=serializer.data,
+            status_code=status.HTTP_201_CREATED
+        )
 
 
 class DiagnosisViewSet(
