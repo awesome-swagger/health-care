@@ -364,7 +364,7 @@ class EmployeeProfileViewSet(viewsets.ModelViewSet):
 
         Request data should contain the `role` ID. For example:
 
-            POST /api/employee_profiles/<employee-id>/remove_role/
+            DELETE /api/employee_profiles/<employee-id>/remove_role/
             {
                 'role': <uuid-here>
             }
