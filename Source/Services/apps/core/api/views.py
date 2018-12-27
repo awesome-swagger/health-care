@@ -264,32 +264,29 @@ class ProviderSpecialtyViewSet(
 
 class EmployeeProfileViewSet(viewsets.ModelViewSet):
     """
-    Viewset for :model:`core.Facility`
+    Viewset for :model:`core.EmployeeProfile`
     ========
 
     create:
-        Creates :model:`core.Facility` object.
+        Creates :model:`core.EmployeeProfile` object.
         Only admins and employees are allowed to perform this action.
 
     update:
-        Updates :model:`core.Facility` object.
+        Updates :model:`core.EmployeeProfile` object.
         Only admins and employees are allowed to perform this action.
 
     partial_update:
-        Updates one or more fields of an existing organization object.
+        Updates one or more fields of an existing employee object.
         Only admins and employees are allowed to perform this action.
 
     retrieve:
-        Retrieves a :model:`core.Facility` instance.
+        Retrieves a :model:`core.EmployeeProfile` instance.
 
     list:
-        Returns list of all :model:`core.Facility` objects.
-
-        - Employees get all facilities they belong to.
-        - Patients only get the facility they're receiving care from.
+        Returns list of all :model:`core.EmployeeProfile` objects.
 
     delete:
-        Deletes a :model:`core.Facility` instance.
+        Deletes a :model:`core.EmployeeProfile` instance.
         Only admins and employees are allowed to perform this action.
     """
     serializer_class = EmployeeProfileSerializer
@@ -318,8 +315,21 @@ class EmployeeProfileViewSet(viewsets.ModelViewSet):
             return qs.filter(id__in=list(care_team_members))
         return qs.none()
 
-    @action(methods=['post'], detail=True)
-    def add_role(self, request, *args, **kwargs):
+    @action(methods=['post'],
+            detail=True,
+            permission_classes=(permissions.IsAuthenticated,
+                                IsAdminOrEmployee))
+    def add_role(self, request, pk, *args, **kwargs):
+        """
+        Adds role to the given employee.
+
+        Request data should contain the `role` ID. For example:
+
+            POST /api/employee_profiles/<employee-id>/add_role/
+            {
+                'role': <uuid-here>
+            }
+        """
         employee = self.get_object()
 
         if 'role' not in request.data:
