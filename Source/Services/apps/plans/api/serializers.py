@@ -1,8 +1,13 @@
+import datetime
+
+import pytz
+
 from django.contrib.auth import get_user_model
 from django.db.models import Avg
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
+from dateutils.relativedelta import relativedelta
 from rest_framework import serializers
 
 from ..models import (
@@ -471,6 +476,8 @@ class CarePlanByTemplateFacilitySerializer(serializers.ModelSerializer):
     data relevant in dashboard average endpoint
     """
     patient_name = serializers.SerializerMethodField()
+    other_plans = serializers.SerializerMethodField()
+    tasks_this_week = serializers.SerializerMethodField()
     average_outcome = serializers.SerializerMethodField()
     average_engagement = serializers.SerializerMethodField()
     risk_level = serializers.SerializerMethodField()
@@ -479,6 +486,7 @@ class CarePlanByTemplateFacilitySerializer(serializers.ModelSerializer):
         model = CarePlan
         fields = (
             'patient_name',
+            'other_plans',
             'average_outcome',
             'average_engagement',
             'risk_level',
@@ -486,6 +494,47 @@ class CarePlanByTemplateFacilitySerializer(serializers.ModelSerializer):
 
     def get_patient_name(self, obj):
         return obj.patient.user.get_full_name()
+
+    def get_other_plans(self, obj):
+        return obj.patient.care_plans.exclude(id=obj.id).count()
+
+    def get_tasks_this_week(self, obj):
+        now = timezone.now()
+        last_day = (6 - now.weekday()) + now.weekday()
+        start = now - relativedelta(days=now.weekday())
+        end = now + relativedelta(days=last_day)
+        start_date = datetime.datetime.combine(start,
+                                               datetime.time.min,
+                                               tzinfo=pytz.utc)
+        end_date = datetime.datetime.combine(end,
+                                             datetime.time.min,
+                                             tzinfo=pytz.utc)
+        patient_tasks = PatientTask.objects.filter(
+            plan=obj,
+            due_datetime__range=(start_date, end_date))
+        medication_tasks = MedicationTask.objects.filter(
+            medication_task_template__plan=obj,
+            due_datetime__range=(start_date, end_date))
+        symptom_tasks = SymptomTask.objects.filter(
+            plan=obj,
+            due_datetime__range=(start_date, end_date))
+        assessment_tasks = AssessmentTask.objects.filter(
+            plan=obj,
+            due_datetime__range=(start_date, end_date))
+        vital_tasks = VitalTask.objects.filter(
+            plan=obj,
+            due_datetime__range=(start_date, end_date))
+
+        total_patient_tasks = patient_tasks.count()
+        total_medication_tasks = medication_tasks.count()
+        total_symptom_tasks = symptom_tasks.count()
+        total_assessment_tasks = assessment_tasks.count()
+        total_vital_tasks = vital_tasks.count()
+        return total_patient_tasks + \
+            total_medication_tasks + \
+            total_symptom_tasks + \
+            total_assessment_tasks + \
+            total_vital_tasks
 
     def get_average_outcome(self, obj):
         tasks = AssessmentTask.objects.filter(
