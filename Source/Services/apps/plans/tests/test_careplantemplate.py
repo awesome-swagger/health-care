@@ -9,6 +9,7 @@ from faker import Faker
 from rest_framework import status
 from rest_framework.test import APITestCase
 
+from .mixins import PlansMixin
 from apps.tasks.models import (
     PatientTask,
     MedicationTask,
@@ -632,3 +633,65 @@ class TestCarePlanTemplateAverage(TasksMixin, APITestCase):
         avg_url = f'{url}?care_plans__patient__facility__organization={organization.id}'
         response = self.client.get(avg_url)
         self.assertAlmostEqual(response.data['risk_level'], risk_level)
+
+
+class TestCarePlanByTemplateFacility(PlansMixin, APITestCase):
+    """
+    Test cases for :view:`plans.CarePlanByTemplateFacility`
+    """
+
+    def setUp(self):
+        self.fake = Faker()
+        self.organization = self.create_organization()
+        self.facility = self.create_facility(self.organization)
+        self.employee = self.create_employee(**{
+            'organizations': [self.organization],
+            'facilities': [self.facility],
+            'facilities_managed': [self.facility]
+        })
+        self.user = self.employee.user
+        self.patient = self.create_patient(**{
+            'facility': self.facility
+        })
+
+        self.template = self.create_care_plan_template()
+
+        kwargs = {
+            'parent_lookup_patient__facility': self.facility.id,
+            'pk': self.template.id
+        }
+        self.url = reverse(
+            'plan-by-template-facility',
+            kwargs=kwargs
+        )
+        self.client.force_authenticate(user=self.user)
+
+    def test_get_care_plan_by_template_facility_status(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_care_plan_by_template_facility_status_unauthorized(self):
+        self.client.logout()
+        self.client.force_authenticate(self.patient.user)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_get_care_plan_by_template_facility_count(self):
+        plan_count = 5
+        for i in range(plan_count):
+            patient = self.create_patient(**{
+                'facility': self.facility
+            })
+            self.create_care_plan(**{
+                'plan_template': self.template,
+                'patient': patient
+            })
+
+        # create dummy care plans
+        for i in range(plan_count):
+            self.create_care_plan(**{
+                'plan_template': self.template
+            })
+
+        response = self.client.get(self.url)
+        self.assertEqual(response.data['count'], plan_count)

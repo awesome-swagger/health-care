@@ -26,8 +26,8 @@ urlpatterns = [
         name='type-plan-templates'
     ),
     url(
-        r'^facilities/(?P<parent_lookup_care_plans__patient__facility>[0-9a-f-]+)/care_plan_templates/(?P<pk>[0-9a-f-]+)/care_plans/$',
+        r'^facilities/(?P<parent_lookup_patient__facility>[0-9a-f-]+)/care_plan_templates/(?P<pk>[0-9a-f-]+)/care_plans/$',
         CarePlanByTemplateFacility.as_view(),
-        name='type-plan-templates'
+        name='plan-by-template-facility'
     ),
 ]

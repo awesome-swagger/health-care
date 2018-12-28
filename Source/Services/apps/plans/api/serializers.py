@@ -478,7 +478,7 @@ class CarePlanByTemplateFacilitySerializer(serializers.ModelSerializer):
     class Meta:
         model = CarePlan
         fields = (
-            'patient',
+            'patient_name',
             'average_outcome',
             'average_engagement',
             'risk_level',

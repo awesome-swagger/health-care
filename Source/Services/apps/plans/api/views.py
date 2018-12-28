@@ -808,7 +808,7 @@ class CarePlanByTemplateFacility(ParentViewSetPermissionMixin,
     )
     parent_lookup = [
         (
-            'care_plans__patient__facility',
+            'patient__facility',
             Facility,
             FacilityViewSet
         )
