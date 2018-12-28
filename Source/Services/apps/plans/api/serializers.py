@@ -23,7 +23,6 @@ from apps.core.api.serializers import (
     ProviderRoleSerializer,
     EmployeeProfileSerializer,
 )
-from apps.patients.api.serializers import PatientProfileSerializer
 from apps.tasks.models import (
     AssessmentTask,
     PatientTask,
@@ -457,7 +456,8 @@ class CarePlanTemplateAverageSerializer(serializers.ModelSerializer):
                        total_symptom_tasks +
                        total_assessment_tasks +
                        total_vital_tasks)
-        return round((total_completed / total_tasks) * 100) if total_tasks > 0 else 0
+        return round((total_completed / total_tasks) * 100) \
+            if total_tasks > 0 else 0
 
     def get_risk_level(self, obj):
         outcome = self.get_average_outcome(obj)
@@ -465,12 +465,12 @@ class CarePlanTemplateAverageSerializer(serializers.ModelSerializer):
         return round((outcome + engagement) / 2)
 
 
-class CarePlanTemplatePatientsSerializer(RepresentationMixin,
-                                         serializers.ModelSerializer):
+class CarePlanByTemplateFacilitySerializer(serializers.ModelSerializer):
     """
     serializer to be used by :model:`plans.CarePlan` with
     data relevant in dashboard average endpoint
     """
+    patient_name = serializers.SerializerMethodField()
     average_outcome = serializers.SerializerMethodField()
     average_engagement = serializers.SerializerMethodField()
     risk_level = serializers.SerializerMethodField()
@@ -483,12 +483,9 @@ class CarePlanTemplatePatientsSerializer(RepresentationMixin,
             'average_engagement',
             'risk_level',
         )
-        nested_serializers = [
-            {
-                'field': 'patient',
-                'serializer_class': PatientProfileSerializer,
-            }
-        ]
+
+    def get_patient_name(self, obj):
+        return obj.patient.user.get_full_name()
 
     def get_average_outcome(self, obj):
         tasks = AssessmentTask.objects.filter(
@@ -544,7 +541,8 @@ class CarePlanTemplatePatientsSerializer(RepresentationMixin,
                        total_symptom_tasks +
                        total_assessment_tasks +
                        total_vital_tasks)
-        return round((total_completed / total_tasks) * 100) if total_tasks > 0 else 0
+        return round((total_completed / total_tasks) * 100) \
+            if total_tasks > 0 else 0
 
     def get_risk_level(self, obj):
         outcome = self.get_average_outcome(obj)
