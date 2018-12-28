@@ -502,6 +502,90 @@ class TasksMixin(PlansMixin):
 
         return VitalResponseFactory(**kwargs)
 
+    def generate_assessment_tasks(self, plan, due_datetime):
+        template = self.create_assessment_task_template()
+        task = self.create_assessment_task(**{
+            'plan': plan,
+            'assessment_task_template': template,
+            'due_datetime': due_datetime
+        })
+        questions = template.questions.all()
+        self.create_responses_to_multiple_questions(template,
+                                                    task,
+                                                    questions)
+
+        # create incomplete assessment tasks
+        incomplete_template = self.create_assessment_task_template()
+        self.create_assessment_task(**{
+            'plan': plan,
+            'assessment_task_template': incomplete_template,
+            'due_datetime': due_datetime
+        })
+
+    def generate_vital_tasks(self, plan, due_datetime):
+        template = self.create_vital_task_template()
+        task = self.create_vital_task(**{
+            'plan': plan,
+            'vital_task_template': template,
+            'due_datetime': due_datetime
+        })
+        self.create_responses_to_multiple_vital_questions(template,
+                                                          task)
+
+        # create incomplete vital tasks
+        incomplete_template = self.create_vital_task_template()
+        self.create_vital_task(**{
+            'plan': plan,
+            'vital_task_template': incomplete_template,
+            'due_datetime': due_datetime
+        })
+
+    def generate_patient_tasks(self, plan, due_datetime):
+        template = self.create_patient_task_template()
+        self.create_patient_task(**{
+            'plan': plan,
+            'patient_task_template': template,
+            'due_datetime': due_datetime,
+            'status': 'done'
+        })
+
+        incomplete_template = self.create_patient_task_template()
+        self.create_patient_task(**{
+            'plan': plan,
+            'patient_task_template': incomplete_template,
+            'due_datetime': due_datetime
+        })
+
+    def generate_medication_tasks(self, plan, due_datetime):
+        template = self.create_medication_task_template(plan)
+        self.create_medication_task(**{
+            'medication_task_template': template,
+            'due_datetime': due_datetime,
+            'status': 'done'
+        })
+
+        incomplete_template = self.create_medication_task_template(plan)
+        self.create_medication_task(**{
+            'medication_task_template': incomplete_template,
+            'due_datetime': due_datetime
+        })
+
+    def generate_symptom_tasks(self, plan, due_datetime):
+        template = self.create_symptom_task_template()
+        symptom_task = self.create_symptom_task(**{
+            'plan': plan,
+            'symptom_task_template': template,
+            'due_datetime': due_datetime,
+        })
+        self.create_symptom_rating(symptom_task)
+
+        incomplete_template = self.create_symptom_task_template()
+        self.create_symptom_task(**{
+            'plan': plan,
+            'symptom_task_template': incomplete_template,
+            'due_datetime': due_datetime
+        })
+
 
 class StateTestMixin(object):
 

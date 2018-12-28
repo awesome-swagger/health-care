@@ -434,90 +434,6 @@ class TestCarePlanTemplateAverage(TasksMixin, APITestCase):
 
         return average_outcome
 
-    def generate_assessment_tasks(self, plan, due_datetime):
-        template = self.create_assessment_task_template()
-        task = self.create_assessment_task(**{
-            'plan': plan,
-            'assessment_task_template': template,
-            'due_datetime': due_datetime
-        })
-        questions = template.questions.all()
-        self.create_responses_to_multiple_questions(template,
-                                                    task,
-                                                    questions)
-
-        # create incomplete assessment tasks
-        incomplete_template = self.create_assessment_task_template()
-        self.create_assessment_task(**{
-            'plan': plan,
-            'assessment_task_template': incomplete_template,
-            'due_datetime': due_datetime
-        })
-
-    def generate_vital_tasks(self, plan, due_datetime):
-        template = self.create_vital_task_template()
-        task = self.create_vital_task(**{
-            'plan': plan,
-            'vital_task_template': template,
-            'due_datetime': due_datetime
-        })
-        self.create_responses_to_multiple_vital_questions(template,
-                                                          task)
-
-        # create incomplete vital tasks
-        incomplete_template = self.create_vital_task_template()
-        self.create_vital_task(**{
-            'plan': plan,
-            'vital_task_template': incomplete_template,
-            'due_datetime': due_datetime
-        })
-
-    def generate_patient_tasks(self, plan, due_datetime):
-        template = self.create_patient_task_template()
-        self.create_patient_task(**{
-            'plan': plan,
-            'patient_task_template': template,
-            'due_datetime': due_datetime,
-            'status': 'done'
-        })
-
-        incomplete_template = self.create_patient_task_template()
-        self.create_patient_task(**{
-            'plan': plan,
-            'patient_task_template': incomplete_template,
-            'due_datetime': due_datetime
-        })
-
-    def generate_medication_tasks(self, plan, due_datetime):
-        template = self.create_medication_task_template(plan)
-        self.create_medication_task(**{
-            'medication_task_template': template,
-            'due_datetime': due_datetime,
-            'status': 'done'
-        })
-
-        incomplete_template = self.create_medication_task_template(plan)
-        self.create_medication_task(**{
-            'medication_task_template': incomplete_template,
-            'due_datetime': due_datetime
-        })
-
-    def generate_symptom_tasks(self, plan, due_datetime):
-        template = self.create_symptom_task_template()
-        symptom_task = self.create_symptom_task(**{
-            'plan': plan,
-            'symptom_task_template': template,
-            'due_datetime': due_datetime,
-        })
-        self.create_symptom_rating(symptom_task)
-
-        incomplete_template = self.create_symptom_task_template()
-        self.create_symptom_task(**{
-            'plan': plan,
-            'symptom_task_template': incomplete_template,
-            'due_datetime': due_datetime
-        })
-
     def generate_average_engagement_records(self, organization):
         total_facilities = 3
         total_care_plans = 5
@@ -635,7 +551,7 @@ class TestCarePlanTemplateAverage(TasksMixin, APITestCase):
         self.assertAlmostEqual(response.data['risk_level'], risk_level)
 
 
-class TestCarePlanByTemplateFacility(PlansMixin, APITestCase):
+class TestCarePlanByTemplateFacility(TasksMixin, APITestCase):
     """
     Test cases for :view:`plans.CarePlanByTemplateFacility`
     """
@@ -695,3 +611,68 @@ class TestCarePlanByTemplateFacility(PlansMixin, APITestCase):
 
         response = self.client.get(self.url)
         self.assertEqual(response.data['count'], plan_count)
+
+    def test_get_other_plans_field(self):
+        plan_count = 5
+
+        # Assign patient to the care plan template
+        patient = self.create_patient(**{
+            'facility': self.facility
+        })
+        self.create_care_plan(**{
+            'plan_template': self.template,
+            'patient': patient
+        })
+
+        # Assign patient to other care plan templates
+        for i in range(plan_count):
+            self.create_care_plan(**{
+                'patient': patient
+            })
+
+        # create dummy care plans
+        for i in range(plan_count):
+            self.create_care_plan(**{
+                'plan_template': self.template
+            })
+
+        response = self.client.get(self.url)
+        self.assertEqual(
+            response.data['results'][0]['other_plans'],
+            plan_count
+        )
+
+    def test_get_tasks_this_week(self):
+        now = timezone.now()
+        next_week = now + relativedelta(days=7)
+
+        # Assign patient to the care plan template
+        patient = self.create_patient(**{
+            'facility': self.facility
+        })
+        plan = self.create_care_plan(**{
+            'plan_template': self.template,
+            'patient': patient
+        })
+
+        # Generate tasks this week
+        # NOTE: 2 tasks are created per generate call
+        self.generate_assessment_tasks(plan, now)
+        self.generate_patient_tasks(plan, now)
+        self.generate_medication_tasks(plan, now)
+        self.generate_symptom_tasks(plan, now)
+        self.generate_vital_tasks(plan, now)
+
+        # Generate tasks for next week
+        # NOTE: 2 tasks are created per generate call
+        self.generate_assessment_tasks(plan, next_week)
+        self.generate_patient_tasks(plan, next_week)
+        self.generate_medication_tasks(plan, next_week)
+        self.generate_symptom_tasks(plan, next_week)
+        self.generate_vital_tasks(plan, next_week)
+
+        response = self.client.get(self.url)
+        self.assertEqual(
+            response.data['results'][0]['tasks_this_week'],
+            10
+        )

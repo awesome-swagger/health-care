@@ -7,7 +7,7 @@ from django.db.models import Avg
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
-from dateutils.relativedelta import relativedelta
+from dateutil.relativedelta import relativedelta
 from rest_framework import serializers
 
 from ..models import (
@@ -487,6 +487,7 @@ class CarePlanByTemplateFacilitySerializer(serializers.ModelSerializer):
         fields = (
             'patient_name',
             'other_plans',
+            'tasks_this_week',
             'average_outcome',
             'average_engagement',
             'risk_level',
@@ -500,7 +501,7 @@ class CarePlanByTemplateFacilitySerializer(serializers.ModelSerializer):
 
     def get_tasks_this_week(self, obj):
         now = timezone.now()
-        last_day = (6 - now.weekday()) + now.weekday()
+        last_day = 6 - now.weekday()
         start = now - relativedelta(days=now.weekday())
         end = now + relativedelta(days=last_day)
         start_date = datetime.datetime.combine(start,
@@ -509,6 +510,7 @@ class CarePlanByTemplateFacilitySerializer(serializers.ModelSerializer):
         end_date = datetime.datetime.combine(end,
                                              datetime.time.min,
                                              tzinfo=pytz.utc)
+
         patient_tasks = PatientTask.objects.filter(
             plan=obj,
             due_datetime__range=(start_date, end_date))
