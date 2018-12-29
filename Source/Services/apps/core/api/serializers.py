@@ -10,6 +10,7 @@ from apps.core.models import (Diagnosis, EmployeeProfile, Facility,
                               ProviderTitle, Symptom)
 from care_adopt_backend import utils
 
+from ..mailer import EmployeeMailer
 from ..search_indexes import (
     DiagnosisIndex,
     ProviderRoleIndex,
@@ -371,6 +372,30 @@ class SymptomSearchSerializer(HaystackSerializerMixin,
         search_fields = ('text', 'name')
 
 
+class EmployeeIDSerializer(serializers.ModelSerializer):
+    """
+    Serializer to be used for :model:`core.EmployeeProfile` with ID field.
+    """
+
+    class Meta:
+        model = EmployeeProfile
+        fields = (
+            'id',
+        )
 
 
+class InviteEmployeeSerializer(serializers.Serializer):
+    """
+    Serializer to be used for sending an invitation email to multiple employees
+    """
 
+    employees = EmployeeIDSerializer(many=True)
+    email_content = serializers.CharField(max_length=1000)
+
+    def save(self):
+        employees = self.validated_data['employees']
+        email_content = self.validated_data['email_content']
+
+        mailer = EmployeeMailer()
+        for employee in employees:
+            mailer.send_invitation(employee, email_content)
