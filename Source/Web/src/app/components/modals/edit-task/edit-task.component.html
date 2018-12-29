@@ -85,22 +85,24 @@
 		</div>
 	</div>
 	<!--/.flex (for start day and frequency)-->
-	<label class="noMargin">Repeats </label>
-	<div class="flex marBottom24">
-		<label class="styledInput marRight32">
-			<input type="radio" class="styledInput__input" formControlName="repeat_amount" [value]="-1" />
-			<span class="styledInput__radio"></span> Until&nbsp;Plan&nbsp;Ends
-		</label>
-		<label class="styledInput">
-			<input type="radio" class="styledInput__input" formControlName="repeat_amount" [value]="taskForm.controls.repeat_amount_input.value" />
-			<span class="styledInput__radio"></span>
-			<div class="modal__inputWrap70 marRight8">
-				<input type="number" formControlName="repeat_amount_input" class="input fullWidth" min="1" />
-			</div>
-			times
-		</label>
-	</div>
-	<!--/.flex (for radio buttons)-->
+	<ng-container *ngIf="taskForm.get('frequency').value !== 'once'">
+		<label class="noMargin">Repeats </label>
+		<div class="flex marBottom24">
+			<label class="styledInput marRight32">
+				<input type="radio" class="styledInput__input" formControlName="repeat_amount" [value]="-1" />
+				<span class="styledInput__radio"></span> Until&nbsp;Plan&nbsp;Ends
+			</label>
+			<label class="styledInput">
+				<input type="radio" class="styledInput__input" formControlName="repeat_amount" [value]="taskForm.controls.repeat_amount_input.value" />
+				<span class="styledInput__radio"></span>
+				<div class="modal__inputWrap70 marRight8">
+					<input type="number" formControlName="repeat_amount_input" class="input fullWidth" min="1" />
+				</div>
+				times
+			</label>
+		</div>
+		<!--/.flex (for radio buttons)-->
+	</ng-container>
 
 	<!--TODO: Hide appear and due times on care team tasks-->
 	<div class="flex justifySpaceBetween marBottom24">

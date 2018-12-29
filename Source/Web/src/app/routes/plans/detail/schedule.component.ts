@@ -7,6 +7,7 @@ import {
   AddStreamComponent,
   AddVitalComponent,
   CreateAssessmentComponent,
+  CreateStreamComponent,
   EditTaskComponent,
   GoalComponent,
   PreviewVitalComponent,
@@ -695,15 +696,40 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
   public addStream() {
     this.modals.open(AddStreamComponent, {
       closeDisabled: true,
+      data: {
+          taskList: this.messageQueues,
+          planTemplateId: this.planTemplateId,
+      },
       width: '768px',
-    }).subscribe(() => {});
+    }).subscribe((data) => {
+      if (data) {
+        switch (data.nextAction) {
+          case 'create-stream':
+            this.editStream(null);
+        	case 'edit-stream':
+            this.editStream(data.message);
+        		break;
+        	default:
+        		break;
+        }
+      }
+    });
   }
 
-  public editStream() {
-    this.modals.open(AddStreamComponent, {
+  public editStream(stream) {
+    this.modals.open(CreateStreamComponent, {
       closeDisabled: true,
+      data: {
+        stream: stream,
+        planTemplateId: this.planTemplateId,
+      },
       width: '768px',
-    }).subscribe(() => {});
+    }).subscribe((updatedStream) => {
+      if (updatedStream) {
+        console.log(updatedStream);
+        stream = updatedStream;
+      }
+    });
   }
 
   public confirmDeleteStream() {

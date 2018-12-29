@@ -51,19 +51,19 @@
     </div>
     <div class="info__cell">
       <label>Avg Engagement</label>
-      <div class="pill pill--red">
+      <div class="pill" [ngStyle]="{'background': getPillColor(carePlanAverage.average_engagement)}">
         {{carePlanAverage.average_engagement}}%
       </div>
     </div>
     <div class="info__cell">
       <label>Avg Outcome</label>
-      <div class="pill pill--purple">
+      <div class="pill" [ngStyle]="{'background': getPillColor(carePlanAverage.average_outcome)}">
         {{carePlanAverage.average_outcome}}%
       </div>
     </div>
     <div class="info__cell">
       <label>Risk Level</label>
-      <div class="pill pill--red">
+      <div class="pill pill--red" [ngStyle]="{'background': getPillColor(carePlanAverage.risk_level)}">
         Med Risk {{carePlanAverage.risk_level}}%
       </div>
     </div>

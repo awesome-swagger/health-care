@@ -1,4 +1,4 @@
-<h1 class="modal__title">Add Message Stream</h1>
+<h1 class="modal__title">Add Care Messages</h1>
 
 <!--TODO: If on a care plan template, show the following-->
 <div *ngIf="" class="marCenter marCenter--twoThirds">
@@ -14,43 +14,20 @@
 
 <div class="grid2col">
   <div class="gridCell--11 marRight32">
-    <input type="text" class="input input--search fullWidth marBottom32" placeholder="Search Message Streams" />
+    <input type="text" class="input input--search fullWidth marBottom32" placeholder="Search Care Messages"  [(ngModel)]="searchInput" (ngModelChange)="filterMessages()"/>
     <div class="listBox">
       <ul class="nameList">
-        <li class="nameList__item nameList__item--padLeft nameList__item--target">
+        <li class="nameList__item nameList__item--padLeft nameList__item--target"
+          [ngClass]="{'nameList__item--target--active': message.id === selectedTemplate?.id}"
+          *ngFor="let message of careMessagesShown"
+          (click)="selectedTemplate = message;">
           <div class="flex alignCenter justifySpaceBetween fullWidth">
-            <span>Anxiety</span>
+            <span>{{message.name}}</span>
             <div class="flex">
-              <button class="button button--icon button--icon--small">
+              <button class="button button--icon button--icon--small" (click)="clickEditMessage(message)">
                 <i class="ss-write"></i>
               </button>
-              <button class="button button--icon button--icon--small">
-                <i class="ss-delete"></i>
-              </button>
-            </div>
-          </div>
-        </li>
-        <li class="nameList__item nameList__item--padLeft nameList__item--target nameList__item--target--active">
-          <div class="flex alignCenter justifySpaceBetween fullWidth">
-            <span>Depression</span>
-            <div class="flex">
-              <button class="button button--icon button--icon--small">
-                <i class="ss-write"></i>
-              </button>
-              <button class="button button--icon button--icon--small">
-                <i class="ss-delete"></i>
-              </button>
-            </div>
-          </div>
-        </li>
-        <li class="nameList__item nameList__item--padLeft nameList__item--target">
-          <div class="flex alignCenter justifySpaceBetween fullWidth">
-            <span>Heart Disease</span>
-            <div class="flex">
-              <button class="button button--icon button--icon--small">
-                <i class="ss-write"></i>
-              </button>
-              <button class="button button--icon button--icon--small">
+              <button class="button button--icon button--icon--small" (click)="clickDeleteMessage()">
                 <i class="ss-delete"></i>
               </button>
             </div>
@@ -59,28 +36,25 @@
       </ul>
     </div> <!--/.listBox-->
 
-    <button class="button button--iconText marBottom24">
-      <i class="ss-plus"></i> Create New Stream
+    <button class="button button--iconText marBottom24" (click)="clickNewStream()">
+      <i class="ss-plus"></i> Create New Care Message
     </button>
 
     <div class="modal__buttons modal__buttons--full">
-      <button class="button button--2nd">
+      <button class="button button--2nd" (click)="clickCancel()">
         Cancel
       </button>
-      <button class="button">
-        Save
+      <button class="button" (click)="clickNext()">
+        Next
       </button>
     </div>
   </div> <!--/.gridCell--11-->
 
   <div class="gridCell--21">
     <div class="modal__details">
-      <!--TODO: Show the following if no stream is selected-->
-      <h2 *ngIf="" class="modal__empty">Select a message stream to see details</h2>
-
-      <!--TODO: Show the following div when a stream is selected-->
-      <div>
-        <h2>Depression</h2>
+      <h2 *ngIf="!selectedTemplate" class="modal__empty">Select a message stream to see details</h2>
+      <div *ngIf="selectedTemplate">
+        <h2>{{selectedTemplate.name}}</h2>
         <table class="fullWidth">
           <thead>
             <tr>
@@ -88,19 +62,9 @@
             </tr>
           </thead>
           <tbody>
-            <tr>
+            <tr *ngFor="let message of selectedTemplate.messages">
               <td class="left">
-                Depression is both a brain disorder and a state of mind. The brain is unique—it is the only organ whose function we consciously experience because the brain is the organ of the mind.
-              </td>
-            </tr>
-            <tr>
-              <td class="left">
-                Depression is worst in the night.
-              </td>
-            </tr>
-            <tr>
-              <td class="left">
-                Depression will affect 1 in 4 adults in their lifetime it accounts for 99% of all mind-brain illness.
+                {{message.text}}
               </td>
             </tr>
           </tbody>

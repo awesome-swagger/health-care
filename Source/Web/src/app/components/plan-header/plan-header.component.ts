@@ -124,4 +124,16 @@ export class PlanHeaderComponent implements OnInit, OnDestroy {
   public set planTemplate(value) {
     this._planTemplate = value;
   }
+
+  public getPillColor(percentage) {
+    if (percentage >= 90) {
+      return '#4caf50';
+    } else if (percentage <= 89 && percentage >= 70) {
+      return '#ff9800';
+    } else if (percentage <= 69 && percentage >= 50) {
+       return '#ca2c4e';
+    } else {
+      return '#880e4f';
+    }
+  }
 }

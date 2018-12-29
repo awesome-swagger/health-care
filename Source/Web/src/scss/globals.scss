@@ -1257,6 +1257,10 @@ td, th {
   position: relative;
   width: 100%;
 
+  &--dash {
+    width: auto;
+  }
+
   &--dk {
     background: rgba(0,0,0,.1);
   }

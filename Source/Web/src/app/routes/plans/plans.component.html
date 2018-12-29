@@ -113,7 +113,7 @@
       <div class="info__cell">
         <label>Risk Level</label>
         <div class="pill" [ngStyle]="{'background': getPillColor(averagesByCarePlan.risk_level)}">
-          Low Risk {{averagesByCarePlan.risk_level}}%
+          {{getRiskLevelText(averagesByCarePlan.risk_level)}} {{averagesByCarePlan.risk_level}}%
         </div>
       </div>
     </div> <!--/.info-->
@@ -173,7 +173,7 @@
               <td class="left">
                 <a [routerLink]="['/plan', item.id, 'info']">{{item.name}}</a>
               </td>
-              <td class="left">{{item.is_active?'Active':'Inactive'}} </td>
+              <td class="left">{{item.is_active ? 'Active':'Inactive'}} </td>
               <td>{{item.averages.total_patients}}</td>
               <td>{{item.averages.total_facilities}}</td>
               <td>
@@ -181,7 +181,7 @@
                   121:10
                 </div>
               </td>
-              <td>{{item.averages.duration_weeks}} weeks</td>
+              <td>{{item.duration_weeks}} weeks</td>
               <td>
                 <div class="pill" [ngStyle]="{'background': getPillColor(item.averages.average_engagement)}">
                   {{item.averages.average_engagement}}%
@@ -194,7 +194,7 @@
               </td>
               <td>
                 <div class="pill" [ngStyle]="{'background': getPillColor(item.averages.risk_level)}">
-                  On Track {{item.averages.risk_level}}%
+                  {{getRiskLevelText(item.averages.risk_level)}} {{item.averages.risk_level}}%
                 </div>
               </td>
               <!-- <td>

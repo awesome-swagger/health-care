@@ -62,7 +62,7 @@ export class PlansComponent implements OnDestroy, OnInit {
             return {
               serviceArea: key,
               serviceAreaObj: templatesGrouped[key][0].service_area,
-              totalPatients: _sumBy(templatesGrouped[key], (o) => o.averages.total_patients),
+              totalPatients: _sumBy(templatesGrouped[key], (o) => o.averages ? o.averages.total_patients : 0),
               templates: templatesGrouped[key],
             };
           });
@@ -141,7 +141,13 @@ export class PlansComponent implements OnDestroy, OnInit {
           resolve(carePlanTemplateAverages);
         },
         (err) => {
-          reject(err);
+          resolve({
+            average_engagement: 0,
+            average_outcome: 0,
+            risk_level: 0,
+            total_facilities: 0,
+            total_patients: 0,
+          });
         },
         () => {
           averagesSub.unsubscribe();
@@ -211,6 +217,18 @@ export class PlansComponent implements OnDestroy, OnInit {
 
   public applyFacilityFilter() {
     this.facilitiesFiltered = Object.keys(this.facilitiesChecked);
+  }
+
+  public getRiskLevelText(riskLevel) {
+    if (riskLevel >= 90) {
+      return 'On Track';
+    } else if (riskLevel <= 89 && riskLevel >= 70) {
+      return 'Low Risk';
+    } else if (riskLevel <= 69 && riskLevel >= 50) {
+       return 'Med Risk';
+    } else {
+      return 'High Risk';
+    }
   }
 
   public getPillColor(percentage) {

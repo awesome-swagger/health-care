@@ -18,9 +18,7 @@ export class CreateAssessmentComponent implements OnInit {
   constructor(
     private modal: ModalService,
     private store: StoreService,
-  ) {
-
-  }
+  ) { }
 
   public ngOnInit() {
     console.log(this.data);
@@ -134,7 +132,7 @@ export class CreateAssessmentComponent implements OnInit {
     this.updateAssessment().then((assessment: any) => {
       this.assessment.id = assessment.id;
       this.createOrUpdateAllQuestions().then(() => {
-        this.modal.close(null);
+        this.modal.close(this.assessment);
       });
     });
   }
