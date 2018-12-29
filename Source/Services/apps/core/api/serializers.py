@@ -389,8 +389,23 @@ class InviteEmployeeSerializer(serializers.Serializer):
     Serializer to be used for sending an invitation email to multiple employees
     """
 
-    employees = EmployeeIDSerializer(many=True)
+    employees = serializers.ListField(
+        child=serializers.UUIDField(),
+        min_length=1
+    )
     email_content = serializers.CharField(max_length=1000)
+
+    def validate_employees(self, value):
+        employees = []
+        for employee_id in value:
+            try:
+                employee = EmployeeProfile.objects.get(id=employee_id)
+                employees.append(employee)
+            except EmployeeProfile.DoesNotExist:
+                raise serializers.ValidationError(
+                    f'Employee ID: {employee_id} does not exist.'
+                )
+        return employees
 
     def save(self):
         employees = self.validated_data['employees']
