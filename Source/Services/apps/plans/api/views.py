@@ -218,6 +218,7 @@ class CarePlanViewSet(viewsets.ModelViewSet):
     filterset_fields = (
         'patient',
         'patient__facility__organization',
+        'plan_template',
     )
 
     def get_queryset(self):
