@@ -251,6 +251,15 @@ class CarePlanViewSet(viewsets.ModelViewSet):
         serializer = ProviderRoleSerializer(available_roles, many=True)
         return Response(serializer.data)
 
+    def calculate_average_satisfaction(self, queryset):
+        tasks = AssessmentTask.objects.filter(
+            plan__in=queryset,
+            assessment_task_template__tracks_satisfaction=True
+        ).aggregate(average=Avg('responses__rating'))
+        average = tasks['average'] or 0
+        avg = round((average / 5) * 100)
+        return avg
+
     def calculate_average_outcome(self, queryset):
         tasks = AssessmentTask.objects.filter(
             plan__in=queryset,
@@ -347,6 +356,47 @@ class CarePlanViewSet(viewsets.ModelViewSet):
             'total_facilities': total_facilities,
             'total_care_plans': total_care_plans,
             'average_outcome': average_outcome,
+            'average_engagement': average_engagement,
+            'risk_level': risk_level
+        }
+        return Response(data)
+
+    @action(methods=['get'],
+            detail=False,
+            permission_classes=(permissions.IsAuthenticated,
+                                IsAdminOrEmployee))
+    def patient_average(self, request, *args, **kwargs):
+        """
+        Returns the average values for outcome, satisfaction, engagement,
+        and risk level.
+
+        IMPORTANT NOTE:
+        ---
+        - Make sure to pass the {patient ID} and {care plan template ID} when
+        sending requests to this endpoint to filter care plans. Otherwise,
+        this endpoint will return all care plans.
+        - The URL parameters to be used are:
+             - **patient**
+             - **plan_template**
+
+        SAMPLE REQUEST:
+        ---
+        ```
+        GET /api/care_plans/patient_average/?patient=<uuid>&plan_template=<uuid>
+        ```
+        """
+
+        base_queryset = self.get_queryset()
+        # Call distinct to remove duplicates from filtering
+        queryset = self.filter_queryset(base_queryset).distinct()
+
+        average_satisfaction = self.calculate_average_satisfaction(queryset)
+        average_outcome = self.calculate_average_outcome(queryset)
+        average_engagement = self.calculate_average_engagement(queryset)
+        risk_level = round((average_outcome + average_engagement) / 2)
+        data = {
+            'average_outcome': average_outcome,
+            'average_satisfaction': average_satisfaction,
             'average_engagement': average_engagement,
             'risk_level': risk_level
         }
