@@ -192,6 +192,26 @@ class TestCarePlanTemplateUsingEmployee(TasksMixin, APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.data['count'], 5)
 
+    def test_get_care_team_task_templates(self):
+        for i in range(5):
+            self.create_team_task_template(**{
+                'plan_template': self.template,
+                'is_manager_task': False
+            })
+
+        # create dummy records
+        for i in range(5):
+            self.create_team_task_template(**{
+                'is_manager_task': False
+            })
+
+        url = reverse(
+            'care-team-task-templates-by-care-plan-templates-list',
+            kwargs={'parent_lookup_plan_template': self.template.id}
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.data['count'], 5)
+
     def test_get_patients(self):
         for i in range(5):
             self.create_care_plan(**{
