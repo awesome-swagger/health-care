@@ -954,6 +954,29 @@ class CareTeamTaskTemplateByCarePlanTemplate(ParentViewSetPermissionMixin,
     ]
 
 
+class InfoMessageQueueByCarePlanTemplate(ParentViewSetPermissionMixin,
+                                         NestedViewSetMixin,
+                                         mixins.ListModelMixin,
+                                         viewsets.GenericViewSet):
+    """
+    Returns list of :model:`plans.InfoMessageQueue related to the given
+    care plan template.
+    """
+    serializer_class = InfoMessageQueueSerializer
+    queryset = InfoMessageQueue.objects.all()
+    permission_classes = (
+        permissions.IsAuthenticated,
+        IsAdminOrEmployee,
+    )
+    parent_lookup = [
+        (
+            'plan_template',
+            CarePlanTemplate,
+            CarePlanTemplateViewSet
+        )
+    ]
+
+
 class PatientByCarePlanTemplate(ParentViewSetPermissionMixin,
                                 NestedViewSetMixin,
                                 mixins.ListModelMixin,
