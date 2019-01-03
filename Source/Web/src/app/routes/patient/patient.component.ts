@@ -74,22 +74,36 @@ export class PatientComponent implements OnDestroy, OnInit {
   }
 
   public getCarePlans(patientId) {
-    let promise = new Promise((resolve, reject) => {
-      let patientSub = this.store.CarePlan.readListPaged({
-        patient: patientId,
-      }).subscribe(
-        (plans) => {
-          resolve(plans);
-        },
-        (err) => {
-          reject(err);
-        },
-        () => {
-          patientSub.unsubscribe();
-        },
-      );
+    return new Promise((resolve, reject) => {
+        let carePlanSub = this.store.PatientCarePlans(patientId).read().subscribe(
+          (plans) => {
+            resolve(plans);
+          },
+          (err) => {
+            reject(err);
+          },
+          () => {
+            carePlanSub.unsubscribe();
+          }
+        )
     });
-    return promise;
+
+    // let promise = new Promise((resolve, reject) => {
+    //   let patientSub = this.store.CarePlan.readListPaged({
+    //     patient: patientId,
+    //   }).subscribe(
+    //     (plans) => {
+    //       resolve(plans);
+    //     },
+    //     (err) => {
+    //       reject(err);
+    //     },
+    //     () => {
+    //       patientSub.unsubscribe();
+    //     },
+    //   );
+    // });
+    // return promise;
   }
 
   public openFinancialDetails() {

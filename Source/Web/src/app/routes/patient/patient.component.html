@@ -25,8 +25,8 @@
   <ng-container *ngFor="let plan of carePlans; let i = index">
     <div class="flex alignCenter justifySpaceBetween">
       <div class="flex alignCenter">
-        <h2 class="noMargin marRight32">{{plan.name}} ({{plan.type}})</h2>
-        <a [routerLink]="['/patient', plan.patient, 'dashboard']" class="button button--iconText">
+        <h2 class="noMargin marRight32">{{plan?.plan_template?.name}}</h2>
+        <a [routerLink]="['/patient', patient.id, 'dashboard', plan.id]" class="button button--iconText">
           <i class="ss-standard ss-view"></i> View Care Plan
         </a>
       </div>
@@ -48,7 +48,7 @@
         <div class="flex alignCenter justifyCenter">
           <div class="picName marRight8">
             <img class="picName__img" src="../../../assets/img/profile.svg" />
-            {{plan.careTeam[0]}}
+            {{plan.careTeam ? plan.careTeam[0] : ''}}
           </div>
           <div class="tool__anchor">
             <a class="flex alignCenter" (click)="teamListOpen === i ? teamListOpen = -1 : teamListOpen = i">
@@ -57,7 +57,7 @@
             </a>
             <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : teamListOpen === i }">
               <div class="tool__text">
-                <div *ngFor="let practitioner of plan.careTeam.slice(1)" class="picName marBottom16">
+                <div *ngFor="let practitioner of plan.careTeam?.slice(1)" class="picName marBottom16">
                   <img class="picName__img" src="../../../assets/img/profile--2.svg" />
                   {{practitioner}}
                 </div>

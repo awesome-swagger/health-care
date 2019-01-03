@@ -11,7 +11,8 @@ import {
   map as _map,
   flattenDeep as _flattenDeep,
   mean as _mean,
-  sum as _sum
+  sum as _sum,
+  compact as _compact
 } from 'lodash';
 import * as moment from 'moment';
 import patientsData from './patients-data';
@@ -44,17 +45,42 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
     this.activePatients = [];
     this.activePatientsGrouped = [];
     this.getPatients().then((patients: any) => {
-      patients = patientsData.results; // TODO: remove
+      // patients = patientsData.results; // TODO: remove
       this.activePatients = _filter(patients, p => p.is_active);
       this.activePatientsGrouped = this.groupPatientsByFacility(patients);
 
-      this.allServiceAreas.forEach(serviceArea => {
-        this.activeServiceAreas[serviceArea] = true;
-      });
+      this.activePatients.forEach((patient, i) => {
+        let carePlanSub = this.store.PatientCarePlans(patient.id).read().subscribe(
+          (plans) => {
+            this.activePatients[i].care_plans = plans.map((plan) => {
+              return {
+                name: plan.plan_template.name,
+                service_area: plan.plan_template.service_area || "Undefined",
+                current_week: plan.current_week || 0,
+                total_weeks: plan.plan_template.duration_weeks || 0,
+                time_in_minutes: plan.time || 0,
+                engagement: plan.engagement || 0,
+                outcomes: plan.outcomes || 0,
+                risk_level: plan.risk_level || 0,
+                next_check_in: plan.next_check_in || 0,
+                tasks_this_week: plan.tasks_this_week || 0,
+              }
+            });
+            this.allServiceAreas.forEach(serviceArea => {
+              this.activeServiceAreas[serviceArea] = true;
+            });
+            this.allCarePlans.forEach(carePlan => {
+              this.activeCarePlans[carePlan] = true;
+            });
+          },
+          (err) => {
 
-      this.allCarePlans.forEach(carePlan => {
-        this.activeCarePlans[carePlan] = true;
-      });
+          },
+          () => {
+            carePlanSub.unsubscribe();
+          }
+        )
+      })
 
       console.log(this.uniqueFacilities());
       console.log(this.activePatientsGrouped);
@@ -147,7 +173,7 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
   }
 
   public routeToPatient(patient) {
-    this.router.navigate(['patient', patient.id, 'overview']);
+    this.router.navigate(['patient', patient.id]);
   }
 
   public getAlsoPlans(i, patient) {
@@ -180,7 +206,7 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
 
   get allPlans() {
     if (this.activePatients) {
-      return _flattenDeep(_map(this.activePatients, p => p.care_plans));
+      return _compact(_flattenDeep(_map(this.activePatients, p => p.care_plans)));
     }
   }
 
@@ -202,7 +228,7 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
 
   public facilityPlans(i) {
     if (this.getPatientsForFacility(i)) {
-      return _flattenDeep(_map(this.getPatientsForFacility(i), p => p.care_plans));
+      return _compact(_flattenDeep(_map(this.getPatientsForFacility(i), p => p.care_plans)));
     }
   }
 

@@ -100,7 +100,7 @@ const routes: Routes = [
     canActivate: [ CanActivateViaAuthGuard ],
   },
   {
-    path: 'patient/:id/dashboard',
+    path: 'patient/:patientId/dashboard/:planId',
     component: PatientDashboardComponent,
     data: { title: 'Patient Dashboard', },
     canActivate: [ CanActivateViaAuthGuard ],
