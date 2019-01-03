@@ -3,7 +3,7 @@ import { ModalService, ConfirmModalComponent } from '../../modules/modals';
 import { PopoverOptions } from '../../modules/popover';
 import { AuthService, StoreService } from '../../services';
 import { AddPlanComponent } from './modals/add-plan/add-plan.component';
-import { groupBy as _groupBy } from 'lodash';
+import { groupBy as _groupBy, sumBy as _sumBy } from 'lodash';
 
 @Component({
   selector: 'app-plans',
@@ -12,7 +12,6 @@ import { groupBy as _groupBy } from 'lodash';
 })
 export class PlansComponent implements OnDestroy, OnInit {
 
-  public showInactive = false;
   public organization = null;
   public facilities = [];
   public facilitiesOpen = false;
@@ -21,11 +20,14 @@ export class PlansComponent implements OnDestroy, OnInit {
   public facilitiesFiltered = [];
   public averagesByCarePlan = null;
   public carePlanTemplates = [];
+  public serviceAreas = [];
   public planTemplatesGrouped = [];
 
-  public accordionsOpen = [];
+  public showServiceAreaHelp = false;
+  public showCarePlanHelp = false;
+  public showAveragesHelp = false;
 
-  public activePatients = [];
+  public accordionsOpen = [];
 
   private organizationSub = null;
 
@@ -50,11 +52,19 @@ export class PlansComponent implements OnDestroy, OnInit {
       this.getPlanTemplates(this.organization).then((templates: any) => {
         this.getAllTemplateAverages(this.organization, templates).then((templatesWithAverages: any) => {
           this.carePlanTemplates = templatesWithAverages;
+          this.serviceAreas = this.carePlanTemplates.map((obj) => {
+            return obj.service_area;
+          });
           let templatesGrouped = _groupBy(this.carePlanTemplates, (obj) => {
-            return obj.type.id;
+            return obj.service_area.id;
           });
           this.planTemplatesGrouped = Object.keys(templatesGrouped).map((key: any) => {
-            return {type: key, typeObj: templatesGrouped[key][0].type, templates: templatesGrouped[key]};
+            return {
+              serviceArea: key,
+              serviceAreaObj: templatesGrouped[key][0].service_area,
+              totalPatients: _sumBy(templatesGrouped[key], (o) => o.averages ? o.averages.total_patients : 0),
+              templates: templatesGrouped[key],
+            };
           });
         });
       });
@@ -131,7 +141,13 @@ export class PlansComponent implements OnDestroy, OnInit {
           resolve(carePlanTemplateAverages);
         },
         (err) => {
-          reject(err);
+          resolve({
+            average_engagement: 0,
+            average_outcome: 0,
+            risk_level: 0,
+            total_facilities: 0,
+            total_patients: 0,
+          });
         },
         () => {
           averagesSub.unsubscribe();
@@ -149,7 +165,6 @@ export class PlansComponent implements OnDestroy, OnInit {
           item.averages = templateAverages;
           itemsProcessed++;
           if (itemsProcessed === array.length) {
-            console.log('done');
             resolve(templates);
           }
         }).catch((err) => {
@@ -202,5 +217,29 @@ export class PlansComponent implements OnDestroy, OnInit {
 
   public applyFacilityFilter() {
     this.facilitiesFiltered = Object.keys(this.facilitiesChecked);
+  }
+
+  public getRiskLevelText(riskLevel) {
+    if (riskLevel >= 90) {
+      return 'On Track';
+    } else if (riskLevel <= 89 && riskLevel >= 70) {
+      return 'Low Risk';
+    } else if (riskLevel <= 69 && riskLevel >= 50) {
+       return 'Med Risk';
+    } else {
+      return 'High Risk';
+    }
+  }
+
+  public getPillColor(percentage) {
+    if (percentage >= 90) {
+      return '#4caf50';
+    } else if (percentage <= 89 && percentage >= 70) {
+      return '#ff9800';
+    } else if (percentage <= 69 && percentage >= 50) {
+       return '#ca2c4e';
+    } else {
+      return '#880e4f';
+    }
   }
 }

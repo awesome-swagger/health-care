@@ -12,50 +12,12 @@ export class AddPlanComponent implements OnInit {
 
   public data = null;
 
-  public planTypes = [];
-  public plans = [
-    {
-      name: 'Remote Patient Management',
-      icon: 'ss-satellitedish',
-      description: 'Remote Patient Managment (RPM) care plans are designed to allow care givers to monitor patient health data.',
-    },
-    {
-      name: 'Behavioral Health Initiative',
-      icon: 'icomoon-bhi',
-      description: 'Behavioral Health Initiative (BHI) care plans are designed for behavioral health care management between one provider and one patient.',
-    },
-    {
-      name: 'Psychiatric Collaborative Care Management',
-      icon: 'icomoon-cocm',
-      description: 'Psychiatric Collaberative Care Management (CoCM) care plans are for a tiad of care between a PCP, behavioral health care manager, and psychiatric consultant.',
-    },
-    {
-      name: 'Chronic Care Management',
-      icon: 'ss-heart',
-      description: 'Chronic Care Mangement (CCM) care plans are for patients with two or more chornic conditions who are not considered complex patients.',
-    },
-    {
-      name: 'Complex Chronic Care Management',
-      icon: 'ss-addheart',
-      description: 'Complex Chronic Care Management (CCCM) care plans are designed for patients with two or more chronic conditions who are considered complex patients.',
-    },
-    {
-      name: 'Transitional Care Management',
-      icon: 'ss-signpost',
-      description: 'Transitional Care Management (TCM) care plans are designed to support the patient between the transition of care from one care provider to another.',
-    },
-  ];
-
-  public selectedPlan = {
-    name: 'Remote Patient Management',
-    icon: 'ss-satellitedish',
-    description: 'Remote Patient Managment (RPM) care plans are designed to allow care givers to monitor patient health data.',
-  };
-
-
+  public serviceAreas = [];
+  public selectedServiceArea = null;
   public nameInput: string = null;
   public durationInput: number = 6;
   public selectedType: string = null;
+  public multiOpen = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -66,22 +28,23 @@ export class AddPlanComponent implements OnInit {
 
   public ngOnInit() {
     console.log(this.data);
-    this.getPlanTypes().then((planTypes: any) => {
-      this.planTypes = planTypes;
+    this.getServiceAreas().then((serviceAreas: any) => {
+      this.serviceAreas = serviceAreas;
+      // this.selectedServiceArea = this.serviceAreas[0];
     });
   }
 
-  public getPlanTypes() {
+  public getServiceAreas() {
     let promise = new Promise((resolve, reject) => {
-      let typesSub = this.store.CarePlanTemplateType.readListPaged().subscribe(
-        (planTypes) => {
-          resolve(planTypes);
+      let serviceAreasSub = this.store.ServiceArea.readListPaged().subscribe(
+        (serviceAreas) => {
+          resolve(serviceAreas);
         },
         (err) => {
           reject(err);
         },
         () => {
-          typesSub.unsubscribe();
+          serviceAreasSub.unsubscribe();
         }
       );
     });
@@ -96,7 +59,7 @@ export class AddPlanComponent implements OnInit {
     let createSub = this.store.CarePlanTemplate.create({
       name: this.nameInput,
       duration_weeks: this.durationInput,
-      type: this.selectedType,
+      service_area: this.selectedServiceArea.id,
     }).subscribe(
       (res) => {
         this.modals.close(null);

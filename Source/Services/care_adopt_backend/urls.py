@@ -30,6 +30,7 @@ from apps.patients.api.views import (
 )
 from apps.plans.api.views import (
     CarePlanTemplateTypeViewSet,
+    ServiceAreaViewSet,
     CarePlanTemplateViewSet,
     CarePlanViewSet,
     PlanConsentViewSet,
@@ -174,6 +175,12 @@ router.register(
     r'care_plan_template_types',
     CarePlanTemplateTypeViewSet,
     base_name='care_plan_template_types')
+router.register(
+    r'service_areas',
+    ServiceAreaViewSet,
+    base_name='service_areas')
+router.register(
+    r'care_plan_templates', CarePlanTemplateViewSet, base_name='care_plan_templates')
 care_plan_template_routes = router.register(
     r'care_plan_templates',
     CarePlanTemplateViewSet,

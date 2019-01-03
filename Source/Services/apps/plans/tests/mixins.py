@@ -8,6 +8,7 @@ from apps.patients.tests.mixins import PatientsMixin
 from .factories import (
     CarePlanFactory,
     CarePlanTemplateTypeFactory,
+    ServiceAreaFactory,
     CarePlanTemplateFactory,
     CareTeamMemberFactory,
     GoalTeamplateFactory,
@@ -47,10 +48,22 @@ class PlansMixin(PatientsMixin):
 
         return CarePlanTemplateTypeFactory(**kwargs)
 
+    def create_service_area(self, **kwargs):
+        if 'name' not in kwargs:
+            kwargs.update({
+                'name': self.fake.name()
+            })
+        return ServiceAreaFactory(**kwargs)
+
     def create_care_plan_template(self, **kwargs):
         if 'name' not in kwargs:
             kwargs.update({
                 'name': self.fake.name()
+            })
+
+        if 'service_area' not in kwargs:
+            kwargs.update({
+                'service_area': self.create_service_area()
             })
 
         if 'type' not in kwargs:

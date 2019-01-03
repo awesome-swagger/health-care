@@ -1,77 +1,69 @@
 <!--TODO: Use this modal for adding care team tasks, and patient tasks-->
-<h1 class="modal__title">Add CM Task</h1>
-<!--TODO: If adding a task to a care plan template, show the following-->
-<div *ngIf="" class="iconText iconText--wrap iconText--autoHeight error marBottom32">
-  <i class="iconText__icon ss-alert"></i>
-  <span class="error__text">
-    Making changes here will affect X patients currently assigned to this care plan.
-  </span>
+<h1 class="modal__title">{{getTaskType().title}}</h1>
+<!-- TODO: If adding a task to a care plan template, show the following -->
+<div class="iconText iconText--wrap iconText--autoHeight error marBottom32">
+	<i class="iconText__icon ss-alert"></i>
+	<span class="error__text">
+		Making changes here will affect X patients currently assigned to this care plan.
+	</span>
 </div>
 <!--TODO: If adding a task to a care plan instance, show the following-->
-<h5>NOTE: You are adding a task to one patient's care plan. To add a task for everyone, go to care plans.</h5>
-<input type="text" class="input input--search fullWidth marBottom32" placeholder="Search Tasks" />
+<h5 *ngIf="">NOTE: You are adding a task to one patient's care plan. To add a task for everyone, go to care plans.</h5>
+<input type="text" class="input input--search fullWidth marBottom32" placeholder="Search Tasks" [(ngModel)]="searchInput" (ngModelChange)="filterTasks()" />
 <div class="listBox">
-  <ul class="nameList">
-    <li class="nameList__item nameList__item--padLeft nameList__item--target" [ngClass]="{'nameList__item--target--active':task == selectedTask}"  *ngFor="let task of tasks">
-        <label class="styledInput marRight16 flex fullWidth">
-          <input type="radio" class="styledInput__input" [(ngModel)]="selectedTask" name="selectedTask" [value]="task" />
-        <div *ngIf="!task.edit" class="flex alignCenter justifySpaceBetween fullWidth">
-        <span>{{task.name}}</span>
-        <div class="flex">
-          <button class="button button--icon button--icon--small"
-          (click)="task.edit=!task.edit">
-            <i class="ss-write"></i>
-          </button>
-          <button class="button button--icon button--icon--small">
-            <i class="ss-delete"></i>
-          </button>
-        </div>
-      </div>
-    </label>        
-      <form *ngIf="task.edit" class="nameList__form">
-        <div class="nameList__inputWrap">
-          <input type="text" class="input fullWidth" [(ngModel)]="task.name" [ngModelOptions]="{standalone: true}" />
-        </div>
-        <div class="flex">
-          <button class="button button--icon button--icon--small"
-          (click)="task.edit=!task.edit">
-            <i class="ss-undo"></i>
-          </button>
-          <button class="button button--icon button--icon--small"
-          (click)="task.edit=!task.edit; updateTaskName(task)">
-            <i class="ss-floppydisk"></i>
-          </button>
-        </div>
-      </form>
-    </li>
-  </ul>
-</div> <!--/.listBox-->
+	<ul class="nameList">
+		<li class="nameList__item nameList__item--padLeft nameList__item--target" [ngClass]="{'nameList__item--target--active': task.id == selectedTask?.id}" *ngFor="let task of tasksShown" (click)="selectedTask = task;">
+			<div *ngIf="!task.edit" class="flex alignCenter justifySpaceBetween fullWidth">
+				<span>{{task.name}}</span>
+				<div class="flex">
+					<button class="button button--icon button--icon--small" (click)="task.edit=!task.edit; task.origName = task.name;">
+						<i class="ss-write"></i>
+					</button>
+					<button class="button button--icon button--icon--small" (click)="clickDeleteTask()">
+						<i class="ss-delete"></i>
+					</button>
+				</div>
+			</div>
+			<form *ngIf="task.edit" class="nameList__form">
+				<div class="nameList__inputWrap">
+					<input type="text" class="input fullWidth" [(ngModel)]="task.name" [ngModelOptions]="{standalone: true}" />
+				</div>
+				<div class="flex">
+					<button class="button button--icon button--icon--small" type="button" (click)="task.edit=!task.edit; task.name = task.origName;">
+						<i class="ss-undo"></i>
+					</button>
+					<button class="button button--icon button--icon--small" type="submit" (click)="updateTaskName(task)">
+						<i class="ss-floppydisk"></i>
+					</button>
+				</div>
+			</form>
+		</li>
+	</ul>
+</div>
+<!--/.listBox-->
 
-<button *ngIf="!createTask" class="button button--iconText"
-(click)="createTask=!createTask">
-  <i class="ss-plus"></i> Create New Task
+<button *ngIf="!createTask" class="button button--iconText" (click)="createTask=!createTask">
+	<i class="ss-plus"></i> Create New Task
 </button>
 <form *ngIf="createTask" class="nameList__form">
-  <div class="nameList__inputWrap">
-    <input type="text" class="input fullWidth" [(ngModel)]="newTaskName" [ngModelOptions]="{standalone: true}" />
-  </div>
-  <div class="flex">
-    <button class="button button--icon button--icon--small"
-    (click)="createTask=!createTask">
-      <i class="ss-undo"></i>
-    </button>
-    <button class="button button--icon button--icon--small" 
-    (click)="createTask=!createTask; addTask(newTaskName)">
-      <i class="ss-plus"></i>
-    </button>
-  </div>
+	<div class="nameList__inputWrap">
+		<input type="text" class="input fullWidth" [(ngModel)]="newTaskName" [ngModelOptions]="{standalone: true}" />
+	</div>
+	<div class="flex">
+		<button class="button button--icon button--icon--small" type="button" (click)="createTask=!createTask;">
+			<i class="ss-undo"></i>
+		</button>
+		<button class="button button--icon button--icon--small" (click)="addTask(newTaskName)">
+			<i class="ss-plus"></i>
+		</button>
+	</div>
 </form>
 
 <div class="modal__buttons">
-  <button class="button button--2nd" (click)="close()">
-    Cancel
-  </button>
-  <button class="button" [disabled]="!selectedTask" (click)="next(selectedTask)">
-    Next
-  </button>
+	<button class="button button--2nd" (click)="close()">
+		Cancel
+	</button>
+	<button class="button" [disabled]="!selectedTask" (click)="next(selectedTask)">
+		Next
+	</button>
 </div>

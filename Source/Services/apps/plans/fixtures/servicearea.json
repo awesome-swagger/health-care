@@ -1,0 +1,49 @@
+[{
+	"model": "plans.servicearea",
+	"pk": "2a19f573-3ef8-4657-b2af-654b4ff40d59",
+	"fields": {
+		"created": "2018-12-12T20:26:21.351Z",
+		"modified": "2018-12-12T20:26:21.351Z",
+		"name": "Cardiology"
+	}
+}, {
+	"model": "plans.servicearea",
+	"pk": "8374b72b-a783-40db-8e82-b8ca0dc5bd56",
+	"fields": {
+		"created": "2018-12-12T20:26:26.503Z",
+		"modified": "2018-12-12T20:26:26.503Z",
+		"name": "Internal Medicine"
+	}
+}, {
+	"model": "plans.servicearea",
+	"pk": "aad6713f-7fd2-4f87-ba71-cdcabaad1680",
+	"fields": {
+		"created": "2018-12-12T20:26:31.819Z",
+		"modified": "2018-12-12T20:26:31.819Z",
+		"name": "Oncology"
+	}
+}, {
+	"model": "plans.servicearea",
+	"pk": "ac2033c6-fa00-409e-b7b5-ba428324ccce",
+	"fields": {
+		"created": "2018-12-12T20:26:36.887Z",
+		"modified": "2018-12-12T20:26:36.887Z",
+		"name": "Orthopedics"
+	}
+}, {
+	"model": "plans.servicearea",
+	"pk": "c6cb0a14-d4c9-4544-8870-38f5fb4dcabb",
+	"fields": {
+		"created": "2018-12-12T20:26:10.312Z",
+		"modified": "2018-12-12T20:26:10.312Z",
+		"name": "Bariatrics"
+	}
+}, {
+	"model": "plans.servicearea",
+	"pk": "d513ff4d-76eb-4b05-8e7e-8c45a33eac76",
+	"fields": {
+		"created": "2018-12-12T20:26:16.666Z",
+		"modified": "2018-12-12T20:26:16.666Z",
+		"name": "Behavioral Health"
+	}
+}]

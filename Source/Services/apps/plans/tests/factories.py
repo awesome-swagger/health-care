@@ -21,6 +21,16 @@ class CarePlanTemplateFactory(factory.django.DjangoModelFactory):
         django_get_or_create = ('name', )
 
 
+class ServiceAreaFactory(factory.django.DjangoModelFactory):
+    """
+    Factory for :model:`plans.ServiceArea`
+    """
+
+    class Meta:
+        model = 'plans.ServiceArea'
+        django_get_or_create = ('name', )
+
+
 class CarePlanFactory(factory.django.DjangoModelFactory):
     """
     Factory for :model:`plans.CarePlan`

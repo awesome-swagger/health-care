@@ -1255,6 +1255,11 @@ td, th {
   padding: rem-calc(24);
   margin-bottom: rem-calc(32);
   position: relative;
+  width: 100%;
+
+  &--dash {
+    width: auto;
+  }
 
   &--dk {
     background: rgba(0,0,0,.1);
@@ -1491,15 +1496,17 @@ td, th {
   &__input {
     display: none;
 
-    &:checked {
+    &:not(.scale__input--unselectable) {
+      &:checked {
 
-      &+ .scale__number {
-        @include scaleNumberChecked($purple);
+        &+ .scale__number {
+          @include scaleNumberChecked($purple);
 
-        &--2 { @include scaleNumberChecked($red); }
-        &--3 { @include scaleNumberChecked($orange); }
-        &--4 { @include scaleNumberChecked($yellow); }
-        &--5 { @include scaleNumberChecked($lime); }
+          &--2 { @include scaleNumberChecked($red); }
+          &--3 { @include scaleNumberChecked($orange); }
+          &--4 { @include scaleNumberChecked($yellow); }
+          &--5 { @include scaleNumberChecked($lime); }
+        }
       }
     }
   }

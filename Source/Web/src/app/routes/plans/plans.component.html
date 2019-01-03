@@ -1,104 +1,129 @@
 <div class="ssContainer ssContents">
+  <div class="right">
+    <!-- <label class="styledInput marRight48">
+      <input type="checkbox" class="styledInput__input" [(ngModel)]="showInactive" (ngModelChange)="fetchPlanTemplates()" />
+      <span class="styledInput__box"></span>
+      View Inactive Plans
+    </label> -->
+    <button class="button button--iconText" (click)="addPlan()">
+      <i class="ss-plus"></i>
+      Add Care Plan
+    </button>
+  </div>
   <div class="flexHeader">
     <div class="flex alignCenter">
+      <h1 class="noMargin marRight8">Service Areas ({{serviceAreas?.length}})</h1>
+      <div class="tool__anchor">
+        <button class="button button--icon button--icon--small"
+        (click)="showServiceAreaHelp = !showServiceAreaHelp">
+          <i class="ss-help"></i>
+        </button>
+        <div class="tool__tip" [ngClass]="{'isOpen': showServiceAreaHelp}">
+          <div class="tool__text">
+            Service Areas contain a group of care plans based on an area of service line.
+          </div>
+        </div>
+      </div> <!--/.tool__anchor-->
       <h1 class="noMargin marRight8">Care Plans ({{carePlanTemplates.length}})</h1>
       <div class="tool__anchor">
         <button class="button button--icon button--icon--small"
-        (click)="toolCPOpen=!toolCPOpen">
+        (click)="showCarePlanHelp=!showCarePlanHelp">
           <i class="ss-help"></i>
         </button>
-        <div class="tool__tip" [ngClass]="{ 'isOpen' : toolCPOpen }">
+        <div class="tool__tip" [ngClass]="{'isOpen': showCarePlanHelp}">
           <div class="tool__text">
-            The Care Plans view provides an overview of all current care plans and care plan statistics across the entire organization.
+            Care Plans are condition specific plans for care management and patient engagement.
           </div>
         </div>
       </div> <!--/.tool__anchor-->
     </div> <!--/.flex (for page title and tooltip)-->
-    <div class="flex">
-      <label class="styledInput marRight48">
-        <input type="checkbox" class="styledInput__input" [(ngModel)]="showInactive" (ngModelChange)="fetchPlanTemplates()" />
-        <span class="styledInput__box"></span>
-        View Inactive Plans
-      </label>
-      <button class="button button--iconText" (click)="addPlan()">
-        <i class="ss-plus"></i>
-        Add Care Plan
-      </button>
+    <div>
+      <label>Facilities</label>
+      <div class="drop marBottom48">
+        <div class="drop__input" (click)="facilitiesOpen=!facilitiesOpen">
+          All
+        </div>
+        <app-popover [options]="facilitiesDropOptions" [(visible)]="facilitiesOpen">
+          <ul class="drop__dropdown isOpen">
+            <div class="drop__buttons">
+              <button class="button button--iconText" (click)="clickCheckAllFacilities()">
+                <i class="ss-check ss-standard"></i> Check All
+              </button>
+              <button class="button button--iconText" (click)="clickUncheckAllFacilities()">
+                <i class="ss-ban"></i> Uncheck All
+              </button>
+            </div>
+
+            <li class="drop__option">
+              <input class="input input--search drop__innerInput" type="text" placeholder="Search" />
+            </li>
+            <li class="drop__option" *ngFor="let facility of facilities">
+              <label class="drop__checkbox styledInput">
+                <input type="checkbox" class="styledInput__input" [(ngModel)]="facilitiesChecked[facility.id]" (ngModelChange)="applyFacilityFilter()" />
+                <span class="styledInput__box"></span>
+                {{facility.name}}
+              </label>
+            </li>
+          </ul>
+        </app-popover>
+      </div> <!--/.drop-->
     </div>
   </div> <!--/.flexHeader-->
 
-  <label>Filter by Facility</label>
-  <div class="drop marBottom48">
-    <div class="drop__input" (click)="facilitiesOpen=!facilitiesOpen">
-      All
-    </div>
-    <app-popover [options]="facilitiesDropOptions" [(visible)]="facilitiesOpen">
-      <ul class="drop__dropdown isOpen">
-        <div class="drop__buttons">
-          <button class="button button--iconText" (click)="clickCheckAllFacilities()">
-            <i class="ss-check ss-standard"></i> Check All
-          </button>
-          <button class="button button--iconText" (click)="clickUncheckAllFacilities()">
-            <i class="ss-ban"></i> Uncheck All
-          </button>
+  <div class="flex alignCenter marBottom24">
+    <h2 class="noMargin">Averages by Care Plan (Past 30 Days)</h2>
+    <div class="tool__anchor">
+      <button class="button button--icon button--icon--small"
+        (click)="showAveragesHelp = !showAveragesHelp">
+        <i class="ss-help"></i>
+      </button>
+      <div class="tool__tip" [ngClass]="{'isOpen': showAveragesHelp}">
+        <div class="tool__text">
+          The Care Plan view provides an of all current Care Plans within Service Areas statistics across the entire organization.
         </div>
-
-        <li class="drop__option">
-          <input class="input input--search drop__innerInput" type="text" placeholder="Search" />
-        </li>
-        <li class="drop__option" *ngFor="let facility of facilities">
-          <label class="drop__checkbox styledInput">
-            <input type="checkbox" class="styledInput__input" [(ngModel)]="facilitiesChecked[facility.id]" (ngModelChange)="applyFacilityFilter()" />
-            <span class="styledInput__box"></span>
-            {{facility.name}}
-          </label>
-        </li>
-      </ul>
-    </app-popover>
-  </div> <!--/.drop-->
-
-  <h2>Averages by Care Plan (Past 30 Days)</h2>
+      </div>
+    </div> <!--/.tool__anchor-->
+  </div>
   <div class="flex" *ngIf="averagesByCarePlan">
     <div class="info info--horiz">
       <div class="info__cell">
-        <label>Patients</label>
+        <label>Total Patients</label>
         {{averagesByCarePlan.total_patients}}
       </div>
       <div class="info__cell">
-        <label>Facilities</label>
+        <label>Total Facilities</label>
         {{averagesByCarePlan.total_facilities}}
       </div>
       <div class="info__cell">
-        <label>Care Plans</label>
+        <label>Total Care Plans</label>
         {{averagesByCarePlan.total_care_plans}}
       </div>
       <div class="info__cell">
-        <label>Avg Engagement</label>
-        <div class="pill pill--red">
-          {{averagesByCarePlan.average_engagement}}%
-        </div>
-      </div>
-      <div class="info__cell">
-        <label>Avg Outcome</label>
-        <div class="pill pill--yellow">
+        <label>Avg Outcomes</label>
+        <div class="pill" [ngStyle]="{'background': getPillColor(averagesByCarePlan.average_outcome)}">
           {{averagesByCarePlan.average_outcome}}%
         </div>
       </div>
       <div class="info__cell">
-        <label>Avg Risk Level</label>
-        <div class="pill pill--yellow">
-          Low Risk {{averagesByCarePlan.risk_level}}%
+        <label>Avg Engagement</label>
+        <div class="pill" [ngStyle]="{'background': getPillColor(averagesByCarePlan.average_engagement)}">
+          {{averagesByCarePlan.average_engagement}}%
+        </div>
+      </div>
+      <div class="info__cell">
+        <label>Risk Level</label>
+        <div class="pill" [ngStyle]="{'background': getPillColor(averagesByCarePlan.risk_level)}">
+          {{getRiskLevelText(averagesByCarePlan.risk_level)}} {{averagesByCarePlan.risk_level}}%
         </div>
       </div>
     </div> <!--/.info-->
   </div> <!--/.flex-->
-
-  <div class="accordion" [ngClass]="{ 'isOpen' : accordionsOpen[plan.type] }" *ngFor="let plan of planTemplatesGrouped; let i = index">
-    <div class="accordion__head" (click)="accordionsOpen[plan.type]=!accordionsOpen[plan.type]">
-      <span class="accordion__title">{{plan.typeObj.name}} ({{plan.typeObj.acronym|uppercase}}) ({{plan.templates.length}})</span>
+  <div class="accordion" [ngClass]="{ 'isOpen' : accordionsOpen[plan.serviceArea] }" *ngFor="let plan of planTemplatesGrouped; let i = index">
+    <div class="accordion__head" (click)="accordionsOpen[plan.serviceArea]=!accordionsOpen[plan.serviceArea]">
+      <span class="accordion__title">{{plan.serviceAreaObj.name}} ({{plan.templates.length}}) ({{plan.totalPatients}})</span>
       <div class="accordion__right">
         <div class="pill pill--yellow marRight16">
-          {{plan.typeObj.acronym|uppercase}} 4:11
+          {{plan.serviceAreaObj.acronym|uppercase}} 4:11
         </div>
         <div class="pill pill--red">
           Med Risk 64%
@@ -114,10 +139,9 @@
           <thead>
             <tr>
               <th class="thSortable">
-                <span class="thSortable__text thSortable__text--left">Care Plan</span>
+                <span class="thSortable__text thSortable__text--left">Pathways</span>
               </th>
-              <!--TODO: Only show status column when viewing inactive plans too-->
-              <th class="thSortable" *ngIf="showInactive">
+              <th class="thSortable">
                 <span class="thSortable__text thSortable__text--left">Status</span>
               </th>
               <th class="thSortable">
@@ -147,30 +171,30 @@
           <tbody *ngFor="let item of plan.templates">
             <tr>
               <td class="left">
-                <a [routerLink]="['/plan', item.id, 'schedule']">{{item.name}}</a>
+                <a [routerLink]="['/plan', item.id, 'info']">{{item.name}}</a>
               </td>
-              <td class="left" *ngIf="showInactive">{{item.is_active?'Active':'Inactive'}} </td>
+              <td class="left">{{item.is_active ? 'Active':'Inactive'}} </td>
               <td>{{item.averages.total_patients}}</td>
-              <td>5</td>
+              <td>{{item.averages.total_facilities}}</td>
               <td>
                 <div class="pill pill--lime">
                   121:10
                 </div>
               </td>
-              <td>{{item.averages.duration_weeks}} weeks</td>
+              <td>{{item.duration_weeks}} weeks</td>
               <td>
-                <div class="pill pill--lime">
+                <div class="pill" [ngStyle]="{'background': getPillColor(item.averages.average_engagement)}">
                   {{item.averages.average_engagement}}%
                 </div>
               </td>
               <td>
-                <div class="pill pill--lime">
+                <div class="pill" [ngStyle]="{'background': getPillColor(item.averages.average_outcome)}">
                   {{item.averages.average_outcome}}%
                 </div>
               </td>
               <td>
-                <div class="pill pill--lime">
-                  On Track {{item.averages.risk_level}}%
+                <div class="pill" [ngStyle]="{'background': getPillColor(item.averages.risk_level)}">
+                  {{getRiskLevelText(item.averages.risk_level)}} {{item.averages.risk_level}}%
                 </div>
               </td>
               <!-- <td>

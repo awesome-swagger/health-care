@@ -1,43 +1,40 @@
 <div class="flexHeader marBottom16">
   <div class="flex alignCenter">
-    <i class="icomoon-cocm iconText__icon iconText__icon--noTop iconText__icon--big"></i>
     <div *ngIf="!editName" class="flex alignCenter">
       <h1 class="noMargin marRight8">
-        <span title="Psychiatric Collaborative Care Management">{{planTemplate?.type.acronym|uppercase}}</span> {{planTemplate?.name}}
+        <span>{{planTemplate?.service_area.name}},</span> {{planTemplate?.name}}
       </h1>
-      <button class="button button--icon" (click)="editName=!editName">
+      <button class="button button--icon" (click)="clickEditName()">
         <i class="ss-write"></i>
       </button>
     </div>
-    <form *ngIf="editName" class="flex">
-      <input type="text" class="input" placeholder="Care Plan Name" />
-      <button class="button button--icon button--flex" (click)="editName=!editName">
+    <form *ngIf="editName" class="flex" (submit)="saveEditName">
+      <input type="text" class="input" placeholder="Care Plan Name" [(ngModel)]="newPlanName" [ngModelOptions]="{standalone: true}" />
+      <button class="button button--icon button--flex" type="button" (click)="cancelEditName()">
         <i class="ss-undo"></i>
       </button>
-      <button class="button button--icon button--flex" (click)="editName=!editName">
+      <button class="button button--icon button--flex" type="submit" (click)="saveEditName()">
         <i class="ss-floppydisk"></i>
       </button>
     </form>
   </div>
   <div class="flex alignCenter">
-    <h2 class="noMargin marRight8">{{planTemplate?.duration_weeks}} weeks</h2>
-    <button class="button button--icon"
-    (click)="openPlanDuration()">
-      <i class="ss-write"></i>
-    </button>
-  </div>
-  <div class="flex">
-    <!-- <button class="button button--iconText marRight32"
+      <h2 class="noMargin marRight8">{{planTemplate?.duration_weeks}} weeks</h2>
+      <button class="button button--icon marRight24"
+        (click)="openPlanDuration()">
+        <i class="ss-write"></i>
+      </button>
+    <button class="button button--iconText marRight32"
     (click)="addPlan()">
       <i class="ss-files"></i> Duplicate
-    </button> -->
+    </button>
     <button class="button button--iconText"
     (click)="openReassignPatients()">
       <i class="ss-ban"></i> Make Inactive
     </button>
   </div>
 </div> <!--/.flexHeader-->
-<h5 class="marBottom32">Lasted edited {{moment(planTemplate?.modified).format('MMM D, YYYY')}}</h5>
+<!-- <h5 class="marBottom32">Lasted edited {{moment(planTemplate?.modified).format('MMM D, YYYY')}}</h5> -->
 <!-- <h5 class="marBottom32">Lasted edited by Stacy Smith, PhD&ensp;|&ensp;Jun 15, 2018</h5> -->
 
 <div class="flex" *ngIf="carePlanAverage">
@@ -54,19 +51,19 @@
     </div>
     <div class="info__cell">
       <label>Avg Engagement</label>
-      <div class="pill pill--red">
+      <div class="pill" [ngStyle]="{'background': getPillColor(carePlanAverage.average_engagement)}">
         {{carePlanAverage.average_engagement}}%
       </div>
     </div>
     <div class="info__cell">
       <label>Avg Outcome</label>
-      <div class="pill pill--purple">
+      <div class="pill" [ngStyle]="{'background': getPillColor(carePlanAverage.average_outcome)}">
         {{carePlanAverage.average_outcome}}%
       </div>
     </div>
     <div class="info__cell">
       <label>Risk Level</label>
-      <div class="pill pill--red">
+      <div class="pill pill--red" [ngStyle]="{'background': getPillColor(carePlanAverage.risk_level)}">
         Med Risk {{carePlanAverage.risk_level}}%
       </div>
     </div>

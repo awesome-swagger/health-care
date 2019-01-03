@@ -13,17 +13,17 @@
 
 <div class="grid2col">
   <div class="gridCell--11 marRight32">
-    <input type="text" class="input input--search fullWidth marBottom32" placeholder="Search Tasks" />
+    <input type="text" class="input input--search fullWidth marBottom32" placeholder="Search Tasks" [(ngModel)]="searchInput" (ngModelChange)="filterVitals()" />
     <div class="listBox">
       <ul class="nameList">
-        <li class="nameList__item nameList__item--padLeft nameList__item--target" [ngClass]="{'nameList__item--target--active':vitalTemplatePreview.vital == vital}" *ngFor="let vital of vitalTemplates" (click)="showVitalPreview(vital)">
+        <li class="nameList__item nameList__item--padLeft nameList__item--target" [ngClass]="{'nameList__item--target--active':vitalTemplatePreview.vital == vital}" *ngFor="let vital of vitalTemplatesShown" (click)="showVitalPreview(vital)">
           <div class="flex alignCenter justifySpaceBetween fullWidth">
             <div>
               <span class="marRight32">{{vital.name}}</span>
               <i class="iconSmall ss-transfer"></i>
             </div>
             <div class="flex">
-              <button class="button button--icon button--icon--small" (click)="editVitalTemplate($event,vital)">
+              <button class="button button--icon button--icon--small" (click)="editVitalTemplate($event, vital)">
                 <i class="ss-write"></i>
               </button>
               <button class="button button--icon button--icon--small">
@@ -35,16 +35,29 @@
       </ul>
     </div> <!--/.listBox-->
 
-    <button class="button button--iconText">
-      <i class="ss-plus"></i> Create New Vital
+    <button *ngIf="!createVital" class="button button--iconText" (click)="createVital=!createVital">
+    	<i class="ss-plus"></i> Create New Vital
     </button>
+    <form *ngIf="createVital" class="nameList__form">
+    	<div class="nameList__inputWrap">
+    		<input type="text" class="input fullWidth" [(ngModel)]="newVitalName" [ngModelOptions]="{standalone: true}" />
+    	</div>
+    	<div class="flex">
+    		<button class="button button--icon button--icon--small" type="button" (click)="createVital=!createVital;">
+    			<i class="ss-undo"></i>
+    		</button>
+    		<button class="button button--icon button--icon--small" (click)="createNewVital()">
+    			<i class="ss-plus"></i>
+    		</button>
+    	</div>
+    </form>
 
     <div class="modal__buttons modal__buttons--full">
       <button class="button button--2nd" (click)="close()">
         Cancel
       </button>
       <!--TODO: Clicking "next" triggers the edit-task modal, for scheduling the vital within the care plan-->
-      <button class="button">
+      <button class="button" [disabled]="!vitalTemplatePreview.vital" (click)="editVitalTemplate($event, vital)">
         Next
       </button>
     </div>
@@ -53,10 +66,10 @@
   <div class="gridCell--21">
     <div class="modal__details">
       <!--TODO: Show the following if no vital is selected-->
-      <h2 *ngIf="vitalTemplatePreview.vitals.length <= 0" class="modal__empty">Select a vital report to see details</h2>
+      <h2 *ngIf="!vitalTemplatePreview.vital" class="modal__empty">Select a vital report to see details</h2>
 
       <!--TODO: Show the following div when a vital is selected-->
-      <div  *ngIf="vitalTemplatePreview.vitals.length > 0">
+      <div *ngIf="vitalTemplatePreview.vital">
         <div class="flex alignCenter justifySpaceBetween marBottom8">
           <div class="flex alignCenter">
             <h2 class="noMargin marRight32">{{vitalTemplatePreview.vital.name}}</h2>
@@ -71,20 +84,22 @@
         <p class="marBottom24">
           When you get up in the morning, record the time you went to bed, and the time you got up, as well as the number of times you awoke during the night.
         </p>
-        <table class="fullWidth" style="display: block; max-height: 200px; overflow-y: auto">
-          <thead>
-            <tr>
-              <th class="left">Metric</th>
-              <th class="left">Type</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let vp of vitalTemplatePreview.vitals">
-              <td class="left">{{vp.prompt |titlecase}}</td>
-              <td class="left">{{vp.answer_type|titlecase}}</td>
-            </tr>
-          </tbody>
-        </table>
+        <div class="fullWidth" style="display: block; max-height: 200px; overflow-y: auto">
+          <table class="fullWidth">
+            <thead>
+              <tr>
+                <th class="left">Metric</th>
+                <th class="left">Type</th>
+              </tr>
+            </thead>
+            <tbody class="fullWidth">
+              <tr *ngFor="let vp of vitalTemplatePreview.vitals">
+                <td class="left">{{vp.prompt |titlecase}}</td>
+                <td class="left">{{vp.answer_type|titlecase}}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div> <!--/.modal__details-->
   </div> <!--/.gridCell-21-->

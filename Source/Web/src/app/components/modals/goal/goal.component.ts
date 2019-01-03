@@ -13,7 +13,7 @@ export class GoalComponent implements OnInit {
   public nameInput = '';
   public descriptionInput = '';
   public focusInput = '';
-  public startDayInput = '';
+  public startDayInput = 0;
   public durationChoice = 0;
   public weeksInput = 1;
 
@@ -30,7 +30,7 @@ export class GoalComponent implements OnInit {
       this.focusInput = g.focus;
       this.startDayInput = g.start_on_day;
       this.durationChoice = g.duration_weeks !== -1 ? 1 : 0;
-      this.weeksInput = g.duration_weeks !== -1 ? g.duration_weeks : null;
+      this.weeksInput = g.duration_weeks !== -1 ? g.duration_weeks : 1;
     }
   }
 
@@ -47,6 +47,9 @@ export class GoalComponent implements OnInit {
       case 1:
         durationWeeks = this.weeksInput;
         break;
+    }
+    if (this.startDayInput < 0) {
+      this.startDayInput = 0;
     }
     this.modals.close({
       name: this.nameInput,

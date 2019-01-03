@@ -58,23 +58,28 @@ class PatientTaskTemplateViewSet(viewsets.ModelViewSet):
     serializer_class = PatientTaskTemplateSerializer
     permission_classes = (permissions.IsAuthenticated, EmployeeOrReadOnly, )
     queryset = PatientTaskTemplate.objects.all()
+    filter_backends = (DjangoFilterBackend, )
+    filterset_fields = (
+        'plan_template__id',
+    )
 
     def get_queryset(self):
-        qs = self.queryset
+        queryset = super(PatientTaskTemplateViewSet, self).get_queryset()
         employee_profile = utils.employee_profile_or_none(self.request.user)
         patient_profile = utils.patient_profile_or_none(self.request.user)
 
         if employee_profile is not None:
             # TODO: Only get task templates for patients this employee
             # has access to
-            return qs.all()
+            return queryset
         elif patient_profile is not None:
             patient_plans = patient_profile.care_plans.all()
             plan_templates = patient_plans.values_list("plan_template",
                                                        flat=True)
-            return qs.filter(plan_template__id__in=plan_templates)
+            queryset = queryset.filter(plan_template__id__in=plan_templates)
+            return queryset
         else:
-            return qs.none()
+            return queryset
 
 
 class PatientTaskViewSet(viewsets.ModelViewSet):
@@ -110,6 +115,10 @@ class TeamTaskTemplateViewSet(viewsets.ModelViewSet):
     serializer_class = TeamTaskTemplateSerializer
     permission_classes = (permissions.IsAuthenticated, EmployeeOrReadOnly, )
     queryset = TeamTaskTemplate.objects.all()
+    filter_backends = (DjangoFilterBackend, )
+    filterset_fields = (
+        'plan_template__id',
+    )
 
 
 class TeamTaskViewSet(viewsets.ModelViewSet):
@@ -160,6 +169,10 @@ class SymptomTaskTemplateViewSet(viewsets.ModelViewSet):
     serializer_class = SymptomTaskTemplateSerializer
     permission_classes = (permissions.IsAuthenticated, EmployeeOrReadOnly, )
     queryset = SymptomTaskTemplate.objects.all()
+    filter_backends = (DjangoFilterBackend, )
+    filterset_fields = (
+        'plan_template__id',
+    )
 
 
 class SymptomTaskViewSet(viewsets.ModelViewSet):
@@ -218,6 +231,10 @@ class SymptomRatingViewSet(viewsets.ModelViewSet):
 class AssessmentTaskTemplateViewSet(viewsets.ModelViewSet):
     serializer_class = AssessmentTaskTemplateSerializer
     permission_classes = (permissions.IsAuthenticated, EmployeeOrReadOnly, )
+    filter_backends = (DjangoFilterBackend, )
+    filterset_fields = (
+        'plan_template__id',
+    )
     queryset = AssessmentTaskTemplate.objects.all()
 
 
@@ -322,6 +339,10 @@ class VitalTaskTemplateViewSet(viewsets.ModelViewSet):
         permissions.IsAuthenticated,
         IsEmployeeOrPatientReadOnly,
     )
+    filter_backends = (DjangoFilterBackend, )
+    filterset_fields = (
+        'plan_template__id',
+    )
     queryset = VitalTaskTemplate.objects.all()
 
 
@@ -417,6 +438,10 @@ class VitalQuestionViewSet(viewsets.ModelViewSet):
     permission_classes = (
         permissions.IsAuthenticated,
         IsEmployeeOrPatientReadOnly,
+    )
+    filter_backends = (DjangoFilterBackend, )
+    filterset_fields = (
+        'vital_task_template',
     )
     queryset = VitalQuestion.objects.all()
 

@@ -1,5 +1,5 @@
-@import '../../../../modules/modals/modal-outlet.component.scss';
-@import '../../../../../scss/variables.scss';
+@import '~app/modules/modals/modal-outlet.component';
+@import '~scss/variables';
 
 label {
   border: none;
@@ -14,10 +14,6 @@ li {
 }
 
 .iconText {
-
-  i {
-    margin-left: 10px;
-  }
 }
 
 .drop__input {
@@ -30,4 +26,8 @@ p {
   margin-top: 18px;
   font-size: rem-calc(14);
   line-height: rem-calc(24);
+}
+
+.placeholder {
+  color: $grayLt;
 }

@@ -11,6 +11,7 @@ from django.db.models import Avg
 
 from ..models import (
     CarePlanTemplateType,
+    ServiceArea,
     CarePlanTemplate,
     CarePlan,
     PlanConsent,
@@ -25,6 +26,7 @@ from ..models import (
 from ..permissions import CareTeamMemberPermissions
 from .serializers import (
     CarePlanTemplateTypeSerializer,
+    ServiceAreaSerializer,
     CarePlanTemplateSerializer,
     CarePlanSerializer,
     PlanConsentSerializer,
@@ -107,6 +109,15 @@ class CarePlanTemplateTypeViewSet(viewsets.ModelViewSet):
         IsEmployeeOrPatientReadOnly,
     )
     queryset = CarePlanTemplateType.objects.all()
+
+
+class ServiceAreaViewSet(viewsets.ModelViewSet):
+    serializer_class = ServiceAreaSerializer
+    permission_classes = (
+        permissions.IsAuthenticated,
+        IsEmployeeOrPatientReadOnly,
+    )
+    queryset = ServiceArea.objects.all()
 
 
 class CarePlanTemplateViewSet(viewsets.ModelViewSet):
@@ -434,7 +445,13 @@ class CareTeamMemberViewSet(viewsets.ModelViewSet):
 class GoalTemplateViewSet(viewsets.ModelViewSet):
     serializer_class = GoalTemplateSerializer
     permission_classes = (permissions.IsAuthenticated, EmployeeOrReadOnly, )
-    queryset = GoalTemplate.objects.all()
+    filter_backends = (DjangoFilterBackend, )
+    filterset_fields = (
+        'plan_template__id',
+    )
+
+    def get_queryset(self):
+        return GoalTemplate.objects.all()
 
 
 class GoalViewSet(viewsets.ModelViewSet):
@@ -644,6 +661,10 @@ class InfoMessageQueueViewSet(viewsets.ModelViewSet):
         IsEmployeeOrPatientReadOnly,
     )
     queryset = InfoMessageQueue.objects.all()
+    filter_backends = (DjangoFilterBackend, )
+    filterset_fields = (
+        'plan_template__id',
+    )
 
     def get_queryset(self):
         queryset = super(InfoMessageQueueViewSet, self).get_queryset()
@@ -775,6 +796,52 @@ class CarePlanTemplateByType(ParentViewSetPermissionMixin,
         Return all CarePlanTemplateType objects.
         """
         return CarePlanTemplateType.objects.all()
+
+    def get_care_plan_templates(self):
+        instance = self.get_object()
+        queryset = instance.care_plan_templates.all()
+        return self.filter_queryset_by_parents_lookups(queryset).distinct()
+
+    def retrieve(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_care_plan_templates())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+
+class CarePlanTemplateByServiceArea(
+    ParentViewSetPermissionMixin,
+    NestedViewSetMixin,
+    RetrieveAPIView
+):
+    """
+    Returns list of :model:`plans.CarePlanTemplate` related to the given service area.
+    This will also be based on the parent organization.
+    """
+    serializer_class = CarePlanTemplateAverageSerializer
+    permission_classes = (
+        permissions.IsAuthenticated,
+        IsAdminOrEmployee,
+    )
+    parent_lookup = [
+        (
+            'care_plans__patient__facility__organization',
+            Organization,
+            OrganizationViewSet
+        )
+    ]
+
+    def get_queryset(self):
+        """
+        Override `get_queryset` so it will not filter for the parent object.
+        Return all ServiceArea objects.
+        """
+        return ServiceArea.objects.all()
 
     def get_care_plan_templates(self):
         instance = self.get_object()

@@ -17,7 +17,7 @@
 </div> -->
 
 <!--TODO: If adding a goal to a care plan instance, show the following-->
-<!-- <h5>NOTE: You are adding a goal to one patient's care plan. To add a goal for everyone, go to care plans.</h5> -->
+<h5 *ngIf="data?.update">NOTE: You are adding a goal to one patient's care plan. To add a goal for everyone, go to care plans.</h5>
 
 <div>
   <label>Goal</label>
@@ -26,10 +26,10 @@
   <textarea type="text" class="input input--textarea fullWidth marBottom32" [(ngModel)]="descriptionInput"></textarea>
   <label>Focus</label>
   <input type="text" class="input fullWidth marBottom32" [(ngModel)]="focusInput" />
-<!-- <div class="flex justifySpaceBetween">
+<div class="flex justifySpaceBetween">
     <div class="modal__inputWrap80 marRight32">
       <label>Start Day</label>
-      <input type="number" min="1" value="1" class="input fullWidth" [(ngModel)]="startDayInput" />
+      <input type="number" min="0" value="0" class="input fullWidth" [(ngModel)]="startDayInput" />
     </div>
     <div class="modal__inputWrap">
       <label>Duration</label>
@@ -42,14 +42,14 @@
           <input type="radio" class="styledInput__input" name="radioETM" [value]="1" [(ngModel)]="durationChoice" />
           <span class="styledInput__radio"></span>
           <div class="modal__inputWrap70 marRight8">
-            <input type="number" class="input fullWidth" min="1" value="1" [(ngModel)]="weeksInput" />
+            <input type="number" class="input fullWidth" min="1" [(ngModel)]="weeksInput" />
           </div>
           weeks
         </label>
       </div>
     </div>
   </div>
-</div> -->
+</div>
 
 <!--TODO: Only show this div if updating a goal on a care plan instance-->
 <div *ngIf="data?.update" class="center">
