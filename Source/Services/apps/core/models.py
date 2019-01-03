@@ -72,6 +72,23 @@ class EmployeeProfile(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
             return '{} {}'.format(
                 self.user.first_name, self.user.last_name)
 
+    @property
+    def facilities_count(self):
+        return self.facilities.count()
+
+    @property
+    def care_manager_count(self):
+        return self.assigned_roles.filter(is_manager=True).count()
+
+    @property
+    def care_team_count(self):
+        return self.assigned_roles.filter(is_manager=False).count()
+
+    @property
+    def billable_patients_count(self):
+        return self.assigned_roles.values_list(
+            'plan__patient__id', flat=True).distinct().count()
+
 
 class ProviderTitle(UUIDPrimaryKeyMixin):
     name = models.CharField(max_length=35, null=False, blank=False)

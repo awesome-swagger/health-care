@@ -1,5 +1,6 @@
 from drf_haystack.viewsets import HaystackViewSet
 from rest_framework import mixins, permissions, viewsets
+from rest_framework.decorators import action
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.response import Response
 
@@ -35,7 +36,8 @@ from .serializers import (DiagnosisSerializer, EmployeeProfileSerializer,
                           SymptomSearchSerializer, FacilityEmployeeSerializer,
                           DiagnosisSearchSerializer,
                           ProviderTitleSearchSerializer,
-                          ProviderRoleSearchSerializer)
+                          ProviderRoleSearchSerializer,
+                          EmployeeAssignmentSerializer)
 
 
 class OrganizationViewSet(viewsets.ModelViewSet):
@@ -468,3 +470,20 @@ class FacilityEmployeeViewSet(ParentViewSetPermissionMixin,
             'facility': self.parent_obj
         })
         return context
+
+    @action(methods=['get'], detail=True)
+    def assignments(self, request, pk, *args, **kwargs):
+        """
+        Returns aggregated data of the given employees pertaining to his/her
+        assignments. The data includes:
+        - total number of facilities
+        - total number of care team as a manager
+        - total number of care team as a member
+        - total number of billable patients
+        - total risk level
+
+        """
+
+        obj = self.get_object()
+        serializer = EmployeeAssignmentSerializer(obj)
+        return Response(serializer.data)
