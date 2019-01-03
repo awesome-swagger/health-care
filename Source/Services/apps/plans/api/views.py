@@ -931,6 +931,29 @@ class ManagerTaskTemplateByCarePlanTemplate(ParentViewSetPermissionMixin,
     ]
 
 
+class CareTeamTaskTemplateByCarePlanTemplate(ParentViewSetPermissionMixin,
+                                             NestedViewSetMixin,
+                                             mixins.ListModelMixin,
+                                             viewsets.GenericViewSet):
+    """
+    Returns list of :model:`tasks.TeamTaskTemplate` having `is_manager_task`
+    as False and related to the given care plan template.
+    """
+    serializer_class = TeamTaskTemplateSerializer
+    queryset = TeamTaskTemplate.objects.filter(is_manager_task=False)
+    permission_classes = (
+        permissions.IsAuthenticated,
+        IsAdminOrEmployee,
+    )
+    parent_lookup = [
+        (
+            'plan_template',
+            CarePlanTemplate,
+            CarePlanTemplateViewSet
+        )
+    ]
+
+
 class PatientByCarePlanTemplate(ParentViewSetPermissionMixin,
                                 NestedViewSetMixin,
                                 mixins.ListModelMixin,
