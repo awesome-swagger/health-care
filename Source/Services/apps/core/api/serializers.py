@@ -262,9 +262,9 @@ class EmployeeAssignmentSerializer(serializers.ModelSerializer):
         avg = round((average / 5) * 100)
         return avg
 
-    def get_average_engagement(self, kwargs):
-        kwargs = kwargs.pop('kwargs')
-        medication_kwargs = kwargs.pop('medication_kwargs')
+    def get_average_engagement(self, task_kwargs):
+        kwargs = task_kwargs.pop('kwargs')
+        medication_kwargs = task_kwargs.pop('medication_kwargs')
         patient_tasks = PatientTask.objects.filter(**kwargs)
         medication_tasks = MedicationTask.objects.filter(
             **medication_kwargs)
