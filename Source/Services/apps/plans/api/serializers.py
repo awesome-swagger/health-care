@@ -159,7 +159,8 @@ class InfoMessageSerializer(serializers.ModelSerializer):
         )
 
 
-class InfoMessageQueueSerializer(serializers.ModelSerializer):
+class InfoMessageQueueSerializer(RepresentationMixin,
+                                 serializers.ModelSerializer):
 
     messages = InfoMessageSerializer(many=True, read_only=True)
 
@@ -179,6 +180,12 @@ class InfoMessageQueueSerializer(serializers.ModelSerializer):
             'created',
             'modified',
         )
+        nested_serializers = [
+            {
+                'field': 'plan_template',
+                'serializer_class': CarePlanTemplateSerializer,
+            }
+        ]
 
 
 class GoalProgressSerializer(serializers.ModelSerializer):
