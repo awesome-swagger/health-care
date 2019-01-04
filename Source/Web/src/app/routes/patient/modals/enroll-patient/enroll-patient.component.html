@@ -1,11 +1,15 @@
 <div>
   <h1 class="modal__title">Enroll Patient</h1>
-  <hr />
+  <div class="divider"></div>
   <h2 class="modal__title">Step {{step + 1}} of 2: {{stepName ? stepName[step] : ''}}</h2> 
   <div *ngIf="step === 0">
     <p>Call the patient to obtain verbal consent for care plan enrollment.</p>
+
+    <div class="divider"></div>
     <h3 class="modal__title">{{data?.patientName}} - {{data?.patientPhone}}</h3>
-    <h4 class="modal__title"><strong>{{data?.carePlan}} ({{data?.carePlanType}})</strong></h4>
+    <h4 class="modal__title">{{data?.serviceArea}}, {{data?.carePlan}}</h4>
+    <h4 class="modal__title">{{data?.carePlanTypeName}} ({{data?.carePlanTypeAbr}})</h4>
+    <div class="divider"></div>
     <p class="fullWidth">Patients can be enrolled without meeting reimbursement requirements. However, they won’t be eligible to receive reimbursement until requirements have been meet.</p>
     <label class="styledInput listHead">REIMBURSEMENT REQUIREMENTS (OPT)</label>
     <label class="styledInput">

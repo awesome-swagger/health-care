@@ -33,9 +33,11 @@ export class Store {
     });
   }
 
-  public read(id: number | string): Observable<any> {
+  public read(id: number | string = null): Observable<any> {
     let request = this.http.get(this.createUrl(id));
-    return request.catch((error: any) => {
+    return request.map((response: ListResponse) => {
+      return response;
+    }).catch((error: any) => {
       return throwError(error);
     });
   }

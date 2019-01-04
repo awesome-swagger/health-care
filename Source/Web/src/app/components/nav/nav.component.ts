@@ -7,6 +7,8 @@ import { Subscription } from 'rxjs/Subscription';
 import { PopoverOptions } from '../../modules/popover';
 import { AuthService, NavbarService, StoreService } from '../../services';
 import { ModalService, ConfirmModalComponent } from '../../modules/modals';
+import patientsData from '../../routes/patients/active/patients-data.js';
+import { filter as _filter } from 'lodash';
 
 @Component({
   selector: 'app-nav',
@@ -18,6 +20,11 @@ export class NavComponent implements OnDestroy, OnInit {
   public employee = null;
   public organization = null;
   public organizations = [];
+  public patients = [];
+  public activePatientsCount = 0;
+  public inactivePatientsCount = 0;
+  public invitedPatientsCount = 0;
+  public potentialPatientsCount = 0;
   public selectableOrganizations = [];
   public appListOpen = false;
   public appListOptions: PopoverOptions = {
@@ -101,9 +108,7 @@ export class NavComponent implements OnDestroy, OnInit {
           this.searchOpen = false;
           return;
         }
-        let searchSub = this.store.PatientProfile.listRoute('post', 'search', {
-          name: searchStr,
-        }).subscribe(
+        let searchSub = this.store.PatientProfileSearch(searchStr).readListPaged().subscribe(
           (searchResults: any) => {
             this.searchResults = searchResults;
             if (this.searchResults.length > 0) {
@@ -116,6 +121,15 @@ export class NavComponent implements OnDestroy, OnInit {
           },
         );
       });
+
+    this.patients = [];
+    this.getPatients().then((patients: any) => {
+      patients = patientsData.results; // TODO: remove
+      this.patients = patients;
+      this.activePatientsCount = _filter(patients, p => p.is_active).length;
+      this.invitedPatientsCount = _filter(patients, p => p.is_invited).length;
+    });
+
   }
 
   public ngOnDestroy() {
@@ -172,5 +186,22 @@ export class NavComponent implements OnDestroy, OnInit {
 
   public routeToPatient(patient) {
     this.router.navigate(['patient', patient.id]);
+  }
+
+  public getPatients() {
+    let promise = new Promise((resolve, reject) => {
+      let patientsSub = this.store.PatientProfile.readListPaged().subscribe(
+        (patients) => {
+          resolve(patients);
+        },
+        (err) => {
+          reject(err);
+        },
+        () => {
+          patientsSub.unsubscribe();
+        }
+      );
+    });
+    return promise;
   }
 }

@@ -8,3 +8,4 @@ export * from './navbar.service';
 export * from './storage.service';
 export * from './store.service';
 export * from './validation.service';
+export * from './utils.service';

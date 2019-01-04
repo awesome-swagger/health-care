@@ -165,14 +165,7 @@
     <div class="smallChartWrap">
       <div class="smallChart">
         <label>Avg Engagement</label>
-        <!--TODO: replace fakeChart with actual js charts-->
-        <div class="fakeChart">
-          <div class="fakeChart__inner">
-            <div class="fakeChart__text">
-              <h1 class="chart__number"><span class="percent">82</span></h1>
-            </div>
-          </div>
-        </div> <!--/.fakeChart-->
+        <app-percentage-gauge [percent]="82" [size]="280"></app-percentage-gauge>
         <p class="smallChart__desc">
           Percentage of tasks and<br />
           assessments completed
@@ -180,14 +173,7 @@
       </div> <!--/.smallChart (the 1st one)-->
       <div class="smallChart">
         <label>Avg Outcome</label>
-        <!--TODO: replace fakeChart with actual js charts-->
-        <div class="fakeChart">
-          <div class="fakeChart__inner">
-            <div class="fakeChart__text">
-              <h1 class="chart__number"><span class="percent">72</span></h1>
-            </div>
-          </div>
-        </div> <!--/.fakeChart-->
+        <app-percentage-gauge [percent]="73" [size]="280"></app-percentage-gauge>
         <p class="smallChart__desc">
           Results of well-being<br />
           assessments
@@ -195,17 +181,7 @@
       </div> <!--/.smallChart (the 2nd one)-->
       <div class="smallChart">
         <label>Avg Risk Level</label>
-        <!--TODO: replace fakeChart with actual js charts-->
-        <div class="fakeChart">
-          <div class="fakeChart__inner">
-            <div class="fakeChart__text">
-              <h1 class="chart__desc">
-                Low Risk<br />
-                <span class="percent">77</span>
-              </h1>
-            </div>
-          </div>
-        </div> <!--/.fakeChart-->
+        <app-percentage-gauge [percent]="95" [size]="280"></app-percentage-gauge>
         <p class="smallChart__desc">
           Average of outcome %<br />
           and engagement %
@@ -213,14 +189,7 @@
       </div> <!--/.smallChart (the 3rd one)-->
       <div class="smallChart">
         <label>Satisfaction</label>
-        <!--TODO: replace fakeChart with actual js charts-->
-        <div class="fakeChart">
-          <div class="fakeChart__inner">
-            <div class="fakeChart__text">
-              <h1 class="chart__number"><span class="percent">91</span></h1>
-            </div>
-          </div>
-        </div> <!--/.fakeChart-->
+        <app-percentage-gauge [percent]="62" [size]="280"></app-percentage-gauge>
         <p class="smallChart__desc">
           Results of satisfaction<br />
           assessments

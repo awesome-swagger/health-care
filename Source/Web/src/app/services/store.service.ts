@@ -47,5 +47,13 @@ export class StoreService {
   public VitalsTaskTemplate = new Store(this.http, 'vital_task_templates');
   public VitalsQuestions = new Store(this.http, 'vital_questions');
 
+  public PatientCarePlans(id) {
+    return new Store(this.http, `patient_profiles/${id}/care_plans`);
+  }
+
+  public PatientProfileSearch(string) {
+    return new Store(this.http, `patient_profiles/search/?q=${string}`)
+  }
+
   constructor(private http: HttpService) { }
 }

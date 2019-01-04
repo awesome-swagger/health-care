@@ -177,22 +177,22 @@
               <label class="drop__label">Patients Lists</label>
               <li class="drop__option">
                 <a class="drop__link" [routerLink]="['/patients/active']">
-                  Active Patients (1,982)
+                  Active Patients ({{activePatientsCount}})
                 </a>
               </li>
               <li class="drop__option">
                 <a class="drop__link" [routerLink]="['/patients/invited']">
-                  Invited Patients (2)
+                  Invited Patients ({{invitedPatientsCount}})
                 </a>
               </li>
               <li class="drop__option">
                 <a class="drop__link" [routerLink]="['/patients/potential']">
-                  Potential Patients (9)
+                  Potential Patients ({{potentialPatientsCount}})
                 </a>
               </li>
               <li class="drop__option">
                 <a class="drop__link" [routerLink]="['/patients/inactive']">
-                  Inactive Patients (248)
+                  Inactive Patients ({{inactivePatientsCount}})
                 </a>
               </li>
             </ul>
@@ -228,25 +228,25 @@
   <div class="nav__bottom" *ngIf="patientDetailState">
     <div class="ssContainer nav__container">
       <div class="nav__links">
-        <a (click)="nav.routeToPatients()" class="nav__link">
-          <i class="ss-standard ss-navigateleft"></i> To Patients
+        <a [routerLink]="['/patient', nav.patientDetailId]" class="nav__link">
+          <i class="ss-standard ss-navigateleft"></i> To Patient
         </a>
-        <a [routerLink]="['/patient', nav.patientDetailId, 'dashboard']" [routerLinkActive]="['nav__link--current']" class="nav__link">
+        <a [routerLink]="['/patient', nav.patientDetailId, 'dashboard', nav.planDetailId]" [routerLinkActive]="['nav__link--current']" class="nav__link">
           Dashboard
         </a>
-        <a [routerLink]="['/patient', nav.patientDetailId, 'details']" [routerLinkActive]="['nav__link--current']" class="nav__link">
+        <a [routerLink]="['/patient', nav.patientDetailId, 'details', nav.planDetailId]" [routerLinkActive]="['nav__link--current']" class="nav__link">
           Details
         </a>
-        <a [routerLink]="['/patient', nav.patientDetailId, 'history']" [routerLinkActive]="['nav__link--current']" class="nav__link">
+        <a [routerLink]="['/patient', nav.patientDetailId, 'history', nav.planDetailId]" [routerLinkActive]="['nav__link--current']" class="nav__link">
           History
         </a>
-        <a [routerLink]="['/patient', nav.patientDetailId, 'overview']" [routerLinkActive]="['nav__link--current']" class="nav__link">
+        <a [routerLink]="['/patient', nav.patientDetailId, 'overview', nav.planDetailId]" [routerLinkActive]="['nav__link--current']" class="nav__link">
           Overview
         </a>
-        <a [routerLink]="['/patient', nav.patientDetailId, 'team']" [routerLinkActive]="['nav__link--current']" class="nav__link">
+        <a [routerLink]="['/patient', nav.patientDetailId, 'team', nav.planDetailId]" [routerLinkActive]="['nav__link--current']" class="nav__link">
           Care Team
         </a>
-        <a [routerLink]="['/patient', nav.patientDetailId, 'messaging']" [routerLinkActive]="['nav__link--current']" class="nav__link">
+        <a [routerLink]="['/patient', nav.patientDetailId, 'messaging', nav.planDetailId]" [routerLinkActive]="['nav__link--current']" class="nav__link">
           Messages
         </a>
       </div>
