@@ -65,6 +65,44 @@ class TestServiceAreaUsingEmployee(PlansMixin, APITestCase):
         response = self.client.delete(self.detail_url, {})
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
+    def test_service_area_plan_templates_count(self):
+        count = 3
+        for i in range(count):
+            self.create_care_plan_template(**{
+                'service_area': self.service_area
+            })
+
+        # Create dummy records
+        for i in range(count):
+            self.create_care_plan_template()
+
+        response = self.client.get(self.detail_url)
+        self.assertEqual(response.data['plan_templates_count'], count)
+
+    def test_service_area_care_plans_count(self):
+        templates_count = 3
+        plan_count = 3
+        total_plans = templates_count * plan_count
+        for i in range(templates_count):
+            plan_template = self.create_care_plan_template(**{
+                'service_area': self.service_area
+            })
+            for p in range(plan_count):
+                self.create_care_plan(**{
+                    'plan_template': plan_template
+                })
+
+        # Create dummy records
+        for i in range(templates_count):
+            plan_template = self.create_care_plan_template()
+            for p in range(plan_count):
+                self.create_care_plan(**{
+                    'plan_template': plan_template
+                })
+
+        response = self.client.get(self.detail_url)
+        self.assertEqual(response.data['care_plans_count'], total_plans)
+
 
 class TestServiceAreaUsingPatient(PlansMixin, APITestCase):
     """
