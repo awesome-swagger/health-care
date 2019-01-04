@@ -29,6 +29,7 @@ export class AddVitalComponent implements OnInit {
     appear_time:'',
     due_time:''
   };
+  public vital;
 
   constructor(
     private modal: ModalService,

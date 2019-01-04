@@ -10,8 +10,10 @@ export class ChangePasswordComponent implements OnInit {
 
   public data = null;
 
+  public tooltipCPM0Open;
+
   constructor(
-    private modals: ModalService,
+    public modals: ModalService,
   ) {
 
   }

@@ -59,6 +59,10 @@ export class EditTaskComponent implements OnInit {
       dataModel: this.store.VitalsTaskTemplate,
     },
   ];
+  public tooltipETM0Open;
+  public tooltipETM1Open;
+  public tooltipETM2Open;
+  public tooltipETM3Open;
 
   constructor(
     private modal: ModalService,

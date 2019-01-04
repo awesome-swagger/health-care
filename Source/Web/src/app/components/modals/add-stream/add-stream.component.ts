@@ -13,6 +13,7 @@ export class AddStreamComponent implements OnInit {
   public searchInput = '';
   public careMessagesShown = [];
   public selectedTemplate = null;
+  public clickCancel;
 
   constructor(
     private modal: ModalService,

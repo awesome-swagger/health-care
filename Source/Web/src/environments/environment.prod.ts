@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiHost: 'https://careadopt.izeni.net',
+  apiHost: 'http://careadopt.dev.mfire.co',
 };

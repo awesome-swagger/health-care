@@ -14,6 +14,7 @@ export class AddAssessmentComponent implements OnInit {
   public searchInput = '';
   public assessmentsShown = [];
   public selectedAssessment = null;
+  public editingTemplate;
 
   constructor(
     private modal: ModalService,

@@ -27,6 +27,9 @@ export class PatientComponent implements OnDestroy, OnInit {
   public patient = null;
   public carePlans = [];
   public teamListOpen = -1;
+  
+  public editName;
+  public tooltipPSOpen;
 
   private routeSub = null;
 

@@ -41,6 +41,8 @@ export class AddPatientToPlanComponent implements OnInit {
     private modals: ModalService
   ) { }
 
+  public dropAPPM2Open;
+
   public addDiagnosis() {
     this.createDiagnosis = !this.createDiagnosis
     this.diagnoses.push({

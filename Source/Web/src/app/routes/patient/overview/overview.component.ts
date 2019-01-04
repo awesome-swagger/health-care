@@ -22,6 +22,21 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
 
   public patient = null;
 
+  public accordCPGOpen;
+  public toolCPGOpen;
+  public accordCTOpen;
+  public toolCTTOpen;
+  public accordPTOpen;
+  public toolPTTOpen;
+  public toolPTAOpen;
+  public toolPTA2Open;
+  public toolPTA3Open;
+  public toolPTSOpen;
+  public toolPTVOpen;
+  public toolPTMOpen;
+  public toolPTMSOpen;
+
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,

@@ -11,7 +11,7 @@ export class ChangeEmailComponent implements OnInit {
   public data = null;
 
   constructor(
-    private modals: ModalService,
+    public modals: ModalService,
   ) {
 
   }

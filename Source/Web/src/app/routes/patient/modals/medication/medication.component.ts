@@ -9,6 +9,8 @@ export class MedicationComponent implements OnInit {
 
   public data = null;
 
+  public showDate;
+
   constructor() {
 
   }
