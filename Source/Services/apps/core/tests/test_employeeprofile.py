@@ -74,9 +74,23 @@ class TestEmployeeProfile(CoreMixin, APITestCase):
         response = self.client.get(self.detail_url)
         self.assertIsNotNone(response.data['facilities_managed'])
 
-    def test_get_employee_detail_with_roles(self):
-        response = self.client.get(self.detail_url)
-        self.assertIsNotNone(response.data['roles'][0]['name'])
+    # def test_get_employee_detail_with_roles(self):
+    #     response = self.client.get(self.detail_url)
+    #     self.assertIsNotNone(response.data['roles'][0]['name'])
+
+    def test_send_employee_invitation(self):
+        url = reverse('employee_profiles-invite')
+        employee1 = self.create_employee()
+        employee2 = self.create_employee()
+
+        employees = [employee1.id, employee2.id]
+        email_content = "Sample content"
+        payload = {
+            'employees': employees,
+            'email_content': email_content
+        }
+        response = self.client.post(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
 
 class TestEmployeeOrganization(CoreMixin, APITestCase):

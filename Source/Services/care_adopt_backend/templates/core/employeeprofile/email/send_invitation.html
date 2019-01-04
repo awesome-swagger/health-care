@@ -1,0 +1,21 @@
+{% load i18n %}
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+      <meta charset="UTF-8">
+      <title>{{ subject }}</title>
+  </head>
+  <body>
+  <p>
+      {{ pre_content }}
+  </p>
+
+  <p>{% trans 'If you have any questions, please email us at' %}: <a href="mailto:{{ admin_email }}">{{ admin_email }}</a></p>
+
+  <p>
+    {% trans 'Thank you!' %}<br />
+    {% trans 'CareAdopt Staff' %}<br/>
+  </p>
+  </body>
+</html>

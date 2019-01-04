@@ -1,5 +1,5 @@
 from drf_haystack.viewsets import HaystackViewSet
-from rest_framework import mixins, permissions, viewsets
+from rest_framework import mixins, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.response import Response
@@ -37,7 +37,9 @@ from .serializers import (DiagnosisSerializer, EmployeeProfileSerializer,
                           DiagnosisSearchSerializer,
                           ProviderTitleSearchSerializer,
                           ProviderRoleSearchSerializer,
-                          EmployeeAssignmentSerializer)
+                          EmployeeAssignmentSerializer,
+                          InviteEmployeeSerializer)
+
 
 
 class OrganizationViewSet(viewsets.ModelViewSet):
@@ -317,6 +319,36 @@ class EmployeeProfileViewSet(viewsets.ModelViewSet):
                 'employee_profile', flat=True).distinct()
             return qs.filter(id__in=list(care_team_members))
         return qs.none()
+
+    @action(methods=['post'],
+            detail=False,
+            permission_classes=(permissions.IsAuthenticated,
+                                IsAdminOrEmployee))
+    def invite(self, request, *args, **kwargs):
+        """
+        Enables user to send invitation email to multiple employees.
+
+        Sample Request:
+        ---
+            POST /api/employee_profiles/invite/
+            {
+                'employees': [
+                    <employee-id>,
+                    <employee-id>,
+                    <employee-id>,
+                    ...
+                ]
+                'email_content': "Custom message here."
+            }
+        """
+        serializer = InviteEmployeeSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(
+            data={'message': 'invitation sent.'},
+            status=status.HTTP_201_CREATED
+        )
 
 
 class DiagnosisViewSet(
