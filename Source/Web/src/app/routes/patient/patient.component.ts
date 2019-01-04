@@ -41,11 +41,12 @@ export class PatientComponent implements OnDestroy, OnInit {
   public ngOnInit() {
     this.nav.normalState();
     this.routeSub = this.route.params.subscribe((params) => {
-      this.getPatient(params.id).then((patient) => {
+      this.getPatient(params.patientId).then((patient) => {
         this.patient = patient;
         this.nav.addRecentPatient(this.patient);
         this.getCarePlans(this.patient.id).then((carePlans: any) => {
           this.carePlans = carePlans;
+          console.log(carePlans);
         });
       }).catch(() => {
         this.patient = patientData.patient;
@@ -77,7 +78,7 @@ export class PatientComponent implements OnDestroy, OnInit {
 
   public getCarePlans(patientId) {
     return new Promise((resolve, reject) => {
-        let carePlanSub = this.store.PatientCarePlans(patientId).read().subscribe(
+        let carePlanSub = this.store.PatientProfile.detailRoute('get', patientId, 'care_plans').subscribe(
           (plans) => {
             resolve(plans);
           },

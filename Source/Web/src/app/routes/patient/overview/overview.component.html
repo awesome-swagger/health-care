@@ -1,6 +1,6 @@
 <div class="ssContainer ssContents">
   <div class="flex alignCenter marBottom32" *ngIf="patient">
-    <app-patient-header [patient]="patient"></app-patient-header>
+    <app-patient-header [currentPage]="'overview'"></app-patient-header>
   </div> <!--/.flex-->
 
   <div class="accordion" [ngClass]="{ 'isOpen' : accordCPGOpen }">

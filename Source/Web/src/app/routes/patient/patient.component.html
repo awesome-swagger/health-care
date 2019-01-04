@@ -25,7 +25,7 @@
   <ng-container *ngFor="let plan of carePlans; let i = index">
     <div class="flex alignCenter justifySpaceBetween">
       <div class="flex alignCenter">
-        <h2 class="noMargin marRight32">{{plan?.plan_template?.name}}</h2>
+        <h2 class="noMargin marRight32">{{plan.plan_template.name}} <i class="icomoon-cocm"></i> <span *ngIf="plan.plan_template.type">{{plan.plan_template.type.abbreviation}}</span></h2>
         <a [routerLink]="['/patient', patient.id, 'dashboard', plan.id]" class="button button--iconText">
           <i class="ss-standard ss-view"></i> View Care Plan
         </a>

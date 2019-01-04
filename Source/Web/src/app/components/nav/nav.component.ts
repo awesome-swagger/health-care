@@ -108,7 +108,9 @@ export class NavComponent implements OnDestroy, OnInit {
           this.searchOpen = false;
           return;
         }
-        let searchSub = this.store.PatientProfileSearch(searchStr).readListPaged().subscribe(
+        let searchSub = this.store.PatientProfile.listRoute('get', 'search', {}, {
+          q: searchStr,
+        }).subscribe(
           (searchResults: any) => {
             this.searchResults = searchResults;
             if (this.searchResults.length > 0) {
@@ -184,8 +186,16 @@ export class NavComponent implements OnDestroy, OnInit {
     this.router.navigate(['/user', this.employee.id]);
   }
 
+  public routeToPatients() {
+    this.router.navigate(['/patients/active']);
+  }
+
   public routeToPatient(patient) {
-    this.router.navigate(['patient', patient.id]);
+    this.router.navigate(['/patient', patient.id]);
+  }
+
+  public routeToPatientPage(route) {
+    this.router.navigate(['/patient', this.nav.patientDetailId, route, this.nav.patientPlanId]);
   }
 
   public getPatients() {
