@@ -6,7 +6,7 @@
   </div>
   <div class="drop">
     <div class="drop__input drop__input--select" (click)="multi1Open=!multi1Open">
-      <h2 class="noMargin">{{selectedPlan?.plan_template.name}} <i class="icomoon-cocm"></i> <span *ngIf="selectedPlan?.plan_template.service_area">{{selectedPlan.plan_template.service_area.name}}</span></h2>
+      <h2 class="noMargin">{{selectedPlan?.plan_template.name}}<!--<i class="icomoon-cocm"></i>--><span *ngIf="selectedPlan?.plan_template.service_area">, {{selectedPlan.plan_template.service_area.name}}</span></h2>
     </div>
     <ul class="drop__dropdown drop__dropdown--select"
     [ngClass]="{ 'isOpen' : multi1Open }"

@@ -47,8 +47,7 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
     this.getPatients().then((patients: any) => {
       // patients = patientsData.results; // TODO: remove
       this.activePatients = _filter(patients, p => p.is_active);
-      this.activePatientsGrouped = this.groupPatientsByFacility(patients);
-
+      this.activePatientsGrouped = this.groupPatientsByFacility(this.activePatients);
       this.activePatients.forEach((patient, i) => {
         let carePlanSub = this.store.PatientProfile.detailRoute('get', patient.id, 'care_plans').subscribe(
           (plans: any) => {
