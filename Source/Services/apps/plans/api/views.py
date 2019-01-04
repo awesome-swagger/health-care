@@ -837,6 +837,10 @@ class CarePlanTemplateByServiceArea(
             OrganizationViewSet
         )
     ]
+    filter_backends = (DjangoFilterBackend, )
+    filterset_fields = (
+        'care_plans__patient__facility',
+    )
 
     def get_queryset(self):
         """
