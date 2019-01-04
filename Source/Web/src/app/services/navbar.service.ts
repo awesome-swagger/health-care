@@ -7,6 +7,7 @@ export class NavbarService {
   public recentPatients = [];
   public planDetailId = null;
   public patientDetailId = null;
+  public patientPlanId = null;
   private _instance = null;
   private _visible = true;
 
@@ -25,6 +26,7 @@ export class NavbarService {
 
   public normalState() {
     this.planDetailId = null;
+    this.patientPlanId = null;
     this.instance.normalState = true;
     this.instance.planDetailState = false;
     this.instance.patientDetailState = false;
@@ -33,14 +35,16 @@ export class NavbarService {
   public planDetailState(id) {
     this.planDetailId = id;
     this.patientDetailId = null;
+    this.patientPlanId = null;
     this.instance.normalState = false;
     this.instance.planDetailState = true;
     this.instance.patientDetailState = false;
   }
 
-  public patientDetailState(id) {
+  public patientDetailState(id, planId) {
     this.planDetailId = null;
     this.patientDetailId = id;
+    this.patientPlanId = planId;
     this.instance.normalState = false;
     this.instance.planDetailState = false;
     this.instance.patientDetailState = true;

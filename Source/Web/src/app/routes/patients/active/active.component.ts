@@ -108,6 +108,6 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
   }
 
   public routeToPatient(patient) {
-    this.router.navigate(['patient', patient.id, 'overview']);
+    this.router.navigate(['patient', patient.id]);
   }
 }

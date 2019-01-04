@@ -6,19 +6,14 @@
   </div>
   <div class="drop">
     <div class="drop__input drop__input--select" (click)="multi1Open=!multi1Open">
-      <h2 class="noMargin">Depression <i class="icomoon-cocm"></i> CoCM</h2>
+      <h2 class="noMargin">{{selectedPlan?.plan_template.name}} <i class="icomoon-cocm"></i> <span *ngIf="selectedPlan?.plan_template.type">{{selectedPlan.plan_template.type.abbreviation}}</span></h2>
     </div>
     <ul class="drop__dropdown drop__dropdown--select"
     [ngClass]="{ 'isOpen' : multi1Open }"
     (click)="multi1Open=!multi1Open">
-      <li class="drop__option drop__option--select">
+      <li class="drop__option drop__option--select" *ngFor="let plan of carePlans" (click)="changeSelectedPlan(plan)">
         <div class="iconText">
-          <span class="marRight8">Depression</span> <i class="icomoon-cocm iconText__icon iconText__icon--noTop"></i> CoCM
-        </div>
-      </li>
-      <li class="drop__option drop__option--select">
-        <div class="iconText">
-          <span class="marRight8">Heart Disease</span> <i class="ss-addheart iconText__icon"></i> CCCM
+          <span class="marRight8">{{plan.plan_template.name}}</span> <i class="icomoon-cocm iconText__icon iconText__icon--noTop"></i> <span *ngIf="plan.plan_template.type">{{plan.plan_template.type.abbreviation}}</span>
         </div>
       </li>
     </ul>
@@ -29,24 +24,20 @@
   <div class="info__cell">
     <label>Care Team</label>
     <div class="flex alignCenter justifyCenter">
-      <div class="picName marRight8">
-        <img class="picName__img" src="../../../assets/img/profile.svg" />
-        Lori Ramirez, RN
+      <div class="picName" *ngIf="careManager" [ngClass]="{'marRight8': careTeamMembers.length > 0}">
+        <img class="picName__img" [src]="careManager.employee_profile.user.image_url" />
+        {{careManager.employee_profile.user.first_name}} {{careManager.employee_profile.user.last_name}}<span *ngIf="careManager.employee_profile.title">, {{careManager.employee_profile.title.abbreviation}}</span>
       </div>
-      <div class="tool__anchor">
+      <div class="tool__anchor" *ngIf="careTeamMembers.length > 0">
         <a class="flex alignCenter" (click)="tooltipP1Open=!tooltipP1Open">
-          <span class="marRight8">+2</span>
+          <span class="marRight8">+{{careTeamMembers.length}}</span>
           <img src="../../../assets/img/arrow-down.svg" />
         </a>
         <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipP1Open }">
           <div class="tool__text">
-            <div class="picName marBottom16">
-              <img class="picName__img" src="../../../assets/img/profile--2.svg" />
-              Jason Hannigan, PA
-            </div>
-            <div class="picName">
-              <img class="picName__img" src="../../../assets/img/profile--2.svg" />
-              Melanie Benson, CRNA
+            <div class="picName marBottom16" *ngFor="let teamMember of careTeamMembers">
+              <img class="picName__img" [src]="teamMember.employee_profile.user.image_url" />
+              {{teamMember.employee_profile.user.first_name}} {{teamMember.employee_profile.user.last_name}}<span *ngIf="teamMember.employee_profile.title">, {{teamMember.employee_profile.title.abbreviation}}</span>
             </div>
           </div>
         </div>
@@ -63,11 +54,15 @@
     </div>
   </div>
   <div class="info__cell">
+    <label>Next&nbsp;Check-In</label>
+    <a href="" class="justifyCenter">2 days</a>
+  </div>
+  <div class="info__cell">
     <label>Last&nbsp;Contact</label>
     <a href="" class="justifyCenter">2 days ago</a>
   </div>
   <div class="info__cell">
-    <label>Problems</label>
+    <label>Problem Areas</label>
     <a href="" class="justifyCenter">3</a>
   </div>
   <div class="info__cell">

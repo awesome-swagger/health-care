@@ -25,6 +25,7 @@ export class StoreService {
   public PotentialPatient = new Store(this.http, 'potential_patients');
   public CarePlanTemplate = new Store(this.http, 'care_plan_templates');
   public CarePlanTemplateType = new Store(this.http, 'care_plan_template_types');
+  public CareTeamMember = new Store(this.http, 'care_team_members');
   public ServiceArea = new Store(this.http, 'service_areas');
   public CarePlan = new Store(this.http, 'care_plans');
   public PlanConsentForm = new Store(this.http, 'plan_consent_forms');

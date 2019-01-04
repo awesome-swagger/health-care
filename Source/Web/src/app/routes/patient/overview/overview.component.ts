@@ -32,7 +32,7 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
 
   public ngOnInit() {
     this.route.params.subscribe((params) => {
-      this.nav.patientDetailState(params.id);
+      this.nav.patientDetailState(params.id, params.planId);
       this.store.PatientProfile.read(params.id).subscribe(
         (patient) => {
           this.patient = patient;

@@ -12,7 +12,11 @@ import { NavbarService, StoreService } from '../../../services';
 export class PatientTeamComponent implements OnDestroy, OnInit {
 
   public patient = null;
+  public planId = null;
   public careTeamMembers = [];
+  public availableRoles = [];
+  public careManager = null;
+  public showCMPhone = false;
 
   private routeSub = null;
 
@@ -26,7 +30,8 @@ export class PatientTeamComponent implements OnDestroy, OnInit {
 
   public ngOnInit() {
     this.routeSub = this.route.params.subscribe((params) => {
-      this.nav.patientDetailState(params.id);
+      this.planId = params.planId;
+      this.nav.patientDetailState(params.id, params.planId);
       let patientSub = this.store.PatientProfile.read(params.id).subscribe(
         (patient) => {
           this.patient = patient;
@@ -36,9 +41,25 @@ export class PatientTeamComponent implements OnDestroy, OnInit {
             patient: this.patient.id,
           }).subscribe(
             (data) => {
-              let teamMembersSub = this.store.CarePlan.detailRoute('get', data[0].id, 'care_team_members').subscribe(
-                (data: any) => {
-                  this.careTeamMembers = data;
+              // Get the available roles for this care plan
+              let availableRolesSub = this.store.CarePlan.detailRoute('get', params.planId, 'available_roles').subscribe(
+                (availableRoles: any) => {
+                  this.availableRoles = availableRoles;
+                },
+                (err) => {},
+                () => {
+                  availableRolesSub.unsubscribe();
+                }
+              );
+              // Get the assigned team members for this care plan
+              let teamMembersSub = this.store.CarePlan.detailRoute('get', params.planId, 'care_team_members').subscribe(
+                (teamMembers: any) => {
+                  this.careTeamMembers = teamMembers.filter((obj) => {
+                    return !obj.is_manager;
+                  });
+                  this.careManager = teamMembers.filter((obj) => {
+                    return obj.is_manager;
+                  })[0];
                 },
                 (err) => {},
                 () => {
@@ -66,12 +87,66 @@ export class PatientTeamComponent implements OnDestroy, OnInit {
     }
   }
 
-  public addCTMember() {
+  public addCTMember(role) {
     let modalSub = this.modals.open(AddCTMemberComponent, {
       closeDisabled: true,
+      data: {
+        role: role,
+        is_manager: false,
+        is_bp: false,
+      },
       width: '416px',
     }).subscribe(
-      (data) => {},
+      (selectedEmployee) => {
+        if (selectedEmployee) {
+          this.store.CareTeamMember.create({
+            employee_profile: selectedEmployee.id,
+            role: role.id,
+            plan: this.planId,
+            is_manager: false,
+          }).subscribe(
+            (newTeamMember) => {
+              this.careTeamMembers.push(newTeamMember);
+            },
+            () => {},
+            () => {}
+          )
+        }
+      },
+      (err) => {},
+      () => {
+        modalSub.unsubscribe();
+      },
+    );
+  }
+
+  public addCareManager() {
+    let modalSub = this.modals.open(AddCTMemberComponent, {
+      closeDisabled: true,
+      data: {
+        role: null,
+        is_manager: true,
+        is_bp: false,
+      },
+      width: '416px',
+    }).subscribe(
+      (selectedEmployee) => {
+        if (selectedEmployee) {
+          this.store.CareTeamMember.create({
+            employee_profile: selectedEmployee.id,
+            role: null,
+            plan: this.planId,
+            is_manager: true,
+          }).subscribe(
+            (newCareManager) => {
+              this.careManager = newCareManager;
+              // Remove old care manager relation, create new one
+            },
+            () => {},
+            () => {}
+          )
+        }
+      },
       (err) => {},
       () => {
         modalSub.unsubscribe();
@@ -114,9 +189,29 @@ export class PatientTeamComponent implements OnDestroy, OnInit {
   public changeCM() {
     let modalSub = this.modals.open(AddCTMemberComponent, {
       closeDisabled: true,
+      data: {
+        role: null,
+        is_manager: true,
+        is_bp: false,
+      },
       width: '416px',
     }).subscribe(
-      (data) => {},
+      (selectedEmployee) => {
+        if (selectedEmployee) {
+          this.store.CareTeamMember.create({
+            employee_profile: selectedEmployee.id,
+            role: null,
+            plan: this.planId,
+            is_manager: true,
+          }).subscribe(
+            (newCareManager) => {
+              this.careManager = newCareManager;
+            },
+            () => {},
+            () => {}
+          )
+        }
+      },
       (err) => {},
       () => {
         modalSub.unsubscribe();

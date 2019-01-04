@@ -170,7 +170,15 @@ export class NavComponent implements OnDestroy, OnInit {
     this.router.navigate(['/user', this.employee.id]);
   }
 
+  public routeToPatients() {
+    this.router.navigate(['/patients/active']);
+  }
+
   public routeToPatient(patient) {
-    this.router.navigate(['patient', patient.id]);
+    this.router.navigate(['/patient', patient.id]);
+  }
+
+  public routeToPatientPage(route) {
+    this.router.navigate(['/patient', this.nav.patientDetailId, route, this.nav.patientPlanId]);
   }
 }

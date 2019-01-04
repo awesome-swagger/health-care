@@ -1,6 +1,6 @@
 <div class="ssContainer ssContents">
   <div class="flex alignCenter marBottom32">
-    <app-patient-header [patient]="patient"></app-patient-header>
+    <app-patient-header [currentPage]="'team'"></app-patient-header>
   </div> <!--/.flex-->
 
   <h2>Billing Practitioner</h2>
@@ -15,20 +15,17 @@
     </button>
   </div>
 
-  <h2>Unassigned Care Plan Roles</h2>
-  <div class="flex marBottom48">
-    <button class="button button--iconText marRight32"
-    (click)="addCTMember()">
-      <i class="ss-plus"></i> Add Dietician
-    </button>
-    <button class="button button--iconText"
-    (click)="addCTMember()">
-      <i class="ss-plus"></i> Add Pharmacist
-    </button>
-  </div>
+  <ng-container *ngIf="availableRoles.length > 0">
+    <h2>Unassigned Care Plan Roles</h2>
+    <div class="flex marBottom48">
+      <button class="button button--iconText marRight32" *ngFor="let availableRole of availableRoles" (click)="addCTMember(availableRole)">
+        <i class="ss-plus"></i> Add {{availableRole.name}}
+      </button>
+    </div>
+  </ng-container>
 
   <h2>Care Manager</h2>
-  <div class="info info--team marBottom48">
+  <div class="info info--team marBottom48" *ngIf="careManager">
     <div class="info__pill pill pill--lime">
       :32
     </div>
@@ -36,23 +33,21 @@
     (click)="changeCM()">
       <i class="ss-write"></i>
     </button>
-    <img class="info__pic" src="../../../../assets/img/profile.svg" />
-    <h3 class="center">Lori Ramirez, RN</h3>
+    <img class="info__pic" [src]="careManager.employee_profile.user.image_url" />
+    <h3 class="center">{{careManager.employee_profile.user.first_name}} {{careManager.employee_profile.user.last_name}}<span *ngIf="careManager.employee_profile.title">, {{careManager.employee_profile.title.abbreviation}}</span></h3>
     <div class="divider divider--dk divider--smallMargin"></div>
     <h5 class="center">Care Manager</h5>
     <p class="info__subhead">Last patient view: Today</p>
     <label>Specialty</label>
-    <p class="marBottom32">Family Medicine</p>
+    <p class="marBottom32">{{careManager.employee_profile.specialty ? careManager.employee_profile.specialty.name : 'None'}}</p>
     <label>Org/Location</label>
     <p class="marBottom32">Ogden Clinic: Mountain View</p>
     <div class="info__contact">
       <div class="info__contactInner tool__anchor">
-        <button class="button button--icon"
-        (click)="tooltipPCT0Open=!tooltipPCT0Open">
+        <button class="button button--icon" (click)="showCMPhone =! showCMPhone">
           <i class="ss-standard ss-phone"></i>
         </button>
-        <div class="tool__tip tool__tip--left"
-        [ngClass]="{ 'isOpen' : tooltipPCT0Open }">
+        <div class="tool__tip tool__tip--left" [ngClass]="{ 'isOpen' : showCMPhone }">
           <a href="tel:">(801)&nbsp;737-3456</a>
         </div>
       </div>
@@ -68,10 +63,17 @@
       </div>
     </div> <!--/.info__contact-->
   </div> <!--/.info--team (for care manager)-->
+  <div *ngIf="!careManager">
+    <div class="marBottom48">
+      <button class="button button--iconText marRight32" (click)="addCareManager()">
+        <i class="ss-plus"></i> Add Care Manager
+      </button>
+    </div>
+  </div>
 
   <h2>Care Team</h2>
   <div class="flex wrap">
-    <div class="info info--team">
+    <div class="info info--team" *ngFor="let teamMember of careTeamMembers">
       <div class="info__pill pill pill--yellow">
         :14
       </div>
@@ -79,13 +81,13 @@
       (click)="removeCTMember()">
         <i class="ss-delete"></i>
       </button>
-      <img class="info__pic" src="../../../../assets/img/profile.svg" />
-      <h3 class="center">John Adams, MD</h3>
+      <img class="info__pic" [src]="teamMember.employee_profile.user.image_url" />
+      <h3 class="center">{{teamMember.employee_profile.user.first_name}} {{teamMember.employee_profile.user.last_name}}<span *ngIf="teamMember.employee_profile.title">, {{teamMember.employee_profile.title.abbreviation}}</span></h3>
       <div class="divider divider--dk divider--smallMargin"></div>
-      <h5 class="center">PCP, Specialist</h5>
+      <h5 class="center"><span *ngIf="teamMember.role">{{teamMember.role.name}}</span></h5>
       <p class="info__subhead">Last patient view: 20 days ago</p>
       <label>Specialty</label>
-      <p class="marBottom32">Family Medicine</p>
+      <p class="marBottom32">{{teamMember.employee_profile.specialty ? teamMember.employee_profile.specialty.name : 'None'}}</p>
       <label>Org/Location</label>
       <p class="marBottom32">Ogden Clinic: Mountain View</p>
       <div class="info__contact">
@@ -96,7 +98,7 @@
           </button>
           <div class="tool__tip tool__tip--left"
           [ngClass]="{ 'isOpen' : tooltipPCT2Open }">
-            <a href="tel:">(801)&nbsp;737-3456</a>
+            <a href="tel:">(555)&nbsp;555-3456</a>
           </div>
         </div>
         <div class="info__contactInner tool__anchor">
@@ -111,130 +113,6 @@
         </div>
       </div> <!--/.info__contact-->
     </div> <!--/.info--team-->
-
-    <div class="info info--team">
-      <div class="info__pill pill pill--red">
-        :06
-      </div>
-      <button class="info__edit button button--icon button--icon--small"
-      (click)="removeCTMember()">
-        <i class="ss-delete"></i>
-      </button>
-      <img class="info__pic" src="../../../../assets/img/profile.svg" />
-      <h3 class="center">Stacy Smith, PhD</h3>
-      <div class="divider divider--dk divider--smallMargin"></div>
-      <h5 class="center">Psychiatric Consultant</h5>
-      <p class="info__subhead">Last patient view: 20 days ago</p>
-      <label>Specialty</label>
-      <p class="marBottom32">Family Medicine</p>
-      <label>Org/Location</label>
-      <p class="marBottom32">Ogden Clinic: Mountain View</p>
-      <div class="info__contact">
-        <div class="info__contactInner tool__anchor">
-          <button class="button button--icon"
-          (click)="tooltipPCT4Open=!tooltipPCT4Open">
-            <i class="ss-standard ss-phone"></i>
-          </button>
-          <div class="tool__tip tool__tip--left"
-          [ngClass]="{ 'isOpen' : tooltipPCT4Open }">
-            <a href="tel:">(801)&nbsp;737-3456</a>
-          </div>
-        </div>
-        <div class="info__contactInner tool__anchor">
-          <button class="button button--icon"
-          (click)="tooltipPCT5Open=!tooltipPCT5Open">
-            <i class="ss-standard ss-mail"></i>
-          </button>
-          <div class="tool__tip tool__tip--right"
-          [ngClass]="{ 'isOpen' : tooltipPCT5Open }">
-            <a href="mailto:">sample@example.com</a>
-          </div>
-        </div>
-      </div> <!--/.info__contact-->
-    </div> <!--/.info--team-->
-
-    <div class="info info--team">
-      <div class="info__pill pill pill--yellow">
-        :14
-      </div>
-      <button class="info__edit button button--icon button--icon--small"
-      (click)="removeCTMember()">
-        <i class="ss-delete"></i>
-      </button>
-      <img class="info__pic" src="../../../../assets/img/profile.svg" />
-      <h3 class="center">Sally Adams, CRNA</h3>
-      <div class="divider divider--dk divider--smallMargin"></div>
-      <h5 class="center">PCP, Specialist</h5>
-      <p class="info__subhead">Last patient view: 20 days ago</p>
-      <label>Specialty</label>
-      <p class="marBottom32">Family Medicine</p>
-      <label>Org/Location</label>
-      <p class="marBottom32">Ogden Clinic: Mountain View</p>
-      <div class="info__contact">
-        <div class="info__contactInner tool__anchor">
-          <button class="button button--icon"
-          (click)="tooltipPCT6Open=!tooltipPCT6Open">
-            <i class="ss-standard ss-phone"></i>
-          </button>
-          <div class="tool__tip tool__tip--left"
-          [ngClass]="{ 'isOpen' : tooltipPCT6Open }">
-            <a href="tel:">(801)&nbsp;737-3456</a>
-          </div>
-        </div>
-        <div class="info__contactInner tool__anchor">
-          <button class="button button--icon"
-          (click)="tooltipPCT7Open=!tooltipPCT7Open">
-            <i class="ss-standard ss-mail"></i>
-          </button>
-          <div class="tool__tip tool__tip--right"
-          [ngClass]="{ 'isOpen' : tooltipPCT7Open }">
-            <a href="mailto:">sample@example.com</a>
-          </div>
-        </div>
-      </div> <!--/.info__contact-->
-    </div> <!--/.info--team-->
-
-    <div class="info info--team">
-      <div class="info__pill pill pill--yellow">
-        :14
-      </div>
-      <button class="info__edit button button--icon button--icon--small"
-      (click)="removeCTMember()">
-        <i class="ss-delete"></i>
-      </button>
-      <img class="info__pic" src="../../../../assets/img/profile.svg" />
-      <h3 class="center">Patricia Williams, MD</h3>
-      <div class="divider divider--dk divider--smallMargin"></div>
-      <h5 class="center">Pharmacist</h5>
-      <p class="info__subhead">Last patient view: 20 days ago</p>
-      <label>Specialty</label>
-      <p class="marBottom32">Pharmacy</p>
-      <label>Org/Location</label>
-      <p class="marBottom32">Ogden Clinic: Mountain View</p>
-      <div class="info__contact">
-        <div class="info__contactInner tool__anchor">
-          <button class="button button--icon"
-          (click)="tooltipPCT8Open=!tooltipPCT8Open">
-            <i class="ss-standard ss-phone"></i>
-          </button>
-          <div class="tool__tip tool__tip--left"
-          [ngClass]="{ 'isOpen' : tooltipPCT8Open }">
-            <a href="tel:">(801)&nbsp;737-3456</a>
-          </div>
-        </div>
-        <div class="info__contactInner tool__anchor">
-          <button class="button button--icon"
-          (click)="tooltipPCT9Open=!tooltipPCT9Open">
-            <i class="ss-standard ss-mail"></i>
-          </button>
-          <div class="tool__tip tool__tip--right"
-          [ngClass]="{ 'isOpen' : tooltipPCT9Open }">
-            <a href="mailto:">sample@example.com</a>
-          </div>
-        </div>
-      </div> <!--/.info__contact-->
-    </div> <!--/.info--team-->
-
   </div> <!--/.flex wrap-->
 
 
