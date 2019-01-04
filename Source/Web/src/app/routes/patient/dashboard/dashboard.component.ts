@@ -27,7 +27,7 @@ export class PatientDashboardComponent implements OnDestroy, OnInit {
 
   public ngOnInit() {
     this.route.params.subscribe((params) => {
-      this.nav.patientDetailState(params.patientId);
+      this.nav.patientDetailState(params.patientId, params.planId);
       this.getPatient(params.patientId).then((patient) => {
         this.patient = patient;
         this.nav.addRecentPatient(this.patient);

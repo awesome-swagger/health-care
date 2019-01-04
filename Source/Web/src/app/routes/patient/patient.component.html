@@ -69,7 +69,7 @@
       <div class="info__cell">
         <label>Progress</label>
         <div class="progress marCenter">
-          Week {{plan.week}} of {{plan.totalWeeks}}
+          Week {{plan.week}} of {{plan?.plan_template?.duration_weeks}}
           <div class="progress__bg">
             <div class="progress__bar" [ngStyle]="{width: (plan.week / plan.totalWeeks) * 100 + '%'}"></div>
           </div>
@@ -197,7 +197,7 @@
         <div class="flex justifySpaceBetween">
           <div>
             <label class="info__label2">Age</label>
-            <p class="info__p">{{patient?.profile?.age}}</p>
+            <p class="info__p">{{patientAge}}</p>
             <label class="info__label2">Insurance</label>
             <p class="info__p">{{patient?.profile?.insurance}}</p>
             <label class="info__label2">Height</label>
@@ -205,7 +205,7 @@
           </div>
           <div>
             <label class="info__label2">Date of Birth</label>
-            <p class="info__p">{{patient?.profile?.dob}}</p>
+            <p class="info__p">{{patient?.user?.birthdate}}</p>
             <label class="info__label2">Secondary Ins.</label>
             <p class="info__p">{{patient?.profile?.secondaryIns}}</p>
             <label class="info__label2">Ethnicity</label>
@@ -213,7 +213,7 @@
           </div>
           <div>
             <label class="info__label2">Gender</label>
-            <p class="info__p">{{patient?.profile?.gender}}</p>
+            <p class="info__p">{{patient?.user?.gender.toUpperCase()}}</p>
             <label class="info__label2">MRN</label>
             <p class="info__p">{{patient?.profile?.MRN}}</p>
             <label class="info__label2">Cognitive Ability</label>
@@ -262,13 +262,13 @@
         </div>
         <label class="info__label2">Email</label>
         <p class="info__p">
-          <a href="mailto:">{{patient?.communication?.email}}</a>
+          <a href="mailto:">{{patient?.user?.email}}</a>
         </p>
         <div class="flex justifySpaceBetween">
           <div class="marRight32">
             <label class="info__label2">Phone</label>
             <p class="info__p info__p--noMargin">
-              <a href="tel:">{{patient?.communication?.phone}}</a>
+              <a href="tel:">{{patient?.user?.phone}}</a>
             </p>
           </div>
           <div>

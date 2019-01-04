@@ -15,6 +15,7 @@ import { DeleteMedicationComponent } from './modals/delete-medication/delete-med
 import { DeleteDiagnosisComponent } from './modals/delete-diagnosis/delete-diagnosis.component';
 import { NavbarService, StoreService } from '../../services';
 import patientData from './patientdata.js';
+import * as moment from 'moment';
 
 @Component({
   selector: 'app-patient',
@@ -38,6 +39,7 @@ export class PatientComponent implements OnDestroy, OnInit {
   ) { }
 
   public ngOnInit() {
+    this.nav.normalState();
     this.routeSub = this.route.params.subscribe((params) => {
       this.getPatient(params.id).then((patient) => {
         this.patient = patient;
@@ -281,5 +283,12 @@ export class PatientComponent implements OnDestroy, OnInit {
         return 'Low Risk';
       }
     })
+  }
+
+  get patientAge() {
+    if (this.patient) {
+      return moment().diff(this.patient.user.birthdate, 'years');
+    }
+    return '';
   }
 }

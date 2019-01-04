@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { StoreService } from '../../services';
 import { groupBy as _groupBy } from 'lodash';
+import { PercentageGaugeComponent } from '../../components/graphs/percentage-gauge/percentage-gauge.component';
 
 @Component({
   selector: 'app-dashboard',

@@ -24,6 +24,7 @@ export class NavbarService {
   }
 
   public normalState() {
+    console.log('normal state');
     this.planDetailId = null;
     this.instance.normalState = true;
     this.instance.planDetailState = false;
@@ -38,9 +39,10 @@ export class NavbarService {
     this.instance.patientDetailState = false;
   }
 
-  public patientDetailState(id) {
-    this.planDetailId = null;
-    this.patientDetailId = id;
+  public patientDetailState(patientId, planId) {
+    console.log('patient state');
+    this.planDetailId = planId;
+    this.patientDetailId = patientId;
     this.instance.normalState = false;
     this.instance.planDetailState = false;
     this.instance.patientDetailState = true;

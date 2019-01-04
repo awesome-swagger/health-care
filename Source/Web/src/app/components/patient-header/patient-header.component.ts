@@ -1,5 +1,7 @@
 import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { StoreService } from '../../services';
+import { find as _find } from 'lodash';
 
 @Component({
   selector: 'app-patient-header',
@@ -9,12 +11,33 @@ import { StoreService } from '../../services';
 export class PatientHeaderComponent implements OnInit, OnDestroy {
 
   private _patient = null;
+  public plans = null;
+  public currentPlanId = null;
+  public patientId = null;
+  public currentPlan = null;
 
   constructor(
+    private route: ActivatedRoute,
+    private router: Router,
     private store: StoreService,
   ) { }
 
-  public ngOnInit() { }
+  public ngOnInit() {
+    this.route.params.subscribe(params => {
+
+      let carePlanSub = this.store.PatientCarePlans(params.patientId).read().subscribe(
+        data => {
+          this.plans = data;
+          this.currentPlan = _find(data, p => p.id === params.planId);
+        },
+        err => {},
+        () => carePlanSub.unsubscribe()
+      )
+
+      this.currentPlanId = params.planId;
+      this.patientId = params.patientId;
+    })
+  }
 
   public ngOnDestroy() { }
 
@@ -25,18 +48,5 @@ export class PatientHeaderComponent implements OnInit, OnDestroy {
 
   public set patient(value) {
     this._patient = value;
-    if (this._patient) {
-      let carePlansSub = this.store.CarePlan.readListPaged({
-        patient: this._patient.id,
-      }).subscribe(
-        (data) => {
-          console.log(data);
-        },
-        (err) => {},
-        () => {
-          carePlansSub.unsubscribe();
-        },
-      );
-    }
   }
 }
