@@ -57,6 +57,9 @@ class CarePlanTemplate(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
     def __str__(self):
         return self.name
 
+    class Meta:
+        ordering = ('-created', )
+
 
 class CarePlan(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
     patient = models.ForeignKey(
