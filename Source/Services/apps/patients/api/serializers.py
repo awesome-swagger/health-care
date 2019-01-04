@@ -228,7 +228,7 @@ class PatientCarePlanSerializer(serializers.ModelSerializer):
     care_plans = serializers.SerializerMethodField()
     class Meta:
         model = PatientProfile
-        fields = (            
+        fields = (
             'id',
             'care_plans',
         )

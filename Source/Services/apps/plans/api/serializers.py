@@ -100,11 +100,30 @@ class CarePlanTemplateSerializer(RepresentationMixin, serializers.ModelSerialize
         ]
 
 
-class CarePlanSerializer(serializers.ModelSerializer):
+class CarePlanSerializer(RepresentationMixin, serializers.ModelSerializer):
 
     class Meta:
         model = CarePlan
-        fields = '__all__'
+        fields = (
+            'id',
+            'created',
+            'modified',
+            'patient',
+            'plan_template',
+        )
+        read_only_fields = (
+            'id',
+            'created',
+            'modified',
+            'patient',
+            'plan_template',
+        )
+        nested_serializers = [
+            {
+                'field': 'plan_template',
+                'serializer_class': CarePlanTemplateSerializer,
+            }
+        ]
 
 
 class PlanConsentSerializer(serializers.ModelSerializer):
@@ -114,14 +133,31 @@ class PlanConsentSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class CareTeamMemberSerializer(serializers.ModelSerializer):
-    employee_profile = EmployeeProfileSerializer(many=False)
-    role = ProviderRoleSerializer(many=False)
-    plan = CarePlanSerializer(many=False)
+class CareTeamMemberSerializer(RepresentationMixin, serializers.ModelSerializer):
 
     class Meta:
         model = CareTeamMember
-        fields = '__all__'
+        fields = (
+            'id',
+            'employee_profile',
+            'role',
+            'plan',
+            'is_manager',
+        )
+        nested_serializers = [
+            {
+                'field': 'employee_profile',
+                'serializer_class': EmployeeProfileSerializer,
+            },
+            {
+                'field': 'role',
+                'serializer_class': ProviderRoleSerializer,
+            },
+            {
+                'field': 'plan',
+                'serializer_class': CarePlanSerializer,
+            }
+        ]
 
 
 class GoalTemplateSerializer(serializers.ModelSerializer):

@@ -301,10 +301,15 @@ class EmployeeProfileViewSet(viewsets.ModelViewSet):
         employee_profile = utils.employee_profile_or_none(self.request.user)
         patient_profile = utils.patient_profile_or_none(self.request.user)
         organization = self.request.query_params.get('organization_id')
+        role = self.request.query_params.get('role_id')
         if organization:
             qs = qs.filter(
                 Q(organizations__id__in=[organization]) |
                 Q(organizations_managed__id__in=[organization])
+            )
+        if role:
+            qs = qs.filter(
+                Q(roles__id__in=[role])
             )
         if employee_profile is not None:
             # TODO: For employees, only return employees in the same facilities/organizations

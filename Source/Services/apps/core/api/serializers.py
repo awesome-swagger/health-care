@@ -23,7 +23,9 @@ class OrganizationSerializer(serializers.ModelSerializer):
     is_manager = serializers.SerializerMethodField()
 
     def get_is_manager(self, obj):
-        request = self.context['request']
+        request = self.context.get('request')
+        if not request:
+            return False
         employee_profile = utils.employee_profile_or_none(request.user)
         if employee_profile is None:
             return False
@@ -56,7 +58,9 @@ class FacilitySerializer(RepresentationMixin, serializers.ModelSerializer):
     is_manager = serializers.SerializerMethodField()
 
     def get_is_manager(self, obj):
-        request = self.context['request']
+        request = self.context.get('request')
+        if not request:
+            return False
         employee_profile = utils.employee_profile_or_none(request.user)
         if not employee_profile:
             return False
@@ -369,8 +373,3 @@ class SymptomSearchSerializer(HaystackSerializerMixin,
     class Meta(SymptomSerializer.Meta):
         index_classes = [SymptomIndex]
         search_fields = ('text', 'name')
-
-
-
-
-
