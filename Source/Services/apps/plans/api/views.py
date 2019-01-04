@@ -38,11 +38,12 @@ from .serializers import (
     InfoMessageQueueSerializer,
     InfoMessageSerializer,
     CarePlanTemplateAverageSerializer,
+    CarePlanByTemplateFacilitySerializer,
 )
 from apps.core.api.mixins import ParentViewSetPermissionMixin
-from apps.core.models import Organization
+from apps.core.models import Organization, Facility
 from apps.core.api.serializers import ProviderRoleSerializer
-from apps.core.api.views import OrganizationViewSet
+from apps.core.api.views import OrganizationViewSet, FacilityViewSet
 from apps.core.models import ProviderRole
 from apps.patients.api.serializers import PatientProfileSerializer
 from apps.patients.models import PatientProfile
@@ -814,6 +815,7 @@ class CarePlanTemplateByType(ParentViewSetPermissionMixin,
         return Response(serializer.data)
 
 
+
 class CarePlanTemplateByServiceArea(
     ParentViewSetPermissionMixin,
     NestedViewSetMixin,
@@ -858,6 +860,53 @@ class CarePlanTemplateByServiceArea(
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+
+
+
+class CarePlanByTemplateFacility(ParentViewSetPermissionMixin,
+                                 NestedViewSetMixin,
+                                 RetrieveAPIView):
+    """
+    Returns list of :model:`plans.CarePlan` related to the given template.
+    This will also be based on the parent facility.
+    """
+    serializer_class = CarePlanByTemplateFacilitySerializer
+    permission_classes = (
+        permissions.IsAuthenticated,
+        IsAdminOrEmployee,
+    )
+    parent_lookup = [
+        (
+            'patient__facility',
+            Facility,
+            FacilityViewSet
+        )
+    ]
+
+    def get_queryset(self):
+        """
+        Override `get_queryset` so it will not filter for the parent object.
+        Return all CarePlanTemplate objects.
+        """
+        return CarePlanTemplate.objects.all()
+
+    def get_care_plans(self):
+        instance = self.get_object()
+        queryset = instance.care_plans.all()
+        return self.filter_queryset_by_parents_lookups(queryset).distinct()
+
+    def retrieve(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_care_plans())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+
 
 
 class PatientTaskTemplateByCarePlanTemplate(ParentViewSetPermissionMixin,
