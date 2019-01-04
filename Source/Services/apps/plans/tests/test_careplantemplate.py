@@ -54,10 +54,10 @@ class TestCarePlanTemplateUsingEmployee(TasksMixin, APITestCase):
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_create_care_plan_template(self):
-        template_type = self.create_care_plan_template_type()
+        service_area = self.create_service_area()
         payload = {
             'name': self.fake.name(),
-            'type': template_type.id,
+            'service_area': service_area.id,
             'duration_weeks': random.randint(1, 5),
             'is_active': True
         }
@@ -65,10 +65,10 @@ class TestCarePlanTemplateUsingEmployee(TasksMixin, APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_full_update_care_plan_template(self):
-        template_type = self.create_care_plan_template_type()
+        service_area = self.create_service_area()
         payload = {
             'name': self.fake.name(),
-            'type': template_type.id,
+            'service_area': service_area.id,
             'duration_weeks': random.randint(1, 5),
             'is_active': True
         }
@@ -76,9 +76,9 @@ class TestCarePlanTemplateUsingEmployee(TasksMixin, APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_partial_update_care_plan_template(self):
-        template_type = self.create_care_plan_template_type()
+        service_area = self.create_service_area()
         payload = {
-            'type': template_type.id,
+            'service_area': service_area.id,
             'duration_weeks': random.randint(1, 5),
         }
         response = self.client.patch(self.detail_url, payload)
