@@ -177,22 +177,22 @@
               <label class="drop__label">Patients Lists</label>
               <li class="drop__option">
                 <a class="drop__link" [routerLink]="['/patients/active']">
-                  Active Patients (1,982)
+                  Active Patients ({{activePatientsCount}})
                 </a>
               </li>
               <li class="drop__option">
                 <a class="drop__link" [routerLink]="['/patients/invited']">
-                  Invited Patients (2)
+                  Invited Patients ({{invitedPatientsCount}})
                 </a>
               </li>
               <li class="drop__option">
                 <a class="drop__link" [routerLink]="['/patients/potential']">
-                  Potential Patients (9)
+                  Potential Patients ({{potentialPatientsCount}})
                 </a>
               </li>
               <li class="drop__option">
                 <a class="drop__link" [routerLink]="['/patients/inactive']">
-                  Inactive Patients (248)
+                  Inactive Patients ({{inactivePatientsCount}})
                 </a>
               </li>
             </ul>

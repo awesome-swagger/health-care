@@ -1,8 +1,13 @@
+import datetime
+
+import pytz
+
 from django.contrib.auth import get_user_model
 from django.db.models import Avg
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
+from dateutil.relativedelta import relativedelta
 from rest_framework import serializers
 
 from ..models import (
@@ -195,7 +200,8 @@ class InfoMessageSerializer(serializers.ModelSerializer):
         )
 
 
-class InfoMessageQueueSerializer(serializers.ModelSerializer):
+class InfoMessageQueueSerializer(RepresentationMixin,
+                                 serializers.ModelSerializer):
 
     messages = InfoMessageSerializer(many=True, read_only=True)
 
@@ -215,6 +221,12 @@ class InfoMessageQueueSerializer(serializers.ModelSerializer):
             'created',
             'modified',
         )
+        nested_serializers = [
+            {
+                'field': 'plan_template',
+                'serializer_class': CarePlanTemplateSerializer,
+            }
+        ]
 
 
 class GoalProgressSerializer(serializers.ModelSerializer):
@@ -516,7 +528,139 @@ class CarePlanTemplateAverageSerializer(serializers.ModelSerializer):
                        total_symptom_tasks +
                        total_assessment_tasks +
                        total_vital_tasks)
-        return round((total_completed / total_tasks) * 100) if total_tasks > 0 else 0
+        return round((total_completed / total_tasks) * 100) \
+            if total_tasks > 0 else 0
+
+    def get_risk_level(self, obj):
+        outcome = self.get_average_outcome(obj)
+        engagement = self.get_average_engagement(obj)
+        return round((outcome + engagement) / 2)
+
+
+class CarePlanByTemplateFacilitySerializer(serializers.ModelSerializer):
+    """
+    serializer to be used by :model:`plans.CarePlan` with
+    data relevant in dashboard average endpoint
+    """
+    patient_name = serializers.SerializerMethodField()
+    other_plans = serializers.SerializerMethodField()
+    tasks_this_week = serializers.SerializerMethodField()
+    average_outcome = serializers.SerializerMethodField()
+    average_engagement = serializers.SerializerMethodField()
+    risk_level = serializers.SerializerMethodField()
+
+    class Meta:
+        model = CarePlan
+        fields = (
+            'patient_name',
+            'other_plans',
+            'tasks_this_week',
+            'average_outcome',
+            'average_engagement',
+            'risk_level',
+        )
+
+    def get_patient_name(self, obj):
+        return obj.patient.user.get_full_name()
+
+    def get_other_plans(self, obj):
+        return obj.patient.care_plans.exclude(id=obj.id).count()
+
+    def get_tasks_this_week(self, obj):
+        now = timezone.now()
+        last_day = 6 - now.weekday()
+        start = now - relativedelta(days=now.weekday())
+        end = now + relativedelta(days=last_day)
+        start_date = datetime.datetime.combine(start,
+                                               datetime.time.min,
+                                               tzinfo=pytz.utc)
+        end_date = datetime.datetime.combine(end,
+                                             datetime.time.min,
+                                             tzinfo=pytz.utc)
+
+        patient_tasks = PatientTask.objects.filter(
+            plan=obj,
+            due_datetime__range=(start_date, end_date))
+        medication_tasks = MedicationTask.objects.filter(
+            medication_task_template__plan=obj,
+            due_datetime__range=(start_date, end_date))
+        symptom_tasks = SymptomTask.objects.filter(
+            plan=obj,
+            due_datetime__range=(start_date, end_date))
+        assessment_tasks = AssessmentTask.objects.filter(
+            plan=obj,
+            due_datetime__range=(start_date, end_date))
+        vital_tasks = VitalTask.objects.filter(
+            plan=obj,
+            due_datetime__range=(start_date, end_date))
+
+        total_patient_tasks = patient_tasks.count()
+        total_medication_tasks = medication_tasks.count()
+        total_symptom_tasks = symptom_tasks.count()
+        total_assessment_tasks = assessment_tasks.count()
+        total_vital_tasks = vital_tasks.count()
+        return total_patient_tasks + \
+            total_medication_tasks + \
+            total_symptom_tasks + \
+            total_assessment_tasks + \
+            total_vital_tasks
+
+    def get_average_outcome(self, obj):
+        tasks = AssessmentTask.objects.filter(
+            plan=obj,
+            assessment_task_template__tracks_outcome=True
+        ).aggregate(average=Avg('responses__rating'))
+        average = tasks['average'] or 0
+        avg = round((average / 5) * 100)
+        return avg
+
+    def get_average_engagement(self, obj):
+        now = timezone.now()
+        patient_tasks = PatientTask.objects.filter(
+            plan=obj,
+            due_datetime__lte=now)
+        medication_tasks = MedicationTask.objects.filter(
+            medication_task_template__plan=obj,
+            due_datetime__lte=now)
+        symptom_tasks = SymptomTask.objects.filter(
+            plan=obj,
+            due_datetime__lte=now)
+        assessment_tasks = AssessmentTask.objects.filter(
+            plan=obj,
+            due_datetime__lte=now)
+        vital_tasks = VitalTask.objects.filter(
+            plan=obj,
+            due_datetime__lte=now)
+
+        total_patient_tasks = patient_tasks.count()
+        total_medication_tasks = medication_tasks.count()
+        total_symptom_tasks = symptom_tasks.count()
+        total_assessment_tasks = assessment_tasks.count()
+        total_vital_tasks = vital_tasks.count()
+
+        completed_patient_tasks = patient_tasks.filter(
+            status__in=['missed', 'done']).count()
+        completed_medication_tasks = medication_tasks.filter(
+            status__in=['missed', 'done']).count()
+        completed_symptom_tasks = symptom_tasks.filter(
+            is_complete=True).count()
+        completed_assessment_tasks = assessment_tasks.filter(
+            is_complete=True).count()
+        completed_vital_tasks = vital_tasks.filter(
+            is_complete=True).count()
+
+        total_completed = (completed_patient_tasks +
+                           completed_medication_tasks +
+                           completed_symptom_tasks +
+                           completed_assessment_tasks +
+                           completed_vital_tasks)
+        total_tasks = (total_patient_tasks +
+                       total_medication_tasks +
+                       total_symptom_tasks +
+                       total_assessment_tasks +
+                       total_vital_tasks)
+        return round((total_completed / total_tasks) * 100) \
+            if total_tasks > 0 else 0
 
     def get_risk_level(self, obj):
         outcome = self.get_average_outcome(obj)

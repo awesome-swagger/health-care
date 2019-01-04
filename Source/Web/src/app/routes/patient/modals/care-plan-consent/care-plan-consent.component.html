@@ -1,8 +1,9 @@
 <h1 class="modal__title">Care Plan Consent</h1>
 <hr />
 <h2 class="modal__title">{{data?.patientName}}</h2> 
+<h4 class="modal__title">{{data?.serviceArea}}, {{data?.carePlan}}</h4>
+<h4 class="modal__title">{{data?.carePlanTypeName}} ({{data?.carePlanTypeAbr}})</h4>
 <div>
-  <p class="fullWidth">Patients can be enrolled without meeting reimbursement requirements. However, they won’t be eligible to receive reimbursement until requirements have been meet.</p>
   <label class="styledInput listHead">REIMBURSEMENT REQUIREMENTS (OPT)</label>
   <label class="styledInput">
     <input type="checkbox" class="styledInput__input" [(ngModel)]="box1" />
@@ -36,6 +37,17 @@
     Complete daily tasks.
   </label>
 </div>
+<div class="flex justifySpaceBetween">
+  <div class="modal__inputWrap marRight16">
+    <label>Enrolled By</label>
+    {{data?.enrolledBy}}
+  </div>
+  <div class="modal__inputWrap marRight32">
+    <label>Enroll Date</label>
+    {{data?.enrollDate}}
+  </div>
+</div>
+
 <div class="modal__buttons padBottom32">
   <button class="button button--2nd" (click)="clickCancel()">
     Cancel

@@ -2,6 +2,7 @@ import { Component, EventEmitter, Input, Output, OnInit, OnDestroy } from '@angu
 import { ActivatedRoute, Router } from '@angular/router';
 import { ToastService } from '../../modules/toast';
 import { StoreService } from '../../services';
+import { find as _find } from 'lodash';
 
 @Component({
   selector: 'app-patient-header',
@@ -30,10 +31,10 @@ export class PatientHeaderComponent implements OnInit, OnDestroy {
   public ngOnInit() {
     this.route.params.subscribe(
       (params) => {
-        this.fetchPatient(params.id).then(
+        this.fetchPatient(params.patientId).then(
           (patient: any) => {
             this.patient = patient;
-            this.fetchCarePlans(params.id).then(
+            this.fetchCarePlans(params.patientId).then(
               (carePlans: any) => {
                 this.carePlans = carePlans;
                 this.selectedPlan = carePlans.find((obj) => {

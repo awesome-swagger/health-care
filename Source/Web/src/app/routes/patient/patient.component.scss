@@ -1,0 +1,32 @@
+@import '~scss/mixins';
+@import '~scss/variables';
+
+.background-radial {
+  background: #32555f;
+  background: -moz-radial-gradient(center, ellipse cover, #32555f 0%, #2f3d45 100%);
+  background: -webkit-radial-gradient(center, ellipse cover, #32555f 0%,#2f3d45 100%);
+  background: radial-gradient(ellipse at center, #32555f 0%,#2f3d45 100%);
+
+  padding: rem-calc(32);
+  color: #ffffff;
+  font-size: rem-calc(40);
+  font-weight: 100;
+
+  h2 {
+    font-size: rem-calc(15);
+    font-weight: 900;
+    color: #92abb5;
+    text-transform: uppercase;
+  }
+
+  label {
+    font-size: rem-calc(12);
+    font-weight: 900;
+    color: #92abb5;
+    text-transform: uppercase;
+  }
+
+  .info {
+    background: rgba(0,0,0,.1);
+  }
+}

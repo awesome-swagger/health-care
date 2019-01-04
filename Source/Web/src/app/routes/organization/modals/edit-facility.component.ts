@@ -46,7 +46,7 @@ export class EditFacilityComponent implements OnInit {
       }
       this.data.facility.organization = this.organization.id;
       this.store.Facility.create(this.data.facility).subscribe(() => {});
-      this.modals.close('created');
+      this.modals.close(this.data.facility);
     } else if (this.data.type === 'edit') {
       if (this.data.isOrganization) {
         this.store.Organization.update(this.data.facility.id, this.data.facility, true).subscribe(() => {});

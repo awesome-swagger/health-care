@@ -1,10 +1,26 @@
+import datetime
+import random
+
+import pytz
+
+
+from django.db.models import Avg
 from django.urls import reverse
+from django.utils import timezone
 
 from faker import Faker
 from rest_framework import status
 from rest_framework.test import APITestCase
 
 from ..tests.mixins import CoreMixin
+from apps.tasks.tests.mixins import TasksMixin
+from apps.tasks.models import (
+    PatientTask,
+    MedicationTask,
+    SymptomTask,
+    AssessmentTask,
+    VitalTask,
+)
 
 
 class TestEmployeeProfile(CoreMixin, APITestCase):
@@ -141,7 +157,7 @@ class TestOrganizationFacility(CoreMixin, APITestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
 
-class TestFacilityEmployee(CoreMixin, APITestCase):
+class TestFacilityEmployee(TasksMixin, APITestCase):
     """
     Test cases for :model:`tasks.EmployeeProfile` using an employee
     as the logged in user.
@@ -178,3 +194,105 @@ class TestFacilityEmployee(CoreMixin, APITestCase):
         )
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_employee_assignment_facilities_count(self):
+        employee = self.create_employee(**{
+            'facilities': [self.facility, self.create_facility()],
+        })
+        url = reverse(
+            'facility-employees-assignments',
+            kwargs={
+                'parent_lookup_facilities': self.facility.id,
+                'pk': employee.id
+            }
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.data['facilities_count'], 2)
+
+    def test_employee_assignment_care_manager_count(self):
+        plans_count = 5
+        employee = self.create_employee(**{
+            'facilities': [self.facility, self.create_facility()],
+        })
+        for i in range(plans_count):
+            # Create care plans as manager
+            manager_plan = self.create_care_plan()
+            self.create_care_team_member(**{
+                'employee_profile': employee,
+                'plan': manager_plan,
+                'is_manager': True
+            })
+
+            # Create care plans as member
+            member_plan = self.create_care_plan()
+            self.create_care_team_member(**{
+                'employee_profile': employee,
+                'plan': member_plan,
+                'is_manager': False
+            })
+
+        url = reverse(
+            'facility-employees-assignments',
+            kwargs={
+                'parent_lookup_facilities': self.facility.id,
+                'pk': employee.id
+            }
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.data['care_manager_count'], plans_count)
+
+    def test_employee_assignment_care_team_count(self):
+        plans_count = 3
+        employee = self.create_employee(**{
+            'facilities': [self.facility, self.create_facility()],
+        })
+        for i in range(plans_count):
+            # Create care plans as manager
+            manager_plan = self.create_care_plan()
+            self.create_care_team_member(**{
+                'employee_profile': employee,
+                'plan': manager_plan,
+                'is_manager': True
+            })
+
+            # Create care plans as member
+            member_plan = self.create_care_plan()
+            self.create_care_team_member(**{
+                'employee_profile': employee,
+                'plan': member_plan,
+                'is_manager': False
+            })
+
+        url = reverse(
+            'facility-employees-assignments',
+            kwargs={
+                'parent_lookup_facilities': self.facility.id,
+                'pk': employee.id
+            }
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.data['care_team_count'], plans_count)
+
+    def test_employee_assignment_billable_patients_count(self):
+        plans_count = 5
+        employee = self.create_employee(**{
+            'facilities': [self.facility, self.create_facility()],
+        })
+        for i in range(plans_count):
+            # Create care plans as manager
+            manager_plan = self.create_care_plan()
+            self.create_care_team_member(**{
+                'employee_profile': employee,
+                'plan': manager_plan,
+                'is_manager': True
+            })
+
+        url = reverse(
+            'facility-employees-assignments',
+            kwargs={
+                'parent_lookup_facilities': self.facility.id,
+                'pk': employee.id
+            }
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.data['billable_patients_count'], plans_count)

@@ -1,26 +1,26 @@
 <div class="flex alignCenter marBottom32" *ngIf="patient">
   <div class="picName marRight24">
-    <img class="picName__img picName__img--big" src="../../../../assets/img/profile.svg" *ngIf="!patient.user.image_url" />
-    <img class="picName__img picName__img--big" [src]="patient.user.image_url" *ngIf="patient.user.image_url" />
-    <h1 class="noMargin">{{patient.user.first_name}} {{patient.user.last_name}}</h1>
+    <img class="picName__img picName__img--big" src="../../../../assets/img/profile.svg" *ngIf="!patient?.user.image_url" />
+    <img class="picName__img picName__img--big" [src]="patient.user.image_url" *ngIf="patient?.user.image_url" />
+    <h1 class="noMargin">{{patient?.user.first_name}} {{patient?.user.last_name}}</h1>
   </div>
   <div class="drop">
     <div class="drop__input drop__input--select" (click)="multi1Open=!multi1Open">
-      <h2 class="noMargin">{{selectedPlan?.plan_template.name}} <i class="icomoon-cocm"></i> <span *ngIf="selectedPlan?.plan_template.type">{{selectedPlan.plan_template.type.abbreviation}}</span></h2>
+      <h2 class="noMargin">{{selectedPlan?.plan_template.name}} <i class="icomoon-cocm"></i> <span *ngIf="selectedPlan?.plan_template.service_area">{{selectedPlan.plan_template.service_area.name}}</span></h2>
     </div>
     <ul class="drop__dropdown drop__dropdown--select"
     [ngClass]="{ 'isOpen' : multi1Open }"
     (click)="multi1Open=!multi1Open">
       <li class="drop__option drop__option--select" *ngFor="let plan of carePlans" (click)="changeSelectedPlan(plan)">
         <div class="iconText">
-          <span class="marRight8">{{plan.plan_template.name}}</span> <i class="icomoon-cocm iconText__icon iconText__icon--noTop"></i> <span *ngIf="plan.plan_template.type">{{plan.plan_template.type.abbreviation}}</span>
+          <span class="marRight8">{{plan.plan_template.name}}</span> <i class="icomoon-cocm iconText__icon iconText__icon--noTop"></i> <span *ngIf="plan.plan_template.service_area">{{plan.plan_template.service_area.name}}</span>
         </div>
       </li>
     </ul>
   </div>
 </div> <!--/.flex (for title area)-->
 
-<div class="info info--horiz" *ngIf="patient">
+<div class="info info--horiz">
   <div class="info__cell">
     <label>Care Team</label>
     <div class="flex alignCenter justifyCenter">
@@ -33,7 +33,7 @@
           <span class="marRight8">+{{careTeamMembers.length}}</span>
           <img src="../../../assets/img/arrow-down.svg" />
         </a>
-        <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipP1Open }">
+        <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : teamListOpen }">
           <div class="tool__text">
             <div class="picName marBottom16" *ngFor="let teamMember of careTeamMembers">
               <img class="picName__img" [src]="teamMember.employee_profile.user.image_url" />
@@ -47,9 +47,9 @@
   <div class="info__cell">
     <label>Progress</label>
     <div class="progress marCenter">
-      Week 8 of 12
+      Week {{selectedPlan?.week}} of {{selectedPlan?.plan_template?.duration_weeks}}
       <div class="progress__bg">
-        <div class="progress__bar"></div>
+        <div class="progress__bar" [ngStyle]="{width: (selectedPlan?.week / selectedPlan?.totalWeeks) * 100 + '%'}"></div>
       </div>
     </div>
   </div>
@@ -59,34 +59,36 @@
   </div>
   <div class="info__cell">
     <label>Last&nbsp;Contact</label>
-    <a href="" class="justifyCenter">2 days ago</a>
+    <a [routerLink]="['/patient/asdf/history']" class="justifyCenter">{{selectedPlan?.daysSinceContact}} days ago</a>
   </div>
   <div class="info__cell">
-    <label>Problem Areas</label>
-    <a href="" class="justifyCenter">3</a>
+    <label>Problems</label>
+    <a class="justifyCenter" (click)="openProblemAreas()">{{selectedPlan?.problems}}</a>
   </div>
   <div class="info__cell">
     <label class="tool info__tool justifyCenter">
       Time
       <div class="tool__anchor">
-        <button class="button button--icon button--icon--small" (click)="tooltipP2Open=!tooltipP2Open">
+        <button class="button button--icon button--icon--small" (click)="openFinancialDetails()">
           <i class="ss-info"></i>
         </button>
-        <div class="tool__tip" [ngClass]="{ 'isOpen' : tooltipP2Open }">
-          <div class="tool__text">
-            This is the amount of time recorded for this patient on this care plan thus far this month.
-          </div>
-        </div>
       </div>
     </label>
     <div class="pill pill--lime">
-      :57
+      {{selectedPlan?.time}}
     </div>
   </div> <!--/.info__cell (for time)-->
   <div class="info__cell">
     <label>Risk Level</label>
-    <div class="pill pill--yellow">
-      Low Risk 84%
+    <div
+      class="pill"
+      [ngClass]="{
+        'pill--red': selectedPlan?.riskLevel >= 80,
+        'pill--yellow': selectedPlan?.riskLevel < 80 && selectedPlan?.riskLevel >= 40,
+        'pill--lime': selectedPlan?.riskLevel < 40
+      }"
+    >
+      {{selectedPlan?.riskLevel}}%
     </div>
   </div>
-</div> <!--/.info-->
+</div> <!--/.info (for care plan instance)-->

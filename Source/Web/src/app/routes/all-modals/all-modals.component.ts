@@ -205,7 +205,7 @@ export class AllModalsComponent implements OnInit {
 
   public openAddPatientToPlan() {
     this.modals.open(AddPatientToPlanComponent, {
-      width: '741px',
+      width: '512px',
     })
   }
 
@@ -216,8 +216,10 @@ export class AllModalsComponent implements OnInit {
       data: {
         patientName: 'Alexander Montgomery',
         patientPhone: '(555)555-5555',
-        carePlan: 'Heart Disease',
-        carePlanType: 'RPM',
+        carePlan: 'Depression',
+        serviceArea: 'Behavioral Health',
+        carePlanTypeName: 'Remote Patient Management',
+        carePlanTypeAbr: 'RPM',
       }
     })
   }
@@ -227,6 +229,12 @@ export class AllModalsComponent implements OnInit {
       width: '512px',
       data: {
         patientName: 'Alexander Montgomery',
+        carePlan: 'Depression',
+        serviceArea: 'Behavioral Health',
+        carePlanTypeName: 'Remote Patient Management',
+        carePlanTypeAbr: 'RPM',
+        enrolledBy: 'John Smith, MD',
+        enrollDate: 'Dec 4, 2017',
       },
     })
   }

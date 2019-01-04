@@ -34,6 +34,9 @@ export class UserComponent implements OnDestroy, OnInit {
       let employeeSub = this.store.EmployeeProfile.read(res.id).subscribe(
         (employee) => {
           this.employee = employee;
+          console.log('vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv');
+          console.log(this.employee);
+          console.log('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^');
         },
         (err) => {
           this.router.navigate(['/error']);

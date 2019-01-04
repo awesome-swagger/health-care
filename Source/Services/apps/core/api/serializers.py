@@ -1,4 +1,9 @@
-from django.db.models import Q
+import datetime
+
+import pytz
+
+from django.db.models import Q, Avg
+from django.utils import timezone
 
 from drf_haystack.serializers import HaystackSerializerMixin
 from rest_framework import serializers
@@ -8,6 +13,13 @@ from apps.core.models import (Diagnosis, EmployeeProfile, Facility,
                               InvitedEmailTemplate, Medication, Organization,
                               Procedure, ProviderRole, ProviderSpecialty,
                               ProviderTitle, Symptom)
+from apps.tasks.models import (
+    AssessmentTask,
+    PatientTask,
+    SymptomTask,
+    MedicationTask,
+    VitalTask,
+)
 from care_adopt_backend import utils
 
 from ..search_indexes import (
@@ -227,6 +239,100 @@ class EmployeeProfileSerializer(RepresentationMixin, serializers.ModelSerializer
                 'many': True,
             },
         ]
+
+
+class EmployeeAssignmentSerializer(serializers.ModelSerializer):
+    """
+    Serializer to be used for employee's assignment details
+    for the current month-to-date
+    """
+    risk_level = serializers.SerializerMethodField()
+
+    class Meta:
+        model = EmployeeProfile
+        fields = (
+            'id',
+            'facilities_count',
+            'care_manager_count',
+            'care_team_count',
+            'billable_patients_count',
+            'risk_level',
+        )
+
+    def get_average_assessment(self, kwargs):
+        tasks = AssessmentTask.objects.filter(**kwargs).aggregate(
+            average=Avg('responses__rating'))
+        average = tasks['average'] or 0
+        avg = round((average / 5) * 100)
+        return avg
+
+    def get_average_engagement(self, task_kwargs):
+        kwargs = task_kwargs.pop('kwargs')
+        medication_kwargs = task_kwargs.pop('medication_kwargs')
+        patient_tasks = PatientTask.objects.filter(**kwargs)
+        medication_tasks = MedicationTask.objects.filter(
+            **medication_kwargs)
+        symptom_tasks = SymptomTask.objects.filter(**kwargs)
+        assessment_tasks = AssessmentTask.objects.filter(**kwargs)
+        vital_tasks = VitalTask.objects.filter(**kwargs)
+
+        total_patient_tasks = patient_tasks.count()
+        total_medication_tasks = medication_tasks.count()
+        total_symptom_tasks = symptom_tasks.count()
+        total_assessment_tasks = assessment_tasks.count()
+        total_vital_tasks = vital_tasks.count()
+
+        completed_patient_tasks = patient_tasks.filter(
+            status__in=['missed', 'done']).count()
+        completed_medication_tasks = medication_tasks.filter(
+            status__in=['missed', 'done']).count()
+        completed_symptom_tasks = symptom_tasks.filter(
+            is_complete=True).count()
+        completed_assessment_tasks = assessment_tasks.filter(
+            is_complete=True).count()
+        completed_vital_tasks = vital_tasks.filter(
+            is_complete=True).count()
+
+        total_completed = (completed_patient_tasks +
+                           completed_medication_tasks +
+                           completed_symptom_tasks +
+                           completed_assessment_tasks +
+                           completed_vital_tasks)
+        total_tasks = (total_patient_tasks +
+                       total_medication_tasks +
+                       total_symptom_tasks +
+                       total_assessment_tasks +
+                       total_vital_tasks)
+        return round((total_completed / total_tasks) * 100) \
+            if total_tasks > 0 else 0
+
+    def get_risk_level(self, obj):
+        now = timezone.now()
+        first_day = now.date().replace(day=1)
+        due_datetime = datetime.datetime.combine(first_day,
+                                                 datetime.time.min,
+                                                 tzinfo=pytz.utc)
+        plans = obj.assigned_roles.values_list('plan', flat=True).distinct()
+        outcome_kwargs = {
+            'plan__in': plans,
+            'assessment_task_template__tracks_outcome': True
+        }
+        outcome = self.get_average_assessment(outcome_kwargs)
+
+        kwargs = {
+            'plan__in': plans,
+            'due_datetime__gte': due_datetime
+        }
+        medication_kwargs = {
+            'medication_task_template__plan__in': plans,
+            'due_datetime__gte': due_datetime
+        }
+        task_kwargs = {
+            'kwargs': kwargs,
+            'medication_kwargs': medication_kwargs
+        }
+        engagement = self.get_average_engagement(task_kwargs)
+        return round((outcome + engagement) / 2)
 
 
 class OrganizationEmployeeSerializer(serializers.ModelSerializer):

@@ -5,8 +5,10 @@ import { ActivatedRoute, Router } from '@angular/router';
 export class NavbarService {
 
   public recentPatients = [];
+  // planDetailId is used for the plan state
   public planDetailId = null;
   public patientDetailId = null;
+  // patientPlanId is used when viewing a patient to keep track of the selected care plan for navigation.
   public patientPlanId = null;
   private _instance = null;
   private _visible = true;
@@ -25,6 +27,7 @@ export class NavbarService {
   }
 
   public normalState() {
+    console.log('normal state');
     this.planDetailId = null;
     this.patientPlanId = null;
     this.instance.normalState = true;
@@ -41,9 +44,10 @@ export class NavbarService {
     this.instance.patientDetailState = false;
   }
 
-  public patientDetailState(id, planId) {
+  public patientDetailState(patientId, planId) {
+    console.log('patient state');
     this.planDetailId = null;
-    this.patientDetailId = id;
+    this.patientDetailId = patientId;
     this.patientPlanId = planId;
     this.instance.normalState = false;
     this.instance.planDetailState = false;

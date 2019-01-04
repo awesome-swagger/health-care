@@ -3,6 +3,8 @@ import { Router } from '@angular/router';
 import { Subscription } from 'rxjs/Subscription';
 import { AuthService, StoreService } from '../../services';
 import { uniqBy as _uniqBy, groupBy as _groupBy } from 'lodash';
+import * as _ from 'lodash';
+import { collectExternalReferences } from '@angular/compiler';
 
 @Component({
   selector: 'app-users',
@@ -25,6 +27,8 @@ export class UsersComponent implements OnDestroy, OnInit {
 
   public organizationChecked = true;
   public facilitiesChecked = {};
+  public sortDirection = 'desc';
+  public searchString = '';
 
   constructor(
     private router: Router,
@@ -95,6 +99,46 @@ export class UsersComponent implements OnDestroy, OnInit {
     this.facilities.forEach((facility) => {
       this.facilitiesChecked[facility.id] = false;
     });
+  }
+
+  public shownNthFacilityEmployeeCount(n) {
+    if (this.facilities[n] && this.facilities[n].employees) {
+      if (this.showInactive) {
+        return this.facilities[n].employees.length;
+      }
+      return _.filter(this.facilities[n].employees, employee => employee.status !== 'inactive').length;
+    }
+    return 0;
+  }
+
+  get shownOrgEmployeesCount() {
+    if (this.organization && this.organization.employees) {
+      if (this.showInactive) {
+        return this.organization.employees.length;
+      }
+      return _.filter(this.organization.employees, employee => employee.status !== 'inactive').length;
+    }
+
+    return 0;
+  }
+
+  get activeUsersCount() {
+    if (this.organization && this.organization.employees) {
+      return _.filter(this.organization.employees, employee => employee.status !== 'inactive').length;
+    }
+    return 0;
+  }
+
+  get searchEmployees() {
+    if (this.organization && this.organization.employees) {
+      return _.filter(this.organization.employees, employee => {
+        const names = employee.full_name.split(' ');
+        const nameMatches = _.map(names, name => name.slice(0, this.searchString.length).toLowerCase() === this.searchString.toLowerCase());
+        return nameMatches.indexOf(true) > -1;
+      });
+    }
+
+    return [];
   }
 
   public organizationSearchMatch() {

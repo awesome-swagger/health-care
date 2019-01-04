@@ -31,8 +31,8 @@ export class PatientTeamComponent implements OnDestroy, OnInit {
   public ngOnInit() {
     this.routeSub = this.route.params.subscribe((params) => {
       this.planId = params.planId;
-      this.nav.patientDetailState(params.id, params.planId);
-      let patientSub = this.store.PatientProfile.read(params.id).subscribe(
+      this.nav.patientDetailState(params.patientId, params.planId);
+      let patientSub = this.store.PatientProfile.read(params.patientId).subscribe(
         (patient) => {
           this.patient = patient;
           this.nav.addRecentPatient(this.patient);

@@ -35,9 +35,7 @@ export class Store {
 
   public read(id: number | string): Observable<any> {
     let request = this.http.get(this.createUrl(id));
-    return request.catch((error: any) => {
-      return throwError(error);
-    });
+    return request;
   }
 
   public readList(params = {}): Observable<any> {

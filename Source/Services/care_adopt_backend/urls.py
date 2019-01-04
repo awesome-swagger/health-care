@@ -42,12 +42,14 @@ from apps.plans.api.views import (
     InfoMessageQueueViewSet,
     InfoMessageViewSet,
     ManagerTaskTemplateByCarePlanTemplate,
+    CareTeamTaskTemplateByCarePlanTemplate,
     PatientByCarePlanTemplate,
     PatientTaskTemplateByCarePlanTemplate,
     AssessmentTaskTemplateByCarePlanTemplate,
     SymptomTaskTemplateByCarePlanTemplate,
     VitalTaskTemplateByCarePlanTemplate,
     TeamTaskTemplateByCarePlanTemplate,
+    InfoMessageQueueByCarePlanTemplate,
 )
 from apps.tasks.api.views import (
     PatientTaskTemplateViewSet,
@@ -190,6 +192,18 @@ care_plan_template_routes.register(
     r'manager_task_templates',
     ManagerTaskTemplateByCarePlanTemplate,
     base_name='manager-task-templates-by-care-plan-templates',
+    parents_query_lookups=['plan_template']
+)
+care_plan_template_routes.register(
+    r'care_team_task_templates',
+    CareTeamTaskTemplateByCarePlanTemplate,
+    base_name='care-team-task-templates-by-care-plan-templates',
+    parents_query_lookups=['plan_template']
+)
+care_plan_template_routes.register(
+    r'info_message_queues',
+    InfoMessageQueueByCarePlanTemplate,
+    base_name='info-message-queues-by-care-plan-templates',
     parents_query_lookups=['plan_template']
 )
 care_plan_template_routes.register(

@@ -14,6 +14,8 @@ import { PatientEmergencyContactComponent } from './modals/patient-emergency-con
 import { DeleteMedicationComponent } from './modals/delete-medication/delete-medication.component';
 import { DeleteDiagnosisComponent } from './modals/delete-diagnosis/delete-diagnosis.component';
 import { NavbarService, StoreService } from '../../services';
+import patientData from './patientdata.js';
+import * as moment from 'moment';
 
 @Component({
   selector: 'app-patient',
@@ -24,6 +26,7 @@ export class PatientComponent implements OnDestroy, OnInit {
 
   public patient = null;
   public carePlans = [];
+  public teamListOpen = -1;
 
   private routeSub = null;
 
@@ -36,13 +39,18 @@ export class PatientComponent implements OnDestroy, OnInit {
   ) { }
 
   public ngOnInit() {
+    this.nav.normalState();
     this.routeSub = this.route.params.subscribe((params) => {
-      this.getPatient(params.id).then((patient) => {
+      this.getPatient(params.patientId).then((patient) => {
         this.patient = patient;
         this.nav.addRecentPatient(this.patient);
         this.getCarePlans(this.patient.id).then((carePlans: any) => {
           this.carePlans = carePlans;
+          console.log(carePlans);
         });
+      }).catch(() => {
+        this.patient = patientData.patient;
+        this.carePlans = patientData.carePlans;
       });
     });
   }
@@ -69,22 +77,36 @@ export class PatientComponent implements OnDestroy, OnInit {
   }
 
   public getCarePlans(patientId) {
-    let promise = new Promise((resolve, reject) => {
-      let patientSub = this.store.CarePlan.readListPaged({
-        patient: patientId,
-      }).subscribe(
-        (plans) => {
-          resolve(plans);
-        },
-        (err) => {
-          reject(err);
-        },
-        () => {
-          patientSub.unsubscribe();
-        },
-      );
+    return new Promise((resolve, reject) => {
+        let carePlanSub = this.store.PatientProfile.detailRoute('get', patientId, 'care_plans').subscribe(
+          (plans) => {
+            resolve(plans);
+          },
+          (err) => {
+            reject(err);
+          },
+          () => {
+            carePlanSub.unsubscribe();
+          }
+        )
     });
-    return promise;
+
+    // let promise = new Promise((resolve, reject) => {
+    //   let patientSub = this.store.CarePlan.readListPaged({
+    //     patient: patientId,
+    //   }).subscribe(
+    //     (plans) => {
+    //       resolve(plans);
+    //     },
+    //     (err) => {
+    //       reject(err);
+    //     },
+    //     () => {
+    //       patientSub.unsubscribe();
+    //     },
+    //   );
+    // });
+    // return promise;
   }
 
   public openFinancialDetails() {
@@ -250,5 +272,24 @@ export class PatientComponent implements OnDestroy, OnInit {
     }).subscribe(() => {
     // do something with result
     });
+  }
+
+  get riskLevelText() {
+    return this.carePlans.map((plan) => {
+      if (plan.riskLevel >= 80) {
+        return 'High Risk';
+      } else if (plan.riskLevel >= 40) {
+        return 'Some Risk';
+      } else {
+        return 'Low Risk';
+      }
+    })
+  }
+
+  get patientAge() {
+    if (this.patient) {
+      return moment().diff(this.patient.user.birthdate, 'years');
+    }
+    return '';
   }
 }

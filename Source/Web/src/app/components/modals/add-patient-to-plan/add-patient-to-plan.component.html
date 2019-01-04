@@ -24,15 +24,11 @@
 <div *ngIf="action === 'add' && !patientInSystem" class="flex justifySpaceBetween">
   <div class="modal__inputWrap marRight16">
     <label>First Name</label>
-    <input class="input fullWidth" />
+    <input class="input fullWidth" [(ngModel)]="firstName" />
   </div>
   <div class="modal__inputWrap marRight32">
     <label>Last Name</label>
-    <input class="input fullWidth" />
-  </div>
-  <div class="modal__inputWrap">
-    <label>Mobile Phone</label>
-    <input class="input fullWidth" />
+    <input class="input fullWidth" [(ngModel)]="lastName"/>
   </div>
 </div>
 <h2 *ngIf="patientKnown" class="center noMargin">Alexander Montgomery</h2>
@@ -40,22 +36,16 @@
 <div class="divider"></div>
 
 <div class="flex justifySpaceBetween">
-  <div class="modal__inputWrap marRight32">
-    <label>Insurance</label>
+  <div class="modal__inputWrap marRight32 fullWidth">
+    <label>Mobile Phone</label>
+    <input class="input fullWidth" [(ngModel)]="phoneNumber" />
+  </div>
+  <div class="modal__inputWrap marRight32 fullWidth">
+    <label>Source</label>
     <div class="styledSelect">
       <select class="styledSelect__select">
-        <option>Medicare</option>
-        <option>Medicaid</option>
-        <option>Humana</option>
       </select>
     </div>
-  </div>
-  <div class="modal__inputWrap0">
-    <label>Reimbursement</label>
-    <label class="styledInput">
-      <input type="checkbox" class="styledInput__input" [checked]="payerReimburses" (click)="payerReimburses = !payerReimburses" />
-      <span class="styledInput__box"></span> Payer Reimburses
-    </label>
   </div>
 </div>
 
@@ -63,32 +53,67 @@
 
 <div class="flex justifySpaceBetween">
   <div class="modal__inputWrap marRight32">
-    <label>Care Plan Type</label>
+    <label>Service Area</label>
     <div class="styledSelect">
       <select class="styledSelect__select" [(ngModel)]="selectedPlanType">
-        <option *ngFor="let planType of planTypes" [ngValue]="planType">{{planType}}</option>
       </select>
     </div>
   </div>
   <div *ngIf="!planKnown" class="modal__inputWrap">
     <label>Care Plan</label>
     <div class="styledSelect">
-      <select class="styledSelect__select">
-        <option>Anxiety</option>
-        <option>Depression</option>
-        <option>Heart Disease</option>
+      <select class="styledSelect__select" [(ngModel)]="selectedPlan">
+        <option value=""></option>
+        <option *ngFor="let plan of carePlans" [ngValue]="plan.name">{{plan.name}}</option>
       </select>
     </div>
-  </div>
-  <div *ngIf="planKnown" class="modal__inputWrap">
-    <label>Care Plan</label>
-    <p class="height48 noMargin flex alignCenter">
-      Heart Disease
-    </p>
   </div>
 </div>
 
 <div class="divider"></div>
+
+<label class="styledInput">
+  <input type="checkbox" class="styledInput__input" [(ngModel)]="enrollPatientChecked" />
+  <span class="styledInput__box"></span>
+  Enroll Patient
+</label>
+
+<p>By default the patient will be added to the Potential Patients unless you select the checkbox Enroll Patient.</p>
+
+<div class="divider"></div>
+
+<ng-container *ngIf="enrollPatientChecked">
+  <label class="styledInput">
+    <input type="checkbox" class="styledInput__input" [(ngModel)]="payerReimburses"/>
+    <span class="styledInput__box"></span>
+    Payer Reimbursement
+  </label>
+
+  <p>Determininng payer reimbursement can be accomplished after the patient has been enrolled.</p>
+
+  <div class="divider"></div>
+</ng-container>
+
+<ng-container *ngIf="payerReimburses">
+  <div class="flex justifySpaceBetween">
+    <div class="modal__inputWrap marRight32">
+      <label>Insurance</label>
+      <div class="styledSelect">
+        <select class="styledSelect__select">
+        </select>
+      </div>
+    </div>
+    <div class="modal__inputWrap">
+      <label>Billing Category</label>
+      <div class="styledSelect">
+        <select class="styledSelect__select" [(ngModel)]="selectedPlanType">
+          <option *ngFor="let planType of planTypes" [ngValue]="planType">{{planType}}</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  <div class="divider"></div>
+</ng-container>
 
 <!--TODO: Show the following if "care plan type" is CCM or CCCM-->
 <div *ngIf="selectedPlanType === 'CCM' || selectedPlanType === 'CCCM'">
@@ -226,7 +251,7 @@
 
 <!--TODO: Hide CM section if BP role is CM-->
 <!--TODO: Disable CM input until care plan is selected-->
-<div>
+<div *ngIf="enrollPatientChecked">
   <label>Care Manager</label>
   <div class="drop">
     <input type="text" class="input input--search fullWidth marBottom32" placeholder="Search Providers" (click)="dropAPPM2Open=!dropAPPM2Open"/>
@@ -251,7 +276,7 @@
   <button class="button button--2nd">
     Cancel
   </button>
-  <button class="button">
+  <button class="button" (click)="handleSubmit()">
     Save
   </button>
 </div>
