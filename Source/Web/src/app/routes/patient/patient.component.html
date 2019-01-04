@@ -213,7 +213,7 @@
           </div>
           <div>
             <label class="info__label2">Gender</label>
-            <p class="info__p">{{patient?.user?.gender.toUpperCase()}}</p>
+            <p class="info__p">{{patient?.user?.gender ? patient?.user?.gender.toUpperCase() : ''}}</p>
             <label class="info__label2">MRN</label>
             <p class="info__p">{{patient?.profile?.MRN}}</p>
             <label class="info__label2">Cognitive Ability</label>
