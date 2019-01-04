@@ -12,6 +12,8 @@ export class AddCTMemberComponent implements OnInit {
   public data = null;
   public selectedProvider = null;
   public availableProviders = [];
+  public providersShown = [];
+  public searchStr = '';
 
   constructor(
     private modal: ModalService,
@@ -21,6 +23,7 @@ export class AddCTMemberComponent implements OnInit {
   public ngOnInit() {
     this.fetchAvailableProviders().then((providers: any) => {
       this.availableProviders = providers;
+      this.providersShown = this.availableProviders;
     });
   }
 
@@ -52,8 +55,15 @@ export class AddCTMemberComponent implements OnInit {
     return promise;
   }
 
+  public filterProviders() {
+    this.providersShown = this.availableProviders.filter((obj) => {
+      return `${obj.user.first_name} ${obj.user.last_name}`.toLowerCase().indexOf(this.searchStr.toLowerCase()) > -1;
+    });
+  }
+
   public selectProvider(provider) {
     this.selectedProvider = provider;
+    this.searchStr = `${provider.user.first_name} ${provider.user.last_name}`;
   }
 
   public clickSave() {

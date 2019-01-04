@@ -30,7 +30,7 @@
       :32
     </div>
     <button class="info__edit button button--icon button--icon--small"
-    (click)="changeCM()">
+    (click)="changeCM(careManager)">
       <i class="ss-write"></i>
     </button>
     <img class="info__pic" [src]="careManager.employee_profile.user.image_url" />
@@ -65,7 +65,7 @@
   </div> <!--/.info--team (for care manager)-->
   <div *ngIf="!careManager">
     <div class="marBottom48">
-      <button class="button button--iconText marRight32" (click)="addCareManager()">
+      <button class="button button--iconText marRight32" (click)="addCareManager(null)">
         <i class="ss-plus"></i> Add Care Manager
       </button>
     </div>
@@ -78,7 +78,7 @@
         :14
       </div>
       <button class="info__edit button button--icon button--icon--small"
-      (click)="removeCTMember()">
+      (click)="removeCTMember(teamMember)">
         <i class="ss-delete"></i>
       </button>
       <img class="info__pic" [src]="teamMember.employee_profile.user.image_url" />

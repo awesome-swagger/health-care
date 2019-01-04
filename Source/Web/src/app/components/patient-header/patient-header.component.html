@@ -13,7 +13,7 @@
     (click)="multi1Open=!multi1Open">
       <li class="drop__option drop__option--select" *ngFor="let plan of carePlans" (click)="changeSelectedPlan(plan)">
         <div class="iconText">
-          <span class="marRight8">{{plan.plan_template.name}}</span> <i class="icomoon-cocm iconText__icon iconText__icon--noTop"></i> <span *ngIf="plan.plan_template.service_area">{{plan.plan_template.service_area.name}}</span>
+          <span class="marRight8">{{plan.plan_template.name}}</span> <!--<i class="icomoon-cocm iconText__icon iconText__icon--noTop"></i>--><span *ngIf="plan.plan_template.service_area">{{plan.plan_template.service_area.name}}</span>
         </div>
       </li>
     </ul>

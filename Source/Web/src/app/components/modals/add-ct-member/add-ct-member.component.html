@@ -11,9 +11,9 @@
 </div>
 
 <div class="drop">
-  <input class="input input--search fullWidth" type="text" (click)="dropOpen = !dropOpen" placeholder="Search Providers" />
+  <input class="input input--search fullWidth" type="text" (click)="dropOpen = !dropOpen" placeholder="Search Providers" [(ngModel)]="searchStr" (ngModelChange)="filterProviders()" />
   <ul class="drop__dropdown fullWidth" [ngClass]="{ 'isOpen' : dropOpen }" (click)="dropOpen = !dropOpen">
-    <li class="drop__option" *ngFor="let employee of availableProviders" (click)="selectProvider(employee)">
+    <li class="drop__option" *ngFor="let employee of providersShown" (click)="selectProvider(employee)">
       <a class="drop__link">
         <div class="picName">
           <img class="picName__img" src="../../../assets/img/profile.svg" />{{employee.user.first_name}} {{employee.user.last_name}}
