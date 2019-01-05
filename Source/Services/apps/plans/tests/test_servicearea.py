@@ -1,3 +1,5 @@
+from urllib.parse import urlencode
+
 from django.urls import reverse
 from faker import Faker
 from rest_framework import status
@@ -191,3 +193,47 @@ class TestCarePlanTemplateByServiceArea(PlansMixin, APITestCase):
 
         response = self.client.get(self.url)
         self.assertEqual(response.data['count'], template_count)
+
+    def test_filter_by_facility(self):
+        facility = self.create_facility(self.organization)
+        other_facility = self.create_facility(self.organization)
+
+        patient_count = 5
+        template_count = 3
+        total_count = patient_count * template_count
+
+        for i in range(patient_count):
+            patient = self.create_patient(**{
+                'facility': facility
+            })
+
+            for i in range(template_count):
+                template = self.create_care_plan_template(**{
+                    'service_area': self.service_area
+                })
+
+                self.create_care_plan(patient, **{
+                    'plan_template': template
+                })
+
+        # create dummy records
+        for i in range(patient_count):
+            patient = self.create_patient(**{
+                'facility': other_facility
+            })
+
+            for i in range(template_count):
+                template = self.create_care_plan_template(**{
+                    'service_area': self.service_area
+                })
+
+                self.create_care_plan(patient, **{
+                    'plan_template': template
+                })
+
+        url_params = urlencode({
+            'care_plans__patient__facility': facility.id
+        })
+        filter_url = f'{self.url}?{url_params}'
+        response = self.client.get(filter_url)
+        self.assertEqual(response.data['count'], total_count)
