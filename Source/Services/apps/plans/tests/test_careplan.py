@@ -3,6 +3,7 @@ import pytz
 import random
 
 from datetime import datetime, time, timedelta
+from urllib.parse import urlencode
 
 from django.apps import apps
 from django.db.models import Avg
@@ -336,6 +337,85 @@ class TestCarePlanUsingEmployee(TasksMixin, APITestCase):
             kwargs={'parent_lookup_patient__facility': self.facility.id}
         )
         response = self.client.get(url)
+        self.assertEqual(response.data['count'], total_count)
+
+    def test_care_plan_by_facility_filter_plan_template(self):
+        patient_count = 5
+        plan_count = 5
+        template_count = 2
+        total_count = patient_count * template_count
+        template = self.create_care_plan_template()
+
+        for i in range(patient_count):
+            patient = self.create_patient(**{
+                'facility': self.facility
+            })
+
+            for p in range(plan_count):
+                plan_kwargs = {}
+                if p < template_count:
+                    plan_kwargs = {
+                        'plan_template': template
+                    }
+                self.create_care_plan(patient, **plan_kwargs)
+
+        # Create dummy records
+        for i in range(patient_count):
+            patient = self.create_patient()
+
+            for p in range(plan_count):
+                self.create_care_plan(patient)
+
+        query_params = urlencode({
+            'plan_template': template.id
+        })
+        url = reverse(
+            'facility-care-plans-list',
+            kwargs={'parent_lookup_patient__facility': self.facility.id}
+        )
+        filter_url = f'{url}?{query_params}'
+        response = self.client.get(filter_url)
+        self.assertEqual(response.data['count'], total_count)
+
+    def test_care_plan_by_facility_filter_service_area(self):
+        patient_count = 5
+        plan_count = 5
+        template_count = 2
+        total_count = patient_count * template_count
+        service_area = self.create_service_area()
+
+        for i in range(patient_count):
+            patient = self.create_patient(**{
+                'facility': self.facility
+            })
+
+            for p in range(plan_count):
+                plan_kwargs = {}
+                if p < template_count:
+                    template = self.create_care_plan_template(**{
+                        'service_area': service_area
+                    })
+                    plan_kwargs = {
+                        'plan_template': template
+                    }
+                self.create_care_plan(patient, **plan_kwargs)
+
+        # Create dummy records
+        for i in range(patient_count):
+            patient = self.create_patient()
+
+            for p in range(plan_count):
+                self.create_care_plan(patient)
+
+        query_params = urlencode({
+            'plan_template__service_area': service_area.id
+        })
+        url = reverse(
+            'facility-care-plans-list',
+            kwargs={'parent_lookup_patient__facility': self.facility.id}
+        )
+        filter_url = f'{url}?{query_params}'
+        response = self.client.get(filter_url)
         self.assertEqual(response.data['count'], total_count)
 
 
