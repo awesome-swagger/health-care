@@ -869,6 +869,13 @@ class CarePlanByFacility(ParentViewSetPermissionMixin,
     """
     Returns list of :model:`plans.CarePlan` related to the given facility.
     This endpoint will be used on `patients` page.
+
+    This endpoint also allows users to filter by `service area` and
+    `plan template`. Please see the examples below:
+
+        - GET /api/facilities/<facility-ID>/care_plans/?plan_template__service_area=<service-area-ID>
+        - GET /api/facilities/<facility-ID>/care_plans/?plan_template=<plan-template-ID>
+
     """
     serializer_class = CarePlanOverviewSerializer
     queryset = CarePlan.objects.all()
@@ -883,6 +890,11 @@ class CarePlanByFacility(ParentViewSetPermissionMixin,
             FacilityViewSet
         )
     ]
+    filter_backends = (DjangoFilterBackend, )
+    filterset_fields = (
+        'plan_template__service_area',
+        'plan_template',
+    )
 
 
 class CarePlanByTemplateFacility(ParentViewSetPermissionMixin,
