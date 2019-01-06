@@ -39,6 +39,7 @@ from .serializers import (
     InfoMessageSerializer,
     CarePlanTemplateAverageSerializer,
     CarePlanByTemplateFacilitySerializer,
+    CarePlanOverviewSerializer,
 )
 from apps.core.api.mixins import ParentViewSetPermissionMixin
 from apps.core.models import Organization, Facility
@@ -815,7 +816,6 @@ class CarePlanTemplateByType(ParentViewSetPermissionMixin,
         return Response(serializer.data)
 
 
-
 class CarePlanTemplateByServiceArea(
     ParentViewSetPermissionMixin,
     NestedViewSetMixin,
@@ -861,6 +861,28 @@ class CarePlanTemplateByServiceArea(
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
+
+class CarePlanByFacility(ParentViewSetPermissionMixin,
+                         NestedViewSetMixin,
+                         mixins.ListModelMixin,
+                         viewsets.GenericViewSet):
+    """
+    Returns list of :model:`plans.CarePlan` related to the given facility.
+    This endpoint will be used on `patients` page.
+    """
+    serializer_class = CarePlanOverviewSerializer
+    queryset = CarePlan.objects.all()
+    permission_classes = (
+        permissions.IsAuthenticated,
+        IsAdminOrEmployee,
+    )
+    parent_lookup = [
+        (
+            'patient__facility',
+            Facility,
+            FacilityViewSet
+        )
+    ]
 
 
 class CarePlanByTemplateFacility(ParentViewSetPermissionMixin,

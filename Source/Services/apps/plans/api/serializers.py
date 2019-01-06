@@ -29,6 +29,7 @@ from apps.core.api.serializers import (
     ProviderRoleSerializer,
     EmployeeProfileSerializer,
 )
+from apps.patients.models import PatientProfile
 from apps.tasks.models import (
     AssessmentTask,
     PatientTask,
@@ -501,12 +502,37 @@ class CarePlanTemplateAverageSerializer(serializers.ModelSerializer):
         return round((outcome + engagement) / 2)
 
 
-class CarePlanByTemplateFacilitySerializer(serializers.ModelSerializer):
+class CarePlanPatientSerializer(serializers.ModelSerializer):
+    """
+    serializer to be used by :model:`patients.PatientProfile`
+    specifically for it's relationship with :model:`plans.CarePlan`.
+    """
+    full_name = serializers.SerializerMethodField()
+    image_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = PatientProfile
+        fields = (
+            'id',
+            'full_name',
+            'image_url',
+            'last_app_use',
+        )
+
+    def get_full_name(self, obj):
+        return obj.user.get_full_name()
+
+    def get_image_url(self, obj):
+        return obj.user.get_image_url()
+
+
+class CarePlanOverviewSerializer(serializers.ModelSerializer):
     """
     serializer to be used by :model:`plans.CarePlan` with
     data relevant in dashboard average endpoint
     """
-    patient_name = serializers.SerializerMethodField()
+    patient = CarePlanPatientSerializer(read_only=True)
+    plan_template = CarePlanTemplateSerializer(read_only=True)
     other_plans = serializers.SerializerMethodField()
     tasks_this_week = serializers.SerializerMethodField()
     average_outcome = serializers.SerializerMethodField()
@@ -516,16 +542,15 @@ class CarePlanByTemplateFacilitySerializer(serializers.ModelSerializer):
     class Meta:
         model = CarePlan
         fields = (
-            'patient_name',
+            'id',
+            'patient',
+            'plan_template',
             'other_plans',
             'tasks_this_week',
             'average_outcome',
             'average_engagement',
             'risk_level',
         )
-
-    def get_patient_name(self, obj):
-        return obj.patient.user.get_full_name()
 
     def get_other_plans(self, obj):
         return obj.patient.care_plans.exclude(id=obj.id).count()
@@ -630,3 +655,11 @@ class CarePlanByTemplateFacilitySerializer(serializers.ModelSerializer):
         outcome = self.get_average_outcome(obj)
         engagement = self.get_average_engagement(obj)
         return round((outcome + engagement) / 2)
+
+
+class CarePlanByTemplateFacilitySerializer(CarePlanOverviewSerializer):
+    """
+    serializer to be used by :model:`plans.CarePlan` with
+    data relevant in dashboard average endpoint
+    """
+    pass

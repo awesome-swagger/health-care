@@ -50,6 +50,7 @@ from apps.plans.api.views import (
     VitalTaskTemplateByCarePlanTemplate,
     TeamTaskTemplateByCarePlanTemplate,
     InfoMessageQueueByCarePlanTemplate,
+    CarePlanByFacility,
 )
 from apps.tasks.api.views import (
     PatientTaskTemplateViewSet,
@@ -125,6 +126,12 @@ facility_routes.register(
     FacilityActivePatientViewSet,
     base_name='facility-active-patients',
     parents_query_lookups=['facility']
+)
+facility_routes.register(
+    r'care_plans',
+    CarePlanByFacility,
+    base_name='facility-care-plans',
+    parents_query_lookups=['patient__facility']
 )
 
 router.register(
