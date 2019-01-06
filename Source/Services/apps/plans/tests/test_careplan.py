@@ -36,7 +36,10 @@ class TestCarePlanUsingEmployee(TasksMixin, APITestCase):
     def setUp(self):
         self.fake = Faker()
         self.patient = self.create_patient()
-        self.employee = self.create_employee()
+        self.facility = self.create_facility()
+        self.employee = self.create_employee(**{
+            'facilities': [self.facility]
+        })
         self.user = self.employee.user
 
         self.plan_template = self.create_care_plan_template()
@@ -307,6 +310,33 @@ class TestCarePlanUsingEmployee(TasksMixin, APITestCase):
         url = reverse('care_plans-average')
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_care_plan_by_facility(self):
+        patient_count = 5
+        plan_count = 3
+        total_count = patient_count * plan_count
+
+        for i in range(patient_count):
+            patient = self.create_patient(**{
+                'facility': self.facility
+            })
+
+            for p in range(plan_count):
+                self.create_care_plan(patient)
+
+        # Create dummy records
+        for i in range(patient_count):
+            patient = self.create_patient()
+
+            for p in range(plan_count):
+                self.create_care_plan(patient)
+
+        url = reverse(
+            'facility-care-plans-list',
+            kwargs={'parent_lookup_patient__facility': self.facility.id}
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.data['count'], total_count)
 
 
 class TestCarePlanPostSaveSignalFrequencyOnce(TasksMixin, APITestCase):
