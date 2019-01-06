@@ -26,7 +26,6 @@ from apps.patients.api.views import (
     PatientProfileSearchViewSet,
     PotentialPatientViewSet,
     FacilityInactivePatientViewSet,
-    FacilityActivePatientViewSet,
 )
 from apps.plans.api.views import (
     CarePlanTemplateTypeViewSet,
@@ -119,12 +118,6 @@ facility_routes.register(
     r'inactive_patients',
     FacilityInactivePatientViewSet,
     base_name='facility-inactive-patients',
-    parents_query_lookups=['facility']
-)
-facility_routes.register(
-    r'active_patients',
-    FacilityActivePatientViewSet,
-    base_name='facility-active-patients',
     parents_query_lookups=['facility']
 )
 facility_routes.register(
