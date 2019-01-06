@@ -564,7 +564,7 @@ class CarePlanOverviewSerializer(serializers.ModelSerializer):
                                                datetime.time.min,
                                                tzinfo=pytz.utc)
         end_date = datetime.datetime.combine(end,
-                                             datetime.time.min,
+                                             datetime.time.max,
                                              tzinfo=pytz.utc)
 
         patient_tasks = PatientTask.objects.filter(
