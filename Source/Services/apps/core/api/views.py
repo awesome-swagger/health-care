@@ -22,7 +22,10 @@ from apps.core.permissions import (EmployeeProfilePermissions,
 
 from apps.plans.models import CareTeamMember
 from care_adopt_backend import utils
-from care_adopt_backend.permissions import IsAdminOrEmployee
+from care_adopt_backend.permissions import (
+    IsAdminOrEmployee,
+    IsAdminOrEmployeeOwner,
+)
 
 from ..utils import get_facilities_for_user
 from .filters import RelatedOrderingFilter
@@ -591,7 +594,7 @@ class FacilityEmployeeViewSet(ParentViewSetPermissionMixin,
     """
 
     serializer_class = FacilityEmployeeSerializer
-    permission_clases = (permissions.IsAuthenticated, IsAdminOrEmployee)
+    permission_classes = (permissions.IsAuthenticated, IsAdminOrEmployee)
     queryset = EmployeeProfile.objects.all()
     parent_field = 'facilities'
     parent_lookup = [
@@ -606,7 +609,10 @@ class FacilityEmployeeViewSet(ParentViewSetPermissionMixin,
         })
         return context
 
-    @action(methods=['get'], detail=True)
+    @action(methods=['get'],
+            detail=True,
+            permission_classes=(
+                permissions.IsAuthenticated, IsAdminOrEmployeeOwner))
     def assignments(self, request, pk, *args, **kwargs):
         """
         Returns aggregated data of the given employees pertaining to his/her
