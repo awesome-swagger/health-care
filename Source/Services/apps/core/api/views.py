@@ -13,7 +13,6 @@ from apps.core.models import (Diagnosis, EmployeeProfile,
                               Procedure, ProviderRole, ProviderSpecialty,
                               ProviderTitle, Symptom, Facility)
 
-from rest_framework.decorators import action
 from rest_framework_extensions.mixins import NestedViewSetMixin
 
 from apps.core.permissions import (EmployeeProfilePermissions,
@@ -41,7 +40,8 @@ from .serializers import (DiagnosisSerializer, EmployeeProfileSerializer,
                           ProviderRoleSearchSerializer,
                           EmployeeAssignmentSerializer,
                           InviteEmployeeSerializer,
-                          OrganizationPatientOverviewSerializer)
+                          OrganizationPatientOverviewSerializer,
+                          OrganizationPatientDashboardSerializer)
 
 
 class OrganizationViewSet(viewsets.ModelViewSet):
@@ -106,6 +106,29 @@ class OrganizationViewSet(viewsets.ModelViewSet):
         """
         organization = self.get_object()
         serializer = OrganizationPatientOverviewSerializer(
+            organization, context={'request': request})
+        return Response(serializer.data)
+
+    @action(methods=['get'], detail=True,
+            permission_classes=(IsAdminOrEmployee, ))
+    def dashboard_analytics(self, request, *args, **kwargs):
+        """
+        This endpoint will primarily populate the `dash` page.
+
+        Returns the following data in a specific organization:
+
+            - active patients
+            - invited patients
+            - potential patients
+            - average satisfaction
+            - average outcome
+            - average engagement
+            - risk level
+
+        TODO: RISK LEVEL BREAKDOWN CHART
+        """
+        organization = self.get_object()
+        serializer = OrganizationPatientDashboardSerializer(
             organization, context={'request': request})
         return Response(serializer.data)
 

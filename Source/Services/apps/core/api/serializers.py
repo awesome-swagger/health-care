@@ -4,6 +4,7 @@ import pytz
 
 from django.db.models import Q, Avg
 from django.utils import timezone
+from django.utils.translation import ugettext_lazy as _
 
 from drf_haystack.serializers import HaystackSerializerMixin
 from rest_framework import serializers
@@ -14,7 +15,7 @@ from apps.core.models import (Diagnosis, EmployeeProfile, Facility,
                               Procedure, ProviderRole, ProviderSpecialty,
                               ProviderTitle, Symptom)
 
-from apps.patients.models import PatientProfile
+from apps.patients.models import PatientProfile, PotentialPatient
 from apps.tasks.models import (
     AssessmentTask,
     PatientTask,
@@ -68,11 +69,14 @@ class OrganizationSerializer(serializers.ModelSerializer):
         )
 
 
-class OrganizationPatientOverviewSerializer(serializers.ModelSerializer):
+class BaseOrganizationPatientSerializer(serializers.ModelSerializer):
 
     active_patients = serializers.SerializerMethodField()
+    invited_patients = serializers.SerializerMethodField()
+    potential_patients = serializers.SerializerMethodField()
     total_facilities = serializers.SerializerMethodField()
     average_outcome = serializers.SerializerMethodField()
+    average_satisfaction = serializers.SerializerMethodField()
     average_engagement = serializers.SerializerMethodField()
     risk_level = serializers.SerializerMethodField()
 
@@ -82,8 +86,10 @@ class OrganizationPatientOverviewSerializer(serializers.ModelSerializer):
             'id',
             'name',
             'active_patients',
+            'invited_patients',
             'total_facilities',
             'average_outcome',
+            'average_satisfaction',
             'average_engagement',
             'risk_level',
         )
@@ -94,21 +100,49 @@ class OrganizationPatientOverviewSerializer(serializers.ModelSerializer):
         return PatientProfile.objects.filter(
             facility__in=facilities, is_active=True).count()
 
+    def get_invited_patients(self, obj):
+        request = self.context['request']
+        facilities = get_facilities_for_user(request.user, obj.id)
+        return PatientProfile.objects.filter(
+            facility__in=facilities,
+            is_invited=True,
+            is_active=False).count()
+
+    def get_potential_patients(self, obj):
+        request = self.context['request']
+        facilities = get_facilities_for_user(request.user, obj.id)
+        return PotentialPatient.objects.filter(
+            facility__in=facilities,
+            patient_profile__isnull=True).count()
+
     def get_total_facilities(self, obj):
         request = self.context['request']
         facilities = get_facilities_for_user(request.user, obj.id)
         return facilities.count()
 
-    def get_average_outcome(self, obj):
+    def _get_average_assessment(self, obj, assessment_type):
+        if assessment_type not in ['tracks_outcome', 'tracks_satisfaction']:
+            raise serializers.ValidationError(_('Invalid assessment type.'))
+
         request = self.context['request']
         facilities = get_facilities_for_user(request.user, obj.id)
-        tasks = AssessmentTask.objects.filter(
-            plan__patient__facility__in=facilities,
-            assessment_task_template__tracks_outcome=True
-        ).aggregate(average=Avg('responses__rating'))
+
+        kwargs = {
+            'plan__patient__facility__in': facilities,
+            f'assessment_task_template__{assessment_type}': True
+        }
+
+        tasks = AssessmentTask.objects.filter(**kwargs).aggregate(
+            average=Avg('responses__rating'))
         average = tasks['average'] or 0
         avg = round((average / 5) * 100)
         return avg
+
+    def get_average_outcome(self, obj):
+        return self._get_average_assessment(obj, 'tracks_outcome')
+
+    def get_average_satisfaction(self, obj):
+        return self._get_average_assessment(obj, 'tracks_satisfaction')
 
     def get_average_engagement(self, obj):
         now = timezone.now()
@@ -163,6 +197,41 @@ class OrganizationPatientOverviewSerializer(serializers.ModelSerializer):
         outcome = self.get_average_outcome(obj)
         engagement = self.get_average_engagement(obj)
         return round((outcome + engagement) / 2)
+
+
+class OrganizationPatientDashboardSerializer(BaseOrganizationPatientSerializer):
+    """
+    Serializer to be used to populate `dash` page.
+    """
+
+    class Meta(BaseOrganizationPatientSerializer.Meta):
+        model = Organization
+        fields = (
+            'id',
+            'name',
+            'active_patients',
+            'invited_patients',
+            'potential_patients',
+            'average_outcome',
+            'average_satisfaction',
+            'average_engagement',
+            'risk_level',
+        )
+
+
+class OrganizationPatientOverviewSerializer(BaseOrganizationPatientSerializer):
+
+    class Meta(BaseOrganizationPatientSerializer.Meta):
+        model = Organization
+        fields = (
+            'id',
+            'name',
+            'active_patients',
+            'total_facilities',
+            'average_outcome',
+            'average_engagement',
+            'risk_level',
+        )
 
 
 # TODO: DELETE on a facility should mark it inactive rather than removing it
