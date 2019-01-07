@@ -868,7 +868,8 @@ class CarePlanByFacility(ParentViewSetPermissionMixin,
                          viewsets.GenericViewSet):
     """
     Returns list of :model:`plans.CarePlan` related to the given facility.
-    This endpoint will be used on `patients` page.
+    This endpoint will be used on `patients` page and will only return care plans
+    from active patients.
 
     This endpoint also allows users to filter by `service area` and
     `plan template`. Please see the examples below:
@@ -878,7 +879,7 @@ class CarePlanByFacility(ParentViewSetPermissionMixin,
 
     """
     serializer_class = CarePlanOverviewSerializer
-    queryset = CarePlan.objects.all()
+    queryset = CarePlan.objects.filter(patient__is_active=True)
     permission_classes = (
         permissions.IsAuthenticated,
         IsAdminOrEmployee,
