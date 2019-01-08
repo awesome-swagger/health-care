@@ -204,4 +204,8 @@ export class NavComponent implements OnDestroy, OnInit {
     });
     return promise;
   }
+
+  public routeToAnalytics() {
+    window.open('https://www.google.com', '_self');
+  }
 }

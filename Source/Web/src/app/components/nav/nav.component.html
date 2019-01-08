@@ -110,6 +110,22 @@
           </app-popover>
         </div> <!--/.drop (for notifications)-->
 
+        <div class="drop">
+          <button class="button button--icon button--icon--nav" (click)="analyticsOpen=!analyticsOpen">
+            <i class="ss-barchart"></i>
+          </button>
+          <app-popover [visible]="analyticsOpen" (visibleChange)="analyticsOpen = $event;" [options]="logoutDropOptions">
+            <ul class="drop__dropdown isOpen">
+              <label class="drop__label">Switch Applications</label>
+              <li class="drop__option">
+                <a class="drop__link drop__link" (click)="routeToAnalytics()">
+                  Patient Analytics
+                </a>
+              </li>
+            </ul>
+          </app-popover>
+        </div> <!--/.drop (for logout, switch org)-->
+
         <!--Login will happen in a separate component.
         <a *ngIf="!user?.id" [routerLink]="['login']"><i class="ss-door"></i> Login</a>-->
 
