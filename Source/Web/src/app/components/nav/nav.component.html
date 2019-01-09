@@ -181,7 +181,7 @@
                 </a>
               </li>
               <label class="drop__label" *ngIf="nav.recentPatients.length > 0">Recent Patients</label>
-              <li class="drop__option" *ngFor="let patient of nav.recentPatients">
+              <li class="drop__option" *ngFor="let patient of nav.recentPatients?.reverse()">
                 <a class="drop__link" (click)="routeToPatient(patient)">
                   <div class="picName">
                     <img class="picName__img" src="../../../assets/img/profile.svg" *ngIf="!patient.user.image_url" />

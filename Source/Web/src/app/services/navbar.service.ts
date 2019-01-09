@@ -49,8 +49,11 @@ export class NavbarService {
   }
 
   public addRecentPatient(patient) {
-    if (this.recentPatients.find((obj) => {return obj.id === patient.id})) {
+    if (this.recentPatients.find((obj) => {return obj.id === patient.id}) ) {
       return;
+    }
+    if (this.recentPatients.length >=5) {
+      this.recentPatients.shift();
     }
     this.recentPatients.push(patient);
   }

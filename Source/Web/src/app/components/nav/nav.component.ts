@@ -148,6 +148,7 @@ export class NavComponent implements OnDestroy, OnInit {
 
   public switchOrganization(organization) {
     this.auth.switchOrganization(organization.id);
+    this.router.navigate(['/dashboard']);
   }
 
   public confirmUnarchive() {
