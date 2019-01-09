@@ -30,6 +30,8 @@ export class UsersComponent implements OnDestroy, OnInit {
   public sortDirection = 'desc';
   public searchString = '';
 
+  public facilitySelectOpen;
+
   constructor(
     private router: Router,
     private auth: AuthService,

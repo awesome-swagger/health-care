@@ -14,6 +14,8 @@ export class AddCTMemberComponent implements OnInit {
   public availableProviders = [];
   public providersShown = [];
   public searchStr = '';
+  public dropOpen;
+
 
   constructor(
     private modal: ModalService,

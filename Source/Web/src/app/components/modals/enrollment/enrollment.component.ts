@@ -9,6 +9,8 @@ export class EnrollmentComponent implements OnInit {
 
   public data = null;
 
+  public showEPStep2;
+
   constructor() {
 
   }

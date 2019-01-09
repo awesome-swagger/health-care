@@ -21,6 +21,10 @@ export class PatientHeaderComponent implements OnInit, OnDestroy {
   @Output()
   public onPlanChange = new EventEmitter<any>();
 
+  public teamListOpen;
+  public openProblemAreas;
+  public openFinancialDetails;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,

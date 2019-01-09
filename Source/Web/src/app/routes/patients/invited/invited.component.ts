@@ -26,6 +26,15 @@ export class InvitedPatientsComponent implements OnDestroy, OnInit {
   public activeServiceAreas = {};
   public activeCarePlans = {};
   public openAlsoTip = {};
+  public toolIP1Open;
+  public accord1Open;
+  public tooltip2Open;
+  public tooltipPP2Open;
+  public accord2Open;
+  public multi1Open;
+  public multi2Open;
+  public multi3Open;
+  public multi4Open;
 
   constructor(
     private router: Router,

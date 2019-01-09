@@ -20,6 +20,8 @@ export class CreateAssessmentComponent implements OnInit {
     private store: StoreService,
   ) { }
 
+  public tooltipCAM0Open;
+
   public ngOnInit() {
     console.log(this.data);
     if (this.data) {

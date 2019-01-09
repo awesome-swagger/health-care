@@ -9,6 +9,8 @@ export class EditCcmComponent implements OnInit {
 
   constructor() { }
 
+  public close;
+
   ngOnInit() {
   }
 

@@ -9,6 +9,11 @@ export class DiagnosisComponent implements OnInit {
 
   public data = null;
 
+  public dropADOpen;
+  public toolADOpen;
+  public toolAD1Open;
+  public editDiagnosisInfo;
+
   constructor() {
 
   }

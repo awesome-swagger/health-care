@@ -9,6 +9,10 @@ export class RecordResultsComponent implements OnInit {
 
   public data = null;
 
+  public tooltipRRM0Open;
+  public tooltipRRM1Open;
+  public tooltipRRM2Open;
+
   constructor() {
 
   }

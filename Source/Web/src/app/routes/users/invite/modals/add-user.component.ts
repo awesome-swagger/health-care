@@ -22,6 +22,8 @@ export class AddUserComponent implements OnInit {
   public specialtyInput: string = null;
   public npiInput = '';
 
+  public tooltipAUM0Open;
+
   constructor(
     private store: StoreService,
   ) { }

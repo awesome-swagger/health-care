@@ -33,6 +33,11 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
   public activeServiceAreas = {};
   public activeCarePlans = {};
   public users = null;
+  public toolAP1Open;
+  public multi1Open;
+  public multi2Open;
+  public multi3Open;
+  public multi4Open;
 
   constructor(
     private router: Router,

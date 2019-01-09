@@ -24,6 +24,12 @@ export class PlanInfoComponent implements OnDestroy, OnInit {
   public patientsGrouped = [];
   public accordionOpen = {};
 
+  public accord1Open;
+  public tooltip3Open;
+  public tooltip1Open;
+  public tooltip2Open;
+  public accord2Open;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
