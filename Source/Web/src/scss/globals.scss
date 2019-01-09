@@ -486,6 +486,10 @@ a {
       border-left-color: white;
       border-right-color: white;
     }
+
+    &.typing {
+      background: none;
+    }
   }
 
   &--textarea {

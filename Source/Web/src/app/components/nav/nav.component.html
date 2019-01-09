@@ -23,7 +23,23 @@
 
       <div class="nav__right">
         <div class="drop">
-          <input class="input input--nav" type="text" (keyup)="searchChange($event.target.value)" placeholder="Search Patients" />
+          <div id="patientSearchContainer">
+            <input
+              class="input input--nav"
+              [ngClass]="{ 'typing': searchString.length > 0 }"
+              [(ngModel)]="searchString"
+              type="text"
+              (keyup)="searchChange($event.target.value)"
+              placeholder="Search Patients"
+            />
+            <button
+              class="button button--icon button--icon--nav searchClear"
+              (click)="searchString = ''"
+              *ngIf="searchString.length > 0"
+            >
+              <i class="ss-delete"></i>
+            </button>
+          </div>
           <app-popover [visible]="searchOpen" (visibleChange)="searchOpen = $event;">
             <ul class="drop__dropdown isOpen">
               <ng-container *ngFor="let patient of searchResults">
