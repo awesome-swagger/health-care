@@ -4,6 +4,8 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import ugettext_lazy as _
 
+from allauth.account.utils import url_str_to_user_pk
+from rest_auth.models import TokenModel
 from rest_framework import serializers
 
 from .mailer import UserMailer
@@ -117,3 +119,46 @@ class ChangeEmailSerializer(serializers.ModelSerializer):
 
         mailer = UserMailer()
         mailer.send_change_email_verification(instance)
+
+
+class VerifyEmailSerializer(serializers.Serializer):
+    """
+    Handles verification of the new email
+    """
+
+    uidb36 = serializers.CharField()
+    key = serializers.CharField()
+
+    def _get_user(self, uidb36):
+        User = get_user_model()
+        try:
+            pk = url_str_to_user_pk(uidb36)
+            return User.objects.get(pk=pk)
+        except (ValueError, User.DoesNotExist):
+            return None
+
+    def validate(self, data):
+
+        uidb36 = data.get('uidb36')
+        key = data.get('key')
+
+        user = self._get_user(uidb36)
+
+        try:
+            TokenModel.objects.get(user=user, key=key)
+            return data
+        except TokenModel.DoesNotExist:
+            raise serializers.ValidationError(_('Invalid token.'))
+
+    def save(self):
+        uidb36 = self.validated_data.get('uidb36')
+        key = self.validated_data.get('key')
+
+        user = self._get_user(uidb36)
+        token = TokenModel.objects.get(user=user, key=key)
+
+        user.is_active = True
+        user.save(update_fields=['is_active'])
+
+        # delete token after activating the user
+        token.delete()
