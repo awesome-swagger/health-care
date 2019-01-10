@@ -1,0 +1,43 @@
+# -*- coding: utf-8 -*-
+from __future__ import absolute_import
+
+import logging
+
+from django.conf import settings
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
+
+from care_adopt_backend.mailer import BaseMailer
+
+logger = logging.getLogger(__name__)
+
+
+class UserMailer(BaseMailer):
+
+    def _generate_uidb64_token(self, user):
+        token_generator = default_token_generator
+        uidb64 = urlsafe_base64_encode(force_bytes(user.pk)).decode()
+        token = token_generator.make_token(user)
+        return (uidb64, token)
+
+    def send_change_email_verification(self, user):
+        """
+        Sends email to user when invoking the change email form.
+        """
+        uidb64, token = self._generate_uidb64_token(user)
+        subject = 'CareAdopt - Change Email'
+
+        context = {
+            "user": user,
+            "uidb64": uidb64,
+            "token": token,
+            "current_site": settings.DEFAULT_FROM_EMAIL,
+        }
+        email_template = 'profiles/email/forgot_password.html'
+        return self.send_mail(
+            subject,
+            email_template,
+            user.email,
+            context
+        )

@@ -1,13 +1,9 @@
-from django.conf import settings
 from django import forms
 from django.contrib.auth import get_user_model
-from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
+from django.utils.translation import ugettext_lazy as _
 from django.views.generic import TemplateView
-from django.views.decorators.cache import never_cache
-from requests.exceptions import HTTPError
 from rest_framework import status, views, viewsets, mixins
-from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import action
 from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import AllowAny, IsAdminUser
@@ -16,11 +12,15 @@ from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken as OriginalObtain
 from rest_framework.exceptions import ValidationError
 
+
+from .models import EmailUser
+from .permissions import BaseUserPermission
+from .serializers import (
+    UserSerializer,
+    CreateUserSerializer,
+    ChangeEmailSerializer,
+)
 from care_adopt_backend import utils
-from apps.accounts.permissions import BaseUserPermission
-from apps.accounts.serializers import UserSerializer, CreateUserSerializer
-from apps.core.models import EmployeeProfile
-from apps.patients.models import PatientProfile
 
 
 class GenericErrorResponse(Response):
@@ -96,6 +96,35 @@ class UserViewSet(
         return Response({
             'token': token.key,
             'id': user.id
+        })
+
+    @action(methods=['PATCH'],
+            detail=True,
+            permission_classes=(BaseUserPermission, ))
+    def change_email(self, request, pk, *args, **kwargs):
+        """
+        This view enables the user to change his/her email.
+        Upon changing of the email, the user will receive an email containing
+        the link with the verification code to verify the new email.
+
+        REQUEST URL:
+        ---
+
+            PATCH /users/<user-ID>/change-email/
+
+        SAMPLE REQUEST DATA:
+        ---
+            {
+                'email': 'new-email@email.com'
+            }
+
+        """
+        obj = self.get_object()
+        serializer = ChangeEmailSerializer(instance=obj, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({
+            'message': _('Verification email sent.')
         })
 
 

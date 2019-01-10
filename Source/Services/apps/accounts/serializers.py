@@ -1,5 +1,12 @@
 from django.contrib.auth import get_user_model
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
+from django.utils.translation import ugettext_lazy as _
+
 from rest_framework import serializers
+
+from .mailer import UserMailer
 from apps.core.models import EmployeeProfile
 from apps.patients.models import PatientProfile
 
@@ -78,3 +85,35 @@ class EmailUserDetailSerializer(serializers.ModelSerializer):
         model = get_user_model()
         fields = ('pk', 'email', 'first_name', 'last_name')
         read_only_fields = ('email', )
+
+
+class ChangeEmailSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = get_user_model()
+        fields = (
+            'pk',
+            'email',
+        )
+
+    def validate_email(self, value):
+        if self.instance:
+            if self.model.objects.filter(email=value).exists():
+                raise serializers.ValidationError(_('Email already exist.'))
+
+        return value
+
+    def _generate_uidb64_token(self, user):
+        token_generator = default_token_generator
+        uidb64 = urlsafe_base64_encode(force_bytes(user.pk)).decode()
+        token = token_generator.make_token(user)
+        return (uidb64, token)
+
+    def update(self, instance, validated_data):
+        email = validated_data.get('email', instance.email)
+        instance.email = email
+        instance.is_active = False
+        instance.save(update_fields=['email', 'is_active'])
+
+        mailer = UserMailer()
+        mailer.send_change_email_verification(instance)
