@@ -100,7 +100,7 @@ class ChangeEmailSerializer(serializers.ModelSerializer):
 
     def validate_email(self, value):
         if self.instance:
-            if self.model.objects.filter(email=value).exists():
+            if self.instance._meta.model.objects.filter(email=value).exists():
                 raise serializers.ValidationError(_('Email already exist.'))
 
         return value
@@ -119,6 +119,8 @@ class ChangeEmailSerializer(serializers.ModelSerializer):
 
         mailer = UserMailer()
         mailer.send_change_email_verification(instance)
+
+        return instance
 
 
 class VerifyEmailSerializer(serializers.Serializer):

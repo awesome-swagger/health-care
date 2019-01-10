@@ -310,3 +310,12 @@ class TestFacilityEmployee(TasksMixin, APITestCase):
         )
         response = self.client.get(url)
         self.assertEqual(response.data['billable_patients_count'], plans_count)
+
+    def test_change_email(self):
+        email = self.fake.email()
+        payload = {
+            'email': email
+        }
+        url = reverse('users-change-email', kwargs={'pk': self.user.pk})
+        response = self.client.patch(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
