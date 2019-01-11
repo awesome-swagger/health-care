@@ -13,6 +13,9 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
 
   public patient = null;
 
+  public showDatePH;
+  public multiOpenPH;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,

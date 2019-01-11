@@ -15,6 +15,10 @@ export class CreateVitalComponent implements OnInit {
 
   public vital: any = {};
   public vitalForm: FormGroup;
+  public tooltipCVM0Open;
+  public tooltipCVM1Open;
+
+  public measures = [];
 
   constructor(
     private modal: ModalService,

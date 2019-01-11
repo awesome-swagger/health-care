@@ -10,6 +10,8 @@ export class ProblemAreasComponent implements OnInit {
 
   public data = null;
 
+  public addPA;
+
   public problemAreas = [
     {
       identifiedDate: 'Mar 17, 2018',

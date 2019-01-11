@@ -22,6 +22,13 @@ export class CreateStreamComponent implements OnInit {
     private modal: ModalService,
   ) { }
 
+  public tooltipCMS0Open
+  public tooltipCMS1Open
+  public deleteM0;
+  public deleteM1;
+  public deleteM2;
+  public showAddMessageForm;
+
   public ngOnInit() {
     console.log(this.data);
     if (this.data) {

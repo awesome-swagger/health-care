@@ -9,6 +9,8 @@ export class EditBillingPractitionerComponent implements OnInit {
 
   constructor() { }
 
+  public close;
+
   ngOnInit() {
   }
 

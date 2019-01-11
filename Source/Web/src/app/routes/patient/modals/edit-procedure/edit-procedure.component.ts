@@ -9,6 +9,9 @@ export class EditProcedureComponent implements OnInit {
 
   constructor() { }
 
+  public close;
+  public emailInput;
+
   ngOnInit() {
   }
 

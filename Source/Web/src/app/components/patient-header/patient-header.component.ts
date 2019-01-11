@@ -16,6 +16,10 @@ export class PatientHeaderComponent implements OnInit, OnDestroy {
   public patientId = null;
   public currentPlan = null;
 
+  public teamListOpen;
+  public openProblemAreas;
+  public openFinancialDetails;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,

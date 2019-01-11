@@ -14,6 +14,17 @@ export class PatientTeamComponent implements OnDestroy, OnInit {
   public patient = null;
   public careTeamMembers = [];
 
+  public tooltipPCT0Open;
+  public tooltipPCT1Open;
+  public tooltipPCT2Open;
+  public tooltipPCT3Open;
+  public tooltipPCT4Open;
+  public tooltipPCT5Open;
+  public tooltipPCT6Open;
+  public tooltipPCT7Open;
+  public tooltipPCT8Open;
+  public tooltipPCT9Open;
+
   private routeSub = null;
 
   constructor(
