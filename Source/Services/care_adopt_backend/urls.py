@@ -320,6 +320,12 @@ urlpatterns = [
     url(r'^favicon.ico$', RedirectView.as_view(
         url=settings.STATIC_URL + 'favicon.ico')),
 
+    url(
+        r'^api/users/verify_change_email/',
+        VerifyChangeEmail.as_view(),
+        name="verify_change_email"
+    ),
+
     url(r'^api/', include('apps.core.api.urls')),
     url(r'^api/', include('apps.patients.api.urls')),
     url(r'^api/', include('apps.plans.api.urls')),
@@ -346,11 +352,7 @@ urlpatterns = [
 
     url(r'^rest-auth/', include('rest_auth.urls')),
 
-    url(
-        r'^api/users/verify_change_email/',
-        VerifyChangeEmail.as_view(),
-        name="verify_change_email"
-    ),
+
     url(r'^api/todays_tasks/', TodaysTasksAPIView.as_view(), name="todays_tasks"),
     url(r'^swagger/', schema_view),
 ]

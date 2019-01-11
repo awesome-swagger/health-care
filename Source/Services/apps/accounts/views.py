@@ -3,8 +3,9 @@ from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404, render
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import TemplateView
-from rest_framework import status, views, viewsets, mixins, generics
+from rest_framework import status, views, viewsets, mixins
 from rest_framework.decorators import action
+from rest_framework.generics import GenericAPIView
 from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework.response import Response
@@ -236,13 +237,13 @@ class ObtainUnvalidatedAuthToken(ObtainAuthToken):
         return super().post(request, require_validated=require_validated)
 
 
-class VerifyChangeEmail(generics.GenericAPIView):
+class VerifyChangeEmail(GenericAPIView):
     """
     Verifies the new email of the user.
     """
 
     serializer_class = VerifyEmailSerializer
-    permission_class = (AllowAny, )
+    permission_classes = (AllowAny, )
 
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)

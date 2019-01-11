@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.encoding import force_bytes
-from django.utils.http import urlsafe_base64_encode
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.translation import ugettext_lazy as _
 
 from allauth.account.utils import url_str_to_user_pk
@@ -128,23 +128,23 @@ class VerifyEmailSerializer(serializers.Serializer):
     Handles verification of the new email
     """
 
-    uidb36 = serializers.CharField()
+    uidb64 = serializers.CharField()
     key = serializers.CharField()
 
-    def _get_user(self, uidb36):
+    def _get_user(self, uidb64):
         User = get_user_model()
         try:
-            pk = url_str_to_user_pk(uidb36)
+            pk = urlsafe_base64_decode(uidb64).decode()
             return User.objects.get(pk=pk)
         except (ValueError, User.DoesNotExist):
             return None
 
     def validate(self, data):
 
-        uidb36 = data.get('uidb36')
+        uidb64 = data.get('uidb64')
         key = data.get('key')
 
-        user = self._get_user(uidb36)
+        user = self._get_user(uidb64)
 
         try:
             TokenModel.objects.get(user=user, key=key)
@@ -153,10 +153,10 @@ class VerifyEmailSerializer(serializers.Serializer):
             raise serializers.ValidationError(_('Invalid token.'))
 
     def save(self):
-        uidb36 = self.validated_data.get('uidb36')
+        uidb64 = self.validated_data.get('uidb64')
         key = self.validated_data.get('key')
 
-        user = self._get_user(uidb36)
+        user = self._get_user(uidb64)
         token = TokenModel.objects.get(user=user, key=key)
 
         user.is_active = True
