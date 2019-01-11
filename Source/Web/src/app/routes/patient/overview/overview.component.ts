@@ -656,15 +656,46 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
   public addMedication() {
     this.modals.open(MedicationComponent, {
       closeDisabled: true,
+      data: {
+        plan: this.carePlan,
+      },
       width: '540px',
-    }).subscribe(() => {});
+    }).subscribe((data) => {
+      console.log(data);
+      if (data.patient_medication && data.task) {
+        this.store.PatientMedication.create(data.patient_medication).subscribe(
+          (patientMedication) => {
+            data.task.patient_medication = patientMedication.id;
+            this.store.MedicationTaskTemplate.create(data.task).subscribe(
+              (medicationTask) => {
+                this.planMedicationTasks.push(medicationTask);
+              },
+              (err) => {
+                console.log('Error creating medication task template', err);
+              },
+              () => {}
+            );
+          },
+          (err) => {
+            console.log('Error creating patient medication', err);
+          },
+          () => {}
+        );
+      }
+    });
   }
 
-  public editMedication() {
+  public editMedication(medication) {
     this.modals.open(EditTaskComponent, {
       closeDisabled: true,
+      data: {
+        type: 'medication',
+        task: medication,
+      },
       width: '540px',
-    }).subscribe(() => {});
+    }).subscribe((res) => {
+      console.log(res);
+    });
   }
 
   public confirmDeleteMedication() {

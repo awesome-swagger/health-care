@@ -15,16 +15,17 @@
 <div class="flex justifySpaceBetween marBottom32">
   <div class="modal__inputWrap marRight32">
     <label>Medication Name</label>
-    <!--TODO: Show input if adding a medication-->
-    <!--<input type="text" class="input fullWidth" />-->
-    <!--TODO: Show text if editing a medication-->
-    <p class="flex alignCenter noMargin height48">Zoloft</p>
+    <div class="styledSelect marBottom32">
+      <select class="styledSelect__select" [(ngModel)]="selectedMedication">
+        <option *ngFor="let medication of medications" [value]="medication.id">{{medication.name}}</option>
+      </select>
+    </div>
   </div>
   <div class="modal__inputWrap140">
     <label>Dose</label>
     <div class="flex alignCenter">
       <div class="modal__inputWrap100 marRight8">
-        <input type="number" class="input fullWidth" min="0" />
+        <input type="number" class="input fullWidth" min="0" [(ngModel)]="doseMg" />
       </div>
       mg
     </div>
@@ -37,14 +38,14 @@
       <div class="datepicker__date datepicker__date--fullWidth" (click)="showDate=!showDate">
         Select Date
       </div>
-      <app-date-picker class="datepicker__picker" [ngClass]="{ 'isOpen' : showDate }"></app-date-picker>
+      <app-date-picker class="datepicker__picker" [ngClass]="{ 'isOpen' : showDate }" [(selected)]="datePrescribed"></app-date-picker>
     </div>
   </div>
   <div class="modal__inputWrap140 marRight32">
     <label>Length</label>
     <div class="flex alignCenter">
       <div class="modal__inputWrap100 marRight8">
-        <input type="number" class="input fullWidth" min="0" />
+        <input type="number" class="input fullWidth" min="0" [(ngModel)]="durationDays" />
       </div>
       days
     </div>
@@ -56,105 +57,63 @@
 </div>
 <label>Prescribing Practitioner</label>
 <div class="styledSelect marBottom32">
-  <select class="styledSelect__select">
-    <option>John Smith, MD</option>
-    <option>Lori Ramirez, RN</option>
-    <option>Not on Care Team</option>
+  <select class="styledSelect__select" [(ngModel)]="prescribingPractitioner">
+    <option *ngFor="let teamMember of careTeamMembers" [value]="teamMember.employee_profile.id">{{teamMember.employee_profile.user.first_name}} {{teamMember.employee_profile.user.last_name}}<span *ngIf="teamMember.employee_profile.title">, {{teamMember.employee_profile.title.abbreviation}}</span></option>
   </select>
 </div>
 <label>Instructions (opt)</label>
-<textarea class="input input--textarea"></textarea>
+<textarea class="input input--textarea" [(ngModel)]="instructions"></textarea>
 
 <div class="divider"></div>
 <div class="edit-details">
   <div class="flex justifySpaceBetween marBottom32">
     <div class="modal__inputWrap marRight32">
       <label>Starts on Day</label>
-      <input type="text" class="input fullWidth" />
+      <input type="text" class="input fullWidth" type="number" min="0" [(ngModel)]="startDay" />
     </div>
     <div class="modal__inputWrap">
       <label>Frequency</label>
       <div class="styledSelect fullWidth">
-        <select class="styledSelect__select">
-          <option>1x per day</option>
-          <option>2x per day</option>
-          <option>3x per day</option>
-          <option>4x per day</option>
+        <select class="styledSelect__select" [(ngModel)]="frequency">
+          <option *ngFor="let option of frequencyOptions" [value]="option.value">{{option.displayName}}</option>
         </select>
       </div>
     </div>
   </div>
-    <label>
-      Repeats
-      <div class="flex">
-        <label class="styledInput marRight48">
-          <input type="radio" class="styledInput__input" name="radioPDM" />
-          <span class="styledInput__radio"></span> Until Plan Ends
-        </label>
-        <label class="styledInput">
-          <input type="radio" class="styledInput__input" name="radioPDM" />
-          <span class="styledInput__radio"></span>
-          <div class="modal__inputWrap80 marRight8">
-            <input type="number" class="input fullWidth" min="0" />
-          </div>
-          times
-        </label>
-      </div>
-    </label>
-    <div class="flex justifySpaceBetween marBottom32">
-      <div class="modal__inputWrap marRight32">
-        <label>Appear Time</label>
-        <div class="styledSelect fullWidth">
-          <select class="styledSelect__select">
-            <option>7:00 AM</option>
-            <option>8:00 AM</option>
-            <option>9:00 AM</option>
-            <option>10:00 AM</option>
-            <option>11:00 AM</option>
-            <option>12:00 PM</option>
-            <option>1:00 PM</option>
-            <option>2:00 PM</option>
-            <option>3:00 PM</option>
-            <option>4:00 PM</option>
-            <option>5:00 PM</option>
-            <option>6:00 PM</option>
-            <option>7:00 PM</option>
-            <option>8:00 PM</option>
-            <option>9:00 PM</option>
-          </select>
+  <label>
+    Repeats
+    <div class="flex">
+      <label class="styledInput marRight48">
+        <input type="radio" class="styledInput__input" name="radioPDM" [value]="'plan_end'" [(ngModel)]="repeatsChoice" />
+        <span class="styledInput__radio"></span> Until Plan Ends
+      </label>
+      <label class="styledInput">
+        <input type="radio" class="styledInput__input" name="radioPDM" [value]="'other'" [(ngModel)]="repeatsChoice" />
+        <span class="styledInput__radio"></span>
+        <div class="modal__inputWrap80 marRight8">
+          <input type="number" class="input fullWidth" min="0" [(ngModel)]="repeatAmount" />
         </div>
-      </div>
-      <div class="modal__inputWrap">
-        <label>Due Time</label>
-        <div class="styledSelect fullWidth">
-          <select class="styledSelect__select">
-            <option>7:00 AM</option>
-            <option>8:00 AM</option>
-            <option>9:00 AM</option>
-            <option>10:00 AM</option>
-            <option>11:00 AM</option>
-            <option>12:00 PM</option>
-            <option>1:00 PM</option>
-            <option>2:00 PM</option>
-            <option>3:00 PM</option>
-            <option>4:00 PM</option>
-            <option>5:00 PM</option>
-            <option>6:00 PM</option>
-            <option>7:00 PM</option>
-            <option>8:00 PM</option>
-            <option>9:00 PM</option>
-          </select>
-        </div>
-      </div>
+        times
+      </label>
     </div>
-
+  </label>
+  <div class="flex justifySpaceBetween marBottom32">
+    <div class="modal__inputWrap marRight32">
+      <label>Appear Time</label>
+			<app-time-picker (valueChange)="appearTime = $event;"></app-time-picker>
+    </div>
+    <div class="modal__inputWrap">
+      <label>Due Time</label>
+			<app-time-picker (valueChange)="dueTime = $event;"></app-time-picker>
+    </div>
+  </div>
 </div>
 
 <div class="modal__buttons modal__buttons--marBottom48">
-  <button class="button button--2nd">
+  <button class="button button--2nd" (click)="clickCancel()">
     Cancel
   </button>
-  <button class="button">
+  <button class="button" [disabled]="saveDisabled()" (click)="clickSave()">
     Save
   </button>
 </div>
