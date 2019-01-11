@@ -23,7 +23,23 @@
 
       <div class="nav__right">
         <div class="drop">
-          <input class="input input--nav" type="text" (keyup)="searchChange($event.target.value)" placeholder="Search Patients" />
+          <div id="patientSearchContainer">
+            <input
+              class="input input--nav"
+              [ngClass]="{ 'typing': searchString.length > 0 }"
+              [(ngModel)]="searchString"
+              type="text"
+              (keyup)="searchChange($event.target.value)"
+              placeholder="Search Patients"
+            />
+            <button
+              class="button button--icon button--icon--nav searchClear"
+              (click)="searchString = ''"
+              *ngIf="searchString.length > 0"
+            >
+              <i class="ss-delete"></i>
+            </button>
+          </div>
           <app-popover [visible]="searchOpen" (visibleChange)="searchOpen = $event;">
             <ul class="drop__dropdown isOpen">
               <ng-container *ngFor="let patient of searchResults">
@@ -110,6 +126,22 @@
           </app-popover>
         </div> <!--/.drop (for notifications)-->
 
+        <div class="drop">
+          <button class="button button--icon button--icon--nav" (click)="analyticsOpen=!analyticsOpen">
+            <i class="ss-barchart"></i>
+          </button>
+          <app-popover [visible]="analyticsOpen" (visibleChange)="analyticsOpen = $event;" [options]="logoutDropOptions">
+            <ul class="drop__dropdown isOpen">
+              <label class="drop__label">Switch Applications</label>
+              <li class="drop__option">
+                <a class="drop__link drop__link" (click)="routeToAnalytics()">
+                  Patient Analytics
+                </a>
+              </li>
+            </ul>
+          </app-popover>
+        </div> <!--/.drop (for logout, switch org)-->
+
         <!--Login will happen in a separate component.
         <a *ngIf="!user?.id" [routerLink]="['login']"><i class="ss-door"></i> Login</a>-->
 
@@ -165,7 +197,7 @@
                 </a>
               </li>
               <label class="drop__label" *ngIf="nav.recentPatients.length > 0">Recent Patients</label>
-              <li class="drop__option" *ngFor="let patient of nav.recentPatients">
+              <li class="drop__option" *ngFor="let patient of nav.recentPatients?.reverse()">
                 <a class="drop__link" (click)="routeToPatient(patient)">
                   <div class="picName">
                     <img class="picName__img" src="../../../assets/img/profile.svg" *ngIf="!patient.user.image_url" />

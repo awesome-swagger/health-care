@@ -4,6 +4,11 @@ import { ModalService, ConfirmModalComponent } from '../../modules/modals';
 import { AuthService, StoreService } from '../../services';
 import { EditFacilityComponent } from './modals/edit-facility.component';
 import { ToastService } from '../../modules/toast';
+import * as moment from 'moment';
+import { 
+  filter as _filter,
+  find as _find
+} from 'lodash';
 
 @Component({
   selector: 'app-organization',
@@ -15,6 +20,15 @@ export class OrganizationComponent implements OnDestroy, OnInit {
   public organization = null;
   public facilities = [];
   public affiliates = [];
+  public userCount = 0;
+  public availableAccounts = 50;
+  public availableAccountsLeft = 50;
+  public openAlert = {
+    users: false,
+    date: false,
+  };
+  public renewalDate = null;
+  public renewalDiff = 100;
 
   private organizationSub: Subscription = null;
 
@@ -31,6 +45,13 @@ export class OrganizationComponent implements OnDestroy, OnInit {
           return;
         }
         this.organization = organization;
+
+        this.renewalDate = moment('January 30, 2019');
+        this.renewalDiff = this.renewalDate.diff(moment(), 'days');
+        if (this.renewalDiff <= 90) {
+          this.openAlert.date = true;
+        }
+
         this.store.Facility.readListPaged({
           organization_id: organization.id
         }).subscribe(
@@ -41,6 +62,18 @@ export class OrganizationComponent implements OnDestroy, OnInit {
         );
       }
     );
+
+    let usersSub = this.store.EmployeeProfile.readListPaged().subscribe(
+      users => {
+        this.userCount = users.length;
+        this.availableAccountsLeft = this.availableAccounts - this.userCount;
+        if (this.availableAccountsLeft <= 5) {
+          this.openAlert.users = true;
+        }
+      },
+      err => {},
+      () => usersSub.unsubscribe()
+    )
   }
 
   public ngOnDestroy() {
@@ -75,7 +108,11 @@ export class OrganizationComponent implements OnDestroy, OnInit {
       },
       width: '512px',
     }).subscribe((res) => {
-      this.facilities.push(res);
+      if (res.is_affiliate) {
+        this.affiliates.push(res);
+      } else {
+        this.facilities.push(res);
+      }
     });
   }
 
@@ -93,19 +130,39 @@ export class OrganizationComponent implements OnDestroy, OnInit {
   }
 
   public deleteFacility(facility) {
-    this.modals.open(ConfirmModalComponent, {
-      data: {
-        title: 'Are You Sure?',
-        body: 'Are you sure you want to delete this facility? This would remove 28 user accounts and 468 active patients.',
-        okText: 'Continue',
-        cancelText: 'Cancel',
+    let patientsSub = this.store.Facility.detailRoute('get', facility.id, 'active_patients').subscribe(
+      (patients: any) => {
+        let usersSub = this.store.EmployeeProfile.readListPaged().subscribe(
+          users => {
+            const facilityUsers = _filter(users, u => _find(u.facilities, f => f.id === facility.id));
+            this.modals.open(ConfirmModalComponent, {
+              data: {
+                title: 'Are You Sure?',
+                body: `Are you sure you want to delete this facility? This would remove ${facilityUsers.length} user accounts and ${patients.results.length} active patients.`,
+                okText: 'Continue',
+                cancelText: 'Cancel',
+              },
+              width: '440px',
+            }).subscribe((res) => {
+              if (res === 'Continue') {
+                this.store.Facility.destroy(facility.id).subscribe();
+                this.affiliates = _filter(this.affiliates, a => a.id !== facility.id);
+                this.facilities = _filter(this.facilities, a => a.id !== facility.id);
+                // TODO: Trigger a confirmation toast to undo.
+              }
+            });
+          },
+          err => {},
+          () => usersSub.unsubscribe()
+        )
       },
-      width: '440px',
-    }).subscribe((res) => {
-      if (res === 'Continue') {
-        this.store.Facility.destroy(facility.id).subscribe();
-        // TODO: Trigger a confirmation toast to undo.
-      }
-    });
+      err => {},
+      () => patientsSub.unsubscribe()
+    )
+
+  }
+
+  public closeAlert(n) {
+    this.openAlert[n] = false;
   }
 }

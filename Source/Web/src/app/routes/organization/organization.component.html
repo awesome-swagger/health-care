@@ -1,17 +1,17 @@
 <div class="ssContainer ssContents">
-  <!-- <div class="alert">
-    <span class="alert__text">Your plan will expire in 89 days. To renew now, call 801-555-5555 or email accounting@careadopt.com.</span>
+  <div class="alert" *ngIf="openAlert.date">
+    <span class="alert__text">Your plan will expire in {{renewalDiff}} days. To renew now, call 801-555-5555 or email accounting@careadopt.com.</span>
     <button class="button button--icon button--icon--small button--icon--white alert__button">
-      <i class="ss-delete"></i>
+      <i class="ss-delete" (click)="closeAlert('date')"></i>
     </button>
-  </div> -->
+  </div>
 
-  <!-- <div class="alert alert--red">
-    <span class="alert__text">Your plan only has 5 available user accounts left. To upgrade now, call 801-555-5555 or email sales@careadopt.com.</span>
+  <div class="alert alert--red" *ngIf="openAlert.users">
+    <span class="alert__text">Your plan only has {{availableAccountsLeft}} available user accounts left. To upgrade now, call 801-555-5555 or email sales@careadopt.com.</span>
     <button class="button button--icon button--icon--small button--icon--white alert__button">
-      <i class="ss-delete"></i>
+      <i class="ss-delete" (click)="closeAlert('users')"></i>
     </button>
-  </div> -->
+  </div>
 
   <div class="org">
     <div class="org__left">
@@ -121,11 +121,11 @@
         <div class="cols">
           <div>
             <label>Current Users</label>
-            45 / 50
+            {{userCount}} / 50
           </div>
           <div>
             <label>Renewal Date</label>
-            Apr 15, 2018
+            {{renewalDate.format('MMMM Do, YYYY')}}
           </div>
         </div>
 

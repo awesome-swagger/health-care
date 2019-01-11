@@ -32,6 +32,7 @@ export class NavComponent implements OnDestroy, OnInit {
     relativeLeft: '1.5rem',
   };
   public searchOpen = false;
+  public searchString = '';
   public taskDropOpen = false;
   public taskDropOptions: PopoverOptions = {
     relativeRight: '16rem',
@@ -150,6 +151,7 @@ export class NavComponent implements OnDestroy, OnInit {
 
   public switchOrganization(organization) {
     this.auth.switchOrganization(organization.id);
+    this.router.navigate(['/dashboard']);
   }
 
   public confirmUnarchive() {
@@ -213,5 +215,9 @@ export class NavComponent implements OnDestroy, OnInit {
       );
     });
     return promise;
+  }
+
+  public routeToAnalytics() {
+    window.open('https://www.google.com', '_self');
   }
 }
