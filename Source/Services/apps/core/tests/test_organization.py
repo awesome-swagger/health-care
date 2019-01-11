@@ -18,11 +18,17 @@ from apps.tasks.models import (
 from apps.tasks.tests.mixins import TasksMixin
 
 
-class TestOrganizationPatientOverview(TasksMixin, APITestCase):
+class BaseOrganizationTestMixin(TasksMixin):
     """
-    Test cases for :model:`plans.CarePlan1 using an employee as the logged in
-    user.
+    Base test class for organization
     """
+
+    def get_test_url(self):
+        """
+        Override this method in the parent class
+        """
+        raise NotImplementedError()
+
     def setUp(self):
         self.fake = Faker()
         self.patient = self.create_patient()
@@ -37,10 +43,9 @@ class TestOrganizationPatientOverview(TasksMixin, APITestCase):
             self.employee.facilities.add(facility)
 
         self.plan_template = self.create_care_plan_template()
-        self.url = reverse(
-            'organizations-active-patients-overview',
-            kwargs={'pk': self.organization.id}
-        )
+
+        self.url = self.get_test_url()
+
         self.client.force_authenticate(user=self.user)
 
     def test_organization_total_patient(self):
@@ -62,18 +67,6 @@ class TestOrganizationPatientOverview(TasksMixin, APITestCase):
         self.assertEqual(
             response.data['active_patients'],
             total_patients * facilities.count()
-        )
-
-    def test_organization_total_facility(self):
-
-        # Create facilities for other organization
-        for i in range(3):
-            self.create_facility()
-
-        response = self.client.get(self.url)
-        self.assertEqual(
-            response.data['total_facilities'],
-            self.facilities_count
         )
 
     def generate_average_outcome_records(self, organization):
@@ -319,3 +312,105 @@ class TestOrganizationPatientOverview(TasksMixin, APITestCase):
         self.client.force_authenticate(patient.user)
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+
+class TestOrganizationPatientOverview(BaseOrganizationTestMixin, APITestCase):
+    """
+    Test cases for endpoint used in patient overview.
+    """
+
+    def get_test_url(self):
+        return reverse(
+            'organizations-active-patients-overview',
+            kwargs={'pk': self.organization.id}
+        )
+
+    def test_organization_total_facility(self):
+
+        # Create facilities for other organization
+        for i in range(3):
+            self.create_facility()
+
+        response = self.client.get(self.url)
+        self.assertEqual(
+            response.data['total_facilities'],
+            self.facilities_count
+        )
+
+
+class TestOrganizationPatientDashboard(BaseOrganizationTestMixin, APITestCase):
+    """
+    Test cases for endpoint used in dashboard analytics page.
+    """
+
+    def get_test_url(self):
+        return reverse(
+            'organizations-dashboard-analytics',
+            kwargs={'pk': self.organization.id}
+        )
+
+    def setUp(self):
+        self.fake = Faker()
+        self.patient = self.create_patient()
+        self.employee = self.create_employee()
+        self.user = self.employee.user
+        self.facilities_count = 5
+        self.organization = self.create_organization()
+        self.employee.organizations.add(self.organization)
+
+        for i in range(self.facilities_count):
+            facility = self.create_facility(self.organization)
+            self.employee.facilities.add(facility)
+
+        self.plan_template = self.create_care_plan_template()
+        self.url = reverse(
+            'organizations-dashboard-analytics',
+            kwargs={'pk': self.organization.id}
+        )
+        self.client.force_authenticate(user=self.user)
+
+    def test_organization_invited_patients(self):
+        invited_patients = 5
+        facilities = get_facilities_for_user(self.user, self.organization.id)
+
+        for facility in facilities:
+            for i in range(invited_patients):
+                self.create_patient(**{
+                    'facility': facility,
+                    'is_invited': True,
+                    'is_active': False
+                })
+
+        # Create patients for other facility
+        for i in range(3):
+            self.create_patient(**{
+                    'is_invited': True,
+                    'is_active': False
+                })
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(
+            response.data['invited_patients'],
+            invited_patients * facilities.count()
+        )
+
+    def test_organization_potential_patients(self):
+        potential_patients = 5
+        facilities = get_facilities_for_user(self.user, self.organization.id)
+
+        for i in range(potential_patients):
+            self.create_potential_patient(**{
+                'facility': facilities
+            })
+
+        # Create patients for other facility
+        for i in range(3):
+            self.create_potential_patient()
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(
+            response.data['potential_patients'],
+            potential_patients * facilities.count()
+        )
