@@ -2,6 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ModalService, ConfirmModalComponent } from '../../modules/modals';
 import { FinancialDetailsComponent } from './modals/financial-details/financial-details.component';
+import { CarePlanConsentComponent } from './modals/care-plan-consent/care-plan-consent.component';
 import { ProblemAreasComponent } from './modals/problem-areas/problem-areas.component';
 import { DiagnosisComponent } from './modals/diagnosis/diagnosis.component';
 import { ProcedureComponent } from './modals/procedure/procedure.component';
@@ -26,8 +27,9 @@ export class PatientComponent implements OnDestroy, OnInit {
 
   public patient = null;
   public carePlans = [];
+  public problemAreas = [];
   public teamListOpen = -1;
-  
+
   public editName;
   public tooltipPSOpen;
 
@@ -49,7 +51,9 @@ export class PatientComponent implements OnDestroy, OnInit {
         this.nav.addRecentPatient(this.patient);
         this.getCarePlans(this.patient.id).then((carePlans: any) => {
           this.carePlans = carePlans;
-          console.log(carePlans);
+        });
+        this.fetchProblemAreas(this.patient.id).then((problemAreas: any) => {
+          this.problemAreas = problemAreas;
         });
       }).catch(() => {
         this.patient = patientData.patient;
@@ -73,6 +77,21 @@ export class PatientComponent implements OnDestroy, OnInit {
         },
         () => {
           patientSub.unsubscribe();
+        },
+      );
+    });
+    return promise;
+  }
+
+  public fetchProblemAreas(patient) {
+    let promise = new Promise((resolve, reject) => {
+      let problemAreasSub = this.store.ProblemArea.readListPaged({
+        patient: patient,
+      }).subscribe(
+        (problemAreas) => resolve(problemAreas),
+        (err) => reject(err),
+        () => {
+          problemAreasSub.unsubscribe();
         },
       );
     });
@@ -121,9 +140,13 @@ export class PatientComponent implements OnDestroy, OnInit {
 
   public openProblemAreas() {
     this.modals.open(ProblemAreasComponent, {
-      closeDisabled: false,
-      width: '576px',
-    }).subscribe(() => {});
+      closeDisabled: true,
+      data: {
+        patient: this.patient,
+        problemAreas: this.problemAreas,
+      },
+      width: '560px',
+    });
   }
 
   public confirmPause() {
@@ -154,6 +177,16 @@ export class PatientComponent implements OnDestroy, OnInit {
     }).subscribe(() => {
     // do something with result
     });
+  }
+
+  public openConsentForm(plan) {
+    this.modals.open(CarePlanConsentComponent, {
+     closeDisabled: true,
+     data: {
+       plan_id: plan,
+     },
+     width: '560px',
+   }).subscribe(() => {});
   }
 
   public addPatientToPlan() {

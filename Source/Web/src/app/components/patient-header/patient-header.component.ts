@@ -1,8 +1,10 @@
 import { Component, EventEmitter, Input, Output, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { ModalService } from '../../modules/modals';
 import { ToastService } from '../../modules/toast';
 import { StoreService } from '../../services';
 import { find as _find } from 'lodash';
+import { ProblemAreasComponent } from '../../routes/patient/modals/problem-areas/problem-areas.component';
 
 @Component({
   selector: 'app-patient-header',
@@ -17,17 +19,18 @@ export class PatientHeaderComponent implements OnInit, OnDestroy {
   public carePlans = [];
   public careTeamMembers = [];
   public careManager = null;
+  public problemAreas = [];
 
   @Output()
   public onPlanChange = new EventEmitter<any>();
 
   public teamListOpen;
-  public openProblemAreas;
   public openFinancialDetails;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
+    private modals: ModalService,
     private toast: ToastService,
     private store: StoreService,
   ) { }
@@ -69,7 +72,16 @@ export class PatientHeaderComponent implements OnInit, OnDestroy {
             this.toast.error('Error fetching care team members');
             console.log(err);
           },
-        )
+        );
+        this.fetchProblemAreas(params.patientId).then(
+          (problemAreas: any) => {
+            this.problemAreas = problemAreas;
+          },
+          (err) => {
+            this.toast.error('Error fetching problem areas');
+            console.log(err);
+          }
+        );
       }
     );
   }
@@ -117,8 +129,34 @@ export class PatientHeaderComponent implements OnInit, OnDestroy {
     return promise;
   }
 
+  public fetchProblemAreas(patient) {
+    let promise = new Promise((resolve, reject) => {
+      let problemAreasSub = this.store.ProblemArea.readListPaged({
+        patient: patient,
+      }).subscribe(
+        (problemAreas) => resolve(problemAreas),
+        (err) => reject(err),
+        () => {
+          problemAreasSub.unsubscribe();
+        },
+      );
+    });
+    return promise;
+  }
+
   public changeSelectedPlan(plan) {
     this.router.navigate(['/patient', this.patient.id, this.currentPage, plan.id]);
+  }
+
+  public openProblemAreas() {
+    this.modals.open(ProblemAreasComponent, {
+      closeDisabled: true,
+      data: {
+        patient: this.patient,
+        problemAreas: this.problemAreas,
+      },
+      width: '560px',
+    });
   }
 
   @Input()

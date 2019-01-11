@@ -3,14 +3,14 @@
   <li class="problem__item" *ngFor="let problemArea of problemAreas; let i = index">
     <div *ngIf="editIndex !== i">
       <div class="flex alignCenter justifySpaceBetween">
-        <label class="problem__label">Identified {{problemArea.identifiedDate}} by {{problemArea.identifiedBy}}</label>
+        <label class="problem__label">Identified <span *ngIf="problemArea.date_identified">{{moment(problemArea.date_identified).format('MMM D, YYYY')}}</span><span *ngIf="problemArea?.identified_by"> by {{problemArea.identified_by.user.first_name}} {{problemArea.identified_by.user.last_name}}<span *ngIf="problemArea.identified_by.title">, {{problemArea.identified_by.title.abbreviation}}</span></span></label>
         <div class="flex">
           <button class="button button--icon button--icon--small"
-          (click)="editIndex = i; currentEditName = problemArea.name; currentEditText = problemArea.description">
+          (click)="clickEditProblem(i, problemArea)">
             <i class="ss-write"></i>
           </button>
           <button class="button button--icon button--icon--small"
-          (click)="deleteIndex = i">
+          (click)="clickDeleteProblem(i)">
             <i class="ss-delete"></i>
           </button>
         </div>
@@ -31,7 +31,7 @@
             <i class="ss-undo"></i>
           </button>
           <button class="button button--icon button--icon--small"
-          (click)="editIndex = -1; problemAreas[i].name = currentEditName; problemAreas[i].descriptions = currentEditText">
+          (click)="clickSaveEdit(i)">
             <i class="ss-floppydisk"></i>
           </button>
         </div>
@@ -47,7 +47,7 @@
         <button class="button marRight32" (click)="deleteIndex = -1">
           Cancel
         </button>
-        <button class="button button--2nd" (click)="problemAreas.splice(i, 1)">
+        <button class="button button--2nd" (click)="confirmDelete(i)">
           Confirm
         </button>
       </div>

@@ -372,6 +372,10 @@ class PlanConsentViewSet(viewsets.ModelViewSet):
     """
     serializer_class = PlanConsentSerializer
     permission_classes = (permissions.IsAuthenticated, EmployeeOrReadOnly, )
+    filter_backends = (DjangoFilterBackend, )
+    filterset_fields = (
+        'plan',
+    )
 
     def get_queryset(self):
         qs = PlanConsent.objects.all()

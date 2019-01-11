@@ -1,38 +1,38 @@
 <h1 class="modal__title">Care Plan Consent</h1>
 <hr />
-<h2 class="modal__title">{{data?.patientName}}</h2> 
-<h4 class="modal__title">{{data?.serviceArea}}, {{data?.carePlan}}</h4>
-<h4 class="modal__title">{{data?.carePlanTypeName}} ({{data?.carePlanTypeAbr}})</h4>
+<h2 class="modal__title">{{patient?.user.first_name}} {{patient?.user.last_name}}</h2>
+<h4 class="modal__title"><span *ngIf="carePlan?.plan_template.service_area">{{carePlan?.plan_template.service_area.name}}, </span>{{carePlan?.plan_template.name}}</h4>
+<h4 class="modal__title" *ngIf="carePlan?.plan_template.type">{{carePlan?.plan_template.type.name}} ({{carePlan?.plan_template.acronym}})</h4>
 <div>
   <label class="styledInput listHead">REIMBURSEMENT REQUIREMENTS (OPT)</label>
   <label class="styledInput">
-    <input type="checkbox" class="styledInput__input" [(ngModel)]="box1" />
+    <input type="checkbox" class="styledInput__input" [(ngModel)]="planConsent.verbal_consent" />
     <span class="styledInput__box"></span>
     Patient has verbally consented to begin care plan.
   </label>
   <label class="styledInput">
-    <input type="checkbox" class="styledInput__input" [(ngModel)]="box2" />
+    <input type="checkbox" class="styledInput__input" [(ngModel)]="planConsent.seen_within_year" />
     <span class="styledInput__box"></span>
     Patient has been seen by the billing practitioner within the past year.
   </label>
   <label class="styledInput">
-    <input type="checkbox" class="styledInput__input" [(ngModel)]="box3" />
+    <input type="checkbox" class="styledInput__input" [(ngModel)]="planConsent.discussed_co_pay" />
     <span class="styledInput__box"></span>
     Patient understands the potential co-pay.
   </label>
   <label class="styledInput listHead">PATIENT COMMITMENT (OPT)</label>
   <label class="styledInput">
-    <input type="checkbox" class="styledInput__input" [(ngModel)]="box4" />
+    <input type="checkbox" class="styledInput__input" [(ngModel)]="planConsent.will_use_mobile_app" />
     <span class="styledInput__box"></span>
     Use the mobile app.
   </label>
   <label class="styledInput">
-    <input type="checkbox" class="styledInput__input" [(ngModel)]="box5" />
+    <input type="checkbox" class="styledInput__input" [(ngModel)]="planConsent.will_interact_with_team" />
     <span class="styledInput__box"></span>
     Interact with care team.
   </label>
   <label class="styledInput">
-    <input type="checkbox" class="styledInput__input" [(ngModel)]="box6" />
+    <input type="checkbox" class="styledInput__input" [(ngModel)]="planConsent.will_complete_tasks" />
     <span class="styledInput__box"></span>
     Complete daily tasks.
   </label>

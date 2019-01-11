@@ -120,18 +120,6 @@ class PatientDiagnosisSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class ProblemAreaSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ProblemArea
-        fields = '__all__'
-
-
-class PatientProcedureSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = PatientProcedure
-        fields = '__all__'
-
-
 class SimplifiedEmployeeProfileSerializer(RepresentationMixin, serializers.ModelSerializer):
 
     class Meta:
@@ -154,6 +142,40 @@ class SimplifiedEmployeeProfileSerializer(RepresentationMixin, serializers.Model
                 'serializer_class': ProviderTitleSerializer,
             },
         ]
+
+
+class ProblemAreaSerializer(RepresentationMixin, serializers.ModelSerializer):
+    class Meta:
+        model = ProblemArea
+        fields = (
+            'id',
+            'date_identified',
+            'identified_by',
+            'name',
+            'description',
+            'modified',
+            'patient',
+        )
+        read_only_fields = (
+            'id',
+            'modified',
+        )
+        nested_serializers = [
+            {
+                'field': 'identified_by',
+                'serializer_class': SimplifiedEmployeeProfileSerializer,
+            },
+            {
+                'field': 'patient',
+                'serializer_class': BasicPatientSerializer,
+            },
+        ]
+
+
+class PatientProcedureSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PatientProcedure
+        fields = '__all__'
 
 
 class PatientMedicationSerializer(RepresentationMixin,

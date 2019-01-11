@@ -135,7 +135,18 @@ class PlanConsentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PlanConsent
-        fields = '__all__'
+        fields = (
+            'id',
+            'plan',
+            'verbal_consent',
+            'discussed_co_pay',
+            'seen_within_year',
+            'will_use_mobile_app',
+            'will_interact_with_team',
+            'will_complete_tasks',
+            'created',
+            'modified',
+        )
 
 
 class CareTeamMemberSerializer(RepresentationMixin, serializers.ModelSerializer):
