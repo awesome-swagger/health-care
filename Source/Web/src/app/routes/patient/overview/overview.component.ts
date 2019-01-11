@@ -8,7 +8,9 @@ import {
   AddAssessmentComponent,
   AddStreamComponent,
   EditTaskComponent,
-  CreateStreamComponent
+  CreateStreamComponent,
+  CreateAssessmentComponent,
+  CreateVitalComponent,
 } from '../../../components';
 import { StoreService, NavbarService, } from '../../../services';
 import { MedicationComponent } from '../modals/medication/medication.component';
@@ -21,11 +23,23 @@ import { MedicationComponent } from '../modals/medication/medication.component';
 export class PatientOverviewComponent implements OnDestroy, OnInit {
 
   public patient = null;
+  public carePlan = null;
+  public planGoals = [];
+  public planTeamTasks = [];
+  public planTeamManagerTasks = [];
+  public planTeamMemberTasks = [];
+  public planPatientTasks = [];
+  public planAssessmentTasks = [];
+  public planSymptomTasks = [];
+  public planVitalTasks = [];
+  public planMedicationTasks = [];
+  public planCareMessages = [];
 
   public accordCPGOpen;
   public toolCPGOpen;
   public accordCTOpen;
   public toolCTTOpen;
+  public toolCMTOpen;
   public accordPTOpen;
   public toolPTTOpen;
   public toolPTAOpen;
@@ -35,7 +49,6 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
   public toolPTVOpen;
   public toolPTMOpen;
   public toolPTMSOpen;
-
 
   constructor(
     private route: ActivatedRoute,
@@ -52,6 +65,37 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
         (patient) => {
           this.patient = patient;
           this.nav.addRecentPatient(this.patient);
+          this.store.CarePlan.read(params.planId).subscribe(
+            (carePlan) => {
+              this.carePlan = carePlan;
+              this.fetchPlanGoals(carePlan.plan_template.id).then((planGoals: any) => {
+                this.planGoals = planGoals;
+              });
+              this.fetchTeamTasks(carePlan.plan_template.id).then((planTeamTasks: any) => {
+                this.planTeamTasks = planTeamTasks;
+                this.planTeamManagerTasks = planTeamTasks.filter((task) => task.is_manager_task);
+                this.planTeamMemberTasks = planTeamTasks.filter((task) => !task.is_manager_task);
+              });
+              this.fetchPatientTasks(carePlan.plan_template.id).then((planPatientTasks: any) => {
+                this.planPatientTasks = planPatientTasks;
+              });
+              this.fetchAssessments(carePlan.plan_template.id).then((planAssessmentTasks: any) => {
+                this.planAssessmentTasks = planAssessmentTasks;
+              });
+              this.fetchSymptomTasks(carePlan.plan_template.id).then((planSymptomTasks: any) => {
+                this.planSymptomTasks = planSymptomTasks;
+              });
+              this.fetchVitalTasks(carePlan.plan_template.id).then((planVitalTasks: any) => {
+                this.planVitalTasks = planVitalTasks;
+              });
+              this.fetchMedicationTasks(carePlan.id).then((planMedicationTasks: any) => {
+                this.planMedicationTasks = planMedicationTasks;
+              });
+              this.fetchCareMessages(carePlan.plan_template.id).then((planCareMessages: any) => {
+                this.planCareMessages = planCareMessages;
+              });
+            }
+          );
         },
         (err) => {},
         () => {},
@@ -59,13 +103,166 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
     });
   }
 
+  public patientTasksCount() {
+    return this.planSymptomTasks.length + this.planVitalTasks.length + this.planPatientTasks.length + this.planAssessmentTasks.length + this.planMedicationTasks.length;
+  }
+
   public ngOnDestroy() { }
+
+  public formatStartOnDay(day) {
+    if (day === 0) {
+      return 'Plan Start';
+    } else if (day >= 7) {
+      return `Week ${day/7}`;
+    } else {
+      return `Day ${day}`;
+    }
+  }
+
+  public formatEndOnDay(day, duration) {
+    if (duration === -1) {
+      return 'Until Plan Ends';
+    } else {
+      return `Week ${Math.round((day/7) + duration)}`;
+    }
+  }
+
+  public fetchPlanGoals(planTemplateId) {
+    let promise = new Promise((resolve, reject) => {
+      let goalsSub = this.store.GoalTemplate.readListPaged({
+        plan_template__id: planTemplateId,
+      }).subscribe(
+        (goals) => resolve(goals),
+        (err) => reject(err),
+        () => {
+          goalsSub.unsubscribe();
+        }
+      );
+    });
+    return promise;
+  }
+
+  public fetchTeamTasks(planTemplateId) {
+    let promise = new Promise((resolve, reject) => {
+      let tasksSub = this.store.TeamTaskTemplate.readListPaged({
+        plan_template__id: planTemplateId,
+      }).subscribe(
+        (teamTasks) => resolve(teamTasks),
+        (err) => reject(err),
+        () => {
+          tasksSub.unsubscribe();
+        }
+      );
+    });
+    return promise;
+  }
+
+  public fetchPatientTasks(planTemplateId) {
+    let promise = new Promise((resolve, reject) => {
+      let tasksSub = this.store.PatientTaskTemplate.readListPaged({
+        plan_template__id: planTemplateId,
+      }).subscribe(
+        (patientTasks) => resolve(patientTasks),
+        (err) => reject(err),
+        () => {
+          tasksSub.unsubscribe();
+        }
+      );
+    });
+    return promise;
+  }
+
+  public fetchAssessments(planTemplateId) {
+    let promise = new Promise((resolve, reject) => {
+      let tasksSub = this.store.AssessmentTaskTemplate.readListPaged({
+        plan_template__id: planTemplateId,
+      }).subscribe(
+        (assessmentTasks) => resolve(assessmentTasks),
+        (err) => reject(err),
+        () => {
+          tasksSub.unsubscribe();
+        }
+      );
+    });
+    return promise;
+  }
+
+  public fetchSymptomTasks(planTemplateId) {
+    let promise = new Promise((resolve, reject) => {
+      let tasksSub = this.store.SymptomTaskTemplate.readListPaged({
+        plan_template__id: planTemplateId,
+      }).subscribe(
+        (symptomTasks) => resolve(symptomTasks),
+        (err) => reject(err),
+        () => {
+          tasksSub.unsubscribe();
+        }
+      );
+    });
+    return promise;
+  }
+
+  public fetchVitalTasks(planTemplateId) {
+    let promise = new Promise((resolve, reject) => {
+      let tasksSub = this.store.VitalsTaskTemplate.readListPaged({
+        plan_template__id: planTemplateId,
+      }).subscribe(
+        (vitalTasks) => resolve(vitalTasks),
+        (err) => reject(err),
+        () => {
+          tasksSub.unsubscribe();
+        }
+      );
+    });
+    return promise;
+  }
+
+  public fetchMedicationTasks(planId) {
+    let promise = new Promise((resolve, reject) => {
+      let tasksSub = this.store.MedicationTaskTemplate.readListPaged({
+        plan__id: planId,
+      }).subscribe(
+        (medicationTasks) => resolve(medicationTasks),
+        (err) => reject(err),
+        () => {
+          tasksSub.unsubscribe();
+        }
+      );
+    });
+    return promise;
+  }
+
+  public fetchCareMessages(planTemplateId) {
+    let promise = new Promise((resolve, reject) => {
+      let messagesSub = this.store.InfoMessageQueue.readListPaged({
+        plan_template__id: planTemplateId,
+      }).subscribe(
+        (careMessages) => resolve(careMessages),
+        (err) => reject(err),
+        () => {
+          messagesSub.unsubscribe();
+        }
+      );
+    });
+    return promise;
+  }
 
   public openGoal() {
     this.modals.open(GoalComponent, {
       closeDisabled: true,
       data: {
         goalTemplate: 'test',
+      },
+      width: '512px',
+    }).subscribe(() => {});
+  }
+
+  public editGoal(goal) {
+    this.modals.open(GoalComponent, {
+      closeDisabled: true,
+      data: {
+        creatingTemplate: false,
+        goalTemplate: goal,
       },
       width: '512px',
     }).subscribe(() => {});
@@ -86,21 +283,86 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
     });
   }
 
+  public addCMTask() {
+    let modalSub = this.modals.open(AddCTTaskComponent, {
+      closeDisabled: true,
+      width: '384px',
+      data: {
+        type: 'manager',
+        planTemplateId: this.carePlan.plan_template.id,
+        taskList: this.planTeamManagerTasks,
+      },
+    }).subscribe(
+      (task) => {
+        if (!task) {
+          return;
+        }
+        this.editCMTask(task);
+      },
+      () => {},
+      () => {
+        modalSub.unsubscribe();
+      }
+    );
+  }
+
+  public editCMTask(task) {
+    let modalSub = this.modals.open(EditTaskComponent, {
+      closeDisabled: true,
+      width: '384px',
+      data: {
+        task: task,
+        type: 'manager',
+      },
+    }).subscribe(
+      (task) => {},
+      (err) => {},
+      () => {
+        modalSub.unsubscribe();
+      }
+    );
+  }
+
   public addCTTask() {
-    this.modals.open(AddCTTaskComponent, {
+    let modalSub = this.modals.open(AddCTTaskComponent, {
       closeDisabled: true,
       width: '384px',
-    }).subscribe(() => {});
+      data: {
+        type: 'team',
+        planTemplateId: this.carePlan.plan_template.id,
+        taskList: this.planTeamMemberTasks,
+      },
+    }).subscribe(
+      (task) => {
+        if (task !== null) {
+          this.editCTTask(task);
+        }
+      },
+      (err) => {},
+      () => {
+        modalSub.unsubscribe();
+      }
+    );
   }
 
-  public editCTTask() {
-    this.modals.open(EditTaskComponent, {
+  public editCTTask(task) {
+    let modalSub = this.modals.open(EditTaskComponent, {
       closeDisabled: true,
       width: '384px',
-    }).subscribe(() => {});
+      data: {
+        task: task,
+        type: 'team',
+      },
+    }).subscribe(
+      (task) => {},
+      (err) => {},
+      () => {
+        modalSub.unsubscribe();
+      }
+    );
   }
 
-  public confirmDeleteCTTask() {
+  public confirmDeleteCTTask(task) {
     this.modals.open(ConfirmModalComponent, {
      'closeDisabled': true,
      data: {
@@ -116,17 +378,43 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
   }
 
   public addTask() {
-    this.modals.open(AddCTTaskComponent, {
+    let modalSub = this.modals.open(AddCTTaskComponent, {
       closeDisabled: true,
+      data: {
+        type: 'patient',
+        planTemplateId: this.carePlan.plan_template.id,
+        taskList: this.planPatientTasks,
+      },
       width: '384px',
-    }).subscribe(() => {});
+    }).subscribe(
+      (task) => {
+        if (!task) {
+          return;
+        }
+        this.editTask(task);
+      },
+      (err) => {},
+      () => {
+        modalSub.unsubscribe();
+      }
+    );
   }
 
-  public editTask() {
-    this.modals.open(EditTaskComponent, {
+  public editTask(task) {
+    let modalSub = this.modals.open(EditTaskComponent, {
       closeDisabled: true,
+      data: {
+        task: task,
+        type: 'patient',
+      },
       width: '384px',
-    }).subscribe(() => {});
+    }).subscribe(
+      (task) => {},
+      (err) => {},
+      () => {
+        modalSub.unsubscribe();
+      }
+    );
   }
 
   public confirmDeleteTask() {
@@ -145,17 +433,80 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
   }
 
   public addAssessment() {
-    this.modals.open(AddAssessmentComponent, {
+    let modalSub = this.modals.open(AddAssessmentComponent, {
       closeDisabled: true,
+      data: {
+        editingTemplate: true,
+        assessmentsList: this.planAssessmentTasks,
+        planTemplateId: this.carePlan.plan_template.id,
+      },
       width: '768px',
-    }).subscribe(() => {});
+    }).subscribe(
+      (res) => {
+        if (!res) {
+          return;
+        }
+        if (res === 'create-new') {
+          setTimeout(() => {
+            this.editAssessment(null);
+          }, 10);
+        } else {
+          setTimeout(() => {
+            this.editAssessment(res);
+          }, 10);
+        }
+      },
+      (err) => {},
+      () => {
+        modalSub.unsubscribe();
+      }
+    );
   }
 
-  public editAssessment() {
-    this.modals.open(EditTaskComponent, {
+  public editAssessment(assessment) {
+    let modalSub = this.modals.open(CreateAssessmentComponent, {
       closeDisabled: true,
-      width: '384px',
-    }).subscribe(() => {});
+      data: {
+        assessment: assessment,
+        planTemplateId: this.carePlan.plan_template.id,
+      },
+      width: '864px',
+    }).subscribe(
+      (res) => {
+        if (!res) {
+          return;
+        }
+        let index = this.planAssessmentTasks.findIndex((obj) => {
+          return obj.id === res.id;
+        });
+        if (index >= 0) {
+          this.planAssessmentTasks[index] = res;
+        } else {
+          this.planAssessmentTasks.push(res);
+        }
+      },
+      (err) => {},
+      () => {
+        modalSub.unsubscribe();
+      }
+    );
+  }
+
+  public editAssessmentTime(assessment) {
+    let modalSub = this.modals.open(EditTaskComponent, {
+      closeDisabled: true,
+      data: {
+        task: assessment,
+        type: 'assessment',
+      },
+      width: '384px'
+    }).subscribe(
+      () => {},
+      () => {},
+      () => {
+        modalSub.unsubscribe();
+      }
+    );
   }
 
   public confirmDeleteAssessment() {
@@ -176,13 +527,32 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
   public addSymptom() {
     this.modals.open(EditTaskComponent, {
       closeDisabled: true,
+      data: {
+        type: 'symptom',
+        task: {
+          start_on_day: 0,
+          appear_time: '00:00:00',
+          due_time: '00:00:00',
+          plan_template: this.carePlan.plan_template.id,
+          frequency: 'once',
+        }
+      },
       width: '384px',
-    }).subscribe(() => {});
+    }).subscribe((symptom) => {
+      if (!symptom) {
+        return;
+      }
+      this.planSymptomTasks.push(symptom);
+    });
   }
 
-  public editSymptom() {
+  public editSymptom(symptom) {
     this.modals.open(EditTaskComponent, {
       closeDisabled: true,
+      data: {
+        type: 'symptom',
+        task: symptom,
+      },
       width: '384px',
     }).subscribe(() => {});
   }
@@ -206,14 +576,66 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
     this.modals.open(AddVitalComponent, {
       closeDisabled: true,
       width: '768px',
-    }).subscribe(() => {});
+      data: {
+        taskList: this.planVitalTasks,
+        planTemplateId: this.carePlan.plan_template.id,
+      },
+    }).subscribe((data) => {
+      console.log(data);
+      if (!data || !data.nextAction) {
+        return;
+      }
+      switch(data.nextAction)
+      {
+        case 'editVital':
+          setTimeout(() => {
+            this.editVital(data.data);
+          }, 10);
+          break;
+        default:
+           break;
+      }
+    });
   }
 
-  public editVital() {
-    this.modals.open(EditTaskComponent, {
+  public editVital(vital) {
+    this.modals.open(CreateVitalComponent, {
       closeDisabled: true,
+      width: '800px',
+      data: {
+        vital: vital,
+        planTemplateId: this.carePlan.plan_template.id,
+      }
+    }).subscribe((res) => {
+      if (!res) {
+        return;
+      }
+      let index = this.planVitalTasks.findIndex((obj) => {
+        return obj.id === res.id;
+      });
+      if (index >= 0) {
+        this.planVitalTasks[index] = res;
+      } else {
+        this.planVitalTasks.push(res);
+      }
+    });
+  }
+
+  public editVitalTime(vital) {
+    let modalSub = this.modals.open(EditTaskComponent, {
+      closeDisabled: true,
+      data: {
+        type: 'vital',
+        task: vital,
+      },
       width: '384px',
-    }).subscribe(() => {});
+    }).subscribe(
+      (data) => {},
+      (err) => {},
+      () => {
+        modalSub.unsubscribe();
+      }
+    );
   }
 
   public confirmDeleteVital() {
@@ -232,16 +654,16 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
   }
 
   public addMedication() {
-    this.modals.open(EditTaskComponent, {
+    this.modals.open(MedicationComponent, {
       closeDisabled: true,
-      width: '384px',
+      width: '540px',
     }).subscribe(() => {});
   }
 
   public editMedication() {
     this.modals.open(EditTaskComponent, {
       closeDisabled: true,
-      width: '384px',
+      width: '540px',
     }).subscribe(() => {});
   }
 
@@ -263,15 +685,51 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
   public addStream() {
     this.modals.open(AddStreamComponent, {
       closeDisabled: true,
+      data: {
+          taskList: this.planCareMessages,
+          planTemplateId: this.carePlan.plan_template.id,
+      },
       width: '768px',
-    }).subscribe(() => {});
+    }).subscribe((data) => {
+      if (data) {
+        switch (data.nextAction) {
+          case 'create-stream':
+            setTimeout(() => {
+              this.editStream(null);
+            }, 10);
+        	case 'edit-stream':
+            setTimeout(() => {
+              this.editStream(data.message);
+            }, 10);
+        		break;
+        	default:
+        		break;
+        }
+      }
+    });
   }
 
-  public editStream() {
+  public editStream(stream) {
     this.modals.open(CreateStreamComponent, {
       closeDisabled: true,
-      width: '640px',
-    }).subscribe(() => {});
+      data: {
+        stream: stream,
+        planTemplateId: this.carePlan.plan_template.id,
+      },
+      width: '768px',
+    }).subscribe((updatedStream) => {
+      if (!updatedStream) {
+        return;
+      }
+      let index = this.planCareMessages.findIndex((obj) => {
+        return obj.id === updatedStream.id;
+      });
+      if (index >= 0) {
+        this.planCareMessages[index] = updatedStream;
+      } else {
+        this.planCareMessages.push(updatedStream);
+      }
+    });
   }
 
   public confirmDeleteStream() {

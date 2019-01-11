@@ -171,7 +171,16 @@ class TeamTaskSerializer(serializers.ModelSerializer):
 class MedicationTaskTemplateSerializer(RepresentationMixin, serializers.ModelSerializer):
     class Meta:
         model = MedicationTaskTemplate
-        fields = '__all__'
+        fields = (
+            'id',
+            'plan',
+            'patient_medication',
+            'start_on_day',
+            'frequency',
+            'repeat_amount',
+            'appear_time',
+            'due_time',
+        )
         nested_serializers = [
             {
                 'field': 'patient_medication',
