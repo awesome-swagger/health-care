@@ -60,7 +60,7 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
             this.activePatients[i].care_plans = plans.map((plan) => {
               return {
                 name: plan.plan_template.name,
-                service_area: plan.plan_template.service_area || "Undefined",
+                service_area: plan.plan_template.service_area.name || "Undefined",
                 current_week: plan.current_week || 0,
                 total_weeks: plan.plan_template.duration_weeks || 0,
                 time_in_minutes: plan.time || 0,
