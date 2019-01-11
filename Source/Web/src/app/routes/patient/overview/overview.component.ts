@@ -581,7 +581,6 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
         planTemplateId: this.carePlan.plan_template.id,
       },
     }).subscribe((data) => {
-      console.log(data);
       if (!data || !data.nextAction) {
         return;
       }
@@ -661,7 +660,6 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
       },
       width: '540px',
     }).subscribe((data) => {
-      console.log(data);
       if (data.patient_medication && data.task) {
         this.store.PatientMedication.create(data.patient_medication).subscribe(
           (patientMedication) => {
@@ -693,9 +691,7 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
         task: medication,
       },
       width: '540px',
-    }).subscribe((res) => {
-      console.log(res);
-    });
+    }).subscribe((res) => {});
   }
 
   public confirmDeleteMedication() {
