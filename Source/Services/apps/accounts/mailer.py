@@ -3,7 +3,6 @@ from __future__ import absolute_import
 
 import logging
 
-from django.contrib.auth.tokens import default_token_generator
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 
@@ -17,9 +16,7 @@ logger = logging.getLogger(__name__)
 class UserMailer(BaseMailer):
 
     def _generate_uidb64_token(self, user):
-        token_generator = default_token_generator
         uidb64 = urlsafe_base64_encode(force_bytes(user.pk)).decode()
-        # token = token_generator.make_token(user)
         token = TokenModel()
         token.user = user
         token.save()

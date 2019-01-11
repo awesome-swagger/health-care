@@ -4,7 +4,6 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.translation import ugettext_lazy as _
 
-from allauth.account.utils import url_str_to_user_pk
 from rest_auth.models import TokenModel
 from rest_framework import serializers
 
