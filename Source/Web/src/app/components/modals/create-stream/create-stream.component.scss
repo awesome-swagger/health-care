@@ -1,7 +1,6 @@
 @import '../../../modules/modals/modal-outlet.component.scss';
 
 .stream {
-
   &__row {
     display: flex;
     position: relative;
@@ -15,5 +14,9 @@
     width: rem-calc(512);
     // this height is to accommodate the confirm delete div height
     height: rem-calc(112);
+  }
+
+  &__typeSelectWrapper {
+    width: 240px;
   }
 }

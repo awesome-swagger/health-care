@@ -155,7 +155,7 @@ export class CreateVitalComponent implements OnInit {
     this.updateVital().then((vital: any) => {
       this.vital.id = vital.id;
       this.createOrUpdateAllQuestions().then(() => {
-        this.modal.close(null);
+        this.modal.close(this.vital);
       });
     });
   }

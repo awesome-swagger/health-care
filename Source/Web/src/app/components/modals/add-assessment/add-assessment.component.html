@@ -19,7 +19,7 @@
           <div class="flex alignCenter justifySpaceBetween fullWidth">
             <span class="assessment--outcome">{{assessment.name}}<span *ngIf="assessment.tracks_outcome">*</span><span *ngIf="assessment.tracks_satisfaction">**</span></span>
             <div class="flex">
-              <button class="button button--icon button--icon--small" (click)="editAssessmentName(assessment)">
+              <button class="button button--icon button--icon--small" (click)="editAssessment(assessment)">
                 <i class="ss-write"></i>
               </button>
               <button class="button button--icon button--icon--small" (click)="deleteAssessment(assessment)">

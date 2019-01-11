@@ -40,7 +40,11 @@ export class AddAssessmentComponent implements OnInit {
     });
   }
 
-  public editAssessmentName() {
+  public editAssessment(assessment) {
+    this.modal.close(assessment);
+  }
+
+  public deleteAssessment(assessment) {
     
   }
 

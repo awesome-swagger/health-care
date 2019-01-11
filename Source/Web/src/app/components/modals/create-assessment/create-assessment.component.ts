@@ -100,6 +100,7 @@ export class CreateAssessmentComponent implements OnInit {
         start_on_day: 0,
         appear_time: '00:00:00',
         due_time: '00:00:00',
+        frequency: 'once',
         tracks_outcome: tracksOutcome,
         tracks_satisfaction: tracksSatisfaction,
       });

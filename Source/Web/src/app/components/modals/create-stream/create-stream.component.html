@@ -24,7 +24,7 @@
   		<label class="label48">Care Message Name</label>
   		<input type="text" class="input fullWidth" formControlName="name" />
   	</div>
-  	<div class="">
+  	<div class="stream__typeSelectWrapper">
   		<div class="tool">
   			<label class="noMargin">Type</label>
   			<div class="tool__anchor">
@@ -64,10 +64,12 @@
 	</div>
 </div>
 <div class="stream__row" *ngFor="let message of stream?.messages; index as i;">
-	<textarea class="input input--textarea stream__textarea" [(ngModel)]="message.text"></textarea>
-	<button class="button button--icon button--icon--small" (click)="deleteMessageOpen[i] = true">
-		<i class="ss-delete"></i>
-	</button>
+	<div class="fullWidth flex justifySpaceBetween">
+		<textarea class="input input--textarea stream__textarea" [(ngModel)]="message.text"></textarea>
+		<button class="button button--icon" (click)="deleteMessageOpen[i] = true">
+			<i class="ss-delete"></i>
+		</button>
+	</div>
 	<div *ngIf="deleteMessageOpen[i]" class="problem__confirm problem__confirm--stream">
 		<p class="problem__question">
 			Are you sure you want to delete this message?<br />
