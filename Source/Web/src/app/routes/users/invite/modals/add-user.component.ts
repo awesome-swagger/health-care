@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { StoreService } from '../../../../services';
+import { ModalService } from '../../../../modules/modals';
 
 @Component({
   selector: 'app-add-user',
@@ -15,16 +16,17 @@ export class AddUserComponent implements OnInit {
 
   public firstNameInput = '';
   public lastNameInput = '';
-  public titleInput: string = null;
+  public titleInput = null;
   public emailInput = '';
   public phoneInput = '';
-  public organizationInput: string = null;
-  public specialtyInput: string = null;
+  public organizationInput = null;
+  public specialtyInput = null;
   public npiInput = '';
 
   public tooltipAUM0Open;
 
   constructor(
+    public modals: ModalService,
     private store: StoreService,
   ) { }
 
@@ -90,5 +92,28 @@ export class AddUserComponent implements OnInit {
       )
     });
     return promise;
+  }
+
+  public submit() {
+    console.log('vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv');
+    console.log(this.titleInput);
+    console.log(this.specialtyInput);
+    console.log(this.organizationInput);
+    console.log('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^');
+    if (this.firstNameInput && this.lastNameInput && this.emailInput) {
+      this.modals.close({
+        firstName: this.firstNameInput,
+        lastName: this.lastNameInput,
+        email: this.emailInput,
+        title: this.titleInput,
+        specialty: this.specialtyInput,
+        phone: this.phoneInput,
+        npi: this.npiInput,
+        employedBy: this.organizationInput,
+        organization: this.organizationInput,
+      })
+    } else {
+      this.modals.close('')
+    }
   }
 }

@@ -14,7 +14,7 @@
     <div class="styledSelect">
       <select class="styledSelect__select" [(ngModel)]="titleInput">
         <option>- - - -</option>
-        <option *ngFor="let title of titles" [value]="title">{{title.abbreviation}}</option>
+        <option *ngFor="let title of titles" [ngValue]="title">{{title.abbreviation}}</option>
       </select>
     </div>
   </div>
@@ -33,7 +33,7 @@
 <div class="styledSelect marBottom16">
   <select class="styledSelect__select" [(ngModel)]="organizationInput">
     <option>- - - -</option>
-    <option *ngFor="let organization of organizations" [value]="organization">{{organization.name}}</option>
+    <option *ngFor="let organization of organizations" [ngValue]="organization">{{organization}}</option>
   </select>
 </div>
 <div class="flex justifySpaceBetween">
@@ -42,7 +42,7 @@
     <div class="styledSelect">
       <select class="styledSelect__select" [(ngModel)]="specialtyInput">
         <option>- - - -</option>
-        <option *ngFor="let specialty of specialties" [value]="specialty">{{specialty.name}}</option>
+        <option *ngFor="let specialty of specialties" [ngValue]="specialty">{{specialty.name}}</option>
       </select>
     </div>
   </div>
@@ -68,7 +68,7 @@
   <button class="button button--2nd">
     Cancel
   </button>
-  <button class="button">
+  <button class="button" (click)="submit()">
     Save
   </button>
 </div>

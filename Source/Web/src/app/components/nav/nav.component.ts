@@ -8,7 +8,14 @@ import { PopoverOptions } from '../../modules/popover';
 import { AuthService, NavbarService, StoreService } from '../../services';
 import { ModalService, ConfirmModalComponent } from '../../modules/modals';
 import patientsData from '../../routes/patients/active/patients-data.js';
-import { filter as _filter } from 'lodash';
+import {
+  filter as _filter,
+  map as _map,
+  sum as _sum
+} from 'lodash';
+import notificationData from './notificationData';
+import tasksData from './tasksData';
+import * as moment from 'moment';
 
 @Component({
   selector: 'app-nav',
@@ -61,6 +68,9 @@ export class NavComponent implements OnDestroy, OnInit {
   private authSub: Subscription = null;
   private organizationSub: Subscription = null;
   private routeParams = null;
+
+  public notificationData = notificationData;
+  public tasksData = tasksData;
 
   constructor(
     private router: Router,
@@ -209,5 +219,30 @@ export class NavComponent implements OnDestroy, OnInit {
 
   public routeToAnalytics() {
     window.open('https://www.google.com', '_self');
+  }
+
+  public get notifCount() {
+    return _sum(_map(this.notificationData, n => n.notifications.length));
+  }
+
+  public get taskCount() {
+    return tasksData.checkIns.length + tasksData.tasks.length;
+  }
+
+  public timeSince(d) {
+    const date = moment(d);
+    const daysSince = moment().diff(date, 'days');
+    const hoursSince = moment().diff(date, 'hours');
+    const minutesSince = moment().diff(date, 'minutes');
+
+    if (!daysSince) {
+      if (!hoursSince) {
+        return `${minutesSince} minute${minutesSince !== 1 ? 's' : ''} ago`;
+      } else {
+        return `${hoursSince} hour${hoursSince !== 1 ? 's' : ''} ago`;
+      }
+    } else {
+      return `${daysSince} day${daysSince !== 1 ? 's' : ''} ago`;
+    }
   }
 }

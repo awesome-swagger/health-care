@@ -65,7 +65,7 @@ export class OrganizationComponent implements OnDestroy, OnInit {
 
     let usersSub = this.store.EmployeeProfile.readListPaged().subscribe(
       users => {
-        this.userCount = users.length;
+        this.userCount = 47//users.length;
         this.availableAccountsLeft = this.availableAccounts - this.userCount;
         if (this.availableAccountsLeft <= 5) {
           this.openAlert.users = true;

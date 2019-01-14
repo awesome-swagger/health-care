@@ -37,7 +37,11 @@ export class InviteComponent implements OnDestroy, OnInit {
     this.modals.open(AddUserComponent, {
       closeDisabled: true,
       width: '512px',
-    }).subscribe(() => {});
+    }).subscribe((data) => {
+      if (data) {
+        this.usersToInivite.push(data)
+      }
+    });
   }
 
   public openEditUser() {
