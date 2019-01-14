@@ -56,4 +56,8 @@ export class AddStreamComponent implements OnInit {
       message: this.selectedTemplate,
     });
   }
+
+  public nextDisabled() {
+    return !this.selectedTemplate;
+  }
 }

@@ -1,13 +1,9 @@
 <h1 class="modal__title">
-  <!--TODO: If adding a care team member, show the following-->
-  <!--<span>Add Psychiatric Consultant</span>->
-  <!--TODO: If changing CM, show the following-->
-  <!--<span>Change Care Manager</span>-->
-  <!--TODO: If changing BP, show the following-->
-  <span>Change Billing Practitioner</span>
+  <span *ngIf="data?.role">Add {{data.role.name}}</span>
+  <span *ngIf="data?.is_manager">Add Care Manager</span>
+  <span *ngIf="data?.is_bp">Add Billing Practitioner</span>
 </h1>
-<!--TODO: If changing BP/CM show the following-->
-<div class="iconText iconText--wrap iconText--autoHeight error marBottom32">
+<div class="iconText iconText--wrap iconText--autoHeight error marBottom32" *ngIf="data?.is_manager || data?.is_bp">
   <i class="iconText__icon ss-alert"></i>
   <span class="error__text">
     This is a required role. Please select a new provider to replace the current one.
@@ -15,36 +11,22 @@
 </div>
 
 <div class="drop">
-  <input class="input input--search fullWidth" type="text" (click)="dropOpen = !dropOpen" placeholder="Search Providers" />
+  <input class="input input--search fullWidth" type="text" (click)="dropOpen = !dropOpen" placeholder="Search Providers" [(ngModel)]="searchStr" (ngModelChange)="filterProviders()" />
   <ul class="drop__dropdown fullWidth" [ngClass]="{ 'isOpen' : dropOpen }" (click)="dropOpen = !dropOpen">
-    <li class="drop__option">
+    <li class="drop__option" *ngFor="let employee of providersShown" (click)="selectProvider(employee)">
       <a class="drop__link">
         <div class="picName">
-          <img class="picName__img" src="../../../assets/img/profile.svg" />Adam Hancock
-        </div>
-      </a>
-    </li>
-    <li class="drop__option">
-      <a class="drop__link">
-        <div class="picName">
-          <img class="picName__img" src="../../../assets/img/profile.svg" />Hank Granowski
-        </div>
-      </a>
-    </li>
-    <li class="drop__option">
-      <a class="drop__link">
-        <div class="picName">
-          <img class="picName__img" src="../../../assets/img/profile.svg" />Samantha Hancock
+          <img class="picName__img" src="../../../assets/img/profile.svg" />{{employee.user.first_name}} {{employee.user.last_name}}
         </div>
       </a>
     </li>
   </ul>
 </div>
 <div class="modal__buttons">
-  <button class="button button--2nd">
+  <button class="button button--2nd" (click)="clickCancel()">
     Cancel
   </button>
-  <button class="button">
+  <button class="button" (click)="clickSave()">
     Save
   </button>
 </div>

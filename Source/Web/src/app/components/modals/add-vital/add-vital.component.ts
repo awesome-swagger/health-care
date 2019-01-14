@@ -80,7 +80,7 @@ export class AddVitalComponent implements OnInit {
   public editVitalTemplate(e, vital) {
     e.stopPropagation();
     this.modalRespData.nextAction = 'editVital';
-    this.modalRespData.data = this.vitalTemplatePreview.vital;
+    this.modalRespData.data = vital;
     this.modal.close(this.modalRespData);
   }
 

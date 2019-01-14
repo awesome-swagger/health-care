@@ -250,25 +250,25 @@
   <div class="nav__bottom" *ngIf="patientDetailState">
     <div class="ssContainer nav__container">
       <div class="nav__links">
-        <a [routerLink]="['/patient', nav.patientDetailId]" class="nav__link">
-          <i class="ss-standard ss-navigateleft"></i> To Patient
+        <a (click)="routeToPatients()" class="nav__link">
+          <i class="ss-standard ss-navigateleft"></i> To Patients
         </a>
-        <a [routerLink]="['/patient', nav.patientDetailId, 'dashboard', nav.planDetailId]" [routerLinkActive]="['nav__link--current']" class="nav__link">
+        <a [routerLink]="['/patient', nav.patientDetailId, 'dashboard', nav.patientPlanId]" [routerLinkActive]="['nav__link--current']" class="nav__link">
           Dashboard
         </a>
-        <a [routerLink]="['/patient', nav.patientDetailId, 'details', nav.planDetailId]" [routerLinkActive]="['nav__link--current']" class="nav__link">
+        <a [routerLink]="['/patient', nav.patientDetailId, 'details', nav.patientPlanId]" [routerLinkActive]="['nav__link--current']" class="nav__link">
           Details
         </a>
-        <a [routerLink]="['/patient', nav.patientDetailId, 'history', nav.planDetailId]" [routerLinkActive]="['nav__link--current']" class="nav__link">
+        <a [routerLink]="['/patient', nav.patientDetailId, 'history', nav.patientPlanId]" [routerLinkActive]="['nav__link--current']" class="nav__link">
           History
         </a>
-        <a [routerLink]="['/patient', nav.patientDetailId, 'overview', nav.planDetailId]" [routerLinkActive]="['nav__link--current']" class="nav__link">
+        <a [routerLink]="['/patient', nav.patientDetailId, 'overview', nav.patientPlanId]" [routerLinkActive]="['nav__link--current']" class="nav__link">
           Overview
         </a>
-        <a [routerLink]="['/patient', nav.patientDetailId, 'team', nav.planDetailId]" [routerLinkActive]="['nav__link--current']" class="nav__link">
+        <a [routerLink]="['/patient', nav.patientDetailId, 'team', nav.patientPlanId]" [routerLinkActive]="['nav__link--current']" class="nav__link">
           Care Team
         </a>
-        <a [routerLink]="['/patient', nav.patientDetailId, 'messaging', nav.planDetailId]" [routerLinkActive]="['nav__link--current']" class="nav__link">
+        <a [routerLink]="['/patient', nav.patientDetailId, 'messaging', nav.patientPlanId]" [routerLinkActive]="['nav__link--current']" class="nav__link">
           Messages
         </a>
       </div>

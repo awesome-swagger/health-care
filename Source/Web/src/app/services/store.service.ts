@@ -25,6 +25,7 @@ export class StoreService {
   public PotentialPatient = new Store(this.http, 'potential_patients');
   public CarePlanTemplate = new Store(this.http, 'care_plan_templates');
   public CarePlanTemplateType = new Store(this.http, 'care_plan_template_types');
+  public CareTeamMember = new Store(this.http, 'care_team_members');
   public ServiceArea = new Store(this.http, 'service_areas');
   public CarePlan = new Store(this.http, 'care_plans');
   public PlanConsentForm = new Store(this.http, 'plan_consent_forms');
@@ -46,14 +47,6 @@ export class StoreService {
   public AssessmentResponse = new Store(this.http, 'assessment_responses');
   public VitalsTaskTemplate = new Store(this.http, 'vital_task_templates');
   public VitalsQuestions = new Store(this.http, 'vital_questions');
-
-  public PatientCarePlans(id) {
-    return new Store(this.http, `patient_profiles/${id}/care_plans`);
-  }
-
-  public PatientProfileSearch(string) {
-    return new Store(this.http, `patient_profiles/search/?q=${string}`)
-  }
 
   constructor(private http: HttpService) { }
 }

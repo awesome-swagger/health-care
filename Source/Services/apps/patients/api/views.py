@@ -189,6 +189,11 @@ class ProblemAreaViewSet(viewsets.ModelViewSet):
     serializer_class = ProblemAreaSerializer
     permission_classes = (permissions.IsAuthenticated, IsEmployeeOnly, )
     queryset = ProblemArea.objects.all()
+    filter_backends = (DjangoFilterBackend, )
+    filterset_fields = (
+        'patient__id',
+        'identified_by__id',
+    )
 
     def get_queryset(self):
         qs = self.queryset

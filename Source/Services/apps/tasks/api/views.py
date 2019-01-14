@@ -134,6 +134,10 @@ class MedicationTaskTemplateViewSet(viewsets.ModelViewSet):
         IsEmployeeOrPatientReadOnly,
     )
     queryset = MedicationTaskTemplate.objects.all()
+    filter_backends = (DjangoFilterBackend, )
+    filterset_fields = (
+        'plan__id',
+    )
 
 
 class MedicationTaskViewSet(viewsets.ModelViewSet):

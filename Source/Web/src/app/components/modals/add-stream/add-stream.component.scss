@@ -1,1 +1,12 @@
 @import '../../../modules/modals/modal-outlet.component.scss';
+
+.messagesList {
+  max-height: 380px;
+  overflow-y: auto;
+  li {
+    border: none;
+    border-top: 1px solid $border;
+    padding-top: rem-calc(32);
+    padding-bottom: rem-calc(32);
+  }
+}

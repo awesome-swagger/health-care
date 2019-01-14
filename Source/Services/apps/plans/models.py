@@ -98,19 +98,32 @@ class CareTeamMember(UUIDPrimaryKeyMixin):
     employee_profile = models.ForeignKey(
         EmployeeProfile, related_name="assigned_roles", on_delete=models.CASCADE)
     role = models.ForeignKey(
-        ProviderRole, null=False, blank=False, on_delete=models.CASCADE)
+        ProviderRole, null=True, blank=True, on_delete=models.CASCADE)
     plan = models.ForeignKey(
         CarePlan, null=False, blank=False, related_name="care_team_members",
         on_delete=models.CASCADE)
     is_manager = models.BooleanField(default=False)
 
     def __str__(self):
-        return '{} {}, {} for {}'.format(
-            self.employee_profile.user.first_name,
-            self.employee_profile.user.last_name,
-            self.role.name,
-            self.plan,
-        )
+        if self.is_manager:
+            return '{} {}, Care Manager for {}'.format(
+                self.employee_profile.user.first_name,
+                self.employee_profile.user.last_name,
+                self.plan,
+            )
+        elif self.role:
+            return '{} {}, {} for {}'.format(
+                self.employee_profile.user.first_name,
+                self.employee_profile.user.last_name,
+                self.role,
+                self.plan,
+            )
+        else:
+            return '{} {} for {}'.format(
+                self.employee_profile.user.first_name,
+                self.employee_profile.user.last_name,
+                self.plan,
+            )
 
 
 class GoalTemplate(UUIDPrimaryKeyMixin):

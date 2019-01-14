@@ -435,7 +435,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
   }
 
   public addAssessment() {
-    this.modals.open(AddAssessmentComponent, {
+    let modalSub = this.modals.open(AddAssessmentComponent, {
       closeDisabled: true,
       data: {
         editingTemplate: true,
@@ -443,50 +443,72 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
         planTemplateId: this.planTemplateId,
       },
       width: '768px',
-    }).subscribe((res) => {
-      if (!res) {
-        return;
+    }).subscribe(
+      (res) => {
+        if (!res) {
+          return;
+        }
+        if (res === 'create-new') {
+          setTimeout(() => {
+            this.editAssessment(null);
+          }, 10);
+        } else {
+          setTimeout(() => {
+            this.editAssessment(res);
+          }, 10);
+        }
+      },
+      (err) => {},
+      () => {
+        modalSub.unsubscribe();
       }
-      if (res === 'create-new') {
-        this.editAssessment(null);
-      } else {
-        this.editAssessment(res);
-      }
-    });
+    );
   }
 
   public editAssessment(assessment) {
-    this.modals.open(CreateAssessmentComponent, {
+    let modalSub = this.modals.open(CreateAssessmentComponent, {
       closeDisabled: true,
       data: {
         assessment: assessment,
         planTemplateId: this.planTemplateId,
       },
       width: '864px',
-    }).subscribe((res) => {
-      if (!res) {
-        return;
+    }).subscribe(
+      (res) => {
+        if (!res) {
+          return;
+        }
+        let index = this.assessmentTemplates.findIndex((obj) => {
+          return obj.id === res.id;
+        });
+        if (index >= 0) {
+          this.assessmentTemplates[index] = res;
+        } else {
+          this.assessmentTemplates.push(res);
+        }
+      },
+      (err) => {},
+      () => {
+        modalSub.unsubscribe();
       }
-      let index = this.assessmentTemplates.findIndex((obj) => {
-        return obj.id === assessment.id;
-      });
-      if (index >= 0) {
-        this.assessmentTemplates[index] = res;
-      } else {
-        this.assessmentTemplates.push(res);
-      }
-    });
+    );
   }
 
   public editAssessmentTime(assessment) {
-    this.modals.open(EditTaskComponent, {
+    let modalSub = this.modals.open(EditTaskComponent, {
       closeDisabled: true,
       data: {
         task: assessment,
         type: 'assessment',
       },
       width: '384px'
-    }).subscribe();
+    }).subscribe(
+      () => {},
+      () => {},
+      () => {
+        modalSub.unsubscribe();
+      }
+    );
   }
 
   public confirmDeleteAssessment(assessment) {
@@ -599,19 +621,24 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
         planTemplateId: this.planTemplateId,
       },
     }).subscribe((data) => {
+      console.log(data);
       if (!data || !data.nextAction) {
         return;
       }
       switch(data.nextAction)
       {
         case 'fullVitalPreview':
+          setTimeout(() => {
             this.previewVital(data.data);
-            break;
+          }, 10);
+          break;
         case 'editVital':
+          setTimeout(() => {
             this.editVital(data.data);
-            break;
+          }, 10);
+          break;
         default:
-             break;
+           break;
       }
     });
   }
@@ -629,7 +656,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
         return;
       }
       let index = this.vitalTemplates.findIndex((obj) => {
-        return obj.id === vital.id;
+        return obj.id === res.id;
       });
       if (index >= 0) {
         this.vitalTemplates[index] = res;
@@ -713,9 +740,13 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       if (data) {
         switch (data.nextAction) {
           case 'create-stream':
-            this.editStream(null);
+            setTimeout(() => {
+              this.editStream(null);
+            }, 10);
         	case 'edit-stream':
-            this.editStream(data.message);
+            setTimeout(() => {
+              this.editStream(data.message);
+            }, 10);
         		break;
         	default:
         		break;
@@ -733,9 +764,16 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       },
       width: '768px',
     }).subscribe((updatedStream) => {
-      if (updatedStream) {
-        console.log(updatedStream);
-        stream = updatedStream;
+      if (!updatedStream) {
+        return;
+      }
+      let index = this.messageQueues.findIndex((obj) => {
+        return obj.id === updatedStream.id;
+      });
+      if (index >= 0) {
+        this.messageQueues[index] = updatedStream;
+      } else {
+        this.messageQueues.push(updatedStream);
       }
     });
   }

@@ -25,7 +25,10 @@
   <ng-container *ngFor="let plan of carePlans; let i = index">
     <div class="flex alignCenter justifySpaceBetween">
       <div class="flex alignCenter">
-        <h2 class="noMargin marRight32">{{plan?.plan_template?.name}}</h2>
+        <h2 class="noMargin marRight32">{{plan.plan_template.name}} <i class="icomoon-cocm"></i> <span *ngIf="plan.plan_template.type">{{plan.plan_template.type.abbreviation}}</span></h2>
+        <a class="button button--iconText" (click)="openConsentForm(plan.id)">
+          <i class="ss-standard ss-info"></i>
+        </a>
         <a [routerLink]="['/patient', patient.id, 'dashboard', plan.id]" class="button button--iconText">
           <i class="ss-standard ss-view"></i> View Care Plan
         </a>
@@ -81,7 +84,7 @@
       </div>
       <div class="info__cell">
         <label>Problems</label>
-        <a class="justifyCenter" (click)="openProblemAreas()">{{plan.problems}}</a>
+        <a class="justifyCenter" (click)="openProblemAreas()">{{problemAreas.length}}</a>
       </div>
       <div class="info__cell">
         <label class="tool info__tool justifyCenter">

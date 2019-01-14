@@ -11,6 +11,7 @@ export class TimePickerComponent implements OnInit {
   private _hourValue = 12;
   private _minuteValue = 0;
   private _periodValue = 'am';
+  private _startingValue: string;
 
   public timePickerVisible = false;
 
@@ -21,9 +22,7 @@ export class TimePickerComponent implements OnInit {
   public value = '';
 
   @Input() disabled: boolean = false;
-  @Input() startingValue: string;
   @Input() militaryTime: boolean = false;
-
 
   @Output()
   public valueChange = new EventEmitter();
@@ -79,7 +78,7 @@ export class TimePickerComponent implements OnInit {
   }
 
   public zeroPad(value) {
-    if (parseInt(value) < 10) {
+    if (parseInt(value, 10) < 10) {
       return `0${value}`;
     } else {
       return `${value}`;
@@ -99,6 +98,14 @@ export class TimePickerComponent implements OnInit {
       actualHour = this.hourValue - 12;
     }
     return `${this.zeroPad(actualHour)}:${this.zeroPad(this.minuteValue)}:00`
+  }
+
+  public parse24Hour(time) {
+    if (!time) return;
+    let timeSplit = time.split(':').map((str) => parseInt(str, 10));
+    this.hourValue = ((timeSplit[0] + 11) % 12 + 1);
+    this.minuteValue = timeSplit[1];
+    this.periodValue = (timeSplit[0] >= 12 ? 'pm' : 'am');
   }
 
   public updateTime() {
@@ -131,5 +138,15 @@ export class TimePickerComponent implements OnInit {
   public set periodValue(value) {
     this._periodValue = value;
     this.updateTime();
+  }
+
+  @Input()
+  public get startingValue() {
+    return this._startingValue;
+  }
+
+  public set startingValue(value) {
+    this._startingValue = value;
+    this.parse24Hour(this._startingValue);
   }
 }
