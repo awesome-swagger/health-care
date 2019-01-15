@@ -109,6 +109,20 @@ class OrganizationViewSet(viewsets.ModelViewSet):
             organization, context={'request': request})
         return Response(serializer.data)
 
+    def check_if_organization_or_facility_admin(self, organization):
+        user = self.request.user
+
+        if user.is_superuser:
+            return True
+        else:
+            employee = user.employee_profile
+            facility_organizations = user.facilities_managed.values_list(
+                'organization', flat=True).distinct()
+            if organization in employee.organizations_managed.all() or \
+               organization in facility_organizations:
+                return True
+        return False
+
     @action(methods=['get'], detail=True,
             permission_classes=(IsAdminOrEmployee, ))
     def dashboard_analytics(self, request, *args, **kwargs):
@@ -128,6 +142,14 @@ class OrganizationViewSet(viewsets.ModelViewSet):
         TODO: RISK LEVEL BREAKDOWN CHART
         """
         organization = self.get_object()
+
+        if 'user' in request.GET:
+            has_permission = self.check_if_organization_or_facility_admin(
+                organization)
+            if not has_permission:
+                message = _('Must be an organization or facility admin.')
+                self.permission_denied(self.request, message)
+
         serializer = OrganizationPatientDashboardSerializer(
             organization, context={'request': request})
         return Response(serializer.data)
