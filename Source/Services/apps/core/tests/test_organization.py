@@ -417,14 +417,14 @@ class TestOrganizationPatientDashboard(BaseOrganizationTestMixin, APITestCase):
             potential_patients * facilities.count()
         )
 
-    def test_organization_filter_by_user_permission_denied(self):
+    def test_organization_filter_by_patient_permission_denied(self):
         facility = self.create_facility(self.organization)
         patient = self.create_patient(**{
             'facility': facility
         })
 
         query_params = urlencode({
-            'user': patient.user.id
+            'patient': patient.id
         })
 
         filter_url = f'{self.url}?{query_params}'

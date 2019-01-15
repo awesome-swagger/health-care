@@ -132,6 +132,11 @@ class BaseOrganizationPatientSerializer(serializers.ModelSerializer):
             f'assessment_task_template__{assessment_type}': True
         }
 
+        if 'patient' in request.GET and self.filter_allowed:
+            kwargs.update({
+                'plan__patient__id': request.GET.get('patient')
+            })
+
         tasks = AssessmentTask.objects.filter(**kwargs).aggregate(
             average=Avg('responses__rating'))
         average = tasks['average'] or 0
@@ -148,21 +153,29 @@ class BaseOrganizationPatientSerializer(serializers.ModelSerializer):
         now = timezone.now()
         request = self.context['request']
         facilities = get_facilities_for_user(request.user, obj.id)
-        patient_tasks = PatientTask.objects.filter(
-            plan__patient__facility__in=facilities,
-            due_datetime__lte=now)
-        medication_tasks = MedicationTask.objects.filter(
-            medication_task_template__plan__patient__facility__in=facilities,
-            due_datetime__lte=now)
-        symptom_tasks = SymptomTask.objects.filter(
-            plan__patient__facility__in=facilities,
-            due_datetime__lte=now)
-        assessment_tasks = AssessmentTask.objects.filter(
-            plan__patient__facility__in=facilities,
-            due_datetime__lte=now)
-        vital_tasks = VitalTask.objects.filter(
-            plan__patient__facility__in=facilities,
-            due_datetime__lte=now)
+
+        kwargs = {
+            'plan__patient__facility__in': facilities,
+            'due_datetime__lte': now
+        }
+        medication_kwargs = {
+            'medication_task_template__plan__patient__facility__in': facilities,
+            'due_datetime__lte': now
+        }
+
+        if 'patient' in request.GET and self.filter_allowed:
+            kwargs.update({
+                'plan__patient__id': request.GET.get('patient')
+            })
+            medication_kwargs.update({
+                'medication_task_template__plan__patient__id': request.GET.get('patient')
+            })
+
+        patient_tasks = PatientTask.objects.filter(**kwargs)
+        medication_tasks = MedicationTask.objects.filter(**medication_kwargs)
+        symptom_tasks = SymptomTask.objects.filter(**kwargs)
+        assessment_tasks = AssessmentTask.objects.filter(**kwargs)
+        vital_tasks = VitalTask.objects.filter(**kwargs)
 
         total_patient_tasks = patient_tasks.count()
         total_medication_tasks = medication_tasks.count()
@@ -191,7 +204,8 @@ class BaseOrganizationPatientSerializer(serializers.ModelSerializer):
                        total_symptom_tasks +
                        total_assessment_tasks +
                        total_vital_tasks)
-        return round((total_completed / total_tasks) * 100) if total_tasks > 0 else 0
+        return round((total_completed / total_tasks) * 100) \
+            if total_tasks > 0 else 0
 
     def get_risk_level(self, obj):
         outcome = self.get_average_outcome(obj)
@@ -220,6 +234,8 @@ class OrganizationPatientDashboardSerializer(BaseOrganizationPatientSerializer):
 
 
 class OrganizationPatientOverviewSerializer(BaseOrganizationPatientSerializer):
+
+    filter_allowed = True
 
     class Meta(BaseOrganizationPatientSerializer.Meta):
         model = Organization

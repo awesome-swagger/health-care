@@ -143,7 +143,7 @@ class OrganizationViewSet(viewsets.ModelViewSet):
         """
         organization = self.get_object()
 
-        if 'user' in request.GET:
+        if 'patient' in request.GET:
             has_permission = self.check_if_organization_or_facility_admin(
                 organization)
             if not has_permission:
