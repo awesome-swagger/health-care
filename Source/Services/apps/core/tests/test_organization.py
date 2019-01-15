@@ -1,3 +1,5 @@
+from urllib.parse import urlencode
+
 from django.db.models import Avg
 from django.urls import reverse
 from django.utils import timezone
@@ -414,3 +416,18 @@ class TestOrganizationPatientDashboard(BaseOrganizationTestMixin, APITestCase):
             response.data['potential_patients'],
             potential_patients * facilities.count()
         )
+
+    def test_organization_filter_by_user_permission_denied(self):
+        facility = self.create_facility(self.organization)
+        patient = self.create_patient(**{
+            'facility': facility
+        })
+
+        query_params = urlencode({
+            'user': patient.user.id
+        })
+
+        filter_url = f'{self.url}?{query_params}'
+        response = self.client.get(filter_url)
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)

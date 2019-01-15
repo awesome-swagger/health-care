@@ -116,7 +116,7 @@ class OrganizationViewSet(viewsets.ModelViewSet):
             return True
         else:
             employee = user.employee_profile
-            facility_organizations = user.facilities_managed.values_list(
+            facility_organizations = employee.facilities_managed.values_list(
                 'organization', flat=True).distinct()
             if organization in employee.organizations_managed.all() or \
                organization in facility_organizations:
