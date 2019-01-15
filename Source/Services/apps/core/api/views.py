@@ -139,6 +139,16 @@ class OrganizationViewSet(viewsets.ModelViewSet):
             - average engagement
             - risk level
 
+        FILTERING:
+        ---
+        Engagement, satisfaction, outcome, and risk levels can be filtered by
+        **patient** and **facility**. See below for example requests:
+
+            GET /api/organizations/<organization-ID>/dashboard_analytics/?patient=<patient-ID>
+            GET /api/organizations/<organization-ID>/dashboard_analytics/?facility=<facility-ID>
+            GET /api/organizations/<organization-ID>/dashboard_analytics/?facility=<facility-ID>&patient=<patient-ID>
+
+
         TODO: RISK LEVEL BREAKDOWN CHART
         """
         organization = self.get_object()
