@@ -66,6 +66,7 @@ from apps.tasks.api.views import (
     AssessmentTaskViewSet,
     AssessmentResponseViewSet,
     VitalTaskTemplateViewSet,
+    VitalTaskTemplateSearchViewSet,
     VitalTaskViewSet,
     VitalQuestionViewSet,
     VitalResponseViewSet,
@@ -300,6 +301,11 @@ router.register(
     r'assessment_responses',
     AssessmentResponseViewSet,
     base_name='assessment_responses')
+router.register(
+    r'vital_task_templates/search',
+    VitalTaskTemplateSearchViewSet,
+    base_name="vital_task_templates-search"
+)
 router.register(
     r'vital_task_templates',
     VitalTaskTemplateViewSet,
