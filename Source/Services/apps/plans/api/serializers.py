@@ -63,6 +63,8 @@ class ServiceAreaSerializer(serializers.ModelSerializer):
         fields = (
             'id',
             'name',
+            'plan_templates_count',
+            'care_plans_count',
             'created',
             'modified',
         )
