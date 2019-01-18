@@ -206,7 +206,9 @@ class BaseOrganizationTestMixin(TasksMixin):
             'due_datetime': due_datetime
         })
 
-    def generate_average_engagement_records(self, organization):
+    def generate_average_engagement_records(self,
+                                            organization=None,
+                                            patient=None):
         total_care_plans = 5
         total_patients = 6
         plans = []
@@ -214,20 +216,32 @@ class BaseOrganizationTestMixin(TasksMixin):
         due_datetime = now - relativedelta(days=3)
         facilities = get_facilities_for_user(self.user, self.organization.id)
 
-        for facility in facilities:
-            for p in range(total_patients):
-                patient = self.create_patient(**{
-                    'facility': facility
-                })
-                for c in range(total_care_plans):
-                    plan = self.create_care_plan(patient)
-                    plans.append(plan)
+        if organization:
+            for facility in facilities:
+                for p in range(total_patients):
+                    patient = self.create_patient(**{
+                        'facility': facility
+                    })
+                    for c in range(total_care_plans):
+                        plan = self.create_care_plan(patient)
+                        plans.append(plan)
 
-                    self.generate_assessment_tasks(plan, due_datetime)
-                    self.generate_patient_tasks(plan, due_datetime)
-                    self.generate_medication_tasks(plan, due_datetime)
-                    self.generate_symptom_tasks(plan, due_datetime)
-                    self.generate_vital_tasks(plan, due_datetime)
+                        self.generate_assessment_tasks(plan, due_datetime)
+                        self.generate_patient_tasks(plan, due_datetime)
+                        self.generate_medication_tasks(plan, due_datetime)
+                        self.generate_symptom_tasks(plan, due_datetime)
+                        self.generate_vital_tasks(plan, due_datetime)
+
+        elif patient:
+            for c in range(total_care_plans):
+                plan = self.create_care_plan(patient)
+                plans.append(plan)
+
+                self.generate_assessment_tasks(plan, due_datetime)
+                self.generate_patient_tasks(plan, due_datetime)
+                self.generate_medication_tasks(plan, due_datetime)
+                self.generate_symptom_tasks(plan, due_datetime)
+                self.generate_vital_tasks(plan, due_datetime)
 
         assessment_tasks = AssessmentTask.objects.filter(
             plan__in=plans,
@@ -431,3 +445,32 @@ class TestOrganizationPatientDashboard(BaseOrganizationTestMixin, APITestCase):
         response = self.client.get(filter_url)
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_organization_filter_by_patient_average_engagement(self):
+        self.client.logout()
+        facility = self.create_facility(self.organization)
+
+        employee = self.create_employee(**{
+            'organizations_managed': [self.organization],
+            'facilities_managed': [facility]
+        })
+
+        self.client.force_authenticate(user=employee.user)
+
+        patient = self.create_patient(**{
+            'facility': facility
+        })
+        average_engagement = self.generate_average_engagement_records(
+            patient=patient)
+
+        query_params = urlencode({
+            'patient': patient.id
+        })
+
+        filter_url = f'{self.url}?{query_params}'
+        response = self.client.get(filter_url)
+
+        self.assertEqual(
+            response.data['average_engagement'],
+            average_engagement
+        )

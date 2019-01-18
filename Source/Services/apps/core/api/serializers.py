@@ -125,6 +125,7 @@ class BaseOrganizationPatientSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(_('Invalid assessment type.'))
 
         request = self.context['request']
+        filter_allowed = self.context.get('filter_allowed', False)
         facilities = get_facilities_for_user(request.user, obj.id)
 
         kwargs = {
@@ -132,7 +133,7 @@ class BaseOrganizationPatientSerializer(serializers.ModelSerializer):
             f'assessment_task_template__{assessment_type}': True
         }
 
-        if 'patient' in request.GET and self.filter_allowed:
+        if 'patient' in request.GET and filter_allowed:
             kwargs.update({
                 'plan__patient__id': request.GET.get('patient')
             })
@@ -152,6 +153,7 @@ class BaseOrganizationPatientSerializer(serializers.ModelSerializer):
     def get_average_engagement(self, obj):
         now = timezone.now()
         request = self.context['request']
+        filter_allowed = self.context.get('filter_allowed', False)
         facilities = get_facilities_for_user(request.user, obj.id)
 
         kwargs = {
@@ -163,7 +165,7 @@ class BaseOrganizationPatientSerializer(serializers.ModelSerializer):
             'due_datetime__lte': now
         }
 
-        if 'patient' in request.GET and self.filter_allowed:
+        if 'patient' in request.GET and filter_allowed:
             kwargs.update({
                 'plan__patient__id': request.GET.get('patient')
             })
@@ -234,8 +236,6 @@ class OrganizationPatientDashboardSerializer(BaseOrganizationPatientSerializer):
 
 
 class OrganizationPatientOverviewSerializer(BaseOrganizationPatientSerializer):
-
-    filter_allowed = True
 
     class Meta(BaseOrganizationPatientSerializer.Meta):
         model = Organization

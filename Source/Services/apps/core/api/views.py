@@ -160,8 +160,12 @@ class OrganizationViewSet(viewsets.ModelViewSet):
                 message = _('Must be an organization or facility admin.')
                 self.permission_denied(self.request, message)
 
+        context = {
+            'request': request,
+            'filter_allowed': True
+        }
         serializer = OrganizationPatientDashboardSerializer(
-            organization, context={'request': request})
+            organization, context=context)
         return Response(serializer.data)
 
 
