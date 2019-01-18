@@ -9,7 +9,7 @@ from rest_framework_extensions.routers import ExtendedDefaultRouter
 from rest_framework_swagger.views import get_swagger_view
 
 from apps.landing.views import LandingView
-from apps.accounts.views import UserViewSet
+from apps.accounts.views import UserViewSet, VerifyChangeEmail
 from apps.core.api.views import (
     OrganizationViewSet, FacilityViewSet, EmployeeProfileViewSet,
     ProviderTitleViewSet, ProviderRoleViewSet, ProviderSpecialtyViewSet,
@@ -320,6 +320,12 @@ urlpatterns = [
     url(r'^favicon.ico$', RedirectView.as_view(
         url=settings.STATIC_URL + 'favicon.ico')),
 
+    url(
+        r'^api/users/verify_change_email/',
+        VerifyChangeEmail.as_view(),
+        name="verify_change_email"
+    ),
+
     url(r'^api/', include('apps.core.api.urls')),
     url(r'^api/', include('apps.patients.api.urls')),
     url(r'^api/', include('apps.plans.api.urls')),
@@ -345,6 +351,7 @@ urlpatterns = [
     url(r'^', include('django.contrib.auth.urls')),
 
     url(r'^rest-auth/', include('rest_auth.urls')),
+
 
     url(r'^api/todays_tasks/', TodaysTasksAPIView.as_view(), name="todays_tasks"),
     url(r'^swagger/', schema_view),

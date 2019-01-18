@@ -7,8 +7,11 @@ import pytz
 from django.db.models import Avg
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
 
 from faker import Faker
+from rest_auth.models import TokenModel
 from rest_framework import status
 from rest_framework.test import APITestCase
 
@@ -310,3 +313,34 @@ class TestFacilityEmployee(TasksMixin, APITestCase):
         )
         response = self.client.get(url)
         self.assertEqual(response.data['billable_patients_count'], plans_count)
+
+    def test_change_email(self):
+        email = self.fake.email()
+        payload = {
+            'email': email
+        }
+        url = reverse('users-change-email', kwargs={'pk': self.user.pk})
+        response = self.client.patch(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_verify_change_email(self):
+        email = self.fake.email()
+        change_payload = {
+            'email': email
+        }
+        change_url = reverse('users-change-email', kwargs={'pk': self.user.pk})
+        self.client.patch(change_url, change_payload)
+
+        uidb64 = urlsafe_base64_encode(force_bytes(self.user.pk)).decode()
+        token = TokenModel.objects.get(user=self.user)
+
+        verify_payload = {
+            'uidb64': uidb64,
+            'key': token.key
+        }
+
+        self.client.logout()
+
+        verify_url = reverse('verify_change_email')
+        response = self.client.post(verify_url, verify_payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
