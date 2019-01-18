@@ -152,23 +152,6 @@ class FacilityViewSet(viewsets.ModelViewSet):
         )
 
 
-class AffiliateFacilityListView(ListAPIView):
-    """
-    Returns list of all :model:`core.Facility` objects where `is_affiliate` is `True`.
-    """
-    serializer_class = FacilitySerializer
-    permission_classes = (permissions.IsAuthenticated, FacilityPermissions, )
-    filter_backends = (RelatedOrderingFilter, )
-    ordering = ('name', )
-
-    def get_queryset(self):
-        queryset = get_facilities_for_user(
-            self.request.user,
-            self.request.query_params.get('organization_id'),
-        )
-        return queryset.filter(is_affiliate=True)
-
-
 class ProviderTitleViewSet(
     mixins.RetrieveModelMixin,
     mixins.ListModelMixin,
@@ -578,6 +561,25 @@ class OrganizationFacilityViewSet(ParentViewSetPermissionMixin,
         ('organization', Organization, OrganizationViewSet)
     ]
     pagination_class = OrganizationEmployeePagination
+
+
+class OrganizationAffiliatesViewSet(ParentViewSetPermissionMixin,
+                                    NestedViewSetMixin,
+                                    mixins.ListModelMixin,
+                                    viewsets.GenericViewSet):
+    """
+    Displays all affiliates in a parent organization.
+    """
+
+    serializer_class = FacilitySerializer
+    permission_clases = (permissions.IsAuthenticated, IsAdminOrEmployee)
+    queryset = Facility.objects.filter(is_affiliate=True)
+    parent_lookup = [
+        ('organization', Organization, OrganizationViewSet)
+    ]
+    pagination_class = OrganizationEmployeePagination
+    filter_backends = (RelatedOrderingFilter, )
+    ordering = ('name', )
 
 
 class FacilityEmployeeViewSet(ParentViewSetPermissionMixin,
