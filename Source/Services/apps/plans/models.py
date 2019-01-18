@@ -34,6 +34,15 @@ class ServiceArea(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
     def __str__(self):
         return f'{self.name}'
 
+    @property
+    def plan_templates_count(self):
+        return self.care_plan_templates.count()
+
+    @property
+    def care_plans_count(self):
+        return CarePlan.objects.filter(
+            plan_template__service_area=self).count()
+
 
 class CarePlanTemplate(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
     name = models.CharField(max_length=120)
@@ -56,6 +65,9 @@ class CarePlanTemplate(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
 
     def __str__(self):
         return self.name
+
+    class Meta:
+        ordering = ('-created', )
 
 
 class CarePlan(CreatedModifiedMixin, UUIDPrimaryKeyMixin):

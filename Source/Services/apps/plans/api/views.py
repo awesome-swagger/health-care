@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from rest_framework_extensions.mixins import NestedViewSetMixin
 
 from django.db.models import Avg
+from django.shortcuts import get_object_or_404
 
 from ..models import (
     CarePlanTemplateType,
@@ -39,6 +40,7 @@ from .serializers import (
     InfoMessageSerializer,
     CarePlanTemplateAverageSerializer,
     CarePlanByTemplateFacilitySerializer,
+    CarePlanOverviewSerializer,
 )
 from apps.core.api.mixins import ParentViewSetPermissionMixin
 from apps.core.models import Organization, Facility
@@ -819,7 +821,6 @@ class CarePlanTemplateByType(ParentViewSetPermissionMixin,
         return Response(serializer.data)
 
 
-
 class CarePlanTemplateByServiceArea(
     ParentViewSetPermissionMixin,
     NestedViewSetMixin,
@@ -841,6 +842,10 @@ class CarePlanTemplateByServiceArea(
             OrganizationViewSet
         )
     ]
+    filter_backends = (DjangoFilterBackend, )
+    filterset_fields = (
+        'care_plans__patient__facility',
+    )
 
     def get_queryset(self):
         """
@@ -848,6 +853,30 @@ class CarePlanTemplateByServiceArea(
         Return all ServiceArea objects.
         """
         return ServiceArea.objects.all()
+
+    def get_object(self):
+        """
+        Override `get_object` so it will not filter the queryset upfront.
+        """
+        queryset = self.get_queryset()
+
+        # Perform the lookup filtering.
+        lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
+
+        assert lookup_url_kwarg in self.kwargs, (
+            'Expected view %s to be called with a URL keyword argument '
+            'named "%s". Fix your URL conf, or set the `.lookup_field` '
+            'attribute on the view correctly.' %
+            (self.__class__.__name__, lookup_url_kwarg)
+        )
+
+        filter_kwargs = {self.lookup_field: self.kwargs[lookup_url_kwarg]}
+        obj = get_object_or_404(queryset, **filter_kwargs)
+
+        # May raise a permission denied
+        self.check_object_permissions(self.request, obj)
+
+        return obj
 
     def get_care_plan_templates(self):
         instance = self.get_object()
@@ -865,6 +894,41 @@ class CarePlanTemplateByServiceArea(
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
+
+class CarePlanByFacility(ParentViewSetPermissionMixin,
+                         NestedViewSetMixin,
+                         mixins.ListModelMixin,
+                         viewsets.GenericViewSet):
+    """
+    Returns list of :model:`plans.CarePlan` related to the given facility.
+    This endpoint will be used on `patients` page and will only return care plans
+    from active patients.
+
+    This endpoint also allows users to filter by `service area` and
+    `plan template`. Please see the examples below:
+
+        - GET /api/facilities/<facility-ID>/care_plans/?plan_template__service_area=<service-area-ID>
+        - GET /api/facilities/<facility-ID>/care_plans/?plan_template=<plan-template-ID>
+
+    """
+    serializer_class = CarePlanOverviewSerializer
+    queryset = CarePlan.objects.filter(patient__is_active=True)
+    permission_classes = (
+        permissions.IsAuthenticated,
+        IsAdminOrEmployee,
+    )
+    parent_lookup = [
+        (
+            'patient__facility',
+            Facility,
+            FacilityViewSet
+        )
+    ]
+    filter_backends = (DjangoFilterBackend, )
+    filterset_fields = (
+        'plan_template__service_area',
+        'plan_template',
+    )
 
 
 class CarePlanByTemplateFacility(ParentViewSetPermissionMixin,
