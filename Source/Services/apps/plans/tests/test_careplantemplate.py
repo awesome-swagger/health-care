@@ -55,8 +55,10 @@ class TestCarePlanTemplateUsingEmployee(TasksMixin, APITestCase):
 
     def test_create_care_plan_template(self):
         service_area = self.create_service_area()
+        service_area = self.create_service_area()
         payload = {
             'name': self.fake.name(),
+            'service_area': service_area.id,
             'service_area': service_area.id,
             'duration_weeks': random.randint(1, 5),
             'is_active': True
@@ -66,8 +68,10 @@ class TestCarePlanTemplateUsingEmployee(TasksMixin, APITestCase):
 
     def test_full_update_care_plan_template(self):
         service_area = self.create_service_area()
+        service_area = self.create_service_area()
         payload = {
             'name': self.fake.name(),
+            'service_area': service_area.id,
             'service_area': service_area.id,
             'duration_weeks': random.randint(1, 5),
             'is_active': True
@@ -332,9 +336,11 @@ class TestCarePlanTemplateUsingPatient(TasksMixin, APITestCase):
 
     def test_create_care_plan_template(self):
         template_type = self.create_care_plan_template_type()
+        service_area = self.create_service_area()
         payload = {
             'name': self.fake.name(),
             'type': template_type.id,
+            'service_area': service_area.id,
             'duration_weeks': random.randint(1, 5),
             'is_active': True
         }
@@ -343,8 +349,10 @@ class TestCarePlanTemplateUsingPatient(TasksMixin, APITestCase):
 
     def test_full_update_care_plan_template(self):
         template_type = self.create_care_plan_template_type()
+        service_area = self.create_service_area()
         payload = {
             'name': self.fake.name(),
+            'service_area': service_area.id,
             'type': template_type.id,
             'duration_weeks': random.randint(1, 5),
             'is_active': True

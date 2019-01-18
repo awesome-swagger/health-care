@@ -40,6 +40,7 @@ from .serializers import (
     InfoMessageSerializer,
     CarePlanTemplateAverageSerializer,
     CarePlanByTemplateFacilitySerializer,
+    CarePlanOverviewSerializer,
 )
 from apps.core.api.mixins import ParentViewSetPermissionMixin
 from apps.core.models import Organization, Facility
@@ -820,7 +821,6 @@ class CarePlanTemplateByType(ParentViewSetPermissionMixin,
         return Response(serializer.data)
 
 
-
 class CarePlanTemplateByServiceArea(
     ParentViewSetPermissionMixin,
     NestedViewSetMixin,
@@ -894,6 +894,41 @@ class CarePlanTemplateByServiceArea(
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
+
+class CarePlanByFacility(ParentViewSetPermissionMixin,
+                         NestedViewSetMixin,
+                         mixins.ListModelMixin,
+                         viewsets.GenericViewSet):
+    """
+    Returns list of :model:`plans.CarePlan` related to the given facility.
+    This endpoint will be used on `patients` page and will only return care plans
+    from active patients.
+
+    This endpoint also allows users to filter by `service area` and
+    `plan template`. Please see the examples below:
+
+        - GET /api/facilities/<facility-ID>/care_plans/?plan_template__service_area=<service-area-ID>
+        - GET /api/facilities/<facility-ID>/care_plans/?plan_template=<plan-template-ID>
+
+    """
+    serializer_class = CarePlanOverviewSerializer
+    queryset = CarePlan.objects.filter(patient__is_active=True)
+    permission_classes = (
+        permissions.IsAuthenticated,
+        IsAdminOrEmployee,
+    )
+    parent_lookup = [
+        (
+            'patient__facility',
+            Facility,
+            FacilityViewSet
+        )
+    ]
+    filter_backends = (DjangoFilterBackend, )
+    filterset_fields = (
+        'plan_template__service_area',
+        'plan_template',
+    )
 
 
 class CarePlanByTemplateFacility(ParentViewSetPermissionMixin,

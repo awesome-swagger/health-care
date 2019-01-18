@@ -12,6 +12,7 @@ from apps.core.models import (Diagnosis, EmployeeProfile,
                               Procedure, ProviderRole, ProviderSpecialty,
                               ProviderTitle, Symptom, Facility)
 
+from rest_framework.decorators import action
 from rest_framework_extensions.mixins import NestedViewSetMixin
 
 from apps.core.permissions import (EmployeeProfilePermissions,
@@ -38,8 +39,8 @@ from .serializers import (DiagnosisSerializer, EmployeeProfileSerializer,
                           ProviderTitleSearchSerializer,
                           ProviderRoleSearchSerializer,
                           EmployeeAssignmentSerializer,
-                          InviteEmployeeSerializer)
-
+                          InviteEmployeeSerializer,
+                          OrganizationPatientOverviewSerializer)
 
 
 class OrganizationViewSet(viewsets.ModelViewSet):
@@ -89,6 +90,23 @@ class OrganizationViewSet(viewsets.ModelViewSet):
                 id=patient_profile.facility.organization.id)
             return qs.all()
         return qs.none()
+
+    @action(methods=['get'], detail=True,
+            permission_classes=(IsAdminOrEmployee, ))
+    def active_patients_overview(self, request, *args, **kwargs):
+        """
+        Returns the following data in a specific organization:
+            - active patients
+            - total facilities
+            - average time  (TODO)
+            - average outcome
+            - average engagement
+            - risk level
+        """
+        organization = self.get_object()
+        serializer = OrganizationPatientOverviewSerializer(
+            organization, context={'request': request})
+        return Response(serializer.data)
 
 
 class FacilityViewSet(viewsets.ModelViewSet):

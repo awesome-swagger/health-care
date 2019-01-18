@@ -13,11 +13,13 @@ from apps.core.models import (Diagnosis, EmployeeProfile, Facility,
                               InvitedEmailTemplate, Medication, Organization,
                               Procedure, ProviderRole, ProviderSpecialty,
                               ProviderTitle, Symptom)
+
+from apps.patients.models import PatientProfile
 from apps.tasks.models import (
     AssessmentTask,
     PatientTask,
-    SymptomTask,
     MedicationTask,
+    SymptomTask,
     VitalTask,
 )
 from care_adopt_backend import utils
@@ -29,6 +31,7 @@ from ..search_indexes import (
     ProviderTitleIndex,
     SymptomIndex,
 )
+from ..utils import get_facilities_for_user
 from .mixins import RepresentationMixin
 
 
@@ -63,6 +66,103 @@ class OrganizationSerializer(serializers.ModelSerializer):
             'created',
             'modified',
         )
+
+
+class OrganizationPatientOverviewSerializer(serializers.ModelSerializer):
+
+    active_patients = serializers.SerializerMethodField()
+    total_facilities = serializers.SerializerMethodField()
+    average_outcome = serializers.SerializerMethodField()
+    average_engagement = serializers.SerializerMethodField()
+    risk_level = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Organization
+        fields = (
+            'id',
+            'name',
+            'active_patients',
+            'total_facilities',
+            'average_outcome',
+            'average_engagement',
+            'risk_level',
+        )
+
+    def get_active_patients(self, obj):
+        request = self.context['request']
+        facilities = get_facilities_for_user(request.user, obj.id)
+        return PatientProfile.objects.filter(
+            facility__in=facilities, is_active=True).count()
+
+    def get_total_facilities(self, obj):
+        request = self.context['request']
+        facilities = get_facilities_for_user(request.user, obj.id)
+        return facilities.count()
+
+    def get_average_outcome(self, obj):
+        request = self.context['request']
+        facilities = get_facilities_for_user(request.user, obj.id)
+        tasks = AssessmentTask.objects.filter(
+            plan__patient__facility__in=facilities,
+            assessment_task_template__tracks_outcome=True
+        ).aggregate(average=Avg('responses__rating'))
+        average = tasks['average'] or 0
+        avg = round((average / 5) * 100)
+        return avg
+
+    def get_average_engagement(self, obj):
+        now = timezone.now()
+        request = self.context['request']
+        facilities = get_facilities_for_user(request.user, obj.id)
+        patient_tasks = PatientTask.objects.filter(
+            plan__patient__facility__in=facilities,
+            due_datetime__lte=now)
+        medication_tasks = MedicationTask.objects.filter(
+            medication_task_template__plan__patient__facility__in=facilities,
+            due_datetime__lte=now)
+        symptom_tasks = SymptomTask.objects.filter(
+            plan__patient__facility__in=facilities,
+            due_datetime__lte=now)
+        assessment_tasks = AssessmentTask.objects.filter(
+            plan__patient__facility__in=facilities,
+            due_datetime__lte=now)
+        vital_tasks = VitalTask.objects.filter(
+            plan__patient__facility__in=facilities,
+            due_datetime__lte=now)
+
+        total_patient_tasks = patient_tasks.count()
+        total_medication_tasks = medication_tasks.count()
+        total_symptom_tasks = symptom_tasks.count()
+        total_assessment_tasks = assessment_tasks.count()
+        total_vital_tasks = vital_tasks.count()
+
+        completed_patient_tasks = patient_tasks.filter(
+            status__in=['missed', 'done']).count()
+        completed_medication_tasks = medication_tasks.filter(
+            status__in=['missed', 'done']).count()
+        completed_symptom_tasks = symptom_tasks.filter(
+            is_complete=True).count()
+        completed_assessment_tasks = assessment_tasks.filter(
+            is_complete=True).count()
+        completed_vital_tasks = vital_tasks.filter(
+            is_complete=True).count()
+
+        total_completed = (completed_patient_tasks +
+                           completed_medication_tasks +
+                           completed_symptom_tasks +
+                           completed_assessment_tasks +
+                           completed_vital_tasks)
+        total_tasks = (total_patient_tasks +
+                       total_medication_tasks +
+                       total_symptom_tasks +
+                       total_assessment_tasks +
+                       total_vital_tasks)
+        return round((total_completed / total_tasks) * 100) if total_tasks > 0 else 0
+
+    def get_risk_level(self, obj):
+        outcome = self.get_average_outcome(obj)
+        engagement = self.get_average_engagement(obj)
+        return round((outcome + engagement) / 2)
 
 
 # TODO: DELETE on a facility should mark it inactive rather than removing it
