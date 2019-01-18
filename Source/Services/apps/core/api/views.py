@@ -1,11 +1,12 @@
 from drf_haystack.viewsets import HaystackViewSet
-from rest_framework import mixins, permissions, status, viewsets
+from rest_framework import mixins, permissions, serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.response import Response
 
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
+from django.utils.translation import ugettext_lazy as _
 
 from apps.core.models import (Diagnosis, EmployeeProfile,
                               InvitedEmailTemplate, Medication, Organization,
@@ -284,32 +285,29 @@ class ProviderSpecialtyViewSet(
 
 class EmployeeProfileViewSet(viewsets.ModelViewSet):
     """
-    Viewset for :model:`core.Facility`
+    Viewset for :model:`core.EmployeeProfile`
     ========
 
     create:
-        Creates :model:`core.Facility` object.
+        Creates :model:`core.EmployeeProfile` object.
         Only admins and employees are allowed to perform this action.
 
     update:
-        Updates :model:`core.Facility` object.
+        Updates :model:`core.EmployeeProfile` object.
         Only admins and employees are allowed to perform this action.
 
     partial_update:
-        Updates one or more fields of an existing organization object.
+        Updates one or more fields of an existing employee object.
         Only admins and employees are allowed to perform this action.
 
     retrieve:
-        Retrieves a :model:`core.Facility` instance.
+        Retrieves a :model:`core.EmployeeProfile` instance.
 
     list:
-        Returns list of all :model:`core.Facility` objects.
-
-        - Employees get all facilities they belong to.
-        - Patients only get the facility they're receiving care from.
+        Returns list of all :model:`core.EmployeeProfile` objects.
 
     delete:
-        Deletes a :model:`core.Facility` instance.
+        Deletes a :model:`core.EmployeeProfile` instance.
         Only admins and employees are allowed to perform this action.
     """
     serializer_class = EmployeeProfileSerializer
@@ -342,6 +340,86 @@ class EmployeeProfileViewSet(viewsets.ModelViewSet):
                 'employee_profile', flat=True).distinct()
             return qs.filter(id__in=list(care_team_members))
         return qs.none()
+
+    @action(methods=['post'],
+            detail=True,
+            permission_classes=(permissions.IsAuthenticated,
+                                IsAdminOrEmployee))
+    def add_role(self, request, pk, *args, **kwargs):
+        """
+        Adds role to the given employee.
+
+        Request data should contain the `role` ID. For example:
+
+            POST /api/employee_profiles/<employee-id>/add_role/
+            {
+                'role': <uuid-here>
+            }
+        """
+        employee = self.get_object()
+
+        if 'role' not in request.data:
+            raise serializers.ValidationError(_('Role ID is required.'))
+
+        role_id = request.data['role']
+        try:
+            role = ProviderRole.objects.get(id=role_id)
+        except ProviderRole.DoesNotExist:
+            raise serializers.ValidationError(_('Role does not exist.'))
+
+        if role in employee.roles.all():
+            raise serializers.ValidationError(_('Role already exists.'))
+
+        employee.roles.add(role)
+        ctx = {
+            'context': self.get_serializer_context()
+        }
+        serializer = self.get_serializer_class()(employee, **ctx)
+        return Response(
+            data=serializer.data,
+            status=status.HTTP_201_CREATED
+        )
+
+    @action(methods=['DELETE'],
+            detail=True,
+            permission_classes=(permissions.IsAuthenticated,
+                                IsAdminOrEmployee))
+    def remove_role(self, request, pk, *args, **kwargs):
+        """
+        Removes role from the given employee.
+
+        Request data should contain the `role` ID. For example:
+
+            DELETE /api/employee_profiles/<employee-id>/remove_role/
+            {
+                'role': <uuid-here>
+            }
+        """
+        employee = self.get_object()
+
+        if 'role' not in request.data:
+            raise serializers.ValidationError(_('Role ID is required.'))
+
+        role_id = request.data['role']
+        try:
+            role = ProviderRole.objects.get(id=role_id)
+        except ProviderRole.DoesNotExist:
+            raise serializers.ValidationError(_('Role does not exist.'))
+
+        if role not in employee.roles.all():
+            raise serializers.ValidationError(
+                _('Employee does not have that role.')
+            )
+
+        employee.roles.remove(role)
+        ctx = {
+            'context': self.get_serializer_context()
+        }
+        serializer = self.get_serializer_class()(employee, **ctx)
+        return Response(
+            data=serializer.data,
+            status=status.HTTP_204_NO_CONTENT
+        )
 
     @action(methods=['post'],
             detail=False,
