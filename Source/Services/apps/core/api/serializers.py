@@ -138,6 +138,11 @@ class BaseOrganizationPatientSerializer(serializers.ModelSerializer):
                 'plan__patient__id': request.GET.get('patient')
             })
 
+        if 'facility' in request.GET and filter_allowed:
+            kwargs.update({
+                'plan__patient__facility__id': request.GET.get('facility')
+            })
+
         tasks = AssessmentTask.objects.filter(**kwargs).aggregate(
             average=Avg('responses__rating'))
         average = tasks['average'] or 0
@@ -171,6 +176,14 @@ class BaseOrganizationPatientSerializer(serializers.ModelSerializer):
             })
             medication_kwargs.update({
                 'medication_task_template__plan__patient__id': request.GET.get('patient')
+            })
+
+        if 'facility' in request.GET and filter_allowed:
+            kwargs.update({
+                'plan__patient__facility__id': request.GET.get('facility')
+            })
+            medication_kwargs.update({
+                'medication_task_template__plan__patient__facility__id': request.GET.get('facility')
             })
 
         patient_tasks = PatientTask.objects.filter(**kwargs)
