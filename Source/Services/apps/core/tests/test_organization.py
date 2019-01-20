@@ -474,3 +474,46 @@ class TestOrganizationPatientDashboard(BaseOrganizationTestMixin, APITestCase):
             response.data['average_engagement'],
             average_engagement
         )
+
+    def test_organization_filter_by_facility_permission_denied(self):
+        facility = self.create_facility(self.organization)
+        patient = self.create_patient(**{
+            'facility': facility
+        })
+
+        query_params = urlencode({
+            'facility': facility.id
+        })
+
+        filter_url = f'{self.url}?{query_params}'
+        response = self.client.get(filter_url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_organization_filter_by_facility_average_engagement(self):
+        self.client.logout()
+        facility = self.create_facility(self.organization)
+
+        employee = self.create_employee(**{
+            'organizations_managed': [self.organization],
+            'facilities_managed': [facility]
+        })
+
+        self.client.force_authenticate(user=employee.user)
+
+        patient = self.create_patient(**{
+            'facility': facility
+        })
+        average_engagement = self.generate_average_engagement_records(
+            patient=patient)
+
+        query_params = urlencode({
+            'facility': facility.id
+        })
+
+        filter_url = f'{self.url}?{query_params}'
+        response = self.client.get(filter_url)
+
+        self.assertEqual(
+            response.data['average_engagement'],
+            average_engagement
+        )
