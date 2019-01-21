@@ -4,10 +4,10 @@
       <h1 class="noMargin marRight24">Billing</h1>
       <div class="monthpicker">
         <button class="button button--icon">
-          <i class="ss-standard ss-navigateleft"></i>
+          <i class="ss-standard ss-navigateleft" (click)="decrementMonth()"></i>
         </button>
-        <h2 class="monthpicker__text">March 2018</h2>
-        <button class="button button--icon">
+        <h2 class="monthpicker__text">{{selectedMonth.format('MMMM YYYY')}}</h2>
+        <button class="button button--icon" (click)="incrementMonth()">
           <i class="ss-standard ss-navigateright"></i>
         </button>
       </div> <!--/.monthpicker-->
@@ -18,10 +18,10 @@
       </button>
       <div class="tool__anchor">
         <button class="button button--icon button--icon--small"
-        (click)="tooltip1Open=!tooltip1Open">
+        (click)="syncTooltipOpen=!syncTooltipOpen">
           <i class="ss-help"></i>
         </button>
-        <div class="tool__tip tool__tip--right tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltip1Open }">
+        <div class="tool__tip tool__tip--right tool__tip--bottom" [ngClass]="{ 'isOpen' : syncTooltipOpen }">
           <div class="tool__text">
             An organization can sync their billing to their billing system. If your billing isn’t getting synced, and you would like this fuctionality, please contact CareAdopt to begin this process.
           </div>
@@ -36,135 +36,95 @@
       <!--TODO: If the user only has access to one facility, hide this filter-->
       <label>Facility</label>
       <div class="drop">
-          <div class="drop__input" (click)="multi1Open = !multi1Open">
+          <div class="drop__input" (click)="filterFacilitiesOpen = !filterFacilitiesOpen">
             All
           </div>
-          <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : multi1Open }">
+          <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : filterFacilitiesOpen }">
             <div class="drop__buttons">
-              <button class="button button--iconText">
+              <button class="button button--iconText" (click)="checkAllFacilities()">
                 <i class="ss-check ss-standard"></i> Check All
               </button>
-              <button class="button button--iconText">
+              <button class="button button--iconText" (click)="uncheckAllFacilities()">
                 <i class="ss-ban"></i> Uncheck All
               </button>
             </div>
 
             <li class="drop__option">
-              <input class="input input--search drop__innerInput" type="text" placeholder="Search" />
+              <input class="input input--search drop__innerInput" type="text" placeholder="Search" [(ngModel)]="facilitySearch" (ngModelChange)="filterFacilities()" />
             </li>
 
-            <li class="drop__option">
+            <li class="drop__option" *ngFor="let facility of facilitiesShown">
               <label class="drop__checkbox styledInput">
-                <input type="checkbox" class="styledInput__input" />
+                <input type="checkbox" class="styledInput__input" [checked]="isFacilitySelected(facility)" (click)="toggleFacility(facility)" />
                 <span class="styledInput__box"></span>
-                Canyon View
+                {{facility.name}}
               </label>
             </li>
-            <li class="drop__option">
-              <label class="drop__checkbox styledInput">
-                <input type="checkbox" class="styledInput__input" />
-                <span class="styledInput__box"></span>
-                South Ogden Family Medicine
-              </label>
-            </li>
-
           </ul>
         </div>
     </div> <!--/ container for facility filter-->
 
     <div class="marRight32">
-      <label>Care Plan Type</label>
+      <label>Service Area</label>
       <div class="drop">
-          <div class="drop__input" (click)="multi2Open = !multi2Open">
+          <div class="drop__input" (click)="filterServiceOpen = !filterServiceOpen">
             All
           </div>
-          <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : multi2Open }">
+          <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : filterServiceOpen }">
             <div class="drop__buttons">
-              <button class="button button--iconText">
+              <button class="button button--iconText" (click)="checkAllServiceAreas()">
                 <i class="ss-check ss-standard"></i> Check All
               </button>
-              <button class="button button--iconText">
+              <button class="button button--iconText" (click)="uncheckAllServiceAreas()">
                 <i class="ss-ban"></i> Uncheck All
               </button>
             </div>
 
             <li class="drop__option">
-              <input class="input input--search drop__innerInput" type="text" placeholder="Search" />
+              <input class="input input--search drop__innerInput" type="text" placeholder="Search" [(ngModel)]="serviceSearch" (ngModelChange)="filterServiceArea()" />
             </li>
 
-            <li class="drop__option">
-              <label class="drop__checkbox styledInput"
-              title="Behavioral Health Initiative">
-                <input type="checkbox" class="styledInput__input" />
+            <li class="drop__option" *ngFor="let serviceArea of serviceAreasShown">
+              <label class="drop__checkbox styledInput">
+                <input type="checkbox" class="styledInput__input" [checked]="isServiceAreaSelected(serviceArea)" (click)="toggleServiceArea(serviceArea)" />
                 <span class="styledInput__box"></span>
-                <i class="drop__icon drop__icon--first icomoon-bhi"></i>
-                BHI
-              </label>
-            </li>
-            <li class="drop__option">
-              <label class="drop__checkbox styledInput"
-              title="Chronic Care Management">
-                <input type="checkbox" class="styledInput__input" />
-                <span class="styledInput__box"></span>
-                <i class="drop__icon drop__icon--first ss-heart"></i>
-                CCM
-              </label>
-            </li>
-            <li class="drop__option">
-              <label class="drop__checkbox styledInput"
-              title="Complex Chronic Care Management">
-                <input type="checkbox" class="styledInput__input" />
-                <span class="styledInput__box"></span>
-                <i class="drop__icon drop__icon--first ss-addheart"></i>
-                CCCM
-              </label>
-            </li>
-            <li class="drop__option">
-              <label class="drop__checkbox styledInput"
-              title="Psychiatric Collaborative Care Management">
-                <input type="checkbox" class="styledInput__input" />
-                <span class="styledInput__box"></span>
-                <i class="drop__icon drop__icon--first icomoon-cocm"></i>
-                CoCM
-              </label>
-            </li>
-            <li class="drop__option">
-              <label class="drop__checkbox styledInput"
-              title="Remote Patient Monitoring">
-                <input type="checkbox" class="styledInput__input" />
-                <span class="styledInput__box"></span>
-                <i class="drop__icon drop__icon--first ss-satellitedish"></i>
-                RPM
-              </label>
-            </li>
-            <li class="drop__option">
-              <label class="drop__checkbox styledInput"
-              title="Transitional Care Management">
-                <input type="checkbox" class="styledInput__input" />
-                <span class="styledInput__box"></span>
-                <i class="drop__icon drop__icon--first ss-signpost"></i>
-                TCM
+                {{serviceArea.name}}
               </label>
             </li>
           </ul>
         </div>
+    </div> <!--/ container for service area filter-->
+
+    <div class="marRight32">
+      <label>Status</label>
+      <div class="drop">
+        <div class="drop__input" (click)="filterStatusOpen = !filterStatusOpen">
+          All Billings
+        </div>
+        <ul class="drop__dropdown fullWidth" [ngClass]="{ 'isOpen' : filterStatusOpen }" (click)="filterStatusOpen = !filterStatusOpen">
+          <li class="drop__option">
+            <a class="drop__link">
+              All Billings
+            </a>
+            <a class="drop__link">
+              Not Billed
+            </a>
+            <a class="drop__link">
+              Billed
+            </a>
+          </li>
+        </ul>
+      </div>
     </div> <!--/ container for care plan type filter-->
 
     <div class="drop">
       <label>Search Users</label>
-      <input class="input input--search" type="text" (click)="dropOpen = !dropOpen" placeholder="Search" />
-      <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : dropOpen }" (click)="dropOpen = !dropOpen">
-        <li class="drop__option">
+      <input class="input input--search" type="text" (click)="employeeSearchOpen = !employeeSearchOpen" placeholder="Search" />
+      <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : employeeSearchOpen }" (click)="employeeSearchOpen = !employeeSearchOpen">
+        <li class="drop__option" *ngFor="let employee of employees">
           <a class="drop__link">
             <div class="picName">
-              <img class="picName__img" src="../../../assets/img/profile.svg" />Adam Hancock
-            </div>
-          </a>
-        </li>
-        <li class="drop__option">
-          <a class="drop__link">
-            <div class="picName">
-              <img class="picName__img" src="../../../assets/img/profile.svg" />Samantha Hancock
+              <img class="picName__img" src="../../../assets/img/profile.svg" />{{employee.first_name}} {{employee.last_name}}, {{employee.title}}
             </div>
           </a>
         </li>
@@ -178,272 +138,170 @@
         Billable Patients
         <div class="tool__anchor">
           <button class="button button--icon button--icon--small"
-          (click)="tooltip2Open=!tooltip2Open">
+          (click)="billablePatientsHelpOpen=!billablePatientsHelpOpen">
             <i class="ss-help"></i>
           </button>
-          <div class="tool__tip" [ngClass]="{ 'isOpen' : tooltip2Open }">
+          <div class="tool__tip" [ngClass]="{ 'isOpen' : billablePatientsHelpOpen }">
             <div class="tool__text">
               Billable patients qualify for reimbursement.
             </div>
           </div>
         </div>
       </label>
-      338
+      {{totalBillablePatients()}}
     </div>
     <div class="info__cell">
-      <label>Facilities</label>
-      5
+      <label>Total Facilities</label>
+      {{totalFacilities()}}
     </div>
     <div class="info__cell">
-      <label>Practitioners</label>
-      24
+      <label>Total Practitioners</label>
+      {{totalPractitioners()}}
     </div>
     <div class="info__cell">
       <label>Total Hours</label>
       <div class="pill pill--lime">
-        107:22
+        {{totalHours()}}
       </div>
     </div>
     <div class="info__cell">
       <label>Total $</label>
       <div class="pill pill--yellow">
-        $32,881
+        ${{totalDollars()}}
       </div>
     </div>
   </div>
-
-  <h2 class="marBottom8">Canyon View</h2>
-  <h5 class="marBottom24">Billing Practitioners (BPs) (3)&ensp;|&ensp;Billable Patients (78)</h5>
-
-  <div class="accordion" [ngClass]="{ 'isOpen' : accord1Open }">
-    <div class="accordion__head" (click)="accord1Open=!accord1Open">
-      <span class="accordion__title">BP: John Smith, MD</span>
-      <div class="accordion__right">
-        <div class="pill pill--purple">
-          Billed 14 / 33
+  <ng-container *ngFor="let facility of selectedFacilities">
+    <h2 class="marBottom16 marTop48">{{facility.name}}: Billing Practitioners ({{getAllBPsForFacility(facility.id).length}}) Billable Patients (3)</h2>
+    <div class="accordion" *ngFor="let bp of getAllBPsForFacility(facility.id)" [ngClass]="{ 'isOpen' : practitionerDropdownOpen[bp.id] }">
+      <div class="accordion__head" (click)="practitionerDropdownOpen[bp.id]=!practitionerDropdownOpen[bp.id]">
+        <span class="accordion__title">Billing Practitioner: {{bp.first_name}} {{bp.last_name}}, {{bp.title}} ({{bpBillablePatients(bp.id, facility.id)}})</span>
+        <div class="accordion__right">
+          <div class="pill"  [ngStyle]="{'background': getPillColor(percentBilled(bp.id, facility.id))}">
+            Billed {{patientsBilled(billingDataByBP(bp.id, facility.id))}} / {{bpBillablePatients(bp.id, facility.id)}}
+          </div>
+          <div class="accordion__arrow">
+            <i class="ss-standard ss-navigateright"></i>
+          </div>
         </div>
-        <div class="accordion__arrow">
-          <i class="ss-standard ss-navigateright"></i>
-        </div>
-      </div>
-    </div> <!--/.accordion__head-->
-    <div class="accordion__body">
-      <div class="accordion__contents">
+      </div> <!--/.accordion__head-->
+      <div class="accordion__body">
+        <div class="accordion__contents">
 
-        <div class="info" [ngClass]="{ 'info--green' : isBilled1 }">
-          <div class="flex justifySpaceBetween marBottom24">
-            <div>
-              <label>Patient</label>
-              <a [routerLink]="['/patient/asdf/']" class="picName">
-                <img class="picName__img" src="../../../assets/img/profile.svg" />
-                Adam Sanderson
-              </a>
-            </div>
-            <div>
-              <label>Care Plan Type</label>
-              <div class="iconText" title="Behavioral Health Initiative">
-                <i class="iconText__icon iconText__icon--noTop iconText__icon--big icomoon-bhi"></i>
-                BHI
+          <div class="info" [ngClass]="{ 'info--green' : data.isBilled }" *ngFor="let data of billingDataByBP(bp.id, facility.id)">
+            <div class="flex justifySpaceBetween marBottom24">
+              <div>
+                <a [routerLink]="['/patient/asdf/']" class="picName">
+                  <img class="picName__img" src="../../../assets/img/profile.svg" />
+                  {{getPatient(data.patient).first_name}} {{getPatient(data.patient).last_name}}
+                </a>
               </div>
-            </div>
-            <div>
-              <label>Care Manager</label>
-              <a class="picName" [routerLink]="['/user/asdf']">
-                <img class="picName__img" src="../../../assets/img/profile.svg" />
-                Lori Ramirez, RN
-              </a>
-            </div>
-            <div>
-              <label>Status</label>
-              <label class="styledInput">
-                <input type="checkbox" class="styledInput__input"
-                [checked]="isBilled1" (change)="isBilled1=!isBilled1" />
-                <span class="styledInput__box"></span>
-                Billed
-              </label>
-            </div>
-            <div>
-              <label>Total</label>
-              <h1 class="noMargin">$145.00</h1>
-            </div>
-          </div> <!--/ top row of billing info-->
-
-          <table class="fullWidth">
-            <thead>
-              <tr>
-                <th class="left">Title</th>
-                <th>CPT Code</th>
-                <th>Duration</th>
-                <th>Date</th>
-                <th>Subtotal</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td class="left">Initial Visit</td>
-                <td>99490</td>
-                <td>1:10</td>
-                <td>Mar 19</td>
-                <td>$145.00</td>
-              </tr>
-            </tbody>
-          </table>
-
-          <div class="accordion" [ngClass]="{ 'isOpen' : accordInner1Open }">
-            <div class="accordion__head accordion__head--lt" (click)="accordInner1Open=!accordInner1Open">
-              <label class="accordion__label">Details of Service</label>
-              <div class="accordion__arrow accordion__arrow--lt">
-                <i class="ss-standard ss-navigateright"></i>
+              <div class="flex alignCenter">
+                <div class="bold marRight16">
+                  Billing Coordinator
+                </div>
+                <div>
+                  <a class="picName" [routerLink]="['/user/asdf']">
+                    <img class="picName__img" src="../../../assets/img/profile.svg" />
+                    {{getEmployee(data.billingCoordinator).first_name}} {{getEmployee(data.billingCoordinator).last_name}}, {{getEmployee(data.billingCoordinator).title}}
+                  </a>
+                </div>
               </div>
-            </div> <!--/.accordion__head-->
-            <div class="accordion__body">
-              <div class="accordion__contents accordion__contents--lt">
-                <table class="fullWidth">
-                  <thead>
-                    <tr>
-                      <th class="left">Action</th>
-                      <th class="left">Provider</th>
-                      <th class="left">Date & Time</th>
-                      <th>Duration</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td class="left">Call with Patient</td>
-                      <td class="left">
-                        <a [routerLink]="['/user/asdf']" class="picName">
-                          <img class="picName__img" src="../../../assets/img/profile.svg" />
-                          Lori Ramirez, RN
-                        </a>
-                      </td>
-                      <td class="left">Mar 19, 9:05 AM</td>
-                      <td>1:00</td>
-                    </tr>
-                    <tr>
-                      <td class="left">In-Person Visit</td>
-                      <td class="left">
-                        <a [routerLink]="['/user/asdf']" class="picName">
-                          <img class="picName__img" src="../../../assets/img/profile.svg" />
-                          Lori Ramirez, RN
-                        </a>
-                      </td>
-                      <td class="left">Mar 19, 12:55 PM</td>
-                      <td>:10</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div> <!--/.accordion__contents (details of service)-->
-            </div> <!--/.accordion__body (details of service)-->
-          </div> <!--/.accordion (details of service)-->
-        </div> <!--/.info-->
-
-        <div class="info" [ngClass]="{ 'info--green' : isBilled2 }">
-          <div class="flex justifySpaceBetween marBottom24">
-            <div>
-              <label>Patient</label>
-              <a class="picName">
-                <img class="picName__img" src="../../../assets/img/profile.svg" />
-                Janice Goodwin
-              </a>
-            </div>
-            <div>
-              <label>Care Plan Type</label>
-              <div class="iconText" title="Complex Chronic Care Management">
-                <i class="iconText__icon iconText__icon--noTop iconText__icon--big ss-addheart"></i>
-                CCCM
+              <div>
+                <label class="styledInput">
+                  <input type="checkbox" class="styledInput__input"
+                  [checked]="data.isBilled" (change)="data.isBilled=!data.isBilled" />
+                  <span class="styledInput__box"></span>
+                  Billed
+                </label>
               </div>
-            </div>
-            <div>
-              <label>Care Manager</label>
-              <a class="picName">
-                <img class="picName__img" src="../../../assets/img/profile.svg" />
-                Lori Ramirez, RN
-              </a>
-            </div>
-            <div>
-              <label>Status</label>
-              <label class="styledInput">
-                <input type="checkbox" class="styledInput__input"
-                [checked]="isBilled2" (change)="isBilled2=!isBilled2" />
-                <span class="styledInput__box"></span>
-                Billed
-              </label>
-            </div>
-            <div>
-              <label>Total</label>
-              <h1 class="noMargin">$145.00</h1>
-            </div>
-          </div> <!--/ top row of billing info-->
-
-          <table class="fullWidth">
-            <thead>
-              <tr>
-                <th class="left">Title</th>
-                <th>CPT Code</th>
-                <th>Duration</th>
-                <th>Date</th>
-                <th>Subtotal</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td class="left">Initial Visit</td>
-                <td>99490</td>
-                <td>1:10</td>
-                <td>Mar 19</td>
-                <td>$145.00</td>
-              </tr>
-            </tbody>
-          </table>
-
-          <div class="accordion" [ngClass]="{ 'isOpen' : accordInner2Open }">
-            <div class="accordion__head accordion__head--lt" (click)="accordInner2Open=!accordInner2Open">
-              <label class="accordion__label">Details of Service</label>
-              <div class="accordion__arrow accordion__arrow--lt">
-                <i class="ss-standard ss-navigateright"></i>
+              <div class="flex alignCenter ">
+                <div class="bold marRight16">
+                  Total
+                </div>
+                <div>
+                  <h1 class="noMargin">${{entriesSubtotal(data.entries)}}</h1>
+                </div>
               </div>
-            </div> <!--/.accordion__head-->
-            <div class="accordion__body">
-              <div class="accordion__contents accordion__contents--lt">
-                <table class="fullWidth">
-                  <thead>
-                    <tr>
-                      <th class="left">Action</th>
-                      <th class="left">Provider</th>
-                      <th class="left">Date & Time</th>
-                      <th>Duration</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td class="left">Call with Patient</td>
-                      <td class="left">
-                        <a class="picName">
-                          <img class="picName__img" src="../../../assets/img/profile.svg" />
-                          Lori Ramirez, RN
-                        </a>
-                      </td>
-                      <td class="left">Mar 19, 9:05 AM</td>
-                      <td>1:00</td>
-                    </tr>
-                    <tr>
-                      <td class="left">In-Person Visit</td>
-                      <td class="left">
-                        <a class="picName">
-                          <img class="picName__img" src="../../../assets/img/profile.svg" />
-                          Lori Ramirez, RN
-                        </a>
-                      </td>
-                      <td class="left">Mar 19, 12:55 PM</td>
-                      <td>:10</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div> <!--/.accordion__contents (details of service)-->
-            </div> <!--/.accordion__body (details of service)-->
-          </div> <!--/.accordion (details of service)-->
-        </div> <!--/.info-->
-      </div> <!--/.accordion__contents (for BP)-->
-    </div> <!--/.accordion__body (for BP)-->
-  </div> <!--/.accordion (for BP)-->
+            </div> <!--/ top row of billing info-->
+
+            <table class="fullWidth">
+              <thead>
+                <tr>
+                  <th class="left">Name</th>
+                  <th>Type</th>
+                  <th>CPT Code</th>
+                  <th>Time</th>
+                  <th>Date Achieved</th>
+                  <th>Description</th>
+                  <th>Subtotal</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let entry of data.entries">
+                  <td class="left">{{entry.name}}</td>
+                  <td>{{getBillingType(entry.billingType).acronym}}</td>
+                  <td>{{getBillingType(entry.billingType).code}}</td>
+                  <td>{{minutesToHours(entry.totalMinutes)}}</td>
+                  <td>{{entry.date}}</td>
+                  <td>{{entry.description}}</td>
+                  <td>${{entry.subtotal}}</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div class="accordion" [ngClass]="{ 'isOpen' : detailsOpen[data.patient] }">
+              <div class="flex justifySpaceBetween alignCenter" (click)="detailsOpen[data.patient]=!detailsOpen[data.patient]">
+                <div class="flex alignCenter">
+                  <label class="accordion__label">Details of Service</label>
+                  <div class="accordion__arrow accordion__arrow--lt">
+                    <i class="ss-standard ss-navigateright"></i>
+                  </div>
+                </div>
+                <div class="flex alignCenter">
+                  <div class="bold marRight16">
+                    Care Manager
+                  </div>
+                  <div>
+                    <a class="picName" [routerLink]="['/user/asdf']">
+                      <img class="picName__img" src="../../../assets/img/profile.svg" />
+                      {{getEmployee(data.careManager).first_name}} {{getEmployee(data.careManager).last_name}}, {{getEmployee(data.careManager).title}}
+                    </a>
+                  </div>
+                </div>
+              </div> <!--/.accordion__head-->
+              <div class="accordion__body">
+                <div class="accordion__contents accordion__contents--lt">
+                  <table class="fullWidth">
+                    <thead>
+                      <tr>
+                        <th class="left">Action</th>
+                        <th class="left">Provider</th>
+                        <th class="left">Date & Time</th>
+                        <th>Duration</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let details of data.details">
+                        <td class="left">{{details.action}}</td>
+                        <td class="left">
+                          <a [routerLink]="['/user/asdf']" class="picName">
+                            <img class="picName__img" src="../../../assets/img/profile.svg" />
+                            {{details.with}}
+                          </a>
+                        </td>
+                        <td class="left">{{details.date}}, {{details.time}}</td>
+                        <td>{{details.duration}} minutes</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div> <!--/.accordion__contents (details of service)-->
+              </div> <!--/.accordion__body (details of service)-->
+            </div> <!--/.accordion (details of service)-->
+          </div> <!--/.info-->
+
+        </div> <!--/.accordion__contents (for BP)-->
+      </div> <!--/.accordion__body (for BP)-->
+    </div> <!--/.accordion (for BP)-->
+  </ng-container>
 </div> <!--/.ssContainer-->
