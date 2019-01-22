@@ -9,59 +9,33 @@
            <div class="marRight32">
              <label>Filter by Date</label>
              <div class="datepicker">
-                 <div class="datepicker__date" (click)="showDatePH=!showDatePH">
+                 <div class="datepicker__date" (click)="dateFilterOpen=!dateFilterOpen">
                    Select Date
                  </div>
                  <!--TODO: This datepicker needs a clear option when a date is selected.-->
-                 <app-date-picker class="datepicker__picker" [ngClass]="{ 'isOpen' : showDatePH }"></app-date-picker>
+                 <app-date-picker class="datepicker__picker" [ngClass]="{ 'isOpen' : dateFilterOpen }"></app-date-picker>
                </div>
            </div>
            <div>
              <label>Filter by Action</label>
              <div class="drop">
-                 <div class="drop__input" (click)="multiOpenPH = !multiOpenPH">
+                 <div class="drop__input" (click)="actionFilterOpen = !actionFilterOpen">
                    All
                  </div>
-                 <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : multiOpenPH }">
+                 <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : actionFilterOpen }">
                    <div class="drop__buttons">
-                     <button class="button button--iconText">
+                     <button class="button button--iconText" (click)="checkAllActions()">
                        <i class="ss-check ss-standard"></i> Check All
                      </button>
-                     <button class="button button--iconText">
+                     <button class="button button--iconText" (click)="uncheckAllActions()">
                        <i class="ss-ban"></i> Uncheck All
                      </button>
                    </div>
-
-                   <li class="drop__option">
-                     <input class="input input--search drop__innerInput" type="text" placeholder="Search" />
-                   </li>
-
-                   <li class="drop__option">
+                   <li class="drop__option" *ngFor="let action of actionChoices">
                      <label class="drop__checkbox styledInput">
-                       <input type="checkbox" class="styledInput__input" />
+                       <input type="checkbox" class="styledInput__input" [checked]="isActionChecked(action)" (click)="toggleAction(action)" />
                        <span class="styledInput__box"></span>
-                       Care Plan Task
-                     </label>
-                   </li>
-                   <li class="drop__option">
-                     <label class="drop__checkbox styledInput">
-                       <input type="checkbox" class="styledInput__input" />
-                       <span class="styledInput__box"></span>
-                       Face to Face
-                     </label>
-                   </li>
-                   <li class="drop__option">
-                     <label class="drop__checkbox styledInput">
-                       <input type="checkbox" class="styledInput__input" />
-                       <span class="styledInput__box"></span>
-                       Notes
-                     </label>
-                   </li>
-                   <li class="drop__option">
-                     <label class="drop__checkbox styledInput">
-                       <input type="checkbox" class="styledInput__input" />
-                       <span class="styledInput__box"></span>
-                       Patient Call
+                       {{action.display}}
                      </label>
                    </li>
                  </ul>
@@ -79,7 +53,7 @@
       <div class="chat__side">
         <div class="chat__threads">
 
-          <div class="chat__thread" *ngFor="let result of results" [ngClass]="{'chat__thread--active': selectedResult === result}" (click)="selectedResult = result;">
+          <div class="chat__thread" *ngFor="let result of filteredResults()" [ngClass]="{'chat__thread--active': selectedResult === result}" (click)="selectedResult = result;">
             <div class="flex alignCenter justifySpaceBetween marBottom8">
               <h5 class="noMargin">
                 {{result.date}}&ensp;|&ensp;{{result.time}}
