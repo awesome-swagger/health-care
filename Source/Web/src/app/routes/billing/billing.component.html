@@ -99,17 +99,17 @@
       <label>Status</label>
       <div class="drop">
         <div class="drop__input" (click)="filterStatusOpen = !filterStatusOpen">
-          All Billings
+          {{selectedStatus|titlecase}}
         </div>
         <ul class="drop__dropdown fullWidth" [ngClass]="{ 'isOpen' : filterStatusOpen }" (click)="filterStatusOpen = !filterStatusOpen">
           <li class="drop__option">
-            <a class="drop__link">
+            <a class="drop__link" (click)="selectedStatus = 'all'">
               All Billings
             </a>
-            <a class="drop__link">
-              Not Billed
+            <a class="drop__link" (click)="selectedStatus = 'not-billed'">
+              Not-billed
             </a>
-            <a class="drop__link">
+            <a class="drop__link" (click)="selectedStatus = 'billed'">
               Billed
             </a>
           </li>

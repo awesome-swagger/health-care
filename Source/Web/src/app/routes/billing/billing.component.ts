@@ -22,7 +22,7 @@ export class BillingComponent implements OnDestroy, OnInit {
   public serviceAreasShown = [];
   public selectedServiceAreas = [];
   public serviceSearch = '';
-  public selectedStatus = '';
+  public selectedStatus = 'all';
   public employees = [];
   public employeeSearch = '';
   public planTypes = [];
@@ -55,6 +55,27 @@ export class BillingComponent implements OnDestroy, OnInit {
   }
 
   public ngOnDestroy() { }
+
+  public filteredBilling() {
+    return this.billingData.filter((billingObj) => {
+      if (this.selectedStatus === 'all') {
+        return true;
+      } else if (this.selectedStatus === 'not-billed') {
+        return !billingObj.isBilled;
+      } else if (this.selectedStatus === 'billed') {
+        return billingObj.isBilled;
+      } else {
+        return true;
+      }
+    }).filter((billingObj) => {
+      let facilityValues = this.selectedFacilities.map((obj) => obj.id);
+      let serviceAreaValues = this.selectedServiceAreas.map((obj) => obj.id);
+      return (
+        facilityValues.includes(this.getPatient(billingObj.patient).facility) &&
+        serviceAreaValues.includes(billingObj.serviceArea)
+      );
+    });
+  }
 
   public getPillColor(percentage) {
     if (percentage >= 90) {
@@ -165,21 +186,21 @@ export class BillingComponent implements OnDestroy, OnInit {
   }
 
   public totalBillablePatients() {
-    return Object.keys(_groupBy(this.billingData, (obj) => obj.patient)).length;
+    return Object.keys(_groupBy(this.filteredBilling(), (obj) => obj.patient)).length;
   }
 
   public totalFacilities() {
-    return Object.keys(_groupBy(this.billingData, (obj) => {
+    return Object.keys(_groupBy(this.filteredBilling(), (obj) => {
       return this.getPatient(obj.patient).facility;
     })).length;
   }
 
   public totalPractitioners() {
-    return Object.keys(_groupBy(this.billingData, (obj) => obj.billingPractitioner)).length;
+    return Object.keys(_groupBy(this.filteredBilling(), (obj) => obj.billingPractitioner)).length;
   }
 
   public totalHours() {
-    return this.minutesToHours(_sumBy(this.billingData, (obj) => {
+    return this.minutesToHours(_sumBy(this.filteredBilling(), (obj) => {
       return _sumBy(obj.entries, (objEntry) => {
         return objEntry.totalMinutes;
       });
@@ -196,7 +217,7 @@ export class BillingComponent implements OnDestroy, OnInit {
   }
 
   public totalDollars() {
-    return _sumBy(this.billingData, (obj) => {
+    return _sumBy(this.filteredBilling(), (obj) => {
       return _sumBy(obj.entries, (objEntry) => {
         return objEntry.subtotal;
       });
@@ -204,12 +225,12 @@ export class BillingComponent implements OnDestroy, OnInit {
   }
 
   public getAllBPsForFacility(facility) {
-    return this.billingData.filter((obj) => this.getPatient(obj.patient).facility === facility).map(
+    return this.filteredBilling().filter((obj) => this.getPatient(obj.patient).facility === facility).map(
       (obj) => this.getEmployee(obj.billingPractitioner));
   }
 
   public billingDataByBP(bp, facility) {
-    return this.billingData.filter((obj) => obj.billingPractitioner === bp && this.getPatient(obj.patient).facility === facility);
+    return this.filteredBilling().filter((obj) => obj.billingPractitioner === bp && this.getPatient(obj.patient).facility === facility);
   }
 
   public bpBillablePatients(bp, facility) {
