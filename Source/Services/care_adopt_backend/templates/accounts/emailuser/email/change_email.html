@@ -1,0 +1,25 @@
+{% load i18n %}
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+      <meta charset="UTF-8">
+      <title>{% trans 'CareAdopt - Verify New Email' %}</title>
+  </head>
+  <body>
+  <p>
+    {% blocktrans %}
+      You have opted to change your email address for your CareAdopt account. In order to verify this new email address, please click the link below:
+    {% endblocktrans %}
+  </p>
+
+  <p><a href="{{ current_site }}/#!/resetPassword/{{ uidb64 }}/{{ token }}">{% trans 'Click here to verify new email' %}</a></p>
+
+  <p>{% trans 'If you have any questions, please email us at' %}: <a href="mailto:admin@careadopt.com">admin@careadopt.com</a></p>
+
+  <p>
+    {% trans 'Thank you!' %}<br />
+    {% trans 'CareAdopt Staff' %}<br/>
+  </p>
+  </body>
+</html>

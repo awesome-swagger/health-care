@@ -1,4 +1,5 @@
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_haystack.viewsets import HaystackViewSet
 from rest_framework import viewsets, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -44,6 +45,7 @@ from . serializers import (
     AssessmentTaskSerializer,
     AssessmentResponseSerializer,
     VitalTaskTemplateSerializer,
+    VitalTaskTemplateSearchSerializer,
     VitalTaskSerializer,
     VitalQuestionSerializer,
     VitalResponseSerializer,
@@ -51,6 +53,7 @@ from . serializers import (
 from care_adopt_backend import utils
 from care_adopt_backend.permissions import (
     EmployeeOrReadOnly,
+    IsAdminOrEmployee,
 )
 
 
@@ -348,6 +351,32 @@ class VitalTaskTemplateViewSet(viewsets.ModelViewSet):
         'plan_template__id',
     )
     queryset = VitalTaskTemplate.objects.all()
+
+
+class VitalTaskTemplateSearchViewSet(HaystackViewSet):
+    """
+    Handles search feature for :model:`tasks.VitalTaskTemplate`
+
+    Vital task templates can be search by `name`.
+
+    Sample Call:
+    ---
+   `GET /api/vital_task_templates/search/?q=<query-here>`
+
+    Sample Response:
+    ---
+        [
+            ...
+            {
+                "id": "78d5472b-32d4-4b15-8dd1-f14a65070da4",
+                "name": "Blood Pressure",
+            }
+            ...
+        ]
+    """
+    index_models = [VitalTaskTemplate]
+    serializer_class = VitalTaskTemplateSearchSerializer
+    permission_classes = (permissions.IsAuthenticated, IsAdminOrEmployee)
 
 
 class VitalTaskViewSet(viewsets.ModelViewSet):

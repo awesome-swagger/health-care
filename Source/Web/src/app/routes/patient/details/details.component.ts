@@ -4,6 +4,9 @@ import { ModalService, ConfirmModalComponent } from '../../../modules/modals';
 import { RecordResultsComponent, GoalComponent, AddCTTaskComponent } from '../../../components';
 import { NavbarService, StoreService } from '../../../services';
 import { GoalCommentsComponent } from './modals/goal-comments/goal-comments.component';
+import {
+  filter as _filter
+} from 'lodash';
 
 @Component({
   selector: 'app-patient-details',
@@ -13,6 +16,7 @@ import { GoalCommentsComponent } from './modals/goal-comments/goal-comments.comp
 export class PatientDetailsComponent implements OnDestroy, OnInit {
 
   public patient = null;
+  public messageQueues = [];
 
   public showDate;
   public accordPD1Open;
@@ -71,6 +75,21 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
         },
         (err) => {},
         () => {},
+      );
+
+      let carePlanSub = this.store.CarePlan.listRoute('get', params.planId).subscribe(
+        (res:any) => {
+          const planTemplateId = res.plan_template.id
+          let messageSub = this.store.InfoMessageQueue.readListPaged().subscribe(
+            res => {
+              this.messageQueues = _filter(res, m => m.plan_template.id === planTemplateId)
+            },
+            err => {},
+            () => messageSub.unsubscribe()
+          );
+        },
+        err => {},
+        () => carePlanSub.unsubscribe()
       );
     });
   }

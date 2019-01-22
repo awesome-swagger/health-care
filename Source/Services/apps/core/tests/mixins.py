@@ -40,7 +40,7 @@ class CoreMixin(object):
     def create_organization(self):
         return OrganizationFactory(name=self.fake.name())
 
-    def create_facility(self, for_organization=None):
+    def create_facility(self, for_organization=None, **kwargs):
         if not for_organization:
             org = self.create_organization()
         else:
@@ -49,6 +49,7 @@ class CoreMixin(object):
         return FacilityFactory(
             name=self.fake.name(),
             organization=org,
+            **kwargs
         )
 
     def create_medication(self):
