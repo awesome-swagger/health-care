@@ -9,14 +9,15 @@ from rest_framework_extensions.routers import ExtendedDefaultRouter
 from rest_framework_swagger.views import get_swagger_view
 
 from apps.landing.views import LandingView
-from apps.accounts.views import UserViewSet
+from apps.accounts.views import UserViewSet, VerifyChangeEmail
 from apps.core.api.views import (
     OrganizationViewSet, FacilityViewSet, EmployeeProfileViewSet,
     ProviderTitleViewSet, ProviderRoleViewSet, ProviderSpecialtyViewSet,
     DiagnosisViewSet,  MedicationViewSet, ProcedureViewSet, SymptomViewSet,
     OrganizationEmployeeViewSet, SymptomSearchViewSet, FacilityEmployeeViewSet,
     OrganizationFacilityViewSet, DiagnosisSearchViewSet,
-    ProviderTitleSearchViewSet, ProviderRoleSearchViewSet)
+    ProviderTitleSearchViewSet, ProviderRoleSearchViewSet,
+    OrganizationAffiliatesViewSet)
 from apps.patients.api.views import (
     PatientProfileViewSet,
     PatientDiagnosisViewSet,
@@ -26,7 +27,6 @@ from apps.patients.api.views import (
     PatientProfileSearchViewSet,
     PotentialPatientViewSet,
     FacilityInactivePatientViewSet,
-    FacilityActivePatientViewSet,
 )
 from apps.plans.api.views import (
     CarePlanTemplateTypeViewSet,
@@ -50,6 +50,7 @@ from apps.plans.api.views import (
     VitalTaskTemplateByCarePlanTemplate,
     TeamTaskTemplateByCarePlanTemplate,
     InfoMessageQueueByCarePlanTemplate,
+    CarePlanByFacility,
 )
 from apps.tasks.api.views import (
     PatientTaskTemplateViewSet,
@@ -66,6 +67,7 @@ from apps.tasks.api.views import (
     AssessmentTaskViewSet,
     AssessmentResponseViewSet,
     VitalTaskTemplateViewSet,
+    VitalTaskTemplateSearchViewSet,
     VitalTaskViewSet,
     VitalQuestionViewSet,
     VitalResponseViewSet,
@@ -102,6 +104,12 @@ organization_routes.register(
     base_name='organization-facilities',
     parents_query_lookups=['organization']
 )
+organization_routes.register(
+    r'affiliates',
+    OrganizationAffiliatesViewSet,
+    base_name='organization-affiliates',
+    parents_query_lookups=['organization']
+)
 
 facility_routes = router.register(
     r'facilities',
@@ -121,10 +129,10 @@ facility_routes.register(
     parents_query_lookups=['facility']
 )
 facility_routes.register(
-    r'active_patients',
-    FacilityActivePatientViewSet,
-    base_name='facility-active-patients',
-    parents_query_lookups=['facility']
+    r'care_plans',
+    CarePlanByFacility,
+    base_name='facility-care-plans',
+    parents_query_lookups=['patient__facility']
 )
 
 router.register(
@@ -301,6 +309,11 @@ router.register(
     AssessmentResponseViewSet,
     base_name='assessment_responses')
 router.register(
+    r'vital_task_templates/search',
+    VitalTaskTemplateSearchViewSet,
+    base_name="vital_task_templates-search"
+)
+router.register(
     r'vital_task_templates',
     VitalTaskTemplateViewSet,
     base_name='vital_task_templates')
@@ -319,6 +332,12 @@ schema_view = get_swagger_view(title='CareAdopt API')
 urlpatterns = [
     url(r'^favicon.ico$', RedirectView.as_view(
         url=settings.STATIC_URL + 'favicon.ico')),
+
+    url(
+        r'^api/users/verify_change_email/',
+        VerifyChangeEmail.as_view(),
+        name="verify_change_email"
+    ),
 
     url(r'^api/', include('apps.core.api.urls')),
     url(r'^api/', include('apps.patients.api.urls')),
@@ -345,6 +364,7 @@ urlpatterns = [
     url(r'^', include('django.contrib.auth.urls')),
 
     url(r'^rest-auth/', include('rest_auth.urls')),
+
 
     url(r'^api/todays_tasks/', TodaysTasksAPIView.as_view(), name="todays_tasks"),
     url(r'^swagger/', schema_view),
