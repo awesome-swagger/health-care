@@ -6,113 +6,61 @@
     </div> <!--/.chatHead-->
 
     <div class="chat">
+
       <div class="chat__side">
         <div class="chat__threads">
-          <div class="chat__thread">
-            <div class="flex alignCenter marBottom16">
-              <label class="noMargin">Patient and Care Team</label>
-              <div class="badge badge--chat">
-                8
-              </div>
-            </div> <!--/.flex for participants, badge, and follow checkbox-->
+          <div
+            *ngFor="let stream of messageStreams"
+            class="chat__thread"
+            [ngClass]="{ 'chat__thread--active': stream.id === currentStream.id }"
+            (click)="changeStream(stream)"
+          >
             <div class="flex justifySpaceBetween alignCenter marBottom8">
               <div class="picName">
                 <img class="picName__img" src="../../../../assets/img/profile.svg" />
-                <h5 class="noMargin">Lori Ramirez, RN</h5>
+                <h5 class="noMargin">{{getParticipants(stream)}}</h5>
               </div>
-              <h5 class="noMargin">4:32 PM</h5>
+              <h5 class="noMargin">{{getLastMessageTime(stream)}}</h5>
             </div>
             <p class="chat__preview">
-              Have you scheduled your appointment? Cuz i don't think you have. Seriously now.
-            </p>
-          </div> <!--/.chat__thread-->
-          <div class="chat__thread chat__thread--active">
-            <div class="flex alignCenter marBottom16">
-              <label class="noMargin">Care Team Only</label>
-              <div *ngIf="" class="badge badge--chat"></div>
-            </div> <!--/.flex for participants, badge, and follow checkbox-->
-            <div class="flex justifySpaceBetween alignCenter marBottom8">
-              <div class="picName">
-                <img class="picName__img" src="../../../../assets/img/profile.svg" />
-                <h5 class="noMargin">Montgomery Alexander, CRNA</h5>
-              </div>
-              <h5 class="noMargin">Yesterday</h5>
-            </div>
-            <p class="chat__preview">
-              CT Coordination has been moved to tomorrow.
+              {{stream.messages[stream.messages.length - 1].text}}
             </p>
           </div> <!--/.chat__thread-->
         </div> <!--/.chat__threads-->
       </div> <!--/.chat__side-->
 
       <div class="chat__main">
-        <div class="chat__contents">
+        <div class="chat__contents" #chatBox>
           <div class="chat__innerContents">
 
-            <!--TODO: When a new thread is added, show hint text: Add people to the conversation by typing @ followed by their name.-->
+            <ng-container *ngFor="let messageGroup of messagesByDay(currentStream)">
 
-            <div class="chat__dayDivider">
-              <div class="chat__divider"></div>
-              <div class="chat__date">Tuesday</div>
-            </div>
+              <div class="chat__dayDivider">
+                <div class="chat__divider"></div>
+                <div class="chat__date">{{getDay(messageGroup[0])}}</div>
+              </div>
 
-            <div class="chat__message">
-              <div class="chat__picBubble">
-                <img class="chat__img" src="../../../../assets/img/profile.svg" />
-                <div class="chat__bubble">
-                  I will let you know about that prescription. We need to look at all the side effects and see if we need to change to dosage.
+              <div
+                *ngFor="let message of messageGroup"
+                class="chat__message"
+                [ngClass]="{ 'chat__message--right': isSelf(currentStream, message) }"
+              >
+                <div class="chat__picBubble">
+                  <img class="chat__img" src="../../../../assets/img/profile.svg" />
+                  <div class="chat__bubble">
+                    <span *ngFor="let messageLine of message.text.split('\n')">{{messageLine}}<br></span>
+                  </div>
                 </div>
-              </div>
-              <h5 class="chat__info">Lori Ramirez, RN&emsp;Tuesday, 12:16 PM</h5>
-            </div> <!--/.chat__message-->
+                <h5 class="chat__info">{{getNameAndTitle(getUser(currentStream, message))}}&emsp;{{getDay(message)}}, {{getTime(message)}}</h5>
+              </div> <!--/.chat__message-->
 
-            <div class="chat__dayDivider">
-              <div class="chat__divider"></div>
-              <div class="chat__date">Yesterday</div>
-            </div>
+            </ng-container>
 
-            <div class="chat__message chat__message--right">
-              <div class="chat__picBubble">
-                <img class="chat__img" src="../../../../assets/img/profile.svg" />
-                <div class="chat__bubble">
-                  Roger that.
-                </div>
-              </div>
-              <h5 class="chat__info">Yesterday, 10:12 AM</h5>
-            </div> <!--/.chat__message-->
-
-            <div class="chat__message">
-              <div class="chat__picBubble">
-                <img class="chat__img" src="../../../../assets/img/profile.svg" />
-                <div class="chat__bubble">
-                  Who is meeting with the patient next week?
-                </div>
-              </div>
-              <h5 class="chat__info">Montgomery Alexander, CRNA&emsp;Yesterday, 12:16 PM</h5>
-            </div> <!--/.chat__message-->
-            <div class="chat__message">
-              <div class="chat__picBubble">
-                <img class="chat__img" src="../../../../assets/img/profile.svg" />
-                <div class="chat__bubble">
-                  I'm going to be out all day following wisdom teeth removal.
-                </div>
-              </div>
-              <h5 class="chat__info">Montgomery Alexander, CRNA&emsp;Yesterday, 12:17 PM</h5>
-            </div> <!--/.chat__message-->
-            <div class="chat__message">
-              <div class="chat__picBubble">
-                <img class="chat__img" src="../../../../assets/img/profile.svg" />
-                <div class="chat__bubble">
-                  CT Coordination has been moved to tomorrow.
-                </div>
-              </div>
-              <h5 class="chat__info">Montgomery Alexander, CRNA&emsp;Yesterday, 12:43 PM</h5>
-            </div> <!--/.chat__message-->
           </div> <!--/.chat__innerContents-->
         </div> <!--/.chat__contents-->
 
         <div class="chat__form">
-          <textarea class="input input--textarea marBottom8" placeholder="Type message&hellip;"></textarea>
+          <textarea class="input input--textarea marBottom8" placeholder="Type message&hellip;" [(ngModel)]="newMessageText"></textarea>
           <div class="flex justifySpaceBetween">
             <label class="styledInput">
               <input type="file" class="styledInput__input" />
@@ -120,7 +68,7 @@
                 <i class="ss-picture"></i> Attach Image
               </div>
             </label>
-            <button class="button button--iconText">
+            <button class="button button--iconText" (click)="addMessage()">
               <i class="ss-chat"></i> Post Message
             </button>
           </div>

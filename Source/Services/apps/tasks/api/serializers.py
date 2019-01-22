@@ -3,6 +3,7 @@ import time
 
 from django.utils.translation import ugettext_lazy as _
 
+from drf_haystack.serializers import HaystackSerializerMixin
 from rest_framework import serializers
 
 from ..models import (
@@ -24,6 +25,7 @@ from ..models import (
     VitalQuestion,
     VitalResponse,
 )
+from ..search_indexes import VitalTaskTemplateIndex
 from apps.core.api.mixins import RepresentationMixin
 from apps.core.api.serializers import SymptomSerializer, ProviderRoleSerializer
 from apps.patients.api.serializers import (
@@ -450,6 +452,17 @@ class VitalTaskTemplateSerializer(serializers.ModelSerializer):
         read_only_fields = (
             'id',
         )
+
+
+class VitalTaskTemplateSearchSerializer(HaystackSerializerMixin,
+                                        VitalTaskTemplateSerializer):
+    """
+    Serializer to be used by the results returned by search
+    for vital task templates.
+    """
+    class Meta(VitalTaskTemplateSerializer.Meta):
+        index_classes = [VitalTaskTemplateIndex]
+        search_fields = ('text', 'name')
 
 
 class VitalTaskTodaySerializer(serializers.ModelSerializer):

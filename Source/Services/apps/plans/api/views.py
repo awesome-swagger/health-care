@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from rest_framework_extensions.mixins import NestedViewSetMixin
 
 from django.db.models import Avg
+from django.shortcuts import get_object_or_404
 
 from ..models import (
     CarePlanTemplateType,
@@ -39,6 +40,7 @@ from .serializers import (
     InfoMessageSerializer,
     CarePlanTemplateAverageSerializer,
     CarePlanByTemplateFacilitySerializer,
+    CarePlanOverviewSerializer,
 )
 from apps.core.api.mixins import ParentViewSetPermissionMixin
 from apps.core.models import Organization, Facility
@@ -229,6 +231,7 @@ class CarePlanViewSet(viewsets.ModelViewSet):
     filterset_fields = (
         'patient',
         'patient__facility__organization',
+        'plan_template',
     )
 
     def get_queryset(self):
@@ -261,6 +264,15 @@ class CarePlanViewSet(viewsets.ModelViewSet):
             id__in=list(set(all_roles) - set(assigned_roles)))
         serializer = ProviderRoleSerializer(available_roles, many=True)
         return Response(serializer.data)
+
+    def calculate_average_satisfaction(self, queryset):
+        tasks = AssessmentTask.objects.filter(
+            plan__in=queryset,
+            assessment_task_template__tracks_satisfaction=True
+        ).aggregate(average=Avg('responses__rating'))
+        average = tasks['average'] or 0
+        avg = round((average / 5) * 100)
+        return avg
 
     def calculate_average_outcome(self, queryset):
         tasks = AssessmentTask.objects.filter(
@@ -358,6 +370,47 @@ class CarePlanViewSet(viewsets.ModelViewSet):
             'total_facilities': total_facilities,
             'total_care_plans': total_care_plans,
             'average_outcome': average_outcome,
+            'average_engagement': average_engagement,
+            'risk_level': risk_level
+        }
+        return Response(data)
+
+    @action(methods=['get'],
+            detail=False,
+            permission_classes=(permissions.IsAuthenticated,
+                                IsAdminOrEmployee))
+    def patient_average(self, request, *args, **kwargs):
+        """
+        Returns the average values for outcome, satisfaction, engagement,
+        and risk level.
+
+        IMPORTANT NOTE:
+        ---
+        - Make sure to pass the {patient ID} and {care plan template ID} when
+        sending requests to this endpoint to filter care plans. Otherwise,
+        this endpoint will return all care plans.
+        - The URL parameters to be used are:
+             - **patient**
+             - **plan_template**
+
+        SAMPLE REQUEST:
+        ---
+        ```
+        GET /api/care_plans/patient_average/?patient=<uuid>&plan_template=<uuid>
+        ```
+        """
+
+        base_queryset = self.get_queryset()
+        # Call distinct to remove duplicates from filtering
+        queryset = self.filter_queryset(base_queryset).distinct()
+
+        average_satisfaction = self.calculate_average_satisfaction(queryset)
+        average_outcome = self.calculate_average_outcome(queryset)
+        average_engagement = self.calculate_average_engagement(queryset)
+        risk_level = round((average_outcome + average_engagement) / 2)
+        data = {
+            'average_outcome': average_outcome,
+            'average_satisfaction': average_satisfaction,
             'average_engagement': average_engagement,
             'risk_level': risk_level
         }
@@ -819,7 +872,6 @@ class CarePlanTemplateByType(ParentViewSetPermissionMixin,
         return Response(serializer.data)
 
 
-
 class CarePlanTemplateByServiceArea(
     ParentViewSetPermissionMixin,
     NestedViewSetMixin,
@@ -841,6 +893,10 @@ class CarePlanTemplateByServiceArea(
             OrganizationViewSet
         )
     ]
+    filter_backends = (DjangoFilterBackend, )
+    filterset_fields = (
+        'care_plans__patient__facility',
+    )
 
     def get_queryset(self):
         """
@@ -848,6 +904,30 @@ class CarePlanTemplateByServiceArea(
         Return all ServiceArea objects.
         """
         return ServiceArea.objects.all()
+
+    def get_object(self):
+        """
+        Override `get_object` so it will not filter the queryset upfront.
+        """
+        queryset = self.get_queryset()
+
+        # Perform the lookup filtering.
+        lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
+
+        assert lookup_url_kwarg in self.kwargs, (
+            'Expected view %s to be called with a URL keyword argument '
+            'named "%s". Fix your URL conf, or set the `.lookup_field` '
+            'attribute on the view correctly.' %
+            (self.__class__.__name__, lookup_url_kwarg)
+        )
+
+        filter_kwargs = {self.lookup_field: self.kwargs[lookup_url_kwarg]}
+        obj = get_object_or_404(queryset, **filter_kwargs)
+
+        # May raise a permission denied
+        self.check_object_permissions(self.request, obj)
+
+        return obj
 
     def get_care_plan_templates(self):
         instance = self.get_object()
@@ -865,6 +945,41 @@ class CarePlanTemplateByServiceArea(
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
+
+class CarePlanByFacility(ParentViewSetPermissionMixin,
+                         NestedViewSetMixin,
+                         mixins.ListModelMixin,
+                         viewsets.GenericViewSet):
+    """
+    Returns list of :model:`plans.CarePlan` related to the given facility.
+    This endpoint will be used on `patients` page and will only return care plans
+    from active patients.
+
+    This endpoint also allows users to filter by `service area` and
+    `plan template`. Please see the examples below:
+
+        - GET /api/facilities/<facility-ID>/care_plans/?plan_template__service_area=<service-area-ID>
+        - GET /api/facilities/<facility-ID>/care_plans/?plan_template=<plan-template-ID>
+
+    """
+    serializer_class = CarePlanOverviewSerializer
+    queryset = CarePlan.objects.filter(patient__is_active=True)
+    permission_classes = (
+        permissions.IsAuthenticated,
+        IsAdminOrEmployee,
+    )
+    parent_lookup = [
+        (
+            'patient__facility',
+            Facility,
+            FacilityViewSet
+        )
+    ]
+    filter_backends = (DjangoFilterBackend, )
+    filterset_fields = (
+        'plan_template__service_area',
+        'plan_template',
+    )
 
 
 class CarePlanByTemplateFacility(ParentViewSetPermissionMixin,
