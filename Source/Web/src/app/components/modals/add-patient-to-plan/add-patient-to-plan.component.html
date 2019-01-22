@@ -4,26 +4,21 @@
 </h1>
 
 <div class="drop" *ngIf="!patientKnown && patientInSystem">
-  <input type="text" class="input input--search fullWidth" placeholder="Search Patients" (click)="dropAPPM0Open=!dropAPPM0Open"/>
+  <input type="text" class="input input--search fullWidth" placeholder="Search Patients" (click)="dropAPPM0Open=!dropAPPM0Open" [value]="selectedPatientName()" />
   <ul class="drop__dropdown fullWidth" [ngClass]="{ 'isOpen' : dropAPPM0Open }" (click)="dropAPPM0Open=!dropAPPM0Open">
-    <li class="drop__option">
+    <li class="drop__option" *ngFor="let patient of patients" (click)="selectedPatient = patient;">
       <a class="drop__link">
         <div class="picName">
-          <img class="picName__img" src="../../../assets/img/profile.svg" />Adam Hancock
-        </div>
-      </a>
-      <a class="drop__link">
-        <div class="picName">
-          <img class="picName__img" src="../../../assets/img/profile.svg" />Elise Reynolds
+          <img class="picName__img" src="../../../assets/img/profile.svg" />{{patient.user.first_name}} {{patient.user.last_name}}
         </div>
       </a>
     </li>
   </ul>
 </div>
 <!--TODO: Show the following div if the patient needs to be added to the system, or if editing new patient details-->
-<div *ngIf="action === 'add' && !patientInSystem" class="flex justifySpaceBetween">
+<div *ngIf="action === 'add' && !patientKnown && !patientInSystem" class="flex justifySpaceBetween">
   <div class="modal__inputWrap marRight16">
-    <label>First Name</label>
+    <label >First Name</label>
     <input class="input fullWidth" [(ngModel)]="firstName" />
   </div>
   <div class="modal__inputWrap marRight32">
@@ -31,7 +26,7 @@
     <input class="input fullWidth" [(ngModel)]="lastName"/>
   </div>
 </div>
-<h2 *ngIf="patientKnown" class="center noMargin">Alexander Montgomery</h2>
+<h2 *ngIf="patientKnown" class="center noMargin">{{selectedPatient.user.first_name}} {{selectedPatient.user.last_name}}</h2>
 
 <div class="divider"></div>
 
@@ -50,21 +45,20 @@
 </div>
 
 <div class="divider"></div>
-
 <div class="flex justifySpaceBetween">
   <div class="modal__inputWrap marRight32">
     <label>Service Area</label>
     <div class="styledSelect">
-      <select class="styledSelect__select" [(ngModel)]="selectedPlanType">
+      <select class="styledSelect__select" [(ngModel)]="selectedServiceArea">
+        <option *ngFor="let serviceArea of serviceAreas" [ngValue]="serviceArea">{{serviceArea.name}}</option>
       </select>
     </div>
   </div>
-  <div *ngIf="!planKnown" class="modal__inputWrap">
+  <div class="modal__inputWrap">
     <label>Care Plan</label>
     <div class="styledSelect">
-      <select class="styledSelect__select" [(ngModel)]="selectedPlan">
-        <option value=""></option>
-        <option *ngFor="let plan of carePlans" [ngValue]="plan.name">{{plan.name}}</option>
+      <select class="styledSelect__select" [disabled]="!selectedServiceArea" [(ngModel)]="selectedPlan">
+        <option *ngFor="let plan of carePlansFiltered()" [ngValue]="plan">{{plan.name}}</option>
       </select>
     </div>
   </div>
@@ -273,7 +267,7 @@
 </div>
 
 <div class="modal__buttons">
-  <button class="button button--2nd">
+  <button class="button button--2nd" (click)="clickClose()">
     Cancel
   </button>
   <button class="button" (click)="handleSubmit()">
