@@ -1,18 +1,18 @@
 from drf_haystack.viewsets import HaystackViewSet
-from rest_framework import mixins, permissions, status, viewsets
+from rest_framework import mixins, permissions, serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.response import Response
 
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
+from django.utils.translation import ugettext_lazy as _
 
 from apps.core.models import (Diagnosis, EmployeeProfile,
                               InvitedEmailTemplate, Medication, Organization,
                               Procedure, ProviderRole, ProviderSpecialty,
                               ProviderTitle, Symptom, Facility)
 
-from rest_framework.decorators import action
 from rest_framework_extensions.mixins import NestedViewSetMixin
 
 from apps.core.permissions import (EmployeeProfilePermissions,
@@ -21,7 +21,10 @@ from apps.core.permissions import (EmployeeProfilePermissions,
 
 from apps.plans.models import CareTeamMember
 from care_adopt_backend import utils
-from care_adopt_backend.permissions import IsAdminOrEmployee
+from care_adopt_backend.permissions import (
+    IsAdminOrEmployee,
+    IsAdminOrEmployeeOwner,
+)
 
 from ..utils import get_facilities_for_user
 from .filters import RelatedOrderingFilter
@@ -40,7 +43,8 @@ from .serializers import (DiagnosisSerializer, EmployeeProfileSerializer,
                           ProviderRoleSearchSerializer,
                           EmployeeAssignmentSerializer,
                           InviteEmployeeSerializer,
-                          OrganizationPatientOverviewSerializer)
+                          OrganizationPatientOverviewSerializer,
+                          OrganizationPatientDashboardSerializer)
 
 
 class OrganizationViewSet(viewsets.ModelViewSet):
@@ -108,6 +112,65 @@ class OrganizationViewSet(viewsets.ModelViewSet):
             organization, context={'request': request})
         return Response(serializer.data)
 
+    def check_if_organization_or_facility_admin(self, organization):
+        user = self.request.user
+
+        if user.is_superuser:
+            return True
+        else:
+            employee = user.employee_profile
+            facility_organizations = employee.facilities_managed.values_list(
+                'organization', flat=True).distinct()
+            if organization in employee.organizations_managed.all() or \
+               organization in facility_organizations:
+                return True
+        return False
+
+    @action(methods=['get'], detail=True,
+            permission_classes=(IsAdminOrEmployee, ))
+    def dashboard_analytics(self, request, *args, **kwargs):
+        """
+        This endpoint will primarily populate the `dash` page.
+
+        Returns the following data in a specific organization:
+
+            - active patients
+            - invited patients
+            - potential patients
+            - average satisfaction
+            - average outcome
+            - average engagement
+            - risk level
+
+        FILTERING:
+        ---
+        Engagement, satisfaction, outcome, and risk levels can be filtered by
+        **patient** and **facility**. See below for example requests:
+
+            GET /api/organizations/<organization-ID>/dashboard_analytics/?patient=<patient-ID>
+            GET /api/organizations/<organization-ID>/dashboard_analytics/?facility=<facility-ID>
+            GET /api/organizations/<organization-ID>/dashboard_analytics/?facility=<facility-ID>&patient=<patient-ID>
+
+
+        TODO: RISK LEVEL BREAKDOWN CHART
+        """
+        organization = self.get_object()
+
+        if 'patient' in request.GET or 'facility' in request.GET:
+            has_permission = self.check_if_organization_or_facility_admin(
+                organization)
+            if not has_permission:
+                message = _('Must be an organization or facility admin.')
+                self.permission_denied(self.request, message)
+
+        context = {
+            'request': request,
+            'filter_allowed': True
+        }
+        serializer = OrganizationPatientDashboardSerializer(
+            organization, context=context)
+        return Response(serializer.data)
+
 
 class FacilityViewSet(viewsets.ModelViewSet):
     """
@@ -149,23 +212,6 @@ class FacilityViewSet(viewsets.ModelViewSet):
             self.request.user,
             self.request.query_params.get('organization_id'),
         )
-
-
-class AffiliateFacilityListView(ListAPIView):
-    """
-    Returns list of all :model:`core.Facility` objects where `is_affiliate` is `True`.
-    """
-    serializer_class = FacilitySerializer
-    permission_classes = (permissions.IsAuthenticated, FacilityPermissions, )
-    filter_backends = (RelatedOrderingFilter, )
-    ordering = ('name', )
-
-    def get_queryset(self):
-        queryset = get_facilities_for_user(
-            self.request.user,
-            self.request.query_params.get('organization_id'),
-        )
-        return queryset.filter(is_affiliate=True)
 
 
 class ProviderTitleViewSet(
@@ -284,32 +330,29 @@ class ProviderSpecialtyViewSet(
 
 class EmployeeProfileViewSet(viewsets.ModelViewSet):
     """
-    Viewset for :model:`core.Facility`
+    Viewset for :model:`core.EmployeeProfile`
     ========
 
     create:
-        Creates :model:`core.Facility` object.
+        Creates :model:`core.EmployeeProfile` object.
         Only admins and employees are allowed to perform this action.
 
     update:
-        Updates :model:`core.Facility` object.
+        Updates :model:`core.EmployeeProfile` object.
         Only admins and employees are allowed to perform this action.
 
     partial_update:
-        Updates one or more fields of an existing organization object.
+        Updates one or more fields of an existing employee object.
         Only admins and employees are allowed to perform this action.
 
     retrieve:
-        Retrieves a :model:`core.Facility` instance.
+        Retrieves a :model:`core.EmployeeProfile` instance.
 
     list:
-        Returns list of all :model:`core.Facility` objects.
-
-        - Employees get all facilities they belong to.
-        - Patients only get the facility they're receiving care from.
+        Returns list of all :model:`core.EmployeeProfile` objects.
 
     delete:
-        Deletes a :model:`core.Facility` instance.
+        Deletes a :model:`core.EmployeeProfile` instance.
         Only admins and employees are allowed to perform this action.
     """
     serializer_class = EmployeeProfileSerializer
@@ -342,6 +385,86 @@ class EmployeeProfileViewSet(viewsets.ModelViewSet):
                 'employee_profile', flat=True).distinct()
             return qs.filter(id__in=list(care_team_members))
         return qs.none()
+
+    @action(methods=['post'],
+            detail=True,
+            permission_classes=(permissions.IsAuthenticated,
+                                IsAdminOrEmployee))
+    def add_role(self, request, pk, *args, **kwargs):
+        """
+        Adds role to the given employee.
+
+        Request data should contain the `role` ID. For example:
+
+            POST /api/employee_profiles/<employee-id>/add_role/
+            {
+                'role': <uuid-here>
+            }
+        """
+        employee = self.get_object()
+
+        if 'role' not in request.data:
+            raise serializers.ValidationError(_('Role ID is required.'))
+
+        role_id = request.data['role']
+        try:
+            role = ProviderRole.objects.get(id=role_id)
+        except ProviderRole.DoesNotExist:
+            raise serializers.ValidationError(_('Role does not exist.'))
+
+        if role in employee.roles.all():
+            raise serializers.ValidationError(_('Role already exists.'))
+
+        employee.roles.add(role)
+        ctx = {
+            'context': self.get_serializer_context()
+        }
+        serializer = self.get_serializer_class()(employee, **ctx)
+        return Response(
+            data=serializer.data,
+            status=status.HTTP_201_CREATED
+        )
+
+    @action(methods=['DELETE'],
+            detail=True,
+            permission_classes=(permissions.IsAuthenticated,
+                                IsAdminOrEmployee))
+    def remove_role(self, request, pk, *args, **kwargs):
+        """
+        Removes role from the given employee.
+
+        Request data should contain the `role` ID. For example:
+
+            DELETE /api/employee_profiles/<employee-id>/remove_role/
+            {
+                'role': <uuid-here>
+            }
+        """
+        employee = self.get_object()
+
+        if 'role' not in request.data:
+            raise serializers.ValidationError(_('Role ID is required.'))
+
+        role_id = request.data['role']
+        try:
+            role = ProviderRole.objects.get(id=role_id)
+        except ProviderRole.DoesNotExist:
+            raise serializers.ValidationError(_('Role does not exist.'))
+
+        if role not in employee.roles.all():
+            raise serializers.ValidationError(
+                _('Employee does not have that role.')
+            )
+
+        employee.roles.remove(role)
+        ctx = {
+            'context': self.get_serializer_context()
+        }
+        serializer = self.get_serializer_class()(employee, **ctx)
+        return Response(
+            data=serializer.data,
+            status=status.HTTP_204_NO_CONTENT
+        )
 
     @action(methods=['post'],
             detail=False,
@@ -502,6 +625,25 @@ class OrganizationFacilityViewSet(ParentViewSetPermissionMixin,
     pagination_class = OrganizationEmployeePagination
 
 
+class OrganizationAffiliatesViewSet(ParentViewSetPermissionMixin,
+                                    NestedViewSetMixin,
+                                    mixins.ListModelMixin,
+                                    viewsets.GenericViewSet):
+    """
+    Displays all affiliates in a parent organization.
+    """
+
+    serializer_class = FacilitySerializer
+    permission_clases = (permissions.IsAuthenticated, IsAdminOrEmployee)
+    queryset = Facility.objects.filter(is_affiliate=True)
+    parent_lookup = [
+        ('organization', Organization, OrganizationViewSet)
+    ]
+    pagination_class = OrganizationEmployeePagination
+    filter_backends = (RelatedOrderingFilter, )
+    ordering = ('name', )
+
+
 class FacilityEmployeeViewSet(ParentViewSetPermissionMixin,
                               NestedViewSetMixin,
                               mixins.ListModelMixin,
@@ -511,7 +653,7 @@ class FacilityEmployeeViewSet(ParentViewSetPermissionMixin,
     """
 
     serializer_class = FacilityEmployeeSerializer
-    permission_clases = (permissions.IsAuthenticated, IsAdminOrEmployee)
+    permission_classes = (permissions.IsAuthenticated, IsAdminOrEmployee)
     queryset = EmployeeProfile.objects.all()
     parent_field = 'facilities'
     parent_lookup = [
@@ -526,7 +668,10 @@ class FacilityEmployeeViewSet(ParentViewSetPermissionMixin,
         })
         return context
 
-    @action(methods=['get'], detail=True)
+    @action(methods=['get'],
+            detail=True,
+            permission_classes=(
+                permissions.IsAuthenticated, IsAdminOrEmployeeOwner))
     def assignments(self, request, pk, *args, **kwargs):
         """
         Returns aggregated data of the given employees pertaining to his/her

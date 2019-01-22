@@ -1,10 +1,3 @@
-import datetime
-import random
-
-import pytz
-
-
-from django.db.models import Avg
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.encoding import force_bytes
@@ -16,14 +9,8 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from ..tests.mixins import CoreMixin
+from apps.accounts.tests.factories import AdminUserFactory
 from apps.tasks.tests.mixins import TasksMixin
-from apps.tasks.models import (
-    PatientTask,
-    MedicationTask,
-    SymptomTask,
-    AssessmentTask,
-    VitalTask,
-)
 
 
 class TestEmployeeProfile(CoreMixin, APITestCase):
@@ -94,6 +81,37 @@ class TestEmployeeProfile(CoreMixin, APITestCase):
         }
         response = self.client.post(url, payload)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_add_role_to_employee(self):
+        new_employee = self.create_employee(**{
+            'facilities': [self.facility_managed]
+        })
+        url = reverse(
+            'employee_profiles-add-role',
+            kwargs={'pk': new_employee.id}
+        )
+        role = self.create_provider_role()
+        payload = {
+            'role': role.id
+        }
+        response = self.client.post(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_remove_role_from_employee(self):
+        role = self.create_provider_role()
+        new_employee = self.create_employee(**{
+            'facilities': [self.facility_managed],
+            'roles': [role, self.role]
+        })
+        url = reverse(
+            'employee_profiles-remove-role',
+            kwargs={'pk': new_employee.id}
+        )
+        payload = {
+            'role': role.id
+        }
+        response = self.client.delete(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
 
 class TestEmployeeOrganization(CoreMixin, APITestCase):
@@ -213,6 +231,61 @@ class TestFacilityEmployee(TasksMixin, APITestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_employee_assignment_facilities_count(self):
+        self.client.logout()
+
+        employee = self.create_employee(**{
+            'facilities': [self.facility, self.create_facility()],
+        })
+        self.client.force_authenticate(user=employee.user)
+
+        url = reverse(
+            'facility-employees-assignments',
+            kwargs={
+                'parent_lookup_facilities': self.facility.id,
+                'pk': employee.id
+            }
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.data['facilities_count'], 2)
+
+    def test_employee_assignment_superuser(self):
+        self.client.logout()
+
+        user = AdminUserFactory()
+        employee = self.create_employee(**{
+            'facilities': [self.facility, self.create_facility()],
+        })
+        self.client.force_authenticate(user=user)
+
+        url = reverse(
+            'facility-employees-assignments',
+            kwargs={
+                'parent_lookup_facilities': self.facility.id,
+                'pk': employee.id
+            }
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_employee_assignment_owner(self):
+        self.client.logout()
+
+        employee = self.create_employee(**{
+            'facilities': [self.facility, self.create_facility()],
+        })
+        self.client.force_authenticate(user=employee.user)
+
+        url = reverse(
+            'facility-employees-assignments',
+            kwargs={
+                'parent_lookup_facilities': self.facility.id,
+                'pk': employee.id
+            }
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_employee_assignment_unauthorized(self):
         employee = self.create_employee(**{
             'facilities': [self.facility, self.create_facility()],
         })
@@ -224,13 +297,17 @@ class TestFacilityEmployee(TasksMixin, APITestCase):
             }
         )
         response = self.client.get(url)
-        self.assertEqual(response.data['facilities_count'], 2)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_employee_assignment_care_manager_count(self):
         plans_count = 5
+        self.client.logout()
+
         employee = self.create_employee(**{
             'facilities': [self.facility, self.create_facility()],
         })
+        self.client.force_authenticate(user=employee.user)
+
         for i in range(plans_count):
             # Create care plans as manager
             manager_plan = self.create_care_plan()
@@ -260,9 +337,13 @@ class TestFacilityEmployee(TasksMixin, APITestCase):
 
     def test_employee_assignment_care_team_count(self):
         plans_count = 3
+        self.client.logout()
+
         employee = self.create_employee(**{
             'facilities': [self.facility, self.create_facility()],
         })
+        self.client.force_authenticate(user=employee.user)
+
         for i in range(plans_count):
             # Create care plans as manager
             manager_plan = self.create_care_plan()
@@ -292,9 +373,13 @@ class TestFacilityEmployee(TasksMixin, APITestCase):
 
     def test_employee_assignment_billable_patients_count(self):
         plans_count = 5
+        self.client.logout()
+
         employee = self.create_employee(**{
             'facilities': [self.facility, self.create_facility()],
         })
+        self.client.force_authenticate(user=employee.user)
+
         for i in range(plans_count):
             # Create care plans as manager
             manager_plan = self.create_care_plan()
