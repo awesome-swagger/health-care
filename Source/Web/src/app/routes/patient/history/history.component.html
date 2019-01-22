@@ -79,82 +79,27 @@
       <div class="chat__side">
         <div class="chat__threads">
 
-          <div class="chat__thread">
+          <div class="chat__thread" *ngFor="let result of results" [ngClass]="{'chat__thread--active': selectedResult === result}" (click)="selectedResult = result;">
             <div class="flex alignCenter justifySpaceBetween marBottom8">
               <h5 class="noMargin">
-                Mar 15, 2018&ensp;|&ensp;8:02 AM
+                {{result.date}}&ensp;|&ensp;{{result.time}}
               </h5>
               <div class="pill">
-                :12
+                :{{result.totalMinutes}}
               </div>
             </div>
             <div class="iconText iconText--wrap iconText--autoHeight marBottom8">
               <i class="iconText__icon ss-chats"></i>
-              Action or Task Name
+              {{getTask(result.task).name}}
             </div>
             <h5 class="noMargin">
-              Added by Montgomery Alexander, CRNA
+              Added by {{getEmployee(result.createdBy).first_name}} {{getEmployee(result.createdBy).last_name}}, {{getEmployee(result.createdBy).title}}
             </h5>
           </div> <!--/.chat__thread-->
-
-          <div class="chat__thread chat__thread--active">
-            <div class="flex alignCenter justifySpaceBetween marBottom8">
-              <h5 class="noMargin">
-                Mar 15, 2018&ensp;|&ensp;10:45 AM
-              </h5>
-              <div class="pill">
-                :12
-              </div>
-            </div>
-            <div class="iconText iconText--wrap iconText--autoHeight marBottom8">
-              <i class="iconText__icon ss-user"></i>
-              Action or Task Name
-            </div>
-            <h5 class="noMargin">
-              Added by Lori Ramirez, RN
-            </h5>
-          </div> <!--/.chat__thread-->
-
-          <div class="chat__thread">
-            <div class="flex alignCenter justifySpaceBetween marBottom8">
-              <h5 class="noMargin">
-                Mar 15, 2018&ensp;|&ensp;12:17 PM
-              </h5>
-              <div class="pill">
-                :12
-              </div>
-            </div>
-            <div class="iconText iconText--wrap iconText--autoHeight marBottom8">
-              <i class="iconText__icon ss-usergroup"></i>
-              Action or Task Name Could Get really long and what if, I mean what if?
-            </div>
-            <h5 class="noMargin">
-              Added by Montgomery Alexander, CRNA
-            </h5>
-          </div> <!--/.chat__thread-->
-
-          <div class="chat__thread">
-            <div class="flex alignCenter justifySpaceBetween marBottom8">
-              <h5 class="noMargin">
-                Mar 15, 2018&ensp;|&ensp;3:02 PM
-              </h5>
-              <div class="pill">
-                :12
-              </div>
-            </div>
-            <div class="iconText iconText--wrap iconText--autoHeight marBottom8">
-              <i class="iconText__icon ss-chats"></i>
-              Action or Task Name Could Get really long and
-            </div>
-            <h5 class="noMargin">
-              Added by Lori Ramirez, RN
-            </h5>
-          </div> <!--/.chat__thread-->
-
         </div> <!--/.chat__threads-->
       </div> <!--/.chat__side-->
 
-      <div class="chat__main">
+      <div class="chat__main" *ngIf="selectedResult">
         <div class="chat__contents">
           <div class="chat__innerContents">
             <div class="historyItem">
@@ -174,15 +119,15 @@
                 <span>Care Plan Task</span>
                 <span *ngIf="">Action</span>
               </label>
-              <h2 class="noMargin">Task or Action Name</h2>
+              <h2 class="noMargin">{{getTask(selectedResult.task).name}}</h2>
               <div class="divider divider--smallMargin"></div>
-              <h5>Added by Lori Ramirez, RN&emsp;Mar 15, 2018&ensp;|&ensp;10:45 AM</h5>
-              <h5 class="noMargin">Last edited by Montgomery Alexander, RN&emsp;Jul 3, 2018&ensp;|&ensp;5:18 PM</h5>
+              <h5>Added by {{getEmployee(selectedResult.createdBy).first_name}} {{getEmployee(selectedResult.createdBy).last_name}}, {{getEmployee(selectedResult.createdBy).title}}&emsp;{{selectedResult.date}}&ensp;|&ensp;{{selectedResult.time}}</h5>
+              <h5 class="noMargin">Last edited by {{getEmployee(selectedResult.createdBy).first_name}} {{getEmployee(selectedResult.createdBy).last_name}}, {{getEmployee(selectedResult.createdBy).title}}&emsp;{{selectedResult.date}}&ensp;|&ensp;{{selectedResult.time}}</h5>
               <div class="divider divider--smallTop"></div>
 
               <label>Total Time</label>
               <div class="pill marBottom32">
-                :12
+                :{{selectedResult.totalMinutes}}
               </div>
 
               <!--TODO: Hide the participants section if not a care plan task-->
@@ -192,13 +137,13 @@
                   <li class="nameList__item nameList__item--left nameList__item--pad">
                     <div class="picName">
                       <img class="picName__img" src="../../assets/img/profile.svg" />
-                      Montgomery Alexander, CRNA
+                      {{getEmployee(selectedResult.createdBy).first_name}} {{getEmployee(selectedResult.createdBy).last_name}}, {{getEmployee(selectedResult.createdBy).title}}
                     </div>
                   </li>
                   <li class="nameList__item nameList__item--left nameList__item--pad">
                     <div class="picName">
                       <img class="picName__img" src="../../assets/img/profile.svg" />
-                      Lori Ramirez, RN
+                      {{getEmployee(selectedResult.with).first_name}} {{getEmployee(selectedResult.with).last_name}}, {{getEmployee(selectedResult.with).title}}
                     </div>
                   </li>
                 </ul>
@@ -206,7 +151,7 @@
 
               <label>Notes</label>
               <p class="marBottom32">
-                Any notes recorded will go here. Any notes recorded will go here. Any notes recorded will go here. Any notes recorded will go here. Any notes recorded will go here. Any notes recorded will go here.
+                {{selectedResult.notes}}
               </p>
 
               <label class="noMargin">Syncing</label>
