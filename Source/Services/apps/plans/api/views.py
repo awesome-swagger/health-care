@@ -1058,50 +1058,6 @@ class CarePlanByTemplateFacility(ParentViewSetPermissionMixin,
         return Response(serializer.data)
 
 
-class GoalsByCarePlanTemplate(ParentViewSetPermissionMixin,
-                              NestedViewSetMixin,
-                              RetrieveAPIView):
-    """
-    Returns list of :model:`plans.Goal` related to the given care plan template
-    This will also be based on the parent patient profile.
-    """
-    serializer_class = GoalSerializer
-    permission_classes = (
-        permissions.IsAuthenticated,
-        IsAdminOrEmployee,
-    )
-    parent_lookup = [
-        (
-            'plan__patient',
-            PatientProfile,
-            PatientProfileViewSet
-        )
-    ]
-
-    def get_queryset(self):
-        """
-        Override `get_queryset` so it will not filter for the parent object.
-        Return all CarePlanTemplateType objects.
-        """
-        return CarePlanTemplate.objects.all()
-
-    def get_goals(self):
-        instance = self.get_object()
-        queryset = Goal.objects.filter(goal_template__in=instance.goals.all())
-        return self.filter_queryset_by_parents_lookups(queryset).distinct()
-
-    def retrieve(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_goals())
-
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
-
-
 class PatientTaskTemplateByCarePlanTemplate(ParentViewSetPermissionMixin,
                                             NestedViewSetMixin,
                                             mixins.ListModelMixin,
