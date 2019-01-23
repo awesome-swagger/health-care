@@ -1,6 +1,8 @@
 import pytz
 
+from django.conf import settings
 from django.urls import reverse
+from django.utils import timezone
 
 from faker import Faker
 from rest_framework import status
@@ -42,9 +44,11 @@ class TestPatientTaskTimezoneConversion(TasksMixin, APITestCase):
         self.assertEqual(response.data['due_datetime'][-6:], gmt_plus_8)
 
     def test_timezone_conversion_due_unauthenticated(self):
-        gmt_minus_6 = "-06:00"
+        server_timezone = pytz.timezone(settings.TIME_ZONE)
+        now = timezone.now().replace(tzinfo=server_timezone)
+        server_gmt = now.isoformat()[-6:]
         response = self.client.get(self.detail_url)
-        self.assertEqual(response.data['due_datetime'][-6:], gmt_minus_6)
+        self.assertEqual(response.data['due_datetime'][-6:], server_gmt)
 
     def test_timezone_conversion_from_user_appear(self):
         gmt_plus_8 = "+08:00"
@@ -53,9 +57,11 @@ class TestPatientTaskTimezoneConversion(TasksMixin, APITestCase):
         self.assertEqual(response.data['appear_datetime'][-6:], gmt_plus_8)
 
     def test_timezone_conversion_appear_unauthenticated(self):
-        gmt_minus_6 = "-06:00"
+        server_timezone = pytz.timezone(settings.TIME_ZONE)
+        now = timezone.now().replace(tzinfo=server_timezone)
+        server_gmt = now.isoformat()[-6:]
         response = self.client.get(self.detail_url)
-        self.assertEqual(response.data['appear_datetime'][-6:], gmt_minus_6)
+        self.assertEqual(response.data['appear_datetime'][-6:], server_gmt)
 
 
 class TestPatientTask(StateTestMixin, TasksMixin, APITestCase):
@@ -119,17 +125,17 @@ class TestPatientTask(StateTestMixin, TasksMixin, APITestCase):
         self.execute_state_test('missed', **kwargs)
 
     def test_filter_by_care_plan(self):
-        filter_url = f'{self.url}?plan__id={self.plan.id}'
+        filter_url = f'{self.url}?plan={self.plan.id}'
         response = self.client.get(filter_url)
         self.assertEqual(response.data['count'], 1)
 
     def test_filter_by_patient_task_template(self):
-        filter_url = f'{self.url}?patient_task_template__id={self.patient_task.patient_task_template.id}'
+        filter_url = f'{self.url}?patient_task_template={self.patient_task.patient_task_template.id}'
         response = self.client.get(filter_url)
         self.assertEqual(response.data['count'], 1)
 
     def test_filter_by_patient(self):
-        filter_url = f'{self.url}?plan__patient__id={self.plan.patient.id}'
+        filter_url = f'{self.url}?plan__patient={self.plan.patient.id}'
         response = self.client.get(filter_url)
         self.assertEqual(response.data['count'], 1)
 
