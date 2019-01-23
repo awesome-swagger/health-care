@@ -921,14 +921,14 @@ class CarePlanTemplateByServiceArea(
     )
     parent_lookup = [
         (
-            'care_plans__patient__facility__organization',
+            'care_plan_templates__care_plans__patient__facility__organization',
             Organization,
             OrganizationViewSet
         )
     ]
     filter_backends = (DjangoFilterBackend, )
     filterset_fields = (
-        # 'care_plans__patient__facility',
+        'care_plan_templates__care_plans__patient__facility',
     )
 
     def get_queryset(self):

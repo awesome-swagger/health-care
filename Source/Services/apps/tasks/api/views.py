@@ -1,3 +1,9 @@
+import datetime
+
+import pytz
+
+from django.utils import timezone
+
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_haystack.viewsets import HaystackViewSet
 from rest_framework import viewsets, permissions
@@ -93,12 +99,20 @@ class PatientTaskViewSet(viewsets.ModelViewSet):
     )
     queryset = PatientTask.objects.all()
     filter_backends = (DjangoFilterBackend, )
-    filterset_fields = (
-        'plan__id',
-        'patient_task_template__id',
-        'plan__patient__id',
-        'status',
-    )
+    # filterset_fields = (
+    #     'plan__id',
+    #     'patient_task_template__id',
+    #     'plan__patient__id',
+    #     'status',
+    # )
+    filterset_fields = {
+        'plan': ['exact'],
+        'patient_task_template': ['exact'],
+        'plan__patient': ['exact'],
+        'patient_task_template__plan_template': ['exact'],
+        'status': ['exact'],
+        'appear_datetime': ['lte', 'gte']
+    }
 
     def get_queryset(self):
         queryset = super(PatientTaskViewSet, self).get_queryset()
@@ -110,6 +124,27 @@ class PatientTaskViewSet(viewsets.ModelViewSet):
             )
         elif user.is_patient:
             queryset = queryset.filter(plan__patient=user.patient_profile)
+
+        return queryset
+
+    def filter_queryset(self, queryset):
+        queryset = super(PatientTaskViewSet, self).filter_queryset(queryset)
+
+        query_parameters = self.request.query_params.keys()
+        if 'plan__patient' in query_parameters and \
+           'patient_task_template__plan_template' in query_parameters and \
+           'appear_datetime__gte' not in query_parameters and \
+           'appear_datetime__lte' not in query_parameters:
+            today = timezone.now().date()
+            today_min = datetime.datetime.combine(today,
+                                                  datetime.time.min,
+                                                  tzinfo=pytz.utc)
+            today_max = datetime.datetime.combine(today,
+                                                  datetime.time.max,
+                                                  tzinfo=pytz.utc)
+            queryset = queryset.filter(
+                appear_datetime__range=(today_min, today_max)
+            )
 
         return queryset
 
