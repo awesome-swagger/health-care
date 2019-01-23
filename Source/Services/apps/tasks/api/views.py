@@ -99,12 +99,6 @@ class PatientTaskViewSet(viewsets.ModelViewSet):
     )
     queryset = PatientTask.objects.all()
     filter_backends = (DjangoFilterBackend, )
-    # filterset_fields = (
-    #     'plan__id',
-    #     'patient_task_template__id',
-    #     'plan__patient__id',
-    #     'status',
-    # )
     filterset_fields = {
         'plan': ['exact'],
         'patient_task_template': ['exact'],
