@@ -247,6 +247,12 @@ class SymptomRatingViewSet(viewsets.ModelViewSet):
         IsPatientOrEmployeeReadOnly,
     )
     queryset = SymptomRating.objects.all()
+    filter_backends = (DjangoFilterBackend, )
+    filterset_fields = {
+        'symptom_task__plan__patient': ['exact'],
+        'symptom_task__symptom_task_template__plan_template': ['exact'],
+        'modified': ['lte', 'gte']
+    }
 
     def get_queryset(self):
         queryset = super(SymptomRatingViewSet, self).get_queryset()
@@ -259,6 +265,27 @@ class SymptomRatingViewSet(viewsets.ModelViewSet):
         elif user.is_patient:
             queryset = queryset.filter(
                 symptom_task__plan__patient=user.patient_profile
+            )
+
+        return queryset
+
+    def filter_queryset(self, queryset):
+        queryset = super(SymptomRatingViewSet, self).filter_queryset(queryset)
+
+        query_parameters = self.request.query_params.keys()
+        if 'symptom_task__plan__patient' in query_parameters and \
+           'symptom_task__symptom_task_template__plan_template' in query_parameters and \
+           'modified__gte' not in query_parameters and \
+           'modified__lte' not in query_parameters:
+            today = timezone.now().date()
+            today_min = datetime.datetime.combine(today,
+                                                  datetime.time.min,
+                                                  tzinfo=pytz.utc)
+            today_max = datetime.datetime.combine(today,
+                                                  datetime.time.max,
+                                                  tzinfo=pytz.utc)
+            queryset = queryset.filter(
+                modified__range=(today_min, today_max)
             )
 
         return queryset

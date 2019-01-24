@@ -258,6 +258,7 @@ class SymptomRatingSerializer(RepresentationMixin,
             'symptom_task',
             'symptom',
             'rating',
+            'behavior',
         )
         read_only_fields = (
             'id',

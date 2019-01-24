@@ -245,6 +245,10 @@ class SymptomTask(AbstractTask):
             self.due_datetime,
         )
 
+    @property
+    def latest_rating(self):
+        return self.ratings.order_by('created').last()
+
 
 class SymptomRating(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
     symptom_task = models.ForeignKey(
@@ -265,6 +269,20 @@ class SymptomRating(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
             self.symptom.name,
             self.rating,
         )
+
+    @property
+    def behavior(self):
+        value = "increasing"
+        second_rating = SymptomRating.objects.filter(
+            symptom_task=self.symptom_task,
+            symptom=self.symptom).exclude(id=self.id).order_by(
+            'created').last()
+        if second_rating:
+            if self.rating < second_rating.rating:
+                value = "decreasing"
+            elif self.rating == second_rating.rating:
+                value = "equal"
+        return value
 
 
 class AssessmentTaskTemplate(AbstractTaskTemplate):
