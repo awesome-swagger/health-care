@@ -1,6 +1,15 @@
+import datetime
 import random
+import urllib
+
+import pytz
+
+from datetime import timedelta
+
+from dateutil.relativedelta import relativedelta
 
 from django.urls import reverse
+from django.utils import timezone
 
 from faker import Faker
 from rest_framework import status
@@ -106,6 +115,93 @@ class TestSymptomRatingUsingEmployee(TasksMixin, APITestCase):
     def test_delete_symptom_rating(self):
         response = self.client.delete(self.detail_url, {})
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_get_symptom_ratings_by_plan_template_and_patient(self):
+        plan_template = self.plan.plan_template
+        patient = self.plan.patient
+
+        for i in range(5):
+            symptom_template = self.create_symptom_task_template(**{
+                'plan_template': plan_template
+            })
+            symptom_task = self.create_symptom_task(**{
+                'symptom_task_template': symptom_template,
+                'plan': self.plan
+            })
+
+            self.create_symptom_rating(**{
+                'symptom_task': symptom_task
+            })
+
+        # create dummy goals for the patient
+        for i in range(5):
+            symptom_template = self.create_symptom_task_template(**{
+                'plan_template': plan_template
+            })
+            symptom_task = self.create_symptom_task(**{
+                'symptom_task_template': symptom_template,
+            })
+
+            self.create_symptom_rating(**{
+                'symptom_task': symptom_task,
+            })
+
+        query_params = urllib.parse.urlencode({
+            'symptom_task__plan__patient': patient.id,
+            'symptom_task__symptom_task_template__plan_template': plan_template.id
+        })
+
+        filter_url = f'{self.url}?{query_params}'
+        response = self.client.get(filter_url)
+        self.assertEqual(response.data['count'], 5)
+
+    def test_get_symptom_Ratings_by_plan_template_patient_and_datetime(self):
+        plan_template = self.plan.plan_template
+        patient = self.plan.patient
+        today = timezone.now()
+        today_min = datetime.datetime.combine(today,
+                                              datetime.time.min,
+                                              tzinfo=pytz.utc)
+        today_max = datetime.datetime.combine(today,
+                                              datetime.time.max,
+                                              tzinfo=pytz.utc)
+
+        for i in range(5):
+            symptom_template = self.create_symptom_task_template(**{
+                'plan_template': plan_template
+            })
+            symptom_task = self.create_symptom_task(**{
+                'symptom_task_template': symptom_template,
+                'plan': self.plan
+            })
+
+            self.create_symptom_rating(**{
+                'symptom_task': symptom_task
+            })
+
+        # create dummy goals for the patient
+        for i in range(5):
+            symptom_template = self.create_symptom_task_template(**{
+                'plan_template': plan_template
+            })
+            symptom_task = self.create_symptom_task(**{
+                'symptom_task_template': symptom_template,
+            })
+
+            self.create_symptom_rating(**{
+                'symptom_task': symptom_task,
+            })
+
+        query_params = urllib.parse.urlencode({
+            'symptom_task__plan__patient': patient.id,
+            'symptom_task__symptom_task_template__plan_template': plan_template.id,
+            'modified__lte': today_max,
+            'modified__gte': today_min
+        })
+
+        filter_url = f'{self.url}?{query_params}'
+        response = self.client.get(filter_url)
+        self.assertEqual(response.data['count'], 5)
 
 
 class TestSymptomTaskUsingPatient(TasksMixin, APITestCase):
