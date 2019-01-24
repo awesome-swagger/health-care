@@ -259,6 +259,23 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
     return (rating / 5.0) * 100;
   }
 
+  public floor(num) {
+    return Math.floor(num);
+  }
+
+  public format24Hour(time) {
+    let timeParse = time.split(":");
+    //it is pm if hours from 12 onwards
+    let suffix = (timeParse[0] >= 12)? 'PM' : 'AM';
+
+    //only -12 from hours if it is greater than 12 (if not back at mid night)
+    let hours = (parseInt(timeParse[0]) > 12) ? parseInt(timeParse[0]) -12 : parseInt(timeParse[0]);
+
+    //if 00 then it is 12 am
+    hours = (hours == 0) ? 12 : hours;
+    return `${hours}:${timeParse[1]} ${suffix}`;
+  }
+
   public getPillColor(percentage) {
     if (percentage >= 90) {
       return '#4caf50';

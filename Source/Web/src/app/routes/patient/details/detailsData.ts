@@ -104,7 +104,7 @@ export class DetailsMockData {
 			first_name: faker.name.firstName(),
 			last_name: faker.name.lastName(),
 			title: 'RN',
-			facilities: [1]
+			facilities: [1],
 		};
 	}
 

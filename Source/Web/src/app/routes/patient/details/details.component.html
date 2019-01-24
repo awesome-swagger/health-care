@@ -79,11 +79,10 @@
                   </div>
                 </a>
               </td>
-              <td class="center">
-                <button class="button button--iconText"
-                (click)="updateGoal()">
+              <td>
+                <a class="button button--icon--small button--icon button--center relative" (click)="updateGoal()">
                   <i class="ss-write"></i>
-                </button>
+                </a>
               </td>
             </tr>
           </tbody>
@@ -148,8 +147,8 @@
           <tbody>
             <tr *ngFor="let task of userTasks">
               <td class="left">{{task.name}}</td>
-              <td>{{task.appear}}</td>
-              <td>{{task.due}}</td>
+              <td>{{format24Hour(task.appear)}}</td>
+              <td>{{format24Hour(task.due)}}</td>
               <td>
                 <div class="pill pill--status" [ngStyle]="{'background': getPillColorStatus(task.status)}">
                   {{task.status}}
@@ -157,9 +156,8 @@
               </td>
               <td>{{task.currentOccurance}} of {{task.totalOccurances}}</td>
               <td>
-                <button class="button button--iconText"
-                (click)="openRecordResults()">
-                  <i class="ss-write"></i> Edit Result
+                <button class="button button--center relative completeButton" *ngIf="task.status !== 'done'" (click)="openRecordResults()">
+                  Complete
                 </button>
               </td>
             </tr>
@@ -225,8 +223,8 @@
           <tbody>
             <tr *ngFor="let task of teamTasks">
               <td class="left">{{task.name}}</td>
-              <td>{{task.appear}}</td>
-              <td>{{task.due}}</td>
+              <td>{{format24Hour(task.appear)}}</td>
+              <td>{{format24Hour(task.due)}}</td>
               <td>
                 <div class="pill pill--status" [ngStyle]="{'background': getPillColorStatus(task.status)}">
                   {{task.status}}
@@ -334,8 +332,8 @@
             <tr *ngFor="let task of patientTasks">
               <td class="left">{{task.type | titlecase}}</td>
               <td class="left">{{task.name}}</td>
-              <td>{{task.appear}}</td>
-              <td>{{task.due}}</td>
+              <td>{{format24Hour(task.appear)}}</td>
+              <td>{{format24Hour(task.due)}}</td>
               <td>
                 <div class="pill pill--status" [ngStyle]="{'background': getPillColorStatus(task.status)}">
                   {{task.status}}
@@ -344,13 +342,13 @@
               <td>{{task.currentOccurance}} of {{task.totalOccurances}}</td>
               <td>
                 <div class="pill" [ngStyle]="{'background': getPillColor(task.averageEngagement * 100)}">
-                  {{task.averageEngagement * 100}}%
+                  {{floor(task.averageEngagement * 100)}}%
                 </div>
               </td>
               <td>
-                <button class="button button--icon button--icon--small" (click)="editPatientTask()">
+                <a class="button button--icon--small button--icon button--center relative" (click)="editPatientTask()">
                   <i class="ss-write"></i>
-                </button>
+                </a>
               </td>
             </tr>
           </tbody>
@@ -364,13 +362,27 @@
       <span class="accordion__title">Assessment Results - {{tableHeaderDate()}} ({{assessmentResults.length}})</span>
       <div class="accordion__right">
         <span class="marRight8">{{totalOutcomeQuestions()}} Outcome Questions</span>
-        <div class="pill marRight24" [ngStyle]="{'background': getPillColor(averageOutcomePercentage())}">
-          {{averageOutcomeScore()}}/5
-        </div>
-        <span class="marRight8">{{totalSatisfactionQuestions()}} Satisfaction Question</span>
-        <div class="pill pill--lime">
-          {{averageSatisfactionScore()}}/5
-        </div>
+        <ng-container *ngIf="totalOutcomeQuestions() > 0">
+          <div class="pill marRight24" [ngStyle]="{'background': getPillColor(averageOutcomePercentage())}">
+            {{averageOutcomeScore()}}/5
+          </div>
+        </ng-container>
+        <ng-container *ngIf="totalOutcomeQuestions() === 0">
+          <div class="pill marRight24">
+            N/A
+          </div>
+        </ng-container>
+          <span class="marRight8">{{totalSatisfactionQuestions()}} Satisfaction Question</span>
+        <ng-container *ngIf="totalSatisfactionQuestions() > 0">
+          <div class="pill" [ngStyle]="{'background': getPillColor(averageSatisfactionPercentage())}">
+            {{averageSatisfactionScore()}}/5
+          </div>
+        </ng-container>
+        <ng-container *ngIf="totalSatisfactionQuestions() === 0">
+          <div class="pill">
+            N/A
+          </div>
+        </ng-container>
         <div class="accordion__arrow">
           <i class="ss-standard ss-navigateright"></i>
         </div>
@@ -478,6 +490,22 @@
                     </div>
                   </div>
                 </th>
+                <th class="thSortable">
+                  <div class="tool justifyCenter">
+                    <span class="thSortable__text">Update</span>
+                    <div class="tool__anchor">
+                      <button class="button button--icon button--icon--small"
+                      (click)="tooltipPD402Open=!tooltipPD402Open">
+                        <i class="ss-help"></i>
+                      </button>
+                      <div class="tool__tip tool__tip--bottom tool__tip--right" [ngClass]="{ 'isOpen' : tooltipPD402Open }">
+                        <div class="tool__text">
+                          You are able to update the patient's information.  This will override anything the patient has already submitted.
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -501,6 +529,11 @@
                   <div class="iconText">
                     <i class="iconText__icon iconText__icon--noTop ss-standard ss-hyphen iconSmall"></i> {{question.vsPlan}}
                   </div>
+                </td>
+                <td>
+                  <a class="button button--icon--small button--icon button--center relative" (click)="editPatientTask()">
+                    <i class="ss-write"></i>
+                  </a>
                 </td>
               </tr>
             </tbody>
@@ -598,6 +631,22 @@
                   </div>
                 </div>
               </th>
+              <th class="thSortable">
+                <div class="tool justifyCenter">
+                  <span class="thSortable__text">Update</span>
+                  <div class="tool__anchor">
+                    <button class="button button--icon button--icon--small"
+                    (click)="tooltipPD402Open=!tooltipPD402Open">
+                      <i class="ss-help"></i>
+                    </button>
+                    <div class="tool__tip tool__tip--bottom tool__tip--right" [ngClass]="{ 'isOpen' : tooltipPD402Open }">
+                      <div class="tool__text">
+                        You are able to update the patient's information.  This will override anything the patient has already submitted.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -621,6 +670,11 @@
                 <div class="iconText">
                   <i class="iconText__icon iconText__icon--noTop ss-standard ss-hyphen iconSmall"></i> {{symptom.vsPlan}}
                 </div>
+              </td>
+              <td>
+                <a class="button button--icon--small button--icon button--center relative" (click)="editPatientTask()">
+                  <i class="ss-write"></i>
+                </a>
               </td>
             </tr>
           </tbody>
@@ -721,6 +775,22 @@
           					</div>
           				</div>
           			</th>
+                <th class="thSortable">
+                  <div class="tool justifyCenter">
+                    <span class="thSortable__text">Update</span>
+                    <div class="tool__anchor">
+                      <button class="button button--icon button--icon--small"
+                      (click)="tooltipPD402Open=!tooltipPD402Open">
+                        <i class="ss-help"></i>
+                      </button>
+                      <div class="tool__tip tool__tip--bottom tool__tip--right" [ngClass]="{ 'isOpen' : tooltipPD402Open }">
+                        <div class="tool__text">
+                          You are able to update the patient's information.  This will override anything the patient has already submitted.
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </th>
           		</tr>
           	</thead>
           	<tbody>
@@ -741,6 +811,11 @@
           					<i class="iconText__icon iconText__icon--noTop ss-standard ss-hyphen iconSmall"></i> {{question.vsPlan}}
           				</div>
           			</td>
+                <td>
+                  <a class="button button--icon--small button--icon button--center relative" (click)="editPatientTask()">
+                    <i class="ss-write"></i>
+                  </a>
+                </td>
           		</tr>
           	</tbody>
           </table>
