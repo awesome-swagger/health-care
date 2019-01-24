@@ -85,7 +85,7 @@
 </div>
 
 <label>Notes (opt)</label>
-<textarea class="input input--textarea"></textarea>
+<textarea class="input input--textarea" [(ngModel)]="notes"></textarea>
 
 <div class="divider"></div>
 <label>Patient Engagement</label>
@@ -132,10 +132,10 @@
 </div>
 
 <div class="modal__buttons">
-  <button class="button button--2nd">
+  <button class="button button--2nd" (click)="clickClose()">
     Cancel
   </button>
-  <button class="button">
+  <button class="button" (click)="clickSave()">
     Save
   </button>
 </div>

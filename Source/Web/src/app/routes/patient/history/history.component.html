@@ -79,12 +79,12 @@
             <div class="historyItem">
               <div class="historyItem__buttons">
                 <button class="button button--icon button--icon--small"
-                (click)="editResults()">
+                (click)="editResults(selectedResult)">
                   <i class="ss-write"></i>
                 </button>
                 <!--TODO: Hide the delete button if the item is a care plan task-->
                 <button class="button button--icon button--icon--small"
-                (click)="confirmDelete()">
+                (click)="confirmDelete(selectedResult)">
                   <i class="ss-delete"></i>
                 </button>
               </div>

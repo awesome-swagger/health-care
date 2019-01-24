@@ -142,7 +142,7 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
     }).subscribe(() => {});
   }
 
-  public confirmDelete() {
+  public confirmDelete(result) {
     this.modals.open(ConfirmModalComponent, {
      'closeDisabled': true,
      data: {

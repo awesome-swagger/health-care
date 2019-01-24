@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { ModalService } from '../../../modules/modals';
 
 @Component({
   selector: 'app-record-results',
@@ -23,7 +24,9 @@ export class RecordResultsComponent implements OnInit {
   public tooltipRRM1Open;
   public tooltipRRM2Open;
 
-  constructor() { }
+  constructor(
+    private modal: ModalService,
+  ) { }
 
   public ngOnInit() {
     console.log(this.data);
@@ -38,5 +41,15 @@ export class RecordResultsComponent implements OnInit {
       this.notes = this.data.notes;
       this.patientEngagement = this.data.patientEngagement;
     }
+  }
+
+  public clickClose() {
+    this.modal.close(null);
+  }
+
+  public clickSave() {
+    this.modal.close({
+      
+    });
   }
 }
