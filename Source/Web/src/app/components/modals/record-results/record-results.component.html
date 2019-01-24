@@ -1,6 +1,6 @@
 <h1 class="modal__title">Record Results</h1>
 <div class="divider modal__divider"></div>
-<h2 class="center marBottom32">Theresa Beckstrom</h2>
+<h2 class="center marBottom32">{{patient?.user.first_name}} {{patient?.user.last_name}}</h2>
 <div class="flex">
   <div class="flex1 marRight24">
     <label>Date</label>
@@ -13,7 +13,7 @@
   </div>
   <div class="flex1">
     <label>Care Plan</label>
-    Depression
+    {{carePlan.plan_template.name}}
   </div>
 </div> <!--/.flex (for date, type, care plan)-->
 
@@ -85,7 +85,7 @@
 </div>
 
 <label>Notes (opt)</label>
-<textarea class="input input--textarea"></textarea>
+<textarea class="input input--textarea" [(ngModel)]="notes"></textarea>
 
 <div class="divider"></div>
 <label>Patient Engagement</label>
@@ -132,10 +132,10 @@
 </div>
 
 <div class="modal__buttons">
-  <button class="button button--2nd">
+  <button class="button button--2nd" (click)="clickClose()">
     Cancel
   </button>
-  <button class="button">
+  <button class="button" (click)="clickSave()">
     Save
   </button>
 </div>
