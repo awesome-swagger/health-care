@@ -1,7 +1,7 @@
 <h1 class="modal__title">Add Care Messages</h1>
 
 <!--TODO: If on a care plan template, show the following-->
-<div *ngIf="" class="marCenter marCenter--twoThirds">
+<div class="marCenter marCenter--twoThirds">
   <div class="iconText iconText--wrap iconText--autoHeight error marBottom32">
     <i class="iconText__icon ss-alert"></i>
     <span class="error__text">
@@ -10,7 +10,7 @@
   </div>
 </div>
 <!--TODO: If on a care plan instance, show the following-->
-<h5 class="center">NOTE: You are working on one patient's care plan. To do this for everyone, go to care plans.</h5>
+<h5 *ngIf="" class="center">NOTE: You are working on one patient's care plan. To do this for everyone, go to care plans.</h5>
 
 <div class="grid2col">
   <div class="gridCell--11 marRight32">
@@ -44,7 +44,7 @@
       <button class="button button--2nd" (click)="clickCancel()">
         Cancel
       </button>
-      <button class="button" (click)="clickNext()">
+      <button class="button" [disabled]="nextDisabled()" (click)="clickNext()">
         Next
       </button>
     </div>
@@ -54,21 +54,12 @@
     <div class="modal__details">
       <h2 *ngIf="!selectedTemplate" class="modal__empty">Select a message stream to see details</h2>
       <div *ngIf="selectedTemplate">
-        <h2>{{selectedTemplate.name}}</h2>
-        <table class="fullWidth">
-          <thead>
-            <tr>
-              <th class="left">Messages</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let message of selectedTemplate.messages">
-              <td class="left">
-                {{message.text}}
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <h2 class="marTop16">{{selectedTemplate.name}}</h2>
+        <ul class="messagesList">
+          <li *ngFor="let message of selectedTemplate.messages">
+            {{message.text}}
+          </li>
+        </ul>
       </div>
     </div> <!--/.modal__details-->
   </div> <!--/.gridCell--21-->

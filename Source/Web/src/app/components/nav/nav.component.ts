@@ -8,7 +8,14 @@ import { PopoverOptions } from '../../modules/popover';
 import { AuthService, NavbarService, StoreService } from '../../services';
 import { ModalService, ConfirmModalComponent } from '../../modules/modals';
 import patientsData from '../../routes/patients/active/patients-data.js';
-import { filter as _filter } from 'lodash';
+import {
+  filter as _filter,
+  map as _map,
+  sum as _sum
+} from 'lodash';
+import notificationData from './notificationData';
+import tasksData from './tasksData';
+import * as moment from 'moment';
 
 @Component({
   selector: 'app-nav',
@@ -32,6 +39,7 @@ export class NavComponent implements OnDestroy, OnInit {
     relativeLeft: '1.5rem',
   };
   public searchOpen = false;
+  public searchString = '';
   public taskDropOpen = false;
   public taskDropOptions: PopoverOptions = {
     relativeRight: '16rem',
@@ -60,6 +68,9 @@ export class NavComponent implements OnDestroy, OnInit {
   private authSub: Subscription = null;
   private organizationSub: Subscription = null;
   private routeParams = null;
+
+  public notificationData = notificationData;
+  public tasksData = tasksData;
 
   constructor(
     private router: Router,
@@ -108,7 +119,9 @@ export class NavComponent implements OnDestroy, OnInit {
           this.searchOpen = false;
           return;
         }
-        let searchSub = this.store.PatientProfileSearch(searchStr).readListPaged().subscribe(
+        let searchSub = this.store.PatientProfile.listRoute('get', 'search', {}, {
+          q: searchStr,
+        }).subscribe(
           (searchResults: any) => {
             this.searchResults = searchResults;
             if (this.searchResults.length > 0) {
@@ -148,6 +161,7 @@ export class NavComponent implements OnDestroy, OnInit {
 
   public switchOrganization(organization) {
     this.auth.switchOrganization(organization.id);
+    this.router.navigate(['/dashboard']);
   }
 
   public confirmUnarchive() {
@@ -184,8 +198,16 @@ export class NavComponent implements OnDestroy, OnInit {
     this.router.navigate(['/user', this.employee.id]);
   }
 
+  public routeToPatients() {
+    this.router.navigate(['/patients/active']);
+  }
+
   public routeToPatient(patient) {
-    this.router.navigate(['patient', patient.id]);
+    this.router.navigate(['/patient', patient.id]);
+  }
+
+  public routeToPatientPage(route) {
+    this.router.navigate(['/patient', this.nav.patientDetailId, route, this.nav.patientPlanId]);
   }
 
   public getPatients() {
@@ -203,5 +225,34 @@ export class NavComponent implements OnDestroy, OnInit {
       );
     });
     return promise;
+  }
+
+  public routeToAnalytics() {
+    window.open('https://www.google.com', '_self');
+  }
+
+  public get notifCount() {
+    return _sum(_map(this.notificationData, n => n.notifications.length));
+  }
+
+  public get taskCount() {
+    return tasksData.checkIns.length + tasksData.tasks.length;
+  }
+
+  public timeSince(d) {
+    const date = moment(d);
+    const daysSince = moment().diff(date, 'days');
+    const hoursSince = moment().diff(date, 'hours');
+    const minutesSince = moment().diff(date, 'minutes');
+
+    if (!daysSince) {
+      if (!hoursSince) {
+        return `${minutesSince} minute${minutesSince !== 1 ? 's' : ''} ago`;
+      } else {
+        return `${hoursSince} hour${hoursSince !== 1 ? 's' : ''} ago`;
+      }
+    } else {
+      return `${daysSince} day${daysSince !== 1 ? 's' : ''} ago`;
+    }
   }
 }

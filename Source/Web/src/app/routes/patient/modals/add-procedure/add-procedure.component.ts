@@ -9,6 +9,8 @@ export class AddProcedureComponent implements OnInit {
 
   constructor() { }
 
+  public close;
+
   ngOnInit() {
   }
 

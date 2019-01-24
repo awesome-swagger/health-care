@@ -33,6 +33,11 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
   public activeServiceAreas = {};
   public activeCarePlans = {};
   public users = null;
+  public toolAP1Open;
+  public multi1Open;
+  public multi2Open;
+  public multi3Open;
+  public multi4Open;
 
   constructor(
     private router: Router,
@@ -47,15 +52,14 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
     this.getPatients().then((patients: any) => {
       // patients = patientsData.results; // TODO: remove
       this.activePatients = _filter(patients, p => p.is_active);
-      this.activePatientsGrouped = this.groupPatientsByFacility(patients);
-
+      this.activePatientsGrouped = this.groupPatientsByFacility(this.activePatients);
       this.activePatients.forEach((patient, i) => {
-        let carePlanSub = this.store.PatientCarePlans(patient.id).read().subscribe(
-          (plans) => {
+        let carePlanSub = this.store.PatientProfile.detailRoute('get', patient.id, 'care_plans').subscribe(
+          (plans: any) => {
             this.activePatients[i].care_plans = plans.map((plan) => {
               return {
                 name: plan.plan_template.name,
-                service_area: plan.plan_template.service_area || "Undefined",
+                service_area: plan.plan_template.service_area.name || "Undefined",
                 current_week: plan.current_week || 0,
                 total_weeks: plan.plan_template.duration_weeks || 0,
                 time_in_minutes: plan.time || 0,

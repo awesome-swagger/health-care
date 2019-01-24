@@ -94,7 +94,7 @@ const routes: Routes = [
     canActivate: [ CanActivateViaAuthGuard ],
   },
   {
-    path: 'patient/:id',
+    path: 'patient/:patientId',
     component: PatientComponent,
     data: { title: 'Patient', },
     canActivate: [ CanActivateViaAuthGuard ],

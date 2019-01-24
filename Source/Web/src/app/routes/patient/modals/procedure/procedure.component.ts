@@ -9,6 +9,9 @@ export class ProcedureComponent implements OnInit {
 
   public data = null;
 
+  public dropAPOpen;
+  public showADDate;
+
   constructor() {
 
   }

@@ -57,7 +57,7 @@
         Cancel
       </button>
       <!--TODO: Clicking "next" triggers the edit-task modal, for scheduling the vital within the care plan-->
-      <button class="button" [disabled]="!vitalTemplatePreview.vital" (click)="editVitalTemplate($event, vital)">
+      <button class="button" [disabled]="!vitalTemplatePreview.vital" (click)="editVitalTemplate($event, vitalTemplatePreview.vital)">
         Next
       </button>
     </div>

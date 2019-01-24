@@ -11,7 +11,7 @@
 <h5 *ngIf="">NOTE: You are working on one patient's care plan. To do this for everyone, go to care plans.</h5>
 
 <!--TODO: Hide if medication or symptom-->
-<div *ngIf="getTaskType().type !== 'symptom'">
+<div *ngIf="getTaskType().type !== 'symptom' && getTaskType().type !== 'medication'">
 	<label class="noMargin">Task</label>
 	<div class="flex alignCenter marBottom32">
 		<div *ngIf="!editName" class="flex alignCenter justifySpaceBetween fullWidth">
@@ -41,9 +41,7 @@
     </button> -->
 	</div>
 </div>
-
-<!-- TODO: Show if medication task -->
-<div *ngIf="">
+<div *ngIf="getTaskType().type === 'medication'">
 	<h5>If a medication should be taken more than once a day, create a separate task for each instance.</h5>
 	<div class="tool">
 		<label class="noMargin">Medication</label>

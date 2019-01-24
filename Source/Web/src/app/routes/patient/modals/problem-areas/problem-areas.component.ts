@@ -1,29 +1,21 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import * as moment from 'moment';
+import { AuthService, StoreService } from '../../../../services';
 
 @Component({
   selector: 'app-problem-areas',
   templateUrl: './problem-areas.component.html',
   styleUrls: ['./problem-areas.component.scss'],
 })
-export class ProblemAreasComponent implements OnInit {
+export class ProblemAreasComponent implements OnDestroy, OnInit {
 
   public data = null;
+  public moment = moment;
 
-  public problemAreas = [
-    {
-      identifiedDate: 'Mar 17, 2018',
-      identifiedBy: 'Lori Ramirez, RN',
-      name: 'Severe Depression',
-      description: 'Unable to concentrate or keep a job or relationship. Patient stays at home most of the time and does not have a lot of human interaction.',
-    },
-    {
-      identifiedDate: 'Dec 10, 2017',
-      identifiedBy: 'Jason Stoneman, MD',
-      name: 'Family Issues',
-      description: 'Going through a divorce.',
-    }
-  ]
+  public addPA;
+
+  public user;
+  public problemAreas = [];
 
   public editIndex = -1;
   public deleteIndex = -1;
@@ -32,21 +24,69 @@ export class ProblemAreasComponent implements OnInit {
   public currentAddName = '';
   public currentAddText = '';
 
-  constructor() {
+  private authSub = null;
 
-  }
+  constructor(
+    private auth: AuthService,
+    private store: StoreService,
+  ) { }
 
   public ngOnInit() {
     console.log(this.data);
+    this.authSub = this.auth.user$.subscribe((user) => {
+      this.user = user;
+    });
+    if (this.data) {
+      this.problemAreas = this.data.problemAreas ? this.data.problemAreas : [];
+    }
+  }
+
+  public ngOnDestroy() {
+    if (this.authSub) {
+      this.authSub.unsubscribe();
+    }
   }
 
   public addProblemArea() {
-    this.problemAreas.push({
-      identifiedDate: moment().format('MMM DD, YYYY'),
-      identifiedBy: this.data && this.data.currentUser,
+    if (!this.user) {
+      return;
+    }
+    this.store.ProblemArea.create({
+      patient: this.data.patient.id,
+      date_identified: moment().format('YYYY-MM-DD'),
+      identified_by: this.user.id,
       name: this.currentAddName,
       description: this.currentAddText,
-    })
+    }).subscribe((problemArea) => {
+      this.problemAreas.push(problemArea);
+    });
   }
 
+  public clickEditProblem(index, problem) {
+    this.editIndex = index;
+    this.currentEditName = problem.name;
+    this.currentEditText = problem.description;
+  }
+
+  public clickDeleteProblem(index) {
+    this.deleteIndex = index;
+  }
+
+  public clickSaveEdit(index) {
+    this.editIndex = -1;
+    this.store.ProblemArea.update(this.problemAreas[index].id, {
+      name: this.currentEditName,
+      description: this.currentEditText,
+    }).subscribe((updatedProblemArea) => {
+      this.problemAreas[index] = updatedProblemArea;
+    });
+  }
+
+  public confirmDelete(index) {
+    this.store.ProblemArea.destroy(this.problemAreas[index].id).subscribe(
+      () => {
+        this.problemAreas.splice(index, 1);
+      }
+    );
+  }
 }

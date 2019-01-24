@@ -50,13 +50,13 @@ export class PatientDashboardComponent implements OnDestroy, OnInit {
 
   public getCarePlans(patientId) {
     return new Promise((resolve, reject) => {
-        let carePlanSub = this.store.PatientCarePlans(patientId).read().subscribe(
+        let carePlanSub = this.store.PatientProfile.detailRoute('get', patientId, 'care_plans').subscribe(
           plans => resolve(plans),
           err => reject(err),
           () => carePlanSub.unsubscribe()
         )
     });
-  } 
+  }
 
   public ngOnDestroy() { }
 }

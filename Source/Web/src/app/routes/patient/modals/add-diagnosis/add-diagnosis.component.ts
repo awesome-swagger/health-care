@@ -9,6 +9,8 @@ export class AddDiagnosisComponent implements OnInit {
 
   constructor() { }
 
+  public close;
+
   ngOnInit() {
   }
 

@@ -3,6 +3,7 @@ import pytz
 import random
 
 from datetime import datetime, time, timedelta
+from urllib.parse import urlencode
 
 from django.apps import apps
 from django.db.models import Avg
@@ -36,7 +37,10 @@ class TestCarePlanUsingEmployee(TasksMixin, APITestCase):
     def setUp(self):
         self.fake = Faker()
         self.patient = self.create_patient()
-        self.employee = self.create_employee()
+        self.facility = self.create_facility()
+        self.employee = self.create_employee(**{
+            'facilities': [self.facility]
+        })
         self.user = self.employee.user
 
         self.plan_template = self.create_care_plan_template()
@@ -135,35 +139,62 @@ class TestCarePlanUsingEmployee(TasksMixin, APITestCase):
         response = self.client.get(avg_url)
         self.assertEqual(response.data['total_patients'], total_care_plans)
 
-    def generate_average_outcome_records(self, organization):
+    def generate_average_outcome_records(self,
+                                         organization=None,
+                                         patient=None,
+                                         plan_template=None):
         total_facilities = 3
         total_care_plans = 5
         total_patients = 6
         num_assessment_tasks = 3
         plans = []
 
-        for i in range(total_facilities):
-            facility = self.create_facility(organization)
-            for p in range(total_patients):
-                patient = self.create_patient(**{
-                    'facility': facility
-                })
-                for c in range(total_care_plans):
-                    plan = self.create_care_plan(patient)
-                    plans.append(plan)
+        if organization:
+            for i in range(total_facilities):
+                facility = self.create_facility(organization)
+                for p in range(total_patients):
+                    patient = self.create_patient(**{
+                        'facility': facility
+                    })
+                    for c in range(total_care_plans):
+                        plan = self.create_care_plan(patient)
+                        plans.append(plan)
 
-                    for t in range(num_assessment_tasks):
-                        template = self.create_assessment_task_template(**{
-                            'tracks_outcome': True
-                        })
-                        task = self.create_assessment_task(**{
-                            'plan': plan,
-                            'assessment_task_template': template
-                        })
-                        questions = template.questions.all()
-                        self.create_responses_to_multiple_questions(template,
-                                                                    task,
-                                                                    questions)
+                        for t in range(num_assessment_tasks):
+                            template = self.create_assessment_task_template(**{
+                                'tracks_outcome': True
+                            })
+                            task = self.create_assessment_task(**{
+                                'plan': plan,
+                                'assessment_task_template': template
+                            })
+                            questions = template.questions.all()
+                            self.create_responses_to_multiple_questions(
+                                template,
+                                task,
+                                questions
+                            )
+        elif patient and plan_template:
+            for c in range(total_care_plans):
+                plan = self.create_care_plan(patient, **{
+                    'plan_template': plan_template
+                })
+                plans.append(plan)
+
+                for t in range(num_assessment_tasks):
+                    template = self.create_assessment_task_template(**{
+                        'tracks_outcome': True
+                    })
+                    task = self.create_assessment_task(**{
+                        'plan': plan,
+                        'assessment_task_template': template
+                    })
+                    questions = template.questions.all()
+                    self.create_responses_to_multiple_questions(
+                        template,
+                        task,
+                        questions
+                    )
 
         outcome_tasks = AssessmentTask.objects.filter(
             plan__in=plans,
@@ -187,7 +218,89 @@ class TestCarePlanUsingEmployee(TasksMixin, APITestCase):
 
         return average_outcome
 
-    def generate_average_engagement_records(self, organization):
+    def generate_average_satisfaction_records(self,
+                                              organization=None,
+                                              patient=None,
+                                              plan_template=None):
+        total_facilities = 3
+        total_care_plans = 5
+        total_patients = 6
+        num_assessment_tasks = 3
+        plans = []
+
+        if organization:
+            for i in range(total_facilities):
+                facility = self.create_facility(organization)
+                for p in range(total_patients):
+                    patient = self.create_patient(**{
+                        'facility': facility
+                    })
+                    for c in range(total_care_plans):
+                        plan = self.create_care_plan(patient)
+                        plans.append(plan)
+
+                        for t in range(num_assessment_tasks):
+                            template = self.create_assessment_task_template(**{
+                                'tracks_satisfaction': True
+                            })
+                            task = self.create_assessment_task(**{
+                                'plan': plan,
+                                'assessment_task_template': template
+                            })
+                            questions = template.questions.all()
+                            self.create_responses_to_multiple_questions(
+                                template,
+                                task,
+                                questions
+                            )
+        elif patient and plan_template:
+            for c in range(total_care_plans):
+                plan = self.create_care_plan(patient, **{
+                    'plan_template': plan_template
+                })
+                plans.append(plan)
+
+                for t in range(num_assessment_tasks):
+                    template = self.create_assessment_task_template(**{
+                        'tracks_satisfaction': True
+                    })
+                    task = self.create_assessment_task(**{
+                        'plan': plan,
+                        'assessment_task_template': template
+                    })
+                    questions = template.questions.all()
+                    self.create_responses_to_multiple_questions(
+                        template,
+                        task,
+                        questions
+                    )
+
+        satisfaction_tasks = AssessmentTask.objects.filter(
+            plan__in=plans,
+            assessment_task_template__tracks_satisfaction=True
+        ).aggregate(satisfaction_average=Avg('responses__rating'))
+        average = satisfaction_tasks['satisfaction_average'] or 0
+        average_satisfaction = round((average / 5) * 100)
+
+        # Create dummy record
+        for i in range(5):
+            template = self.create_assessment_task_template(**{
+                'tracks_satisfaction': True
+            })
+            task = self.create_assessment_task(**{
+                'assessment_task_template': template
+            })
+            self.create_multiple_assessment_questions(template)
+            questions = template.questions.all()
+            self.create_responses_to_multiple_questions(
+                template, task, questions)
+
+        return average_satisfaction
+
+    def generate_average_engagement_records(self,
+                                            organization=None,
+                                            patient=None,
+                                            plan_template=None):
         total_facilities = 3
         total_care_plans = 5
         total_patients = 6
@@ -195,21 +308,34 @@ class TestCarePlanUsingEmployee(TasksMixin, APITestCase):
         now = timezone.now()
         due_datetime = now - relativedelta(days=3)
 
-        for i in range(total_facilities):
-            facility = self.create_facility(organization)
-            for p in range(total_patients):
-                patient = self.create_patient(**{
-                    'facility': facility
-                })
-                for c in range(total_care_plans):
-                    plan = self.create_care_plan(patient)
-                    plans.append(plan)
+        if organization:
+            for i in range(total_facilities):
+                facility = self.create_facility(organization)
+                for p in range(total_patients):
+                    patient = self.create_patient(**{
+                        'facility': facility
+                    })
+                    for c in range(total_care_plans):
+                        plan = self.create_care_plan(patient)
+                        plans.append(plan)
 
-                    self.generate_assessment_tasks(plan, due_datetime)
-                    self.generate_patient_tasks(plan, due_datetime)
-                    self.generate_medication_tasks(plan, due_datetime)
-                    self.generate_symptom_tasks(plan, due_datetime)
-                    self.generate_vital_tasks(plan, due_datetime)
+                        self.generate_assessment_tasks(plan, due_datetime)
+                        self.generate_patient_tasks(plan, due_datetime)
+                        self.generate_medication_tasks(plan, due_datetime)
+                        self.generate_symptom_tasks(plan, due_datetime)
+                        self.generate_vital_tasks(plan, due_datetime)
+        elif patient and plan_template:
+            for c in range(total_care_plans):
+                plan = self.create_care_plan(patient, **{
+                    'plan_template': plan_template
+                })
+                plans.append(plan)
+
+                self.generate_assessment_tasks(plan, due_datetime)
+                self.generate_patient_tasks(plan, due_datetime)
+                self.generate_medication_tasks(plan, due_datetime)
+                self.generate_symptom_tasks(plan, due_datetime)
+                self.generate_vital_tasks(plan, due_datetime)
 
         assessment_tasks = AssessmentTask.objects.filter(
             plan__in=plans,
@@ -282,6 +408,75 @@ class TestCarePlanUsingEmployee(TasksMixin, APITestCase):
             average_engagement
         )
 
+    def test_care_plan_patient_average_outcome(self):
+        patient = self.create_patient()
+        plan_template = self.create_care_plan_template()
+        average_outcome = self.generate_average_outcome_records(
+            patient=patient, plan_template=plan_template)
+
+        url = reverse('care_plans-patient-average')
+        url_params = urlencode({
+            'patient': patient.id,
+            'plan_template': plan_template.id
+        })
+        avg_url = f'{url}?{url_params}'
+        response = self.client.get(avg_url)
+        self.assertEqual(response.data['average_outcome'], average_outcome)
+
+    def test_care_plan_patient_average_satisfaction(self):
+        patient = self.create_patient()
+        plan_template = self.create_care_plan_template()
+        average_satisfaction = self.generate_average_satisfaction_records(
+            patient=patient, plan_template=plan_template)
+
+        url = reverse('care_plans-patient-average')
+        url_params = urlencode({
+            'patient': patient.id,
+            'plan_template': plan_template.id
+        })
+        avg_url = f'{url}?{url_params}'
+        response = self.client.get(avg_url)
+        self.assertEqual(
+            response.data['average_satisfaction'],
+            average_satisfaction
+        )
+
+    def test_care_plan_patient_average_engagement(self):
+        patient = self.create_patient()
+        plan_template = self.create_care_plan_template()
+        average_engagement = self.generate_average_engagement_records(
+            patient=patient, plan_template=plan_template)
+
+        url = reverse('care_plans-patient-average')
+        url_params = urlencode({
+            'patient': patient.id,
+            'plan_template': plan_template.id
+        })
+        avg_url = f'{url}?{url_params}'
+        response = self.client.get(avg_url)
+        self.assertEqual(
+            response.data['average_engagement'],
+            average_engagement
+        )
+
+    def test_care_plan_patient_average_risk_level(self):
+        patient = self.create_patient()
+        plan_template = self.create_care_plan_template()
+        average_engagement = self.generate_average_engagement_records(
+            patient=patient, plan_template=plan_template)
+        average_outcome = self.generate_average_outcome_records(
+            patient=patient, plan_template=plan_template)
+        risk_level = round((average_outcome + average_engagement) / 2)
+
+        url = reverse('care_plans-patient-average')
+        url_params = urlencode({
+            'patient': patient.id,
+            'plan_template': plan_template.id
+        })
+        avg_url = f'{url}?{url_params}'
+        response = self.client.get(avg_url)
+        self.assertAlmostEqual(response.data['risk_level'], risk_level)
+
     def test_care_plan_average_risk_level(self):
         organization = self.create_organization()
         average_outcome = self.generate_average_outcome_records(organization)
@@ -307,6 +502,112 @@ class TestCarePlanUsingEmployee(TasksMixin, APITestCase):
         url = reverse('care_plans-average')
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_care_plan_by_facility(self):
+        patient_count = 5
+        plan_count = 3
+        total_count = patient_count * plan_count
+
+        for i in range(patient_count):
+            patient = self.create_patient(**{
+                'facility': self.facility
+            })
+
+            for p in range(plan_count):
+                self.create_care_plan(patient)
+
+        # Create dummy records
+        for i in range(patient_count):
+            patient = self.create_patient()
+
+            for p in range(plan_count):
+                self.create_care_plan(patient)
+
+        url = reverse(
+            'facility-care-plans-list',
+            kwargs={'parent_lookup_patient__facility': self.facility.id}
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.data['count'], total_count)
+
+    def test_care_plan_by_facility_filter_plan_template(self):
+        patient_count = 5
+        plan_count = 5
+        template_count = 2
+        total_count = patient_count * template_count
+        template = self.create_care_plan_template()
+
+        for i in range(patient_count):
+            patient = self.create_patient(**{
+                'facility': self.facility
+            })
+
+            for p in range(plan_count):
+                plan_kwargs = {}
+                if p < template_count:
+                    plan_kwargs = {
+                        'plan_template': template
+                    }
+                self.create_care_plan(patient, **plan_kwargs)
+
+        # Create dummy records
+        for i in range(patient_count):
+            patient = self.create_patient()
+
+            for p in range(plan_count):
+                self.create_care_plan(patient)
+
+        query_params = urlencode({
+            'plan_template': template.id
+        })
+        url = reverse(
+            'facility-care-plans-list',
+            kwargs={'parent_lookup_patient__facility': self.facility.id}
+        )
+        filter_url = f'{url}?{query_params}'
+        response = self.client.get(filter_url)
+        self.assertEqual(response.data['count'], total_count)
+
+    def test_care_plan_by_facility_filter_service_area(self):
+        patient_count = 5
+        plan_count = 5
+        template_count = 2
+        total_count = patient_count * template_count
+        service_area = self.create_service_area()
+
+        for i in range(patient_count):
+            patient = self.create_patient(**{
+                'facility': self.facility
+            })
+
+            for p in range(plan_count):
+                plan_kwargs = {}
+                if p < template_count:
+                    template = self.create_care_plan_template(**{
+                        'service_area': service_area
+                    })
+                    plan_kwargs = {
+                        'plan_template': template
+                    }
+                self.create_care_plan(patient, **plan_kwargs)
+
+        # Create dummy records
+        for i in range(patient_count):
+            patient = self.create_patient()
+
+            for p in range(plan_count):
+                self.create_care_plan(patient)
+
+        query_params = urlencode({
+            'plan_template__service_area': service_area.id
+        })
+        url = reverse(
+            'facility-care-plans-list',
+            kwargs={'parent_lookup_patient__facility': self.facility.id}
+        )
+        filter_url = f'{url}?{query_params}'
+        response = self.client.get(filter_url)
+        self.assertEqual(response.data['count'], total_count)
 
 
 class TestCarePlanPostSaveSignalFrequencyOnce(TasksMixin, APITestCase):

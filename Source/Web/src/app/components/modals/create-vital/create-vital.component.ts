@@ -15,6 +15,10 @@ export class CreateVitalComponent implements OnInit {
 
   public vital: any = {};
   public vitalForm: FormGroup;
+  public tooltipCVM0Open;
+  public tooltipCVM1Open;
+
+  public measures = [];
 
   constructor(
     private modal: ModalService,
@@ -151,7 +155,7 @@ export class CreateVitalComponent implements OnInit {
     this.updateVital().then((vital: any) => {
       this.vital.id = vital.id;
       this.createOrUpdateAllQuestions().then(() => {
-        this.modal.close(null);
+        this.modal.close(this.vital);
       });
     });
   }

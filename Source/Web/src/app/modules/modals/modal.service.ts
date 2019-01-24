@@ -40,6 +40,7 @@ export class ModalService {
   ) { }
 
   public open(type, options = {}) {
+    this.result = new Subject();
     let meta = {
       'type': type,
       'options': Object.assign({}, this.optionDefaults, options)
@@ -70,7 +71,6 @@ export class ModalService {
     document.querySelector('body').classList.remove('relative');
     this.result.next(data);
     this.result.complete();
-    this.result = new Subject();
   }
 
   public setOutlet(_outlet) {

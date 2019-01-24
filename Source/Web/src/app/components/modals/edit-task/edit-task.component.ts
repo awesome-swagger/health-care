@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ModalService } from '../../../modules/modals';
 import { FormGroup, FormControl } from '@angular/forms';
 import { ERROR_COLLECTOR_TOKEN } from '@angular/platform-browser-dynamic/src/compiler_factory';
+import { omit as _omit } from 'lodash';
 import { StoreService } from '../../../services';
 
 @Component({
@@ -58,7 +59,16 @@ export class EditTaskComponent implements OnInit {
       title: 'Edit Vital',
       dataModel: this.store.VitalsTaskTemplate,
     },
+    {
+      type: 'medication',
+      title: 'Edit Medication Task',
+      dataModel: this.store.MedicationTaskTemplate,
+    },
   ];
+  public tooltipETM0Open;
+  public tooltipETM1Open;
+  public tooltipETM2Open;
+  public tooltipETM3Open;
 
   constructor(
     private modal: ModalService,
@@ -123,7 +133,7 @@ export class EditTaskComponent implements OnInit {
       this.taskForm.addControl('category', new FormControl(task.category));
     }
     if (this.getTaskType().type === 'team') {
-      this.taskForm.addControl('role', new FormControl(task.role));
+      this.taskForm.addControl('role', new FormControl(task.role.id));
     }
   }
 
@@ -166,7 +176,11 @@ export class EditTaskComponent implements OnInit {
   }
 
   public updateTask() {
-    let updateSub = this.getTaskType().dataModel.update(this.task.id, this.task, true).subscribe(
+    let postData = this.task;
+    if (this.getTaskType().type === 'medication') {
+      postData = _omit(postData, 'patient_medication');
+    }
+    let updateSub = this.getTaskType().dataModel.update(this.task.id, postData, true).subscribe(
       (task) => {
         this.modal.close(task);
       },

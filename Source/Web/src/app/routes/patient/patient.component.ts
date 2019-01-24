@@ -2,6 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ModalService, ConfirmModalComponent } from '../../modules/modals';
 import { FinancialDetailsComponent } from './modals/financial-details/financial-details.component';
+import { CarePlanConsentComponent } from './modals/care-plan-consent/care-plan-consent.component';
 import { ProblemAreasComponent } from './modals/problem-areas/problem-areas.component';
 import { DiagnosisComponent } from './modals/diagnosis/diagnosis.component';
 import { ProcedureComponent } from './modals/procedure/procedure.component';
@@ -26,7 +27,11 @@ export class PatientComponent implements OnDestroy, OnInit {
 
   public patient = null;
   public carePlans = [];
+  public problemAreas = [];
   public teamListOpen = -1;
+
+  public editName;
+  public tooltipPSOpen;
 
   private routeSub = null;
 
@@ -41,11 +46,14 @@ export class PatientComponent implements OnDestroy, OnInit {
   public ngOnInit() {
     this.nav.normalState();
     this.routeSub = this.route.params.subscribe((params) => {
-      this.getPatient(params.id).then((patient) => {
+      this.getPatient(params.patientId).then((patient) => {
         this.patient = patient;
         this.nav.addRecentPatient(this.patient);
         this.getCarePlans(this.patient.id).then((carePlans: any) => {
           this.carePlans = carePlans;
+        });
+        this.fetchProblemAreas(this.patient.id).then((problemAreas: any) => {
+          this.problemAreas = problemAreas;
         });
       }).catch(() => {
         this.patient = patientData.patient;
@@ -75,9 +83,24 @@ export class PatientComponent implements OnDestroy, OnInit {
     return promise;
   }
 
+  public fetchProblemAreas(patient) {
+    let promise = new Promise((resolve, reject) => {
+      let problemAreasSub = this.store.ProblemArea.readListPaged({
+        patient: patient,
+      }).subscribe(
+        (problemAreas) => resolve(problemAreas),
+        (err) => reject(err),
+        () => {
+          problemAreasSub.unsubscribe();
+        },
+      );
+    });
+    return promise;
+  }
+
   public getCarePlans(patientId) {
     return new Promise((resolve, reject) => {
-        let carePlanSub = this.store.PatientCarePlans(patientId).read().subscribe(
+        let carePlanSub = this.store.PatientProfile.detailRoute('get', patientId, 'care_plans').subscribe(
           (plans) => {
             resolve(plans);
           },
@@ -117,9 +140,13 @@ export class PatientComponent implements OnDestroy, OnInit {
 
   public openProblemAreas() {
     this.modals.open(ProblemAreasComponent, {
-      closeDisabled: false,
-      width: '576px',
-    }).subscribe(() => {});
+      closeDisabled: true,
+      data: {
+        patient: this.patient,
+        problemAreas: this.problemAreas,
+      },
+      width: '560px',
+    });
   }
 
   public confirmPause() {
@@ -152,9 +179,25 @@ export class PatientComponent implements OnDestroy, OnInit {
     });
   }
 
-  public addPatientToPlan() {
+  public openConsentForm(plan) {
+    this.modals.open(CarePlanConsentComponent, {
+     closeDisabled: true,
+     data: {
+       plan_id: plan,
+     },
+     width: '560px',
+   }).subscribe(() => {});
+  }
+
+  public addPatientToPlan(patient) {
     this.modals.open(AddPatientToPlanComponent, {
       closeDisabled: true,
+      data: {
+        action: 'add',
+        patientKnown: true,
+        patient: patient,
+        planKnown: false,
+      },
       width: '576px',
     }).subscribe(() => {});
   }

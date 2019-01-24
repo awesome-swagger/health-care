@@ -120,18 +120,6 @@ class PatientDiagnosisSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class ProblemAreaSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ProblemArea
-        fields = '__all__'
-
-
-class PatientProcedureSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = PatientProcedure
-        fields = '__all__'
-
-
 class SimplifiedEmployeeProfileSerializer(RepresentationMixin, serializers.ModelSerializer):
 
     class Meta:
@@ -154,6 +142,40 @@ class SimplifiedEmployeeProfileSerializer(RepresentationMixin, serializers.Model
                 'serializer_class': ProviderTitleSerializer,
             },
         ]
+
+
+class ProblemAreaSerializer(RepresentationMixin, serializers.ModelSerializer):
+    class Meta:
+        model = ProblemArea
+        fields = (
+            'id',
+            'date_identified',
+            'identified_by',
+            'name',
+            'description',
+            'modified',
+            'patient',
+        )
+        read_only_fields = (
+            'id',
+            'modified',
+        )
+        nested_serializers = [
+            {
+                'field': 'identified_by',
+                'serializer_class': SimplifiedEmployeeProfileSerializer,
+            },
+            {
+                'field': 'patient',
+                'serializer_class': BasicPatientSerializer,
+            },
+        ]
+
+
+class PatientProcedureSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PatientProcedure
+        fields = '__all__'
 
 
 class PatientMedicationSerializer(RepresentationMixin,
@@ -228,7 +250,7 @@ class PatientCarePlanSerializer(serializers.ModelSerializer):
     care_plans = serializers.SerializerMethodField()
     class Meta:
         model = PatientProfile
-        fields = (            
+        fields = (
             'id',
             'care_plans',
         )
@@ -426,48 +448,6 @@ class FacilityInactivePatientSerializer(serializers.ModelSerializer):
             if manager:
                 return manager.employee_profile.user.get_full_name()
         return ''
-
-
-#BAM
-class FacilityActivePatientSerializer(serializers.ModelSerializer):
-    """
-    serializer to be used for inactive patients in a facility
-    """
-    full_name = serializers.SerializerMethodField()
-    image_url = serializers.SerializerMethodField()
-    care_plan = serializers.SerializerMethodField()
-    care_manager = serializers.SerializerMethodField()
-
-    class Meta:
-        model = PatientProfile
-        fields = (
-            'id',
-            'full_name',
-            'image_url',
-            'care_plan',
-            'last_app_use',
-            'care_manager',
-        )
-
-    def get_full_name(self, obj):
-        return obj.user.get_full_name()
-
-    def get_image_url(self, obj):
-        return obj.user.get_image_url()
-
-    def get_care_plan(self, obj):
-        latest_plan = obj.latest_care_plan
-        return latest_plan.plan_template.name if latest_plan else ''
-
-    def get_care_manager(self, obj):
-        latest_plan = obj.latest_care_plan
-        if latest_plan:
-            manager = latest_plan.care_team_members.filter(
-                is_manager=True).first()
-            if manager:
-                return manager.employee_profile.user.get_full_name()
-        return ''
-
 
 
 class LatestPatientSymptomSerializer(serializers.ModelSerializer):

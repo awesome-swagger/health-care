@@ -10,6 +10,8 @@ export class EditUserDetailsComponent implements OnInit {
 
   public data = null;
 
+  public tooltipEUDMOpen;
+
   constructor(
     private modals: ModalService,
   ) {

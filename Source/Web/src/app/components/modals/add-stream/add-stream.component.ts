@@ -13,6 +13,7 @@ export class AddStreamComponent implements OnInit {
   public searchInput = '';
   public careMessagesShown = [];
   public selectedTemplate = null;
+  public clickCancel;
 
   constructor(
     private modal: ModalService,
@@ -54,5 +55,9 @@ export class AddStreamComponent implements OnInit {
       nextAction: 'edit-stream',
       message: this.selectedTemplate,
     });
+  }
+
+  public nextDisabled() {
+    return !this.selectedTemplate;
   }
 }

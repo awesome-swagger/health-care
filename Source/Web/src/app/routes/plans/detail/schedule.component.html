@@ -385,7 +385,7 @@
               <td class="left">{{asmt.name | titlecase}}</td>
 
               <td>{{asmt.start_on_day}}</td>
-              <td class="left">{{asmt.frequency | frequencyTransform | titlecase}}</td>
+              <td class="left"><span *ngIf="asmt.frequency">{{asmt.frequency | frequencyTransform | titlecase}}</span></td>
               <td class="left">{{asmt.repeat_amount != -1 ? asmt.repeat_amount :'Until Plan Ends'}}</td>
               <td>{{asmt.appear_time | timeTransform | date: 'shortTime'}}</td>
               <td>{{asmt.due_time | timeTransform | date: 'shortTime'}}</td>
@@ -449,8 +449,8 @@
               <th class="noPad"></th>
             </tr>
           </thead>
-          <tbody *ngFor="let sympt of symptomTemplates">
-            <tr>
+          <tbody>
+            <tr *ngFor="let sympt of symptomTemplates">
               <td>{{sympt.start_on_day}}</td>
               <td class="left">{{sympt.frequency | frequencyTransform | titlecase}}</td>
               <td class="left">{{sympt.repeat_amount != -1 ? sympt.repeat_amount :'Until Plan Ends'}}</td>
@@ -517,8 +517,8 @@
               <th class="noPad"></th>
             </tr>
           </thead>
-          <tbody *ngFor="let vital of vitalTemplates">
-            <tr>
+          <tbody>
+            <tr *ngFor="let vital of vitalTemplates">
               <td class="left">{{vital.name}}</td>
               <td>{{vital.start_on_day}}</td>
               <td class="left">{{vital.frequency | frequencyTransform | titlecase}}</td>
@@ -589,8 +589,8 @@
               <th class="noPad"></th>
             </tr>
           </thead>
-          <tbody *ngFor="let msg of messageQueues">
-            <tr>
+          <tbody>
+            <tr *ngFor="let msg of messageQueues">
               <td class="left">{{msg.name }}</td>
               <td class="left">{{msg.type|titlecase}}</td>
               <td>{{msg.messages.length}}</td>

@@ -120,3 +120,5 @@ $RECYCLE.BIN/
 
 foo/*
 **/node_modules
+*.orig
+

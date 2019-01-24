@@ -5,7 +5,10 @@ import { AddPatientToPlanComponent, EnrollmentComponent } from '../../../compone
 import { AuthService, StoreService } from '../../../services';
 import {
   uniq as _uniq,
-  map as _map
+  map as _map,
+  flattenDeep as _flattenDeep,
+  compact as _compact,
+  uniqBy as _uniqBy
 } from 'lodash';
 
 @Component({
@@ -19,6 +22,18 @@ export class PotentialPatientsComponent implements OnDestroy, OnInit {
   public potentialPatients = [];
   public activeCarePlans = {};
   public users = null;
+  public activeServiceAreas = {};
+  public activePatients = [];
+
+  public accord1Open;
+  public tooltip2Open;
+  public tooltipPP2Open;
+  public accord2Open;
+  public toolPP1Open;
+  public multi1Open;
+  public multi2Open;
+  public multi3Open;
+  public multi4Open;
 
   private facilitiesSub = null;
 
@@ -128,4 +143,30 @@ export class PotentialPatientsComponent implements OnDestroy, OnInit {
     }
     return [];
   }
+
+
+  get allPlans() {
+    if (this.activePatients) {
+      return _compact(_flattenDeep(_map(this.activePatients, p => p.care_plans)));
+    }
+  }
+
+  get allServiceAreas() {
+    const plans = this.allPlans;
+    return _uniqBy(_map(plans, p => p.service_area));
+  }
+
+  public toggleAllServiceAreas(status) {
+    Object.keys(this.activeServiceAreas).forEach(area => {
+      this.activeServiceAreas[area] = status;
+    })
+  }
+
+  public toggleAllCarePlans(status) {
+    Object.keys(this.activeServiceAreas).forEach(area => {
+      this.activeServiceAreas[area] = status;
+    })
+  }
+
+
 }
