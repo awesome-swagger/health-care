@@ -3,6 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ModalService, ConfirmModalComponent } from '../../../modules/modals';
 import { RecordResultsComponent } from '../../../components';
 import { NavbarService, StoreService } from '../../../services';
+import mockData from './historyData';
 
 @Component({
   selector: 'app-patient-history',
@@ -12,6 +13,24 @@ import { NavbarService, StoreService } from '../../../services';
 export class PatientHistoryComponent implements OnDestroy, OnInit {
 
   public patient = null;
+  public dateFilter = null;
+  public actionFilter = '';
+  public actionChoices = [
+    {
+      display: 'Patient Interaction',
+      value: 'interaction',
+    },
+    {
+      display: 'Care Team Coordination',
+      value: 'coordination',
+    },
+    {
+      display: 'Notes',
+      value: 'notes',
+    },
+  ];
+  public results = [];
+  public selectedResult = null;
 
   public showDatePH;
   public multiOpenPH;
@@ -31,6 +50,8 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
         (patient) => {
           this.patient = patient;
           this.nav.addRecentPatient(this.patient);
+          this.results = mockData.results;
+          this.selectedResult = this.results[0];
         },
         (err) => {},
         () => {},
@@ -39,6 +60,14 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
   }
 
   public ngOnDestroy() { }
+
+  public getEmployee(id) {
+    return mockData.employees.find((obj) => obj.id === id);
+  }
+
+  public getTask(id) {
+    return mockData.tasks.find((obj) => obj.id === id);
+  }
 
   public openRecordResults() {
     this.modals.open(RecordResultsComponent, {
