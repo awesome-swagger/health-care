@@ -13,7 +13,6 @@ from apps.core.models import (Diagnosis, EmployeeProfile,
                               Procedure, ProviderRole, ProviderSpecialty,
                               ProviderTitle, Symptom, Facility)
 
-from rest_framework.decorators import action
 from rest_framework_extensions.mixins import NestedViewSetMixin
 
 from apps.core.permissions import (EmployeeProfilePermissions,
@@ -22,7 +21,10 @@ from apps.core.permissions import (EmployeeProfilePermissions,
 
 from apps.plans.models import CareTeamMember
 from care_adopt_backend import utils
-from care_adopt_backend.permissions import IsAdminOrEmployee
+from care_adopt_backend.permissions import (
+    IsAdminOrEmployee,
+    IsAdminOrEmployeeOwner,
+)
 
 from ..utils import get_facilities_for_user
 from .filters import RelatedOrderingFilter
@@ -41,7 +43,8 @@ from .serializers import (DiagnosisSerializer, EmployeeProfileSerializer,
                           ProviderRoleSearchSerializer,
                           EmployeeAssignmentSerializer,
                           InviteEmployeeSerializer,
-                          OrganizationPatientOverviewSerializer)
+                          OrganizationPatientOverviewSerializer,
+                          OrganizationPatientDashboardSerializer)
 
 
 class OrganizationViewSet(viewsets.ModelViewSet):
@@ -107,6 +110,65 @@ class OrganizationViewSet(viewsets.ModelViewSet):
         organization = self.get_object()
         serializer = OrganizationPatientOverviewSerializer(
             organization, context={'request': request})
+        return Response(serializer.data)
+
+    def check_if_organization_or_facility_admin(self, organization):
+        user = self.request.user
+
+        if user.is_superuser:
+            return True
+        else:
+            employee = user.employee_profile
+            facility_organizations = employee.facilities_managed.values_list(
+                'organization', flat=True).distinct()
+            if organization in employee.organizations_managed.all() or \
+               organization in facility_organizations:
+                return True
+        return False
+
+    @action(methods=['get'], detail=True,
+            permission_classes=(IsAdminOrEmployee, ))
+    def dashboard_analytics(self, request, *args, **kwargs):
+        """
+        This endpoint will primarily populate the `dash` page.
+
+        Returns the following data in a specific organization:
+
+            - active patients
+            - invited patients
+            - potential patients
+            - average satisfaction
+            - average outcome
+            - average engagement
+            - risk level
+
+        FILTERING:
+        ---
+        Engagement, satisfaction, outcome, and risk levels can be filtered by
+        **patient** and **facility**. See below for example requests:
+
+            GET /api/organizations/<organization-ID>/dashboard_analytics/?patient=<patient-ID>
+            GET /api/organizations/<organization-ID>/dashboard_analytics/?facility=<facility-ID>
+            GET /api/organizations/<organization-ID>/dashboard_analytics/?facility=<facility-ID>&patient=<patient-ID>
+
+
+        TODO: RISK LEVEL BREAKDOWN CHART
+        """
+        organization = self.get_object()
+
+        if 'patient' in request.GET or 'facility' in request.GET:
+            has_permission = self.check_if_organization_or_facility_admin(
+                organization)
+            if not has_permission:
+                message = _('Must be an organization or facility admin.')
+                self.permission_denied(self.request, message)
+
+        context = {
+            'request': request,
+            'filter_allowed': True
+        }
+        serializer = OrganizationPatientDashboardSerializer(
+            organization, context=context)
         return Response(serializer.data)
 
 
@@ -591,7 +653,7 @@ class FacilityEmployeeViewSet(ParentViewSetPermissionMixin,
     """
 
     serializer_class = FacilityEmployeeSerializer
-    permission_clases = (permissions.IsAuthenticated, IsAdminOrEmployee)
+    permission_classes = (permissions.IsAuthenticated, IsAdminOrEmployee)
     queryset = EmployeeProfile.objects.all()
     parent_field = 'facilities'
     parent_lookup = [
@@ -606,7 +668,10 @@ class FacilityEmployeeViewSet(ParentViewSetPermissionMixin,
         })
         return context
 
-    @action(methods=['get'], detail=True)
+    @action(methods=['get'],
+            detail=True,
+            permission_classes=(
+                permissions.IsAuthenticated, IsAdminOrEmployeeOwner))
     def assignments(self, request, pk, *args, **kwargs):
         """
         Returns aggregated data of the given employees pertaining to his/her

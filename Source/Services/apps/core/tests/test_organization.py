@@ -1,3 +1,5 @@
+from urllib.parse import urlencode
+
 from django.db.models import Avg
 from django.urls import reverse
 from django.utils import timezone
@@ -18,11 +20,17 @@ from apps.tasks.models import (
 from apps.tasks.tests.mixins import TasksMixin
 
 
-class TestOrganizationPatientOverview(TasksMixin, APITestCase):
+class BaseOrganizationTestMixin(TasksMixin):
     """
-    Test cases for :model:`plans.CarePlan1 using an employee as the logged in
-    user.
+    Base test class for organization
     """
+
+    def get_test_url(self):
+        """
+        Override this method in the parent class
+        """
+        raise NotImplementedError()
+
     def setUp(self):
         self.fake = Faker()
         self.patient = self.create_patient()
@@ -37,10 +45,9 @@ class TestOrganizationPatientOverview(TasksMixin, APITestCase):
             self.employee.facilities.add(facility)
 
         self.plan_template = self.create_care_plan_template()
-        self.url = reverse(
-            'organizations-active-patients-overview',
-            kwargs={'pk': self.organization.id}
-        )
+
+        self.url = self.get_test_url()
+
         self.client.force_authenticate(user=self.user)
 
     def test_organization_total_patient(self):
@@ -62,18 +69,6 @@ class TestOrganizationPatientOverview(TasksMixin, APITestCase):
         self.assertEqual(
             response.data['active_patients'],
             total_patients * facilities.count()
-        )
-
-    def test_organization_total_facility(self):
-
-        # Create facilities for other organization
-        for i in range(3):
-            self.create_facility()
-
-        response = self.client.get(self.url)
-        self.assertEqual(
-            response.data['total_facilities'],
-            self.facilities_count
         )
 
     def generate_average_outcome_records(self, organization):
@@ -211,7 +206,9 @@ class TestOrganizationPatientOverview(TasksMixin, APITestCase):
             'due_datetime': due_datetime
         })
 
-    def generate_average_engagement_records(self, organization):
+    def generate_average_engagement_records(self,
+                                            organization=None,
+                                            patient=None):
         total_care_plans = 5
         total_patients = 6
         plans = []
@@ -219,20 +216,32 @@ class TestOrganizationPatientOverview(TasksMixin, APITestCase):
         due_datetime = now - relativedelta(days=3)
         facilities = get_facilities_for_user(self.user, self.organization.id)
 
-        for facility in facilities:
-            for p in range(total_patients):
-                patient = self.create_patient(**{
-                    'facility': facility
-                })
-                for c in range(total_care_plans):
-                    plan = self.create_care_plan(patient)
-                    plans.append(plan)
+        if organization:
+            for facility in facilities:
+                for p in range(total_patients):
+                    patient = self.create_patient(**{
+                        'facility': facility
+                    })
+                    for c in range(total_care_plans):
+                        plan = self.create_care_plan(patient)
+                        plans.append(plan)
 
-                    self.generate_assessment_tasks(plan, due_datetime)
-                    self.generate_patient_tasks(plan, due_datetime)
-                    self.generate_medication_tasks(plan, due_datetime)
-                    self.generate_symptom_tasks(plan, due_datetime)
-                    self.generate_vital_tasks(plan, due_datetime)
+                        self.generate_assessment_tasks(plan, due_datetime)
+                        self.generate_patient_tasks(plan, due_datetime)
+                        self.generate_medication_tasks(plan, due_datetime)
+                        self.generate_symptom_tasks(plan, due_datetime)
+                        self.generate_vital_tasks(plan, due_datetime)
+
+        elif patient:
+            for c in range(total_care_plans):
+                plan = self.create_care_plan(patient)
+                plans.append(plan)
+
+                self.generate_assessment_tasks(plan, due_datetime)
+                self.generate_patient_tasks(plan, due_datetime)
+                self.generate_medication_tasks(plan, due_datetime)
+                self.generate_symptom_tasks(plan, due_datetime)
+                self.generate_vital_tasks(plan, due_datetime)
 
         assessment_tasks = AssessmentTask.objects.filter(
             plan__in=plans,
@@ -319,3 +328,192 @@ class TestOrganizationPatientOverview(TasksMixin, APITestCase):
         self.client.force_authenticate(patient.user)
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+
+class TestOrganizationPatientOverview(BaseOrganizationTestMixin, APITestCase):
+    """
+    Test cases for endpoint used in patient overview.
+    """
+
+    def get_test_url(self):
+        return reverse(
+            'organizations-active-patients-overview',
+            kwargs={'pk': self.organization.id}
+        )
+
+    def test_organization_total_facility(self):
+
+        # Create facilities for other organization
+        for i in range(3):
+            self.create_facility()
+
+        response = self.client.get(self.url)
+        self.assertEqual(
+            response.data['total_facilities'],
+            self.facilities_count
+        )
+
+
+class TestOrganizationPatientDashboard(BaseOrganizationTestMixin, APITestCase):
+    """
+    Test cases for endpoint used in dashboard analytics page.
+    """
+
+    def get_test_url(self):
+        return reverse(
+            'organizations-dashboard-analytics',
+            kwargs={'pk': self.organization.id}
+        )
+
+    def setUp(self):
+        self.fake = Faker()
+        self.patient = self.create_patient()
+        self.employee = self.create_employee()
+        self.user = self.employee.user
+        self.facilities_count = 5
+        self.organization = self.create_organization()
+        self.employee.organizations.add(self.organization)
+
+        for i in range(self.facilities_count):
+            facility = self.create_facility(self.organization)
+            self.employee.facilities.add(facility)
+
+        self.plan_template = self.create_care_plan_template()
+        self.url = reverse(
+            'organizations-dashboard-analytics',
+            kwargs={'pk': self.organization.id}
+        )
+        self.client.force_authenticate(user=self.user)
+
+    def test_organization_invited_patients(self):
+        invited_patients = 5
+        facilities = get_facilities_for_user(self.user, self.organization.id)
+
+        for facility in facilities:
+            for i in range(invited_patients):
+                self.create_patient(**{
+                    'facility': facility,
+                    'is_invited': True,
+                    'is_active': False
+                })
+
+        # Create patients for other facility
+        for i in range(3):
+            self.create_patient(**{
+                    'is_invited': True,
+                    'is_active': False
+                })
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(
+            response.data['invited_patients'],
+            invited_patients * facilities.count()
+        )
+
+    def test_organization_potential_patients(self):
+        potential_patients = 5
+        facilities = get_facilities_for_user(self.user, self.organization.id)
+
+        for i in range(potential_patients):
+            self.create_potential_patient(**{
+                'facility': facilities
+            })
+
+        # Create patients for other facility
+        for i in range(3):
+            self.create_potential_patient()
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(
+            response.data['potential_patients'],
+            potential_patients * facilities.count()
+        )
+
+    def test_organization_filter_by_patient_permission_denied(self):
+        facility = self.create_facility(self.organization)
+        patient = self.create_patient(**{
+            'facility': facility
+        })
+
+        query_params = urlencode({
+            'patient': patient.id
+        })
+
+        filter_url = f'{self.url}?{query_params}'
+        response = self.client.get(filter_url)
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_organization_filter_by_patient_average_engagement(self):
+        self.client.logout()
+        facility = self.create_facility(self.organization)
+
+        employee = self.create_employee(**{
+            'organizations_managed': [self.organization],
+            'facilities_managed': [facility]
+        })
+
+        self.client.force_authenticate(user=employee.user)
+
+        patient = self.create_patient(**{
+            'facility': facility
+        })
+        average_engagement = self.generate_average_engagement_records(
+            patient=patient)
+
+        query_params = urlencode({
+            'patient': patient.id
+        })
+
+        filter_url = f'{self.url}?{query_params}'
+        response = self.client.get(filter_url)
+
+        self.assertEqual(
+            response.data['average_engagement'],
+            average_engagement
+        )
+
+    def test_organization_filter_by_facility_permission_denied(self):
+        facility = self.create_facility(self.organization)
+        patient = self.create_patient(**{
+            'facility': facility
+        })
+
+        query_params = urlencode({
+            'facility': facility.id
+        })
+
+        filter_url = f'{self.url}?{query_params}'
+        response = self.client.get(filter_url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_organization_filter_by_facility_average_engagement(self):
+        self.client.logout()
+        facility = self.create_facility(self.organization)
+
+        employee = self.create_employee(**{
+            'organizations_managed': [self.organization],
+            'facilities_managed': [facility]
+        })
+
+        self.client.force_authenticate(user=employee.user)
+
+        patient = self.create_patient(**{
+            'facility': facility
+        })
+        average_engagement = self.generate_average_engagement_records(
+            patient=patient)
+
+        query_params = urlencode({
+            'facility': facility.id
+        })
+
+        filter_url = f'{self.url}?{query_params}'
+        response = self.client.get(filter_url)
+
+        self.assertEqual(
+            response.data['average_engagement'],
+            average_engagement
+        )

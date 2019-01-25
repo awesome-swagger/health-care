@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs/Subscription';
 import { ModalService, ConfirmModalComponent } from '../../../modules/modals';
-import { StoreService } from '../../../services';
+import { AuthService, StoreService } from '../../../services';
 import { ReassignPatientsComponent } from '../../../components';
 import { ChangeEmailComponent } from './modals/change-email/change-email.component';
 import { ChangePasswordComponent } from './modals/change-password/change-password.component';
@@ -17,6 +17,7 @@ export class UserComponent implements OnDestroy, OnInit {
 
   public employee: any = null;
   private paramsSub: Subscription = null;
+  public organization: any = null;
 
   public tooltip1Open;
   public isOrgAdmin;
@@ -30,6 +31,7 @@ export class UserComponent implements OnDestroy, OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
+    private auth: AuthService,
     private modals: ModalService,
     private store: StoreService,
   ) { }
@@ -43,9 +45,6 @@ export class UserComponent implements OnDestroy, OnInit {
       let employeeSub = this.store.EmployeeProfile.read(res.id).subscribe(
         (employee) => {
           this.employee = employee;
-          console.log('vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv');
-          console.log(this.employee);
-          console.log('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^');
         },
         (err) => {
           this.router.navigate(['/error']);
@@ -55,6 +54,18 @@ export class UserComponent implements OnDestroy, OnInit {
         },
       );
     });
+
+    const organizationSub = this.auth.organization$.subscribe(
+      (res) => {
+        if (res === null) {
+          return;
+        }
+        this.organization = res;
+      },
+      (err) => {},
+      () => { organizationSub.unsubscribe() }
+    );
+
   }
 
   public ngOnDestroy() {
