@@ -1,6 +1,11 @@
+import datetime
 import random
+import urllib
+
+import pytz
 
 from django.urls import reverse
+from django.utils import timezone
 
 from faker import Faker
 from rest_framework import status
@@ -40,14 +45,75 @@ class TestAssessmentResponse(TasksMixin, APITestCase):
         self.client.force_authenticate(user=self.user)
 
     def test_filter_by_assessment_task(self):
-        filter_url = f'{self.url}?assessment_task__id={self.assessment_task.id}'
+        filter_url = f'{self.url}?assessment_task={self.assessment_task.id}'
         response = self.client.get(filter_url)
         self.assertEqual(response.data['count'], self.responses.count())
 
     def test_filter_by_assessment_question(self):
-        filter_url = f'{self.url}?assessment_question__id={self.assessment_response.assessment_question.id}'
+        filter_url = f'{self.url}?assessment_question={self.assessment_response.assessment_question.id}'
         response = self.client.get(filter_url)
         self.assertEqual(response.data['count'], 1)
+
+    def test_filter_by_patient_and_plan_template(self):
+        plan_template = self.template.plan_template
+        patient = self.plan.patient
+        response_count = self.template.questions.count()
+
+        # create dummy assessment responses
+        other_patient = self.create_patient()
+        other_plan = self.create_care_plan(other_patient)
+        assessment_task = self.create_assessment_task(**{
+            'plan': other_plan,
+            'assessment_task_template': self.template
+        })
+        self.create_responses_to_multiple_questions(
+            self.template,
+            assessment_task,
+            self.template.questions.all()
+        )
+
+        query_params = urllib.parse.urlencode({
+            'assessment_task__plan__patient': patient.id,
+            'assessment_task__assessment_task_template__plan_template': plan_template.id
+        })
+        filter_url = f'{self.url}?{query_params}'
+        response = self.client.get(filter_url)
+        self.assertEqual(response.data['count'], response_count)
+
+    def test_filter_by_patient_plan_template_and_datetime(self):
+        plan_template = self.template.plan_template
+        patient = self.plan.patient
+        response_count = self.template.questions.count()
+        today = timezone.now()
+        today_min = datetime.datetime.combine(today,
+                                              datetime.time.min,
+                                              tzinfo=pytz.utc)
+        today_max = datetime.datetime.combine(today,
+                                              datetime.time.max,
+                                              tzinfo=pytz.utc)
+
+        # create dummy assessment responses
+        other_patient = self.create_patient()
+        other_plan = self.create_care_plan(other_patient)
+        assessment_task = self.create_assessment_task(**{
+            'plan': other_plan,
+            'assessment_task_template': self.template
+        })
+        self.create_responses_to_multiple_questions(
+            self.template,
+            assessment_task,
+            self.template.questions.all()
+        )
+
+        query_params = urllib.parse.urlencode({
+            'assessment_task__plan__patient': patient.id,
+            'assessment_task__assessment_task_template__plan_template': plan_template.id,
+            'modified__lte': today_max,
+            'modified__gte': today_min
+        })
+        filter_url = f'{self.url}?{query_params}'
+        response = self.client.get(filter_url)
+        self.assertEqual(response.data['count'], response_count)
 
 
 class TestAssessmentResponseUsingEmployee(TasksMixin, APITestCase):
