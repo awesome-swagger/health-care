@@ -10,10 +10,11 @@
              <label>Filter by Date</label>
              <div class="datepicker">
                  <div class="datepicker__date" (click)="dateFilterOpen=!dateFilterOpen">
-                   Select Date
+                   <span *ngIf="!dateFilter">Select Date</span>
+                   <span *ngIf="dateFilter">{{dateFilter.format('MMM DD, YYYY')}}</span>
                  </div>
                  <!--TODO: This datepicker needs a clear option when a date is selected.-->
-                 <app-date-picker class="datepicker__picker" [ngClass]="{ 'isOpen' : dateFilterOpen }"></app-date-picker>
+                 <app-date-picker class="datepicker__picker" [ngClass]="{ 'isOpen' : dateFilterOpen }" [selected]="dateFilter" (selectedChange)="setSelectedDay($event)"></app-date-picker>
                </div>
            </div>
            <div>
@@ -53,10 +54,10 @@
       <div class="chat__side">
         <div class="chat__threads">
 
-          <div class="chat__thread" *ngFor="let result of filteredResults()" [ngClass]="{'chat__thread--active': selectedResult === result}" (click)="selectedResult = result;">
+          <div class="chat__thread" *ngFor="let result of filteredResults()" [ngClass]="{'chat__thread--active': selectedResult.id === result.id}" (click)="selectedResult = result;">
             <div class="flex alignCenter justifySpaceBetween marBottom8">
               <h5 class="noMargin">
-                {{result.date}}&ensp;|&ensp;{{result.time}}
+                {{result.date.format('MMM DD, YYYY')}}&ensp;|&ensp;{{result.date.format('h:mm A')}}
               </h5>
               <div class="pill">
                 :{{result.totalMinutes}}
@@ -95,8 +96,8 @@
               </label>
               <h2 class="noMargin">{{getTask(selectedResult.task).name}}</h2>
               <div class="divider divider--smallMargin"></div>
-              <h5>Added by {{getEmployee(selectedResult.createdBy).first_name}} {{getEmployee(selectedResult.createdBy).last_name}}, {{getEmployee(selectedResult.createdBy).title}}&emsp;{{selectedResult.date}}&ensp;|&ensp;{{selectedResult.time}}</h5>
-              <h5 class="noMargin">Last edited by {{getEmployee(selectedResult.createdBy).first_name}} {{getEmployee(selectedResult.createdBy).last_name}}, {{getEmployee(selectedResult.createdBy).title}}&emsp;{{selectedResult.date}}&ensp;|&ensp;{{selectedResult.time}}</h5>
+              <h5>Added by {{getEmployee(selectedResult.createdBy).first_name}} {{getEmployee(selectedResult.createdBy).last_name}}, {{getEmployee(selectedResult.createdBy).title}}&emsp;{{selectedResult.date.format('MMM DD, YYYY')}}&ensp;|&ensp;{{selectedResult.date.format('h:mm A')}}</h5>
+              <h5 class="noMargin" *ngIf="selectedResult.lastEditedBy">Last edited by {{getEmployee(selectedResult.lastEditedBy).first_name}} {{getEmployee(selectedResult.lastEditedBy).last_name}}, {{getEmployee(selectedResult.lastEditedBy).title}}&emsp;{{selectedResult.lastEdited.format('MMM DD, YYYY')}}&ensp;|&ensp;{{selectedResult.lastEdited.format('h:mm A')}}</h5>
               <div class="divider divider--smallTop"></div>
 
               <label>Total Time</label>

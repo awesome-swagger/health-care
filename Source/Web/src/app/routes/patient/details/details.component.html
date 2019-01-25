@@ -71,7 +71,7 @@
               </td>
               <td>{{moment(goal.lastUpdated).format('MMM D, YYYY')}}</td>
               <td>
-                <a class="button button--icon button--center relative"
+                <a class="button button--icon button--icon--small button--center relative"
                   (click)="openGoalComments()">
                   <i class="ss-chats"></i>
                   <div class="badge" *ngIf="goal.comments.length > 0">
@@ -80,7 +80,7 @@
                 </a>
               </td>
               <td>
-                <a class="button button--icon--small button--icon button--center relative" (click)="updateGoal()">
+                <a class="button button--icon button--icon--small button--center relative" (click)="updateGoal()">
                   <i class="ss-write"></i>
                 </a>
               </td>
@@ -156,7 +156,7 @@
               </td>
               <td>{{task.currentOccurance}} of {{task.totalOccurances}}</td>
               <td>
-                <button class="button button--center relative completeButton" *ngIf="task.status !== 'done'" (click)="openRecordResults()">
+                <button class="button button--center relative completeButton" *ngIf="task.status !== 'done'" (click)="openRecordResults(task)">
                   Complete
                 </button>
               </td>
@@ -684,7 +684,7 @@
         <p>
           "I think this new medication makes my head hurt more."
         </p>
-        <a [routerLink]="['/patient/asdf/messaging']" class="button button--iconText">
+        <a (click)="routeToMessaging()" class="button button--iconText">
           <i class="ss-chat"></i> Reply
         </a>
 
@@ -889,8 +889,7 @@
                   <td class="left">Education</td>
                   <td class="center">{{j + 1}} of {{messageQueue.messages.length}}</td>
                   <td class="center">
-                    <button class="button button--iconText"
-                      (click)="openRecordResults()">
+                    <button class="button button--icon button--icon--small button--center">
                       <i class="ss-write"></i>
                     </button>
                   </td>

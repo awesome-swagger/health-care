@@ -94,7 +94,7 @@ export class DetailsMockData {
 	}
 
 	private generateRandomStatus() {
-		let statusChoices = ['done', 'late', 'open', 'missed'];
+		let statusChoices = ['done', 'done', 'done', 'late', 'late', 'open', 'missed'];
 		return statusChoices[Math.floor(Math.random() * statusChoices.length)];
 	}
 

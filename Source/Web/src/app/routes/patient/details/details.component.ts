@@ -95,6 +95,7 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
       );
       let carePlanSub = this.store.CarePlan.listRoute('get', params.planId).subscribe(
         (res:any) => {
+          this.carePlan = res;
           const planTemplateId = res.plan_template.id
           let messageSub = this.store.InfoMessageQueue.readListPaged().subscribe(
             res => {
@@ -265,13 +266,8 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
 
   public format24Hour(time) {
     let timeParse = time.split(":");
-    //it is pm if hours from 12 onwards
     let suffix = (timeParse[0] >= 12)? 'PM' : 'AM';
-
-    //only -12 from hours if it is greater than 12 (if not back at mid night)
     let hours = (parseInt(timeParse[0]) > 12) ? parseInt(timeParse[0]) -12 : parseInt(timeParse[0]);
-
-    //if 00 then it is 12 am
     hours = (hours == 0) ? 12 : hours;
     return `${hours}:${timeParse[1]} ${suffix}`;
   }
@@ -300,11 +296,25 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
     }
   }
 
-  public openRecordResults() {
+  public openRecordResults(task) {
     this.modals.open(RecordResultsComponent, {
      closeDisabled: true,
+     data: {
+       patient: this.patient,
+       carePlan: this.carePlan,
+       tasks: this.userTasks,
+       task: task.id,
+       totalMinutes: null,
+       teamMembers: this.mockData.employees,
+       with: null,
+       syncToEHR: false,
+       notes: '',
+       patientEngagement: null,
+     },
      width: '512px',
-    }).subscribe(() => {});
+   }).subscribe((res) => {
+     console.log(res);
+   });
   }
 
   public addGoal() {
@@ -317,6 +327,10 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
   public updateGoal() {
     this.modals.open(GoalComponent, {
       closeDisabled: true,
+      data: {
+        update: true,
+        patientName: `${this.patient.user.first_name} ${this.patient.user.last_name}`
+      },
       width: '512px',
     }).subscribe(() => {});
   }
@@ -371,11 +385,14 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
     this.selectedDate = moment;
     this.planGoals = this.getGoals();
     this.userTasks = this.getUserTasks(moment);
-    console.log(this.userTasks);
     this.teamTasks = this.getTeamTasks(moment);
     this.patientTasks = this.getPatientTasks(moment);
     this.assessmentResults = this.getAssessmentResults(moment);
     this.symptomResults = this.getSymptomResults(moment);
     this.vitalResults = this.getVitalResults(moment);
+  }
+
+  public routeToMessaging() {
+    this.router.navigate(['/patient', this.patient.id, 'messaging', this.carePlan.id]);
   }
 }

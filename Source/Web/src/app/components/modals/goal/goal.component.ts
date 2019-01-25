@@ -16,6 +16,7 @@ export class GoalComponent implements OnInit {
   public startDayInput = 0;
   public durationChoice = 0;
   public weeksInput = 1;
+  public progress = null;
 
   constructor(
     private modals: ModalService,
@@ -32,6 +33,10 @@ export class GoalComponent implements OnInit {
       this.durationChoice = g.duration_weeks !== -1 ? 1 : 0;
       this.weeksInput = g.duration_weeks !== -1 ? g.duration_weeks : 1;
     }
+  }
+
+  public setProgress(num) {
+    console.log(num);
   }
 
   public clickClose() {
@@ -51,12 +56,16 @@ export class GoalComponent implements OnInit {
     if (this.startDayInput < 0) {
       this.startDayInput = 0;
     }
-    this.modals.close({
+    let returnData = {
       name: this.nameInput,
       description: this.descriptionInput,
       focus: this.focusInput,
       start_on_day: this.startDayInput,
       duration_weeks: durationWeeks,
-    });
+    };
+    if (this.progress) {
+      returnData['progress'] = this.progress;
+    }
+    this.modals.close(returnData);
   }
 }
