@@ -314,6 +314,29 @@ class FacilitySerializer(RepresentationMixin, serializers.ModelSerializer):
         ]
 
 
+class InsuranceSerializer(RepresentationMixin, serializers.ModelSerializer):
+    class Meta:
+        model = Facility
+        fields = (
+            'id',
+            'name',
+            'organization',
+            'created',
+            'modified',
+        )
+        read_only_fields = (
+            'id',
+            'created',
+            'modified',
+        )
+        nested_serializers = [
+            {
+                'field': 'organization',
+                'serializer_class': OrganizationSerializer,
+            }
+        ]
+
+
 class ProviderTitleSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProviderTitle

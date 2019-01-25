@@ -11,6 +11,10 @@ class FacilityAdmin(admin.ModelAdmin):
     list_display = ('name', 'organization', )
 
 
+class InsuranceAdmin(admin.ModelAdmin):
+    list_display = ('name', 'organization', )
+
+
 class EmployeeProfileAdmin(admin.ModelAdmin):
     list_display = ('user', 'title', 'specialty', )
 
@@ -49,6 +53,7 @@ class InvitedEmailTemplateAdmin(admin.ModelAdmin):
 
 admin.site.register(models.Organization, OrganizationAdmin)
 admin.site.register(models.Facility, FacilityAdmin)
+admin.site.register(models.Insurance, InsuranceAdmin)
 admin.site.register(models.EmployeeProfile, EmployeeProfileAdmin)
 admin.site.register(models.ProviderTitle, ProviderTitleAdmin)
 admin.site.register(models.ProviderRole, ProviderRoleAdmin)

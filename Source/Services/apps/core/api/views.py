@@ -8,7 +8,7 @@ from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.utils.translation import ugettext_lazy as _
 
-from apps.core.models import (Diagnosis, EmployeeProfile,
+from apps.core.models import (Diagnosis, EmployeeProfile, Insurance,
                               InvitedEmailTemplate, Medication, Organization,
                               Procedure, ProviderRole, ProviderSpecialty,
                               ProviderTitle, Symptom, Facility)
@@ -35,7 +35,7 @@ from .serializers import (DiagnosisSerializer, EmployeeProfileSerializer,
                           OrganizationSerializer, ProcedureSerializer,
                           ProviderRoleSerializer, ProviderSpecialtySerializer,
                           ProviderTitleSerializer, SymptomSerializer,
-                          InvitedEmailTemplateSerializer,
+                          InvitedEmailTemplateSerializer, InsuranceSerializer,
                           OrganizationEmployeeSerializer,
                           SymptomSearchSerializer, FacilityEmployeeSerializer,
                           DiagnosisSearchSerializer,
@@ -619,6 +619,23 @@ class OrganizationFacilityViewSet(ParentViewSetPermissionMixin,
     serializer_class = FacilitySerializer
     permission_clases = (permissions.IsAuthenticated, IsAdminOrEmployee)
     queryset = Facility.objects.all()
+    parent_lookup = [
+        ('organization', Organization, OrganizationViewSet)
+    ]
+    pagination_class = OrganizationEmployeePagination
+
+
+class OrganizationInsuranceViewSet(ParentViewSetPermissionMixin,
+                                  NestedViewSetMixin,
+                                  mixins.ListModelMixin,
+                                  viewsets.GenericViewSet):
+    """
+    Displays all insurances in a parent organization.
+    """
+
+    serializer_class = InsuranceSerializer
+    permission_clases = (permissions.IsAuthenticated, IsAdminOrEmployee)
+    queryset = Insurance.objects.all()
     parent_lookup = [
         ('organization', Organization, OrganizationViewSet)
     ]
