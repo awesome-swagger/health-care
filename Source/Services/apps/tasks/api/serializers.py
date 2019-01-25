@@ -351,11 +351,26 @@ class AssessmentTaskTemplateSerializer(serializers.ModelSerializer):
         )
 
 
-class AssessmentResponseSerializer(serializers.ModelSerializer):
+class AssessmentResponseSerializer(RepresentationMixin,
+                                   serializers.ModelSerializer):
 
     class Meta:
         model = AssessmentResponse
-        fields = '__all__'
+        fields = (
+            'id',
+            'assessment_task',
+            'assessment_question',
+            'rating',
+        )
+        read_only_fields = (
+            'id',
+        )
+        nested_serializers = [
+            {
+                'field': 'assessment_question',
+                'serializer_class': AssessmentQuestionSerializer,
+            }
+        ]
 
 
 class AssessmentTaskSerializer(RepresentationMixin,

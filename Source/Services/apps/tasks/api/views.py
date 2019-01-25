@@ -346,6 +346,8 @@ class AssessmentResponseViewSet(viewsets.ModelViewSet):
     filterset_fields = (
         'assessment_task__id',
         'assessment_question__id',
+        'assessment_task__plan__patient',
+        'assessment_task__assessment_task_template__plan_template',
     )
 
     def get_queryset(self):
