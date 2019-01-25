@@ -343,12 +343,13 @@ class AssessmentResponseViewSet(viewsets.ModelViewSet):
     )
     queryset = AssessmentResponse.objects.all()
     filter_backends = (DjangoFilterBackend, )
-    filterset_fields = (
-        'assessment_task__id',
-        'assessment_question__id',
-        'assessment_task__plan__patient',
-        'assessment_task__assessment_task_template__plan_template',
-    )
+    filterset_fields = {
+        'assessment_task': ['exact'],
+        'assessment_question': ['exact'],
+        'assessment_task__plan__patient': ['exact'],
+        'assessment_task__assessment_task_template__plan_template': ['exact'],
+        'modified': ['lte', 'gte']
+    }
 
     def get_queryset(self):
         queryset = super(AssessmentResponseViewSet, self).get_queryset()
@@ -366,10 +367,33 @@ class AssessmentResponseViewSet(viewsets.ModelViewSet):
         return queryset
 
     def get_serializer(self, *args, **kwargs):
-        if self.request.method == 'POST' and isinstance(self.request.data, list):
+        if self.request.method == 'POST' and isinstance(
+           self.request.data, list):
             kwargs['many'] = True
         return super(AssessmentResponseViewSet, self).get_serializer(
             *args, **kwargs)
+
+    def filter_queryset(self, queryset):
+        queryset = super(AssessmentResponseViewSet, self).filter_queryset(
+            queryset)
+
+        query_parameters = self.request.query_params.keys()
+        if 'assessment_task__plan__patient' in query_parameters and \
+           'assessment_task__assessment_task_template__plan_template' in query_parameters and \
+           'modified__gte' not in query_parameters and \
+           'modified__lte' not in query_parameters:
+            today = timezone.now().date()
+            today_min = datetime.datetime.combine(today,
+                                                  datetime.time.min,
+                                                  tzinfo=pytz.utc)
+            today_max = datetime.datetime.combine(today,
+                                                  datetime.time.max,
+                                                  tzinfo=pytz.utc)
+            queryset = queryset.filter(
+                modified__range=(today_min, today_max)
+            )
+
+        return queryset
 
 
 class VitalTaskTemplateViewSet(viewsets.ModelViewSet):
