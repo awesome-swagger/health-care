@@ -367,6 +367,20 @@ class AssessmentResponse(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
             self.rating,
         )
 
+    @property
+    def behavior(self):
+        value = "increasing"
+        second_response = AssessmentResponse.objects.filter(
+            assessment_task=self.assessment_task,
+            assessment_question=self.assessment_question).exclude(
+            id=self.id).order_by('created').last()
+        if second_response:
+            if self.rating < second_response.rating:
+                value = "decreasing"
+            elif self.rating == second_response.rating:
+                value = "equal"
+        return value
+
 
 class VitalTaskTemplate(AbstractTaskTemplate):
     """

@@ -361,9 +361,14 @@ class AssessmentResponseSerializer(RepresentationMixin,
             'assessment_task',
             'assessment_question',
             'rating',
+            'behavior',
+            'created',
+            'modified',
         )
         read_only_fields = (
             'id',
+            'created',
+            'modified',
         )
         nested_serializers = [
             {
