@@ -344,7 +344,7 @@ class AssessmentTask(AbstractTask):
         )
 
 
-class AssessmentResponse(UUIDPrimaryKeyMixin):
+class AssessmentResponse(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
     assessment_task = models.ForeignKey(
         AssessmentTask,
         related_name='responses',
@@ -448,7 +448,7 @@ class VitalQuestion(UUIDPrimaryKeyMixin):
         return f'{self.vital_task_template.name}: {self.prompt}'
 
 
-class VitalResponse(UUIDPrimaryKeyMixin):
+class VitalResponse(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
     """
     Stores information about a response made by a patient to a specific
     question for a particular vital task.
