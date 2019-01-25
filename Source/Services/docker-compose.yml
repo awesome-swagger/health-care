@@ -1,19 +1,28 @@
 database:
   image: postgres
+  container_name: ca-postgres
+  hostname: ca-postgres
   environment:
     - POSTGRES_USER=care_adopt_backend
     - POSTGRES_PASSWORD=care_adopt_backend
+    - PGDATA=/var/db
+  volumes:
+    - /data/CareAdopt/db:/var/db
   ports:
   - "5432:5432"
 backend:
   build: .
   command: bash /care_adopt_backend/server/django_devserver.sh
+  container_name: ca-api
+  hostname: ca-services
   links:
   - database
   ports:
   - "8000:8000"
   environment:
-    DB_HOST: services_database_1
+    DB_HOST: ca-postgres
     PYTHONUNBUFFERED: 1
+    FQDN: careadopt.dev.mfire.co
+    ADDITIONAL_DOMAINS: '*'
     ADMIN_USER: admin@mindfiretechnology.com
     ADMIN_PASS: admin-password

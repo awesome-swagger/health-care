@@ -113,9 +113,16 @@ export class PlanInfoComponent implements OnDestroy, OnInit {
     }).subscribe(() => {});
   }
 
-  public addPatientToPlan() {
+  public addPatientToPlan(plan) {
     this.modals.open(AddPatientToPlanComponent, {
       closeDisabled: true,
+      data: {
+        action: 'add',
+        patientKnown: false,
+        patientInSystem: true,
+        planKnown: true,
+        planTemplate: this.planTemplate,
+      },
       width: '576px',
     }).subscribe(() => {});
   }
