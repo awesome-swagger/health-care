@@ -200,6 +200,32 @@ class GoalTemplateSerializer(serializers.ModelSerializer):
         )
 
 
+class BaseInfoMessageQueueSerializer(RepresentationMixin,
+                                     serializers.ModelSerializer):
+
+    class Meta:
+        model = InfoMessageQueue
+        fields = (
+            'id',
+            'plan_template',
+            'name',
+            'type',
+            'created',
+            'modified'
+        )
+        read_only_fields = (
+            'id',
+            'created',
+            'modified',
+        )
+        nested_serializers = [
+            {
+                'field': 'plan_template',
+                'serializer_class': CarePlanTemplateSerializer,
+            }
+        ]
+
+
 class InfoMessageSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -212,6 +238,12 @@ class InfoMessageSerializer(serializers.ModelSerializer):
         read_only_fields = (
             'id',
         )
+        nested_serializers = [
+            {
+                'field': 'queue',
+                'serializer_class': BaseInfoMessageQueueSerializer,
+            }
+        ]
 
 
 class InfoMessageQueueSerializer(RepresentationMixin,
