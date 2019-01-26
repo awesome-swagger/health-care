@@ -806,6 +806,11 @@ class InfoMessageViewSet(viewsets.ModelViewSet):
         IsEmployeeOrPatientReadOnly,
     )
     queryset = InfoMessage.objects.all()
+    filter_backends = (DjangoFilterBackend, )
+    filterset_fields = {
+        'queue__plan_template': ['exact'],
+        'modified': ['lte', 'gte']
+    }
 
     def get_queryset(self):
         queryset = super(InfoMessageViewSet, self).get_queryset()
@@ -814,6 +819,27 @@ class InfoMessageViewSet(viewsets.ModelViewSet):
         if user.is_patient:
             queryset = queryset.filter(
                 queue__plan_template__care_plans__patient=user.patient_profile
+            )
+
+        return queryset
+
+    def filter_queryset(self, queryset):
+        queryset = super(InfoMessageViewSet, self).filter_queryset(
+            queryset)
+
+        query_parameters = self.request.query_params.keys()
+        if 'queue__plan_template' in query_parameters and \
+           'modified__gte' not in query_parameters and \
+           'modified__lte' not in query_parameters:
+            today = timezone.now().date()
+            today_min = datetime.datetime.combine(today,
+                                                  datetime.time.min,
+                                                  tzinfo=pytz.utc)
+            today_max = datetime.datetime.combine(today,
+                                                  datetime.time.max,
+                                                  tzinfo=pytz.utc)
+            queryset = queryset.filter(
+                modified__range=(today_min, today_max)
             )
 
         return queryset
