@@ -47,6 +47,10 @@ class SymptomAdmin(admin.ModelAdmin):
     list_display = ('name', )
 
 
+class NotificationAdmin(admin.ModelAdmin):
+    list_display = ('user', 'category', 'is_read', 'patient')
+
+
 class InvitedEmailTemplateAdmin(admin.ModelAdmin):
     list_display = ('subject', 'message', 'is_default')
 
@@ -63,3 +67,4 @@ admin.site.register(models.Medication, MedicationAdmin)
 admin.site.register(models.Procedure, ProcedureAdmin)
 admin.site.register(models.Symptom, SymptomAdmin)
 admin.site.register(models.InvitedEmailTemplate, InvitedEmailTemplateAdmin)
+admin.site.register(models.Notification, NotificationAdmin)
