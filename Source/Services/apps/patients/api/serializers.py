@@ -19,6 +19,7 @@ from apps.core.api.serializers import (
     EmployeeUserInfo,
     ProviderTitleSerializer,
     SymptomSerializer,
+    PatientUserInfo,
 )
 from apps.patients.models import (PatientDiagnosis, PatientMedication,
                                   PatientProcedure, PatientProfile,
@@ -28,14 +29,6 @@ from apps.plans.api.serializers import InfoMessageSerializer
 from apps.tasks.models import AssessmentResponse, SymptomRating
 
 from ..search_indexes import PatientProfileIndex
-
-
-class PatientUserInfo(SettingsUserForSerializers, serializers.ModelSerializer):
-    class Meta:
-        read_only_fields = ('email', 'date_joined', 'last_login', )
-        exclude = ('password', 'is_superuser', 'groups', 'user_permissions',
-                   'validation_key', 'validated_at', 'reset_key',
-                   'is_developer', )
 
 
 class PatientSearchUserInfo(SettingsUserForSerializers,

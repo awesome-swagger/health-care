@@ -196,11 +196,11 @@ class Notification(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
     )
 
     category = models.CharField(max_length=50, choices=NOTIFICATION_CATEGORY)
-    message = models.CharField(max_length=500)
+    message = models.CharField(max_length=500, null=True, blank=True)
     is_read = models.BooleanField(default=False)
-    icon = models.CharField(max_length=255)
+    icon = models.CharField(max_length=255, null=True, blank=True)
     repeat = models.IntegerField(default=1)
-    user = models.ForeignKey(EmailUser, null=True, blank=True, on_delete=models.CASCADE, 
+    user = models.ForeignKey(EmailUser, on_delete=models.CASCADE, 
                              related_name="notifications") 
     patient = models.ForeignKey(EmailUser, null=True, blank=True, on_delete=models.CASCADE,) 
 
