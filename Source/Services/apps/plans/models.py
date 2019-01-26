@@ -252,7 +252,7 @@ class InfoMessageQueue(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
         return self.name
 
 
-class InfoMessage(UUIDPrimaryKeyMixin):
+class InfoMessage(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
     queue = models.ForeignKey(
         InfoMessageQueue, null=False, blank=False, related_name="messages",
         on_delete=models.CASCADE)
