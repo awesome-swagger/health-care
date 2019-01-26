@@ -604,6 +604,12 @@ class VitalResponseViewSet(viewsets.ModelViewSet):
         IsPatientOrEmployeeReadOnly,
     )
     queryset = VitalResponse.objects.all()
+    filter_backends = (DjangoFilterBackend, )
+    filterset_fields = {
+        'vital_task__plan__patient': ['exact'],
+        'vital_task__vital_task_template__plan_template': ['exact'],
+        'modified': ['lte', 'gte']
+    }
 
     def get_queryset(self):
         queryset = super(VitalResponseViewSet, self).get_queryset()
@@ -627,6 +633,27 @@ class VitalResponseViewSet(viewsets.ModelViewSet):
         return super(VitalResponseViewSet, self).get_serializer(
             *args, **kwargs)
 
+    def filter_queryset(self, queryset):
+        queryset = super(VitalResponseViewSet, self).filter_queryset(
+            queryset)
+
+        query_parameters = self.request.query_params.keys()
+        if 'vital_task__plan__patient' in query_parameters and \
+           'vital_task__vital_task_template__plan_template' in query_parameters and \
+           'modified__gte' not in query_parameters and \
+           'modified__lte' not in query_parameters:
+            today = timezone.now().date()
+            today_min = datetime.datetime.combine(today,
+                                                  datetime.time.min,
+                                                  tzinfo=pytz.utc)
+            today_max = datetime.datetime.combine(today,
+                                                  datetime.time.max,
+                                                  tzinfo=pytz.utc)
+            queryset = queryset.filter(
+                modified__range=(today_min, today_max)
+            )
+
+        return queryset
 
 ############################
 # ----- CUSTOM VIEWS ----- #

@@ -433,6 +433,28 @@ class AssessmentTaskTodaySerializer(serializers.ModelSerializer):
         return obj.assessment_task_template.name
 
 
+class BaseVitalTaskTemplateSerializer(serializers.ModelSerializer):
+    """
+    serializer to be used by :model:`tasks.VitalTaskTemplate`
+    """
+
+    class Meta:
+        model = VitalTaskTemplate
+        fields = (
+            'id',
+            'plan_template',
+            'name',
+            'start_on_day',
+            'frequency',
+            'repeat_amount',
+            'appear_time',
+            'due_time',
+        )
+        read_only_fields = (
+            'id',
+        )
+
+
 class VitalQuestionSerializer(serializers.ModelSerializer):
     """
     serializer to be used by :model:`tasks.VitalQuestion`
@@ -449,6 +471,12 @@ class VitalQuestionSerializer(serializers.ModelSerializer):
         read_only_fields = (
             'id',
         )
+        nested_serializers = [
+            {
+                'field': 'vital_task_template',
+                'serializer_class': BaseVitalTaskTemplateSerializer,
+            }
+        ]
 
 
 class VitalTaskTemplateSerializer(serializers.ModelSerializer):
@@ -530,6 +558,12 @@ class VitalResponseSerializer(serializers.ModelSerializer):
         read_only_fields = (
             'id',
         )
+        nested_serializers = [
+            {
+                'field': 'question',
+                'serializer_class': VitalQuestionSerializer,
+            }
+        ]
 
     def format_answer(self, answer_type, response):
         if answer_type == VitalQuestion.BOOLEAN:
