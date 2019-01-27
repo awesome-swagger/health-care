@@ -1163,43 +1163,66 @@
         </div>
       </div>
     </div> <!--/.accordion__head-->
+
+    <!-- Patient Care Messages -->
     <div class="accordion__body">
       <div class="accordion__contents">
-        <table>
-          <thead>
-            <tr>
-              <th class="left">Message</th>
-              <th>
-                <div class="tool justifyCenter">
-                  <span>Helpful</span>
-                  <div class="tool__anchor">
-                    <button class="button button--icon button--icon--small"
-                    (click)="tooltipPD800Open=!tooltipPD800Open">
-                      <i class="ss-help"></i>
-                    </button>
-                    <div class="tool__tip tool__tip--bottom tool__tip--right" [ngClass]="{ 'isOpen' : tooltipPD800Open }">
-                      <div class="tool__text">
-                        Patients can mark messages as helpful or not. They may also dismiss the message without a response.
+        <ng-container *ngFor="let messageQueue of messageQueues; let i = index">
+          <ng-container *ngFor="let message of messageQueue.messages; let j = index">
+            <table class="fullWidth">
+              <thead>
+                <tr>
+                  <th class="left">Care Message</th>
+                  <th class="left">Viewed</th>
+                  <th class="left">Type</th>
+                  <th>
+                    <div class="tool left">
+                      <span>Helpful</span>
+                      <div class="tool__anchor">
+                        <button class="button button--icon button--icon--small"
+                        (click)="tooltipPD800Open=!tooltipPD800Open">
+                          <i class="ss-help"></i>
+                        </button>
+                        <div class="tool__tip tool__tip--bottom tool__tip--right" [ngClass]="{ 'isOpen' : tooltipPD800Open }">
+                          <div class="tool__text">
+                            Patients can mark messages as helpful or not. They may also dismiss the message without a response.
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </div>
-              </th>
-              <th class="left">Type</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td class="left">
-                Depression is both a brain disorder and a state of mind. The brain is unique—it is the only organ whose function we consciously experience because the brain is the organ of the mind.
-              </td>
-              <td>
-                <i class="ss-standard ss-like iconLime"></i>
-              </td>
-              <td class="left">Education</td>
-            </tr>
-          </tbody>
-        </table>
+                  </th>
+                  <th class="left">Type</th>
+                  <th class="left">Number of Messages</th>
+                  <th class="left">Update</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="left">
+                    {{messageQueue.name}}
+                  </td>
+                  <td class="left">
+                    <div class="pill pill--lime">yes</div>
+                  </td>
+                  <td class="left">Text Message</td>
+                  <td class="left">
+                    <i class="ss-standard ss-like iconLime"></i>
+                  </td>
+                  <td class="left">Education</td>
+                  <td class="left">{{j + 1}} of {{messageQueue.messages.length}}</td>
+                  <td class="left">
+                    <i class="ss-standard ss-write iconLime"></i>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <label>Message Sent</label>
+            <p>
+              {{message.text}}
+            </p>
+            <div *ngIf="i !== messageQueues.length - 1 || j !== messageQueue.messages.length - 1" class="divider"></div>
+          </ng-container>
+        </ng-container>
       </div> <!--/.accordion__contents-->
     </div> <!--/.accordion__body-->
   </div> <!--/.accordion (for messages)-->

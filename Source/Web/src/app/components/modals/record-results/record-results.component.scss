@@ -1,3 +1,12 @@
 @import '~scss/mixins';
 @import '~scss/variables';
-@import '../../../modules/modals/modal-outlet.component.scss'
+@import '../../../modules/modals/modal-outlet.component.scss';
+
+
+.flex1 {
+  flex: 1;
+}
+
+.input {
+  width: 100%;
+}

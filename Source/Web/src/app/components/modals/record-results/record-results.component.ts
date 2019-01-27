@@ -12,6 +12,8 @@ export class RecordResultsComponent implements OnInit {
   public tooltipRRM0Open;
   public tooltipRRM1Open;
   public tooltipRRM2Open;
+  public showDate;
+  public taskEditable;
 
   constructor() {
 
