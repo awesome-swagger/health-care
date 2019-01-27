@@ -2,6 +2,8 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { StoreService } from '../../services';
 import { groupBy as _groupBy } from 'lodash';
 import { PercentageGaugeComponent } from '../../components/graphs/percentage-gauge/percentage-gauge.component';
+import { ActivePatientsGraphComponent } from '../../components/graphs/active-patients-graph/active-patients-graph.component';
+import { PatientsEnrolledGraphComponent } from '../../components/graphs/patients-enrolled-graph/patients-enrolled-graph.component';
 
 @Component({
   selector: 'app-dashboard',

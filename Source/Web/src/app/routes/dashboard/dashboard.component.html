@@ -84,14 +84,7 @@
         <div class="dashRisk">
           <div class="dashRisk__chart">
             <!--TODO: replace fakeChart with actual js charts-->
-            <div class="fakeChart">
-              <div class="fakeChart__inner">
-                <div class="fakeChart__text">
-                  <h1 class="chart__number" *ngIf="patientsGrouped?.active">{{patientsGrouped?.active.length}}</h1>
-                  <h1 class="chart__desc">active patients</h1>
-                </div>
-              </div>
-            </div> <!--/.fakeChart-->
+            <app-active-patients-graph></app-active-patients-graph>
           </div> <!--/.dashRisk__chart-->
           <div class="dashRisk__key">
             <table class="dashRisk__table">
@@ -307,9 +300,7 @@
         </div> <!--/.flex (for row above the time chart)-->
       </div> <!--/.timeChart__selectWrap (for risk level filter)-->
 
-      <div class="fakeTimeChart">
-        <!--TODO: Replace with real js chart-->
-      </div>
+      <app-patients-enrolled-graph></app-patients-enrolled-graph>
 
     </div> <!--/.timeChart-->
 
