@@ -37,6 +37,7 @@
     "rxjs": "^6.2.2",
     "rxjs-compat": "^6.2.1",
     "shortid": "^2.2.14",
+    "store": "^2.0.12",
     "zone.js": "^0.8.26"
   },
   "devDependencies": {
