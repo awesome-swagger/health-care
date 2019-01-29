@@ -41,6 +41,7 @@ class BilledActivitySerializer(RepresentationMixin,
             {
                 'field': 'members',
                 'serializer_class': BasicEmployeeProfileSerializer,
+                'many': True,
             },
             {
                 'field': 'added_by',

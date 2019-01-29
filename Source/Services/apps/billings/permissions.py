@@ -15,4 +15,4 @@ class IsAdminOrEmployeeActivityOwner(IsAdminOrEmployee):
         members = obj.plan.care_team_members.values_list('employee_profile',
                                                          flat=True).distinct()
         return request.user.is_employee and \
-            request.user.employee_profile in members
+            request.user.employee_profile.id in members
