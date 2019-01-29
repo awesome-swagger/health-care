@@ -524,6 +524,9 @@ class EmployeeAssignmentSerializer(serializers.ModelSerializer):
     """
     risk_level = serializers.SerializerMethodField()
 
+    # override billable_hours field for filtering by date
+    billable_hours = serializers.SerializerMethodField()
+
     class Meta:
         model = EmployeeProfile
         fields = (
@@ -539,7 +542,7 @@ class EmployeeAssignmentSerializer(serializers.ModelSerializer):
     def get_billable_hours(self, obj):
         now = timezone.now()
         first_day = now.date().replace(day=1)
-        time_spent = self.added_activities.filter(
+        time_spent = obj.added_activities.filter(
             activity_date__gte=first_day).aggregate(
                 total=Sum('time_spent'))
         total = time_spent['total'] or 0

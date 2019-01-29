@@ -1,3 +1,8 @@
+import datetime
+import random
+
+from dateutil.relativedelta import relativedelta
+
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.encoding import force_bytes
@@ -10,6 +15,7 @@ from rest_framework.test import APITestCase
 
 from ..tests.mixins import CoreMixin
 from apps.accounts.tests.factories import AdminUserFactory
+from apps.billings.tests.mixins import BillingsMixin
 from apps.tasks.tests.mixins import TasksMixin
 
 
@@ -192,7 +198,7 @@ class TestOrganizationFacility(CoreMixin, APITestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
 
-class TestFacilityEmployee(TasksMixin, APITestCase):
+class TestFacilityEmployee(BillingsMixin, TasksMixin, APITestCase):
     """
     Test cases for :model:`tasks.EmployeeProfile` using an employee
     as the logged in user.
@@ -398,6 +404,65 @@ class TestFacilityEmployee(TasksMixin, APITestCase):
         )
         response = self.client.get(url)
         self.assertEqual(response.data['billable_patients_count'], plans_count)
+
+    def test_employee_assignment_billable_hours(self):
+        total_minutes = 0
+        plans_count = 3
+        previous_month = timezone.now() - relativedelta(months=1)
+        self.client.logout()
+
+        employee = self.create_employee(**{
+            'facilities': [self.facility, self.create_facility()],
+        })
+        self.client.force_authenticate(user=employee.user)
+
+        for i in range(plans_count):
+            # Create care plans as member
+            member_plan = self.create_care_plan()
+            self.create_care_team_member(**{
+                'employee_profile': employee,
+                'plan': member_plan,
+                'is_manager': False
+            })
+
+            minutes = random.randint(5, 120)
+            self.create_billed_activity(**{
+                'plan': member_plan,
+                'added_by': employee,
+                'time_spent': minutes
+            })
+            total_minutes += minutes
+
+        # create dummy records
+        for i in range(plans_count):
+            # Create care plans as member
+            member_plan = self.create_care_plan()
+            self.create_care_team_member(**{
+                'employee_profile': employee,
+                'plan': member_plan,
+                'is_manager': False
+            })
+
+            minutes = random.randint(5, 120)
+            self.create_billed_activity(**{
+                'plan': member_plan,
+                'added_by': employee,
+                'time_spent': minutes,
+                'activity_date': previous_month.date()
+            })
+
+        total_time_spent = str(datetime.timedelta(
+            minutes=total_minutes))[:-3]
+
+        url = reverse(
+            'facility-employees-assignments',
+            kwargs={
+                'parent_lookup_facilities': self.facility.id,
+                'pk': employee.id
+            }
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.data['billable_hours'], total_time_spent)
 
     def test_change_email(self):
         email = self.fake.email()
