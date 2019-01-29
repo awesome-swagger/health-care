@@ -2,7 +2,7 @@ import datetime
 
 import pytz
 
-from django.db.models import Q, Avg
+from django.db.models import Q, Avg, Sum
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
@@ -532,8 +532,18 @@ class EmployeeAssignmentSerializer(serializers.ModelSerializer):
             'care_manager_count',
             'care_team_count',
             'billable_patients_count',
+            'billable_hours',
             'risk_level',
         )
+
+    def get_billable_hours(self, obj):
+        now = timezone.now()
+        first_day = now.date().replace(day=1)
+        time_spent = self.added_activities.filter(
+            activity_date__gte=first_day).aggregate(
+                total=Sum('time_spent'))
+        total = time_spent['total'] or 0
+        return str(datetime.timedelta(minutes=total))[:-3]
 
     def get_average_assessment(self, kwargs):
         tasks = AssessmentTask.objects.filter(**kwargs).aggregate(
