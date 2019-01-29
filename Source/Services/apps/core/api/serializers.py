@@ -428,6 +428,30 @@ class EmployeeUserInfo(SettingsUserForSerializers, serializers.ModelSerializer):
                    'image', )
 
 
+class BasicEmployeeProfileSerializer(RepresentationMixin,
+                                     serializers.ModelSerializer):
+    """
+    Serializer for :model:`core.EmployeeProfile` with lesser fields compared
+    to EmployeeProfileSerializer
+    """
+    class Meta:
+        model = EmployeeProfile
+        fields = (
+            'id',
+            'user',
+            'status',
+        )
+        read_only_fields = (
+            'id',
+        )
+        nested_serializers = [
+            {
+                'field': 'user',
+                'serializer_class': EmployeeUserInfo,
+            },
+        ]
+
+
 class EmployeeProfileSerializer(RepresentationMixin, serializers.ModelSerializer):
 
     class Meta:

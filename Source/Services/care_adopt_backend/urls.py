@@ -10,6 +10,7 @@ from rest_framework_swagger.views import get_swagger_view
 
 from apps.landing.views import LandingView
 from apps.accounts.views import UserViewSet, VerifyChangeEmail
+from apps.billings.api.views import BilledActivityViewSet
 from apps.core.api.views import (
     OrganizationViewSet, FacilityViewSet, EmployeeProfileViewSet,
     ProviderTitleViewSet, ProviderRoleViewSet, ProviderSpecialtyViewSet,
@@ -85,11 +86,22 @@ admin.site.site_header = mark_safe('<img src="{img}" alt="{alt}"/> {alt}'.format
 router = ExtendedDefaultRouter()
 # Accounts
 user_routes = router.register(r'users', UserViewSet, base_name='users')
-user_routes.register(r'notifications', 
-    NotificationViewSet, 
+user_routes.register(
+    r'notifications',
+    NotificationViewSet,
     base_name='notifications',
     parents_query_lookups=['user']
 )
+router.register(r'users', UserViewSet, base_name='users')
+
+# Billings
+router.register(
+    r'billed_activities',
+    BilledActivityViewSet,
+    base_name='billed_activities'
+)
+
+# Core
 
 organization_routes = router.register(
     r'organizations',
