@@ -128,6 +128,8 @@ import { EditBillingPractitionerComponent } from './routes/patient/modals/edit-b
 import { EditCcmComponent } from './routes/patient/modals/edit-ccm/edit-ccm.component';
 import { PercentageGaugeComponent } from './components/graphs/percentage-gauge/percentage-gauge.component';
 import { ResultsGraphComponent } from './components/graphs/results-graph/results-graph.component';
+import { ActivePatientsGraphComponent } from './components/graphs/active-patients-graph/active-patients-graph.component';
+import { PatientsEnrolledGraphComponent } from './components/graphs/patients-enrolled-graph/patients-enrolled-graph.component';
 
 @NgModule({
   imports: [
@@ -232,6 +234,8 @@ import { ResultsGraphComponent } from './components/graphs/results-graph/results
     EditCcmComponent,
     PercentageGaugeComponent,
     ResultsGraphComponent,
+    ActivePatientsGraphComponent,
+    PatientsEnrolledGraphComponent,
   ],
   providers: [
     {provide: APP_BASE_HREF, useValue: '/'},

@@ -81,7 +81,7 @@
 
   <div class="accordion" [ngClass]="{ 'isOpen': organizationAccordionOpen }" *ngIf="organization && organizationChecked">
     <div class="accordion__head" (click)="organizationAccordionOpen = !organizationAccordionOpen">
-      <span class="accordion__title">Organization: {{organization.name}} (<span *ngIf="organization.employees">{{shownOrgEmployeesCount}}</span>)</span>
+      <span class="accordion__title">Organization: {{organization.name}} (<span *ngIf="organization.employees">{{orgUserCountText}}</span>)</span>
       <div class="accordion__right">
         <div class="accordion__arrow">
           <i class="ss-standard ss-navigateright"></i>
@@ -144,12 +144,30 @@
           </table>
         </div> <!--/.tableWrap-->
       </div> <!--/.accordion__contents-->
+      <div class="paginationWrap">
+        <div class="pagination">
+            <button class="button button--icon button--icon--dis" (click)="switchPage(null, 1)">
+                <i class="ss-standard ss-skipback"></i>
+            </button>
+            <button class="button button--icon button--icon--dis" (click)="switchPage(-1)">
+                <i class="ss-standard ss-directleft"></i>
+            </button>
+            <span>{{currentPage}} of {{lastPage(total)}}</span>
+            <button class="button button--icon" (click)="switchPage(1)">
+                <i class="ss-standard ss-directright"></i>
+            </button>
+            <button class="button button--icon" (click)="switchPage(null, lastPage(total))">
+                <i class="ss-standard ss-skipforward"></i>
+            </button>
+        </div> <!--/.pagination-->
+      </div> <!--/.paginationWrap-->
+
     </div> <!--/.accordion__body-->
   </div> <!--/.accordion (for organization)-->
   <ng-container *ngFor="let facility of facilities; let i = index">
     <div class="accordion" [ngClass]="{ 'isOpen': facilityAccordionsOpen[facility.id] }" *ngIf="facilitiesChecked[facility.id]">
       <div class="accordion__head" (click)="facilityAccordionsOpen[facility.id] = !facilityAccordionsOpen[facility.id]">
-        <span class="accordion__title">Facility: {{facility.name}} <span *ngIf="facility.employees">({{shownNthFacilityEmployeeCount(i)}})</span></span>
+        <span class="accordion__title">Facility: {{facility.name}} <span *ngIf="facility.employees">({{nthFacilityUserCountText(i)}})</span></span>
         <div class="accordion__right">
           <div class="accordion__arrow">
             <i class="ss-standard ss-navigateright"></i>
@@ -258,8 +276,24 @@
             </table>
           </div> <!--/.tableWrap-->
         </div> <!--/.accordion__contents-->
+        <div class="paginationWrap">
+          <div class="pagination">
+              <button class="button button--icon button--icon--dis" (click)="switchNthFacilityPage(i, null, 1)">
+                  <i class="ss-standard ss-skipback"></i>
+              </button>
+              <button class="button button--icon button--icon--dis" (click)="switchNthFacilityPage(i, -1)">
+                  <i class="ss-standard ss-directleft"></i>
+              </button>
+              <span>{{facilityPages[facility.id]}} of {{lastPage(facilityTotals[facility.id])}}</span>
+              <button class="button button--icon" (click)="switchNthFacilityPage(i, 1)">
+                  <i class="ss-standard ss-directright"></i>
+              </button>
+              <button class="button button--icon" (click)="switchNthFacilityPage(i, null, lastPage(facilityTotals[facility.id]))">
+                  <i class="ss-standard ss-skipforward"></i>
+              </button>
+          </div> <!--/.pagination-->
+        </div> <!--/.paginationWrap-->
       </div> <!--/.accordion__body-->
     </div> <!--/.accordion (for facility)-->
   </ng-container>
-
 </div> <!--/.ssContainer-->

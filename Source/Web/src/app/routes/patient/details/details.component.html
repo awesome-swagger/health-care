@@ -20,7 +20,9 @@
           <span *ngIf="!selectedDate">Select Date</span>
           <span *ngIf="selectedDate">{{selectedDate.format('ddd, MMM, D')}}</span>
         </div>
-        <app-date-picker class="datepicker__picker" [ngClass]="{ 'isOpen' : showDate }" [selected]="selectedDate" (selectedChange)="setSelectedDay($event)"></app-date-picker>
+        <app-popover [visible]="showDate" (visibleChange)="showDate = $event;" [options]="datePickerOptions">
+          <app-date-picker class="datepicker__picker isOpen" [selected]="selectedDate" (selectedChange)="setSelectedDay($event)"></app-date-picker>
+        </app-popover>
         <button class="button button--icon" (click)="nextDate()">
           <i class="ss-standard ss-navigateright"></i>
         </button>
@@ -58,7 +60,24 @@
               <th class="thSortable">
                 <span class="thSortable__text">Comments</span>
               </th>
-              <th>Update</th>
+              <th>
+                <div class="tool justifyCenter">
+                  <span>Update</span>
+                  <div class="tool__anchor">
+                    <button class="button button--icon button--icon--small"
+                    (click)="goalUpdateTTOpen=!goalUpdateTTOpen">
+                      <i class="ss-help"></i>
+                    </button>
+                    <app-popover [visible]="goalUpdateTTOpen" (visibleChange)="goalUpdateTTOpen = $event;">
+                      <div class="tool__tip isOpen">
+                        <div class="tool__text">
+                          You are able to manually update the progress of patient's care plan goals.
+                        </div>
+                      </div>
+                    </app-popover>
+                  </div>
+                </div>
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -130,14 +149,16 @@
                   <span class="thSortable__text">Occur</span>
                   <div class="tool__anchor">
                     <button class="button button--icon button--icon--small"
-                    (click)="tooltipPD200Open=!tooltipPD200Open">
+                    (click)="myTaskOccurTTOpen=!myTaskOccurTTOpen">
                       <i class="ss-help"></i>
                     </button>
-                    <div class="tool__tip tool__tip--bottom tool__tip--right" [ngClass]="{ 'isOpen' : tooltipPD200Open }">
-                      <div class="tool__text">
-                        This is the number of times the provider has seen this item, out of the total times it will occurr in this care plan.
+                    <app-popover [visible]="myTaskOccurTTOpen" (visibleChange)="myTaskOccurTTOpen = $event;">
+                      <div class="tool__tip isOpen">
+                        <div class="tool__text">
+                          This is the number of times the provider has seen this item, out of the total times it will occurr in this care plan.
+                        </div>
                       </div>
-                    </div>
+                    </app-popover>
                   </div>
                 </div>
               </th>
@@ -206,14 +227,16 @@
                   <span class="thSortable__text">Occur</span>
                   <div class="tool__anchor">
                     <button class="button button--icon button--icon--small"
-                    (click)="tooltipPD300Open=!tooltipPD300Open">
+                    (click)="teamTaskOccurTTOpen=!teamTaskOccurTTOpen">
                       <i class="ss-help"></i>
                     </button>
-                    <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipPD300Open }">
-                      <div class="tool__text">
-                        This is the number of times the provider has seen this item, out of the total times it will occur in this care plan.
+                    <app-popover [visible]="teamTaskOccurTTOpen" (visibleChange)="teamTaskOccurTTOpen = $event;">
+                      <div class="tool__tip isOpen">
+                        <div class="tool__text">
+                          This is the number of times the provider has seen this item, out of the total times it will occurr in this care plan.
+                        </div>
                       </div>
-                    </div>
+                    </app-popover>
                   </div>
                 </div>
               </th>
@@ -283,14 +306,16 @@
                   <span class="thSortable__text">Occur</span>
                   <div class="tool__anchor">
                     <button class="button button--icon button--icon--small"
-                    (click)="tooltipPD400Open=!tooltipPD400Open">
+                    (click)="patientTaskOccurTTOpen=!patientTaskOccurTTOpen">
                       <i class="ss-help"></i>
                     </button>
-                    <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipPD400Open }">
-                      <div class="tool__text">
-                        This is the number of times the patient has seen this item, out of the total times it will occurr in this care plan.
+                    <app-popover [visible]="patientTaskOccurTTOpen" (visibleChange)="patientTaskOccurTTOpen = $event;">
+                      <div class="tool__tip isOpen">
+                        <div class="tool__text">
+                          This is the number of times the patient has seen this item, out of the total times it will occurr in this care plan.
+                        </div>
                       </div>
-                    </div>
+                    </app-popover>
                   </div>
                 </div>
               </th>
@@ -299,14 +324,16 @@
                   <span class="thSortable__text">Avg Eng</span>
                   <div class="tool__anchor">
                     <button class="button button--icon button--icon--small"
-                    (click)="tooltipPD401Open=!tooltipPD401Open">
+                    (click)="patientTaskAvgEngTTOpen=!patientTaskAvgEngTTOpen">
                       <i class="ss-help"></i>
                     </button>
-                    <div class="tool__tip tool__tip--bottom tool__tip--right" [ngClass]="{ 'isOpen' : tooltipPD401Open }">
-                      <div class="tool__text">
-                        This number shows the patient’s average engagement with this item over the course of the care plan thus far.
+                    <app-popover [visible]="patientTaskAvgEngTTOpen" (visibleChange)="patientTaskAvgEngTTOpen = $event;">
+                      <div class="tool__tip isOpen">
+                        <div class="tool__text">
+                          This number shows the patient’s average engagement with this item over the course of the care plan thus far.
+                        </div>
                       </div>
-                    </div>
+                    </app-popover>
                   </div>
                 </div>
               </th>
@@ -315,14 +342,16 @@
                   <span class="thSortable__text">Update</span>
                   <div class="tool__anchor">
                     <button class="button button--icon button--icon--small"
-                    (click)="tooltipPD402Open=!tooltipPD402Open">
+                    (click)="patientTaskUpdateTTOpen=!patientTaskUpdateTTOpen">
                       <i class="ss-help"></i>
                     </button>
-                    <div class="tool__tip tool__tip--bottom tool__tip--right" [ngClass]="{ 'isOpen' : tooltipPD402Open }">
-                      <div class="tool__text">
-                        You are able to update the patient's information.  This will override anything the patient has already submitted.
+                    <app-popover [visible]="patientTaskUpdateTTOpen" (visibleChange)="patientTaskUpdateTTOpen = $event;">
+                      <div class="tool__tip isOpen">
+                        <div class="tool__text">
+                          You are able to update the patient's information.  This will override anything the patient has already submitted.
+                        </div>
                       </div>
-                    </div>
+                    </app-popover>
                   </div>
                 </div>
               </th>
@@ -407,26 +436,30 @@
             <h3 class="noMargin marRight24">{{assessment.name}}</h3>
             <h4 class="noMargin" *ngIf="assessment.tracksOutcome">Tracks Outcome</h4>
             <div class="tool__anchor" *ngIf="assessment.tracksOutcome">
-            	<button class="button button--icon button--icon--small" (click)="tooltipPD500Open=!tooltipPD500Open">
+            	<button class="button button--icon button--icon--small" (click)="assmntOutcomeTTOpen[assessment.id]=!assmntOutcomeTTOpen[assessment.id]">
             		<i class="ss-help"></i>
             	</button>
-            	<div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipPD500Open }">
-            		<div class="tool__text">
-            			Assessments that track outcome are included when calculating the patient’s outcomes.
-            		</div>
-            	</div>
+              <app-popover [visible]="assmntOutcomeTTOpen[assessment.id]" (visibleChange)="assmntOutcomeTTOpen[assessment.id] = $event;">
+                <div class="tool__tip isOpen">
+                  <div class="tool__text">
+                    Assessments that track outcome are included when calculating the patient’s outcomes.
+                  </div>
+                </div>
+              </app-popover>
             </div>
             <h4 class="noMargin" *ngIf="assessment.tracksSatisfaction">Tracks Satisfaction</h4>
             <div class="tool__anchor" *ngIf="assessment.tracksSatisfaction">
               <button class="button button--icon button--icon--small"
-              (click)="tooltipPD505Open=!tooltipPD505Open">
+              (click)="assmntSatisfactionTTOpen[assessment.id]=!assmntSatisfactionTTOpen[assessment.id]">
                 <i class="ss-help"></i>
               </button>
-              <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipPD505Open }">
-                <div class="tool__text">
-                  Assessments that track satisfaction are included when calculating the patient’s satisfaction score.
+              <app-popover [visible]="assmntSatisfactionTTOpen[assessment.id]" (visibleChange)="assmntSatisfactionTTOpen[assessment.id] = $event;">
+                <div class="tool__tip isOpen">
+                  <div class="tool__text">
+                    Assessments that track satisfaction are included when calculating the patient’s satisfaction score.
+                  </div>
                 </div>
-              </div>
+              </app-popover>
             </div>
           </div>
           <table class="fullWidth marBottom48">
@@ -443,14 +476,16 @@
                     <span class="thSortable__text">Occur</span>
                     <div class="tool__anchor">
                       <button class="button button--icon button--icon--small"
-                      (click)="tooltipPD501Open=!tooltipPD501Open">
+                      (click)="assmntOccurTTOpen[assessment.id]=!assmntOccurTTOpen[assessment.id]">
                         <i class="ss-help"></i>
                       </button>
-                      <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipPD501Open }">
-                        <div class="tool__text">
-                          This is the number of times the patient has seen this item, out of the total times it will occurr in this care plan.
+                      <app-popover [visible]="assmntOccurTTOpen[assessment.id]" (visibleChange)="assmntOccurTTOpen[assessment.id] = $event;">
+                        <div class="tool__tip isOpen">
+                          <div class="tool__text">
+                            This is the number of times the patient has seen this item, out of the total times it will occurr in this care plan.
+                          </div>
                         </div>
-                      </div>
+                      </app-popover>
                     </div>
                   </div>
                 </th>
@@ -459,14 +494,16 @@
                     <span class="thSortable__text">Vs Prev</span>
                     <div class="tool__anchor">
                       <button class="button button--icon button--icon--small"
-                      (click)="tooltipPD502Open=!tooltipPD502Open">
+                      (click)="assmntVsPrevTTOpen[assessment.id]=!assmntVsPrevTTOpen[assessment.id]">
                         <i class="ss-help"></i>
                       </button>
-                      <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipPD502Open }">
-                        <div class="tool__text">
-                          This column shows how these results compare to the patient’s previous response to these questions.
+                      <app-popover [visible]="assmntVsPrevTTOpen[assessment.id]" (visibleChange)="assmntVsPrevTTOpen[assessment.id] = $event;">
+                        <div class="tool__tip isOpen">
+                          <div class="tool__text">
+                            This column shows how these results compare to the patient’s previous response to these questions.
+                          </div>
                         </div>
-                      </div>
+                      </app-popover>
                     </div>
                   </div>
                 </th>
@@ -475,14 +512,16 @@
                     <span class="thSortable__text">Vs Next</span>
                     <div class="tool__anchor">
                       <button class="button button--icon button--icon--small"
-                      (click)="tooltipPD503Open=!tooltipPD503Open">
+                      (click)="assmntVsNextTTOpen[assessment.id]=!assmntVsNextTTOpen[assessment.id]">
                         <i class="ss-help"></i>
                       </button>
-                      <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipPD503Open }">
-                        <div class="tool__text">
-                          This column shows how these results compare to the patient’s next response to these questions.
+                      <app-popover [visible]="assmntVsNextTTOpen[assessment.id]" (visibleChange)="assmntVsNextTTOpen[assessment.id] = $event;">
+                        <div class="tool__tip isOpen">
+                          <div class="tool__text">
+                            This column shows how these results compare to the patient’s next response to these questions.
+                          </div>
                         </div>
-                      </div>
+                      </app-popover>
                     </div>
                   </div>
                 </th>
@@ -491,14 +530,16 @@
                     <span class="thSortable__text">Vs Care Plan</span>
                     <div class="tool__anchor">
                       <button class="button button--icon button--icon--small"
-                      (click)="tooltipPD504Open=!tooltipPD504Open">
+                      (click)="assmntVsPlanTTOpen[assessment.id]=!assmntVsPlanTTOpen[assessment.id]">
                         <i class="ss-help"></i>
                       </button>
-                      <div class="tool__tip tool__tip--bottom tool__tip--right" [ngClass]="{ 'isOpen' : tooltipPD504Open }">
-                        <div class="tool__text">
-                          This column shows how these results compare to the patient's average responses to these questions over the course of the care plan.
+                      <app-popover [visible]="assmntVsPlanTTOpen[assessment.id]" (visibleChange)="assmntVsPlanTTOpen[assessment.id] = $event;">
+                        <div class="tool__tip isOpen">
+                          <div class="tool__text">
+                            This column shows how these results compare to the patient's average responses to these questions over the course of the care plan.
+                          </div>
                         </div>
-                      </div>
+                      </app-popover>
                     </div>
                   </div>
                 </th>
@@ -507,14 +548,16 @@
                     <span class="thSortable__text">Update</span>
                     <div class="tool__anchor">
                       <button class="button button--icon button--icon--small"
-                      (click)="tooltipPD402Open=!tooltipPD402Open">
+                      (click)="assmntUpdateTTOpen[assessment.id]=!assmntUpdateTTOpen[assessment.id]">
                         <i class="ss-help"></i>
                       </button>
-                      <div class="tool__tip tool__tip--bottom tool__tip--right" [ngClass]="{ 'isOpen' : tooltipPD402Open }">
-                        <div class="tool__text">
-                          You are able to update the patient's information.  This will override anything the patient has already submitted.
+                      <app-popover [visible]="assmntUpdateTTOpen[assessment.id]" (visibleChange)="assmntUpdateTTOpen[assessment.id] = $event;">
+                        <div class="tool__tip isOpen">
+                          <div class="tool__text">
+                            You are able to update the patient's information.  This will override anything the patient has already submitted.
+                          </div>
                         </div>
-                      </div>
+                      </app-popover>
                     </div>
                   </div>
                 </th>
@@ -592,14 +635,16 @@
                   <span class="thSortable__text">Reported</span>
                   <div class="tool__anchor">
                     <button class="button button--icon button--icon--small"
-                    (click)="tooltipPD600Open=!tooltipPD600Open">
+                    (click)="symptomReportedTTOpen=!symptomReportedTTOpen">
                       <i class="ss-help"></i>
                     </button>
-                    <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipPD600Open }">
-                      <div class="tool__text">
-                        This is the number of times the patient has reported this symptom, out of the total times possible.
+                    <app-popover [visible]="symptomReportedTTOpen" (visibleChange)="symptomReportedTTOpen = $event;">
+                      <div class="tool__tip isOpen">
+                        <div class="tool__text">
+                          This is the number of times the patient has reported this symptom, out of the total times possible.
+                        </div>
                       </div>
-                    </div>
+                    </app-popover>
                   </div>
                 </div>
               </th>
@@ -608,14 +653,16 @@
                   <span class="thSortable__text">Vs Prev</span>
                   <div class="tool__anchor">
                     <button class="button button--icon button--icon--small"
-                    (click)="tooltipPD601Open=!tooltipPD601Open">
+                    (click)="symptomVsPrevTTOpen=!symptomVsPrevTTOpen">
                       <i class="ss-help"></i>
                     </button>
-                    <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipPD601Open }">
-                      <div class="tool__text">
-                        This column shows how these results compare to the patient’s previous report of these symptoms.
+                    <app-popover [visible]="symptomVsPrevTTOpen" (visibleChange)="symptomVsPrevTTOpen = $event;">
+                      <div class="tool__tip isOpen">
+                        <div class="tool__text">
+                          This column shows how these results compare to the patient’s previous report of these symptoms.
+                        </div>
                       </div>
-                    </div>
+                    </app-popover>
                   </div>
                 </div>
               </th>
@@ -624,14 +671,16 @@
                   <span class="thSortable__text">Vs Next</span>
                   <div class="tool__anchor">
                     <button class="button button--icon button--icon--small"
-                    (click)="tooltipPD602Open=!tooltipPD602Open">
+                    (click)="symptomVsNextTTOpen=!symptomVsNextTTOpen">
                       <i class="ss-help"></i>
                     </button>
-                    <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipPD602Open }">
-                      <div class="tool__text">
-                        This column shows how these results compare to the patient’s next report of these symptoms.
+                    <app-popover [visible]="symptomVsNextTTOpen" (visibleChange)="symptomVsNextTTOpen = $event;">
+                      <div class="tool__tip isOpen">
+                        <div class="tool__text">
+                          This column shows how these results compare to the patient’s next report of these symptoms.
+                        </div>
                       </div>
-                    </div>
+                    </app-popover>
                   </div>
                 </div>
               </th>
@@ -640,14 +689,16 @@
                   <span class="thSortable__text">Vs Care Plan</span>
                   <div class="tool__anchor">
                     <button class="button button--icon button--icon--small"
-                    (click)="tooltipPD603Open=!tooltipPD603Open">
+                    (click)="symptomVsPlanTTOpen=!symptomVsPlanTTOpen">
                       <i class="ss-help"></i>
                     </button>
-                    <div class="tool__tip tool__tip--bottom tool__tip--right" [ngClass]="{ 'isOpen' : tooltipPD603Open }">
-                      <div class="tool__text">
-                        This column shows how these results compare to the patient's average report of these symptoms over the course of the care plan.
+                    <app-popover [visible]="symptomVsPlanTTOpen" (visibleChange)="symptomVsPlanTTOpen = $event;">
+                      <div class="tool__tip isOpen">
+                        <div class="tool__text">
+                          This column shows how these results compare to the patient's average report of these symptoms over the course of the care plan.
+                        </div>
                       </div>
-                    </div>
+                    </app-popover>
                   </div>
                 </div>
               </th>
@@ -656,14 +707,16 @@
                   <span class="thSortable__text">Update</span>
                   <div class="tool__anchor">
                     <button class="button button--icon button--icon--small"
-                    (click)="tooltipPD402Open=!tooltipPD402Open">
+                    (click)="symptomUpdateTTOpen=!symptomUpdateTTOpen">
                       <i class="ss-help"></i>
                     </button>
-                    <div class="tool__tip tool__tip--bottom tool__tip--right" [ngClass]="{ 'isOpen' : tooltipPD402Open }">
-                      <div class="tool__text">
-                        You are able to update the patient's information.  This will override anything the patient has already submitted.
+                    <app-popover [visible]="symptomUpdateTTOpen" (visibleChange)="symptomUpdateTTOpen = $event;">
+                      <div class="tool__tip isOpen">
+                        <div class="tool__text">
+                          You are able to update the patient's information.  This will override anything the patient has already submitted.
+                        </div>
                       </div>
-                    </div>
+                    </app-popover>
                   </div>
                 </div>
               </th>
@@ -750,14 +803,16 @@
           				<div class="tool justifyCenter">
           					<span class="thSortable__text">Reported</span>
           					<div class="tool__anchor">
-          						<button class="button button--icon button--icon--small" (click)="tooltipPD700Open=!tooltipPD700Open">
+          						<button class="button button--icon button--icon--small" (click)="vitalReportedTTOpen[vital.id]=!vitalReportedTTOpen[vital.id]">
           							<i class="ss-help"></i>
           						</button>
-          						<div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipPD700Open }">
-          							<div class="tool__text">
-          								This is the number of times the patient has reported these metrics, out of the total times possible.
-          							</div>
-          						</div>
+                      <app-popover [visible]="vitalReportedTTOpen[vital.id]" (visibleChange)="vitalReportedTTOpen[vital.id] = $event;">
+                        <div class="tool__tip isOpen">
+                          <div class="tool__text">
+            								This is the number of times the patient has reported these metrics, out of the total times possible.
+                          </div>
+                        </div>
+                      </app-popover>
           					</div>
           				</div>
           			</th>
@@ -765,14 +820,16 @@
           				<div class="tool justifyCenter">
           					<span class="thSortable__text">Vs Prev</span>
           					<div class="tool__anchor">
-          						<button class="button button--icon button--icon--small" (click)="tooltipPD701Open=!tooltipPD701Open">
+          						<button class="button button--icon button--icon--small" (click)="vitalVsPrevTTOpen[vital.id]=!vitalVsPrevTTOpen[vital.id]">
           							<i class="ss-help"></i>
           						</button>
-          						<div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipPD701Open }">
-          							<div class="tool__text">
-          								This column shows how these results compare to the patient’s previous report of these metrics.
-          							</div>
-          						</div>
+                      <app-popover [visible]="vitalVsPrevTTOpen[vital.id]" (visibleChange)="vitalVsPrevTTOpen[vital.id] = $event;">
+                        <div class="tool__tip isOpen">
+                          <div class="tool__text">
+            								This column shows how these results compare to the patient’s previous report of these metrics.
+                          </div>
+                        </div>
+                      </app-popover>
           					</div>
           				</div>
           			</th>
@@ -780,14 +837,16 @@
           				<div class="tool justifyCenter">
           					<span class="thSortable__text">Vs Next</span>
           					<div class="tool__anchor">
-          						<button class="button button--icon button--icon--small" (click)="tooltipPD702Open=!tooltipPD702Open">
+          						<button class="button button--icon button--icon--small" (click)="vitalVsNextTTOpen[vital.id]=!vitalVsNextTTOpen[vital.id]">
           							<i class="ss-help"></i>
           						</button>
-          						<div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipPD702Open }">
-          							<div class="tool__text">
-          								This column shows how these results compare to the patient’s next report of these metrics.
-          							</div>
-          						</div>
+                      <app-popover [visible]="vitalVsNextTTOpen[vital.id]" (visibleChange)="vitalVsNextTTOpen[vital.id] = $event;">
+                        <div class="tool__tip isOpen">
+                          <div class="tool__text">
+            								This column shows how these results compare to the patient’s next report of these metrics.
+                          </div>
+                        </div>
+                      </app-popover>
           					</div>
           				</div>
           			</th>
@@ -795,14 +854,16 @@
           				<div class="tool justifyCenter">
           					<span class="thSortable__text">Vs Care Plan</span>
           					<div class="tool__anchor">
-          						<button class="button button--icon button--icon--small" (click)="tooltipPD703Open=!tooltipPD703Open">
+          						<button class="button button--icon button--icon--small" (click)="vitalVsPlanTTOpen[vital.id]=!vitalVsPlanTTOpen[vital.id]">
           							<i class="ss-help"></i>
           						</button>
-          						<div class="tool__tip tool__tip--bottom tool__tip--right" [ngClass]="{ 'isOpen' : tooltipPD703Open }">
-          							<div class="tool__text">
-          								This column shows how these results compare to the patient's average report of these metrics over the course of the care plan.
-          							</div>
-          						</div>
+                      <app-popover [visible]="vitalVsPlanTTOpen[vital.id]" (visibleChange)="vitalVsPlanTTOpen[vital.id] = $event;">
+                        <div class="tool__tip isOpen">
+                          <div class="tool__text">
+            								This column shows how these results compare to the patient's average report of these metrics over the course of the care plan.
+                          </div>
+                        </div>
+                      </app-popover>
           					</div>
           				</div>
           			</th>
@@ -811,14 +872,16 @@
                     <span class="thSortable__text">Update</span>
                     <div class="tool__anchor">
                       <button class="button button--icon button--icon--small"
-                      (click)="tooltipPD402Open=!tooltipPD402Open">
+                      (click)="vitalUpdateTTOpen[vital.id]=!vitalUpdateTTOpen[vital.id]">
                         <i class="ss-help"></i>
                       </button>
-                      <div class="tool__tip tool__tip--bottom tool__tip--right" [ngClass]="{ 'isOpen' : tooltipPD402Open }">
-                        <div class="tool__text">
-                          You are able to update the patient's information.  This will override anything the patient has already submitted.
+                      <app-popover [visible]="vitalUpdateTTOpen[vital.id]" (visibleChange)="vitalUpdateTTOpen[vital.id] = $event;">
+                        <div class="tool__tip isOpen">
+                          <div class="tool__text">
+                            You are able to update the patient's information.  This will override anything the patient has already submitted.
+                          </div>
                         </div>
-                      </div>
+                      </app-popover>
                     </div>
                   </div>
                 </th>

@@ -2,6 +2,7 @@ import { Component, EventEmitter, Input, Output, OnInit, OnDestroy } from '@angu
 import { ActivatedRoute, Router } from '@angular/router';
 import { ModalService } from '../../modules/modals';
 import { ToastService } from '../../modules/toast';
+import { PopoverOptions } from '../../modules/popover';
 import { StoreService } from '../../services';
 import { find as _find } from 'lodash';
 import { ProblemAreasComponent } from '../../routes/patient/modals/problem-areas/problem-areas.component';
@@ -24,8 +25,11 @@ export class PatientHeaderComponent implements OnInit, OnDestroy {
   @Output()
   public onPlanChange = new EventEmitter<any>();
 
+  public planSelectOpen = false;
   public teamListOpen;
   public openFinancialDetails;
+
+  public planSelectOptions: PopoverOptions = {};
 
   constructor(
     private route: ActivatedRoute,

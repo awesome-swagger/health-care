@@ -5,6 +5,7 @@ import { Subscription } from 'rxjs/Subscription';
 import 'rxjs/add/operator/filter';
 import { NavComponent } from './components';
 import { NavbarService } from './services/';
+import { AutoLogoutService } from './services/auto-logout.service';
 
 @Component({
   selector: 'app-root',
@@ -23,6 +24,7 @@ export class AppComponent implements OnInit, OnDestroy {
     private router: Router,
     private title: Title,
     private nav: NavbarService,
+    private autoLogout: AutoLogoutService,
   ) { }
 
   public ngOnInit() {

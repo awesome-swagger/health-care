@@ -3,12 +3,12 @@
   <i class="iconText__icon ss-alert"></i>
   <span class="error__text">Changing your email will log you out, require you to verify your new email, and then log in again.</span>
 </div>
-<input class="input fullWidth" type="email" placeholder="New email address" />
+<input class="input fullWidth" type="email" placeholder="New email address" [(ngModel)]="newEmail" />
 <div class="modal__buttons">
   <button class="button button--2nd" (click)="modals.close('cancel')">
     Cancel
   </button>
-  <button class="button">
+  <button class="button" (click)="submit()">
     Verify Email
   </button>
 </div>
