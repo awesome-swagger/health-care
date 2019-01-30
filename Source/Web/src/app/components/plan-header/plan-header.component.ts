@@ -3,7 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import * as moment from 'moment';
 import { ModalService } from '../../modules/modals';
 import { PlanDurationComponent } from '../../components/modals/plan-duration/plan-duration.component';
-import { AuthService, StoreService } from '../../services';
+import { AuthService, StoreService, UtilsService } from '../../services';
 
 @Component({
   selector: 'app-plan-header',
@@ -28,6 +28,7 @@ export class PlanHeaderComponent implements OnInit, OnDestroy {
     private modals: ModalService,
     private auth: AuthService,
     private store: StoreService,
+    public utils: UtilsService,
   ) {
     let paramSub = this.route.params.subscribe(
       (params) => {

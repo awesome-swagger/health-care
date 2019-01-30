@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { groupBy as _groupBy } from 'lodash';
+import { sumBy as _sumBy } from 'lodash';
 import { ModalService, ConfirmModalComponent } from '../../../modules/modals';
 import { AddPlanComponent } from '../modals/add-plan/add-plan.component';
 import {
@@ -8,7 +8,12 @@ import {
   ReassignPatientsComponent,
   PlanDurationComponent
 } from '../../../components';
-import { AuthService, NavbarService, StoreService } from '../../../services';
+import {
+  AuthService,
+  NavbarService,
+  StoreService,
+  UtilsService,
+} from '../../../services';
 
 @Component({
   selector: 'app-plan-info',
@@ -20,8 +25,6 @@ export class PlanInfoComponent implements OnDestroy, OnInit {
   public planTemplateId = null;
   public planTemplate: any = null;
   public facilities = [];
-  public patients = [];
-  public patientsGrouped = [];
   public accordionOpen = {};
 
   public accord1Open;
@@ -37,6 +40,7 @@ export class PlanInfoComponent implements OnDestroy, OnInit {
     private auth: AuthService,
     private nav: NavbarService,
     private store: StoreService,
+    public utils: UtilsService,
   ) { }
 
   public ngOnInit() {
@@ -50,11 +54,12 @@ export class PlanInfoComponent implements OnDestroy, OnInit {
           this.planTemplateId = planTemplate.id;
           this.planTemplate = planTemplate;
           this.nav.planDetailState(this.planTemplateId);
-          this.getPatients(this.planTemplateId).then((patients: any) => {
-            this.patients = patients.results;
-            this.patientsGrouped = _groupBy(this.patients, (obj) => {
-              return obj.facility.id;
-            });
+          this.facilities.forEach((facility) => {
+            this.store.Facility.detailRoute('get', facility.id, 'care_plan_templates/' + this.planTemplateId + '/care_plans')
+              .subscribe((plans: any) => {
+                facility.plans = plans.results;
+                console.log(facility.plans);
+              });
           });
         }).catch(() => {
           this.router.navigate(['/error']);
@@ -72,19 +77,6 @@ export class PlanInfoComponent implements OnDestroy, OnInit {
         (err) => reject(err),
         () => {
           readSub.unsubscribe();
-        }
-      );
-    });
-    return promise;
-  }
-
-  public getPatients(planId) {
-    let promise = new Promise((resolve, reject) => {
-      let detailSub = this.store.CarePlanTemplate.detailRoute('get', planId, 'patients').subscribe(
-        (patients) => resolve(patients),
-        (err) => reject(err),
-        () => {
-          detailSub.unsubscribe();
         }
       );
     });
@@ -125,5 +117,16 @@ export class PlanInfoComponent implements OnDestroy, OnInit {
       },
       width: '576px',
     }).subscribe(() => {});
+  }
+
+  public totalFacilityRiskLevel(facility) {
+    if (!facility.plans || facility.plans.length === 0) {
+      return 0;
+    }
+    return _sumBy(facility.plans, (plan) => plan.risk_level) / facility.plans.length;
+  }
+
+  public routeToPatientOverview(patient, plan) {
+    this.router.navigate(['/patient', patient, 'overview', plan]);
   }
 }
