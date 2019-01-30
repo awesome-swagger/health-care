@@ -3,7 +3,7 @@ import datetime
 import pytz
 
 from django.contrib.auth import get_user_model
-from django.db.models import Avg
+from django.db.models import Avg, Sum
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
@@ -24,6 +24,7 @@ from ..models import (
     InfoMessage,
     CareTeamMember,
 )
+from apps.billings.models import BilledActivity
 from apps.core.api.mixins import RepresentationMixin
 from apps.core.api.serializers import (
     ProviderRoleSerializer,
@@ -492,6 +493,7 @@ class CarePlanTemplateAverageSerializer(serializers.ModelSerializer):
     """
     total_patients = serializers.SerializerMethodField()
     total_facilities = serializers.SerializerMethodField()
+    time_count = serializers.SerializerMethodField()
     average_outcome = serializers.SerializerMethodField()
     average_engagement = serializers.SerializerMethodField()
     risk_level = serializers.SerializerMethodField()
@@ -507,6 +509,7 @@ class CarePlanTemplateAverageSerializer(serializers.ModelSerializer):
             'duration_weeks',
             'total_patients',
             'total_facilities',
+            'time_count',
             'average_outcome',
             'average_engagement',
             'risk_level',
@@ -519,6 +522,12 @@ class CarePlanTemplateAverageSerializer(serializers.ModelSerializer):
     def get_total_facilities(self, obj):
         return obj.care_plans.values_list(
             'patient__facility', flat=True).distinct().count()
+
+    def get_time_count(self, obj):
+        time_spent = BilledActivity.objects.filter(
+            plan__plan_template=obj).aggregate(total=Sum('time_spent'))
+        total = time_spent['total'] or 0
+        return str(datetime.timedelta(minutes=total))[:-3]
 
     def get_average_outcome(self, obj):
         tasks = AssessmentTask.objects.filter(
