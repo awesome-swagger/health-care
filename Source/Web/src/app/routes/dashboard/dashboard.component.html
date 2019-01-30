@@ -28,10 +28,10 @@
             </div>
             <ul class="drop__dropdown drop__dropdown--right" [ngClass]="{ 'isOpen' : multiOpen }">
               <div class="drop__buttons">
-                <button class="button button--iconText">
+                <button class="button button--iconText" (click)="toggleAllUsers(true)">
                   <i class="ss-check ss-standard"></i> Check All
                 </button>
-                <button class="button button--iconText">
+                <button class="button button--iconText" (click)="toggleAllUsers(false)">
                   <i class="ss-ban"></i> Uncheck All
                 </button>
               </div>
@@ -40,21 +40,12 @@
                 <input class="input input--search drop__innerInput" type="text" placeholder="Search" />
               </li>
 
-              <li class="drop__option">
+              <li class="drop__option" *ngFor="let employee of employees">
                 <label class="drop__checkbox styledInput">
-                  <input type="checkbox" class="styledInput__input" />
+                  <input type="checkbox" class="styledInput__input" [(ngModel)]="employeeChecked[employee.id]" />
                   <span class="styledInput__box"></span>
                   <div class="picName">
-                    <img class="picName__img" src="../../../assets/img/profile.svg" />Stephanie Wintergreen
-                  </div>
-                </label>
-              </li>
-              <li class="drop__option">
-                <label class="drop__checkbox styledInput">
-                  <input type="checkbox" class="styledInput__input" />
-                  <span class="styledInput__box"></span>
-                  <div class="picName">
-                    <img class="picName__img" src="../../../assets/img/profile.svg" />Val Zeeman
+                    <img class="picName__img" src="../../../assets/img/profile.svg" />{{employee.user.first_name}} {{employee.user.last_name}}
                   </div>
                 </label>
               </li>
@@ -196,7 +187,11 @@
     <h2>Patients Enrolled Over Time</h2>
     <div>
       <!--TODO: Get an option to style the date range text; in this instance it needs to be smaller-->
-      <app-date-range [datePickerOverrides]="datepickerOptions"></app-date-range>
+      <app-date-range
+        [datePickerOverrides]="datepickerOptions"
+        [startDate]="defaultDates[0]"
+        [endDate]="defaultDates[1]"
+      ></app-date-range>
     </div>
       <div class="timeChart__header">
         <div class="flex">
@@ -216,10 +211,10 @@
               </div>
               <ul class="drop__dropdown drop__dropdown--right" [ngClass]="{ 'isOpen' : multi2Open }">
                 <div class="drop__buttons">
-                  <button class="button button--iconText">
+                  <button class="button button--iconText" (click)="toggleAllFacilities(true)">
                     <i class="ss-check ss-standard"></i> Check All
                   </button>
-                  <button class="button button--iconText">
+                  <button class="button button--iconText" (click)="toggleAllFacilities(false)">
                     <i class="ss-ban"></i> Uncheck All
                   </button>
                 </div>
@@ -228,18 +223,11 @@
                   <input class="input input--search drop__innerInput" type="text" placeholder="Search" />
                 </li>
 
-                <li class="drop__option">
+                <li class="drop__option" *ngFor="let facility of facilities">
                   <label class="drop__checkbox styledInput">
-                    <input type="checkbox" class="styledInput__input" />
+                    <input type="checkbox" class="styledInput__input" [(ngModel)]="facilityChecked[facility.id]" />
                     <span class="styledInput__box"></span>
-                    Canyon View
-                  </label>
-                </li>
-                <li class="drop__option">
-                  <label class="drop__checkbox styledInput">
-                    <input type="checkbox" class="styledInput__input" />
-                    <span class="styledInput__box"></span>
-                    South Odgen Family Medicine
+                    {{facility.name}}
                   </label>
                 </li>
               </ul>
@@ -307,7 +295,11 @@
     <div class="dashDivider"></div>
 
     <div class="flex justifySpaceBetween">
-      <app-date-range [datePickerOverrides]="datepickerOptions"></app-date-range>
+      <app-date-range
+        [datePickerOverrides]="datepickerOptions"
+        [startDate]="defaultDates[0]"
+        [endDate]="defaultDates[1]"
+      ></app-date-range>
       <a [routerLink]="['/billing']" class="button button--iconText">
         <i class="ss-standard ss-view"></i> View Billing Details
       </a>
@@ -336,7 +328,11 @@
     </div> <!--/.info (for current month to date)-->
 
     <div class="flex justifySpaceBetween">
-      <app-date-range [datePickerOverrides]="datepickerOptions"></app-date-range>
+      <app-date-range
+        [datePickerOverrides]="datepickerOptions"
+        [startDate]="defaultDates[0]"
+        [endDate]="defaultDates[1]"
+      ></app-date-range>
       <a [routerLink]="['/billing']" class="button button--iconText">
         <i class="ss-standard ss-view"></i> View Billing Details
       </a>

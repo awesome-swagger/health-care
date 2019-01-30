@@ -210,122 +210,133 @@
           </div> <!--/.flex (for checkboxes)-->
           <div class="divider"></div>
 
-          <div class="cols">
-            <div class="cols__colBig marRight96"> <!-- start left column-->
-              <ng-container *ngFor="let facility of employee?.facilities">
-                <div class="flex justifySpaceBetween alignCenter"><!-- start facility -->
-                  <h3 class="noMargin">{{facility.name}}</h3>
-                  <!--TODO: If role is not CM or BP, show a confirmation modal-->
-                  <label class="styledInput">
-                    <input type="checkbox" class="styledInput__input"
-                    [checked]="facility.is_manager" />
-                    <span class="styledInput__box"></span>
-                    Facility Administrator
-                  </label>
+          <ng-container *ngFor="let facility of employee?.facilities">
+            <div class="flex justifySpaceBetween alignCenter upperRow"><!-- start facility -->
+              <h3 class="noMargin">{{facility.name}}</h3>
+              <!--TODO: If role is not CM or BP, show a confirmation modal-->
+              <label class="styledInput">
+                <input type="checkbox" class="styledInput__input"
+                [checked]="facility.is_manager" />
+                <span class="styledInput__box"></span>
+                Facility Administrator
+              </label>
+              <button class="button button--iconText"
+              (click)="openChangePassword()">
+                <i class="ss-delete"></i>Revoke Access
+              </button>
+            </div>
 
-                </div>
-                <table class="fullWidth marBottom48">
-                  <thead>
-                    <tr>
-                      <th class="thSortable thSortable--sortDown">
-                        <span class="thSortable__text thSortable__text--left">Facility</span>
-                      </th>
-                      <th class="thSortable">
-                        <span class="thSortable__text">Patients</span>
-                      </th>
-                      <th class="thSortable">
-                        <span class="thSortable__text">Managing</span>
-                      </th>
-                      <th class="thSortable">
-                        <span class="thSortable__text">Care Team</span>
-                      </th>
-                      <th class="thSortable">
-                        <span class="thSortable__text">Billing</span>
-                      </th>
-                      <th></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr *ngFor="let role of employee?.roles">
-                      <td class="left">{{role.name}}</td>
-                      <td>0</td>
-                      <td>0</td>
-                      <td>0</td>
-                      <td></td>
-                      <td>
-                        <button class="button button--icon button--icon--small">
-                          <i class="ss-delete"></i>
-                        </button>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table> <!-- end facility -->
-              </ng-container>
+            <div class="cols">
+              <div class="cols__colBig marRight96"> <!-- start left column-->
+                  <table class="fullWidth marBottom48">
+                    <thead>
+                      <tr>
+                        <th class="thSortable thSortable--sortDown">
+                          <span class="thSortable__text thSortable__text--left">Facility</span>
+                        </th>
+                        <th class="thSortable">
+                          <span class="thSortable__text">Patients</span>
+                        </th>
+                        <th class="thSortable">
+                          <span class="thSortable__text">Managing</span>
+                        </th>
+                        <th class="thSortable">
+                          <span class="thSortable__text">Care Team</span>
+                        </th>
+                        <th class="thSortable">
+                          <span class="thSortable__text">Billing</span>
+                        </th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let role of employee?.roles">
+                        <td class="left">{{role.name}}</td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td></td>
+                        <td>
+                          <button class="button button--icon button--icon--small">
+                            <i class="ss-delete"></i>
+                          </button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table> <!-- end facility -->
 
-              <label>Add Role</label>
-              <form class="flexForm">
-                <div class="styledSelect">
-                  <select class="styledSelect__select">
-                    <option *ngFor="let role of roles">
-                      {{role.name}}
-                    </option>
-                  </select>
-                </div>
-                <button class="button button--icon button--flex">
-                  <i class="ss-plus"></i>
-                </button>
-              </form>
-            </div> <!--/ left column-->
-
-            <div class="cols__colSmall"> <!-- start right column-->
-              <h3>Billing Coordinators (BCs)</h3>
-              <ul class="nameList marBottom48">
-                <li class="nameList__item">
-                  <!--TODO: Link to user detail page-->
-                  <a class="picName">
-                    <img class="picName__img" src="../../../assets/img/profile.svg"/>
-                    Paul Gordon
-                  </a>
-                  <button class="button button--icon button--icon--small"
-                  (click)="confirmRemoveBC()">
-                    <i class="ss-delete"></i>
+                <label>Add Role</label>
+                <form class="flexForm">
+                  <div class="styledSelect">
+                    <select class="styledSelect__select">
+                      <option *ngFor="let role of roles">
+                        {{role.name}}
+                      </option>
+                    </select>
+                  </div>
+                  <button class="button button--icon button--flex">
+                    <i class="ss-plus"></i>
                   </button>
-                </li>
-              </ul>
-              <label>Add Billing Coordinator (BC)</label>
-              <form class="flexForm">
-                <div class="drop">
-                  <input class="input input--search" type="text" (click)="dropOpen = !dropOpen" placeholder="Search" />
-                  <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : dropOpen }" (click)="dropOpen = !dropOpen">
-                    <li class="drop__option">
-                      <a class="drop__link">
-                        <div class="picName">
-                          <img class="picName__img" src="../../../assets/img/profile.svg" />Adam Hancock
-                        </div>
+                </form>
+              </div> <!--/ left column-->
+
+              <div class="cols__colSmall"> <!-- start right column-->
+                <div class="bc">
+                  <label>Billing Coordinators (BCs)</label>
+                  <ul class="nameList">
+                    <li class="nameList__item">
+                      <!--TODO: Link to user detail page-->
+                      <a class="picName fullWidth">
+                        <img class="picName__img" src="../../../assets/img/profile.svg"/>
+                        Paul Gordon
                       </a>
-                    </li>
-                    <li class="drop__option">
-                      <a class="drop__link">
-                        <div class="picName">
-                          <img class="picName__img" src="../../../assets/img/profile.svg" />Hank Granowski
-                        </div>
-                      </a>
-                    </li>
-                    <li class="drop__option">
-                      <a class="drop__link">
-                        <div class="picName">
-                          <img class="picName__img" src="../../../assets/img/profile.svg" />Samantha Hancock
-                        </div>
-                      </a>
+                      <button class="button button--icon button--icon--small"
+                      (click)="confirmRemoveBC()">
+                        <i class="ss-write"></i>
+                      </button>
+                      <button class="button button--icon button--icon--small"
+                      (click)="confirmRemoveBC()">
+                        <i class="ss-delete"></i>
+                      </button>
                     </li>
                   </ul>
                 </div>
-                <button class="button button--icon">
-                  <i class="ss-plus"></i>
-                </button>
-              </form>
-            </div> <!--/ right column-->
-          </div> <!--/.cols-->
+                <label>Add Billing Coordinator (BC)</label>
+                <form class="flexForm">
+                  <div class="drop">
+                    <input class="input input--search" type="text" (click)="dropOpen = !dropOpen" placeholder="Search" />
+                    <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : dropOpen }" (click)="dropOpen = !dropOpen">
+                      <li class="drop__option">
+                        <a class="drop__link">
+                          <div class="picName">
+                            <img class="picName__img" src="../../../assets/img/profile.svg" />Adam Hancock
+                          </div>
+                        </a>
+                      </li>
+                      <li class="drop__option">
+                        <a class="drop__link">
+                          <div class="picName">
+                            <img class="picName__img" src="../../../assets/img/profile.svg" />Hank Granowski
+                          </div>
+                        </a>
+                      </li>
+                      <li class="drop__option">
+                        <a class="drop__link">
+                          <div class="picName">
+                            <img class="picName__img" src="../../../assets/img/profile.svg" />Samantha Hancock
+                          </div>
+                        </a>
+                      </li>
+                    </ul>
+                  </div>
+                  <button class="button button--icon">
+                    <i class="ss-plus"></i>
+                  </button>
+                </form>
+              </div> <!--/ right column-->
+            </div> <!--/.cols-->
+            <div class="divider"></div>
+          </ng-container>
         </div> <!--/.accordion__contents-->
       </div> <!--/.accordion__body-->
     </div> <!--/.accordion (for roles)-->
