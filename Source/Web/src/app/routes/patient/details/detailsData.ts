@@ -234,6 +234,7 @@ export class DetailsMockData {
 
   public generateVitalResults(name, questionTextArray, occurances) {
 		let tmpDate = moment().add(-1 * (occurances - 5), 'days');
+	  let vitalQuestionTypeChoices = ['boolean', 'time', 'float', 'integer', 'scale', 'string'];
 		for (let i = 0; i < occurances; i++) {
 			this.vitalResults.push({
   			id: this.generateRandomId(),
@@ -243,6 +244,7 @@ export class DetailsMockData {
 					return {
   					id: this.generateRandomId(),
   					text: q,
+						type: vitalQuestionTypeChoices[Math.floor(Math.random() * vitalQuestionTypeChoices.length)],
       			results: Math.floor(Math.random() * 5) + 1,
             currentOccurance: i + 1,
             totalOccurances: occurances,

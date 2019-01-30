@@ -4,10 +4,11 @@ import * as moment from 'moment';
 import {
   sumBy as _sumBy,
   filter as _filter,
+  flatten as _flatten,
 } from 'lodash';
 import { ModalService, ConfirmModalComponent } from '../../../modules/modals';
 import { RecordResultsComponent, GoalComponent, AddCTTaskComponent } from '../../../components';
-import { NavbarService, StoreService } from '../../../services';
+import { NavbarService, StoreService, UtilsService } from '../../../services';
 import { GoalCommentsComponent } from './modals/goal-comments/goal-comments.component';
 import { DetailsMockData } from './detailsData';
 
@@ -31,9 +32,14 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
   public userTasks = [];
   public teamTasks = [];
   public patientTasks = [];
+  public updatingPatientTasks = [];
+  public patientTaskStatusChoices = ['done', 'missed', 'late'];
   public assessmentResults = [];
+  public updatingAssessmentResults = [];
   public symptomResults = [];
+  public updatingSymptomResults = [];
   public vitalResults = [];
+  public updatingVitalResults = [];
   public messageQueues = [];
 
   public showDate = false;
@@ -41,7 +47,7 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
   public userTasksOpen = false;
   public teamTasksOpen = false;
   public patientTasksOpen = false;
-  public assessmentResultsOpen = false;
+  public assessmentResultsOpen = true;
   public symptomResultsOpen = false;
   public vitalsResultsOpen = false;
   public messagesOpen = false;
@@ -80,6 +86,7 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
     private modals: ModalService,
     private store: StoreService,
     private nav: NavbarService,
+    public utils: UtilsService,
   ) { }
 
   public ngOnInit() {
@@ -89,17 +96,22 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
         (patient) => {
           this.patient = patient;
           this.nav.addRecentPatient(this.patient);
+          if (this.isUsingMobile) {
+            this.updatingPatientTasks = this.getPatientTasks();
+            this.updatingAssessmentResults = _flatten(this.getAssessmentResults().map((results) => results.questions));
+            this.updatingSymptomResults = this.getSymptomResults();
+            this.updatingVitalResults = _flatten(this.getVitalResults().map((results) => results.questions))
+          }
         },
         (err) => {},
         () => {},
       );
-      let carePlanSub = this.store.CarePlan.listRoute('get', params.planId).subscribe(
-        (res:any) => {
-          this.carePlan = res;
-          const planTemplateId = res.plan_template.id
+      let carePlanSub = this.store.CarePlan.read(params.planId).subscribe(
+        (carePlan: any) => {
+          this.carePlan = carePlan;
           let messageSub = this.store.InfoMessageQueue.readListPaged().subscribe(
-            res => {
-              this.messageQueues = _filter(res, m => m.plan_template.id === planTemplateId)
+            (messageQueues) => {
+              return this.messageQueues = _filter(messageQueues, m => m.plan_template.id === carePlan.plan_template.id);
             },
             err => {},
             () => messageSub.unsubscribe()
@@ -117,37 +129,55 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
     return this.mockData.goals;
   }
 
-  public getUserTasks(dateAsMoment) {
+  public getUserTasks(dateAsMoment = null) {
+    if (!dateAsMoment) {
+      dateAsMoment = moment();
+    }
     return this.mockData.userTasks.filter((obj) => {
       return dateAsMoment.isSame(obj.date, 'day');
     });
   }
 
-  public getTeamTasks(dateAsMoment) {
+  public getTeamTasks(dateAsMoment = null) {
+    if (!dateAsMoment) {
+      dateAsMoment = moment();
+    }
     return this.mockData.careTeamTasks.filter((obj) => {
       return dateAsMoment.isSame(obj.date, 'day');
     });
   }
 
-  public getPatientTasks(dateAsMoment) {
+  public getPatientTasks(dateAsMoment = null) {
+    if (!dateAsMoment) {
+      dateAsMoment = moment();
+    }
     return this.mockData.patientTasks.filter((obj) => {
       return dateAsMoment.isSame(obj.date, 'day');
     });
   }
 
-  public getAssessmentResults(dateAsMoment) {
+  public getAssessmentResults(dateAsMoment = null) {
+    if (!dateAsMoment) {
+      dateAsMoment = moment();
+    }
     return this.mockData.assessmentResults.filter((obj) => {
       return dateAsMoment.isSame(obj.date, 'day');
     });
   }
 
-  public getSymptomResults(dateAsMoment) {
+  public getSymptomResults(dateAsMoment = null) {
+    if (!dateAsMoment) {
+      dateAsMoment = moment();
+    }
     return this.mockData.symptomResults.filter((obj) => {
       return dateAsMoment.isSame(obj.date, 'day');
     });
   }
 
-  public getVitalResults(dateAsMoment) {
+  public getVitalResults(dateAsMoment = null) {
+    if (!dateAsMoment) {
+      dateAsMoment = moment();
+    }
     return this.mockData.vitalResults.filter((obj) => {
       return dateAsMoment.isSame(obj.date, 'day');
     });
@@ -183,13 +213,13 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
   }
 
   public completedTeamTasks() {
-    return this.userTasks.filter((obj) => {
+    return this.teamTasks.filter((obj) => {
       return obj.status === 'done';
     }).length;
   }
 
   public teamTasksPercentage() {
-    return Math.round((this.completedUserTasks() / this.userTasks.length) * 100);
+    return Math.round((this.completedTeamTasks() / this.teamTasks.length) * 100);
   }
 
   public completedPatientTasks() {
@@ -272,30 +302,6 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
     return `${hours}:${timeParse[1]} ${suffix}`;
   }
 
-  public getPillColor(percentage) {
-    if (percentage >= 90) {
-      return '#4caf50';
-    } else if (percentage <= 89 && percentage >= 70) {
-      return '#ff9800';
-    } else if (percentage <= 69 && percentage >= 50) {
-       return '#ca2c4e';
-    } else {
-      return '#880e4f';
-    }
-  }
-
-  public getPillColorStatus(status) {
-    if (status === 'done') {
-      return '#4caf50';
-    } else if (status === 'late') {
-       return '#ca2c4e';
-    } else if (status === 'missed') {
-      return '#880e4f';
-    } else if (status === 'open') {
-      return '#2180a0';
-    }
-  }
-
   public openRecordResults(task) {
     this.modals.open(RecordResultsComponent, {
      closeDisabled: true,
@@ -313,7 +319,7 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
      },
      width: '512px',
    }).subscribe((res) => {
-     console.log(res);
+     task.status = 'done';
    });
   }
 
@@ -390,6 +396,60 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
     this.assessmentResults = this.getAssessmentResults(moment);
     this.symptomResults = this.getSymptomResults(moment);
     this.vitalResults = this.getVitalResults(moment);
+  }
+
+  public isUpdatingPatientTask(task) {
+    return this.updatingPatientTasks.findIndex((obj) => obj.id === task.id) >= 0;
+  }
+
+  public clickUpdatePatientTask(task) {
+    this.updatingPatientTasks.push(task);
+  }
+
+  public clickSavePatientTask(task) {
+    let taskUpdateListIndex = this.updatingPatientTasks.findIndex((obj) => obj.id === task.id);
+    this.updatingPatientTasks.splice(taskUpdateListIndex, 1);
+  }
+
+  public isUpdatingAssessmentResult(result) {
+    return this.updatingAssessmentResults.findIndex((obj) => obj.id === result.id) >= 0;
+  }
+
+  public clickUpdateAssessmentResult(result) {
+    this.updatingAssessmentResults.push(result);
+  }
+
+  public clickSaveAssessmentResult(result) {
+    let resultsListIndex = this.updatingAssessmentResults.findIndex((obj) => obj.id === result.id);
+    this.updatingAssessmentResults.splice(resultsListIndex, 1);
+  }
+
+  public isUpdatingSymptomResult(result) {
+    return this.updatingSymptomResults.findIndex((obj) => obj.id === result.id) >= 0;
+  }
+
+  public clickUpdateSymptomResult(result) {
+    this.updatingSymptomResults.push(result);
+  }
+
+  public clickSaveSymptomResult(result) {
+    let resultsListIndex = this.updatingSymptomResults.findIndex((obj) => obj.id === result.id);
+    this.updatingSymptomResults.splice(resultsListIndex, 1);
+  }
+
+  public formatVitalQuestionType(type: string) {
+    if (!type) {
+      return '';
+    }
+    if (type === 'boolean') {
+      return 'True/False';
+    } else if (type == 'float') {
+      return 'Decimal';
+    } else if (type === 'string') {
+      return 'String';
+    } else {
+      return type;
+    }
   }
 
   public routeToMessaging() {

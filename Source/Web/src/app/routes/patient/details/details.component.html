@@ -33,7 +33,7 @@
       <span class="accordion__title">Care Plan Goals - {{tableHeaderDate()}} ({{planGoals.length}})</span>
       <div class="accordion__right">
         <span class="marRight8">{{planGoals.length}} Goals</span>
-        <div class="pill" [ngStyle]="{'background': getPillColor(goalsPercentage())}">
+        <div class="pill" [ngStyle]="{'background': utils.percentPillColor(goalsPercentage())}">
           {{goalsAverage()}}/5
         </div>
         <div class="accordion__arrow">
@@ -65,7 +65,7 @@
             <tr *ngFor="let goal of planGoals">
               <td class="left">{{goal.name}}</td>
               <td>
-                <div class="pill" [ngStyle]="{'background': getPillColor(goalPercentage(goal.progress))}">
+                <div class="pill" [ngStyle]="{'background': utils.percentPillColor(goalPercentage(goal.progress))}">
                   {{goal.progress}}/5
                 </div>
               </td>
@@ -100,7 +100,7 @@
       <span class="accordion__title">My Tasks - {{tableHeaderDate()}} ({{userTasks.length}})</span>
       <div class="accordion__right">
         <span class="marRight8">{{completedUserTasks()}}/{{userTasks.length}} Completed</span>
-        <div class="pill" [ngStyle]="{'background': getPillColor(userTasksPercentage())}">
+        <div class="pill" [ngStyle]="{'background': utils.percentPillColor(userTasksPercentage())}">
           {{userTasksPercentage()}}%
         </div>
         <div class="accordion__arrow">
@@ -150,7 +150,7 @@
               <td>{{format24Hour(task.appear)}}</td>
               <td>{{format24Hour(task.due)}}</td>
               <td>
-                <div class="pill pill--status" [ngStyle]="{'background': getPillColorStatus(task.status)}">
+                <div class="pill pill--status" [ngStyle]="{'background': utils.pillColorStatus(task.status)}">
                   {{task.status}}
                 </div>
               </td>
@@ -176,7 +176,7 @@
       <span class="accordion__title">Care Team Tasks - {{tableHeaderDate()}} ({{teamTasks.length}})</span>
       <div class="accordion__right">
         <span class="marRight8">{{completedTeamTasks()}}/{{teamTasks.length}} Completed</span>
-        <div class="pill" [ngStyle]="{'background': getPillColor(teamTasksPercentage())}">
+        <div class="pill" [ngStyle]="{'background': utils.percentPillColor(teamTasksPercentage())}">
           {{teamTasksPercentage()}}%
         </div>
         <div class="accordion__arrow">
@@ -226,7 +226,7 @@
               <td>{{format24Hour(task.appear)}}</td>
               <td>{{format24Hour(task.due)}}</td>
               <td>
-                <div class="pill pill--status" [ngStyle]="{'background': getPillColorStatus(task.status)}">
+                <div class="pill pill--status" [ngStyle]="{'background': utils.pillColorStatus(task.status)}">
                   {{task.status}}
                 </div>
               </td>
@@ -250,7 +250,7 @@
       <span class="accordion__title">Patient Tasks - {{tableHeaderDate()}} ({{patientTasks.length}})</span>
       <div class="accordion__right">
         <span class="marRight8">{{completedPatientTasks()}}/{{patientTasks.length}} Completed</span>
-        <div class="pill" [ngStyle]="{'background': getPillColor(patientTasksPercentage())}">
+        <div class="pill" [ngStyle]="{'background': utils.percentPillColor(patientTasksPercentage())}">
           {{patientTasksPercentage()}}%
         </div>
         <div class="accordion__arrow">
@@ -335,18 +335,30 @@
               <td>{{format24Hour(task.appear)}}</td>
               <td>{{format24Hour(task.due)}}</td>
               <td>
-                <div class="pill pill--status" [ngStyle]="{'background': getPillColorStatus(task.status)}">
-                  {{task.status}}
-                </div>
+                <ng-container *ngIf="isUpdatingPatientTask(task)">
+                  <div class="styledSelect">
+                    <select class="styledSelect__select" [(ngModel)]="task.status">
+                      <option *ngFor="let status of patientTaskStatusChoices" [ngValue]="status">{{status}}</option>
+                    </select>
+                  </div>
+                </ng-container>
+                <ng-container *ngIf="!isUpdatingPatientTask(task)">
+                  <div class="pill pill--status" [ngStyle]="{'background': utils.pillColorStatus(task.status)}">
+                    {{task.status}}
+                  </div>
+                </ng-container>
               </td>
               <td>{{task.currentOccurance}} of {{task.totalOccurances}}</td>
               <td>
-                <div class="pill" [ngStyle]="{'background': getPillColor(task.averageEngagement * 100)}">
+                <div class="pill" [ngStyle]="{'background': utils.percentPillColor(task.averageEngagement * 100)}">
                   {{floor(task.averageEngagement * 100)}}%
                 </div>
               </td>
               <td>
-                <a class="button button--icon--small button--icon button--center relative" (click)="editPatientTask()">
+                <a class="button button--icon--small button--icon button--center relative" *ngIf="isUpdatingPatientTask(task)" (click)="clickSavePatientTask(task)">
+                  <i class="ss-floppydisk"></i>
+                </a>
+                <a class="button button--icon--small button--icon button--center relative" *ngIf="!isUpdatingPatientTask(task)" (click)="clickUpdatePatientTask(task)">
                   <i class="ss-write"></i>
                 </a>
               </td>
@@ -363,7 +375,7 @@
       <div class="accordion__right">
         <span class="marRight8">{{totalOutcomeQuestions()}} Outcome Questions</span>
         <ng-container *ngIf="totalOutcomeQuestions() > 0">
-          <div class="pill marRight24" [ngStyle]="{'background': getPillColor(averageOutcomePercentage())}">
+          <div class="pill marRight24" [ngStyle]="{'background': utils.percentPillColor(averageOutcomePercentage())}">
             {{averageOutcomeScore()}}/5
           </div>
         </ng-container>
@@ -374,7 +386,7 @@
         </ng-container>
           <span class="marRight8">{{totalSatisfactionQuestions()}} Satisfaction Question</span>
         <ng-container *ngIf="totalSatisfactionQuestions() > 0">
-          <div class="pill" [ngStyle]="{'background': getPillColor(averageSatisfactionPercentage())}">
+          <div class="pill" [ngStyle]="{'background': utils.percentPillColor(averageSatisfactionPercentage())}">
             {{averageSatisfactionScore()}}/5
           </div>
         </ng-container>
@@ -512,9 +524,14 @@
               <tr *ngFor="let question of assessment.questions">
                 <td class="left">{{question.text}}</td>
                 <td>
-                  <div class="pill" [ngStyle]="{'background': getPillColor(outcomePercentage(question.outcome))}">
-                    {{question.outcome}}/5
-                  </div>
+                  <ng-container *ngIf="!isUpdatingAssessmentResult(question)">
+                    <div class="pill" [ngStyle]="{'background': utils.percentPillColor(outcomePercentage(question.outcome))}">
+                      {{question.outcome}}/5
+                    </div>
+                  </ng-container>
+                  <ng-container *ngIf="isUpdatingAssessmentResult(question)">
+                    <input type="number" min="0" max="5" class="input" [(ngModel)]="question.outcome" />
+                  </ng-container>
                 </td>
                 <td>{{question.currentOccurance}} of {{question.totalOccurances}}</td>
                 <td>
@@ -531,8 +548,11 @@
                   </div>
                 </td>
                 <td>
-                  <a class="button button--icon--small button--icon button--center relative" (click)="editPatientTask()">
+                  <a *ngIf="!isUpdatingAssessmentResult(question)" class="button button--icon--small button--icon button--center relative" (click)="clickUpdateAssessmentResult(question)">
                     <i class="ss-write"></i>
+                  </a>
+                  <a *ngIf="isUpdatingAssessmentResult(question)" class="button button--icon--small button--icon button--center relative" (click)="clickSaveAssessmentResult(question)">
+                    <i class="ss-floppydisk"></i>
                   </a>
                 </td>
               </tr>
@@ -548,7 +568,7 @@
       <span class="accordion__title">Symptoms - {{tableHeaderDate()}} ({{symptomResults.length}})</span>
       <div class="accordion__right">
         <span class="marRight8">{{symptomResults.length}} Symptoms</span>
-        <div class="pill" [ngStyle]="{'background': getPillColor(averageSymptomPercent())}">
+        <div class="pill" [ngStyle]="{'background': utils.percentPillColor(averageSymptomPercent())}">
           {{averageSymptomRating()}}/5
         </div>
         <div class="accordion__arrow">
@@ -653,9 +673,14 @@
             <tr *ngFor="let symptom of symptomResults">
               <td class="left">{{symptom.name}}</td>
               <td>
-                <div class="pill" [ngStyle]="{'background': getPillColor(ratingPercentage(symptom.rating))}">
-                  {{symptom.rating}}/5
-                </div>
+                <ng-container *ngIf="!isUpdatingSymptomResult(symptom)">
+                  <div class="pill" [ngStyle]="{'background': utils.percentPillColor(ratingPercentage(symptom.rating))}">
+                    {{symptom.rating}}/5
+                  </div>
+                </ng-container>
+                <ng-container *ngIf="isUpdatingSymptomResult(symptom)">
+                  <input type="number" min="0" max="5" class="input" [(ngModel)]="symptom.rating" />
+                </ng-container>
               </td>
               <td>{{symptom.currentOccurance}} of {{symptom.totalOccurances}}</td>
               <td>
@@ -672,8 +697,11 @@
                 </div>
               </td>
               <td>
-                <a class="button button--icon--small button--icon button--center relative" (click)="editPatientTask()">
+                <a *ngIf="!isUpdatingSymptomResult(symptom)" class="button button--icon--small button--icon button--center relative" (click)="clickUpdateSymptomResult(symptom)">
                   <i class="ss-write"></i>
+                </a>
+                <a *ngIf="isUpdatingSymptomResult(symptom)" class="button button--icon--small button--icon button--center relative" (click)="clickSaveSymptomResult(symptom)">
+                  <i class="ss-floppydisk"></i>
                 </a>
               </td>
             </tr>
@@ -711,6 +739,9 @@
           		<tr>
           			<th class="thSortable">
           				<span class="thSortable__text thSortable__text--left">Questions</span>
+          			</th>
+          			<th class="thSortable">
+          				<span class="thSortable__text">Type</span>
           			</th>
           			<th class="thSortable thSortable--sortDown">
           				<span class="thSortable__text">Result</span>
@@ -796,6 +827,7 @@
           	<tbody>
           		<tr *ngFor="let question of vital.questions">
           			<td class="left">{{question.text}}</td>
+          			<td>{{formatVitalQuestionType(question.type) | titlecase}}</td>
           			<td>{{question.results}}</td>
           			<td>{{question.currentOccurance}} of {{question.totalOccurances}}</td>
           			<td>
