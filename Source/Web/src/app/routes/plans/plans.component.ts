@@ -15,7 +15,10 @@ export class PlansComponent implements OnDestroy, OnInit {
   public organization = null;
   public facilities = [];
   public facilitiesOpen = false;
-  public facilitiesDropOptions: PopoverOptions = {};
+  public facilitiesDropOptions: PopoverOptions = {
+    relativeTop: '48px',
+    relativeRight: '0px',
+  };
   public facilitiesChecked: any = {};
   public facilitiesFiltered = [];
   public averagesByCarePlan = null;

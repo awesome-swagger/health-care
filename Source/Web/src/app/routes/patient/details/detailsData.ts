@@ -50,6 +50,11 @@ export class DetailsMockData {
 					'Rate your energy level.', 'Rate your overall sense of well-being',
 				],
 			},
+			{
+				name: 'Another Assessment', questions: [
+					'Rate your assessment skills', 'Rate your assessment skills again',
+				],
+			},
 		];
 		assessmentDetails.forEach((obj) => {
 			this.generateAssessmentResults(obj.name, obj.questions, 30);

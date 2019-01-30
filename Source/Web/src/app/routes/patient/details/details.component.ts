@@ -7,6 +7,7 @@ import {
   flatten as _flatten,
 } from 'lodash';
 import { ModalService, ConfirmModalComponent } from '../../../modules/modals';
+import { PopoverOptions } from '../../../modules/popover';
 import { RecordResultsComponent, GoalComponent, AddCTTaskComponent } from '../../../components';
 import { NavbarService, StoreService, UtilsService } from '../../../services';
 import { GoalCommentsComponent } from './modals/goal-comments/goal-comments.component';
@@ -27,57 +28,63 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
   public patient = null;
   public carePlan = null;
   public isUsingMobile = true;
-  public selectedDate = moment();
+
   public planGoals = [];
   public userTasks = [];
   public teamTasks = [];
   public patientTasks = [];
+  public assessmentResults = [];
+  public symptomResults = [];
+  public vitalResults = [];
+  public messageQueues = [];
+  // Tracks what tasks, if any, are currently being updated.
   public updatingPatientTasks = [];
   public patientTaskStatusChoices = ['done', 'missed', 'late'];
-  public assessmentResults = [];
   public updatingAssessmentResults = [];
-  public symptomResults = [];
   public updatingSymptomResults = [];
-  public vitalResults = [];
   public updatingVitalResults = [];
-  public messageQueues = [];
-
+  // Date picker options
+  public selectedDate = moment();
   public showDate = false;
+  public datePickerOptions: PopoverOptions = {
+    relativeTop: '48px',
+    relativeRight: '0px',
+  };
+  // Accordion open statuses
   public goalAccordionOpen = false;
   public userTasksOpen = false;
   public teamTasksOpen = false;
   public patientTasksOpen = false;
-  public assessmentResultsOpen = true;
+  public assessmentResultsOpen = false;
   public symptomResultsOpen = false;
   public vitalsResultsOpen = false;
   public messagesOpen = false;
-  public tooltipPD200Open;
-  public tooltipPD300Open;
-  public tooltipPD400Open;
-  public tooltipPD401Open;
-  public tooltipPD402Open;
-  public tooltipPD500Open;
-  public tooltipPD501Open;
-  public tooltipPD502Open;
-  public tooltipPD503Open;
-  public tooltipPD504Open;
-  public tooltipPD505Open;
-  public tooltipPD506Open;
-  public tooltipPD507Open;
-  public tooltipPD508Open;
-  public tooltipPD509Open;
-  public tooltipPD510Open;
-  public tooltipPD511Open;
-  public tooltipPD512Open;
-  public tooltipPD513Open;
-  public tooltipPD600Open;
-  public tooltipPD601Open;
-  public tooltipPD602Open;
-  public tooltipPD603Open;
-  public tooltipPD700Open;
-  public tooltipPD701Open;
-  public tooltipPD702Open;
-  public tooltipPD703Open;
+  // Tooltip open statuses
+  public goalUpdateTTOpen = false;
+  public myTaskOccurTTOpen = false;
+  public teamTaskOccurTTOpen = false;
+  public patientTaskOccurTTOpen = false;
+  public patientTaskAvgEngTTOpen = false;
+  public patientTaskUpdateTTOpen = false;
+  public symptomReportedTTOpen = false;
+  public symptomVsPrevTTOpen = false;
+  public symptomVsNextTTOpen = false;
+  public symptomVsPlanTTOpen = false;
+  public symptomUpdateTTOpen = false;
+  // Assessment and vital tooltips occur on multiple tables
+  // so they are tied to the id of the vital or assessment
+  public assmntOutcomeTTOpen: any = {};
+  public assmntSatisfactionTTOpen: any = {};
+  public assmntOccurTTOpen: any = {};
+  public assmntVsPrevTTOpen: any = {};
+  public assmntVsNextTTOpen: any = {};
+  public assmntVsPlanTTOpen: any = {};
+  public assmntUpdateTTOpen: any = {};
+  public vitalReportedTTOpen: any = {};
+  public vitalVsPrevTTOpen: any = {};
+  public vitalVsNextTTOpen: any = {};
+  public vitalVsPlanTTOpen: any = {};
+  public vitalUpdateTTOpen: any = {};
   public tooltipPD800Open;
 
   constructor(
@@ -96,12 +103,6 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
         (patient) => {
           this.patient = patient;
           this.nav.addRecentPatient(this.patient);
-          if (this.isUsingMobile) {
-            this.updatingPatientTasks = this.getPatientTasks();
-            this.updatingAssessmentResults = _flatten(this.getAssessmentResults().map((results) => results.questions));
-            this.updatingSymptomResults = this.getSymptomResults();
-            this.updatingVitalResults = _flatten(this.getVitalResults().map((results) => results.questions))
-          }
         },
         (err) => {},
         () => {},
@@ -181,6 +182,23 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
     return this.mockData.vitalResults.filter((obj) => {
       return dateAsMoment.isSame(obj.date, 'day');
     });
+  }
+
+  public setSelectedDay(moment) {
+    this.selectedDate = moment;
+    this.planGoals = this.getGoals();
+    this.userTasks = this.getUserTasks(moment);
+    this.teamTasks = this.getTeamTasks(moment);
+    this.patientTasks = this.getPatientTasks(moment);
+    this.assessmentResults = this.getAssessmentResults(moment);
+    this.symptomResults = this.getSymptomResults(moment);
+    this.vitalResults = this.getVitalResults(moment);
+    if (!this.isUsingMobile) {
+      this.updatingPatientTasks = this.patientTasks.concat();
+      this.updatingAssessmentResults = _flatten(this.assessmentResults.concat().map((results) => results.questions));
+      this.updatingSymptomResults = this.symptomResults.concat();
+      this.updatingVitalResults = _flatten(this.vitalResults.concat().map((results) => results.questions))
+    }
   }
 
   public goalsAverage() {
@@ -385,17 +403,6 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
     } else {
       return this.selectedDate.format('MMM DD');
     }
-  }
-
-  public setSelectedDay(moment) {
-    this.selectedDate = moment;
-    this.planGoals = this.getGoals();
-    this.userTasks = this.getUserTasks(moment);
-    this.teamTasks = this.getTeamTasks(moment);
-    this.patientTasks = this.getPatientTasks(moment);
-    this.assessmentResults = this.getAssessmentResults(moment);
-    this.symptomResults = this.getSymptomResults(moment);
-    this.vitalResults = this.getVitalResults(moment);
   }
 
   public isUpdatingPatientTask(task) {

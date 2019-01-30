@@ -18,11 +18,13 @@
         (click)="showServiceAreaHelp = !showServiceAreaHelp">
           <i class="ss-help"></i>
         </button>
-        <div class="tool__tip" [ngClass]="{'isOpen': showServiceAreaHelp}">
-          <div class="tool__text">
-            Service Areas contain a group of care plans based on an area of service line.
+        <app-popover [visible]="showServiceAreaHelp" (visibleChange)="showServiceAreaHelp = $event;">
+          <div class="tool__tip isOpen">
+            <div class="tool__text">
+              Service Areas contain a group of care plans based on an area of service line.
+            </div>
           </div>
-        </div>
+        </app-popover>
       </div> <!--/.tool__anchor-->
       <h1 class="noMargin marRight8">Care Plans ({{carePlanTemplates.length}})</h1>
       <div class="tool__anchor">
@@ -30,11 +32,13 @@
         (click)="showCarePlanHelp=!showCarePlanHelp">
           <i class="ss-help"></i>
         </button>
-        <div class="tool__tip" [ngClass]="{'isOpen': showCarePlanHelp}">
-          <div class="tool__text">
-            Care Plans are condition specific plans for care management and patient engagement.
+        <app-popover [visible]="showCarePlanHelp" (visibleChange)="showCarePlanHelp = $event;">
+          <div class="tool__tip isOpen">
+            <div class="tool__text">
+              Care Plans are condition specific plans for care management and patient engagement.
+            </div>
           </div>
-        </div>
+        </app-popover>
       </div> <!--/.tool__anchor-->
     </div> <!--/.flex (for page title and tooltip)-->
     <div>
@@ -43,7 +47,7 @@
         <div class="drop__input" (click)="facilitiesOpen=!facilitiesOpen">
           All
         </div>
-        <app-popover [options]="facilitiesDropOptions" [(visible)]="facilitiesOpen">
+        <app-popover [options]="facilitiesDropOptions" [visible]="facilitiesOpen" (visibleChange)="facilitiesOpen = $event;">
           <ul class="drop__dropdown isOpen">
             <div class="drop__buttons">
               <button class="button button--iconText" (click)="clickCheckAllFacilities()">
@@ -77,11 +81,13 @@
         (click)="showAveragesHelp = !showAveragesHelp">
         <i class="ss-help"></i>
       </button>
-      <div class="tool__tip" [ngClass]="{'isOpen': showAveragesHelp}">
-        <div class="tool__text">
-          The Care Plan view provides an of all current Care Plans within Service Areas statistics across the entire organization.
+      <app-popover [visible]="showAveragesHelp" (visibleChange)="showAveragesHelp = $event;">
+        <div class="tool__tip isOpen">
+          <div class="tool__text">
+            The Care Plan view provides an of all current Care Plans within Service Areas statistics across the entire organization.
+          </div>
         </div>
-      </div>
+      </app-popover>
     </div> <!--/.tool__anchor-->
   </div>
   <div class="flex" *ngIf="averagesByCarePlan">
