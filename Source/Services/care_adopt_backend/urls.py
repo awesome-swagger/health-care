@@ -52,6 +52,7 @@ from apps.plans.api.views import (
     TeamTaskTemplateByCarePlanTemplate,
     InfoMessageQueueByCarePlanTemplate,
     CarePlanByFacility,
+    PatientCarePlanOverview,
 )
 from apps.tasks.api.views import (
     PatientTaskTemplateViewSet,
@@ -193,8 +194,16 @@ router.register(
     PatientProfileSearchViewSet,
     base_name='patient_profiles_search',
 )
-router.register(
+
+patient_routes = router.register(
     r'patient_profiles', PatientProfileViewSet, base_name='patient_profiles')
+patient_routes.register(
+    r'care_plan_overview',
+    PatientCarePlanOverview,
+    base_name='patient-care-plan-overview',
+    parents_query_lookups=['patient']
+)
+
 router.register(r'problem_areas', ProblemAreaViewSet, base_name='problem_areas')
 router.register(
     r'patient_diagnosis', PatientDiagnosisViewSet, base_name='patient_diagnosis')

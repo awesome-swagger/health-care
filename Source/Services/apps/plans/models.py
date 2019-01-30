@@ -1,5 +1,9 @@
+import datetime
+
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django.db.models import Sum
+from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
 from apps.core.models import EmployeeProfile, ProviderRole
@@ -84,6 +88,22 @@ class CarePlan(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
             self.patient.user.first_name,
             self.patient.user.last_name,
             self.plan_template.name)
+
+    @property
+    def total_time_spent(self):
+        time_spent = self.activities.aggregate(total=Sum('time_spent'))
+        total = time_spent['total'] or 0
+        return str(datetime.timedelta(minutes=total))[:-3]
+
+    @property
+    def time_spent_this_month(self):
+        now = timezone.now()
+        first_day_of_month = now.replace(day=1).date()
+        time_spent = self.activities.filter(
+            activity_date__gte=first_day_of_month).aggregate(
+                total=Sum('time_spent'))
+        total = time_spent['total'] or 0
+        return str(datetime.timedelta(minutes=total))[:-3]
 
 
 class PlanConsent(CreatedModifiedMixin, UUIDPrimaryKeyMixin):

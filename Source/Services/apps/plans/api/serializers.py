@@ -28,6 +28,7 @@ from apps.billings.models import BilledActivity
 from apps.core.api.mixins import RepresentationMixin
 from apps.core.api.serializers import (
     ProviderRoleSerializer,
+    BasicEmployeeProfileSerializer,
     EmployeeProfileSerializer,
 )
 from apps.patients.models import PatientProfile
@@ -753,3 +754,45 @@ class CarePlanByTemplateFacilitySerializer(CarePlanOverviewSerializer):
     data relevant in dashboard average endpoint
     """
     pass
+
+
+class PatientCarePlanOverviewSerializer(CarePlanOverviewSerializer):
+    """
+    serializer to be used for :model:`plans.CarePlan` with overview data
+    relevant in the following pages:
+
+        - `patients__patientOverviewTab--dash`
+        - `patients__patient`
+        - `patients__patientHistoryTab`
+        - `patients__patientOverview`
+        - `patients__patientCareTeamTab`
+        - `patients__patientMessagesTab`
+    """
+
+    care_team = serializers.SerializerMethodField()
+    next_check_in = serializers.SerializerMethodField()
+    problem_areas_count = serializers.SerializerMethodField()
+
+    class Meta(CarePlanOverviewSerializer.Meta):
+        fields = (
+            'id',
+            'patient',
+            'plan_template',
+            'care_team',
+            'next_check_in',
+            'problem_areas_count',
+            'time_spent_this_month',
+            'risk_level',
+        )
+
+    def get_care_team(self, obj):
+        queryset = obj.care_team_members.values_list(
+            'employee_profile', flat=True).distinct()
+        serializer = BasicEmployeeProfileSerializer(queryset, many=True)
+        return serializer.data
+
+    def get_next_check_in(self, obj):
+        return ''  # TODO
+
+    def get_problem_areas_count(self, obj):
+        return obj.patient.problemarea_set.count()

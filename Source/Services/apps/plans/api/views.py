@@ -11,7 +11,7 @@ from rest_framework.generics import RetrieveAPIView
 from rest_framework.response import Response
 from rest_framework_extensions.mixins import NestedViewSetMixin
 
-from django.db.models import Avg
+from django.db.models import Avg, Q
 from django.shortcuts import get_object_or_404
 
 from ..models import (
@@ -45,6 +45,7 @@ from .serializers import (
     CarePlanTemplateAverageSerializer,
     CarePlanByTemplateFacilitySerializer,
     CarePlanOverviewSerializer,
+    PatientCarePlanOverviewSerializer,
 )
 from apps.core.api.mixins import ParentViewSetPermissionMixin
 from apps.core.models import Organization, Facility
@@ -52,6 +53,7 @@ from apps.core.api.serializers import ProviderRoleSerializer
 from apps.core.api.views import OrganizationViewSet, FacilityViewSet
 from apps.core.models import ProviderRole
 from apps.patients.api.serializers import PatientProfileSerializer
+from apps.patients.api.views import PatientProfileViewSet
 from apps.patients.models import PatientProfile
 from apps.tasks.api.serializers import (
     PatientTaskTemplateSerializer,
@@ -1295,3 +1297,73 @@ class PatientByCarePlanTemplate(ParentViewSetPermissionMixin,
 
         # call distinct() to prevent duplicates
         return queryset.distinct()
+
+
+class PatientCarePlanOverview(ParentViewSetPermissionMixin,
+                              NestedViewSetMixin,
+                              mixins.ListModelMixin,
+                              viewsets.GenericViewSet):
+    """
+    Returns list of all :model:`plans.CarePlan` objects with overview data.
+    Admins and employees will have access to all care plan objects.
+    The following data will be provided:
+
+        - care team
+        - next check-in
+        - last contact
+        - problem areas
+        - total time
+        - risk level
+
+    FILTERING
+    ---
+    This endpoint will also allow filtering by **plan_template**. For example:
+
+        GET /api/patient_profiles/<patient-ID>/care_plan_overview/?plan_template=<plan-template-ID>
+
+    USAGE
+    ---
+    This endpoint will be primarily used in the following pages:
+
+        - `patients__patientOverviewTab--dash`
+        - `patients__patient`
+        - `patients__patientHistoryTab`
+        - `patients__patientOverview`
+        - `patients__patientCareTeamTab`
+        - `patients__patientMessagesTab`
+    """
+    serializer_class = PatientCarePlanOverviewSerializer
+    queryset = CarePlan.objects.all()
+    permission_classes = (
+        permissions.IsAuthenticated,
+        IsAdminOrEmployee,
+    )
+    parent_lookup = [
+        (
+            'patient',
+            PatientProfile,
+            PatientProfileViewSet
+        )
+    ]
+    filter_backends = (DjangoFilterBackend, )
+    filterset_fields = (
+        'plan_template',
+    )
+
+    def get_queryset(self):
+        queryset = super(PatientCarePlanOverview, self).get_queryset()
+
+        # call distinct() to prevent duplicates
+        queryset = queryset.distinct()
+
+        user = self.request.user
+        if user.is_superuser:
+            pass
+        elif user.is_employee:
+            employee = user.employee_profile
+            queryset = queryset.filter(
+                Q(patient__facility__in=employee.facilities.all()) |
+                Q(patient__facility__in=employee.facilities_managed.all())
+            )
+
+        return queryset
