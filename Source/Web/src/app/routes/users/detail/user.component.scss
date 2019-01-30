@@ -5,3 +5,19 @@
   // additional padding on the right to accommodate edit button next to question icon
   padding: rem-calc(24) rem-calc(48) rem-calc(24) rem-calc(24);
 }
+
+.upperRow {
+  margin: 30px auto;
+}
+
+.bc {
+  .nameList {
+    li {
+      border: none;
+      justify-content: left;
+    }
+  }
+  border: 1px dashed #657880;
+  padding: 20px;
+  margin-bottom: 20px;
+}

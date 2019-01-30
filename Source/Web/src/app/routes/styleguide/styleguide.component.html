@@ -593,7 +593,9 @@
 
     <div class="divider"></div>
 
-    <app-percentage-gauge [percent]="99"></app-percentage-gauge>
+    <div style="background-image: radial-gradient(circle at 50% 53%, #32555f, #2f3d45);">
+      <app-percentage-gauge [percent]="99"></app-percentage-gauge>
+    </div>
 
     <div class="divider"></div>
 
@@ -602,5 +604,15 @@
     </div>
 
     <div class="divider"></div>
+
+    <div style="background-image: radial-gradient(circle at 50% 53%, #32555f, #2f3d45);">
+      <app-active-patients-graph></app-active-patients-graph>
+    </div>
+
+    <div class="divider"></div>
+
+    <div style="background-image: radial-gradient(circle at 50% 53%, #32555f, #2f3d45);">
+      <app-patients-enrolled-graph></app-patients-enrolled-graph>
+    </div>
   </div>
 </div>
