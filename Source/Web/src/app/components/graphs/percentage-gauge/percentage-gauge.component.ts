@@ -1,6 +1,5 @@
 import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import * as d3 from 'd3';
-import * as shortid from 'shortid';
 
 @Component({
   selector: 'app-percentage-gauge',
@@ -12,7 +11,6 @@ export class PercentageGaugeComponent implements OnInit {
   @ViewChild('chart') private chartContainer: ElementRef;
   private _percent = 0;
   private _size = 196;
-  public chartId = '';
 
   constructor() { }
 
@@ -34,8 +32,6 @@ export class PercentageGaugeComponent implements OnInit {
   }
 
   ngOnInit() {
-
-    this.chartId = shortid.generate();
 
     const percent = this.percent;
     const trackWidth = 15;

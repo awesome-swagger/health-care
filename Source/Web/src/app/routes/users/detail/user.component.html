@@ -99,104 +99,51 @@
     </div> <!--/.info (for email)-->
   </div> <!--/.flex (for user details)-->
 
-  <h2>User Permissions</h2>
-  <div class="flex marBottom48">
-    <label class="styledInput">
-      <input type="checkbox" class="styledInput__input"
-      [checked]="isOrgAdmin" (change)="isOrgAdmin=!isOrgAdmin" />
-      <span class="styledInput__box"></span>
-      Organization Administrator
-    </label>
-    <div class="tool__anchor marRight48">
-      <button class="button button--icon button--icon--small" (click)="tooltip2Open=!tooltip2Open">
-        <i class="ss-help"></i>
-      </button>
-      <div class="tool__tip" [ngClass]="{ 'isOpen' : tooltip2Open }">
-        <div class="tool__text">
-          Checking this box allows the user to see and edit all details for the organization. There must always be at least one admin for the organization and one for each facility.
-        </div>
-      </div>
-    </div> <!--/.tool__anchor-->
-
-    <label class="styledInput">
-      <input type="checkbox" class="styledInput__input"
-      [checked]="isProvider" (change)="isProvider=!isProvider" />
-      <span class="styledInput__box"></span>
-      Provider
-    </label>
-    <div class="tool__anchor marRight48">
-      <button class="button button--icon button--icon--small" (click)="tooltip3Open=!tooltip3Open">
-        <i class="ss-help"></i>
-      </button>
-      <div class="tool__tip" [ngClass]="{ 'isOpen' : tooltip3Open }">
-        <div class="tool__text">
-          Checking this box allows the user to be assigned to patients and care plans.
-        </div>
-      </div>
-    </div> <!--/.tool__anchor-->
-
-    <label class="styledInput">
-      <input type="checkbox" class="styledInput__input"
-      [checked]="isBC" (change)="isBC=!isBC"/>
-      <span class="styledInput__box"></span>
-      Billing Coordinator
-    </label>
-    <div class="tool__anchor marRight48">
-      <button class="button button--icon button--icon--small" (click)="tooltip4Open=!tooltip4Open">
-        <i class="ss-help"></i>
-      </button>
-      <div class="tool__tip" [ngClass]="{ 'isOpen' : tooltip4Open }">
-        <div class="tool__text">
-          Billing Coordinators (BCs) can view billing info for Billing Practitioners (BPs) to whom they’re assigned.
-        </div>
-      </div>
-    </div> <!--/.tool__anchor-->
-  </div> <!--/.flex (for checkboxes)-->
-
-  <div *ngIf="isProvider">
-    <div class="flex justifySpaceBetween">
-      <h2 class="noMargin">Assignments (Current Month-to-Date)</h2>
-      <!--TODO: When this link is clicked, filter active patients list by this provider-->
-      <a [routerLink]="['/patients/active']" class="button button--iconText">
-        <i class="ss-standard ss-view"></i> View Patients List
-      </a>
+  <div class="flex justifySpaceBetween">
+    <h2 class="noMargin">Assignments (Current Month-to-Date)</h2>
+    <!--TODO: When this link is clicked, filter active patients list by this provider-->
+    <a [routerLink]="['/patients/active']" class="button button--iconText">
+      <i class="ss-standard ss-view"></i> View Patients List
+    </a>
+  </div>
+  <div class="info info--horiz">
+    <div class="info__cell">
+      <label>Facilities</label>
+      2
     </div>
-    <div class="info info--horiz">
-      <div class="info__cell">
-        <label>Facilities</label>
-        2
+    <div class="info__cell">
+      <label>CM & CT</label>
+      122 & 14
+    </div>
+    <div class="info__cell">
+      <label>Billable Patients</label>
+      107
+    </div>
+    <div class="info__cell">
+      <label>Billable Hours</label>
+      <div class="pill pill--yellow">
+        11:15
       </div>
-      <div class="info__cell">
-        <label>CM & CT</label>
-        122 & 14
+    </div>
+    <div class="info__cell">
+      <label>Total $</label>
+      <div class="pill pill--yellow">
+        $4,790
       </div>
-      <div class="info__cell">
-        <label>Billable Patients</label>
-        107
+    </div>
+    <div class="info__cell">
+      <label>Avg. Risk Level</label>
+      <div class="pill pill--yellow">
+        Low Risk 77%
       </div>
-      <div class="info__cell">
-        <label>Billable Hours</label>
-        <div class="pill pill--yellow">
-          11:15
-        </div>
-      </div>
-      <div class="info__cell">
-        <label>Total $</label>
-        <div class="pill pill--yellow">
-          $4,790
-        </div>
-      </div>
-      <div class="info__cell">
-        <label>Avg. Risk Level</label>
-        <div class="pill pill--yellow">
-          Low Risk 77%
-        </div>
-      </div>
-    </div> <!--/.info (for assignments)-->
+    </div>
+  </div> <!--/.info (for assignments)-->
 
+
+  <div>
     <div class="accordion" [ngClass]="{ 'isOpen' : accord1Open }">
       <div class="accordion__head" (click)="accord1Open=!accord1Open">
-        <span class="accordion__title">Roles (2)</span>
+        <span class="accordion__title">Access ({{employee?.facilities?.length}})</span>
         <div class="accordion__right">
           <div class="accordion__arrow">
             <i class="ss-standard ss-navigateright"></i>
@@ -205,374 +152,193 @@
       </div> <!--/.accordion__head-->
       <div class="accordion__body">
         <div class="accordion__contents">
-          <div class="cols">
-            <div class="cols__colBig marRight96"> <!-- start left column-->
-              <div class="flex justifySpaceBetween alignCenter">
-                <h3 class="noMargin">Care Manager</h3>
-                <!--TODO: If role is not CM or BP, show a confirmation modal-->
-                <button class="button button--iconText"
-                (click)="confirmRemoveRole()">
-                  <i class="ss-delete"></i> Remove Role
-                </button>
-              </div>
-              <table class="fullWidth marBottom48">
-                <thead>
-                  <tr>
-                    <th class="thSortable thSortable--sortDown">
-                      <span class="thSortable__text thSortable__text--left">Facility</span>
-                    </th>
-                    <th class="thSortable">
-                      <span class="thSortable__text">Patients</span>
-                    </th>
-                    <th class="thSortable">
-                      <div class="tool justifyCenter">
-                        <span class="thSortable__text">BP</span>
-                        <div class="tool__anchor">
-                          <button class="button button--icon button--icon--small" (click)="tooltip5Open=!tooltip5Open"><i class="ss-help"></i></button>
-                          <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltip5Open }">
-                            <div class="tool__text">
-                              Billing Practitioners (BPs) are qualified providers under whose name Medicare is billed for their assigned patients.
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td class="left">Canyon View</td>
-                    <td>21</td>
-                    <td>- -</td>
-                  </tr>
-                  <tr>
-                    <td class="left">South Ogden Family Medicine</td>
-                    <td>6</td>
-                    <td>- -</td>
-                  </tr>
-                </tbody>
-              </table>
-
-              <div class="flex justifySpaceBetween alignCenter">
-                <h3 class="noMargin">Primary Care Provider</h3>
-                <!--TODO: If user is BP or CM, trigger reassign patients modal, showing appropriate fields; otherwise, trigger a confirmation modal-->
-                <button class="button button--iconText"
-                (click)="openReassignPatients()">
-                  <i class="ss-delete"></i> Remove Role
-                </button>
-              </div>
-              <table class="fullWidth marBottom48">
-                <thead>
-                  <tr>
-                    <th class="left thSortable thSortable--sortDown">
-                      <span class="thSortable__text thSortable__text--left">Facility</span>
-                    </th>
-                    <th class="thSortable">
-                      <span class="thSortable__text">Patients</span>
-                    </th>
-                    <th class="thSortable">
-                      <div class="tool justifyCenter">
-                        <span class="thSortable__text">BP</span>
-                        <div class="tool__anchor">
-                          <button class="button button--icon button--icon--small" (click)="tooltip6Open=!tooltip6Open"><i class="ss-help"></i></button>
-                          <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltip6Open }">
-                            <div class="tool__text">
-                              Billing Practitioners (BPs) are qualified providers under whose name Medicare is billed for their assigned patients.
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td class="left">Canyon View</td>
-                    <td>3</td>
-                    <td>3</td>
-                  </tr>
-                  <tr>
-                    <td class="left">South Ogden Family Medicine</td>
-                    <td>7</td>
-                    <td>7</td>
-                  </tr>
-                </tbody>
-              </table>
-
-              <label>Add Role</label>
-              <form class="flexForm">
-                <div class="styledSelect">
-                  <select class="styledSelect__select">
-                    <option>
-                      Anaesthesiologist
-                    </option>
-                    <option>
-                      Psychiatric Consultant
-                    </option>
-                  </select>
+          <div class="flex marBottom48 fullWidth">
+            <label class="styledInput">
+              <input
+                type="checkbox"
+                class="styledInput__input"
+                [checked]="isOrgAdmin"
+                (change)="isOrgAdmin=!isOrgAdmin"
+              />
+              <span class="styledInput__box"></span>
+              Organization Administrator
+            </label>
+            <div class="tool__anchor marRight48">
+              <button class="button button--icon button--icon--small" (click)="tooltip2Open=!tooltip2Open">
+                <i class="ss-help"></i>
+              </button>
+              <div class="tool__tip" [ngClass]="{ 'isOpen' : tooltip2Open }">
+                <div class="tool__text">
+                  Checking this box allows the user to see and edit all details for the organization. There must always be at least one admin for the organization and one for each facility.
                 </div>
-                <button class="button button--icon button--flex">
-                  <i class="ss-plus"></i>
-                </button>
-              </form>
-            </div> <!--/ left column-->
+              </div>
+            </div> <!--/.tool__anchor-->
 
-            <div class="cols__colSmall"> <!-- start right column-->
-              <h3>Billing Coordinators (BCs)</h3>
-              <ul class="nameList marBottom48">
-                <li class="nameList__item">
-                  <!--TODO: Link to user detail page-->
-                  <a class="picName">
-                    <img class="picName__img" src="../../../assets/img/profile.svg"/>
-                    Paul Gordon
-                  </a>
-                  <button class="button button--icon button--icon--small"
-                  (click)="confirmRemoveBC()">
-                    <i class="ss-delete"></i>
+            <label class="styledInput">
+              <input type="checkbox" class="styledInput__input"
+              [checked]="isProvider" (change)="isProvider=!isProvider" />
+              <span class="styledInput__box"></span>
+              Billing View
+            </label>
+            <div class="tool__anchor marRight48">
+              <button class="button button--icon button--icon--small" (click)="tooltip3Open=!tooltip3Open">
+                <i class="ss-help"></i>
+              </button>
+              <div class="tool__tip" [ngClass]="{ 'isOpen' : tooltip3Open }">
+                <div class="tool__text">
+                  By clicking the Billng View check box it enables this user to have access to the billing view.
+                </div>
+              </div>
+            </div> <!--/.tool__anchor-->
+
+            <label class="styledInput">
+              <input type="checkbox" class="styledInput__input"
+              [checked]="isBC" (change)="isBC=!isBC"/>
+              <span class="styledInput__box"></span>
+              Qualified Practitioner
+            </label>
+            <div class="tool__anchor marRight48">
+              <button class="button button--icon button--icon--small" (click)="tooltip4Open=!tooltip4Open">
+                <i class="ss-help"></i>
+              </button>
+              <div class="tool__tip" [ngClass]="{ 'isOpen' : tooltip4Open }">
+                <div class="tool__text">
+                  Billing Coordinators (BCs) can view billing info for Billing Practitioners (BPs) to whom they’re assigned.
+                </div>
+              </div>
+            </div> <!--/.tool__anchor-->
+          </div> <!--/.flex (for checkboxes)-->
+          <div class="divider"></div>
+
+          <ng-container *ngFor="let facility of employee?.facilities">
+            <div class="flex justifySpaceBetween alignCenter upperRow"><!-- start facility -->
+              <h3 class="noMargin">{{facility.name}}</h3>
+              <!--TODO: If role is not CM or BP, show a confirmation modal-->
+              <label class="styledInput">
+                <input type="checkbox" class="styledInput__input"
+                [checked]="facility.is_manager" />
+                <span class="styledInput__box"></span>
+                Facility Administrator
+              </label>
+              <button class="button button--iconText"
+              (click)="openChangePassword()">
+                <i class="ss-delete"></i>Revoke Access
+              </button>
+            </div>
+
+            <div class="cols">
+              <div class="cols__colBig marRight96"> <!-- start left column-->
+                  <table class="fullWidth marBottom48">
+                    <thead>
+                      <tr>
+                        <th class="thSortable thSortable--sortDown">
+                          <span class="thSortable__text thSortable__text--left">Facility</span>
+                        </th>
+                        <th class="thSortable">
+                          <span class="thSortable__text">Patients</span>
+                        </th>
+                        <th class="thSortable">
+                          <span class="thSortable__text">Managing</span>
+                        </th>
+                        <th class="thSortable">
+                          <span class="thSortable__text">Care Team</span>
+                        </th>
+                        <th class="thSortable">
+                          <span class="thSortable__text">Billing</span>
+                        </th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let role of employee?.roles">
+                        <td class="left">{{role.name}}</td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td></td>
+                        <td>
+                          <button class="button button--icon button--icon--small">
+                            <i class="ss-delete"></i>
+                          </button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table> <!-- end facility -->
+
+                <label>Add Role</label>
+                <form class="flexForm">
+                  <div class="styledSelect">
+                    <select class="styledSelect__select">
+                      <option *ngFor="let role of roles">
+                        {{role.name}}
+                      </option>
+                    </select>
+                  </div>
+                  <button class="button button--icon button--flex">
+                    <i class="ss-plus"></i>
                   </button>
-                </li>
-              </ul>
-              <label>Add Billing Coordinator (BC)</label>
-              <form class="flexForm">
-                <div class="drop">
-                  <input class="input input--search" type="text" (click)="dropOpen = !dropOpen" placeholder="Search" />
-                  <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : dropOpen }" (click)="dropOpen = !dropOpen">
-                    <li class="drop__option">
-                      <a class="drop__link">
-                        <div class="picName">
-                          <img class="picName__img" src="../../../assets/img/profile.svg" />Adam Hancock
-                        </div>
+                </form>
+              </div> <!--/ left column-->
+
+              <div class="cols__colSmall"> <!-- start right column-->
+                <div class="bc">
+                  <label>Billing Coordinators (BCs)</label>
+                  <ul class="nameList">
+                    <li class="nameList__item">
+                      <!--TODO: Link to user detail page-->
+                      <a class="picName fullWidth">
+                        <img class="picName__img" src="../../../assets/img/profile.svg"/>
+                        Paul Gordon
                       </a>
-                    </li>
-                    <li class="drop__option">
-                      <a class="drop__link">
-                        <div class="picName">
-                          <img class="picName__img" src="../../../assets/img/profile.svg" />Hank Granowski
-                        </div>
-                      </a>
-                    </li>
-                    <li class="drop__option">
-                      <a class="drop__link">
-                        <div class="picName">
-                          <img class="picName__img" src="../../../assets/img/profile.svg" />Samantha Hancock
-                        </div>
-                      </a>
+                      <button class="button button--icon button--icon--small"
+                      (click)="confirmRemoveBC()">
+                        <i class="ss-write"></i>
+                      </button>
+                      <button class="button button--icon button--icon--small"
+                      (click)="confirmRemoveBC()">
+                        <i class="ss-delete"></i>
+                      </button>
                     </li>
                   </ul>
                 </div>
-                <button class="button button--icon">
-                  <i class="ss-plus"></i>
-                </button>
-              </form>
-            </div> <!--/ right column-->
-          </div> <!--/.cols-->
+                <label>Add Billing Coordinator (BC)</label>
+                <form class="flexForm">
+                  <div class="drop">
+                    <input class="input input--search" type="text" (click)="dropOpen = !dropOpen" placeholder="Search" />
+                    <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : dropOpen }" (click)="dropOpen = !dropOpen">
+                      <li class="drop__option">
+                        <a class="drop__link">
+                          <div class="picName">
+                            <img class="picName__img" src="../../../assets/img/profile.svg" />Adam Hancock
+                          </div>
+                        </a>
+                      </li>
+                      <li class="drop__option">
+                        <a class="drop__link">
+                          <div class="picName">
+                            <img class="picName__img" src="../../../assets/img/profile.svg" />Hank Granowski
+                          </div>
+                        </a>
+                      </li>
+                      <li class="drop__option">
+                        <a class="drop__link">
+                          <div class="picName">
+                            <img class="picName__img" src="../../../assets/img/profile.svg" />Samantha Hancock
+                          </div>
+                        </a>
+                      </li>
+                    </ul>
+                  </div>
+                  <button class="button button--icon">
+                    <i class="ss-plus"></i>
+                  </button>
+                </form>
+              </div> <!--/ right column-->
+            </div> <!--/.cols-->
+            <div class="divider"></div>
+          </ng-container>
         </div> <!--/.accordion__contents-->
       </div> <!--/.accordion__body-->
     </div> <!--/.accordion (for roles)-->
-
-    <div class="accordion" [ngClass]="{ 'isOpen' : accord2Open }">
-      <div class="accordion__head" (click)="accord2Open=!accord2Open">
-        <span class="accordion__title">Facilities (2)</span>
-        <div class="accordion__right">
-          <div class="accordion__arrow">
-            <i class="ss-standard ss-navigateright"></i>
-          </div>
-        </div>
-      </div> <!--/.accordion__head-->
-      <div class="accordion__body">
-        <div class="accordion__contents">
-          <div class="flex justifySpaceBetween alignCenter">
-            <h3 class="noMargin">Canyon View</h3>
-            <label class="styledInput" *ngIf="!isOrgAdmin">
-              <input class="styledInput__input" type="checkbox" />
-              <span class="styledInput__box"></span>
-              Facility Administrator
-            </label>
-            <!--TODO: If user is CM or BP, show reassign modals; if not, show confirmation modal-->
-            <button class="button button--iconText"
-            (click)="confirmRevokeAccess()">
-              <i class="ss-delete"></i> Revoke Access
-            </button>
-          </div>
-          <table class="fullWidth marBottom48">
-            <thead>
-              <tr>
-                <th class="left thSortable thSortable--sortDown">
-                  <span class="thSortable__text thSortable__text--left">Role</span>
-                </th>
-                <th class="thSortable">
-                  <span class="thSortable__text">Patients</span>
-                </th>
-                <th class="thSortable">
-                  <div class="tool justifyCenter">
-                    <span class="thSortable__text">BP</span>
-                    <div class="tool__anchor">
-                      <button class="button button--icon button--icon--small" (click)="tooltip7Open=!tooltip7Open"><i class="ss-help"></i></button>
-                      <div class="tool__tip tool__tip--bottom tool__tip--right" [ngClass]="{ 'isOpen' : tooltip7Open }">
-                        <div class="tool__text">
-                          Billing Practitioners (BPs) are qualified providers under whose name Medicare is billed for their assigned patients.
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td class="left">Care Manager</td>
-                <td>21</td>
-                <td>- -</td>
-              </tr>
-              <tr>
-                <td class="left">Primary Care Provider</td>
-                <td>3</td>
-                <td>3</td>
-              </tr>
-            </tbody>
-          </table>
-
-          <div class="flex justifySpaceBetween alignCenter">
-            <h3 class="noMargin">South Ogden Family Medicine</h3>
-            <label class="styledInput" *ngIf="!isOrgAdmin">
-              <input class="styledInput__input" type="checkbox" />
-              <span class="styledInput__box"></span>
-              Facility Administrator
-            </label>
-            <button class="button button--iconText">
-              <i class="ss-delete"></i> Revoke Access
-            </button>
-          </div>
-          <table class="fullWidth marBottom48">
-            <thead>
-              <tr>
-                <th class="left thSortable thSortable--sortDown">
-                  <span class="thSortable__text thSortable__text--left">Role</span>
-                </th>
-                <th class="thSortable">
-                  <span class="thSortable__text">Patients</span>
-                </th>
-                <th class="thSortable">
-                  <div class="tool justifyCenter">
-                    <span class="thSortable__text">BP</span>
-                    <div class="tool__anchor">
-                      <button class="button button--icon button--icon--small" (click)="tooltip8Open=!tooltip8Open"><i class="ss-help"></i></button>
-                      <div class="tool__tip tool__tip--bottom tool__tip--right" [ngClass]="{ 'isOpen' : tooltip8Open }">
-                        <div class="tool__text">
-                          Billing Practitioners (BPs) are qualified providers under whose name Medicare is billed for their assigned patients.
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td class="left">Care Manager</td>
-                <td>6</td>
-                <td>- -</td>
-              </tr>
-              <tr>
-                <td class="left">Primary Care Provider</td>
-                <td>7</td>
-                <td>7</td>
-              </tr>
-            </tbody>
-          </table>
-
-          <label>Add Facility</label>
-          <form class="flexForm">
-            <div class="styledSelect">
-              <select class="styledSelect__select">
-                <option>
-                  Crestview
-                </option>
-                <option>
-                  North Ogden Physicians' Group
-                </option>
-              </select>
-            </div>
-            <button class="button button--icon button--flex">
-              <i class="ss-plus"></i>
-            </button>
-          </form>
-        </div> <!--/.accordion__contents-->
-      </div> <!--/.accordion__body-->
-    </div> <!--/.accordion (for facilities)-->
-  </div> <!--/ provider section-->
-
-  <div *ngIf="isBC">
-    <div class="accordion" [ngClass]="{ 'isOpen' : accord3Open }">
-      <div class="accordion__head" (click)="accord3Open=!accord3Open">
-        <span class="accordion__title">Billing Practitioners (BPs) (2)</span>
-        <div class="accordion__right">
-          <div class="accordion__arrow">
-            <i class="ss-standard ss-navigateright"></i>
-          </div>
-        </div>
-      </div> <!--/.accordion__head-->
-      <div class="accordion__body">
-        <div class="accordion__contents">
-          <ul class="nameList marBottom48 halfWidth">
-            <li class="nameList__item">
-              <!--TODO: link to user detail page-->
-              <a class="picName">
-                <img class="picName__img" src="../../../assets/img/profile.svg"/>
-                Jessica Alexander, MD
-              </a>
-              <button class="button button--icon button--icon--small"
-              (click)="confirmRemoveBP()">
-                <i class="ss-delete"></i>
-              </button>
-            </li>
-            <li class="nameList__item">
-              <!--TODO: link to user detail page-->
-              <a class="picName">
-                <img class="picName__img" src="../../../assets/img/profile.svg"/>
-                Steven Wilson, PA
-              </a>
-              <button class="button button--icon button--icon--small"
-              (click)="confirmRemoveBP()">
-                <i class="ss-delete"></i>
-              </button>
-            </li>
-          </ul>
-          <label>Add Billing Practitioner (BP)</label>
-          <form class="flexForm">
-            <div class="drop">
-              <input class="input input--search" type="text" (click)="dropOpen1 = !dropOpen1" placeholder="Search" />
-              <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : dropOpen1 }" (click)="dropOpen1 = !dropOpen1">
-                <li class="drop__option">
-                  <a class="drop__link">
-                    <div class="picName">
-                      <img class="picName__img" src="../../../assets/img/profile.svg" />Adam Hancock
-                    </div>
-                  </a>
-                </li>
-                <li class="drop__option">
-                  <a class="drop__link">
-                    <div class="picName">
-                      <img class="picName__img" src="../../../assets/img/profile.svg" />Hank Granowski
-                    </div>
-                  </a>
-                </li>
-                <li class="drop__option">
-                  <a class="drop__link">
-                    <div class="picName">
-                      <img class="picName__img" src="../../../assets/img/profile.svg" />Samantha Hancock
-                    </div>
-                  </a>
-                </li>
-              </ul>
-            </div>
-            <button class="button button--icon">
-              <i class="ss-plus"></i>
-            </button>
-          </form>
-        </div> <!--/.accordion__contents-->
-      </div> <!--/.accordion__body-->
-    </div> <!--/.accordion (for BPs)-->
   </div> <!--/ BC section-->
-
 </div> <!--/.ssContainer-->

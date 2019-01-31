@@ -19,6 +19,11 @@ export class UsersComponent implements OnDestroy, OnInit {
   private organizationSub: Subscription = null;
   private facilitesSub: Subscription = null;
 
+  public total:number = 0;
+  public facilityTotals = {};
+  public currentPage:number = 1;
+  public facilityPages = {};
+
   public showInactive = false;
   public searchOpen = false;
   public organizationAccordionOpen = false;
@@ -50,6 +55,7 @@ export class UsersComponent implements OnDestroy, OnInit {
       }
       let employeesSub = this.store.Organization.detailRoute('get', organization.id, 'employee_profiles').subscribe(
         (employees: any) => {
+          this.total = employees.count;
           this.organization.employees = employees.results;
         },
         (err) => {},
@@ -68,6 +74,8 @@ export class UsersComponent implements OnDestroy, OnInit {
             (employees: any) => {
               facility.employees = employees.results;
               this.facilitiesChecked[facility.id] = true;
+              this.facilityPages[facility.id] = 1;
+              this.facilityTotals[facility.id] = employees.count;
             },
             (err) => {},
             () => {
@@ -153,5 +161,85 @@ export class UsersComponent implements OnDestroy, OnInit {
 
   public usersFilteredBySearch() {
 
+  }
+
+  public switchPage(by:number, to:number = 0) {
+    if (this.organization) {
+      let employeesSub = this.store.Organization.detailRoute(
+        'get',
+        this.organization.id,
+        'employee_profiles',
+        {},
+        { 
+          page: to || this.currentPage + by
+        }
+      ).subscribe(
+        (employees: any) => {
+          this.organization.employees = employees.results;
+          if (to) {
+            this.currentPage = to;
+          } else {
+            this.currentPage += by;
+          }
+        },
+        (err) => {},
+        () => {
+          employeesSub.unsubscribe();
+        },
+      )
+    }
+  }
+
+  public switchNthFacilityPage(n:number, by:number, to:number = 0) {
+    if (this.facilities) {
+      const facility = this.facilities[n];
+      let employeesSub = this.store.Facility.detailRoute(
+        'get',
+        facility.id,
+        'employee_profiles',
+        {},
+        {
+          page: to || this.facilityPages[facility.id] + by,
+        }
+      ).subscribe(
+        (employees: any) => {
+          facility.employees = employees.results;
+          if (to) {
+            this.facilityPages[facility.id] = to;
+          } else {
+            this.facilityPages[facility.id] += by;
+          }
+        },
+        (err) => {},
+        () => {
+          employeesSub.unsubscribe();
+        },
+      );
+    }
+  }
+
+  public get orgUserCountText() {
+    if (this.total <= 20) {
+      return this.total;
+    } else {
+      const pageMin = 20*(this.currentPage - 1) + 1;
+      const pageMax = 20*(this.currentPage - 1) + 20;
+      return `${pageMin} - ${pageMax < this.total ? pageMax : this.total} of ${this.total}`
+    }
+  }
+
+  public nthFacilityUserCountText(n) {
+    const facility = this.facilities[n];
+    if (this.facilityTotals[facility.id] <= 20) {
+      return this.total;
+    } else {
+      const pageMin = 20*(this.facilityPages[facility.id] - 1) + 1;
+      const pageMax = 20*(this.facilityPages[facility.id] - 1) + 20;
+      return `${pageMin} - ${pageMax < this.facilityTotals[facility.id] ? pageMax : this.facilityTotals[facility.id]} of ${this.facilityTotals[facility.id]}`;
+    }
+  }
+
+  public lastPage(total) {
+    return Math.ceil(total/20);
   }
 }

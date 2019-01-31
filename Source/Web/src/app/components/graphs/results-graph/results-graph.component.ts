@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import * as d3 from 'd3';
 import { get as _get } from 'lodash';
-import { directiveCreate } from '@angular/core/src/render3/instructions';
 
 @Component({
   selector: 'app-results-graph',

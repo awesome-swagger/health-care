@@ -1,22 +1,63 @@
 <h1 class="modal__title">Add Diagnosis</h1>
-<input type="text" class="input input--search fullWidth marBottom32" placeholder="placeholder" />
-<label class="styledInput">
-  <input type="radio" class="styledInput__input" name="radioPDM" />
-  <span class="styledInput__radio"></span>Chronic Condition
-</label>
-<label class="styledInput">
-  <input type="radio" class="styledInput__input" name="radioPDM" />
-  <span class="styledInput__radio"></span>Complex Chronic Condition
-</label>
-<label class="styledInput">
-  <input type="radio" class="styledInput__input" name="radioPDM" />
-  <span class="styledInput__radio"></span>Neither
-</label>
+<div class="drop marBottom32">
+  <label>Diagnosis Name</label>
+  <input class="input input--search fullWidth" type="text" placeholder="Search" [(ngModel)]="searchString" (keypress)="clearSelection()" />
+  <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : searchString.length > 2 && !selectedDiagnosis }">
+    <li class="drop__option" *ngFor="let diagnosis of searchDiagnoses" (click)="searchString = diagnosis.name; selectedDiagnosis = diagnosis">
+      <a class="drop__link">
+        <div class="picName">
+          {{diagnosis.name}}
+        </div>
+      </a>
+    </li>
+  </ul>
+</div>
+<div class="flex marBottom32 alignEnd">
+  <div class="flex1 marRight24">
+    <label>DX Code</label>
+    <input class="input input--search fullWidth" type="text" placeholder="Search" />
+  </div>
+  <div class="flex1">
+    <label class="styledInput">
+      <input type="checkbox" class="styledInput__input" />
+      <span class="styledInput__box"></span> Chronic Condition
+    </label>
+  </div>
+</div>
+<div class="modal__inputWrap marBottom32">
+  <label>Date Identified</label>
+  <app-date-picker-input></app-date-picker-input>
+</div>
+<div class="flex justifySpaceBetween marBottom32">
+  <div class="modal__inputWrap marRight32">
+    <div class="drop marBottom32">
+      <label>Diagnosing Practitioner</label>
+      <input class="input input--search fullWidth" type="text" placeholder="Search" [(ngModel)]="employeeSearchString" (keypress)="clearEmployeeSelection()" />
+      <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : employeeSearchString.length > 2 && !selectedEmployee }">
+        <li class="drop__option" *ngFor="let employee of searchEmployees" (click)="selectedEmployee = employee; employeeSearchString = employeeFullName">
+          <a class="drop__link">
+            <div class="picName">
+              {{employee?.user?.first_name}} {{employee?.user?.last_name}}
+            </div>
+          </a>
+        </li>
+      </ul>
+    </div>
+
+  </div>
+  <div class="modal__inputWrap">
+    <label>Facility</label>
+    <div class="styledSelect fullWidth">
+      <select class="styledSelect__select">
+      </select>
+    </div>
+  </div>
+</div>
 <div class="modal__buttons">
   <button class="button button--2nd" (click)="close()">
     Cancel
   </button>
-  <button class="button">
+  <button class="button" (click)="submit()">
     Save
   </button>
 </div>
