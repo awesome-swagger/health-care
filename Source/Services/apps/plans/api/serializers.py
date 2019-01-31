@@ -125,8 +125,6 @@ class CarePlanSerializer(RepresentationMixin, serializers.ModelSerializer):
             'id',
             'created',
             'modified',
-            'patient',
-            'plan_template',
         )
         nested_serializers = [
             {
