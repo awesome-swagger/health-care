@@ -28,6 +28,7 @@ export class UserComponent implements OnDestroy, OnInit {
   public isBC;
   public tooltip4Open;
   public editName;
+  public accord1Open;
 
   constructor(
     private route: ActivatedRoute,
