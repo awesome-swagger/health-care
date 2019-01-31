@@ -31,6 +31,7 @@ from apps.core.api.serializers import (
     BasicEmployeeProfileSerializer,
     EmployeeProfileSerializer,
 )
+from apps.core.models import EmployeeProfile
 from apps.patients.models import PatientProfile
 from apps.tasks.models import (
     AssessmentTask,
@@ -786,7 +787,8 @@ class PatientCarePlanOverviewSerializer(CarePlanOverviewSerializer):
     def get_care_team(self, obj):
         queryset = obj.care_team_members.values_list(
             'employee_profile', flat=True).distinct()
-        serializer = BasicEmployeeProfileSerializer(queryset, many=True)
+        employees = EmployeeProfile.objects.filter(id__in=queryset)
+        serializer = BasicEmployeeProfileSerializer(employees, many=True)
         return serializer.data
 
     def get_next_check_in(self, obj):
