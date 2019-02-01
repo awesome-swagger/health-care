@@ -32,6 +32,18 @@ class Facility(AddressMixin, CreatedModifiedMixin, UUIDPrimaryKeyMixin):
         return '{}: {}'.format(self.organization.name, self.name)
 
 
+class Insurance(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
+    name = models.CharField(max_length=120, null=False, blank=False)
+    organization = models.ForeignKey(
+        Organization, blank=False, null=False, on_delete=models.CASCADE)
+
+    class Meta:
+        ordering = ('name', 'organization')
+
+    def __str__(self):
+        return '{}: {}'.format(self.organization.name, self.name)
+
+
 class EmployeeProfile(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
     user = models.OneToOneField(
         EmailUser, on_delete=models.CASCADE, related_name='employee_profile')
