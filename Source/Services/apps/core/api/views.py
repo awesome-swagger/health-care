@@ -8,7 +8,7 @@ from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.utils.translation import ugettext_lazy as _
 
-from apps.core.models import (Diagnosis, EmployeeProfile,
+from apps.core.models import (Diagnosis, EmployeeProfile, Insurance, Notification,
                               InvitedEmailTemplate, Medication, Organization,
                               Procedure, ProviderRole, ProviderSpecialty,
                               ProviderTitle, Symptom, Facility)
@@ -35,8 +35,8 @@ from .serializers import (DiagnosisSerializer, EmployeeProfileSerializer,
                           OrganizationSerializer, ProcedureSerializer,
                           ProviderRoleSerializer, ProviderSpecialtySerializer,
                           ProviderTitleSerializer, SymptomSerializer,
-                          InvitedEmailTemplateSerializer,
-                          OrganizationEmployeeSerializer,
+                          InvitedEmailTemplateSerializer, InsuranceSerializer,
+                          OrganizationEmployeeSerializer, NotificationSerializer,
                           SymptomSearchSerializer, FacilityEmployeeSerializer,
                           DiagnosisSearchSerializer,
                           ProviderTitleSearchSerializer,
@@ -623,6 +623,37 @@ class OrganizationFacilityViewSet(ParentViewSetPermissionMixin,
         ('organization', Organization, OrganizationViewSet)
     ]
     pagination_class = OrganizationEmployeePagination
+
+
+class OrganizationInsuranceViewSet(ParentViewSetPermissionMixin,
+                                   NestedViewSetMixin,
+                                   mixins.ListModelMixin,
+                                   viewsets.GenericViewSet):
+    """
+    Displays all insurances in a parent organization.
+    """
+
+    serializer_class = InsuranceSerializer
+    permission_clases = (permissions.IsAuthenticated, IsAdminOrEmployee)
+    queryset = Insurance.objects.all()
+    parent_lookup = [
+        ('organization', Organization, OrganizationViewSet)
+    ]
+    pagination_class = OrganizationEmployeePagination
+
+
+class NotificationViewSet(ParentViewSetPermissionMixin,
+                          NestedViewSetMixin,
+                          mixins.ListModelMixin,
+                          viewsets.GenericViewSet):
+    """
+    Displays all notifications for the user.
+    """
+
+    serializer_class = NotificationSerializer
+    permission_clases = (permissions.IsAuthenticated, IsAdminOrEmployee)
+    queryset = Notification.objects.filter(is_read=False)
+    parent_lookup = []
 
 
 class OrganizationAffiliatesViewSet(ParentViewSetPermissionMixin,

@@ -107,6 +107,25 @@ class PatientProfileViewSet(viewsets.ModelViewSet):
 
         return queryset
 
+    @action(methods=['get'], detail=False)
+    def overview(self, request, *args, **kwargs):
+        """
+        This endpoints will return overview of patients. It returns number of active patients, 
+        number of inactive patients, number of invited patients, number of potential patients
+        """
+        queryset = self.get_queryset()
+        ppv = PotentialPatientViewSet()
+        ppv.request = self.request
+
+        res = {
+            "active": queryset.filter(is_active=True).count(),
+            "inactive": queryset.filter(is_active=False).count(),
+            "invited": queryset.filter(is_invited=True).count(),
+            "potential": ppv.get_queryset().count()
+        }
+
+        return Response(res)
+
     @action(methods=['get'], detail=True)
     def care_plan_goals(self, request, *args, **kwargs):
         """

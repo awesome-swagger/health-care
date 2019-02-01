@@ -15,8 +15,8 @@ from apps.core.api.views import (
     ProviderTitleViewSet, ProviderRoleViewSet, ProviderSpecialtyViewSet,
     DiagnosisViewSet,  MedicationViewSet, ProcedureViewSet, SymptomViewSet,
     OrganizationEmployeeViewSet, SymptomSearchViewSet, FacilityEmployeeViewSet,
-    OrganizationFacilityViewSet, DiagnosisSearchViewSet,
-    ProviderTitleSearchViewSet, ProviderRoleSearchViewSet,
+    OrganizationFacilityViewSet, DiagnosisSearchViewSet, OrganizationInsuranceViewSet,
+    ProviderTitleSearchViewSet, ProviderRoleSearchViewSet, NotificationViewSet,
     OrganizationAffiliatesViewSet)
 from apps.patients.api.views import (
     PatientProfileViewSet,
@@ -84,8 +84,12 @@ admin.site.site_header = mark_safe('<img src="{img}" alt="{alt}"/> {alt}'.format
 
 router = ExtendedDefaultRouter()
 # Accounts
-router.register(r'users', UserViewSet, base_name='users')
-# Core
+user_routes = router.register(r'users', UserViewSet, base_name='users')
+user_routes.register(r'notifications', 
+    NotificationViewSet, 
+    base_name='notifications',
+    parents_query_lookups=['user']
+)
 
 organization_routes = router.register(
     r'organizations',
@@ -102,6 +106,12 @@ organization_routes.register(
     r'facilities',
     OrganizationFacilityViewSet,
     base_name='organization-facilities',
+    parents_query_lookups=['organization']
+)
+organization_routes.register(
+    r'insurances',
+    OrganizationInsuranceViewSet,
+    base_name='organization-insurances',
     parents_query_lookups=['organization']
 )
 organization_routes.register(
