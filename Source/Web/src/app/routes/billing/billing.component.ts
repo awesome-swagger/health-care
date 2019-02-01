@@ -224,6 +224,16 @@ export class BillingComponent implements OnDestroy, OnInit {
     });
   }
 
+  public facilityBillablePatients(facility) {
+    return _uniqBy(
+        this.filteredBilling()
+        .filter(
+          (obj) => this.getPatient(obj.patient).facility === facility)
+        .map(
+          (obj) => this.getPatient(obj.patient)),
+        (obj) => obj.id).length;
+  }
+
   public getAllBPsForFacility(facility) {
     return this.filteredBilling().filter((obj) => this.getPatient(obj.patient).facility === facility).map(
       (obj) => this.getEmployee(obj.billingPractitioner));

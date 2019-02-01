@@ -18,6 +18,7 @@ export class UserComponent implements OnDestroy, OnInit {
   public employee: any = null;
   private paramsSub: Subscription = null;
   public organization: any = null;
+  public roles = [];
 
   public tooltip1Open;
   public isOrgAdmin;
@@ -27,6 +28,7 @@ export class UserComponent implements OnDestroy, OnInit {
   public isBC;
   public tooltip4Open;
   public editName;
+  public accord1Open;
 
   constructor(
     private route: ActivatedRoute,
@@ -44,6 +46,9 @@ export class UserComponent implements OnDestroy, OnInit {
       }
       let employeeSub = this.store.EmployeeProfile.read(res.id).subscribe(
         (employee) => {
+          console.log('vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv');
+          console.log(employee);
+          console.log('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^');
           this.employee = employee;
         },
         (err) => {
@@ -65,6 +70,14 @@ export class UserComponent implements OnDestroy, OnInit {
       (err) => {},
       () => { organizationSub.unsubscribe() }
     );
+
+    const rolesSub = this.store.ProviderRole.readListPaged().subscribe(
+      roles => {
+        this.roles = roles;
+      },
+      err => {},
+      () => rolesSub.unsubscribe()
+    )
 
   }
 

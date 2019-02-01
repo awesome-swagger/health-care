@@ -1,9 +1,9 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
+import { groupBy as _groupBy, sumBy as _sumBy } from 'lodash';
 import { ModalService, ConfirmModalComponent } from '../../modules/modals';
 import { PopoverOptions } from '../../modules/popover';
-import { AuthService, StoreService } from '../../services';
+import { AuthService, StoreService, UtilsService } from '../../services';
 import { AddPlanComponent } from './modals/add-plan/add-plan.component';
-import { groupBy as _groupBy, sumBy as _sumBy } from 'lodash';
 
 @Component({
   selector: 'app-plans',
@@ -15,7 +15,10 @@ export class PlansComponent implements OnDestroy, OnInit {
   public organization = null;
   public facilities = [];
   public facilitiesOpen = false;
-  public facilitiesDropOptions: PopoverOptions = {};
+  public facilitiesDropOptions: PopoverOptions = {
+    relativeTop: '48px',
+    relativeRight: '0px',
+  };
   public facilitiesChecked: any = {};
   public facilitiesFiltered = [];
   public averagesByCarePlan = null;
@@ -39,6 +42,7 @@ export class PlansComponent implements OnDestroy, OnInit {
     private modals: ModalService,
     private auth: AuthService,
     private store: StoreService,
+    public utils: UtilsService,
   ) { }
 
   public ngOnInit() {
@@ -223,27 +227,10 @@ export class PlansComponent implements OnDestroy, OnInit {
     this.facilitiesFiltered = Object.keys(this.facilitiesChecked);
   }
 
-  public getRiskLevelText(riskLevel) {
-    if (riskLevel >= 90) {
-      return 'On Track';
-    } else if (riskLevel <= 89 && riskLevel >= 70) {
-      return 'Low Risk';
-    } else if (riskLevel <= 69 && riskLevel >= 50) {
-       return 'Med Risk';
-    } else {
-      return 'High Risk';
+  public totalRiskLevel(templates) {
+    if (!templates || templates.length === 0) {
+      return 0;
     }
-  }
-
-  public getPillColor(percentage) {
-    if (percentage >= 90) {
-      return '#4caf50';
-    } else if (percentage <= 89 && percentage >= 70) {
-      return '#ff9800';
-    } else if (percentage <= 69 && percentage >= 50) {
-       return '#ca2c4e';
-    } else {
-      return '#880e4f';
-    }
+    return _sumBy(templates, (template) => template.averages.risk_level) / templates.length;
   }
 }

@@ -14,6 +14,8 @@ import { PlanExpiredComponent } from '../../components/modals/plan-expired/plan-
 import { PlanLimitReachedComponent } from '../../components/modals/plan-limit-reached/plan-limit-reached.component';
 import { PercentageGaugeComponent } from '../../components/graphs/percentage-gauge/percentage-gauge.component';
 import { ResultsGraphComponent } from '../../components/graphs/results-graph/results-graph.component';
+import { ActivePatientsGraphComponent } from '../../components/graphs/active-patients-graph/active-patients-graph.component';
+import { PatientsEnrolledGraphComponent } from '../../components/graphs/patients-enrolled-graph/patients-enrolled-graph.component';
 
 @Component({
   selector: 'app-styleguide',

@@ -37,6 +37,7 @@ import { MedicationComponent } from '../patient/modals/medication/medication.com
 import { AddCtComponent } from '../patient/modals/add-ct/add-ct.component';
 import { EditBillingPractitionerComponent } from '../patient/modals/edit-billing-practitioner/edit-billing-practitioner.component';
 import { EditCcmComponent } from '../patient/modals/edit-ccm/edit-ccm.component';
+import { EditUserDetailsComponent } from '../users/detail/modals/edit-user-details/edit-user-details.component';
 
 @Component({
   selector: 'app-all-modals',
@@ -259,7 +260,10 @@ export class AllModalsComponent implements OnInit {
 
   public openAddDiagnosis() {
     this.modals.open(AddDiagnosisComponent, {
-      width: '440px',
+      width: '512px',
+      data: {
+        patientId: '49bff2d4-78a1-4b11-9a95-c01d5cfbeddd',
+      }
     })
   }
 
@@ -318,6 +322,12 @@ export class AllModalsComponent implements OnInit {
   public openEditCmm() {
     this.modals.open(EditCcmComponent, {
       width: '440px',
+    })
+  }
+
+  public openEditUserDetails() {
+    this.modals.open(EditUserDetailsComponent, {
+      width: '512px',
     })
   }
 

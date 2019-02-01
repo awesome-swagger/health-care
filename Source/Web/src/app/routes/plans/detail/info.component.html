@@ -2,20 +2,31 @@
   <app-plan-header [planTemplate]="planTemplate"></app-plan-header>
   <div class="accordion" [ngClass]="{ 'isOpen' : accordionOpen[facility.id] }" *ngFor="let facility of facilities">
     <div class="accordion__head" (click)="accordionOpen[facility.id] = !accordionOpen[facility.id]">
-      <span class="accordion__title">{{facility.name}} (<span *ngIf="patientsGrouped[facility.id]">{{patientsGrouped[facility.id].length}}</span><span *ngIf="!patientsGrouped[facility.id]">0</span>)</span>
-      <div class="accordion__right">
+      <span class="accordion__title">{{facility.name}} (<span *ngIf="facility.plans">{{facility.plans.length}}</span><span *ngIf="!facility.plans">0</span>)</span>
+      <div class="accordion__right" *ngIf="facility.plans && facility.plans.length > 0">
         <div class="pill pill--red marRight16">
-          CoCM 2:17
+          Time 2:17
         </div>
-        <div class="pill pill--purple">
-          High Risk 28%
+        <div class="pill" [ngStyle]="{'background': utils.percentPillColor(totalFacilityRiskLevel(facility))}">
+          {{utils.getRiskLevelText(totalFacilityRiskLevel(facility))}} {{totalFacilityRiskLevel(facility)}}%
+        </div>
+        <div class="accordion__arrow">
+          <i class="ss-standard ss-navigateright"></i>
+        </div>
+      </div>
+      <div class="accordion__right" *ngIf="!facility.plans || facility.plans.length === 0">
+        <div class="pill marRight16">
+          Time 0:00
+        </div>
+        <div class="pill">
+          N/A
         </div>
         <div class="accordion__arrow">
           <i class="ss-standard ss-navigateright"></i>
         </div>
       </div>
     </div> <!--/.accordion__head-->
-    <div class="accordion__body" *ngIf="patientsGrouped[facility.id]">
+    <div class="accordion__body" *ngIf="facility.plans && facility.plans.length > 0">
       <div class="accordion__contents">
         <div class="tableWrap fullWidth">
           <table class="fullWidth">
@@ -59,17 +70,17 @@
                 <th class="noPad"></th>
               </tr>
             </thead>
-            <tbody>
-              <tr *ngFor="let patient of patientsGrouped[facility.id]">
+            <tbody *ngIf="facility.plans">
+              <tr *ngFor="let plan of facility.plans">
                 <td class="left hideOverflow">
-                  <a [routerLink]="['/patient', patient.id]" class="picName">
-                    <img class="picName__img" src="../../../assets/img/profile.svg" />
-                    {{patient.user.first_name}} {{patient.user.last_name}}
+                  <a [routerLink]="['/patient', plan.patient.id]" class="picName">
+                    <img class="picName__img" [src]="plan.patient.image_url" />
+                    {{plan.patient.full_name}}
                   </a>
                 </td>
                 <td>
                   <a class="tool__anchor justifyCenter" (click)="tooltip1Open=!tooltip1Open">
-                    2
+                    {{plan.other_plans}}
                     <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltip1Open }">
                       <div class="iconText iconText--white iconText--autoHeight marBottom8">
                         <i class="iconText__icon iconText__icon--noTop icomoon-cocm"></i> Anxiety
@@ -84,20 +95,20 @@
                 </td>
                 <td>
                   <!--TODO: This link should also open the care team tasks accordion on the plan instance overview page-->
-                  <a [routerLink]="['/patient/asdf/overview']" class="justifyCenter">4</a>
+                  <a (click)="routeToPatientOverview(plan.patient.id, plan.id)" class="justifyCenter">{{plan.tasks_this_week}}</a>
                 </td>
                 <td>
                   <div class="progress">
-                    Week 8 of 12
+                    Week 0 of 12
                     <div class="progress__bg">
                       <div class="progress__bar"></div>
                     </div>
                   </div>
                 </td>
                 <td>7 Days</td>
-                <td><div class="pill pill--lime">93%</div></td>
-                <td><div class="pill pill--yellow">73%</div></td>
-                <td><div class="pill pill--yellow">Low Risk 83%</div></td>
+                <td><div class="pill" [ngStyle]="{'background': utils.percentPillColor(plan.average_engagement)}">{{plan.average_engagement}}%</div></td>
+                <td><div class="pill" [ngStyle]="{'background': utils.percentPillColor(plan.average_outcome)}">{{plan.average_outcome}}%</div></td>
+                <td><div class="pill" [ngStyle]="{'background': utils.percentPillColor(plan.risk_level)}">{{utils.getRiskLevelText(plan.risk_level)}} {{plan.risk_level}}%</div></td>
                 <td class="noPad">
                   <button class="button button--icon button--icon--small"
                   (click)="openReassignPatients()">
@@ -112,7 +123,7 @@
             (click)="addPatientToPlan()">
               <i class="ss-plus"></i> Add Patient
             </button>
-            <div class="pagination">
+            <!-- <div class="pagination">
                 <button class="button button--icon button--icon--dis">
                     <i class="ss-standard ss-skipback"></i>
                 </button>
@@ -126,12 +137,12 @@
                 <button class="button button--icon">
                     <i class="ss-standard ss-skipforward"></i>
                 </button>
-            </div> <!--/.pagination-->
+            </div> -->
           </div> <!--/.paginationWrap-->
         </div> <!--/.tableWrap-->
       </div> <!--/.accordion__contents-->
     </div> <!--/.accordion__body-->
-    <div class="accordion__body" *ngIf="!patientsGrouped[facility.id]">
+    <div class="accordion__body" *ngIf="!facility.plans || facility.plans.length === 0">
       <div class="accordion__contents">
         <h2 class="center">No patients have been added to this care plan.</h2>
         <button class="button button--center button--iconText"

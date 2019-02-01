@@ -18,11 +18,13 @@
         (click)="showServiceAreaHelp = !showServiceAreaHelp">
           <i class="ss-help"></i>
         </button>
-        <div class="tool__tip" [ngClass]="{'isOpen': showServiceAreaHelp}">
-          <div class="tool__text">
-            Service Areas contain a group of care plans based on an area of service line.
+        <app-popover [visible]="showServiceAreaHelp" (visibleChange)="showServiceAreaHelp = $event;">
+          <div class="tool__tip isOpen">
+            <div class="tool__text">
+              Service Areas contain a group of care plans based on an area of service line.
+            </div>
           </div>
-        </div>
+        </app-popover>
       </div> <!--/.tool__anchor-->
       <h1 class="noMargin marRight8">Care Plans ({{carePlanTemplates.length}})</h1>
       <div class="tool__anchor">
@@ -30,11 +32,13 @@
         (click)="showCarePlanHelp=!showCarePlanHelp">
           <i class="ss-help"></i>
         </button>
-        <div class="tool__tip" [ngClass]="{'isOpen': showCarePlanHelp}">
-          <div class="tool__text">
-            Care Plans are condition specific plans for care management and patient engagement.
+        <app-popover [visible]="showCarePlanHelp" (visibleChange)="showCarePlanHelp = $event;">
+          <div class="tool__tip isOpen">
+            <div class="tool__text">
+              Care Plans are condition specific plans for care management and patient engagement.
+            </div>
           </div>
-        </div>
+        </app-popover>
       </div> <!--/.tool__anchor-->
     </div> <!--/.flex (for page title and tooltip)-->
     <div>
@@ -43,7 +47,7 @@
         <div class="drop__input" (click)="facilitiesOpen=!facilitiesOpen">
           All
         </div>
-        <app-popover [options]="facilitiesDropOptions" [(visible)]="facilitiesOpen">
+        <app-popover [options]="facilitiesDropOptions" [visible]="facilitiesOpen" (visibleChange)="facilitiesOpen = $event;">
           <ul class="drop__dropdown isOpen">
             <div class="drop__buttons">
               <button class="button button--iconText" (click)="clickCheckAllFacilities()">
@@ -77,11 +81,13 @@
         (click)="showAveragesHelp = !showAveragesHelp">
         <i class="ss-help"></i>
       </button>
-      <div class="tool__tip" [ngClass]="{'isOpen': showAveragesHelp}">
-        <div class="tool__text">
-          The Care Plan view provides an of all current Care Plans within Service Areas statistics across the entire organization.
+      <app-popover [visible]="showAveragesHelp" (visibleChange)="showAveragesHelp = $event;">
+        <div class="tool__tip isOpen">
+          <div class="tool__text">
+            The Care Plan view provides an of all current Care Plans within Service Areas statistics across the entire organization.
+          </div>
         </div>
-      </div>
+      </app-popover>
     </div> <!--/.tool__anchor-->
   </div>
   <div class="flex" *ngIf="averagesByCarePlan">
@@ -100,20 +106,20 @@
       </div>
       <div class="info__cell">
         <label>Avg Outcomes</label>
-        <div class="pill" [ngStyle]="{'background': getPillColor(averagesByCarePlan.average_outcome)}">
+        <div class="pill" [ngStyle]="{'background': utils.percentPillColor(averagesByCarePlan.average_outcome)}">
           {{averagesByCarePlan.average_outcome}}%
         </div>
       </div>
       <div class="info__cell">
         <label>Avg Engagement</label>
-        <div class="pill" [ngStyle]="{'background': getPillColor(averagesByCarePlan.average_engagement)}">
+        <div class="pill" [ngStyle]="{'background': utils.percentPillColor(averagesByCarePlan.average_engagement)}">
           {{averagesByCarePlan.average_engagement}}%
         </div>
       </div>
       <div class="info__cell">
         <label>Risk Level</label>
-        <div class="pill" [ngStyle]="{'background': getPillColor(averagesByCarePlan.risk_level)}">
-          {{getRiskLevelText(averagesByCarePlan.risk_level)}} {{averagesByCarePlan.risk_level}}%
+        <div class="pill" [ngStyle]="{'background': utils.percentPillColor(averagesByCarePlan.risk_level)}">
+          {{utils.getRiskLevelText(averagesByCarePlan.risk_level)}} {{averagesByCarePlan.risk_level}}%
         </div>
       </div>
     </div> <!--/.info-->
@@ -123,10 +129,10 @@
       <span class="accordion__title">{{plan.serviceAreaObj.name}} ({{plan.templates.length}}) ({{plan.totalPatients}})</span>
       <div class="accordion__right">
         <div class="pill pill--yellow marRight16">
-          {{plan.serviceAreaObj.acronym|uppercase}} 4:11
+          Time 4:11
         </div>
-        <div class="pill pill--red">
-          Med Risk 64%
+        <div class="pill" [ngStyle]="{'background': utils.percentPillColor(totalRiskLevel(plan.templates))}">
+          {{utils.getRiskLevelText(totalRiskLevel(plan.templates))}} {{totalRiskLevel(plan.templates)}}%
         </div>
         <div class="accordion__arrow">
           <i class="ss-standard ss-navigateright"></i>
@@ -183,18 +189,18 @@
               </td>
               <td>{{item.duration_weeks}} weeks</td>
               <td>
-                <div class="pill" [ngStyle]="{'background': getPillColor(item.averages.average_engagement)}">
+                <div class="pill" [ngStyle]="{'background': utils.percentPillColor(item.averages.average_engagement)}">
                   {{item.averages.average_engagement}}%
                 </div>
               </td>
               <td>
-                <div class="pill" [ngStyle]="{'background': getPillColor(item.averages.average_outcome)}">
+                <div class="pill" [ngStyle]="{'background': utils.percentPillColor(item.averages.average_outcome)}">
                   {{item.averages.average_outcome}}%
                 </div>
               </td>
               <td>
-                <div class="pill" [ngStyle]="{'background': getPillColor(item.averages.risk_level)}">
-                  {{getRiskLevelText(item.averages.risk_level)}} {{item.averages.risk_level}}%
+                <div class="pill" [ngStyle]="{'background': utils.percentPillColor(item.averages.risk_level)}">
+                  {{utils.getRiskLevelText(item.averages.risk_level)}} {{item.averages.risk_level}}%
                 </div>
               </td>
               <!-- <td>

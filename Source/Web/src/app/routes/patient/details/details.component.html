@@ -3,26 +3,40 @@
     <app-patient-header [currentPage]="'details'"></app-patient-header>
   </div> <!--/.flex-->
 
-  <div class="datepicker marBottom32">
-    <button class="button button--icon">
-      <i class="ss-standard ss-navigateleft"></i>
-    </button>
-    <div class="datepicker__date" (click)="showDate=!showDate">
-      Select Date
+  <div class="flex alignCenter justifySpaceBetween marBottom32">
+    <div>
+      <label class="styledInput">
+        <input type="checkbox" class="styledInput__input" [(ngModel)]="isUsingMobile"/>
+        <span class="styledInput__box"></span>
+        Using Mobile Application
+      </label>
     </div>
-    <app-date-picker class="datepicker__picker" [ngClass]="{ 'isOpen' : showDate }"></app-date-picker>
-    <button class="button button--icon">
-      <i class="ss-standard ss-navigateright"></i>
-    </button>
-  </div> <!--/.datepicker-->
+    <div>
+      <div class="datepicker">
+        <button class="button button--icon" (click)="prevDate()">
+          <i class="ss-standard ss-navigateleft"></i>
+        </button>
+        <div class="datepicker__date" (click)="showDate=!showDate">
+          <span *ngIf="!selectedDate">Select Date</span>
+          <span *ngIf="selectedDate">{{selectedDate.format('ddd, MMM, D')}}</span>
+        </div>
+        <app-popover [visible]="showDate" (visibleChange)="showDate = $event;" [options]="datePickerOptions">
+          <app-date-picker class="datepicker__picker isOpen" [selected]="selectedDate" (selectedChange)="setSelectedDay($event)"></app-date-picker>
+        </app-popover>
+        <button class="button button--icon" (click)="nextDate()">
+          <i class="ss-standard ss-navigateright"></i>
+        </button>
+      </div> <!--/.datepicker-->
+    </div>
+  </div>
 
-  <div class="accordion" [ngClass]="{ 'isOpen' : accordPD1Open }">
-    <div class="accordion__head" (click)="accordPD1Open=!accordPD1Open">
-      <span class="accordion__title">Care Plan Goals - Today (2)</span>
+  <div class="accordion" [ngClass]="{ 'isOpen' : goalAccordionOpen }">
+    <div class="accordion__head" (click)="goalAccordionOpen=!goalAccordionOpen">
+      <span class="accordion__title">Care Plan Goals - {{tableHeaderDate()}} ({{planGoals.length}})</span>
       <div class="accordion__right">
-        <span class="marRight8">2 Goals</span>
-        <div class="pill pill--lime">
-          4.5/5
+        <span class="marRight8">{{planGoals.length}} Goals</span>
+        <div class="pill" [ngStyle]="{'background': utils.percentPillColor(goalsPercentage())}">
+          {{goalsAverage()}}/5
         </div>
         <div class="accordion__arrow">
           <i class="ss-standard ss-navigateright"></i>
@@ -31,7 +45,7 @@
     </div> <!--/.accordion__head-->
     <div class="accordion__body">
       <div class="accordion__contents">
-        <table>
+        <table class="fullWidth">
           <thead>
             <tr>
               <th class="thSortable thSortable--sortDown">
@@ -46,51 +60,48 @@
               <th class="thSortable">
                 <span class="thSortable__text">Comments</span>
               </th>
-              <th></th>
+              <th>
+                <div class="tool justifyCenter">
+                  <span>Update</span>
+                  <div class="tool__anchor">
+                    <button class="button button--icon button--icon--small"
+                    (click)="goalUpdateTTOpen=!goalUpdateTTOpen">
+                      <i class="ss-help"></i>
+                    </button>
+                    <app-popover [visible]="goalUpdateTTOpen" (visibleChange)="goalUpdateTTOpen = $event;">
+                      <div class="tool__tip isOpen">
+                        <div class="tool__text">
+                          You are able to manually update the progress of patient's care plan goals.
+                        </div>
+                      </div>
+                    </app-popover>
+                  </div>
+                </div>
+              </th>
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td class="left">Manage Depression Symptoms</td>
+            <tr *ngFor="let goal of planGoals">
+              <td class="left">{{goal.name}}</td>
               <td>
-                <div class="pill pill--yellow">
-                  4/5
+                <div class="pill" [ngStyle]="{'background': utils.percentPillColor(goalPercentage(goal.progress))}">
+                  {{goal.progress}}/5
                 </div>
               </td>
-              <td>May 15, 2018</td>
+              <td>{{moment(goal.lastUpdated).format('MMM D, YYYY')}}</td>
               <td>
-                <a class="button button--icon button--center relative"
-                (click)="openGoalComments()">
+                <a class="button button--icon button--icon--small button--center relative"
+                  (click)="openGoalComments()">
                   <i class="ss-chats"></i>
-                  <div class="badge">
-                    2
+                  <div class="badge" *ngIf="goal.comments.length > 0">
+                    {{goal.comments.length}}
                   </div>
                 </a>
               </td>
               <td>
-                <button class="button button--iconText"
-                (click)="updateGoal()">
-                  <i class="ss-write"></i> Update
-                </button>
-              </td>
-            </tr>
-            <tr>
-              <td class="left">Healthier Eating Habits</td>
-              <td>
-                <div class="pill pill--lime">
-                  5/5
-                </div>
-              </td>
-              <td>Mar 24, 2018</td>
-              <td>
-                <a class="button button--icon button--center relative">
-                  <i class="ss-chats"></i>
+                <a class="button button--icon button--icon--small button--center relative" (click)="updateGoal()">
+                  <i class="ss-write"></i>
                 </a>
-              </td>
-              <td>
-                <button class="button button--iconText">
-                  <i class="ss-write"></i> Update
-                </button>
               </td>
             </tr>
           </tbody>
@@ -103,13 +114,13 @@
     </div> <!--/.accordion__body-->
   </div> <!--/.accordion (for care plan goals)-->
 
-  <div class="accordion" [ngClass]="{ 'isOpen' : accordPD2Open }">
-    <div class="accordion__head" (click)="accordPD2Open=!accordPD2Open">
-      <span class="accordion__title">My Tasks - Today (2)</span>
+  <div class="accordion" [ngClass]="{ 'isOpen' : userTasksOpen }">
+    <div class="accordion__head" (click)="userTasksOpen=!userTasksOpen">
+      <span class="accordion__title">My Tasks - {{tableHeaderDate()}} ({{userTasks.length}})</span>
       <div class="accordion__right">
-        <span class="marRight8">1/2 Completed</span>
-        <div class="pill pill--red">
-          50%
+        <span class="marRight8">{{completedUserTasks()}}/{{userTasks.length}} Completed</span>
+        <div class="pill" [ngStyle]="{'background': utils.percentPillColor(userTasksPercentage())}">
+          {{userTasksPercentage()}}%
         </div>
         <div class="accordion__arrow">
           <i class="ss-standard ss-navigateright"></i>
@@ -118,7 +129,7 @@
     </div> <!--/.accordion__head-->
     <div class="accordion__body">
       <div class="accordion__contents">
-        <table>
+        <table class="fullWidth">
           <thead>
             <tr>
               <th class="thSortable">
@@ -138,14 +149,16 @@
                   <span class="thSortable__text">Occur</span>
                   <div class="tool__anchor">
                     <button class="button button--icon button--icon--small"
-                    (click)="tooltipPD200Open=!tooltipPD200Open">
+                    (click)="myTaskOccurTTOpen=!myTaskOccurTTOpen">
                       <i class="ss-help"></i>
                     </button>
-                    <div class="tool__tip tool__tip--bottom tool__tip--right" [ngClass]="{ 'isOpen' : tooltipPD200Open }">
-                      <div class="tool__text">
-                        This is the number of times the provider has seen this item, out of the total times it will occurr in this care plan.
+                    <app-popover [visible]="myTaskOccurTTOpen" (visibleChange)="myTaskOccurTTOpen = $event;">
+                      <div class="tool__tip isOpen">
+                        <div class="tool__text">
+                          This is the number of times the provider has seen this item, out of the total times it will occurr in this care plan.
+                        </div>
                       </div>
-                    </div>
+                    </app-popover>
                   </div>
                 </div>
               </th>
@@ -153,37 +166,19 @@
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td class="left">Review Patient Data</td>
-              <td>8:00 AM</td>
-              <td>5:00 PM</td>
+            <tr *ngFor="let task of userTasks">
+              <td class="left">{{task.name}}</td>
+              <td>{{format24Hour(task.appear)}}</td>
+              <td>{{format24Hour(task.due)}}</td>
               <td>
-                <div class="pill pill--lime">
-                  done
+                <div class="pill pill--status" [ngStyle]="{'background': utils.pillColorStatus(task.status)}">
+                  {{task.status}}
                 </div>
               </td>
-              <td>1 of 12</td>
+              <td>{{task.currentOccurance}} of {{task.totalOccurances}}</td>
               <td>
-                <button class="button button--iconText"
-                (click)="openRecordResults()">
-                  <i class="ss-write"></i> Edit Result
-                </button>
-              </td>
-            </tr>
-            <tr>
-              <td class="left">Follow up on labs</td>
-              <td>9:00 AM</td>
-              <td>10:00 PM</td>
-              <td>
-                <div class="pill pill--red">
-                  late
-                </div>
-              </td>
-              <td>1 of 1</td>
-              <td>
-                <button class="button button--iconText"
-                (click)="openRecordResults()">
-                  <i class="ss-write"></i> Record Result
+                <button class="button button--center relative completeButton" *ngIf="task.status !== 'done'" (click)="openRecordResults(task)">
+                  Complete
                 </button>
               </td>
             </tr>
@@ -197,13 +192,13 @@
     </div> <!--/.accordion__body-->
   </div> <!--/.accordion (for my tasks)-->
 
-  <div class="accordion" [ngClass]="{ 'isOpen' : accordPD3Open }">
-    <div class="accordion__head" (click)="accordPD3Open=!accordPD3Open">
-      <span class="accordion__title">Care Team Tasks - Today (2)</span>
+  <div class="accordion" [ngClass]="{ 'isOpen' : teamTasksOpen }">
+    <div class="accordion__head" (click)="teamTasksOpen=!teamTasksOpen">
+      <span class="accordion__title">Care Team Tasks - {{tableHeaderDate()}} ({{teamTasks.length}})</span>
       <div class="accordion__right">
-        <span class="marRight8">2/2 Completed</span>
-        <div class="pill pill--lime">
-          100%
+        <span class="marRight8">{{completedTeamTasks()}}/{{teamTasks.length}} Completed</span>
+        <div class="pill" [ngStyle]="{'background': utils.percentPillColor(teamTasksPercentage())}">
+          {{teamTasksPercentage()}}%
         </div>
         <div class="accordion__arrow">
           <i class="ss-standard ss-navigateright"></i>
@@ -212,7 +207,7 @@
     </div> <!--/.accordion__head-->
     <div class="accordion__body">
       <div class="accordion__contents">
-        <table>
+        <table class="fullWidth">
           <thead>
             <tr>
               <th class="thSortable">
@@ -232,47 +227,34 @@
                   <span class="thSortable__text">Occur</span>
                   <div class="tool__anchor">
                     <button class="button button--icon button--icon--small"
-                    (click)="tooltipPD300Open=!tooltipPD300Open">
+                    (click)="teamTaskOccurTTOpen=!teamTaskOccurTTOpen">
                       <i class="ss-help"></i>
                     </button>
-                    <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipPD300Open }">
-                      <div class="tool__text">
-                        This is the number of times the provider has seen this item, out of the total times it will occur in this care plan.
+                    <app-popover [visible]="teamTaskOccurTTOpen" (visibleChange)="teamTaskOccurTTOpen = $event;">
+                      <div class="tool__tip isOpen">
+                        <div class="tool__text">
+                          This is the number of times the provider has seen this item, out of the total times it will occurr in this care plan.
+                        </div>
                       </div>
-                    </div>
+                    </app-popover>
                   </div>
                 </div>
               </th>
-              <th class="left">Assignee (Role)</th>
+              <th class="left">Responsible Person</th>
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td class="left">Review Patient Data</td>
-              <td>8:00 AM</td>
-              <td>5:00 PM</td>
+            <tr *ngFor="let task of teamTasks">
+              <td class="left">{{task.name}}</td>
+              <td>{{format24Hour(task.appear)}}</td>
+              <td>{{format24Hour(task.due)}}</td>
               <td>
-                <div class="pill pill--lime">
-                  done
+                <div class="pill pill--status" [ngStyle]="{'background': utils.pillColorStatus(task.status)}">
+                  {{task.status}}
                 </div>
               </td>
-              <td>1 of 12</td>
+              <td>{{task.currentOccurance}} of {{task.totalOccurances}}</td>
               <td class="left">
-                John Phillips, MD (Psychiatric Consultant)<br />
-                Susan Jorgensen, CRNA (CM)
-              </td>
-            </tr>
-            <tr>
-              <td class="left">CT Coordination</td>
-              <td>9:00 AM</td>
-              <td>10:00 AM</td>
-              <td>
-                <div class="pill pill--lime">
-                  done
-                </div>
-              </td>
-              <td>1 of 12</td>
-              <td>
                 John Phillips, MD (Psychiatric Consultant)
               </td>
             </tr>
@@ -286,13 +268,13 @@
     </div> <!--/.accordion__body-->
   </div> <!--/.accordion (for care team tasks)-->
 
-  <div class="accordion" [ngClass]="{ 'isOpen' : accordPD4Open }">
-    <div class="accordion__head" (click)="accordPD4Open=!accordPD4Open">
-      <span class="accordion__title">Patient Tasks - Today (6)</span>
+  <div class="accordion" [ngClass]="{ 'isOpen' : patientTasksOpen }">
+    <div class="accordion__head" (click)="patientTasksOpen=!patientTasksOpen">
+      <span class="accordion__title">Patient Tasks - {{tableHeaderDate()}} ({{patientTasks.length}})</span>
       <div class="accordion__right">
-        <span class="marRight8">3/6 Completed</span>
-        <div class="pill pill--purple">
-          50%
+        <span class="marRight8">{{completedPatientTasks()}}/{{patientTasks.length}} Completed</span>
+        <div class="pill" [ngStyle]="{'background': utils.percentPillColor(patientTasksPercentage())}">
+          {{patientTasksPercentage()}}%
         </div>
         <div class="accordion__arrow">
           <i class="ss-standard ss-navigateright"></i>
@@ -301,7 +283,7 @@
     </div> <!--/.accordion__head-->
     <div class="accordion__body">
       <div class="accordion__contents">
-        <table>
+        <table class="fullWidth">
           <thead>
             <tr>
               <th class="thSortable">
@@ -324,14 +306,16 @@
                   <span class="thSortable__text">Occur</span>
                   <div class="tool__anchor">
                     <button class="button button--icon button--icon--small"
-                    (click)="tooltipPD400Open=!tooltipPD400Open">
+                    (click)="patientTaskOccurTTOpen=!patientTaskOccurTTOpen">
                       <i class="ss-help"></i>
                     </button>
-                    <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipPD400Open }">
-                      <div class="tool__text">
-                        This is the number of times the patient has seen this item, out of the total times it will occurr in this care plan.
+                    <app-popover [visible]="patientTaskOccurTTOpen" (visibleChange)="patientTaskOccurTTOpen = $event;">
+                      <div class="tool__tip isOpen">
+                        <div class="tool__text">
+                          This is the number of times the patient has seen this item, out of the total times it will occurr in this care plan.
+                        </div>
                       </div>
-                    </div>
+                    </app-popover>
                   </div>
                 </div>
               </th>
@@ -340,120 +324,72 @@
                   <span class="thSortable__text">Avg Eng</span>
                   <div class="tool__anchor">
                     <button class="button button--icon button--icon--small"
-                    (click)="tooltipPD401Open=!tooltipPD401Open">
+                    (click)="patientTaskAvgEngTTOpen=!patientTaskAvgEngTTOpen">
                       <i class="ss-help"></i>
                     </button>
-                    <div class="tool__tip tool__tip--bottom tool__tip--right" [ngClass]="{ 'isOpen' : tooltipPD401Open }">
-                      <div class="tool__text">
-                        This number shows the patient’s average engagement with this item over the course of the care plan thus far.
+                    <app-popover [visible]="patientTaskAvgEngTTOpen" (visibleChange)="patientTaskAvgEngTTOpen = $event;">
+                      <div class="tool__tip isOpen">
+                        <div class="tool__text">
+                          This number shows the patient’s average engagement with this item over the course of the care plan thus far.
+                        </div>
                       </div>
-                    </div>
+                    </app-popover>
+                  </div>
+                </div>
+              </th>
+              <th class="thSortable">
+                <div class="tool justifyCenter">
+                  <span class="thSortable__text">Update</span>
+                  <div class="tool__anchor">
+                    <button class="button button--icon button--icon--small"
+                    (click)="patientTaskUpdateTTOpen=!patientTaskUpdateTTOpen">
+                      <i class="ss-help"></i>
+                    </button>
+                    <app-popover [visible]="patientTaskUpdateTTOpen" (visibleChange)="patientTaskUpdateTTOpen = $event;">
+                      <div class="tool__tip isOpen">
+                        <div class="tool__text">
+                          You are able to update the patient's information.  This will override anything the patient has already submitted.
+                        </div>
+                      </div>
+                    </app-popover>
                   </div>
                 </div>
               </th>
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td class="left">Medication</td>
-              <td class="left">Zoloft (10mg)</td>
-              <td>8:00 AM</td>
-              <td>8:30 AM</td>
+            <tr *ngFor="let task of patientTasks">
+              <td class="left">{{task.type | titlecase}}</td>
+              <td class="left">{{task.name}}</td>
+              <td>{{format24Hour(task.appear)}}</td>
+              <td>{{format24Hour(task.due)}}</td>
               <td>
-                <div class="pill pill--status pill--purple">
-                  missed
+                <ng-container *ngIf="isUpdatingPatientTask(task)">
+                  <div class="styledSelect">
+                    <select class="styledSelect__select" [(ngModel)]="task.status">
+                      <option *ngFor="let status of patientTaskStatusChoices" [ngValue]="status">{{status}}</option>
+                    </select>
+                  </div>
+                </ng-container>
+                <ng-container *ngIf="!isUpdatingPatientTask(task)">
+                  <div class="pill pill--status" [ngStyle]="{'background': utils.pillColorStatus(task.status)}">
+                    {{task.status}}
+                  </div>
+                </ng-container>
+              </td>
+              <td>{{task.currentOccurance}} of {{task.totalOccurances}}</td>
+              <td>
+                <div class="pill" [ngStyle]="{'background': utils.percentPillColor(task.averageEngagement * 100)}">
+                  {{floor(task.averageEngagement * 100)}}%
                 </div>
               </td>
-              <td>37 of 56</td>
               <td>
-                <div class="pill pill--lime">
-                  99%
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <td class="left">Task</td>
-              <td class="left">30 min exercise</td>
-              <td>10:00 AM</td>
-              <td>5:00 PM</td>
-              <td>
-                <div class="pill pill--status pill--blue">
-                  open
-                </div>
-              </td>
-              <td>37 of 56</td>
-              <td>
-                <div class="pill pill--yellow">
-                  80%
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <td class="left">Vital</td>
-              <td class="left">Blood Pressure</td>
-              <td>12:00 PM</td>
-              <td>12:30 PM</td>
-              <td>
-                <div class="pill pill--status pill--lime">
-                  done
-                </div>
-              </td>
-              <td>37 of 56</td>
-              <td>
-                <div class="pill pill--lime">
-                  90%
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <td class="left">Vital</td>
-              <td class="left">Resting Heart Rate</td>
-              <td>12:00 PM</td>
-              <td>2:00 PM</td>
-              <td>
-                <div class="pill pill--status pill--red">
-                  late
-                </div>
-              </td>
-              <td>37 of 56</td>
-              <td>
-                <div class="pill pill--lime">
-                  90%
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <td class="left">Symptoms</td>
-              <td class="left">Daily Symptoms Report</td>
-              <td>8:00 PM</td>
-              <td>8:30 PM</td>
-              <td>
-                <div class="pill">
-                  pending
-                </div>
-              </td>
-              <td>37 of 56</td>
-              <td>
-                <div class="pill pill--lime">
-                  92%
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <td class="left">Assessment</td>
-              <td class="left">General Well-being</td>
-              <td>8:00 PM</td>
-              <td>8:30 PM</td>
-              <td>
-                <div class="pill pill--status">
-                  pending
-                </div>
-              </td>
-              <td>37 of 56</td>
-              <td>
-                <div class="pill pill--lime">
-                  92%
-                </div>
+                <a class="button button--icon--small button--icon button--center relative" *ngIf="isUpdatingPatientTask(task)" (click)="clickSavePatientTask(task)">
+                  <i class="ss-floppydisk"></i>
+                </a>
+                <a class="button button--icon--small button--icon button--center relative" *ngIf="!isUpdatingPatientTask(task)" (click)="clickUpdatePatientTask(task)">
+                  <i class="ss-write"></i>
+                </a>
               </td>
             </tr>
           </tbody>
@@ -462,18 +398,32 @@
     </div> <!--/.accordion__body-->
   </div> <!--/.accordion (for patient tasks)-->
 
-  <div class="accordion" [ngClass]="{ 'isOpen' : accordPD5Open }">
-    <div class="accordion__head" (click)="accordPD5Open=!accordPD5Open">
-      <span class="accordion__title">Assessment Results - Today (3)</span>
+  <div class="accordion" [ngClass]="{ 'isOpen' : assessmentResultsOpen }">
+    <div class="accordion__head" (click)="assessmentResultsOpen=!assessmentResultsOpen">
+      <span class="accordion__title">Assessment Results - {{tableHeaderDate()}} ({{assessmentResults.length}})</span>
       <div class="accordion__right">
-        <span class="marRight8">2 Outcome Questions</span>
-        <div class="pill pill--red marRight24">
-          3.5/5
-        </div>
-        <span class="marRight8">1 Satisfaction Question</span>
-        <div class="pill pill--lime">
-          5/5
-        </div>
+        <span class="marRight8">{{totalOutcomeQuestions()}} Outcome Questions</span>
+        <ng-container *ngIf="totalOutcomeQuestions() > 0">
+          <div class="pill marRight24" [ngStyle]="{'background': utils.percentPillColor(averageOutcomePercentage())}">
+            {{averageOutcomeScore()}}/5
+          </div>
+        </ng-container>
+        <ng-container *ngIf="totalOutcomeQuestions() === 0">
+          <div class="pill marRight24">
+            N/A
+          </div>
+        </ng-container>
+          <span class="marRight8">{{totalSatisfactionQuestions()}} Satisfaction Question</span>
+        <ng-container *ngIf="totalSatisfactionQuestions() > 0">
+          <div class="pill" [ngStyle]="{'background': utils.percentPillColor(averageSatisfactionPercentage())}">
+            {{averageSatisfactionScore()}}/5
+          </div>
+        </ng-container>
+        <ng-container *ngIf="totalSatisfactionQuestions() === 0">
+          <div class="pill">
+            N/A
+          </div>
+        </ng-container>
         <div class="accordion__arrow">
           <i class="ss-standard ss-navigateright"></i>
         </div>
@@ -481,373 +431,188 @@
     </div> <!--/.accordion__head-->
     <div class="accordion__body">
       <div class="accordion__contents">
-
-        <div class="flex alignCenter">
-          <h3 class="noMargin marRight24">Depression Review</h3>
-          <h4 class="noMargin">Tracks Outcome</h4>
-          <div class="tool__anchor">
-            <button class="button button--icon button--icon--small"
-            (click)="tooltipPD500Open=!tooltipPD500Open">
-              <i class="ss-help"></i>
-            </button>
-            <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipPD500Open }">
-              <div class="tool__text">
-                Assessments that track outcome are included when calculating the patient’s outcomes.
-              </div>
+        <ng-container *ngFor="let assessment of assessmentResults">
+          <div class="flex alignCenter">
+            <h3 class="noMargin marRight24">{{assessment.name}}</h3>
+            <h4 class="noMargin" *ngIf="assessment.tracksOutcome">Tracks Outcome</h4>
+            <div class="tool__anchor" *ngIf="assessment.tracksOutcome">
+            	<button class="button button--icon button--icon--small" (click)="assmntOutcomeTTOpen[assessment.id]=!assmntOutcomeTTOpen[assessment.id]">
+            		<i class="ss-help"></i>
+            	</button>
+              <app-popover [visible]="assmntOutcomeTTOpen[assessment.id]" (visibleChange)="assmntOutcomeTTOpen[assessment.id] = $event;">
+                <div class="tool__tip isOpen">
+                  <div class="tool__text">
+                    Assessments that track outcome are included when calculating the patient’s outcomes.
+                  </div>
+                </div>
+              </app-popover>
+            </div>
+            <h4 class="noMargin" *ngIf="assessment.tracksSatisfaction">Tracks Satisfaction</h4>
+            <div class="tool__anchor" *ngIf="assessment.tracksSatisfaction">
+              <button class="button button--icon button--icon--small"
+              (click)="assmntSatisfactionTTOpen[assessment.id]=!assmntSatisfactionTTOpen[assessment.id]">
+                <i class="ss-help"></i>
+              </button>
+              <app-popover [visible]="assmntSatisfactionTTOpen[assessment.id]" (visibleChange)="assmntSatisfactionTTOpen[assessment.id] = $event;">
+                <div class="tool__tip isOpen">
+                  <div class="tool__text">
+                    Assessments that track satisfaction are included when calculating the patient’s satisfaction score.
+                  </div>
+                </div>
+              </app-popover>
             </div>
           </div>
-        </div>
-        <table class="marBottom48">
-          <thead>
-            <tr>
-              <th class="thSortable">
-                <span class="thSortable__text thSortable__text--left">Question</span>
-              </th>
-              <th class="thSortable thSortable--sortDown">
-                <span class="thSortable__text">Outcome</span>
-              </th>
-              <th class="thSortable">
-                <div class="tool justifyCenter">
-                  <span class="thSortable__text">Occur</span>
-                  <div class="tool__anchor">
-                    <button class="button button--icon button--icon--small"
-                    (click)="tooltipPD501Open=!tooltipPD501Open">
-                      <i class="ss-help"></i>
-                    </button>
-                    <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipPD501Open }">
-                      <div class="tool__text">
-                        This is the number of times the patient has seen this item, out of the total times it will occurr in this care plan.
-                      </div>
+          <table class="fullWidth marBottom48">
+            <thead>
+              <tr>
+                <th class="thSortable">
+                  <span class="thSortable__text thSortable__text--left">Question</span>
+                </th>
+                <th class="thSortable thSortable--sortDown">
+                  <span class="thSortable__text">Outcome</span>
+                </th>
+                <th class="thSortable">
+                  <div class="tool justifyCenter">
+                    <span class="thSortable__text">Occur</span>
+                    <div class="tool__anchor">
+                      <button class="button button--icon button--icon--small"
+                      (click)="assmntOccurTTOpen[assessment.id]=!assmntOccurTTOpen[assessment.id]">
+                        <i class="ss-help"></i>
+                      </button>
+                      <app-popover [visible]="assmntOccurTTOpen[assessment.id]" (visibleChange)="assmntOccurTTOpen[assessment.id] = $event;">
+                        <div class="tool__tip isOpen">
+                          <div class="tool__text">
+                            This is the number of times the patient has seen this item, out of the total times it will occurr in this care plan.
+                          </div>
+                        </div>
+                      </app-popover>
                     </div>
                   </div>
-                </div>
-              </th>
-              <th class="thSortable">
-                <div class="tool justifyCenter">
-                  <span class="thSortable__text">Vs Prev</span>
-                  <div class="tool__anchor">
-                    <button class="button button--icon button--icon--small"
-                    (click)="tooltipPD502Open=!tooltipPD502Open">
-                      <i class="ss-help"></i>
-                    </button>
-                    <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipPD502Open }">
-                      <div class="tool__text">
-                        This column shows how these results compare to the patient’s previous response to these questions.
-                      </div>
+                </th>
+                <th class="thSortable">
+                  <div class="tool justifyCenter">
+                    <span class="thSortable__text">Vs Prev</span>
+                    <div class="tool__anchor">
+                      <button class="button button--icon button--icon--small"
+                      (click)="assmntVsPrevTTOpen[assessment.id]=!assmntVsPrevTTOpen[assessment.id]">
+                        <i class="ss-help"></i>
+                      </button>
+                      <app-popover [visible]="assmntVsPrevTTOpen[assessment.id]" (visibleChange)="assmntVsPrevTTOpen[assessment.id] = $event;">
+                        <div class="tool__tip isOpen">
+                          <div class="tool__text">
+                            This column shows how these results compare to the patient’s previous response to these questions.
+                          </div>
+                        </div>
+                      </app-popover>
                     </div>
                   </div>
-                </div>
-              </th>
-              <th class="thSortable">
-                <div class="tool justifyCenter">
-                  <span class="thSortable__text">Vs Next</span>
-                  <div class="tool__anchor">
-                    <button class="button button--icon button--icon--small"
-                    (click)="tooltipPD503Open=!tooltipPD503Open">
-                      <i class="ss-help"></i>
-                    </button>
-                    <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipPD503Open }">
-                      <div class="tool__text">
-                        This column shows how these results compare to the patient’s next response to these questions.
-                      </div>
+                </th>
+                <th class="thSortable">
+                  <div class="tool justifyCenter">
+                    <span class="thSortable__text">Vs Next</span>
+                    <div class="tool__anchor">
+                      <button class="button button--icon button--icon--small"
+                      (click)="assmntVsNextTTOpen[assessment.id]=!assmntVsNextTTOpen[assessment.id]">
+                        <i class="ss-help"></i>
+                      </button>
+                      <app-popover [visible]="assmntVsNextTTOpen[assessment.id]" (visibleChange)="assmntVsNextTTOpen[assessment.id] = $event;">
+                        <div class="tool__tip isOpen">
+                          <div class="tool__text">
+                            This column shows how these results compare to the patient’s next response to these questions.
+                          </div>
+                        </div>
+                      </app-popover>
                     </div>
                   </div>
-                </div>
-              </th>
-              <th class="thSortable">
-                <div class="tool justifyCenter">
-                  <span class="thSortable__text">Vs Care Plan</span>
-                  <div class="tool__anchor">
-                    <button class="button button--icon button--icon--small"
-                    (click)="tooltipPD504Open=!tooltipPD504Open">
-                      <i class="ss-help"></i>
-                    </button>
-                    <div class="tool__tip tool__tip--bottom tool__tip--right" [ngClass]="{ 'isOpen' : tooltipPD504Open }">
-                      <div class="tool__text">
-                        This column shows how these results compare to the patient's average responses to these questions over the course of the care plan.
-                      </div>
+                </th>
+                <th class="thSortable">
+                  <div class="tool justifyCenter">
+                    <span class="thSortable__text">Vs Care Plan</span>
+                    <div class="tool__anchor">
+                      <button class="button button--icon button--icon--small"
+                      (click)="assmntVsPlanTTOpen[assessment.id]=!assmntVsPlanTTOpen[assessment.id]">
+                        <i class="ss-help"></i>
+                      </button>
+                      <app-popover [visible]="assmntVsPlanTTOpen[assessment.id]" (visibleChange)="assmntVsPlanTTOpen[assessment.id] = $event;">
+                        <div class="tool__tip isOpen">
+                          <div class="tool__text">
+                            This column shows how these results compare to the patient's average responses to these questions over the course of the care plan.
+                          </div>
+                        </div>
+                      </app-popover>
                     </div>
                   </div>
-                </div>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td class="left">Rate your happiness level</td>
-              <td>
-                <div class="pill pill--yellow">
-                  4/5
-                </div>
-              </td>
-              <td>37 of 56</td>
-              <td>
-                <div class="iconText">
-                  <i class="iconText__icon iconText__icon--noTop ss-standard ss-up iconSmall iconLime"></i> better
-                </div>
-              </td>
-              <td>
-                n/a
-              </td>
-              <td>
-                <div class="iconText">
-                  <i class="iconText__icon iconText__icon--noTop ss-standard ss-hyphen iconSmall"></i> avg
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <td class="left">Rate your pain level</td>
-              <td>
-                <div class="pill pill--red">
-                  3/5
-                </div>
-              </td>
-              <td>37 of 56</td>
-              <td>
-                <div class="iconText">
-                  <i class="iconText__icon iconText__icon--noTop ss-standard ss-down iconSmall iconRed"></i> worse
-                </div>
-              </td>
-              <td>
-                n/a
-              </td>
-              <td>
-                <div class="iconText">
-                  <i class="iconText__icon iconText__icon--noTop ss-standard ss-down iconSmall iconRed"></i> worse
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-
-        <div class="flex alignCenter">
-          <h3 class="noMargin marRight24">Satisfaction Review</h3>
-          <h4 class="noMargin">Tracks Satisfaction</h4>
-          <div class="tool__anchor">
-            <button class="button button--icon button--icon--small"
-            (click)="tooltipPD505Open=!tooltipPD505Open">
-              <i class="ss-help"></i>
-            </button>
-            <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipPD505Open }">
-              <div class="tool__text">
-                Assessments that track satisfaction are included when calculating the patient’s satisfaction score.
-              </div>
-            </div>
-          </div>
-        </div>
-        <table class="marBottom48">
-          <thead>
-            <tr>
-              <th class="thSortable">
-                <span class="thSortable__text thSortable__text--left">Question</span>
-              </th>
-              <th class="thSortable thSortable--sortDown">
-                <span class="thSortable__text">Outcome</span>
-              </th>
-              <th class="thSortable">
-                <div class="tool justifyCenter">
-                  <span class="thSortable__text">Occur</span>
-                  <div class="tool__anchor">
-                    <button class="button button--icon button--icon--small"
-                    (click)="tooltipPD506Open=!tooltipPD506Open">
-                      <i class="ss-help"></i>
-                    </button>
-                    <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipPD506Open }">
-                      <div class="tool__text">
-                        This is the number of times the patient has seen this item, out of the total times it will occurr in this care plan.
-                      </div>
+                </th>
+                <th class="thSortable">
+                  <div class="tool justifyCenter">
+                    <span class="thSortable__text">Update</span>
+                    <div class="tool__anchor">
+                      <button class="button button--icon button--icon--small"
+                      (click)="assmntUpdateTTOpen[assessment.id]=!assmntUpdateTTOpen[assessment.id]">
+                        <i class="ss-help"></i>
+                      </button>
+                      <app-popover [visible]="assmntUpdateTTOpen[assessment.id]" (visibleChange)="assmntUpdateTTOpen[assessment.id] = $event;">
+                        <div class="tool__tip isOpen">
+                          <div class="tool__text">
+                            You are able to update the patient's information.  This will override anything the patient has already submitted.
+                          </div>
+                        </div>
+                      </app-popover>
                     </div>
                   </div>
-                </div>
-              </th>
-              <th class="thSortable">
-                <div class="tool justifyCenter">
-                  <span class="thSortable__text">Vs Prev</span>
-                  <div class="tool__anchor">
-                    <button class="button button--icon button--icon--small"
-                    (click)="tooltipPD507Open=!tooltipPD507Open">
-                      <i class="ss-help"></i>
-                    </button>
-                    <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipPD507Open }">
-                      <div class="tool__text">
-                        This column shows how these results compare to the patient’s previous response to these questions.
-                      </div>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let question of assessment.questions">
+                <td class="left">{{question.text}}</td>
+                <td>
+                  <ng-container *ngIf="!isUpdatingAssessmentResult(question)">
+                    <div class="pill" [ngStyle]="{'background': utils.percentPillColor(outcomePercentage(question.outcome))}">
+                      {{question.outcome}}/5
                     </div>
+                  </ng-container>
+                  <ng-container *ngIf="isUpdatingAssessmentResult(question)">
+                    <input type="number" min="0" max="5" class="input" [(ngModel)]="question.outcome" />
+                  </ng-container>
+                </td>
+                <td>{{question.currentOccurance}} of {{question.totalOccurances}}</td>
+                <td>
+                  <div class="iconText">
+                    <i class="iconText__icon iconText__icon--noTop ss-standard ss-up iconSmall iconLime"></i> {{question.vsPrev}}
                   </div>
-                </div>
-              </th>
-              <th class="thSortable">
-                <div class="tool justifyCenter">
-                  <span class="thSortable__text">Vs Next</span>
-                  <div class="tool__anchor">
-                    <button class="button button--icon button--icon--small"
-                    (click)="tooltipPD508Open=!tooltipPD508Open">
-                      <i class="ss-help"></i>
-                    </button>
-                    <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipPD508Open }">
-                      <div class="tool__text">
-                        This column shows how these results compare to the patient’s next response to these questions.
-                      </div>
-                    </div>
+                </td>
+                <td>
+                  {{question.vsNext}}
+                </td>
+                <td>
+                  <div class="iconText">
+                    <i class="iconText__icon iconText__icon--noTop ss-standard ss-hyphen iconSmall"></i> {{question.vsPlan}}
                   </div>
-                </div>
-              </th>
-              <th class="thSortable">
-                <div class="tool justifyCenter">
-                  <span class="thSortable__text">Vs Care Plan</span>
-                  <div class="tool__anchor">
-                    <button class="button button--icon button--icon--small"
-                    (click)="tooltipPD509Open=!tooltipPD509Open">
-                      <i class="ss-help"></i>
-                    </button>
-                    <div class="tool__tip tool__tip--bottom tool__tip--right" [ngClass]="{ 'isOpen' : tooltipPD509Open }">
-                      <div class="tool__text">
-                        This column shows how these results compare to the patient's average responses to these questions over the course of the care plan.
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td class="left">Rate your satisfaction</td>
-              <td>
-                <div class="pill pill--yellow">
-                  4/5
-                </div>
-              </td>
-              <td>37 of 56</td>
-              <td>
-                <div class="iconText">
-                  <i class="iconText__icon iconText__icon--noTop ss-standard ss-up iconSmall iconLime"></i> better
-                </div>
-              </td>
-              <td>
-                n/a
-              </td>
-              <td>
-                <div class="iconText">
-                  <i class="iconText__icon iconText__icon--noTop ss-standard ss-hyphen iconSmall"></i> avg
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-
-        <h3 class="noMargin">Daily Diet Count</h3>
-        <table>
-          <thead>
-            <tr>
-              <th class="thSortable">
-                <span class="thSortable__text thSortable__text--left">Question</span>
-              </th>
-              <th class="thSortable thSortable--sortDown">
-                <span class="thSortable__text">Outcome</span>
-              </th>
-              <th class="thSortable">
-                <div class="tool justifyCenter">
-                  <span class="thSortable__text">Occur</span>
-                  <div class="tool__anchor">
-                    <button class="button button--icon button--icon--small"
-                    (click)="tooltipPD510Open=!tooltipPD510Open">
-                      <i class="ss-help"></i>
-                    </button>
-                    <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipPD510Open }">
-                      <div class="tool__text">
-                        This is the number of times the patient has seen this item, out of the total times it will occurr in this care plan.
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </th>
-              <th class="thSortable">
-                <div class="tool justifyCenter">
-                  <span class="thSortable__text">Vs Prev</span>
-                  <div class="tool__anchor">
-                    <button class="button button--icon button--icon--small"
-                    (click)="tooltipPD511Open=!tooltipPD511Open">
-                      <i class="ss-help"></i>
-                    </button>
-                    <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipPD511Open }">
-                      <div class="tool__text">
-                        This column shows how these results compare to the patient’s previous response to these questions.
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </th>
-              <th class="thSortable">
-                <div class="tool justifyCenter">
-                  <span class="thSortable__text">Vs Next</span>
-                  <div class="tool__anchor">
-                    <button class="button button--icon button--icon--small"
-                    (click)="tooltipPD512Open=!tooltipPD512Open">
-                      <i class="ss-help"></i>
-                    </button>
-                    <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipPD512Open }">
-                      <div class="tool__text">
-                        This column shows how these results compare to the patient’s next response to these questions.
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </th>
-              <th class="thSortable">
-                <div class="tool justifyCenter">
-                  <span class="thSortable__text">Vs Care Plan</span>
-                  <div class="tool__anchor">
-                    <button class="button button--icon button--icon--small"
-                    (click)="tooltipPD513Open=!tooltipPD513Open">
-                      <i class="ss-help"></i>
-                    </button>
-                    <div class="tool__tip tool__tip--bottom tool__tip--right" [ngClass]="{ 'isOpen' : tooltipPD513Open }">
-                      <div class="tool__text">
-                        This column shows how these results compare to the patient's average responses to these questions over the course of the care plan.
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td class="left">How many vegetables did you eat today?</td>
-              <td>
-                <div class="pill pill--yellow">
-                  4/5
-                </div>
-              </td>
-              <td>37 of 56</td>
-              <td>
-                <div class="iconText">
-                  <i class="iconText__icon iconText__icon--noTop ss-standard ss-up iconSmall iconLime"></i> better
-                </div>
-              </td>
-              <td>
-                n/a
-              </td>
-              <td>
-                <div class="iconText">
-                  <i class="iconText__icon iconText__icon--noTop ss-standard ss-up iconSmall iconLime"></i> better
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+                </td>
+                <td>
+                  <a *ngIf="!isUpdatingAssessmentResult(question)" class="button button--icon--small button--icon button--center relative" (click)="clickUpdateAssessmentResult(question)">
+                    <i class="ss-write"></i>
+                  </a>
+                  <a *ngIf="isUpdatingAssessmentResult(question)" class="button button--icon--small button--icon button--center relative" (click)="clickSaveAssessmentResult(question)">
+                    <i class="ss-floppydisk"></i>
+                  </a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </ng-container>
       </div> <!--/.accordion__contents-->
     </div> <!--/.accordion__body-->
   </div> <!--/.accordion (for assessments)-->
 
-  <div class="accordion" [ngClass]="{ 'isOpen' : accordPD6Open }">
-    <div class="accordion__head" (click)="accordPD6Open=!accordPD6Open">
-      <span class="accordion__title">Symptoms - Today (3)</span>
+  <div class="accordion" [ngClass]="{ 'isOpen' : symptomResultsOpen }">
+    <div class="accordion__head" (click)="symptomResultsOpen=!symptomResultsOpen">
+      <span class="accordion__title">Symptoms - {{tableHeaderDate()}} ({{symptomResults.length}})</span>
       <div class="accordion__right">
-        <span class="marRight8">3 Symptoms</span>
-        <div class="pill pill--purple">
-          2.3/5
+        <span class="marRight8">{{symptomResults.length}} Symptoms</span>
+        <div class="pill" [ngStyle]="{'background': utils.percentPillColor(averageSymptomPercent())}">
+          {{averageSymptomRating()}}/5
         </div>
         <div class="accordion__arrow">
           <i class="ss-standard ss-navigateright"></i>
@@ -856,8 +621,7 @@
     </div> <!--/.accordion__head-->
     <div class="accordion__body">
       <div class="accordion__contents">
-
-        <table>
+        <table class="fullWidth">
           <thead>
             <tr>
               <th class="thSortable">
@@ -871,14 +635,16 @@
                   <span class="thSortable__text">Reported</span>
                   <div class="tool__anchor">
                     <button class="button button--icon button--icon--small"
-                    (click)="tooltipPD600Open=!tooltipPD600Open">
+                    (click)="symptomReportedTTOpen=!symptomReportedTTOpen">
                       <i class="ss-help"></i>
                     </button>
-                    <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipPD600Open }">
-                      <div class="tool__text">
-                        This is the number of times the patient has reported this symptom, out of the total times possible.
+                    <app-popover [visible]="symptomReportedTTOpen" (visibleChange)="symptomReportedTTOpen = $event;">
+                      <div class="tool__tip isOpen">
+                        <div class="tool__text">
+                          This is the number of times the patient has reported this symptom, out of the total times possible.
+                        </div>
                       </div>
-                    </div>
+                    </app-popover>
                   </div>
                 </div>
               </th>
@@ -887,14 +653,16 @@
                   <span class="thSortable__text">Vs Prev</span>
                   <div class="tool__anchor">
                     <button class="button button--icon button--icon--small"
-                    (click)="tooltipPD601Open=!tooltipPD601Open">
+                    (click)="symptomVsPrevTTOpen=!symptomVsPrevTTOpen">
                       <i class="ss-help"></i>
                     </button>
-                    <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipPD601Open }">
-                      <div class="tool__text">
-                        This column shows how these results compare to the patient’s previous report of these symptoms.
+                    <app-popover [visible]="symptomVsPrevTTOpen" (visibleChange)="symptomVsPrevTTOpen = $event;">
+                      <div class="tool__tip isOpen">
+                        <div class="tool__text">
+                          This column shows how these results compare to the patient’s previous report of these symptoms.
+                        </div>
                       </div>
-                    </div>
+                    </app-popover>
                   </div>
                 </div>
               </th>
@@ -903,14 +671,16 @@
                   <span class="thSortable__text">Vs Next</span>
                   <div class="tool__anchor">
                     <button class="button button--icon button--icon--small"
-                    (click)="tooltipPD602Open=!tooltipPD602Open">
+                    (click)="symptomVsNextTTOpen=!symptomVsNextTTOpen">
                       <i class="ss-help"></i>
                     </button>
-                    <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipPD602Open }">
-                      <div class="tool__text">
-                        This column shows how these results compare to the patient’s next report of these symptoms.
+                    <app-popover [visible]="symptomVsNextTTOpen" (visibleChange)="symptomVsNextTTOpen = $event;">
+                      <div class="tool__tip isOpen">
+                        <div class="tool__text">
+                          This column shows how these results compare to the patient’s next report of these symptoms.
+                        </div>
                       </div>
-                    </div>
+                    </app-popover>
                   </div>
                 </div>
               </th>
@@ -919,84 +689,73 @@
                   <span class="thSortable__text">Vs Care Plan</span>
                   <div class="tool__anchor">
                     <button class="button button--icon button--icon--small"
-                    (click)="tooltipPD603Open=!tooltipPD603Open">
+                    (click)="symptomVsPlanTTOpen=!symptomVsPlanTTOpen">
                       <i class="ss-help"></i>
                     </button>
-                    <div class="tool__tip tool__tip--bottom tool__tip--right" [ngClass]="{ 'isOpen' : tooltipPD603Open }">
-                      <div class="tool__text">
-                        This column shows how these results compare to the patient's average report of these symptoms over the course of the care plan.
+                    <app-popover [visible]="symptomVsPlanTTOpen" (visibleChange)="symptomVsPlanTTOpen = $event;">
+                      <div class="tool__tip isOpen">
+                        <div class="tool__text">
+                          This column shows how these results compare to the patient's average report of these symptoms over the course of the care plan.
+                        </div>
                       </div>
-                    </div>
+                    </app-popover>
+                  </div>
+                </div>
+              </th>
+              <th class="thSortable">
+                <div class="tool justifyCenter">
+                  <span class="thSortable__text">Update</span>
+                  <div class="tool__anchor">
+                    <button class="button button--icon button--icon--small"
+                    (click)="symptomUpdateTTOpen=!symptomUpdateTTOpen">
+                      <i class="ss-help"></i>
+                    </button>
+                    <app-popover [visible]="symptomUpdateTTOpen" (visibleChange)="symptomUpdateTTOpen = $event;">
+                      <div class="tool__tip isOpen">
+                        <div class="tool__text">
+                          You are able to update the patient's information.  This will override anything the patient has already submitted.
+                        </div>
+                      </div>
+                    </app-popover>
                   </div>
                 </div>
               </th>
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td class="left">Fatigue</td>
+            <tr *ngFor="let symptom of symptomResults">
+              <td class="left">{{symptom.name}}</td>
               <td>
-                <div class="pill pill--purple">
-                  2/5
-                </div>
+                <ng-container *ngIf="!isUpdatingSymptomResult(symptom)">
+                  <div class="pill" [ngStyle]="{'background': utils.percentPillColor(ratingPercentage(symptom.rating))}">
+                    {{symptom.rating}}/5
+                  </div>
+                </ng-container>
+                <ng-container *ngIf="isUpdatingSymptomResult(symptom)">
+                  <input type="number" min="0" max="5" class="input" [(ngModel)]="symptom.rating" />
+                </ng-container>
               </td>
-              <td>30 of 56</td>
+              <td>{{symptom.currentOccurance}} of {{symptom.totalOccurances}}</td>
               <td>
                 <div class="iconText">
-                  <i class="iconText__icon iconText__icon--noTop ss-standard ss-hyphen iconSmall"></i> same
+                  <i class="iconText__icon iconText__icon--noTop ss-standard ss-hyphen iconSmall"></i> {{symptom.vsPrev}}
                 </div>
               </td>
               <td>
-                n/a
-              </td>
-              <td>
-                <div class="iconText">
-                  <i class="iconText__icon iconText__icon--noTop ss-standard ss-hyphen iconSmall"></i> avg
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <td class="left">Headache</td>
-              <td>
-                <div class="pill pill--purple">
-                  1/5
-                </div>
-              </td>
-              <td>22 of 56</td>
-              <td>
-                <div class="iconText">
-                  <i class="iconText__icon iconText__icon--noTop ss-standard ss-down iconSmall iconRed"></i> worse
-                </div>
-              </td>
-              <td>
-                n/a
+                {{symptom.vsNext}}
               </td>
               <td>
                 <div class="iconText">
-                  <i class="iconText__icon iconText__icon--noTop ss-standard ss-down iconSmall iconRed"></i> worse
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <td class="left">Insomnia</td>
-              <td>
-                <div class="pill pill--yellow">
-                  4/5
-                </div>
-              </td>
-              <td>1 of 56</td>
-              <td>
-                <div class="iconText">
-                  <i class="iconText__icon iconText__icon--noTop ss-standard ss-hyphen iconSmall"></i> n/a
+                  <i class="iconText__icon iconText__icon--noTop ss-standard ss-hyphen iconSmall"></i> {{symptom.vsPlan}}
                 </div>
               </td>
               <td>
-                n/a
-              </td>
-              <td>
-                <div class="iconText">
-                  <i class="iconText__icon iconText__icon--noTop ss-standard ss-hyphen iconSmall"></i> new
-                </div>
+                <a *ngIf="!isUpdatingSymptomResult(symptom)" class="button button--icon--small button--icon button--center relative" (click)="clickUpdateSymptomResult(symptom)">
+                  <i class="ss-write"></i>
+                </a>
+                <a *ngIf="isUpdatingSymptomResult(symptom)" class="button button--icon--small button--icon button--center relative" (click)="clickSaveSymptomResult(symptom)">
+                  <i class="ss-floppydisk"></i>
+                </a>
               </td>
             </tr>
           </tbody>
@@ -1006,7 +765,7 @@
         <p>
           "I think this new medication makes my head hurt more."
         </p>
-        <a [routerLink]="['/patient/asdf/messaging']" class="button button--iconText">
+        <a (click)="routeToMessaging()" class="button button--iconText">
           <i class="ss-chat"></i> Reply
         </a>
 
@@ -1014,11 +773,11 @@
     </div> <!--/.accordion__body-->
   </div> <!--/.accordion (for symptoms)-->
 
-  <div class="accordion" [ngClass]="{ 'isOpen' : accordPD7Open }">
-    <div class="accordion__head" (click)="accordPD7Open=!accordPD7Open">
-      <span class="accordion__title">Vitals - Today (2)</span>
+  <div class="accordion" [ngClass]="{ 'isOpen' : vitalsResultsOpen }">
+    <div class="accordion__head" (click)="vitalsResultsOpen=!vitalsResultsOpen">
+      <span class="accordion__title">Vitals - {{tableHeaderDate()}} ({{vitalResults.length}})</span>
       <div class="accordion__right">
-        <span class="marRight24">2 Updates</span>
+        <span class="marRight24">{{vitalResults.length}} Updates</span>
         <div class="accordion__arrow">
           <i class="ss-standard ss-navigateright"></i>
         </div>
@@ -1026,122 +785,136 @@
     </div> <!--/.accordion__head-->
     <div class="accordion__body">
       <div class="accordion__contents">
-
-        <h3 class="noMargin">Blood Pressure</h3>
-        <table>
-          <thead>
-            <tr>
-              <th class="thSortable">
-                <span class="thSortable__text thSortable__text--left">Metric</span>
-              </th>
-              <th class="thSortable thSortable--sortDown">
-                <span class="thSortable__text">Result</span>
-              </th>
-              <th class="thSortable">
-                <div class="tool justifyCenter">
-                  <span class="thSortable__text">Reported</span>
-                  <div class="tool__anchor">
-                    <button class="button button--icon button--icon--small"
-                    (click)="tooltipPD700Open=!tooltipPD700Open">
-                      <i class="ss-help"></i>
-                    </button>
-                    <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipPD700Open }">
-                      <div class="tool__text">
-                        This is the number of times the patient has reported these metrics, out of the total times possible.
-                      </div>
+        <ng-container *ngFor="let vital of vitalResults">
+          <h3 class="noMargin">{{vital.name}}</h3>
+          <table class="fullWidth">
+          	<thead>
+          		<tr>
+          			<th class="thSortable">
+          				<span class="thSortable__text thSortable__text--left">Questions</span>
+          			</th>
+          			<th class="thSortable">
+          				<span class="thSortable__text">Type</span>
+          			</th>
+          			<th class="thSortable thSortable--sortDown">
+          				<span class="thSortable__text">Result</span>
+          			</th>
+          			<th class="thSortable">
+          				<div class="tool justifyCenter">
+          					<span class="thSortable__text">Reported</span>
+          					<div class="tool__anchor">
+          						<button class="button button--icon button--icon--small" (click)="vitalReportedTTOpen[vital.id]=!vitalReportedTTOpen[vital.id]">
+          							<i class="ss-help"></i>
+          						</button>
+                      <app-popover [visible]="vitalReportedTTOpen[vital.id]" (visibleChange)="vitalReportedTTOpen[vital.id] = $event;">
+                        <div class="tool__tip isOpen">
+                          <div class="tool__text">
+            								This is the number of times the patient has reported these metrics, out of the total times possible.
+                          </div>
+                        </div>
+                      </app-popover>
+          					</div>
+          				</div>
+          			</th>
+          			<th class="thSortable">
+          				<div class="tool justifyCenter">
+          					<span class="thSortable__text">Vs Prev</span>
+          					<div class="tool__anchor">
+          						<button class="button button--icon button--icon--small" (click)="vitalVsPrevTTOpen[vital.id]=!vitalVsPrevTTOpen[vital.id]">
+          							<i class="ss-help"></i>
+          						</button>
+                      <app-popover [visible]="vitalVsPrevTTOpen[vital.id]" (visibleChange)="vitalVsPrevTTOpen[vital.id] = $event;">
+                        <div class="tool__tip isOpen">
+                          <div class="tool__text">
+            								This column shows how these results compare to the patient’s previous report of these metrics.
+                          </div>
+                        </div>
+                      </app-popover>
+          					</div>
+          				</div>
+          			</th>
+          			<th class="thSortable">
+          				<div class="tool justifyCenter">
+          					<span class="thSortable__text">Vs Next</span>
+          					<div class="tool__anchor">
+          						<button class="button button--icon button--icon--small" (click)="vitalVsNextTTOpen[vital.id]=!vitalVsNextTTOpen[vital.id]">
+          							<i class="ss-help"></i>
+          						</button>
+                      <app-popover [visible]="vitalVsNextTTOpen[vital.id]" (visibleChange)="vitalVsNextTTOpen[vital.id] = $event;">
+                        <div class="tool__tip isOpen">
+                          <div class="tool__text">
+            								This column shows how these results compare to the patient’s next report of these metrics.
+                          </div>
+                        </div>
+                      </app-popover>
+          					</div>
+          				</div>
+          			</th>
+          			<th class="thSortable">
+          				<div class="tool justifyCenter">
+          					<span class="thSortable__text">Vs Care Plan</span>
+          					<div class="tool__anchor">
+          						<button class="button button--icon button--icon--small" (click)="vitalVsPlanTTOpen[vital.id]=!vitalVsPlanTTOpen[vital.id]">
+          							<i class="ss-help"></i>
+          						</button>
+                      <app-popover [visible]="vitalVsPlanTTOpen[vital.id]" (visibleChange)="vitalVsPlanTTOpen[vital.id] = $event;">
+                        <div class="tool__tip isOpen">
+                          <div class="tool__text">
+            								This column shows how these results compare to the patient's average report of these metrics over the course of the care plan.
+                          </div>
+                        </div>
+                      </app-popover>
+          					</div>
+          				</div>
+          			</th>
+                <th class="thSortable">
+                  <div class="tool justifyCenter">
+                    <span class="thSortable__text">Update</span>
+                    <div class="tool__anchor">
+                      <button class="button button--icon button--icon--small"
+                      (click)="vitalUpdateTTOpen[vital.id]=!vitalUpdateTTOpen[vital.id]">
+                        <i class="ss-help"></i>
+                      </button>
+                      <app-popover [visible]="vitalUpdateTTOpen[vital.id]" (visibleChange)="vitalUpdateTTOpen[vital.id] = $event;">
+                        <div class="tool__tip isOpen">
+                          <div class="tool__text">
+                            You are able to update the patient's information.  This will override anything the patient has already submitted.
+                          </div>
+                        </div>
+                      </app-popover>
                     </div>
                   </div>
-                </div>
-              </th>
-              <th class="thSortable">
-                <div class="tool justifyCenter">
-                  <span class="thSortable__text">Vs Prev</span>
-                  <div class="tool__anchor">
-                    <button class="button button--icon button--icon--small"
-                    (click)="tooltipPD701Open=!tooltipPD701Open">
-                      <i class="ss-help"></i>
-                    </button>
-                    <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipPD701Open }">
-                      <div class="tool__text">
-                        This column shows how these results compare to the patient’s previous report of these metrics.
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </th>
-              <th class="thSortable">
-                <div class="tool justifyCenter">
-                  <span class="thSortable__text">Vs Next</span>
-                  <div class="tool__anchor">
-                    <button class="button button--icon button--icon--small"
-                    (click)="tooltipPD702Open=!tooltipPD702Open">
-                      <i class="ss-help"></i>
-                    </button>
-                    <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipPD702Open }">
-                      <div class="tool__text">
-                        This column shows how these results compare to the patient’s next report of these metrics.
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </th>
-              <th class="thSortable">
-                <div class="tool justifyCenter">
-                  <span class="thSortable__text">Vs Care Plan</span>
-                  <div class="tool__anchor">
-                    <button class="button button--icon button--icon--small"
-                    (click)="tooltipPD703Open=!tooltipPD703Open">
-                      <i class="ss-help"></i>
-                    </button>
-                    <div class="tool__tip tool__tip--bottom tool__tip--right" [ngClass]="{ 'isOpen' : tooltipPD703Open }">
-                      <div class="tool__text">
-                        This column shows how these results compare to the patient's average report of these metrics over the course of the care plan.
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td class="left">Diastolic</td>
-              <td>80</td>
-              <td>33 of 56</td>
-              <td>
-                <div class="iconText">
-                  <i class="iconText__icon iconText__icon--noTop ss-standard ss-up iconSmall"></i> higher
-                </div>
-              </td>
-              <td>
-                n/a
-              </td>
-              <td>
-                <div class="iconText">
-                  <i class="iconText__icon iconText__icon--noTop ss-standard ss-hyphen iconSmall"></i> avg
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <td class="left">Systolic</td>
-              <td>130</td>
-              <td>33 of 56</td>
-              <td>
-                <div class="iconText">
-                  <i class="iconText__icon iconText__icon--noTop ss-standard ss-down iconSmall"></i> lower
-                </div>
-              </td>
-              <td>
-                n/a
-              </td>
-              <td>
-                <div class="iconText">
-                  <i class="iconText__icon iconText__icon--noTop ss-standard ss-hyphen iconSmall"></i> avg
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+                </th>
+          		</tr>
+          	</thead>
+          	<tbody>
+          		<tr *ngFor="let question of vital.questions">
+          			<td class="left">{{question.text}}</td>
+          			<td>{{formatVitalQuestionType(question.type) | titlecase}}</td>
+          			<td>{{question.results}}</td>
+          			<td>{{question.currentOccurance}} of {{question.totalOccurances}}</td>
+          			<td>
+          				<div class="iconText">
+          					<i class="iconText__icon iconText__icon--noTop ss-standard ss-up iconSmall"></i> {{question.vsPrev}}
+          				</div>
+          			</td>
+          			<td>
+          				{{question.vsNext}}
+          			</td>
+          			<td>
+          				<div class="iconText">
+          					<i class="iconText__icon iconText__icon--noTop ss-standard ss-hyphen iconSmall"></i> {{question.vsPlan}}
+          				</div>
+          			</td>
+                <td>
+                  <a class="button button--icon--small button--icon button--center relative" (click)="editPatientTask()">
+                    <i class="ss-write"></i>
+                  </a>
+                </td>
+          		</tr>
+          	</tbody>
+          </table>
+        </ng-container>
         <label>Comment</label>
         <p>
           "My blood pressure seems to be stabilizing."
@@ -1154,9 +927,9 @@
     </div> <!--/.accordion__body-->
   </div> <!--/.accordion (for vitals)-->
 
-  <div class="accordion" [ngClass]="{ 'isOpen' : accordPD8Open }">
-    <div class="accordion__head" (click)="accordPD8Open=!accordPD8Open">
-      <span class="accordion__title">Messages - Today (1)</span>
+  <div class="accordion" [ngClass]="{ 'isOpen' : messagesOpen }">
+    <div class="accordion__head" (click)="messagesOpen=!messagesOpen">
+      <span class="accordion__title">Messages - {{tableHeaderDate()}} (1)</span>
       <div class="accordion__right">
         <div class="accordion__arrow">
           <i class="ss-standard ss-navigateright"></i>
@@ -1173,7 +946,7 @@
               <thead>
                 <tr>
                   <th class="left">Care Message</th>
-                  <th class="left">Viewed</th>
+                  <th class="center">Viewed</th>
                   <th class="left">Type</th>
                   <th>
                     <div class="tool left">
@@ -1192,7 +965,7 @@
                     </div>
                   </th>
                   <th class="left">Type</th>
-                  <th class="left">Number of Messages</th>
+                  <th class="center">Number of Messages</th>
                   <th class="left">Update</th>
                 </tr>
               </thead>
@@ -1201,7 +974,7 @@
                   <td class="left">
                     {{messageQueue.name}}
                   </td>
-                  <td class="left">
+                  <td class="center">
                     <div class="pill pill--lime">yes</div>
                   </td>
                   <td class="left">Text Message</td>
@@ -1209,9 +982,11 @@
                     <i class="ss-standard ss-like iconLime"></i>
                   </td>
                   <td class="left">Education</td>
-                  <td class="left">{{j + 1}} of {{messageQueue.messages.length}}</td>
-                  <td class="left">
-                    <i class="ss-standard ss-write iconLime"></i>
+                  <td class="center">{{j + 1}} of {{messageQueue.messages.length}}</td>
+                  <td class="center">
+                    <button class="button button--icon button--icon--small button--center">
+                      <i class="ss-write"></i>
+                    </button>
                   </td>
                 </tr>
               </tbody>
