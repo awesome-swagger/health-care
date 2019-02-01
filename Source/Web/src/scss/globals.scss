@@ -869,7 +869,6 @@ a {
     display: none;
     position: absolute;
     z-index: 100;
-    bottom: 100%;
     left: 50%;
     transform: translateX(-50%);
     padding: rem-calc(12);
@@ -905,6 +904,7 @@ a {
   }
   // this controls tooltip width when it only contains text
   &__text {
+    line-height: normal;
     width: 240px;
     hyphens: auto;
 

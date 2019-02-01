@@ -5,18 +5,18 @@
     <h1 class="noMargin">{{patient?.user.first_name}} {{patient?.user.last_name}}</h1>
   </div>
   <div class="drop">
-    <div class="drop__input drop__input--select" (click)="multi1Open=!multi1Open">
-      <h2 class="noMargin">{{selectedPlan?.plan_template.name}}<!--<i class="icomoon-cocm"></i>--><span *ngIf="selectedPlan?.plan_template.service_area">, {{selectedPlan.plan_template.service_area.name}}</span></h2>
+    <div class="drop__input drop__input--select" (click)="planSelectOpen=!planSelectOpen">
+      <h3 class="noMargin">{{selectedPlan?.plan_template.name}}<!--<i class="icomoon-cocm"></i>--><span *ngIf="selectedPlan?.plan_template.service_area">, {{selectedPlan.plan_template.service_area.name}}</span></h3>
     </div>
-    <ul class="drop__dropdown drop__dropdown--select"
-    [ngClass]="{ 'isOpen' : multi1Open }"
-    (click)="multi1Open=!multi1Open">
-      <li class="drop__option drop__option--select" *ngFor="let plan of carePlans" (click)="changeSelectedPlan(plan)">
-        <div class="iconText">
-          <span class="marRight8">{{plan.plan_template.name}}</span> <!--<i class="icomoon-cocm iconText__icon iconText__icon--noTop"></i>--><span *ngIf="plan.plan_template.service_area">{{plan.plan_template.service_area.name}}</span>
-        </div>
-      </li>
-    </ul>
+    <app-popover [visible]="planSelectOpen" (visibleChange)="planSelectOpen = $event;" [options]="planSelectOptions">
+      <ul class="drop__dropdown drop__dropdown--select isOpen">
+        <li class="drop__option drop__option--select" *ngFor="let plan of carePlans" (click)="changeSelectedPlan(plan)">
+        	<div class="iconText">
+        		<span>{{plan.plan_template.name}}</span><span *ngIf="plan.plan_template.service_area">, {{plan.plan_template.service_area.name}}</span>
+        	</div>
+        </li>
+      </ul>
+    </app-popover>
   </div>
 </div> <!--/.flex (for title area)-->
 
