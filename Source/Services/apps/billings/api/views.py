@@ -2,13 +2,17 @@ import datetime
 
 from django.utils.translation import ugettext_lazy as _
 
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets, permissions, mixins
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework_extensions.mixins import NestedViewSetMixin
 
 from ..models import BilledActivity
 from ..permissions import IsAdminOrEmployeeActivityOwner
 from .serializers import BilledActivitySerializer
+from apps.core.api.mixins import ParentViewSetPermissionMixin
+from apps.core.api.views import OrganizationViewSet
+from apps.core.models import Organization
 
 
 class BilledActivityViewSet(viewsets.ModelViewSet):
@@ -100,3 +104,52 @@ class BilledActivityViewSet(viewsets.ModelViewSet):
         return Response(
             {"total_tracked_time": spent_time}
         )
+
+
+class OrganizationBilledActivity(ParentViewSetPermissionMixin,
+                                 NestedViewSetMixin,
+                                 mixins.ListModelMixin,
+                                 viewsets.GenericViewSet):
+    """
+
+    list:
+        Returns list of all :model:`billings.BilledActivity` objects related
+        to the parent organization.
+        Admins and employee members will have access to billed activities that
+        belong to the care team.
+
+    """
+
+    serializer_class = BilledActivitySerializer
+    permission_classes = (
+        permissions.IsAuthenticated,
+        IsAdminOrEmployeeActivityOwner,
+    )
+    queryset = BilledActivity.objects.all()
+    parent_lookup = [
+        (
+            'plan__patient__facility__organization',
+            Organization,
+            OrganizationViewSet
+        )
+    ]
+
+    def get_queryset(self):
+        queryset = super(BilledActivityViewSet, self).get_queryset()
+        user = self.request.user
+
+        if user.is_superuser:
+            pass
+
+        elif user.is_employee:
+            employee = user.employee_profile
+            queryset = queryset.filter(
+                plan__care_team_members__employee_profile=employee
+            )
+
+        elif user.is_patient:
+            queryset = queryset.filter(
+                plan__patient=user.patient_profile
+            )
+
+        return queryset

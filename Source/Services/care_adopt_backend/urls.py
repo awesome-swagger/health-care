@@ -10,7 +10,10 @@ from rest_framework_swagger.views import get_swagger_view
 
 from apps.landing.views import LandingView
 from apps.accounts.views import UserViewSet, VerifyChangeEmail
-from apps.billings.api.views import BilledActivityViewSet
+from apps.billings.api.views import (
+    BilledActivityViewSet,
+    OrganizationBilledActivity,
+)
 from apps.core.api.views import (
     OrganizationViewSet, FacilityViewSet, EmployeeProfileViewSet,
     ProviderTitleViewSet, ProviderRoleViewSet, ProviderSpecialtyViewSet,
@@ -110,6 +113,12 @@ organization_routes = router.register(
     r'organizations',
     OrganizationViewSet,
     base_name='organizations'
+)
+organization_routes.register(
+    r'billed_activities',
+    OrganizationBilledActivity,
+    base_name='organization-billed-activities',
+    parents_query_lookups=['plan__patient__facility__organization']
 )
 organization_routes.register(
     r'employee_profiles',
