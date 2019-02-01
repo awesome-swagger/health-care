@@ -188,6 +188,26 @@ class Symptom(UUIDPrimaryKeyMixin):
         return self.name
 
 
+class Notification(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
+    NOTIFICATION_CATEGORY = (
+        ('unread_message', 'Unread Message'),
+        ('flagged_patient', 'Flagged Patient'),
+        ('assignment', 'Assignment')
+    )
+
+    category = models.CharField(max_length=50, choices=NOTIFICATION_CATEGORY)
+    message = models.CharField(max_length=500, null=True, blank=True)
+    is_read = models.BooleanField(default=False)
+    icon = models.CharField(max_length=255, null=True, blank=True)
+    repeat = models.IntegerField(default=1)
+    user = models.ForeignKey(EmailUser, on_delete=models.CASCADE, 
+                             related_name="notifications") 
+    patient = models.ForeignKey(EmailUser, null=True, blank=True, on_delete=models.CASCADE,) 
+
+    def __str__(self):
+        return '{}: {}'.format(self.user, self.message)
+
+
 class InvitedEmailTemplate(UUIDPrimaryKeyMixin):
     subject = models.CharField(max_length=140, null=False, blank=False, default='Invitation to CareAdopt')
     message = models.CharField(max_length=500, null=False, blank=False)

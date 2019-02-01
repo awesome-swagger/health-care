@@ -13,7 +13,7 @@ from apps.accounts.serializers import SettingsUserForSerializers
 from apps.core.models import (Diagnosis, EmployeeProfile, Facility,
                               InvitedEmailTemplate, Medication, Organization,
                               Procedure, ProviderRole, ProviderSpecialty,
-                              ProviderTitle, Symptom)
+                              ProviderTitle, Symptom, Notification)
 
 from apps.patients.models import PatientProfile, PotentialPatient
 from apps.tasks.models import (
@@ -333,6 +333,31 @@ class InsuranceSerializer(RepresentationMixin, serializers.ModelSerializer):
             {
                 'field': 'organization',
                 'serializer_class': OrganizationSerializer,
+            }
+        ]
+
+
+class PatientUserInfo(SettingsUserForSerializers, serializers.ModelSerializer):
+    class Meta:
+        read_only_fields = ('email', 'date_joined', 'last_login', )
+        exclude = ('password', 'is_superuser', 'groups', 'user_permissions',
+                   'validation_key', 'validated_at', 'reset_key',
+                   'is_developer', )
+
+
+class NotificationSerializer(RepresentationMixin, serializers.ModelSerializer):
+    class Meta:
+        model = Notification
+        exclude = ('is_read',)
+        read_only_fields = (
+            'id',
+            'created',
+            'modified',
+        )
+        nested_serializers = [
+            {
+                'field': 'patient',
+                'serializer_class': PatientUserInfo,
             }
         ]
 
