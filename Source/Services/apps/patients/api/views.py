@@ -19,6 +19,7 @@ from .serializers import (PatientDashboardSerializer,
                           PatientProcedureSerializer,
                           PatientProfileSearchSerializer,
                           PatientProfileSerializer,
+                          AddPatientToPlanSerializer,
                           PatientCarePlanSerializer,
                           ProblemAreaSerializer,
                           VerifyPatientSerializer,
@@ -150,7 +151,6 @@ class PatientProfileViewSet(viewsets.ModelViewSet):
         serializer = CarePlanGoalSerializer(care_plans, many=True)
         return Response(serializer.data)
 
-
     @action(methods=['post'], detail=False,
             permission_classes=(permissions.IsAuthenticated, ))
     def create_account(self, request, *args, **kwargs):
@@ -162,6 +162,19 @@ class PatientProfileViewSet(viewsets.ModelViewSet):
         serializer.save()
         return Response(
             {"detail": _("Successfully created a patient account.")}
+        )
+
+    @action(methods=['post'], detail=False,
+            permission_classes=(permissions.IsAuthenticated, ))
+    def add_to_plan(self, request, *args, **kwargs):
+        serializer = AddPatientToPlanSerializer(
+            data=request.data,
+            context={'request': request}
+        )
+        serializer.is_valid(raise_exception=True)
+        # serializer.save()
+        return Response(
+            {"detail": _("Successfully created a patient account and added it to the plan.")}
         )
 
     @action(methods=['get'], detail=True)
