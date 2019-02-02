@@ -101,3 +101,14 @@ def careplan_post_save(sender, instance, created, **kwargs):
     if created:
         create_goals_for_new_care_plan(instance)
         create_tasks_for_new_care_plan(instance)
+
+
+def teammessage_post_save(sender, instance, created, **kwargs):
+    """
+    Function to be used as signal (post_save) when saving
+    :model:`plans.TeamMessage`
+    """
+    if created:
+        recipients = instance.recipients
+        recipients.last_update = instance.created
+        recipients.save()

@@ -10,7 +10,7 @@ from apps.core.models import EmployeeProfile, ProviderRole
 from apps.patients.models import PatientProfile
 from care_adopt_backend.mixins import CreatedModifiedMixin, UUIDPrimaryKeyMixin
 
-from .signals import careplan_post_save
+from .signals import careplan_post_save, teammessage_post_save
 
 
 class CarePlanTemplateType(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
@@ -282,8 +282,57 @@ class InfoMessage(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
         return '{} message'.format(self.queue.name)
 
 
+class MessageRecipient(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
+    """
+    Stores members of a conversation
+    """
+    plan = models.ForeignKey(
+        'plans.CarePlan',
+        related_name='message_recipients',
+        on_delete=models.CASCADE
+        )
+    members = models.ManyToManyField(
+        'core.EmployeeProfile',
+        related_name='message_recipients',
+        )
+    last_update = models.DateTimeField(
+        default=timezone.now
+        )
+
+    class Meta:
+        verbose_name = _('Message Recipient')
+        verbose_name_plural = _('Message Recipients')
+        ordering = ('-last_update', )
+
+
+class TeamMessage(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
+    """
+    This stores the messages made in a certain message group
+    """
+    recipients = models.ForeignKey(
+        'plans.MessageRecipient',
+        related_name='messages',
+        on_delete=models.CASCADE,
+        )
+    content = models.TextField()
+    sender = models.ForeignKey(
+        'accounts.EmailUser',
+        related_name='messages',
+        on_delete=models.CASCADE
+        )
+
+    class Meta:
+        verbose_name = _('Team Message')
+        verbose_name_plural = _('Team Messages')
+        ordering = ('created', )
+
+
 # Signals
 models.signals.post_save.connect(
     careplan_post_save,
     sender=CarePlan,
+)
+models.signals.post_save.connect(
+    teammessage_post_save,
+    sender=TeamMessage,
 )
