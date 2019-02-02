@@ -75,9 +75,26 @@ class ParentViewSetPermissionMixin(object):
 
 
 class ReferenceCheckMixin(object):
+    """
+    This mixin will validate the existence of custom foreign fields. When used,
+    `validate` method will require `ref_validators` property
+    in the serializer's Meta property. Below is an example:
 
-    def validate(self, attrs):
-        super(ReferenceCheckMixin, self).validate(attrs)
+        ref_validators = [
+            {
+                'field': 'care_manager',
+                'model': EmployeeProfile
+            },
+            {
+                'field': 'plan_template',
+                'model': CarePlanTemplate
+            },
+            ...
+        ]
+    """
+
+    def validate(self, data):
+        super(ReferenceCheckMixin, self).validate(data)
 
         meta = getattr(self, 'Meta', None)
         ref_validators = getattr(meta, 'ref_validators', {})
@@ -85,9 +102,9 @@ class ReferenceCheckMixin(object):
             for obj in ref_validators:
                 field = obj.get('field')
                 model = obj.get('model')
-                value = attrs.get(field)
+                value = data.get(field)
                 if value:
                     if not model.objects.filter(pk=value):
                         raise serializers.ValidationError({ field: _('Given instance does not exist.')})
 
-        return attrs
+        return data

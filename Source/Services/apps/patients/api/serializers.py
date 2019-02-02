@@ -118,7 +118,7 @@ class AddPatientToPlanSerializer(ReferenceCheckMixin,
     first_name = serializers.CharField(max_length=128)
     last_name = serializers.CharField(max_length=128)
     email = serializers.EmailField()
-    phone = serializers.CharField(max_length=16, required=False)
+    phone = serializers.CharField(max_length=16)
     plan_template = serializers.UUIDField()
     care_manager = serializers.UUIDField()
 
@@ -148,6 +148,15 @@ class AddPatientToPlanSerializer(ReferenceCheckMixin,
                 'model': CarePlanTemplate
             }
         ]
+
+    def validate(self, data):
+        super(AddPatientToPlanSerializer, self).validate(data)
+        user = data.get('user')
+        if not user and get_user_model().objects.filter(email=data.get('email')).exists():
+            raise serializers.ValidationError({ 
+                "user": _('A user with the email already exists .')
+            })
+        return data
 
 
 class PatientDiagnosisSerializer(serializers.ModelSerializer):
