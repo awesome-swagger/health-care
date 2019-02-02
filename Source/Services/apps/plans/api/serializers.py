@@ -23,6 +23,8 @@ from ..models import (
     InfoMessageQueue,
     InfoMessage,
     CareTeamMember,
+    MessageRecipient,
+    TeamMessage,
 )
 from apps.billings.models import BilledActivity
 from apps.core.api.mixins import RepresentationMixin
@@ -40,6 +42,33 @@ from apps.tasks.models import (
     SymptomTask,
     VitalTask,
 )
+
+
+class BasicPatientPlanSerializer(serializers.ModelSerializer):
+    """
+    basic serializer for :model:`patients.PatientProfile`
+    """
+    first_name = serializers.SerializerMethodField()
+    last_name = serializers.SerializerMethodField()
+    image_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = PatientProfile
+        fields = (
+            'id',
+            'first_name',
+            'last_name',
+            'image_url',
+        )
+
+    def get_first_name(self, obj):
+        return obj.user.first_name
+
+    def get_last_name(self, obj):
+        return obj.user.last_name
+
+    def get_image_url(self, obj):
+        return obj.user.get_image_url()
 
 
 class CarePlanTemplateTypeSerializer(serializers.ModelSerializer):
@@ -131,7 +160,11 @@ class CarePlanSerializer(RepresentationMixin, serializers.ModelSerializer):
             {
                 'field': 'plan_template',
                 'serializer_class': CarePlanTemplateSerializer,
-            }
+            },
+            {
+                'field': 'patient',
+                'serializer_class': BasicPatientPlanSerializer,
+            },
         ]
 
 
@@ -796,3 +829,58 @@ class PatientCarePlanOverviewSerializer(CarePlanOverviewSerializer):
 
     def get_problem_areas_count(self, obj):
         return obj.patient.problemarea_set.count()
+
+
+class MessageRecipientSerializer(serializers.ModelSerializer):
+    """
+    serializer to be used by :model:`plans.MessageRecipient`
+    """
+
+    class Meta:
+        model = MessageRecipient
+        fields = (
+            'id',
+            'plan',
+            'members',
+            'created',
+            'modified',
+            'last_update',
+        )
+        read_only_fields = (
+            'id',
+            'created',
+            'modified',
+        )
+
+
+class TeamMessageSerializer(RepresentationMixin, serializers.ModelSerializer):
+    """
+    serializer to be used by :model:`plans.TeamMessage`
+    """
+
+    class Meta:
+        model = TeamMessage
+        fields = (
+            'id',
+            'plan',
+            'members',
+            'created',
+            'modified',
+            'last_update',
+        )
+        read_only_fields = (
+            'id',
+            'created',
+            'modified',
+        )
+        nested_serializers = [
+            {
+                'field': 'plan',
+                'serializer_class': CarePlanSerializer,
+            },
+            {
+                'field': 'members',
+                'serializer_class': BasicEmployeeProfileSerializer,
+                'many': True
+            },
+        ]
