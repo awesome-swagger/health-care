@@ -902,6 +902,7 @@ class MessageRecipientSerializer(serializers.ModelSerializer):
             'id',
             'created',
             'modified',
+            'last_update',
         )
         nested_serializers = [
             {
@@ -914,6 +915,34 @@ class MessageRecipientSerializer(serializers.ModelSerializer):
                 'many': True
             },
         ]
+
+    def check_if_plan_member_or_patient_owner(self, plan, user):
+        if user.is_patient and user.patient_profile != plan.patient:
+            raise serializers.ValidationError(
+                _("Patient must be the owner of the plan."))
+        elif user.is_employee:
+            employee = user.employee_profile
+            plan_member = plan.care_team_members.filter(
+                employee_profile=employee).exists()
+            if not plan_member:
+                raise serializers.ValidationError(
+                    _("Employee must be a care team member of the plan."))
+
+    def validate(self, data):
+        if 'plan' in data:
+            plan = data.get('plan')
+            request = self.kwargs.get('request')
+            user = request.user
+            # Check for logged in user
+            self.check_if_plan_member_or_patient_owner(plan, user)
+
+        if 'members' in data:
+            members = data.get('members', [])
+            # Check data for members field
+            for member in members:
+                self.check_if_plan_member_or_patient_owner(plan, member)
+
+        return data
 
 
 class TeamMessageSerializer(RepresentationMixin, serializers.ModelSerializer):
