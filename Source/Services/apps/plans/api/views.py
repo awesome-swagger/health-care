@@ -1392,6 +1392,8 @@ class MessageRecipientViewSet(viewsets.ModelViewSet):
 
     list:
         Returns list of all :model:`plans.MessageRecipient` objects.
+        Employees and patients will only have access to objects which
+        they are a member of.
 
     delete:
         Deletes a :model:`plans.MessageRecipient` instance.
@@ -1402,6 +1404,21 @@ class MessageRecipientViewSet(viewsets.ModelViewSet):
         permissions.IsAuthenticated,
     )
     queryset = MessageRecipient.objects.all()
+    filter_backends = (DjangoFilterBackend, )
+    filterset_fields = (
+        'plan',
+    )
+
+    def get_queryset(self):
+        queryset = super(MessageRecipientViewSet, self).get_queryset()
+
+        user = self.request.user
+        if user.is_superuser:
+            pass
+        else:
+            queryset = queryset.filter(members=user)
+
+        return queryset
 
 
 class TeamMessageViewSet(viewsets.ModelViewSet):
