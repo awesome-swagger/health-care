@@ -883,7 +883,7 @@ class MessageRecipientSerializer(serializers.ModelSerializer):
             },
             {
                 'field': 'members',
-                'serializer_class': BasicEmployeeProfileSerializer,
+                'serializer_class': MessageProfileSerializer,
                 'many': True
             },
         ]

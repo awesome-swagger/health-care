@@ -291,8 +291,10 @@ class MessageRecipient(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
         related_name='message_recipients',
         on_delete=models.CASCADE
         )
+    # members field should be on the user level because both patients and
+    # employees can be members of a message thread
     members = models.ManyToManyField(
-        'core.EmployeeProfile',
+        'accounts.EmailUser',
         related_name='message_recipients',
         )
     last_update = models.DateTimeField(
