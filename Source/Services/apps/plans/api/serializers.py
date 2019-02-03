@@ -26,6 +26,7 @@ from ..models import (
     MessageRecipient,
     TeamMessage,
 )
+from apps.accounts.models import EmailUser
 from apps.billings.models import BilledActivity
 from apps.core.api.mixins import RepresentationMixin
 from apps.core.api.serializers import (
@@ -831,6 +832,30 @@ class PatientCarePlanOverviewSerializer(CarePlanOverviewSerializer):
         return obj.patient.problemarea_set.count()
 
 
+class MessageProfileSerializer(serializers.ModelSerializer):
+    """
+    serializer to be used by :models:`accounts.EmailUser`
+    """
+    profile = serializers.SerializerMethodField()
+
+    class Meta:
+        model = EmailUser
+        fields = (
+            'id',
+            'profile',
+        )
+
+    def get_profile(self, obj):
+        data = {}
+        if obj.is_employee:
+            serializer = BasicEmployeeProfileSerializer(obj.employee_profile)
+            data = serializer.data
+        elif obj.is_patient:
+            serializer = BasicPatientPlanSerializer(obj.patient_profile)
+            data = serializer.data
+        return data
+
+
 class MessageRecipientSerializer(serializers.ModelSerializer):
     """
     serializer to be used by :model:`plans.MessageRecipient`
@@ -838,28 +863,6 @@ class MessageRecipientSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = MessageRecipient
-        fields = (
-            'id',
-            'plan',
-            'members',
-            'created',
-            'modified',
-            'last_update',
-        )
-        read_only_fields = (
-            'id',
-            'created',
-            'modified',
-        )
-
-
-class TeamMessageSerializer(RepresentationMixin, serializers.ModelSerializer):
-    """
-    serializer to be used by :model:`plans.TeamMessage`
-    """
-
-    class Meta:
-        model = TeamMessage
         fields = (
             'id',
             'plan',
@@ -882,5 +885,33 @@ class TeamMessageSerializer(RepresentationMixin, serializers.ModelSerializer):
                 'field': 'members',
                 'serializer_class': BasicEmployeeProfileSerializer,
                 'many': True
+            },
+        ]
+
+
+class TeamMessageSerializer(RepresentationMixin, serializers.ModelSerializer):
+    """
+    serializer to be used by :model:`plans.TeamMessage`
+    """
+
+    class Meta:
+        model = TeamMessage
+        fields = (
+            'id',
+            'recipients',
+            'sender',
+            'content',
+            'created',
+            'modified',
+        )
+        read_only_fields = (
+            'id',
+            'created',
+            'modified',
+        )
+        nested_serializers = [
+            {
+                'field': 'sender',
+                'serializer_class': MessageProfileSerializer,
             },
         ]

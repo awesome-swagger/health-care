@@ -27,6 +27,8 @@ from ..models import (
     InfoMessageQueue,
     InfoMessage,
     CareTeamMember,
+    MessageRecipient,
+    TeamMessage,
 )
 from ..permissions import CareTeamMemberPermissions
 from .serializers import (
@@ -46,6 +48,8 @@ from .serializers import (
     CarePlanByTemplateFacilitySerializer,
     CarePlanOverviewSerializer,
     PatientCarePlanOverviewSerializer,
+    MessageRecipientSerializer,
+    TeamMessageSerializer,
 )
 from apps.core.api.mixins import ParentViewSetPermissionMixin
 from apps.core.models import Organization, Facility
@@ -1367,3 +1371,65 @@ class PatientCarePlanOverview(ParentViewSetPermissionMixin,
             )
 
         return queryset
+
+
+class MessageRecipientViewSet(viewsets.ModelViewSet):
+    """
+    Viewset for :model:`plans.MessageRecipient`
+    ========
+
+    create:
+        Creates :model:`plans.MessageRecipient` object.
+
+    update:
+        Updates :model:`plans.MessageRecipient` object.
+
+    partial_update:
+        Updates one or more fields of an existing recipient object.
+
+    retrieve:
+        Retrieves a :model:`plans.MessageRecipient` instance.
+
+    list:
+        Returns list of all :model:`plans.MessageRecipient` objects.
+
+    delete:
+        Deletes a :model:`plans.MessageRecipient` instance.
+    """
+
+    serializer_class = MessageRecipientSerializer
+    permission_classes = (
+        permissions.IsAuthenticated,
+    )
+    queryset = MessageRecipient.objects.all()
+
+
+class TeamMessageViewSet(viewsets.ModelViewSet):
+    """
+    Viewset for :model:`plans.TeamMessage`
+    ========
+
+    create:
+        Creates :model:`plans.TeamMessage` object.
+
+    update:
+        Updates :model:`plans.TeamMessage` object.
+
+    partial_update:
+        Updates one or more fields of an existing message object.
+
+    retrieve:
+        Retrieves a :model:`plans.TeamMessage` instance.
+
+    list:
+        Returns list of all :model:`plans.TeamMessage` objects.
+
+    delete:
+        Deletes a :model:`plans.TeamMessage` instance.
+    """
+
+    serializer_class = TeamMessageSerializer
+    permission_classes = (
+        permissions.IsAuthenticated,
+    )
+    queryset = TeamMessage.objects.all()

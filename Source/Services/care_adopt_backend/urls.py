@@ -53,6 +53,8 @@ from apps.plans.api.views import (
     InfoMessageQueueByCarePlanTemplate,
     CarePlanByFacility,
     PatientCarePlanOverview,
+    MessageRecipientViewSet,
+    TeamMessageViewSet,
 )
 from apps.tasks.api.views import (
     PatientTaskTemplateViewSet,
@@ -303,6 +305,15 @@ router.register(
     r'potential_patients',
     PotentialPatientViewSet,
     base_name='potential_patients')
+router.register(
+    r'message_recipients',
+    MessageRecipientViewSet,
+    base_name='message_recipients')
+router.register(
+    r'team_messages',
+    TeamMessageViewSet,
+    base_name='team_messages')
+
 # Tasks
 router.register(
     r'patient_task_templates',
