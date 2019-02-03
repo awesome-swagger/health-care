@@ -51,6 +51,7 @@ from .serializers import (
     PatientCarePlanOverviewSerializer,
     MessageRecipientSerializer,
     TeamMessageSerializer,
+    UpdateTeamMessageSerializer,
 )
 from apps.accounts.models import EmailUser
 from apps.core.api.mixins import ParentViewSetPermissionMixin
@@ -1550,3 +1551,18 @@ class TeamMessageViewSet(ParentViewSetPermissionMixin,
 
     def perform_create(self, serializer):
         serializer.save(recipients=self.parent_obj)
+
+    def get_serializer_class(self):
+        if self.request.method in ['PUT', 'PATCH']:
+            return UpdateTeamMessageSerializer
+        return super(TeamMessageViewSet, self).get_serializer_class()
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+
+        if request.user != instance.sender:
+            raise serializers.ValidationError(
+                _('You are not the sender of this message.'))
+
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)

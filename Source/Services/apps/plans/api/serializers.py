@@ -950,3 +950,23 @@ class TeamMessageSerializer(RepresentationMixin, serializers.ModelSerializer):
                 'serializer_class': MessageProfileSerializer,
             },
         ]
+
+
+class UpdateTeamMessageSerializer(TeamMessageSerializer):
+    """
+    update serializer for :model:`plans.TeamMessage`
+    """
+
+    class Meta(TeamMessageSerializer.Meta):
+
+        # This will make sure that only the `content` field is editable
+        read_only_fields = (
+            'id',
+            'sender',
+
+            # make this read only to make use of ParentViewSetPermissionMixin
+            'recipients',
+
+            'created',
+            'modified',
+        )

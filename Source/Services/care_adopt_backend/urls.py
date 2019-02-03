@@ -285,11 +285,16 @@ care_plan_template_routes.register(
 )
 care_plan_routes = router.register(
     r'care_plans', CarePlanViewSet, base_name='care_plans')
-care_plan_routes.register(
+message_recipient_routes = care_plan_routes.register(
     r'message_recipients',
     MessageRecipientViewSet,
     base_name='message_recipients',
     parents_query_lookups=['plan'])
+message_recipient_routes.register(
+    r'team_messages',
+    TeamMessageViewSet,
+    base_name='team_messages',
+    parents_query_lookups=['recipients__plan', 'recipients'])
 router.register(
     r'plan_consent_forms', PlanConsentViewSet, base_name='plan_consent_forms')
 router.register(
@@ -310,10 +315,6 @@ router.register(
     r'potential_patients',
     PotentialPatientViewSet,
     base_name='potential_patients')
-router.register(
-    r'team_messages',
-    TeamMessageViewSet,
-    base_name='team_messages')
 
 # Tasks
 router.register(
