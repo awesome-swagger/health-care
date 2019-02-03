@@ -107,7 +107,7 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
 
   public getPatients() {
     let promise = new Promise((resolve, reject) => {
-      let patientsSub = this.store.PatientProfile.readListPaged().subscribe(
+      let patientsSub = this.store.PatientProfile.readListPaged({page: 1}).subscribe(
         (patients) => {
           resolve(patients);
         },

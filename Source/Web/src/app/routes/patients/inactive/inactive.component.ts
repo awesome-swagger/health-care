@@ -10,7 +10,8 @@ import {
   flattenDeep as _flattenDeep,
   mean as _mean,
   sum as _sum,
-  compact as _compact
+  compact as _compact,
+  find as _find
 } from 'lodash';
 
 @Component({
@@ -35,6 +36,12 @@ export class InactivePatientsComponent implements OnDestroy, OnInit {
   public multi3Open;
   public multi4Open;
 
+  public totalInactive:number = 0;
+  public total:number = 0;
+  public facilityTotals = {};
+  public currentPage:number = 1;
+  public facilityPages = {};
+
   constructor(
     private modals: ModalService,
     private auth: AuthService,
@@ -49,20 +56,25 @@ export class InactivePatientsComponent implements OnDestroy, OnInit {
         }
         this.facilities = facilities;
         this.facilities.forEach((facility, i) => {
-          let inactivePatientsSub = this.store.Facility.detailRoute('get', facility.id, 'inactive_patients', {}, {})
-            .subscribe(
-              (inactivePatients: any) => {
-                facility.inactivePatients = inactivePatients.results;
-                console.log(facility);
-              },
-              (err) => {},
-              () => {
-                inactivePatientsSub.unsubscribe();
-              }
-            )
+          this.getInactivePatients(facility.id).then((inactivePatients:any) => {
+            this.totalInactive += inactivePatients.count;
+            this.facilityPages[facility.id] = 1;
+            this.facilityTotals[facility.id] = inactivePatients.count;
+            facility.inactivePatients = inactivePatients.results;
+          })
         });
       }
     )
+  }
+
+  private getInactivePatients(facilityId) {
+    return new Promise((resolve, reject) => {
+      let inactivePatientsSub = this.store.Facility.detailRoute('get', facilityId, 'inactive_patients', {}, {}).subscribe(
+        (inactivePatients:any) => resolve(inactivePatients),
+        err => reject(err),
+        () => inactivePatientsSub.unsubscribe()
+      )
+    });
   }
 
   public ngOnDestroy() { }
@@ -111,5 +123,38 @@ export class InactivePatientsComponent implements OnDestroy, OnInit {
       this.activeServiceAreas[area] = status;
     })
   }
+
+  public switchNthFacilityPage(n:number, by:number, to:number = 0) {
+    if (this.facilities) {
+      const facility = this.facilities[n];
+      let inactivePatientsSub = this.store.Facility.detailRoute(
+        'get',
+        facility.id,
+        'inactive_patients',
+        {},
+        {
+          page: to || this.facilityPages[facility.id] + by,
+        }
+      ).subscribe(
+        (inactivePatients: any) => {
+          facility.inactivePatients = inactivePatients.results;
+          if (to) {
+            this.facilityPages[facility.id] = to;
+          } else {
+            this.facilityPages[facility.id] += by;
+          }
+        },
+        (err) => {},
+        () => {
+          inactivePatientsSub.unsubscribe();
+        },
+      );
+    }
+  }
+
+  public lastPage(total) {
+    return Math.ceil(total/20);
+  }
+
 
 }
