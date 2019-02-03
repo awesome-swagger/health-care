@@ -962,6 +962,10 @@ class TeamMessageSerializer(RepresentationMixin, serializers.ModelSerializer):
         )
         read_only_fields = (
             'id',
+
+            # make this read only to make use of ParentViewSetPermissionMixin
+            'recipients',
+
             'created',
             'modified',
         )

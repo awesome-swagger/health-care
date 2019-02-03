@@ -1421,7 +1421,9 @@ class MessageRecipientViewSet(viewsets.ModelViewSet):
         return queryset
 
 
-class TeamMessageViewSet(viewsets.ModelViewSet):
+class TeamMessageViewSet(ParentViewSetPermissionMixin,
+                         NestedViewSetMixin,
+                         viewsets.ModelViewSet):
     """
     Viewset for :model:`plans.TeamMessage`
     ========
@@ -1450,3 +1452,14 @@ class TeamMessageViewSet(viewsets.ModelViewSet):
         permissions.IsAuthenticated,
     )
     queryset = TeamMessage.objects.all()
+    parent_field = 'recipients'
+    parent_lookup = [
+        (
+            'recipients',
+            MessageRecipient,
+            MessageRecipientViewSet
+        )
+    ]
+
+    def perform_create(self, serializer):
+        serializer.save(recipients=self.parent_obj)
