@@ -17,7 +17,9 @@ from .factories import (
     GoalCommentFactory,
     InfoMessageQueueFactory,
     InfoMessageFactory,
+    MessageRecipientFactory,
 )
+from apps.accounts.tests.factories import RegularUserFactory
 
 
 class PlansMixin(PatientsMixin):
@@ -206,3 +208,16 @@ class PlansMixin(PatientsMixin):
             })
 
         return InfoMessageFactory(**kwargs)
+
+    def create_message_recipient(self, **kwargs):
+        if 'plan' not in kwargs:
+            kwargs.update({
+                'plan': self.create_care_plan()
+            })
+
+        members = kwargs.pop('members', [RegularUserFactory()])
+
+        recipient = MessageRecipientFactory(**kwargs)
+        recipient.members.add(*members)
+
+        return recipient
