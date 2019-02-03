@@ -283,8 +283,13 @@ care_plan_template_routes.register(
     base_name='vital-task-templates-by-care-plan-templates',
     parents_query_lookups=['plan_template']
 )
-router.register(
+care_plan_routes = router.register(
     r'care_plans', CarePlanViewSet, base_name='care_plans')
+care_plan_routes.register(
+    r'message_recipients',
+    MessageRecipientViewSet,
+    base_name='message_recipients',
+    parents_query_lookups=['plan'])
 router.register(
     r'plan_consent_forms', PlanConsentViewSet, base_name='plan_consent_forms')
 router.register(
@@ -305,10 +310,6 @@ router.register(
     r'potential_patients',
     PotentialPatientViewSet,
     base_name='potential_patients')
-router.register(
-    r'message_recipients',
-    MessageRecipientViewSet,
-    base_name='message_recipients')
 router.register(
     r'team_messages',
     TeamMessageViewSet,

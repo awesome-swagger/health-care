@@ -5,7 +5,7 @@ import pytz
 from dateutil.relativedelta import relativedelta
 
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import viewsets, permissions, mixins
+from rest_framework import viewsets, permissions, mixins, serializers, status
 from rest_framework.decorators import action
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.response import Response
@@ -13,6 +13,7 @@ from rest_framework_extensions.mixins import NestedViewSetMixin
 
 from django.db.models import Avg, Q
 from django.shortcuts import get_object_or_404
+from django.utils.translation import ugettext_lazy as _
 
 from ..models import (
     CarePlanTemplateType,
@@ -51,6 +52,7 @@ from .serializers import (
     MessageRecipientSerializer,
     TeamMessageSerializer,
 )
+from apps.accounts.models import EmailUser
 from apps.core.api.mixins import ParentViewSetPermissionMixin
 from apps.core.models import Organization, Facility
 from apps.core.api.serializers import ProviderRoleSerializer
@@ -1373,19 +1375,18 @@ class PatientCarePlanOverview(ParentViewSetPermissionMixin,
         return queryset
 
 
-class MessageRecipientViewSet(viewsets.ModelViewSet):
+class MessageRecipientViewSet(ParentViewSetPermissionMixin,
+                              NestedViewSetMixin,
+                              mixins.CreateModelMixin,
+                              mixins.ListModelMixin,
+                              mixins.RetrieveModelMixin,
+                              viewsets.GenericViewSet):
     """
     Viewset for :model:`plans.MessageRecipient`
     ========
 
     create:
         Creates :model:`plans.MessageRecipient` object.
-
-    update:
-        Updates :model:`plans.MessageRecipient` object.
-
-    partial_update:
-        Updates one or more fields of an existing recipient object.
 
     retrieve:
         Retrieves a :model:`plans.MessageRecipient` instance.
@@ -1395,8 +1396,6 @@ class MessageRecipientViewSet(viewsets.ModelViewSet):
         Employees and patients will only have access to objects which
         they are a member of.
 
-    delete:
-        Deletes a :model:`plans.MessageRecipient` instance.
     """
 
     serializer_class = MessageRecipientSerializer
@@ -1404,10 +1403,14 @@ class MessageRecipientViewSet(viewsets.ModelViewSet):
         permissions.IsAuthenticated,
     )
     queryset = MessageRecipient.objects.all()
-    filter_backends = (DjangoFilterBackend, )
-    filterset_fields = (
-        'plan',
-    )
+    parent_field = 'plan'
+    parent_lookup = [
+        (
+            'plan',
+            CarePlan,
+            CarePlanViewSet
+        )
+    ]
 
     def get_queryset(self):
         queryset = super(MessageRecipientViewSet, self).get_queryset()
@@ -1419,6 +1422,90 @@ class MessageRecipientViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(members=user)
 
         return queryset
+
+    def create(self, request, *args, **kwargs):
+        # Call `get_queryset` first before processing POST request
+        self.get_queryset()
+
+        return super(MessageRecipientViewSet, self).create(
+            request, *args, **kwargs)
+
+    def perform_create(self, serializer):
+        serializer.save(plan=self.parent_obj)
+
+    @action(methods=['POST'], detail=True)
+    def add_member(self, request, pk, *args, **kwargs):
+        """
+        Adds a member to the given recipient/thread.
+
+        Request data should contain the `user` ID. For example:
+
+            POST /api/care_plans/<plan-id>/message_recipients/<recipient-ID>/add_member/
+            {
+                'member': <user-ID>
+            }
+        """
+        recipient = self.get_object()
+
+        if 'member' not in request.data:
+            raise serializers.ValidationError(_('User ID is required.'))
+
+        user_id = request.data['member']
+        try:
+            member = EmailUser.objects.get(id=user_id)
+        except EmailUser.DoesNotExist:
+            raise serializers.ValidationError(_('User does not exist.'))
+
+        if member in recipient.members.all():
+            raise serializers.ValidationError(_('User already exists.'))
+
+        recipient.members.add(member)
+        ctx = {
+            'context': self.get_serializer_context()
+        }
+        serializer = self.get_serializer_class()(recipient, **ctx)
+        return Response(
+            data=serializer.data,
+            status=status.HTTP_201_CREATED
+        )
+
+    @action(methods=['DELETE'], detail=True)
+    def remove_member(self, request, pk, *args, **kwargs):
+        """
+        Removes a member from the given recipient/thread.
+
+        Request data should contain the `user` ID. For example:
+
+            DELETE /api/care_plans/<plan-id>/message_recipients/<recipient-ID>/remove_member/
+            {
+                'member': <user-ID>
+            }
+        """
+        recipient = self.get_object()
+
+        if 'member' not in request.data:
+            raise serializers.ValidationError(_('User ID is required.'))
+
+        user_id = request.data['member']
+        try:
+            member = EmailUser.objects.get(id=user_id)
+        except EmailUser.DoesNotExist:
+            raise serializers.ValidationError(_('User does not exist.'))
+
+        if member not in recipient.members.all():
+            raise serializers.ValidationError(
+                _('Employee does not have that role.')
+            )
+
+        recipient.members.remove(member)
+        ctx = {
+            'context': self.get_serializer_context()
+        }
+        serializer = self.get_serializer_class()(recipient, **ctx)
+        return Response(
+            data=serializer.data,
+            status=status.HTTP_204_NO_CONTENT
+        )
 
 
 class TeamMessageViewSet(ParentViewSetPermissionMixin,
