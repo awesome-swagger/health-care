@@ -937,6 +937,7 @@ class TeamMessageSerializer(RepresentationMixin, serializers.ModelSerializer):
         )
         read_only_fields = (
             'id',
+            'sender',  # auto-populate by logged in user
 
             # make this read only to make use of ParentViewSetPermissionMixin
             'recipients',
@@ -951,22 +952,14 @@ class TeamMessageSerializer(RepresentationMixin, serializers.ModelSerializer):
             },
         ]
 
+    def validate(self, data):
+        if self.instance is not None:
+            request = self.context.get('request')
+            user = request.user
 
-class UpdateTeamMessageSerializer(TeamMessageSerializer):
-    """
-    update serializer for :model:`plans.TeamMessage`
-    """
+            # Only the owner can update a message instance
+            if user != self.instance.sender:
+                raise serializers.ValidationError(
+                    _('Logged in user is not the sender.'))
 
-    class Meta(TeamMessageSerializer.Meta):
-
-        # This will make sure that only the `content` field is editable
-        read_only_fields = (
-            'id',
-            'sender',
-
-            # make this read only to make use of ParentViewSetPermissionMixin
-            'recipients',
-
-            'created',
-            'modified',
-        )
+        return data

@@ -31,7 +31,10 @@ from ..models import (
     MessageRecipient,
     TeamMessage,
 )
-from ..permissions import CareTeamMemberPermissions
+from ..permissions import (
+    CareTeamMemberPermissions,
+    MessageRecipientPermissions,
+)
 from .serializers import (
     CarePlanTemplateTypeSerializer,
     ServiceAreaSerializer,
@@ -51,7 +54,6 @@ from .serializers import (
     PatientCarePlanOverviewSerializer,
     MessageRecipientSerializer,
     TeamMessageSerializer,
-    UpdateTeamMessageSerializer,
 )
 from apps.accounts.models import EmailUser
 from apps.core.api.mixins import ParentViewSetPermissionMixin
@@ -1402,6 +1404,7 @@ class MessageRecipientViewSet(ParentViewSetPermissionMixin,
     serializer_class = MessageRecipientSerializer
     permission_classes = (
         permissions.IsAuthenticated,
+        MessageRecipientPermissions,
     )
     queryset = MessageRecipient.objects.all()
     parent_field = 'plan'
@@ -1549,17 +1552,23 @@ class TeamMessageViewSet(ParentViewSetPermissionMixin,
         )
     ]
 
-    def perform_create(self, serializer):
-        serializer.save(recipients=self.parent_obj)
+    def create(self, request, *args, **kwargs):
+        # Call `get_queryset` first before processing POST request
+        self.get_queryset()
 
-    def get_serializer_class(self):
-        if self.request.method in ['PUT', 'PATCH']:
-            return UpdateTeamMessageSerializer
-        return super(TeamMessageViewSet, self).get_serializer_class()
+        return super(TeamMessageViewSet, self).create(
+            request, *args, **kwargs)
+
+    def perform_create(self, serializer):
+        serializer.save(
+            recipients=self.parent_obj,
+            sender=self.request.user,
+        )
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
 
+        # Only the owner can delete a message instance
         if request.user != instance.sender:
             raise serializers.ValidationError(
                 _('You are not the sender of this message.'))

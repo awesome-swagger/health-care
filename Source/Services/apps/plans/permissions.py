@@ -1,3 +1,5 @@
+from rest_framework import permissions
+
 from care_adopt_backend.permissions import IsAdminOrEmployee
 
 
@@ -18,3 +20,11 @@ class CareTeamMemberPermissions(IsAdminOrEmployee):
                     return True
 
         return False
+
+
+class MessageRecipientPermissions(permissions.IsAuthenticated):
+
+    def has_object_permission(self, request, view, obj):
+
+        return request.user.is_superuser or \
+            request.user in obj.members.all()
