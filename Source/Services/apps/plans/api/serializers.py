@@ -45,6 +45,33 @@ from apps.tasks.models import (
 )
 
 
+class BasicEmployeePlanSerializer(serializers.ModelSerializer):
+    """
+    basic serializer for :model:`core.EmployeeProfile`
+    """
+    first_name = serializers.SerializerMethodField()
+    last_name = serializers.SerializerMethodField()
+    image_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = EmployeeProfile
+        fields = (
+            'id',
+            'first_name',
+            'last_name',
+            'image_url',
+        )
+
+    def get_first_name(self, obj):
+        return obj.user.first_name
+
+    def get_last_name(self, obj):
+        return obj.user.last_name
+
+    def get_image_url(self, obj):
+        return obj.user.get_image_url()
+
+
 class BasicPatientPlanSerializer(serializers.ModelSerializer):
     """
     basic serializer for :model:`patients.PatientProfile`
@@ -848,7 +875,7 @@ class MessageProfileSerializer(serializers.ModelSerializer):
     def get_profile(self, obj):
         data = {}
         if obj.is_employee:
-            serializer = BasicEmployeeProfileSerializer(obj.employee_profile)
+            serializer = BasicEmployeePlanSerializer(obj.employee_profile)
             data = serializer.data
         elif obj.is_patient:
             serializer = BasicPatientPlanSerializer(obj.patient_profile)
