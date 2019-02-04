@@ -101,3 +101,21 @@ class InfoMessageFactory(factory.django.DjangoModelFactory):
 
     class Meta:
         model = 'plans.InfoMessage'
+
+
+class MessageRecipientFactory(factory.django.DjangoModelFactory):
+    """
+    Factory for :model:`plans.MessageRecipient`
+    """
+
+    class Meta:
+        model = 'plans.MessageRecipient'
+
+
+class TeamMessageFactory(factory.django.DjangoModelFactory):
+    """
+    Factory for :model:`plans.TeamMessage`
+    """
+
+    class Meta:
+        model = 'plans.TeamMessage'

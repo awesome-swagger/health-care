@@ -3,7 +3,7 @@ import datetime
 import pytz
 
 from django.contrib.auth import get_user_model
-from django.db.models import Avg
+from django.db.models import Avg, Sum
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
@@ -23,12 +23,18 @@ from ..models import (
     InfoMessageQueue,
     InfoMessage,
     CareTeamMember,
+    MessageRecipient,
+    TeamMessage,
 )
+from apps.accounts.models import EmailUser
+from apps.billings.models import BilledActivity
 from apps.core.api.mixins import RepresentationMixin
 from apps.core.api.serializers import (
     ProviderRoleSerializer,
+    BasicEmployeeProfileSerializer,
     EmployeeProfileSerializer,
 )
+from apps.core.models import EmployeeProfile
 from apps.patients.models import PatientProfile
 from apps.tasks.models import (
     AssessmentTask,
@@ -37,6 +43,60 @@ from apps.tasks.models import (
     SymptomTask,
     VitalTask,
 )
+
+
+class BasicEmployeePlanSerializer(serializers.ModelSerializer):
+    """
+    basic serializer for :model:`core.EmployeeProfile`
+    """
+    first_name = serializers.SerializerMethodField()
+    last_name = serializers.SerializerMethodField()
+    image_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = EmployeeProfile
+        fields = (
+            'id',
+            'first_name',
+            'last_name',
+            'image_url',
+        )
+
+    def get_first_name(self, obj):
+        return obj.user.first_name
+
+    def get_last_name(self, obj):
+        return obj.user.last_name
+
+    def get_image_url(self, obj):
+        return obj.user.get_image_url()
+
+
+class BasicPatientPlanSerializer(serializers.ModelSerializer):
+    """
+    basic serializer for :model:`patients.PatientProfile`
+    """
+    first_name = serializers.SerializerMethodField()
+    last_name = serializers.SerializerMethodField()
+    image_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = PatientProfile
+        fields = (
+            'id',
+            'first_name',
+            'last_name',
+            'image_url',
+        )
+
+    def get_first_name(self, obj):
+        return obj.user.first_name
+
+    def get_last_name(self, obj):
+        return obj.user.last_name
+
+    def get_image_url(self, obj):
+        return obj.user.get_image_url()
 
 
 class CarePlanTemplateTypeSerializer(serializers.ModelSerializer):
@@ -123,14 +183,16 @@ class CarePlanSerializer(RepresentationMixin, serializers.ModelSerializer):
             'id',
             'created',
             'modified',
-            'patient',
-            'plan_template',
         )
         nested_serializers = [
             {
                 'field': 'plan_template',
                 'serializer_class': CarePlanTemplateSerializer,
-            }
+            },
+            {
+                'field': 'patient',
+                'serializer_class': BasicPatientPlanSerializer,
+            },
         ]
 
 
@@ -200,6 +262,32 @@ class GoalTemplateSerializer(serializers.ModelSerializer):
         )
 
 
+class BaseInfoMessageQueueSerializer(RepresentationMixin,
+                                     serializers.ModelSerializer):
+
+    class Meta:
+        model = InfoMessageQueue
+        fields = (
+            'id',
+            'plan_template',
+            'name',
+            'type',
+            'created',
+            'modified'
+        )
+        read_only_fields = (
+            'id',
+            'created',
+            'modified',
+        )
+        nested_serializers = [
+            {
+                'field': 'plan_template',
+                'serializer_class': CarePlanTemplateSerializer,
+            }
+        ]
+
+
 class InfoMessageSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -212,6 +300,12 @@ class InfoMessageSerializer(serializers.ModelSerializer):
         read_only_fields = (
             'id',
         )
+        nested_serializers = [
+            {
+                'field': 'queue',
+                'serializer_class': BaseInfoMessageQueueSerializer,
+            }
+        ]
 
 
 class InfoMessageQueueSerializer(RepresentationMixin,
@@ -460,6 +554,7 @@ class CarePlanTemplateAverageSerializer(serializers.ModelSerializer):
     """
     total_patients = serializers.SerializerMethodField()
     total_facilities = serializers.SerializerMethodField()
+    time_count = serializers.SerializerMethodField()
     average_outcome = serializers.SerializerMethodField()
     average_engagement = serializers.SerializerMethodField()
     risk_level = serializers.SerializerMethodField()
@@ -475,6 +570,7 @@ class CarePlanTemplateAverageSerializer(serializers.ModelSerializer):
             'duration_weeks',
             'total_patients',
             'total_facilities',
+            'time_count',
             'average_outcome',
             'average_engagement',
             'risk_level',
@@ -487,6 +583,12 @@ class CarePlanTemplateAverageSerializer(serializers.ModelSerializer):
     def get_total_facilities(self, obj):
         return obj.care_plans.values_list(
             'patient__facility', flat=True).distinct().count()
+
+    def get_time_count(self, obj):
+        time_spent = BilledActivity.objects.filter(
+            plan__plan_template=obj).aggregate(total=Sum('time_spent'))
+        total = time_spent['total'] or 0
+        return str(datetime.timedelta(minutes=total))[:-3]
 
     def get_average_outcome(self, obj):
         tasks = AssessmentTask.objects.filter(
@@ -712,3 +814,152 @@ class CarePlanByTemplateFacilitySerializer(CarePlanOverviewSerializer):
     data relevant in dashboard average endpoint
     """
     pass
+
+
+class PatientCarePlanOverviewSerializer(CarePlanOverviewSerializer):
+    """
+    serializer to be used for :model:`plans.CarePlan` with overview data
+    relevant in the following pages:
+
+        - `patients__patientOverviewTab--dash`
+        - `patients__patient`
+        - `patients__patientHistoryTab`
+        - `patients__patientOverview`
+        - `patients__patientCareTeamTab`
+        - `patients__patientMessagesTab`
+    """
+
+    care_team = serializers.SerializerMethodField()
+    next_check_in = serializers.SerializerMethodField()
+    problem_areas_count = serializers.SerializerMethodField()
+
+    class Meta(CarePlanOverviewSerializer.Meta):
+        fields = (
+            'id',
+            'patient',
+            'plan_template',
+            'care_team',
+            'next_check_in',
+            'problem_areas_count',
+            'time_spent_this_month',
+            'risk_level',
+        )
+
+    def get_care_team(self, obj):
+        queryset = obj.care_team_members.values_list(
+            'employee_profile', flat=True).distinct()
+        employees = EmployeeProfile.objects.filter(id__in=queryset)
+        serializer = BasicEmployeeProfileSerializer(employees, many=True)
+        return serializer.data
+
+    def get_next_check_in(self, obj):
+        return ''  # TODO
+
+    def get_problem_areas_count(self, obj):
+        return obj.patient.problemarea_set.count()
+
+
+class MessageProfileSerializer(serializers.ModelSerializer):
+    """
+    serializer to be used by :models:`accounts.EmailUser`
+    """
+    profile = serializers.SerializerMethodField()
+
+    class Meta:
+        model = EmailUser
+        fields = (
+            'id',
+            'profile',
+        )
+
+    def get_profile(self, obj):
+        data = {}
+        if obj.is_employee:
+            serializer = BasicEmployeePlanSerializer(obj.employee_profile)
+            data = serializer.data
+        elif obj.is_patient:
+            serializer = BasicPatientPlanSerializer(obj.patient_profile)
+            data = serializer.data
+        return data
+
+
+class MessageRecipientSerializer(serializers.ModelSerializer):
+    """
+    serializer to be used by :model:`plans.MessageRecipient`
+    """
+
+    class Meta:
+        model = MessageRecipient
+        fields = (
+            'id',
+            'members',
+            'created',
+            'modified',
+            'last_update',
+        )
+        read_only_fields = (
+            'id',
+
+            # make this read only to make use of ParentViewSetPermissionMixin
+            'plan',
+
+            'created',
+            'modified',
+            'last_update',
+        )
+        nested_serializers = [
+            {
+                'field': 'plan',
+                'serializer_class': CarePlanSerializer,
+            },
+            {
+                'field': 'members',
+                'serializer_class': MessageProfileSerializer,
+                'many': True
+            },
+        ]
+
+
+class TeamMessageSerializer(RepresentationMixin, serializers.ModelSerializer):
+    """
+    serializer to be used by :model:`plans.TeamMessage`
+    """
+
+    class Meta:
+        model = TeamMessage
+        fields = (
+            'id',
+            'recipients',
+            'sender',
+            'content',
+            'created',
+            'modified',
+        )
+        read_only_fields = (
+            'id',
+            'sender',  # auto-populate by logged in user
+
+            # make this read only to make use of ParentViewSetPermissionMixin
+            'recipients',
+
+            'created',
+            'modified',
+        )
+        nested_serializers = [
+            {
+                'field': 'sender',
+                'serializer_class': MessageProfileSerializer,
+            },
+        ]
+
+    def validate(self, data):
+        if self.instance is not None:
+            request = self.context.get('request')
+            user = request.user
+
+            # Only the owner can update a message instance
+            if user != self.instance.sender:
+                raise serializers.ValidationError(
+                    _('Logged in user is not the sender.'))
+
+        return data

@@ -706,11 +706,12 @@ class FacilityEmployeeViewSet(ParentViewSetPermissionMixin,
     def assignments(self, request, pk, *args, **kwargs):
         """
         Returns aggregated data of the given employees pertaining to his/her
-        assignments. The data includes:
+        assignments from the current month-to-date. The data includes:
         - total number of facilities
         - total number of care team as a manager
         - total number of care team as a member
         - total number of billable patients
+        - total billable hours
         - total risk level
 
         """

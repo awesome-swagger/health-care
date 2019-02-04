@@ -1,12 +1,16 @@
+import datetime
+
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django.db.models import Sum
+from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
 from apps.core.models import EmployeeProfile, ProviderRole
 from apps.patients.models import PatientProfile
 from care_adopt_backend.mixins import CreatedModifiedMixin, UUIDPrimaryKeyMixin
 
-from .signals import careplan_post_save
+from .signals import careplan_post_save, teammessage_post_save
 
 
 class CarePlanTemplateType(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
@@ -84,6 +88,22 @@ class CarePlan(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
             self.patient.user.first_name,
             self.patient.user.last_name,
             self.plan_template.name)
+
+    @property
+    def total_time_spent(self):
+        time_spent = self.activities.aggregate(total=Sum('time_spent'))
+        total = time_spent['total'] or 0
+        return str(datetime.timedelta(minutes=total))[:-3]
+
+    @property
+    def time_spent_this_month(self):
+        now = timezone.now()
+        first_day_of_month = now.replace(day=1).date()
+        time_spent = self.activities.filter(
+            activity_date__gte=first_day_of_month).aggregate(
+                total=Sum('time_spent'))
+        total = time_spent['total'] or 0
+        return str(datetime.timedelta(minutes=total))[:-3]
 
 
 class PlanConsent(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
@@ -252,7 +272,7 @@ class InfoMessageQueue(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
         return self.name
 
 
-class InfoMessage(UUIDPrimaryKeyMixin):
+class InfoMessage(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
     queue = models.ForeignKey(
         InfoMessageQueue, null=False, blank=False, related_name="messages",
         on_delete=models.CASCADE)
@@ -262,8 +282,59 @@ class InfoMessage(UUIDPrimaryKeyMixin):
         return '{} message'.format(self.queue.name)
 
 
+class MessageRecipient(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
+    """
+    Stores members of a conversation
+    """
+    plan = models.ForeignKey(
+        'plans.CarePlan',
+        related_name='message_recipients',
+        on_delete=models.CASCADE
+        )
+    # members field should be on the user level because both patients and
+    # employees can be members of a message thread
+    members = models.ManyToManyField(
+        'accounts.EmailUser',
+        related_name='message_recipients',
+        )
+    last_update = models.DateTimeField(
+        default=timezone.now
+        )
+
+    class Meta:
+        verbose_name = _('Message Recipient')
+        verbose_name_plural = _('Message Recipients')
+        ordering = ('-last_update', )
+
+
+class TeamMessage(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
+    """
+    This stores the messages made in a certain message group
+    """
+    recipients = models.ForeignKey(
+        'plans.MessageRecipient',
+        related_name='messages',
+        on_delete=models.CASCADE,
+        )
+    content = models.TextField()
+    sender = models.ForeignKey(
+        'accounts.EmailUser',
+        related_name='messages',
+        on_delete=models.CASCADE
+        )
+
+    class Meta:
+        verbose_name = _('Team Message')
+        verbose_name_plural = _('Team Messages')
+        ordering = ('created', )
+
+
 # Signals
 models.signals.post_save.connect(
     careplan_post_save,
     sender=CarePlan,
+)
+models.signals.post_save.connect(
+    teammessage_post_save,
+    sender=TeamMessage,
 )

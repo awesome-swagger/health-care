@@ -147,16 +147,17 @@ def get_all_tasks_of_patient_today(patient):
     return tasks
 
 
-def get_all_tasks_for_today(user):
+def get_all_tasks_for_today(user, **kwargs):
     """
     Retrieves all tasks for the given user that are due for current day.
     """
     tasks = []
-    today = timezone.now().date()
-    today_min = datetime.datetime.combine(today,
+    date_object = kwargs.pop('date_object', timezone.now().date())
+    plan_template = kwargs.pop('plan_template', None)
+    today_min = datetime.datetime.combine(date_object,
                                           datetime.time.min,
                                           tzinfo=pytz.utc)
-    today_max = datetime.datetime.combine(today,
+    today_max = datetime.datetime.combine(date_object,
                                           datetime.time.max,
                                           tzinfo=pytz.utc)
 
@@ -197,6 +198,18 @@ def get_all_tasks_for_today(user):
             plan__patient__id=patient.id,
             due_datetime__range=(today_min, today_max),
             is_complete=False)
+
+        if plan_template:
+            patient_tasks = patient_tasks.filter(
+                patient_task_template__plan_template=plan_template)
+            medication_tasks = medication_tasks.filter(
+                medication_task_template__plan__plan_template=plan_template)
+            symptom_tasks = symptom_tasks.filter(
+                symptom_task_template__plan_template=plan_template)
+            assessment_tasks = assessment_tasks.filter(
+                assessment_task_template__plan_template=plan_template)
+            vital_tasks = vital_tasks.filter(
+                vital_task_template__plan_template=plan_template)
 
         if patient_tasks.exists():
             serializer = PatientTaskTodaySerializer(
