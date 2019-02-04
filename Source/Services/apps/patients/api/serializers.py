@@ -19,11 +19,8 @@ from apps.core.api.serializers import (
     EmployeeUserInfo,
     ProviderTitleSerializer,
     SymptomSerializer,
-<<<<<<< HEAD
     ProcedureSerializer,
-=======
     PatientUserInfo,
->>>>>>> master
 )
 from apps.patients.models import (PatientDiagnosis, PatientMedication,
                                   PatientProcedure, PatientProfile,
