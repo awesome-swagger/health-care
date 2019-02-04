@@ -88,10 +88,10 @@
                   {{goal.progress}}/5
                 </div>
               </td>
-              <td>{{moment(goal.lastUpdated).format('MMM D, YYYY')}}</td>
+              <td>{{goal.lastUpdated.format('MMM D, YYYY')}}</td>
               <td>
                 <a class="button button--icon button--icon--small button--center relative"
-                  (click)="openGoalComments()">
+                  (click)="openGoalComments(goal)">
                   <i class="ss-chats"></i>
                   <div class="badge" *ngIf="goal.comments.length > 0">
                     {{goal.comments.length}}
@@ -99,7 +99,7 @@
                 </a>
               </td>
               <td>
-                <a class="button button--icon button--icon--small button--center relative" (click)="updateGoal()">
+                <a class="button button--icon button--icon--small button--center relative" (click)="updateGoal(goal)">
                   <i class="ss-write"></i>
                 </a>
               </td>
