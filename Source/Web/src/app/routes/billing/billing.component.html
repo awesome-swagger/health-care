@@ -17,120 +17,140 @@
         <i class="ss-upload"></i> Sync Billing
       </button>
       <div class="tool__anchor">
-        <button class="button button--icon button--icon--small"
-        (click)="syncTooltipOpen=!syncTooltipOpen">
+        <button class="button button--icon button--icon--small" (click)="syncTooltipOpen=!syncTooltipOpen">
           <i class="ss-help"></i>
         </button>
-        <div class="tool__tip tool__tip--right tool__tip--bottom" [ngClass]="{ 'isOpen' : syncTooltipOpen }">
-          <div class="tool__text">
-            An organization can sync their billing to their billing system. If your billing isn’t getting synced, and you would like this fuctionality, please contact CareAdopt to begin this process.
+        <app-popover [visible]="syncTooltipOpen" (visibleChange)="syncTooltipOpen = $event;">
+          <div class="tool__tip isOpen">
+            <div class="tool__text">
+              An organization can sync their billing to their billing system. If your billing isn’t getting synced, and you would like this fuctionality, please contact CareAdopt to begin this process.
+            </div>
           </div>
-        </div>
+        </app-popover>
       </div>
     </div>
   </div> <!--/.flexHeader-->
 
   <h2>Filter Results</h2>
   <div class="flex marBottom48">
-    <div class="marRight32">
-      <!--TODO: If the user only has access to one facility, hide this filter-->
-      <label>Facility</label>
-      <div class="drop">
-          <div class="drop__input" (click)="filterFacilitiesOpen = !filterFacilitiesOpen">
-            All
-          </div>
-          <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : filterFacilitiesOpen }">
-            <div class="drop__buttons">
-              <button class="button button--iconText" (click)="checkAllFacilities()">
-                <i class="ss-check ss-standard"></i> Check All
-              </button>
-              <button class="button button--iconText" (click)="uncheckAllFacilities()">
-                <i class="ss-ban"></i> Uncheck All
-              </button>
-            </div>
+  	<div class="marRight32">
+  		<!--TODO: If the user only has access to one facility, hide this filter-->
+  		<label>Facility</label>
+  		<div class="drop">
+  			<div class="drop__input" (click)="filterFacilitiesOpen = !filterFacilitiesOpen">
+  				All
+  			</div>
+  			<app-popover [visible]="filterFacilitiesOpen" (visibleChange)="filterFacilitiesOpen = $event;">
+  				<ul class="drop__dropdown isOpen">
+  					<div class="drop__buttons">
+  						<button class="button button--iconText" (click)="checkAllFacilities()">
+  							<i class="ss-check ss-standard"></i> Check All
+  						</button>
+  						<button class="button button--iconText" (click)="uncheckAllFacilities()">
+  							<i class="ss-ban"></i> Uncheck All
+  						</button>
+  					</div>
 
-            <li class="drop__option">
-              <input class="input input--search drop__innerInput" type="text" placeholder="Search" [(ngModel)]="facilitySearch" (ngModelChange)="filterFacilities()" />
-            </li>
+  					<li class="drop__option">
+  						<input class="input input--search drop__innerInput" type="text" placeholder="Search" [(ngModel)]="facilitySearch" (ngModelChange)="filterFacilities()" />
+  					</li>
 
-            <li class="drop__option" *ngFor="let facility of facilitiesShown">
-              <label class="drop__checkbox styledInput">
-                <input type="checkbox" class="styledInput__input" [checked]="isFacilitySelected(facility)" (click)="toggleFacility(facility)" />
-                <span class="styledInput__box"></span>
-                {{facility.name}}
-              </label>
-            </li>
-          </ul>
-        </div>
-    </div> <!--/ container for facility filter-->
+  					<li class="drop__option" *ngFor="let facility of facilitiesShown">
+  						<label class="drop__checkbox styledInput">
+  							<input type="checkbox" class="styledInput__input" [checked]="isFacilitySelected(facility)" (click)="toggleFacility(facility)" />
+  							<span class="styledInput__box"></span>
+  							{{facility.name}}
+  						</label>
+  					</li>
+  				</ul>
+  			</app-popover>
+  		</div>
+  	</div>
+  	<!--/ container for facility filter-->
 
-    <div class="marRight32">
-      <label>Service Area</label>
-      <div class="drop">
-          <div class="drop__input" (click)="filterServiceOpen = !filterServiceOpen">
-            All
-          </div>
-          <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : filterServiceOpen }">
-            <div class="drop__buttons">
-              <button class="button button--iconText" (click)="checkAllServiceAreas()">
-                <i class="ss-check ss-standard"></i> Check All
-              </button>
-              <button class="button button--iconText" (click)="uncheckAllServiceAreas()">
-                <i class="ss-ban"></i> Uncheck All
-              </button>
-            </div>
+  	<div class="marRight32">
+  		<label>Service Area</label>
+  		<div class="drop">
+  			<div class="drop__input" (click)="filterServiceOpen = !filterServiceOpen">
+  				All
+  			</div>
+  			<app-popover [visible]="filterServiceOpen" (visibleChange)="filterServiceOpen = $event;">
+  				<ul class="drop__dropdown isOpen">
+  					<div class="drop__buttons">
+  						<button class="button button--iconText" (click)="checkAllServiceAreas()">
+  							<i class="ss-check ss-standard"></i> Check All
+  						</button>
+  						<button class="button button--iconText" (click)="uncheckAllServiceAreas()">
+  							<i class="ss-ban"></i> Uncheck All
+  						</button>
+  					</div>
 
-            <li class="drop__option">
-              <input class="input input--search drop__innerInput" type="text" placeholder="Search" [(ngModel)]="serviceSearch" (ngModelChange)="filterServiceArea()" />
-            </li>
+  					<li class="drop__option">
+  						<input class="input input--search drop__innerInput" type="text" placeholder="Search" [(ngModel)]="serviceSearch" (ngModelChange)="filterServiceArea()" />
+  					</li>
 
-            <li class="drop__option" *ngFor="let serviceArea of serviceAreasShown">
-              <label class="drop__checkbox styledInput">
-                <input type="checkbox" class="styledInput__input" [checked]="isServiceAreaSelected(serviceArea)" (click)="toggleServiceArea(serviceArea)" />
-                <span class="styledInput__box"></span>
-                {{serviceArea.name}}
-              </label>
-            </li>
-          </ul>
-        </div>
-    </div> <!--/ container for service area filter-->
+  					<li class="drop__option" *ngFor="let serviceArea of serviceAreasShown">
+  						<label class="drop__checkbox styledInput">
+  							<input type="checkbox" class="styledInput__input" [checked]="isServiceAreaSelected(serviceArea)" (click)="toggleServiceArea(serviceArea)" />
+  							<span class="styledInput__box"></span>
+  							{{serviceArea.name}}
+  						</label>
+  					</li>
+  				</ul>
+  			</app-popover>
+  		</div>
+  	</div>
+  	<!--/ container for service area filter-->
 
-    <div class="marRight32">
-      <label>Status</label>
-      <div class="drop">
-        <div class="drop__input" (click)="filterStatusOpen = !filterStatusOpen">
-          {{selectedStatus|titlecase}}
-        </div>
-        <ul class="drop__dropdown fullWidth" [ngClass]="{ 'isOpen' : filterStatusOpen }" (click)="filterStatusOpen = !filterStatusOpen">
-          <li class="drop__option">
-            <a class="drop__link" (click)="selectedStatus = 'all'">
-              All Billings
-            </a>
-            <a class="drop__link" (click)="selectedStatus = 'not-billed'">
-              Not-billed
-            </a>
-            <a class="drop__link" (click)="selectedStatus = 'billed'">
-              Billed
-            </a>
-          </li>
-        </ul>
-      </div>
-    </div> <!--/ container for care plan type filter-->
+  	<div class="marRight32">
+  		<label>Status</label>
+  		<div class="drop">
+  			<div class="drop__input" (click)="filterStatusOpen = !filterStatusOpen">
+  				{{selectedStatus|titlecase}}
+  			</div>
+  			<app-popover [visible]="filterStatusOpen" (visibleChange)="filterStatusOpen = $event;">
+  				<ul class="drop__dropdown fullWidth isOpen" (click)="filterStatusOpen = !filterStatusOpen">
+  					<li class="drop__option">
+  						<a class="drop__link" (click)="selectedStatus = 'all'">
+  							All Billings
+  						</a>
+  						<a class="drop__link" (click)="selectedStatus = 'not-billed'">
+  							Not-billed
+  						</a>
+  						<a class="drop__link" (click)="selectedStatus = 'billed'">
+  							Billed
+  						</a>
+  					</li>
+  				</ul>
+  			</app-popover>
+  		</div>
+  	</div>
+  	<!--/ container for care plan type filter-->
 
-    <div class="drop">
-      <label>Search Users</label>
-      <input class="input input--search" type="text" (click)="employeeSearchOpen = !employeeSearchOpen" placeholder="Search" />
-      <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : employeeSearchOpen }" (click)="employeeSearchOpen = !employeeSearchOpen">
-        <li class="drop__option" *ngFor="let employee of employees">
-          <a class="drop__link">
-            <div class="picName">
-              <img class="picName__img" src="../../../assets/img/profile.svg" />{{employee.first_name}} {{employee.last_name}}, {{employee.title}}
-            </div>
-          </a>
-        </li>
-      </ul>
-    </div> <!--/ container for search users filter-->
-  </div> <!--/.flex (for filters)-->
+  	<div class="drop" *ngIf="isManager">
+  		<label>Search Users</label>
+  		<div *ngIf="selectedEmployee" class="flex alignCenter">
+  			<div class="picName marRight8">
+  				<img class="picName__img" src="../../../assets/img/profile.svg" />{{selectedEmployee.first_name}} {{selectedEmployee.last_name}}, {{selectedEmployee.title}}
+  			</div>
+  			<button class="button button--icon" (click)="selectedEmployee = null; employeeSearch = '';"><i class="ss-delete"></i></button>
+  		</div>
+  		<input *ngIf="!selectedEmployee" class="input input--search" type="text" (click)="employeeSearchOpen = !employeeSearchOpen" placeholder="Search" [(ngModel)]="employeeSearch" (ngModelChange)="filterEmployee()" />
+  		<app-popover [visible]="employeeSearchOpen" (visibleChange)="employeeSearchOpen = $event;">
+  			<ul class="drop__dropdown isOpen" (click)="employeeSearchOpen = !employeeSearchOpen">
+  				<li class="drop__option" *ngFor="let employee of employees" (click)="setSelectedEmployee(employee)">
+  					<a class="drop__link">
+  						<div class="picName">
+  							<img class="picName__img" src="../../../assets/img/profile.svg" />{{employee.first_name}} {{employee.last_name}}, {{employee.title}}
+  						</div>
+  					</a>
+  				</li>
+  			</ul>
+  		</app-popover>
+  	</div>
+  	<!--/ container for search users filter-->
+  </div>
+  <!--/.flex (for filters)-->
 
   <div class="info info--horiz marBottom48">
     <div class="info__cell">
