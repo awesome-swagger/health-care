@@ -14,19 +14,21 @@
 <!---->
 <div>
   <label>Procedure</label>
-  <div class="drop marBottom32">
-    <input class="input input--search fullWidth" type="text" (click)="dropAPOpen = !dropAPOpen" placeholder="Search by name or PX Code" />
-    <ul class="drop__dropdown fullWidth" [ngClass]="{ 'isOpen' : dropAPOpen }" (click)="dropAPOpen = !dropAPOpen">
-      <li class="drop__option">
-        <a class="drop__link">Bypass (1234567)</a>
-      </li>
-      <li class="drop__option">
-        <a class="drop__link">Double Bypass (1234568)</a>
-      </li>
-      <li class="drop__option">
-        <a class="drop__link">Knee Replacement (1234569)</a>
-      </li>
-    </ul>
+  <div class="drop marBottom32" *ngIf="!selectedProcedure">
+    <input class="input input--search fullWidth" type="text" (click)="procedureSearchOpen = !procedureSearchOpen" placeholder="Search by name or PX Code" [(ngModel)]="procedureSearchTerm" (ngModelChange)="filterProcedures($event)" />
+    <app-popover [visible]="procedureSearchOpen" (visibleChange)="procedureSearchOpen = $event;" [options]="procedureDropOptions">
+      <ul class="drop__dropdown fullWidth isOpen" (click)="procedureSearchOpen = !procedureSearchOpen">
+        <li class="drop__option" *ngFor="let procedure of proceduresShown" (click)="setSelectedProcedure(procedure)">
+          <a class="drop__link">{{procedure.name}} ({{procedure.px_code}})</a>
+        </li>
+      </ul>
+    </app-popover>
+  </div>
+  <div class="flex alignCenter marBottom32" *ngIf="selectedProcedure">
+    <h2 class="noMargin marRight8">{{selectedProcedure.name}} ({{selectedProcedure.px_code}})</h2>
+    <button class="button button--icon button--icon--small" (click)="clearSelectedProcedure()">
+      <i class="ss-delete"></i>
+    </button>
   </div>
 </div>
 <!---->
@@ -39,31 +41,32 @@
 </div>
 -->
 
-<form>
-  <div class="flex justifySpaceBetween marBottom32">
-    <div class="modal__inputWrap marRight32">
-      <label>Attending Practitioner</label>
-      <input type="text" class="input fullWidth" />
-    </div>
-    <div class="modal__inputWrap0">
-      <label>Date</label>
-      <div class="datepicker">
-        <div class="datepicker__date" (click)="showADDate=!showADDate">
-          Select Date
-        </div>
-        <app-date-picker class="datepicker__picker datepicker__picker--right" [ngClass]="{ 'isOpen' : showADDate }"></app-date-picker>
+<div class="flex justifySpaceBetween marBottom32">
+  <div class="modal__inputWrap marRight32">
+    <label>Attending Practitioner</label>
+    <input type="text" class="input fullWidth" placeholder="Practitioner Name" [(ngModel)]="practitionerInput" />
+  </div>
+  <div class="modal__inputWrap0">
+    <label>Date</label>
+    <div class="datepicker">
+      <div class="datepicker__date" (click)="showDatePicker=!showDatePicker">
+        <span *ngIf="!selectedDate">Select Date</span>
+        <span *ngIf="selectedDate">{{selectedDate.format('MMM D, YYYY')}}</span>
       </div>
+      <app-popover [visible]="showDatePicker" (visibleChange)="showDatePicker = $event;" [options]="datePickerOptions">
+        <app-date-picker class="datepicker__picker datepicker__picker--right isOpen" [selected]="selectedDate" (selectedChange)="setSelectedDay($event)"></app-date-picker>
+      </app-popover>
     </div>
   </div>
-  <label>Facility</label>
-  <input type="text" class="input fullWidth" />
-</form>
+</div>
+<label>Facility</label>
+<input type="text" class="input fullWidth" placeholder="Facility Name" [(ngModel)]="facilityInput" />
 
 <div class="modal__buttons">
-  <button class="button button--2nd">
+  <button class="button button--2nd" (click)="clickCancel()">
     Cancel
   </button>
-  <button class="button">
+  <button class="button" (click)="clickSave()">
     Save
   </button>
 </div>

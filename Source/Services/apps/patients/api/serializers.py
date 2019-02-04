@@ -19,6 +19,7 @@ from apps.core.api.serializers import (
     EmployeeUserInfo,
     ProviderTitleSerializer,
     SymptomSerializer,
+    ProcedureSerializer,
 )
 from apps.patients.models import (PatientDiagnosis, PatientMedication,
                                   PatientProcedure, PatientProfile,
@@ -172,10 +173,27 @@ class ProblemAreaSerializer(RepresentationMixin, serializers.ModelSerializer):
         ]
 
 
-class PatientProcedureSerializer(serializers.ModelSerializer):
+class PatientProcedureSerializer(RepresentationMixin,
+                                 serializers.ModelSerializer):
     class Meta:
         model = PatientProcedure
-        fields = '__all__'
+        fields = (
+            'id',
+            'patient',
+            'procedure',
+            'date_of_procedure',
+            'attending_practitioner',
+            'facility',
+        )
+        read_only_fields = (
+            'id',
+        )
+        nested_serializers = [
+            {
+                'field': 'procedure',
+                'serializer_class': ProcedureSerializer,
+            }
+        ]
 
 
 class PatientMedicationSerializer(RepresentationMixin,
