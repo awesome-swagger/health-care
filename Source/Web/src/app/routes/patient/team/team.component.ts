@@ -17,6 +17,7 @@ export class PatientTeamComponent implements OnDestroy, OnInit {
   public careTeamMembers = [];
   public availableRoles = [];
   public careManager = null;
+  public billingPractitioner = null;
   public showCMPhone = false;
 
   public tooltipPCT0Open;
@@ -65,10 +66,14 @@ export class PatientTeamComponent implements OnDestroy, OnInit {
               let teamMembersSub = this.store.CarePlan.detailRoute('get', params.planId, 'care_team_members').subscribe(
                 (teamMembers: any) => {
                   this.careTeamMembers = teamMembers.filter((obj) => {
-                    return !obj.is_manager;
+                    return !obj.is_manager && obj.role && obj.role.id !== 'd8f8ba07-3063-44da-ad7e-ac9d5e2146de';
                   });
                   this.careManager = teamMembers.filter((obj) => {
                     return obj.is_manager;
+                  })[0];
+                  this.billingPractitioner = teamMembers.filter((obj) => {
+                    console.log(obj);
+                    return obj.role && obj.role.id === 'd8f8ba07-3063-44da-ad7e-ac9d5e2146de';
                   })[0];
                 },
                 (err) => {},
@@ -218,9 +223,27 @@ export class PatientTeamComponent implements OnDestroy, OnInit {
   public changeBP() {
     let modalSub = this.modals.open(AddCTMemberComponent, {
       closeDisabled: true,
+      data: {
+        role: null,
+        is_manager: false,
+        is_bp: true,
+      },
       width: '416px',
     }).subscribe(
-      (data) => {},
+      (newBp) => {
+        this.store.CareTeamMember.destroy(this.billingPractitioner.id).subscribe(
+          (success) => {
+            this.store.CareTeamMember.create({
+              employee_profile: newBp.id,
+              role: 'd8f8ba07-3063-44da-ad7e-ac9d5e2146de',
+              plan: this.planId,
+              is_manager: false,
+            }).subscribe((createdBp) => {
+              this.billingPractitioner = createdBp;
+            });
+          }
+        );
+      },
       (err) => {},
       () => {
         modalSub.unsubscribe();
