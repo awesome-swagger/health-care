@@ -1,3 +1,9 @@
+import datetime
+
+import pytz
+
+from django.utils import timezone
+
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_haystack.viewsets import HaystackViewSet
 from rest_framework import viewsets, permissions
@@ -93,12 +99,14 @@ class PatientTaskViewSet(viewsets.ModelViewSet):
     )
     queryset = PatientTask.objects.all()
     filter_backends = (DjangoFilterBackend, )
-    filterset_fields = (
-        'plan__id',
-        'patient_task_template__id',
-        'plan__patient__id',
-        'status',
-    )
+    filterset_fields = {
+        'plan': ['exact'],
+        'patient_task_template': ['exact'],
+        'plan__patient': ['exact'],
+        'patient_task_template__plan_template': ['exact'],
+        'status': ['exact'],
+        'appear_datetime': ['lte', 'gte']
+    }
 
     def get_queryset(self):
         queryset = super(PatientTaskViewSet, self).get_queryset()
@@ -110,6 +118,27 @@ class PatientTaskViewSet(viewsets.ModelViewSet):
             )
         elif user.is_patient:
             queryset = queryset.filter(plan__patient=user.patient_profile)
+
+        return queryset
+
+    def filter_queryset(self, queryset):
+        queryset = super(PatientTaskViewSet, self).filter_queryset(queryset)
+
+        query_parameters = self.request.query_params.keys()
+        if 'plan__patient' in query_parameters and \
+           'patient_task_template__plan_template' in query_parameters and \
+           'appear_datetime__gte' not in query_parameters and \
+           'appear_datetime__lte' not in query_parameters:
+            today = timezone.now().date()
+            today_min = datetime.datetime.combine(today,
+                                                  datetime.time.min,
+                                                  tzinfo=pytz.utc)
+            today_max = datetime.datetime.combine(today,
+                                                  datetime.time.max,
+                                                  tzinfo=pytz.utc)
+            queryset = queryset.filter(
+                appear_datetime__range=(today_min, today_max)
+            )
 
         return queryset
 
@@ -218,6 +247,12 @@ class SymptomRatingViewSet(viewsets.ModelViewSet):
         IsPatientOrEmployeeReadOnly,
     )
     queryset = SymptomRating.objects.all()
+    filter_backends = (DjangoFilterBackend, )
+    filterset_fields = {
+        'symptom_task__plan__patient': ['exact'],
+        'symptom_task__symptom_task_template__plan_template': ['exact'],
+        'modified': ['lte', 'gte']
+    }
 
     def get_queryset(self):
         queryset = super(SymptomRatingViewSet, self).get_queryset()
@@ -230,6 +265,27 @@ class SymptomRatingViewSet(viewsets.ModelViewSet):
         elif user.is_patient:
             queryset = queryset.filter(
                 symptom_task__plan__patient=user.patient_profile
+            )
+
+        return queryset
+
+    def filter_queryset(self, queryset):
+        queryset = super(SymptomRatingViewSet, self).filter_queryset(queryset)
+
+        query_parameters = self.request.query_params.keys()
+        if 'symptom_task__plan__patient' in query_parameters and \
+           'symptom_task__symptom_task_template__plan_template' in query_parameters and \
+           'modified__gte' not in query_parameters and \
+           'modified__lte' not in query_parameters:
+            today = timezone.now().date()
+            today_min = datetime.datetime.combine(today,
+                                                  datetime.time.min,
+                                                  tzinfo=pytz.utc)
+            today_max = datetime.datetime.combine(today,
+                                                  datetime.time.max,
+                                                  tzinfo=pytz.utc)
+            queryset = queryset.filter(
+                modified__range=(today_min, today_max)
             )
 
         return queryset
@@ -287,10 +343,13 @@ class AssessmentResponseViewSet(viewsets.ModelViewSet):
     )
     queryset = AssessmentResponse.objects.all()
     filter_backends = (DjangoFilterBackend, )
-    filterset_fields = (
-        'assessment_task__id',
-        'assessment_question__id',
-    )
+    filterset_fields = {
+        'assessment_task': ['exact'],
+        'assessment_question': ['exact'],
+        'assessment_task__plan__patient': ['exact'],
+        'assessment_task__assessment_task_template__plan_template': ['exact'],
+        'modified': ['lte', 'gte']
+    }
 
     def get_queryset(self):
         queryset = super(AssessmentResponseViewSet, self).get_queryset()
@@ -308,10 +367,33 @@ class AssessmentResponseViewSet(viewsets.ModelViewSet):
         return queryset
 
     def get_serializer(self, *args, **kwargs):
-        if self.request.method == 'POST' and isinstance(self.request.data, list):
+        if self.request.method == 'POST' and isinstance(
+           self.request.data, list):
             kwargs['many'] = True
         return super(AssessmentResponseViewSet, self).get_serializer(
             *args, **kwargs)
+
+    def filter_queryset(self, queryset):
+        queryset = super(AssessmentResponseViewSet, self).filter_queryset(
+            queryset)
+
+        query_parameters = self.request.query_params.keys()
+        if 'assessment_task__plan__patient' in query_parameters and \
+           'assessment_task__assessment_task_template__plan_template' in query_parameters and \
+           'modified__gte' not in query_parameters and \
+           'modified__lte' not in query_parameters:
+            today = timezone.now().date()
+            today_min = datetime.datetime.combine(today,
+                                                  datetime.time.min,
+                                                  tzinfo=pytz.utc)
+            today_max = datetime.datetime.combine(today,
+                                                  datetime.time.max,
+                                                  tzinfo=pytz.utc)
+            queryset = queryset.filter(
+                modified__range=(today_min, today_max)
+            )
+
+        return queryset
 
 
 class VitalTaskTemplateViewSet(viewsets.ModelViewSet):
@@ -522,6 +604,12 @@ class VitalResponseViewSet(viewsets.ModelViewSet):
         IsPatientOrEmployeeReadOnly,
     )
     queryset = VitalResponse.objects.all()
+    filter_backends = (DjangoFilterBackend, )
+    filterset_fields = {
+        'vital_task__plan__patient': ['exact'],
+        'vital_task__vital_task_template__plan_template': ['exact'],
+        'modified': ['lte', 'gte']
+    }
 
     def get_queryset(self):
         queryset = super(VitalResponseViewSet, self).get_queryset()
@@ -545,6 +633,27 @@ class VitalResponseViewSet(viewsets.ModelViewSet):
         return super(VitalResponseViewSet, self).get_serializer(
             *args, **kwargs)
 
+    def filter_queryset(self, queryset):
+        queryset = super(VitalResponseViewSet, self).filter_queryset(
+            queryset)
+
+        query_parameters = self.request.query_params.keys()
+        if 'vital_task__plan__patient' in query_parameters and \
+           'vital_task__vital_task_template__plan_template' in query_parameters and \
+           'modified__gte' not in query_parameters and \
+           'modified__lte' not in query_parameters:
+            today = timezone.now().date()
+            today_min = datetime.datetime.combine(today,
+                                                  datetime.time.min,
+                                                  tzinfo=pytz.utc)
+            today_max = datetime.datetime.combine(today,
+                                                  datetime.time.max,
+                                                  tzinfo=pytz.utc)
+            queryset = queryset.filter(
+                modified__range=(today_min, today_max)
+            )
+
+        return queryset
 
 ############################
 # ----- CUSTOM VIEWS ----- #

@@ -10,13 +10,14 @@ from rest_framework_swagger.views import get_swagger_view
 
 from apps.landing.views import LandingView
 from apps.accounts.views import UserViewSet, VerifyChangeEmail
+from apps.billings.api.views import BilledActivityViewSet
 from apps.core.api.views import (
     OrganizationViewSet, FacilityViewSet, EmployeeProfileViewSet,
     ProviderTitleViewSet, ProviderRoleViewSet, ProviderSpecialtyViewSet,
     DiagnosisViewSet,  MedicationViewSet, ProcedureViewSet, SymptomViewSet,
     OrganizationEmployeeViewSet, SymptomSearchViewSet, FacilityEmployeeViewSet,
-    OrganizationFacilityViewSet, DiagnosisSearchViewSet,
-    ProviderTitleSearchViewSet, ProviderRoleSearchViewSet,
+    OrganizationFacilityViewSet, DiagnosisSearchViewSet, OrganizationInsuranceViewSet,
+    ProviderTitleSearchViewSet, ProviderRoleSearchViewSet, NotificationViewSet,
     OrganizationAffiliatesViewSet)
 from apps.patients.api.views import (
     PatientProfileViewSet,
@@ -51,6 +52,9 @@ from apps.plans.api.views import (
     TeamTaskTemplateByCarePlanTemplate,
     InfoMessageQueueByCarePlanTemplate,
     CarePlanByFacility,
+    PatientCarePlanOverview,
+    MessageRecipientViewSet,
+    TeamMessageViewSet,
 )
 from apps.tasks.api.views import (
     PatientTaskTemplateViewSet,
@@ -84,7 +88,22 @@ admin.site.site_header = mark_safe('<img src="{img}" alt="{alt}"/> {alt}'.format
 
 router = ExtendedDefaultRouter()
 # Accounts
+user_routes = router.register(r'users', UserViewSet, base_name='users')
+user_routes.register(
+    r'notifications',
+    NotificationViewSet,
+    base_name='notifications',
+    parents_query_lookups=['user']
+)
 router.register(r'users', UserViewSet, base_name='users')
+
+# Billings
+router.register(
+    r'billed_activities',
+    BilledActivityViewSet,
+    base_name='billed_activities'
+)
+
 # Core
 
 organization_routes = router.register(
@@ -102,6 +121,12 @@ organization_routes.register(
     r'facilities',
     OrganizationFacilityViewSet,
     base_name='organization-facilities',
+    parents_query_lookups=['organization']
+)
+organization_routes.register(
+    r'insurances',
+    OrganizationInsuranceViewSet,
+    base_name='organization-insurances',
     parents_query_lookups=['organization']
 )
 organization_routes.register(
@@ -171,8 +196,16 @@ router.register(
     PatientProfileSearchViewSet,
     base_name='patient_profiles_search',
 )
-router.register(
+
+patient_routes = router.register(
     r'patient_profiles', PatientProfileViewSet, base_name='patient_profiles')
+patient_routes.register(
+    r'care_plan_overview',
+    PatientCarePlanOverview,
+    base_name='patient-care-plan-overview',
+    parents_query_lookups=['patient']
+)
+
 router.register(r'problem_areas', ProblemAreaViewSet, base_name='problem_areas')
 router.register(
     r'patient_diagnosis', PatientDiagnosisViewSet, base_name='patient_diagnosis')
@@ -250,8 +283,18 @@ care_plan_template_routes.register(
     base_name='vital-task-templates-by-care-plan-templates',
     parents_query_lookups=['plan_template']
 )
-router.register(
+care_plan_routes = router.register(
     r'care_plans', CarePlanViewSet, base_name='care_plans')
+message_recipient_routes = care_plan_routes.register(
+    r'message_recipients',
+    MessageRecipientViewSet,
+    base_name='message_recipients',
+    parents_query_lookups=['plan'])
+message_recipient_routes.register(
+    r'team_messages',
+    TeamMessageViewSet,
+    base_name='team_messages',
+    parents_query_lookups=['recipients__plan', 'recipients'])
 router.register(
     r'plan_consent_forms', PlanConsentViewSet, base_name='plan_consent_forms')
 router.register(
@@ -272,6 +315,7 @@ router.register(
     r'potential_patients',
     PotentialPatientViewSet,
     base_name='potential_patients')
+
 # Tasks
 router.register(
     r'patient_task_templates',

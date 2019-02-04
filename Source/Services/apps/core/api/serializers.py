@@ -2,7 +2,7 @@ import datetime
 
 import pytz
 
-from django.db.models import Q, Avg
+from django.db.models import Q, Avg, Sum
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
@@ -13,7 +13,7 @@ from apps.accounts.serializers import SettingsUserForSerializers
 from apps.core.models import (Diagnosis, EmployeeProfile, Facility,
                               InvitedEmailTemplate, Medication, Organization,
                               Procedure, ProviderRole, ProviderSpecialty,
-                              ProviderTitle, Symptom)
+                              ProviderTitle, Symptom, Notification)
 
 from apps.patients.models import PatientProfile, PotentialPatient
 from apps.tasks.models import (
@@ -314,6 +314,54 @@ class FacilitySerializer(RepresentationMixin, serializers.ModelSerializer):
         ]
 
 
+class InsuranceSerializer(RepresentationMixin, serializers.ModelSerializer):
+    class Meta:
+        model = Facility
+        fields = (
+            'id',
+            'name',
+            'organization',
+            'created',
+            'modified',
+        )
+        read_only_fields = (
+            'id',
+            'created',
+            'modified',
+        )
+        nested_serializers = [
+            {
+                'field': 'organization',
+                'serializer_class': OrganizationSerializer,
+            }
+        ]
+
+
+class PatientUserInfo(SettingsUserForSerializers, serializers.ModelSerializer):
+    class Meta:
+        read_only_fields = ('email', 'date_joined', 'last_login', )
+        exclude = ('password', 'is_superuser', 'groups', 'user_permissions',
+                   'validation_key', 'validated_at', 'reset_key',
+                   'is_developer', )
+
+
+class NotificationSerializer(RepresentationMixin, serializers.ModelSerializer):
+    class Meta:
+        model = Notification
+        exclude = ('is_read',)
+        read_only_fields = (
+            'id',
+            'created',
+            'modified',
+        )
+        nested_serializers = [
+            {
+                'field': 'patient',
+                'serializer_class': PatientUserInfo,
+            }
+        ]
+
+
 class ProviderTitleSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProviderTitle
@@ -378,6 +426,30 @@ class EmployeeUserInfo(SettingsUserForSerializers, serializers.ModelSerializer):
         exclude = ('password', 'is_superuser', 'groups', 'user_permissions',
                    'validation_key', 'validated_at', 'reset_key', 'is_developer',
                    'image', )
+
+
+class BasicEmployeeProfileSerializer(RepresentationMixin,
+                                     serializers.ModelSerializer):
+    """
+    Serializer for :model:`core.EmployeeProfile` with lesser fields compared
+    to EmployeeProfileSerializer
+    """
+    class Meta:
+        model = EmployeeProfile
+        fields = (
+            'id',
+            'user',
+            'status',
+        )
+        read_only_fields = (
+            'id',
+        )
+        nested_serializers = [
+            {
+                'field': 'user',
+                'serializer_class': EmployeeUserInfo,
+            },
+        ]
 
 
 class EmployeeProfileSerializer(RepresentationMixin, serializers.ModelSerializer):
@@ -452,6 +524,9 @@ class EmployeeAssignmentSerializer(serializers.ModelSerializer):
     """
     risk_level = serializers.SerializerMethodField()
 
+    # override billable_hours field for filtering by date
+    billable_hours = serializers.SerializerMethodField()
+
     class Meta:
         model = EmployeeProfile
         fields = (
@@ -460,8 +535,18 @@ class EmployeeAssignmentSerializer(serializers.ModelSerializer):
             'care_manager_count',
             'care_team_count',
             'billable_patients_count',
+            'billable_hours',
             'risk_level',
         )
+
+    def get_billable_hours(self, obj):
+        now = timezone.now()
+        first_day = now.date().replace(day=1)
+        time_spent = obj.added_activities.filter(
+            activity_date__gte=first_day).aggregate(
+                total=Sum('time_spent'))
+        total = time_spent['total'] or 0
+        return str(datetime.timedelta(minutes=total))[:-3]
 
     def get_average_assessment(self, kwargs):
         tasks = AssessmentTask.objects.filter(**kwargs).aggregate(

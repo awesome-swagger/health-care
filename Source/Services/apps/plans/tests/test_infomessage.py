@@ -1,4 +1,11 @@
+import datetime
+import urllib
+
+import pytz
+
 from django.urls import reverse
+from django.utils import timezone
+
 from faker import Faker
 from rest_framework import status
 from rest_framework.test import APITestCase
@@ -68,6 +75,43 @@ class TestInfoMessageUsingEmployee(PlansMixin, APITestCase):
     def test_delete_message(self):
         response = self.client.delete(self.detail_url, {})
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_filter_queue(self):
+        queue = self.message.queue
+
+        # create dummy messages
+        for i in range(5):
+            self.create_info_message()
+
+        query_params = urllib.parse.urlencode({
+            'queue__plan_template': queue.plan_template.id,
+        })
+        filter_url = f'{self.url}?{query_params}'
+        response = self.client.get(filter_url)
+        self.assertEqual(response.data['count'], 1)
+
+    def test_filter_queue_and_datetime(self):
+        queue = self.message.queue
+        today = timezone.now()
+        today_min = datetime.datetime.combine(today,
+                                              datetime.time.min,
+                                              tzinfo=pytz.utc)
+        today_max = datetime.datetime.combine(today,
+                                              datetime.time.max,
+                                              tzinfo=pytz.utc)
+
+        # create dummy messages
+        for i in range(5):
+            self.create_info_message()
+
+        query_params = urllib.parse.urlencode({
+            'queue__plan_template': queue.plan_template.id,
+            'modified__lte': today_max,
+            'modified__gte': today_min
+        })
+        filter_url = f'{self.url}?{query_params}'
+        response = self.client.get(filter_url)
+        self.assertEqual(response.data['count'], 1)
 
 
 class TestIInfoMessageUsingPatient(PlansMixin, APITestCase):

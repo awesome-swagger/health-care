@@ -1,6 +1,9 @@
+from datetime import datetime
+
 from django import forms
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404, render
+from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import TemplateView
 from rest_framework import status, views, viewsets, mixins
@@ -20,6 +23,7 @@ from .serializers import (
     ChangeEmailSerializer,
     VerifyEmailSerializer,
 )
+from apps.tasks.utils import get_all_tasks_for_today
 from care_adopt_backend import utils
 
 
@@ -126,6 +130,37 @@ class UserViewSet(
         return Response({
             'message': _('Verification email sent.')
         })
+
+    @action(methods=['GET'],
+            detail=True,
+            permission_classes=(BaseUserPermission, ))
+    def tasks(self, request, pk, *args, **kwargs):
+        """
+        This view returns a list of tasks for the given user. By default,
+        the list of tasks will be filtered by the present day.
+
+        This view will also allow filtering for tasks belonging to a specific
+        **plan_template** and **due_datetime**
+
+        EXAMPLE REQUEST:
+        ---
+
+            GET /api/<user-ID>/tasks/?plan_template=<plan-template-ID>
+            GET /api/<user-ID>/tasks/?plan_template=<plan-template-ID>&date=2019-01-30
+
+        """
+        user = self.get_object()
+        timestamp = request.GET.get('date', None)
+        plan_template = request.GET.get('plan_template', None)
+        date_format = "%Y-%m-%d"
+        date_object = datetime.strptime(timestamp, date_format).date() \
+            if timestamp else timezone.now().date()
+        tasks = get_all_tasks_for_today(
+            user,
+            date_object=date_object,
+            plan_template=plan_template
+        )
+        return Response(data=tasks)
 
 
 class ResetPassword(views.APIView):

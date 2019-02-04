@@ -1,6 +1,11 @@
+import datetime
 import random
+import urllib
+
+import pytz
 
 from django.urls import reverse
+from django.utils import timezone
 
 from faker import Faker
 from rest_framework import status
@@ -43,6 +48,65 @@ class TestVitalResponseUsingEmployee(TasksMixin, APITestCase):
             kwargs={'pk': self.vital_response.id}
         )
         self.client.force_authenticate(user=self.user)
+
+    def test_filter_by_patient_and_plan_template(self):
+        plan_template = self.template.plan_template
+        patient = self.plan.patient
+        response_count = self.responses.count()
+
+        # create dummy vital responses
+        other_patient = self.create_patient()
+        other_plan = self.create_care_plan(other_patient)
+        vital_task = self.create_vital_task(**{
+            'plan': other_plan,
+            'vital_task_template': self.template
+        })
+        self.create_responses_to_multiple_vital_questions(
+            self.template,
+            vital_task
+        )
+
+        query_params = urllib.parse.urlencode({
+            'vital_task__plan__patient': patient.id,
+            'vital_task__vital_task_template__plan_template': plan_template.id
+        })
+        filter_url = f'{self.url}?{query_params}'
+        response = self.client.get(filter_url)
+        self.assertEqual(response.data['count'], response_count)
+
+    def test_filter_by_patient_plan_template_and_datetime(self):
+        plan_template = self.template.plan_template
+        patient = self.plan.patient
+        response_count = self.responses.count()
+        today = timezone.now()
+        today_min = datetime.datetime.combine(today,
+                                              datetime.time.min,
+                                              tzinfo=pytz.utc)
+        today_max = datetime.datetime.combine(today,
+                                              datetime.time.max,
+                                              tzinfo=pytz.utc)
+
+        # create dummy vital responses
+        other_patient = self.create_patient()
+        other_plan = self.create_care_plan(other_patient)
+        vital_task = self.create_vital_task(**{
+            'plan': other_plan,
+            'vital_task_template': self.template
+        })
+        self.create_responses_to_multiple_vital_questions(
+            self.template,
+            vital_task
+        )
+
+        query_params = urllib.parse.urlencode({
+            'vital_task__plan__patient': patient.id,
+            'vital_task__vital_task_template__plan_template': plan_template.id,
+            'modified__lte': today_max,
+            'modified__gte': today_min
+        })
+        filter_url = f'{self.url}?{query_params}'
+        response = self.client.get(filter_url)
+        self.assertEqual(response.data['count'], response_count)
 
     def test_get_vital_response_list(self):
         response = self.client.get(self.url)

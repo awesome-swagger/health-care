@@ -11,6 +11,10 @@ class FacilityAdmin(admin.ModelAdmin):
     list_display = ('name', 'organization', )
 
 
+class InsuranceAdmin(admin.ModelAdmin):
+    list_display = ('name', 'organization', )
+
+
 class EmployeeProfileAdmin(admin.ModelAdmin):
     list_display = ('user', 'title', 'specialty', )
 
@@ -43,12 +47,17 @@ class SymptomAdmin(admin.ModelAdmin):
     list_display = ('name', )
 
 
+class NotificationAdmin(admin.ModelAdmin):
+    list_display = ('user', 'category', 'is_read', 'patient')
+
+
 class InvitedEmailTemplateAdmin(admin.ModelAdmin):
     list_display = ('subject', 'message', 'is_default')
 
 
 admin.site.register(models.Organization, OrganizationAdmin)
 admin.site.register(models.Facility, FacilityAdmin)
+admin.site.register(models.Insurance, InsuranceAdmin)
 admin.site.register(models.EmployeeProfile, EmployeeProfileAdmin)
 admin.site.register(models.ProviderTitle, ProviderTitleAdmin)
 admin.site.register(models.ProviderRole, ProviderRoleAdmin)
@@ -58,3 +67,4 @@ admin.site.register(models.Medication, MedicationAdmin)
 admin.site.register(models.Procedure, ProcedureAdmin)
 admin.site.register(models.Symptom, SymptomAdmin)
 admin.site.register(models.InvitedEmailTemplate, InvitedEmailTemplateAdmin)
+admin.site.register(models.Notification, NotificationAdmin)

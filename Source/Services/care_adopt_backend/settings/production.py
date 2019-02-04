@@ -54,6 +54,7 @@ INSTALLED_APPS = (
     # Local
     'apps.landing',
     'apps.accounts',
+    'apps.billings',
     'apps.core',
     'apps.patients',
     'apps.plans',

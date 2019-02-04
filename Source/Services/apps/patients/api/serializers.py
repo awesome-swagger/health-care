@@ -19,7 +19,11 @@ from apps.core.api.serializers import (
     EmployeeUserInfo,
     ProviderTitleSerializer,
     SymptomSerializer,
+<<<<<<< HEAD
     ProcedureSerializer,
+=======
+    PatientUserInfo,
+>>>>>>> master
 )
 from apps.patients.models import (PatientDiagnosis, PatientMedication,
                                   PatientProcedure, PatientProfile,
@@ -29,14 +33,6 @@ from apps.plans.api.serializers import InfoMessageSerializer
 from apps.tasks.models import AssessmentResponse, SymptomRating
 
 from ..search_indexes import PatientProfileIndex
-
-
-class PatientUserInfo(SettingsUserForSerializers, serializers.ModelSerializer):
-    class Meta:
-        read_only_fields = ('email', 'date_joined', 'last_login', )
-        exclude = ('password', 'is_superuser', 'groups', 'user_permissions',
-                   'validation_key', 'validated_at', 'reset_key',
-                   'is_developer', )
 
 
 class PatientSearchUserInfo(SettingsUserForSerializers,
@@ -473,7 +469,6 @@ class LatestPatientSymptomSerializer(serializers.ModelSerializer):
     Serializer to be used for displaying latest symptom data per patient.
     """
     symptom = SymptomSerializer(read_only=True)
-    behavior = serializers.SerializerMethodField()
 
     class Meta:
         model = SymptomRating
@@ -485,16 +480,3 @@ class LatestPatientSymptomSerializer(serializers.ModelSerializer):
             'created',
             'modified',
         )
-
-    def get_behavior(self, obj):
-        value = "increasing"
-        second_rating = SymptomRating.objects.filter(
-            symptom_task__plan__patient=obj.symptom_task.plan.patient,
-            symptom=obj.symptom).exclude(id=obj.id).order_by(
-            '-created').first()
-        if second_rating:
-            if obj.rating < second_rating.rating:
-                value = "decreasing"
-            elif obj.rating == second_rating.rating:
-                value = "equal"
-        return value
