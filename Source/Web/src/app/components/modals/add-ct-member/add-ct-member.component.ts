@@ -31,6 +31,17 @@ export class AddCTMemberComponent implements OnInit {
 
   public fetchAvailableProviders() {
     let promise = new Promise((resolve, reject) => {
+      if (this.data.is_bp) {
+        let fetchSub = this.store.EmployeeProfile.readListPaged({
+          role_id: 'd8f8ba07-3063-44da-ad7e-ac9d5e2146de',
+        }).subscribe(
+          (bps) => resolve(bps),
+          (err) => reject(err),
+          () => {
+            fetchSub.unsubscribe();
+          },
+        );
+      }
       // If adding a care manager fetch only care managers
       if (this.data.is_manager) {
         let fetchSub = this.store.EmployeeProfile.readListPaged().subscribe(

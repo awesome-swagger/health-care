@@ -19,6 +19,7 @@ from apps.core.api.serializers import (
     EmployeeUserInfo,
     ProviderTitleSerializer,
     SymptomSerializer,
+    ProcedureSerializer,
     PatientUserInfo,
 )
 from apps.patients.models import (PatientDiagnosis, PatientMedication,
@@ -165,10 +166,27 @@ class ProblemAreaSerializer(RepresentationMixin, serializers.ModelSerializer):
         ]
 
 
-class PatientProcedureSerializer(serializers.ModelSerializer):
+class PatientProcedureSerializer(RepresentationMixin,
+                                 serializers.ModelSerializer):
     class Meta:
         model = PatientProcedure
-        fields = '__all__'
+        fields = (
+            'id',
+            'patient',
+            'procedure',
+            'date_of_procedure',
+            'attending_practitioner',
+            'facility',
+        )
+        read_only_fields = (
+            'id',
+        )
+        nested_serializers = [
+            {
+                'field': 'procedure',
+                'serializer_class': ProcedureSerializer,
+            }
+        ]
 
 
 class PatientMedicationSerializer(RepresentationMixin,
@@ -448,7 +466,6 @@ class LatestPatientSymptomSerializer(serializers.ModelSerializer):
     Serializer to be used for displaying latest symptom data per patient.
     """
     symptom = SymptomSerializer(read_only=True)
-    behavior = serializers.SerializerMethodField()
 
     class Meta:
         model = SymptomRating
@@ -460,16 +477,3 @@ class LatestPatientSymptomSerializer(serializers.ModelSerializer):
             'created',
             'modified',
         )
-
-    def get_behavior(self, obj):
-        value = "increasing"
-        second_rating = SymptomRating.objects.filter(
-            symptom_task__plan__patient=obj.symptom_task.plan.patient,
-            symptom=obj.symptom).exclude(id=obj.id).order_by(
-            '-created').first()
-        if second_rating:
-            if obj.rating < second_rating.rating:
-                value = "decreasing"
-            elif obj.rating == second_rating.rating:
-                value = "equal"
-        return value

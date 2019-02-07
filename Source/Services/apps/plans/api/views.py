@@ -1,14 +1,19 @@
+import datetime
+
+import pytz
+
 from dateutil.relativedelta import relativedelta
 
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import viewsets, permissions, mixins
+from rest_framework import viewsets, permissions, mixins, serializers, status
 from rest_framework.decorators import action
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.response import Response
 from rest_framework_extensions.mixins import NestedViewSetMixin
 
-from django.db.models import Avg
+from django.db.models import Avg, Q
 from django.shortcuts import get_object_or_404
+from django.utils.translation import ugettext_lazy as _
 
 from ..models import (
     CarePlanTemplateType,
@@ -23,8 +28,13 @@ from ..models import (
     InfoMessageQueue,
     InfoMessage,
     CareTeamMember,
+    MessageRecipient,
+    TeamMessage,
 )
-from ..permissions import CareTeamMemberPermissions
+from ..permissions import (
+    CareTeamMemberPermissions,
+    MessageRecipientPermissions,
+)
 from .serializers import (
     CarePlanTemplateTypeSerializer,
     ServiceAreaSerializer,
@@ -41,13 +51,18 @@ from .serializers import (
     CarePlanTemplateAverageSerializer,
     CarePlanByTemplateFacilitySerializer,
     CarePlanOverviewSerializer,
+    PatientCarePlanOverviewSerializer,
+    MessageRecipientSerializer,
+    TeamMessageSerializer,
 )
+from apps.accounts.models import EmailUser
 from apps.core.api.mixins import ParentViewSetPermissionMixin
 from apps.core.models import Organization, Facility
 from apps.core.api.serializers import ProviderRoleSerializer
 from apps.core.api.views import OrganizationViewSet, FacilityViewSet
 from apps.core.models import ProviderRole
 from apps.patients.api.serializers import PatientProfileSerializer
+from apps.patients.api.views import PatientProfileViewSet
 from apps.patients.models import PatientProfile
 from apps.tasks.api.serializers import (
     PatientTaskTemplateSerializer,
@@ -554,6 +569,12 @@ class GoalViewSet(viewsets.ModelViewSet):
         IsEmployeeOrPatientReadOnly,
     )
     queryset = Goal.objects.all()
+    filter_backends = (DjangoFilterBackend, )
+    filterset_fields = {
+        'plan__patient': ['exact'],
+        'goal_template__plan_template': ['exact'],
+        'start_on_datetime': ['lte', 'gte']
+    }
 
     def get_queryset(self):
         queryset = super(GoalViewSet, self).get_queryset()
@@ -563,12 +584,35 @@ class GoalViewSet(viewsets.ModelViewSet):
         if not include_future_goals:
             queryset = queryset.exclude(start_on_datetime__gte=timezone.now())
 
-        if user.is_employee:
+        if user.is_superuser:
+            pass
+        elif user.is_employee:
             queryset = queryset.filter(
                 plan__care_team_members__employee_profile=user.employee_profile
             )
         elif user.is_patient:
             queryset = queryset.filter(plan__patient=user.patient_profile)
+
+        return queryset
+
+    def filter_queryset(self, queryset):
+        queryset = super(GoalViewSet, self).filter_queryset(queryset)
+
+        query_parameters = self.request.query_params.keys()
+        if 'plan__patient' in query_parameters and \
+           'goal_template__plan_template' in query_parameters and \
+           'start_on_datetime__gte' not in query_parameters and \
+           'start_on_datetime__lte' not in query_parameters:
+            today = timezone.now().date()
+            today_min = datetime.datetime.combine(today,
+                                                  datetime.time.min,
+                                                  tzinfo=pytz.utc)
+            today_max = datetime.datetime.combine(today,
+                                                  datetime.time.max,
+                                                  tzinfo=pytz.utc)
+            queryset = queryset.filter(
+                start_on_datetime__range=(today_min, today_max)
+            )
 
         return queryset
 
@@ -773,6 +817,11 @@ class InfoMessageViewSet(viewsets.ModelViewSet):
         IsEmployeeOrPatientReadOnly,
     )
     queryset = InfoMessage.objects.all()
+    filter_backends = (DjangoFilterBackend, )
+    filterset_fields = {
+        'queue__plan_template': ['exact'],
+        'modified': ['lte', 'gte']
+    }
 
     def get_queryset(self):
         queryset = super(InfoMessageViewSet, self).get_queryset()
@@ -781,6 +830,27 @@ class InfoMessageViewSet(viewsets.ModelViewSet):
         if user.is_patient:
             queryset = queryset.filter(
                 queue__plan_template__care_plans__patient=user.patient_profile
+            )
+
+        return queryset
+
+    def filter_queryset(self, queryset):
+        queryset = super(InfoMessageViewSet, self).filter_queryset(
+            queryset)
+
+        query_parameters = self.request.query_params.keys()
+        if 'queue__plan_template' in query_parameters and \
+           'modified__gte' not in query_parameters and \
+           'modified__lte' not in query_parameters:
+            today = timezone.now().date()
+            today_min = datetime.datetime.combine(today,
+                                                  datetime.time.min,
+                                                  tzinfo=pytz.utc)
+            today_max = datetime.datetime.combine(today,
+                                                  datetime.time.max,
+                                                  tzinfo=pytz.utc)
+            queryset = queryset.filter(
+                modified__range=(today_min, today_max)
             )
 
         return queryset
@@ -888,14 +958,14 @@ class CarePlanTemplateByServiceArea(
     )
     parent_lookup = [
         (
-            'care_plans__patient__facility__organization',
+            'care_plan_templates__care_plans__patient__facility__organization',
             Organization,
             OrganizationViewSet
         )
     ]
     filter_backends = (DjangoFilterBackend, )
     filterset_fields = (
-        # 'care_plans__patient__facility',
+        'care_plan_templates__care_plans__patient__facility',
     )
 
     def get_queryset(self):
@@ -1016,7 +1086,6 @@ class CarePlanByTemplateFacility(ParentViewSetPermissionMixin,
 
     def retrieve(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_care_plans())
-
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
@@ -1024,8 +1093,6 @@ class CarePlanByTemplateFacility(ParentViewSetPermissionMixin,
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
-
-
 
 
 class PatientTaskTemplateByCarePlanTemplate(ParentViewSetPermissionMixin,
@@ -1239,3 +1306,272 @@ class PatientByCarePlanTemplate(ParentViewSetPermissionMixin,
 
         # call distinct() to prevent duplicates
         return queryset.distinct()
+
+
+class PatientCarePlanOverview(ParentViewSetPermissionMixin,
+                              NestedViewSetMixin,
+                              mixins.ListModelMixin,
+                              viewsets.GenericViewSet):
+    """
+    Returns list of all :model:`plans.CarePlan` objects with overview data.
+    Admins and employees will have access to all care plan objects.
+    The following data will be provided:
+
+        - care team
+        - next check-in
+        - last contact
+        - problem areas
+        - total time
+        - risk level
+
+    FILTERING
+    ---
+    This endpoint will also allow filtering by **plan_template**. For example:
+
+        GET /api/patient_profiles/<patient-ID>/care_plan_overview/?plan_template=<plan-template-ID>
+
+    USAGE
+    ---
+    This endpoint will be primarily used in the following pages:
+
+        - `patients__patientOverviewTab--dash`
+        - `patients__patient`
+        - `patients__patientHistoryTab`
+        - `patients__patientOverview`
+        - `patients__patientCareTeamTab`
+        - `patients__patientMessagesTab`
+    """
+    serializer_class = PatientCarePlanOverviewSerializer
+    queryset = CarePlan.objects.all()
+    permission_classes = (
+        permissions.IsAuthenticated,
+        IsAdminOrEmployee,
+    )
+    parent_lookup = [
+        (
+            'patient',
+            PatientProfile,
+            PatientProfileViewSet
+        )
+    ]
+    filter_backends = (DjangoFilterBackend, )
+    filterset_fields = (
+        'plan_template',
+    )
+
+    def get_queryset(self):
+        queryset = super(PatientCarePlanOverview, self).get_queryset()
+
+        # call distinct() to prevent duplicates
+        queryset = queryset.distinct()
+
+        user = self.request.user
+        if user.is_superuser:
+            pass
+        elif user.is_employee:
+            employee = user.employee_profile
+            queryset = queryset.filter(
+                Q(patient__facility__in=employee.facilities.all()) |
+                Q(patient__facility__in=employee.facilities_managed.all())
+            )
+
+        return queryset
+
+
+class MessageRecipientViewSet(ParentViewSetPermissionMixin,
+                              NestedViewSetMixin,
+                              mixins.CreateModelMixin,
+                              mixins.ListModelMixin,
+                              mixins.RetrieveModelMixin,
+                              viewsets.GenericViewSet):
+    """
+    Viewset for :model:`plans.MessageRecipient`
+    ========
+
+    create:
+        Creates :model:`plans.MessageRecipient` object.
+
+    retrieve:
+        Retrieves a :model:`plans.MessageRecipient` instance.
+
+    list:
+        Returns list of all :model:`plans.MessageRecipient` objects.
+        Employees and patients will only have access to objects which
+        they are a member of.
+
+    """
+
+    serializer_class = MessageRecipientSerializer
+    permission_classes = (
+        permissions.IsAuthenticated,
+        MessageRecipientPermissions,
+    )
+    queryset = MessageRecipient.objects.all()
+    parent_field = 'plan'
+    parent_lookup = [
+        (
+            'plan',
+            CarePlan,
+            CarePlanViewSet
+        )
+    ]
+
+    def get_queryset(self):
+        queryset = super(MessageRecipientViewSet, self).get_queryset()
+
+        user = self.request.user
+        if user.is_superuser:
+            pass
+        else:
+            queryset = queryset.filter(members=user)
+
+        return queryset
+
+    def create(self, request, *args, **kwargs):
+        # Call `get_queryset` first before processing POST request
+        self.get_queryset()
+
+        return super(MessageRecipientViewSet, self).create(
+            request, *args, **kwargs)
+
+    def perform_create(self, serializer):
+        serializer.save(plan=self.parent_obj)
+
+    @action(methods=['POST'], detail=True)
+    def add_member(self, request, pk, *args, **kwargs):
+        """
+        Adds a member to the given recipient/thread.
+
+        Request data should contain the `user` ID. For example:
+
+            POST /api/care_plans/<plan-id>/message_recipients/<recipient-ID>/add_member/
+            {
+                'member': <user-ID>
+            }
+        """
+        recipient = self.get_object()
+
+        if 'member' not in request.data:
+            raise serializers.ValidationError(_('User ID is required.'))
+
+        user_id = request.data['member']
+        try:
+            member = EmailUser.objects.get(id=user_id)
+        except EmailUser.DoesNotExist:
+            raise serializers.ValidationError(_('User does not exist.'))
+
+        if member in recipient.members.all():
+            raise serializers.ValidationError(_('User already exists.'))
+
+        recipient.members.add(member)
+        ctx = {
+            'context': self.get_serializer_context()
+        }
+        serializer = self.get_serializer_class()(recipient, **ctx)
+        return Response(
+            data=serializer.data,
+            status=status.HTTP_201_CREATED
+        )
+
+    @action(methods=['DELETE'], detail=True)
+    def remove_member(self, request, pk, *args, **kwargs):
+        """
+        Removes a member from the given recipient/thread.
+
+        Request data should contain the `user` ID. For example:
+
+            DELETE /api/care_plans/<plan-id>/message_recipients/<recipient-ID>/remove_member/
+            {
+                'member': <user-ID>
+            }
+        """
+        recipient = self.get_object()
+
+        if 'member' not in request.data:
+            raise serializers.ValidationError(_('User ID is required.'))
+
+        user_id = request.data['member']
+        try:
+            member = EmailUser.objects.get(id=user_id)
+        except EmailUser.DoesNotExist:
+            raise serializers.ValidationError(_('User does not exist.'))
+
+        if member not in recipient.members.all():
+            raise serializers.ValidationError(
+                _('Employee does not have that role.')
+            )
+
+        recipient.members.remove(member)
+        ctx = {
+            'context': self.get_serializer_context()
+        }
+        serializer = self.get_serializer_class()(recipient, **ctx)
+        return Response(
+            data=serializer.data,
+            status=status.HTTP_204_NO_CONTENT
+        )
+
+
+class TeamMessageViewSet(ParentViewSetPermissionMixin,
+                         NestedViewSetMixin,
+                         viewsets.ModelViewSet):
+    """
+    Viewset for :model:`plans.TeamMessage`
+    ========
+
+    create:
+        Creates :model:`plans.TeamMessage` object.
+
+    update:
+        Updates :model:`plans.TeamMessage` object.
+
+    partial_update:
+        Updates one or more fields of an existing message object.
+
+    retrieve:
+        Retrieves a :model:`plans.TeamMessage` instance.
+
+    list:
+        Returns list of all :model:`plans.TeamMessage` objects.
+
+    delete:
+        Deletes a :model:`plans.TeamMessage` instance.
+    """
+
+    serializer_class = TeamMessageSerializer
+    permission_classes = (
+        permissions.IsAuthenticated,
+    )
+    queryset = TeamMessage.objects.all()
+    parent_field = 'recipients'
+    parent_lookup = [
+        (
+            'recipients',
+            MessageRecipient,
+            MessageRecipientViewSet
+        )
+    ]
+
+    def create(self, request, *args, **kwargs):
+        # Call `get_queryset` first before processing POST request
+        self.get_queryset()
+
+        return super(TeamMessageViewSet, self).create(
+            request, *args, **kwargs)
+
+    def perform_create(self, serializer):
+        serializer.save(
+            recipients=self.parent_obj,
+            sender=self.request.user,
+        )
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+
+        # Only the owner can delete a message instance
+        if request.user != instance.sender:
+            raise serializers.ValidationError(
+                _('You are not the sender of this message.'))
+
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)

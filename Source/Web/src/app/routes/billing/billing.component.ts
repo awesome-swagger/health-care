@@ -1,7 +1,8 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
+import  { Subscription } from 'rxjs';
 import * as moment from 'moment';
 import { sumBy as _sumBy, uniqBy as _uniqBy, groupBy as _groupBy } from 'lodash';
-import { StoreService } from '../../services';
+import { AuthService, StoreService } from '../../services';
 import mockData from './billingData';
 
 @Component({
@@ -11,6 +12,9 @@ import mockData from './billingData';
 })
 export class BillingComponent implements OnDestroy, OnInit {
 
+  public user = null;
+  public organization = null;
+  public isManager = false;
   public selectedMonth: moment.Moment = moment().startOf('month');
   public billingData = null;
   public patients = [];
@@ -24,12 +28,10 @@ export class BillingComponent implements OnDestroy, OnInit {
   public serviceSearch = '';
   public selectedStatus = 'all';
   public employees = [];
+  public employeesShown = [];
   public employeeSearch = '';
+  public selectedEmployee = null;
   public planTypes = [];
-
-  constructor(
-    private store: StoreService,
-  ) { }
 
   public syncTooltipOpen = false;
   public filterFacilitiesOpen = false;
@@ -40,10 +42,17 @@ export class BillingComponent implements OnDestroy, OnInit {
   public practitionerDropdownOpen = {};
   public detailsOpen = {};
 
+  private authSub: Subscription = null;
+  private orgSub: Subscription = null;
+
+  constructor(
+    private auth: AuthService,
+    private store: StoreService,
+  ) { }
+
   public ngOnInit() {
     this.patients = mockData.patients;
     this.billingData = mockData.billingData;
-    console.log(this.billingData);
     this.facilities = this.getUniqueFacilities();
     this.facilitiesShown = this.facilities.concat();
     this.selectedFacilities = this.facilities.concat();
@@ -52,9 +61,28 @@ export class BillingComponent implements OnDestroy, OnInit {
     this.selectedServiceAreas = this.serviceAreas.concat();
     this.employees = this.getUniqueBPs();
     this.planTypes = mockData.billingTypes;
+    this.authSub = this.auth.user$.subscribe((user) => {
+      if (!user) {
+        return;
+      }
+      this.auth.organization$.subscribe((organization) => {
+        this.user = user;
+      });
+    });
+    this.orgSub = this.auth.organization$.subscribe((organization) => {
+      if (!organization) {
+        return;
+      }
+      this.organization = organization;
+      this.isManager = this.organization.is_manager;
+    });
   }
 
-  public ngOnDestroy() { }
+  public ngOnDestroy() {
+    if (this.authSub) {
+      this.authSub.unsubscribe();
+    }
+  }
 
   public filteredBilling() {
     return this.billingData.filter((billingObj) => {
@@ -74,6 +102,11 @@ export class BillingComponent implements OnDestroy, OnInit {
         facilityValues.includes(this.getPatient(billingObj.patient).facility) &&
         serviceAreaValues.includes(billingObj.serviceArea)
       );
+    }).filter((billingObj) => {
+      if (!this.selectedEmployee) {
+        return true;
+      }
+      return billingObj.billingPractitioner === this.selectedEmployee.id;
     });
   }
 
@@ -134,7 +167,6 @@ export class BillingComponent implements OnDestroy, OnInit {
     } else {
       this.selectedFacilities.push(facility);
     }
-    console.log(this.selectedFacilities);
   }
 
   public isServiceAreaSelected(serviceArea) {
@@ -155,6 +187,18 @@ export class BillingComponent implements OnDestroy, OnInit {
     });
   }
 
+  public filterEmployee() {
+    this.employeesShown = this.employees.filter((obj) => {
+      let fullNameWithTitle = `${obj.first_name} ${obj.last_name}, ${obj.title}`;
+      return fullNameWithTitle.toLowerCase().includes(this.employeeSearch.toLowerCase());
+    });
+  }
+
+  public setSelectedEmployee(employee) {
+    this.selectedEmployee = employee;
+    this.employeeSearch = `${employee.first_name} ${employee.last_name}, ${employee.title}`;
+  }
+
   public toggleServiceArea(serviceArea) {
     if (this.isServiceAreaSelected(serviceArea)) {
       let index = this.selectedServiceAreas.findIndex((obj) => obj.id === serviceArea.id);
@@ -162,7 +206,6 @@ export class BillingComponent implements OnDestroy, OnInit {
     } else {
       this.selectedServiceAreas.push(serviceArea);
     }
-    console.log(this.selectedServiceAreas);
   }
 
   public getPatient(id) {

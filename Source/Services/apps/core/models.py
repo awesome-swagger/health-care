@@ -1,4 +1,7 @@
+import datetime
+
 from django.db import models
+from django.db.models import Sum
 
 from apps.accounts.models import EmailUser
 from care_adopt_backend.mixins import (AddressMixin, CreatedModifiedMixin,
@@ -100,6 +103,12 @@ class EmployeeProfile(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
     def billable_patients_count(self):
         return self.assigned_roles.values_list(
             'plan__patient__id', flat=True).distinct().count()
+
+    @property
+    def billable_hours(self):
+        time_spent = self.added_activities.aggregate(total=Sum('time_spent'))
+        total = time_spent['total'] or 0
+        return str(datetime.timedelta(minutes=total))[:-3]
 
 
 class ProviderTitle(UUIDPrimaryKeyMixin):

@@ -28,6 +28,7 @@ export class PatientComponent implements OnDestroy, OnInit {
   public patient = null;
   public carePlans = [];
   public problemAreas = [];
+  public patientProcedures = [];
   public teamListOpen = -1;
 
   public editName;
@@ -52,8 +53,12 @@ export class PatientComponent implements OnDestroy, OnInit {
         this.getCarePlans(this.patient.id).then((carePlans: any) => {
           this.carePlans = carePlans;
         });
-        this.fetchProblemAreas(this.patient.id).then((problemAreas: any) => {
+        this.getProblemAreas(this.patient.id).then((problemAreas: any) => {
           this.problemAreas = problemAreas;
+        });
+        this.getPatientProcedures(this.patient.id).then((patientProcedures: any) => {
+          this.patientProcedures = patientProcedures;
+          console.log(this.patientProcedures);
         });
       }).catch(() => {
         this.patient = patientData.patient;
@@ -83,10 +88,10 @@ export class PatientComponent implements OnDestroy, OnInit {
     return promise;
   }
 
-  public fetchProblemAreas(patient) {
+  public getProblemAreas(patientId) {
     let promise = new Promise((resolve, reject) => {
       let problemAreasSub = this.store.ProblemArea.readListPaged({
-        patient: patient,
+        patient: patientId,
       }).subscribe(
         (problemAreas) => resolve(problemAreas),
         (err) => reject(err),
@@ -112,23 +117,21 @@ export class PatientComponent implements OnDestroy, OnInit {
           }
         )
     });
+  }
 
-    // let promise = new Promise((resolve, reject) => {
-    //   let patientSub = this.store.CarePlan.readListPaged({
-    //     patient: patientId,
-    //   }).subscribe(
-    //     (plans) => {
-    //       resolve(plans);
-    //     },
-    //     (err) => {
-    //       reject(err);
-    //     },
-    //     () => {
-    //       patientSub.unsubscribe();
-    //     },
-    //   );
-    // });
-    // return promise;
+  public getPatientProcedures(patientId) {
+    let promise = new Promise((resolve, reject) => {
+      let proceduresSub = this.store.PatientProcedure.readListPaged({
+        patient: patientId,
+      }).subscribe(
+        (procedures) => resolve(procedures),
+        (err) => reject(err),
+        () => {
+          proceduresSub.unsubscribe();
+        },
+      );
+    });
+    return promise;
   }
 
   public openFinancialDetails() {
@@ -255,19 +258,37 @@ export class PatientComponent implements OnDestroy, OnInit {
     this.modals.open(ProcedureComponent, {
       closeDisabled: true,
       width: '576px',
-    }).subscribe(() => {});
+    }).subscribe((procedureData) => {
+      if (procedureData) {
+        procedureData['patient'] = this.patient.id;
+        this.store.PatientProcedure.create(procedureData).subscribe((newPatientProcedure) => {
+          this.patientProcedures.push(newPatientProcedure);
+        });
+      }
+    });
   }
 
-  public editProcedure() {
+  public editProcedure(patientProcedure) {
     this.modals.open(ProcedureComponent, {
       closeDisabled: true,
+      data: {
+        patientProcedure: patientProcedure,
+      },
       width: '576px',
-    }).subscribe(() => {});
+    }).subscribe((procedureData) => {
+      if (procedureData) {
+        this.store.PatientProcedure.update(patientProcedure.id, procedureData, true)
+          .subscribe((updatedPatientProcedure) => {
+            let index = this.patientProcedures.findIndex((obj) => obj.id === patientProcedure.id);
+            this.patientProcedures[index] = updatedPatientProcedure;
+          });
+      }
+    });
   }
 
-  public deleteProcedure() {
+  public deleteProcedure(patientProcedure) {
     this.modals.open(ConfirmModalComponent, {
-     'closeDisabled': true,
+     closeDisabled: true,
      data: {
        title: 'Delete Procedure?',
        body: 'Are you sure you want to remove this procedure?',
@@ -275,7 +296,15 @@ export class PatientComponent implements OnDestroy, OnInit {
        okText: 'Continue',
       },
       width: '384px',
-    }).subscribe(() => {
+    }).subscribe((res) => {
+      if (res === 'Continue') {
+        this.store.PatientProcedure.destroy(patientProcedure.id).subscribe(
+          (success) => {
+            let index = this.patientProcedures.findIndex((obj) => obj.id === patientProcedure.id);
+            this.patientProcedures.splice(index, 1);
+          }
+        );
+      }
     // do something with result
     });
   }

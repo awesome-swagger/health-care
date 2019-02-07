@@ -1,4 +1,6 @@
+import datetime
 import random
+import urllib
 
 from django.db.models import Avg
 from django.urls import reverse
@@ -9,7 +11,7 @@ from faker import Faker
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from .mixins import PlansMixin
+from apps.billings.tests.mixins import BillingsMixin
 from apps.tasks.models import (
     PatientTask,
     MedicationTask,
@@ -374,7 +376,7 @@ class TestCarePlanTemplateUsingPatient(TasksMixin, APITestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
 
-class TestCarePlanTemplateAverage(TasksMixin, APITestCase):
+class TestCarePlanTemplateAverage(BillingsMixin, TasksMixin, APITestCase):
     """
     Test cases for the average endpoint of :model:`plans.CarePlanTemplate`
     """
@@ -434,6 +436,70 @@ class TestCarePlanTemplateAverage(TasksMixin, APITestCase):
         avg_url = f'{url}?care_plans__patient__facility__organization={organization.id}'
         response = self.client.get(avg_url)
         self.assertEqual(response.data['total_facilities'], total_facilities)
+
+    def test_care_plan_average_time_count(self):
+        facility = self.create_facility()
+        total_minutes = 0
+        plans_count = 3
+        self.client.logout()
+
+        employee = self.create_employee(**{
+            'facilities': [facility]
+        })
+        self.client.force_authenticate(user=employee.user)
+
+        for i in range(plans_count):
+            # Create care plans as member
+            patient = self.create_patient(**{
+                'facility': facility
+            })
+            member_plan = self.create_care_plan(patient, **{
+                'plan_template': self.template
+            })
+            self.create_care_team_member(**{
+                'employee_profile': employee,
+                'plan': member_plan,
+                'is_manager': False
+            })
+
+            minutes = random.randint(5, 120)
+            self.create_billed_activity(**{
+                'plan': member_plan,
+                'added_by': employee,
+                'time_spent': minutes
+            })
+            total_minutes += minutes
+
+        # create dummy records
+        for i in range(plans_count):
+            # Create care plans as member
+            member_plan = self.create_care_plan()
+            self.create_care_team_member(**{
+                'employee_profile': employee,
+                'plan': member_plan,
+                'is_manager': False
+            })
+
+            minutes = random.randint(5, 120)
+            self.create_billed_activity(**{
+                'plan': member_plan,
+                'added_by': employee,
+                'time_spent': minutes,
+            })
+
+        total_time_spent = str(datetime.timedelta(
+            minutes=total_minutes))[:-3]
+
+        query_params = urllib.parse.urlencode({
+            'care_plans__patient__facility__organization': facility.organization.id
+        })
+        url = reverse(
+            'care_plan_templates-average',
+            kwargs={'pk': self.template.id}
+        )
+        avg_url = f'{url}?{query_params}'
+        response = self.client.get(avg_url)
+        self.assertEqual(response.data['time_count'], total_time_spent)
 
     def generate_average_outcome_records(self, organization):
         total_facilities = 3

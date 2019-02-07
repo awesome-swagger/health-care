@@ -80,7 +80,7 @@ export class DetailsMockData {
 		});
 	}
 
-	private generateRandomId() {
+	public generateRandomId() {
 		return Math.floor(Math.random() * 99999) + 1;
 	}
 
@@ -124,18 +124,28 @@ export class DetailsMockData {
 		};
 	}
 
+	public generateRandomGoalComment(text) {
+		let fromEmployee = Math.random() > .5;
+		return {
+			id: this.generateRandomId(),
+			date: moment(faker.date.past()),
+			is_employee: fromEmployee,
+			employee: fromEmployee ? this.employees[Math.floor(Math.random() * this.employees.length)] : null,
+			text: text,
+		}
+	}
+
 	public generateRandomGoal(name) {
 		return {
 			id: this.generateRandomId(),
 			name: name,
+			description: name + ' Description',
+			focus: name + ' Focus',
 			progress: Math.floor(Math.random() * 5) + 1,
-			lastUpdated: faker.date.past(),
-			comments: [
-				{
-					id: this.generateRandomId(),
-					text: 'test',
-				}
-			],
+			lastUpdated: moment(faker.date.past()),
+			comments: Array(Math.floor(Math.random() * 4) + 1).fill(null).map((v, i) => {
+				return this.generateRandomGoalComment('Mock goal comment ' + i);
+			}),
 		};
 	}
 

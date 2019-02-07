@@ -363,15 +363,15 @@
     <div class="info cols__colSmall">
       <h3>Procedures</h3>
       <ul class="nameList nameList--dk marBottom16">
-        <li class="nameList__item" *ngFor="let procedure of patient?.procedures">
-          <span>{{procedure}}</span>
+        <li class="nameList__item" *ngFor="let patientProcedure of patientProcedures">
+          <span>{{patientProcedure.procedure.name}}</span>
           <div class="flex">
             <button class="button button--icon button--icon--small"
-            (click)="editProcedure()">
+            (click)="editProcedure(patientProcedure)">
               <i class="ss-write"></i>
             </button>
             <button class="button button--icon button--icon--small"
-            (click)="deleteProcedure()">
+            (click)="deleteProcedure(patientProcedure)">
               <i class="ss-delete"></i>
             </button>
           </div>

@@ -32,11 +32,17 @@ export class GoalComponent implements OnInit {
       this.startDayInput = g.start_on_day;
       this.durationChoice = g.duration_weeks !== -1 ? 1 : 0;
       this.weeksInput = g.duration_weeks !== -1 ? g.duration_weeks : 1;
+    } else if (this.data && this.data.mockGoal) {
+      let g = this.data.mockGoal;
+      this.nameInput = g.name;
+      this.descriptionInput = g.description;
+      this.focusInput = g.focus;
+      this.progress = g.progress;
     }
   }
 
   public setProgress(num) {
-    console.log(num);
+    this.progress = num;
   }
 
   public clickClose() {

@@ -1,7 +1,13 @@
+import datetime
+import urllib
+
 import pytz
 
+from django.conf import settings
 from django.urls import reverse
+from django.utils import timezone
 
+from dateutil.relativedelta import relativedelta
 from faker import Faker
 from rest_framework import status
 from rest_framework.test import APITestCase
@@ -42,9 +48,11 @@ class TestPatientTaskTimezoneConversion(TasksMixin, APITestCase):
         self.assertEqual(response.data['due_datetime'][-6:], gmt_plus_8)
 
     def test_timezone_conversion_due_unauthenticated(self):
-        gmt_minus_6 = "-06:00"
+        server_timezone = pytz.timezone(settings.TIME_ZONE)
+        now = timezone.now().replace(tzinfo=server_timezone)
+        server_gmt = now.isoformat()[-6:]
         response = self.client.get(self.detail_url)
-        self.assertEqual(response.data['due_datetime'][-6:], gmt_minus_6)
+        self.assertEqual(response.data['due_datetime'][-6:], server_gmt)
 
     def test_timezone_conversion_from_user_appear(self):
         gmt_plus_8 = "+08:00"
@@ -53,9 +61,11 @@ class TestPatientTaskTimezoneConversion(TasksMixin, APITestCase):
         self.assertEqual(response.data['appear_datetime'][-6:], gmt_plus_8)
 
     def test_timezone_conversion_appear_unauthenticated(self):
-        gmt_minus_6 = "-06:00"
+        server_timezone = pytz.timezone(settings.TIME_ZONE)
+        now = timezone.now().replace(tzinfo=server_timezone)
+        server_gmt = now.isoformat()[-6:]
         response = self.client.get(self.detail_url)
-        self.assertEqual(response.data['appear_datetime'][-6:], gmt_minus_6)
+        self.assertEqual(response.data['appear_datetime'][-6:], server_gmt)
 
 
 class TestPatientTask(StateTestMixin, TasksMixin, APITestCase):
@@ -119,17 +129,17 @@ class TestPatientTask(StateTestMixin, TasksMixin, APITestCase):
         self.execute_state_test('missed', **kwargs)
 
     def test_filter_by_care_plan(self):
-        filter_url = f'{self.url}?plan__id={self.plan.id}'
+        filter_url = f'{self.url}?plan={self.plan.id}'
         response = self.client.get(filter_url)
         self.assertEqual(response.data['count'], 1)
 
     def test_filter_by_patient_task_template(self):
-        filter_url = f'{self.url}?patient_task_template__id={self.patient_task.patient_task_template.id}'
+        filter_url = f'{self.url}?patient_task_template={self.patient_task.patient_task_template.id}'
         response = self.client.get(filter_url)
         self.assertEqual(response.data['count'], 1)
 
     def test_filter_by_patient(self):
-        filter_url = f'{self.url}?plan__patient__id={self.plan.patient.id}'
+        filter_url = f'{self.url}?plan__patient={self.plan.patient.id}'
         response = self.client.get(filter_url)
         self.assertEqual(response.data['count'], 1)
 
@@ -153,6 +163,54 @@ class TestPatientTask(StateTestMixin, TasksMixin, APITestCase):
         filter_url = f'{self.url}?due_datetime={self.patient_task.due_datetime.strftime("%Y-%m-%d")}'
         response = self.client.get(filter_url)
         self.assertEqual(response.data['count'], count)
+
+    def test_patient_task_filter_appear_datetime(self):
+        patient = self.create_patient()
+        plan_template = self.create_care_plan_template()
+        days_ago = timezone.now() - relativedelta(days=5)
+        days_ago_min = datetime.datetime.combine(days_ago,
+                                                 datetime.time.min,
+                                                 tzinfo=pytz.utc)
+        days_ago_max = datetime.datetime.combine(days_ago,
+                                                 datetime.time.max,
+                                                 tzinfo=pytz.utc)
+
+        for i in range(5):
+            plan = self.create_care_plan(patient, **{
+                'plan_template': plan_template
+            })
+            task_template = self.create_patient_task_template(**{
+                'plan_template': plan_template
+            })
+            self.create_patient_task(**{
+                'plan': plan,
+                'patient_task_template': task_template,
+                'appear_datetime': days_ago,
+            })
+
+        # Create tasks not belonging to the initial appear_datetime
+        for i in range(5):
+            plan = self.create_care_plan(patient, **{
+                'plan_template': plan_template
+            })
+            task_template = self.create_patient_task_template(**{
+                'plan_template': plan_template
+            })
+            self.create_patient_task(**{
+                'plan': plan,
+                'patient_task_template': task_template
+            })
+
+        query_params = urllib.parse.urlencode({
+            'plan__patient': patient.id,
+            'patient_task_template__plan_template': plan_template.id,
+            'appear_datetime__lte': days_ago_max,
+            'appear_datetime__gte': days_ago_min
+        })
+
+        filter_url = f'{self.url}?{query_params}'
+        response = self.client.get(filter_url)
+        self.assertEqual(response.data['count'], 5)
 
 
 class TestPatientTaskUsingEmployee(TasksMixin, APITestCase):

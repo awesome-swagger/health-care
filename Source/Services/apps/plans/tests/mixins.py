@@ -2,9 +2,6 @@ import random
 
 from django.utils import timezone
 
-from apps.accounts.tests.factories import RegularUserFactory
-from apps.patients.tests.mixins import PatientsMixin
-
 from .factories import (
     CarePlanFactory,
     CarePlanTemplateTypeFactory,
@@ -17,7 +14,11 @@ from .factories import (
     GoalCommentFactory,
     InfoMessageQueueFactory,
     InfoMessageFactory,
+    MessageRecipientFactory,
+    TeamMessageFactory,
 )
+from apps.accounts.tests.factories import RegularUserFactory
+from apps.patients.tests.mixins import PatientsMixin
 
 
 class PlansMixin(PatientsMixin):
@@ -206,3 +207,34 @@ class PlansMixin(PatientsMixin):
             })
 
         return InfoMessageFactory(**kwargs)
+
+    def create_message_recipient(self, **kwargs):
+        if 'plan' not in kwargs:
+            kwargs.update({
+                'plan': self.create_care_plan()
+            })
+
+        members = kwargs.pop('members', [RegularUserFactory()])
+
+        recipient = MessageRecipientFactory(**kwargs)
+        recipient.members.add(*members)
+
+        return recipient
+
+    def create_team_message(self, **kwargs):
+        if 'recipients' not in kwargs:
+            kwargs.update({
+                'recipients': self.create_message_recipient()
+            })
+
+        if 'content' not in kwargs:
+            kwargs.update({
+                'content': self.fake.sentence(nb_words=10)
+            })
+
+        if 'sender' not in kwargs:
+            kwargs.update({
+                'sender': RegularUserFactory()
+            })
+
+        return TeamMessageFactory(**kwargs)

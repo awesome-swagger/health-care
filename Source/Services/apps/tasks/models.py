@@ -245,6 +245,10 @@ class SymptomTask(AbstractTask):
             self.due_datetime,
         )
 
+    @property
+    def latest_rating(self):
+        return self.ratings.order_by('created').last()
+
 
 class SymptomRating(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
     symptom_task = models.ForeignKey(
@@ -265,6 +269,20 @@ class SymptomRating(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
             self.symptom.name,
             self.rating,
         )
+
+    @property
+    def behavior(self):
+        value = "increasing"
+        second_rating = SymptomRating.objects.filter(
+            symptom_task=self.symptom_task,
+            symptom=self.symptom).exclude(id=self.id).order_by(
+            'created').last()
+        if second_rating:
+            if self.rating < second_rating.rating:
+                value = "decreasing"
+            elif self.rating == second_rating.rating:
+                value = "equal"
+        return value
 
 
 class AssessmentTaskTemplate(AbstractTaskTemplate):
@@ -326,7 +344,7 @@ class AssessmentTask(AbstractTask):
         )
 
 
-class AssessmentResponse(UUIDPrimaryKeyMixin):
+class AssessmentResponse(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
     assessment_task = models.ForeignKey(
         AssessmentTask,
         related_name='responses',
@@ -348,6 +366,20 @@ class AssessmentResponse(UUIDPrimaryKeyMixin):
             self.assessment_question.prompt,
             self.rating,
         )
+
+    @property
+    def behavior(self):
+        value = "increasing"
+        second_response = AssessmentResponse.objects.filter(
+            assessment_task=self.assessment_task,
+            assessment_question=self.assessment_question).exclude(
+            id=self.id).order_by('created').last()
+        if second_response:
+            if self.rating < second_response.rating:
+                value = "decreasing"
+            elif self.rating == second_response.rating:
+                value = "equal"
+        return value
 
 
 class VitalTaskTemplate(AbstractTaskTemplate):
@@ -430,7 +462,7 @@ class VitalQuestion(UUIDPrimaryKeyMixin):
         return f'{self.vital_task_template.name}: {self.prompt}'
 
 
-class VitalResponse(UUIDPrimaryKeyMixin):
+class VitalResponse(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
     """
     Stores information about a response made by a patient to a specific
     question for a particular vital task.

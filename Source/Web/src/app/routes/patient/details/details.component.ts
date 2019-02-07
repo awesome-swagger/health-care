@@ -336,7 +336,10 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
        patientEngagement: null,
      },
      width: '512px',
-   }).subscribe((res) => {
+   }).subscribe((results) => {
+     if (!results) {
+       return;
+     }
      task.status = 'done';
    });
   }
@@ -348,22 +351,42 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
     }).subscribe(() => {});
   }
 
-  public updateGoal() {
+  public updateGoal(goal) {
     this.modals.open(GoalComponent, {
       closeDisabled: true,
       data: {
         update: true,
-        patientName: `${this.patient.user.first_name} ${this.patient.user.last_name}`
+        patientName: `${this.patient.user.first_name} ${this.patient.user.last_name}`,
+        mockGoal: goal,
       },
       width: '512px',
-    }).subscribe(() => {});
+    }).subscribe((updatedGoal) => {
+      if (!updatedGoal) {
+        return;
+      }
+      let goalListIndex = this.mockData.goals.findIndex((obj) => obj.id === goal.id);
+      this.mockData.goals[goalListIndex] = Object.assign({}, this.mockData.goals[goalListIndex], {
+        name: updatedGoal.name,
+        description: updatedGoal.description,
+        focus: updatedGoal.focus,
+        progress: updatedGoal.progress,
+        lastUpdated: moment(),
+      });
+    });
   }
 
-  public openGoalComments() {
+  public openGoalComments(goal) {
     this.modals.open(GoalCommentsComponent, {
       closeDisabled: false,
+      data: {
+        mockData: this.mockData,
+        patient: this.patient,
+        goal: goal,
+      },
       width: '512px',
-    }).subscribe(() => {});
+    }).subscribe((res) => {
+      console.log(res);
+    });
   }
 
   public addCTTask() {
