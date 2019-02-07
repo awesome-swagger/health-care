@@ -4,6 +4,13 @@ import {
   get as _get,
   map as _map
 } from 'lodash';
+import * as moment from 'moment';
+
+interface MonthData {
+  month: string
+  enrolled: number
+  billable: number
+}
 
 @Component({
   selector: 'app-patients-enrolled-graph',
@@ -12,33 +19,34 @@ import {
 })
 export class PatientsEnrolledGraphComponent implements OnInit {
 
+  private _data;
+  @Input()
+  public get data() {
+    return this._data;
+  }
+  public set data(data) {
+    this._data = data;
+    this.drawChart();
+  }
+
   @ViewChild('chart') private chartContainer: ElementRef;
   constructor() { }
 
   ngOnInit() {
+    this.drawChart();
+  }
 
+  public drawChart() {
     const chartWidth = 1300;
 
-    interface MonthData {
-      month: string
-      enrolled: number,
-      billable: number
-    }
-
-    const months = [
-      { month: 'February', enrolled: 450, billable: 422 },
-      { month: 'March', enrolled: 398, billable: 376 },
-      { month: 'April', enrolled: 405, billable: 340 },
-      { month: 'May', enrolled: 254, billable: 231 },
-      { month: 'June', enrolled: 304, billable: 211 },
-      { month: 'July', enrolled: 420, billable: 400 },
-    ];
+    const months = this._data;
 
     const margin = {top: 30, right: 20, bottom: 30, left: 50};
     const width = chartWidth - margin.left - margin.right;
     const height = 500 - margin.top - margin.bottom;
 
     let element = this.chartContainer.nativeElement;
+    element.innerHTML = '';
     const wrapper = d3.select(element);
 
     function getUpperLimit(months) {
@@ -59,7 +67,7 @@ export class PatientsEnrolledGraphComponent implements OnInit {
       .domain([-5, upperLimit + upperLimit/20]);
 
     const xAxis = d3.axisBottom(x)
-      .ticks(months.length)
+      .ticks(months.length <= 8 ? months.length : 8)
       .tickSize(0)
       .tickFormat((t:number) => months[t - 1].month)
 
@@ -124,19 +132,22 @@ export class PatientsEnrolledGraphComponent implements OnInit {
       .enter().append('circle')
         .attr('r', 5)
         .attr('cx', (d, i) => x(i + 1))
-        .attr('cy', (d) => y(d.enrolled))
+        .attr('cy', (d:MonthData) => y(d.enrolled))
         .attr('fill', '#ffffff')
-        .on('mouseover', (d, i) => {
+        .on('mouseover', (d:MonthData, i) => {
           tooltip.transition()
             .duration(200)
             .style('opacity', 1)
           tooltip.html(
-              `<h4>Month ${i + 1}</h4><span>&middot;&middot;&middot;  Enrolled: ${d.enrolled}<br/>&mdash;  Billable: ${d.billable}</span>`
+              `<h4>${d.month}</h4><span>&middot;&middot;&middot;  Enrolled: ${d.enrolled}<br/>&mdash;  Billable: ${d.billable}</span>`
             )
             .style('left', (d3.event.pageX) + "px")
             .style('top', (d3.event.pageY + 30) + "px")
         })
         .on('mouseout', (d) => {
+          console.log('vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv');
+          console.log('asdf');
+          console.log('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^');
           tooltip.transition()
             .duration(500)
             .style('opacity', 0)
@@ -154,19 +165,22 @@ export class PatientsEnrolledGraphComponent implements OnInit {
       .enter().append('circle')
         .attr('r', 5)
         .attr('cx', (d, i) => x(i + 1))
-        .attr('cy', (d) => y(d.billable))
+        .attr('cy', (d:MonthData) => y(d.billable))
         .attr('fill', '#49b48b')
-        .on('mouseover', (d, i) => {
+        .on('mouseover', (d:MonthData, i) => {
           tooltip.transition()
             .duration(200)
             .style('opacity', 1)
           tooltip.html(
-              `<h4>Month ${i + 1}</h4><span>&middot;&middot;&middot;  Enrolled: ${d.enrolled}<br/>&mdash;  Billable: ${d.billable}</span>`
+              `<h4>${d.month}</h4><span>&middot;&middot;&middot;  Enrolled: ${d.enrolled}<br/>&mdash;  Billable: ${d.billable}</span>`
             )
             .style('left', (d3.event.pageX) + "px")
             .style('top', (d3.event.pageY + 30) + "px")
         })
         .on('mouseout', (d) => {
+          console.log('vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv');
+          console.log('asdfasdf');
+          console.log('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^');
           tooltip.transition()
             .duration(500)
             .style('opacity', 0)

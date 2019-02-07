@@ -167,7 +167,7 @@
   <ng-container *ngFor="let facility of facilities; let i = index">
     <div class="accordion" [ngClass]="{ 'isOpen': facilityAccordionsOpen[facility.id] }" *ngIf="facilitiesChecked[facility.id]">
       <div class="accordion__head" (click)="facilityAccordionsOpen[facility.id] = !facilityAccordionsOpen[facility.id]">
-        <span class="accordion__title">Facility: {{facility.name}} <span *ngIf="facility.employees">({{nthFacilityUserCountText(i)}})</span></span>
+        <span class="accordion__title">Facility: {{facility.name}} <span *ngIf="facility.employees.length">({{nthFacilityUserCountText(i)}})</span></span>
         <div class="accordion__right">
           <div class="accordion__arrow">
             <i class="ss-standard ss-navigateright"></i>

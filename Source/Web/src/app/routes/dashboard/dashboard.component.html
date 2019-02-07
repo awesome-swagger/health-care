@@ -6,17 +6,17 @@
       <div class="info info--dash info--dk info--horiz">
         <div class="info__cell">
           <label>Active Patients</label>
-          <a [routerLink]="['/patients/active']" class="link--big" *ngIf="patientsGrouped?.active">{{patientsGrouped?.active.length}}</a>
+          <a [routerLink]="['/patients/active']" class="link--big" *ngIf="patientsGrouped?.active">{{analyticsData?.active_patients}}</a>
           <a [routerLink]="['/patients/active']" class="link--big" *ngIf="!patientsGrouped?.active">0</a>
         </div>
         <div class="info__cell">
           <label>Invited Patients</label>
-          <a [routerLink]="['/patients/invited']" class="link--big link--red" *ngIf="patientsGrouped?.invited">{{patientsGrouped?.invited.length}}</a>
+          <a [routerLink]="['/patients/invited']" class="link--big link--red" *ngIf="patientsGrouped?.invited">{{analyticsData?.invited_patients}}</a>
           <a [routerLink]="['/patients/invited']" class="link--big link--red" *ngIf="!patientsGrouped?.invited">0</a>
         </div>
         <div class="info__cell">
           <label>Potential Patients</label>
-          <a [routerLink]="['/patients/potential']" class="link--big" *ngIf="patientsGrouped?.potential">{{patientsGrouped?.potential.length}}</a>
+          <a [routerLink]="['/patients/potential']" class="link--big" *ngIf="patientsGrouped?.potential">{{analyticsData?.potential_patients}}</a>
           <a [routerLink]="['/patients/potential']" class="link--big" *ngIf="!patientsGrouped?.potential">0</a>
         </div>
       </div>
@@ -149,7 +149,7 @@
     <div class="smallChartWrap">
       <div class="smallChart">
         <label>Avg Engagement</label>
-        <app-percentage-gauge [percent]="82" [size]="280"></app-percentage-gauge>
+        <app-percentage-gauge [percent]="analyticsData?.average_engagement" [size]="280"></app-percentage-gauge>
         <p class="smallChart__desc">
           Percentage of tasks and<br />
           assessments completed
@@ -157,7 +157,7 @@
       </div> <!--/.smallChart (the 1st one)-->
       <div class="smallChart">
         <label>Avg Outcome</label>
-        <app-percentage-gauge [percent]="73" [size]="280"></app-percentage-gauge>
+        <app-percentage-gauge [percent]="analyticsData?.average_outcome" [size]="280"></app-percentage-gauge>
         <p class="smallChart__desc">
           Results of well-being<br />
           assessments
@@ -165,7 +165,7 @@
       </div> <!--/.smallChart (the 2nd one)-->
       <div class="smallChart">
         <label>Avg Risk Level</label>
-        <app-percentage-gauge [percent]="95" [size]="280"></app-percentage-gauge>
+        <app-percentage-gauge [percent]="analyticsData?.risk_level" [size]="280"></app-percentage-gauge>
         <p class="smallChart__desc">
           Average of outcome %<br />
           and engagement %
@@ -173,7 +173,7 @@
       </div> <!--/.smallChart (the 3rd one)-->
       <div class="smallChart">
         <label>Satisfaction</label>
-        <app-percentage-gauge [percent]="62" [size]="280"></app-percentage-gauge>
+        <app-percentage-gauge [percent]="analyticsData?.satisfaction" [size]="280"></app-percentage-gauge>
         <p class="smallChart__desc">
           Results of satisfaction<br />
           assessments
@@ -189,8 +189,10 @@
       <!--TODO: Get an option to style the date range text; in this instance it needs to be smaller-->
       <app-date-range
         [datePickerOverrides]="datepickerOptions"
-        [startDate]="defaultDates[0]"
-        [endDate]="defaultDates[1]"
+        [startDate]="patientsEnrolledStart"
+        (startDateChange)="patientsEnrolledStart = $event; filterData()"
+        [endDate]="patientsEnrolledEnd"
+        (endDateChange)="patientsEnrolledEnd = $event; filterData()"
       ></app-date-range>
     </div>
       <div class="timeChart__header">
@@ -288,7 +290,7 @@
         </div> <!--/.flex (for row above the time chart)-->
       </div> <!--/.timeChart__selectWrap (for risk level filter)-->
 
-      <app-patients-enrolled-graph></app-patients-enrolled-graph>
+      <app-patients-enrolled-graph [data]="filteredPatientsEnrolledData"></app-patients-enrolled-graph>
 
     </div> <!--/.timeChart-->
 

@@ -21,6 +21,7 @@ export class PercentageGaugeComponent implements OnInit {
 
   public set percent(percent) {
     this._percent = percent;
+    this.drawChart();
   }
 
   @Input()
@@ -32,6 +33,10 @@ export class PercentageGaugeComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.drawChart();
+  }
+
+  public drawChart() {
 
     const percent = this.percent;
     const trackWidth = 15;
@@ -40,6 +45,7 @@ export class PercentageGaugeComponent implements OnInit {
     const textColor = '#ffffff';
 
     let element = this.chartContainer.nativeElement;
+    element.innerHTML = '';
     let wrapper = d3.select(element);
 
     let circle = d3.arc()
@@ -76,7 +82,7 @@ export class PercentageGaugeComponent implements OnInit {
       .attr('dy', '.5rem')
       .style('font-size', '3rem')
       .style('font-weight', 100)
-      .text(`${percent}%`);
+      .text(`${percent || 0}%`);
   }
 
   get color() {

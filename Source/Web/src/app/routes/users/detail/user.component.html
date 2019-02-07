@@ -153,12 +153,12 @@
       <div class="accordion__body">
         <div class="accordion__contents">
           <div class="flex marBottom48 fullWidth">
-            <label class="styledInput">
+            <label class="styledInput" (click)="confirmToggleAdmin(!isOrgAdmin)">
               <input
                 type="checkbox"
                 class="styledInput__input"
                 [checked]="isOrgAdmin"
-                (change)="isOrgAdmin=!isOrgAdmin"
+                disabled
               />
               <span class="styledInput__box"></span>
               Organization Administrator
@@ -214,9 +214,13 @@
             <div class="flex justifySpaceBetween alignCenter upperRow"><!-- start facility -->
               <h3 class="noMargin">{{facility.name}}</h3>
               <!--TODO: If role is not CM or BP, show a confirmation modal-->
-              <label class="styledInput">
-                <input type="checkbox" class="styledInput__input"
-                [checked]="facility.is_manager" />
+              <label class="styledInput" (click)="confirmToggleAdmin(!isFacilityManager(facility.id), facility.id)">
+                <input
+                  type="checkbox"
+                  class="styledInput__input"
+                  [checked]="isFacilityManager(facility.id)"
+                  disabled
+                />
                 <span class="styledInput__box"></span>
                 Facility Administrator
               </label>
