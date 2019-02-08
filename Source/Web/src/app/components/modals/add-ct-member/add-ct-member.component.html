@@ -12,15 +12,17 @@
 
 <div class="drop">
   <input class="input input--search fullWidth" type="text" (click)="dropOpen = !dropOpen" placeholder="Search Providers" [(ngModel)]="searchStr" (ngModelChange)="filterProviders()" />
-  <ul class="drop__dropdown fullWidth" [ngClass]="{ 'isOpen' : dropOpen }" (click)="dropOpen = !dropOpen">
-    <li class="drop__option" *ngFor="let employee of providersShown" (click)="selectProvider(employee)">
-      <a class="drop__link">
-        <div class="picName">
-          <img class="picName__img" src="../../../assets/img/profile.svg" />{{employee.user.first_name}} {{employee.user.last_name}}
-        </div>
-      </a>
-    </li>
-  </ul>
+  <app-popover [visible]="dropOpen" (visibleChange)="dropOpen = $event;">
+    <ul class="drop__dropdown fullWidth" [ngClass]="{ 'isOpen' : dropOpen }" (click)="dropOpen = !dropOpen">
+      <li class="drop__option" *ngFor="let employee of providersShown" (click)="selectProvider(employee)">
+        <a class="drop__link">
+          <div class="picName">
+            <img class="picName__img" src="../../../assets/img/profile.svg" />{{employee.user.first_name}} {{employee.user.last_name}}
+          </div>
+        </a>
+      </li>
+    </ul>
+  </app-popover>
 </div>
 <div class="modal__buttons">
   <button class="button button--2nd" (click)="clickCancel()">
