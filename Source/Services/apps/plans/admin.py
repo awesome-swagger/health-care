@@ -31,7 +31,7 @@ class CarePlanTemplateAdmin(admin.ModelAdmin):
 
 class CarePlanAdmin(admin.ModelAdmin):
     list_display = (
-        'patient', 'plan_template', )
+        'patient', 'plan_template', 'billing_practitioner', )
 
 
 class PlanConsentAdmin(admin.ModelAdmin):

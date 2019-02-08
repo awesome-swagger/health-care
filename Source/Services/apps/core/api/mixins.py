@@ -1,4 +1,7 @@
 from django.http import Http404
+from django.utils.translation import ugettext_lazy as _
+
+from rest_framework import serializers
 
 
 class RepresentationMixin(object):
@@ -69,3 +72,39 @@ class ParentViewSetPermissionMixin(object):
                 raise Http404
         else:
             return queryset
+
+
+class ReferenceCheckMixin(object):
+    """
+    This mixin will validate the existence of custom foreign fields. When used,
+    `validate` method will require `ref_validators` property
+    in the serializer's Meta property. Below is an example:
+
+        ref_validators = [
+            {
+                'field': 'care_manager',
+                'model': EmployeeProfile
+            },
+            {
+                'field': 'plan_template',
+                'model': CarePlanTemplate
+            },
+            ...
+        ]
+    """
+
+    def validate(self, data):
+        super(ReferenceCheckMixin, self).validate(data)
+
+        meta = getattr(self, 'Meta', None)
+        ref_validators = getattr(meta, 'ref_validators', {})
+        if ref_validators:
+            for obj in ref_validators:
+                field = obj.get('field')
+                model = obj.get('model')
+                value = data.get(field)
+                if value:
+                    if not model.objects.filter(pk=value):
+                        raise serializers.ValidationError({ field: _('Given instance does not exist.')})
+
+        return data

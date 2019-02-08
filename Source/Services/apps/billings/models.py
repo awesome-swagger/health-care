@@ -2,6 +2,7 @@ import datetime
 
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
+from django.db.models import Sum
 
 from model_utils import Choices
 
@@ -36,6 +37,7 @@ class BilledActivity(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
         )
     members = models.ManyToManyField(
         'core.EmployeeProfile',
+        blank=True,
         related_name='activities',
         )
     sync_to_ehr = models.BooleanField(
@@ -63,6 +65,11 @@ class BilledActivity(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
     @property
     def readable_time_spent(self):
         return str(datetime.timedelta(minutes=self.time_spent))[:-3]
+
+    def total_spent_time(self, employee):
+        spent_time = BilledActivity.objects.filter(added_by=employee) \
+                                           .aggregate(Sum('time_spent'))
+        return str(datetime.timedelta(minutes=spent_time['time_spent__sum']))[:-3]
 
     def __str__(self):
         return f'{self.added_by}: {self.readable_time_spent}'
