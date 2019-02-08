@@ -160,8 +160,8 @@ class OrganizationBilledActivity(ParentViewSetPermissionMixin,
         parents_query_dict = self.get_parents_query_dict()
         organization_id = parents_query_dict['plan__patient__facility__organization']
 
-        # TODO: Filter this so only billable patients remain
-        return PatientProfile.objects.filter(
+        return queryset.filter(
+            payer_reimbursement=True,
             facility__organization__id=organization_id)
 
     def get_billable_patients_count(self, queryset):

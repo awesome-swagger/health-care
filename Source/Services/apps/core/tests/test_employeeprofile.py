@@ -388,11 +388,25 @@ class TestFacilityEmployee(BillingsMixin, TasksMixin, APITestCase):
 
         for i in range(plans_count):
             # Create care plans as manager
-            manager_plan = self.create_care_plan()
+            billable_patient = self.create_patient(**{
+                'payer_reimbursement': True
+            })
+            manager_plan = self.create_care_plan(billable_patient)
             self.create_care_team_member(**{
                 'employee_profile': employee,
                 'plan': manager_plan,
                 'is_manager': True
+            })
+
+        # Create dummy records for non-billable patients
+        for i in range(plans_count):
+            nonbillable_patient = self.create_patient(**{
+                'payer_reimbursement': False
+            })
+            other_plan = self.create_care_plan(nonbillable_patient)
+            self.create_care_team_member(**{
+                'employee_profile': employee,
+                'plan': other_plan
             })
 
         url = reverse(

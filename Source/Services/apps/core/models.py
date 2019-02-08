@@ -101,7 +101,8 @@ class EmployeeProfile(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
 
     @property
     def billable_patients_count(self):
-        return self.assigned_roles.values_list(
+        return self.assigned_roles.filter(
+            plan__patient__payer_reimbursement=True).values_list(
             'plan__patient__id', flat=True).distinct().count()
 
     @property
