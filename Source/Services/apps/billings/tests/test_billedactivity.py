@@ -17,9 +17,16 @@ class TestBilledActivityUsingEmployee(BillingsMixin, APITestCase):
 
     def setUp(self):
         self.fake = Faker()
-        self.employee = self.create_employee()
+        self.facility = self.create_facility()
+        self.employee = self.create_employee(**{
+            'facilities': [self.facility]
+        })
         self.user = self.employee.user
-        self.plan = self.create_care_plan()
+        self.patient = self.create_patient(**{
+            'facility': self.facility,
+            'payer_reimbursement': True
+        })
+        self.plan = self.create_care_plan(self.patient)
         self.members = [self.create_employee() for i in range(3)]
         self.members.append(self.employee)
 
@@ -66,6 +73,22 @@ class TestBilledActivityUsingEmployee(BillingsMixin, APITestCase):
         response = self.client.post(self.url, payload)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
+    def test_create_billed_activity_not_billable(self):
+        member = self.create_employee()
+        patient = self.create_patient(**{
+            'payer_reimbursement': False
+        })
+        plan = self.create_care_plan(patient)
+        payload = {
+            'plan': plan.id,
+            'members': [self.employee.id, member.id],
+            'added_by': self.employee.id,
+            'notes': self.fake.sentence(),
+            'time_spent': random.randint(5, 120)
+        }
+        response = self.client.post(self.url, payload)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
     def test_full_update_billed_activity(self):
         member = self.create_employee()
         payload = {
@@ -77,6 +100,22 @@ class TestBilledActivityUsingEmployee(BillingsMixin, APITestCase):
         }
         response = self.client.put(self.detail_url, payload)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_full_update_billed_activity_not_billable(self):
+        member = self.create_employee()
+        patient = self.create_patient(**{
+            'payer_reimbursement': False
+        })
+        plan = self.create_care_plan(patient)
+        payload = {
+            'plan': plan.id,
+            'members': [self.employee.id, member.id],
+            'added_by': self.employee.id,
+            'notes': self.fake.sentence(),
+            'time_spent': random.randint(5, 120)
+        }
+        response = self.client.put(self.detail_url, payload)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_partial_update_billed_activity(self):
         payload = {
