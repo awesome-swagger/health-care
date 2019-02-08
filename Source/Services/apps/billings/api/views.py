@@ -3,6 +3,7 @@ import datetime
 from django.db.models import Sum
 from django.utils.translation import ugettext_lazy as _
 
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, permissions, mixins
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -120,6 +121,17 @@ class OrganizationBilledActivity(ParentViewSetPermissionMixin,
         Admins and employee members will have access to billed activities that
         belong to the care team.
 
+
+    Filtering
+    ---
+    This endpoint also allows users to filter by `facility` and
+    `service area`. Please see the examples below:
+
+        - GET /api/organizations/<organization-ID>/billed_activities/?plan__patient__facility=<facility-ID>
+        - GET /api/organizations/<organization-ID>/billed_activities/?plan_template__service_area=<service-area-ID>
+        - GET /api/organizations/<organization-ID>/billed_activities/?plan__patient__facility=<facility-ID>&plan_template__service_area=<service-area-ID>
+
+
     """
 
     serializer_class = BilledActivitySerializer
@@ -135,6 +147,11 @@ class OrganizationBilledActivity(ParentViewSetPermissionMixin,
             OrganizationViewSet
         )
     ]
+    filter_backends = (DjangoFilterBackend, )
+    filterset_fields = (
+        'plan__patient__facility',
+        'plan_template__service_area',
+    )
 
     def get_queryset(self):
         queryset = super(BilledActivityViewSet, self).get_queryset()
@@ -183,6 +200,15 @@ class OrganizationBilledActivity(ParentViewSetPermissionMixin,
             - total practitioners
             - total hours
             - total billable
+
+        Filtering
+        ---
+        This endpoint also allows users to filter by `facility` and
+        `service area`. Please see the examples below:
+
+            - GET /api/organizations/<organization-ID>/billed_activities/overview/?plan__patient__facility=<facility-ID>
+            - GET /api/organizations/<organization-ID>/billed_activities/overview/?plan_template__service_area=<service-area-ID>
+            - GET /api/organizations/<organization-ID>/billed_activities/overview/?plan__patient__facility=<facility-ID>&plan_template__service_area=<service-area-ID>
 
         Page Usage
         ---
