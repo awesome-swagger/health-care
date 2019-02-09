@@ -19,7 +19,7 @@ from apps.core.permissions import (EmployeeProfilePermissions,
                                    FacilityPermissions,
                                    OrganizationPermissions)
 
-from apps.plans.models import CareTeamMember
+from apps.plans.models import CareTeamMember, ServiceArea
 from care_adopt_backend import utils
 from care_adopt_backend.permissions import (
     IsAdminOrEmployee,
@@ -44,7 +44,8 @@ from .serializers import (DiagnosisSerializer, EmployeeProfileSerializer,
                           EmployeeAssignmentSerializer,
                           InviteEmployeeSerializer,
                           OrganizationPatientOverviewSerializer,
-                          OrganizationPatientDashboardSerializer)
+                          OrganizationPatientDashboardSerializer,
+                          BillingPractitionerSerializer,)
 
 
 class OrganizationViewSet(viewsets.ModelViewSet):
@@ -606,6 +607,66 @@ class OrganizationEmployeeViewSet(ParentViewSetPermissionMixin,
         ('organizations', Organization, OrganizationViewSet)
     ]
     pagination_class = OrganizationEmployeePagination
+
+
+class OrganizationBillingPractitionerViewSet(ParentViewSetPermissionMixin,
+                                             NestedViewSetMixin,
+                                             mixins.ListModelMixin,
+                                             viewsets.GenericViewSet):
+    """
+    Displays all billing practitioners in a parent organization.
+
+    FILTERING
+    ---
+    Results can be filtered by `facility` and `service_area`. For example:
+
+        GET /api/organizations/<organization-ID>/billing_practitioners/?facility=<facility-ID>
+        GET /api/organizations/<organization-ID>/billing_practitioners/?service_area=<service-area-ID>
+        GET /api/organizations/<organization-ID>/billing_practitioners/?facility=<facility-ID>&service_area=<service-area-ID>
+
+    USAGE
+    ---
+    - This will primarily populate `billing` page
+    """
+
+    serializer_class = BillingPractitionerSerializer
+    permission_clases = (permissions.IsAuthenticated, IsAdminOrEmployee)
+    queryset = EmployeeProfile.objects.filter(billed_plans__isnull=False)
+    parent_lookup = [
+        ('organizations', Organization, OrganizationViewSet)
+    ]
+    pagination_class = OrganizationEmployeePagination
+    parent_field = 'organizations'
+
+    def get_queryset(self):
+        queryset = super(OrganizationBillingPractitionerViewSet,
+                         self).get_queryset()
+
+        # Call `distinct()` to remove duplicates
+        return queryset.distinct()
+
+    def get_serializer_context(self):
+        context = super(OrganizationBillingPractitionerViewSet,
+                        self).get_serializer_context()
+
+        context.update({
+            'organization': self.parent_obj
+        })
+
+        if 'facility' in self.request.GET:
+            facility = Facility.objects.get(id=self.request.GET['facility'])
+            context.update({
+                'facility': facility
+            })
+
+        if 'service_area' in self.request.GET:
+            service_area = ServiceArea.objects.get(
+                id=self.request.GET['service_area'])
+            context.update({
+                'service_area': service_area
+            })
+
+        return context
 
 
 class OrganizationFacilityViewSet(ParentViewSetPermissionMixin,

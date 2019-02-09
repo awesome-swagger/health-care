@@ -10,12 +10,14 @@ from drf_haystack.serializers import HaystackSerializerMixin
 from rest_framework import serializers
 
 from apps.accounts.serializers import SettingsUserForSerializers
+from apps.billings.models import BilledActivity
 from apps.core.models import (Diagnosis, EmployeeProfile, Facility,
                               InvitedEmailTemplate, Medication, Organization,
                               Procedure, ProviderRole, ProviderSpecialty,
                               ProviderTitle, Symptom, Notification)
 
 from apps.patients.models import PatientProfile, PotentialPatient
+from apps.plans.models import CarePlan
 from apps.tasks.models import (
     AssessmentTask,
     PatientTask,
@@ -33,7 +35,7 @@ from ..search_indexes import (
     SymptomIndex,
 )
 from ..utils import get_facilities_for_user
-from .mixins import RepresentationMixin
+from .mixins import RepresentationMixin, BillingProfileSerializerMixin
 
 
 class OrganizationSerializer(serializers.ModelSerializer):
@@ -812,3 +814,124 @@ class InviteEmployeeSerializer(serializers.Serializer):
         mailer = EmployeeMailer()
         for employee in employees:
             mailer.send_invitation(employee, email_content)
+
+
+class BilledActivityDetailSerializer(RepresentationMixin,
+                                     serializers.ModelSerializer):
+    """
+    serializer to be used by :model:`billings.BilledActivity` to be used
+    in `billing` page
+    """
+
+    class Meta:
+        model = BilledActivity
+        fields = (
+            'id',
+            'get_activity_type_display',
+            'members',
+            'activity_date',
+            'time_spent',
+        )
+        nested_serializers = [
+            {
+                'field': 'members',
+                'serializer_class': BasicEmployeeProfileSerializer,
+                'many': True
+            }
+        ]
+
+
+class BilledPatientSerializer(BillingProfileSerializerMixin,
+                              serializers.ModelSerializer):
+    """
+    serializer to be used by :model:`patients.PatientProfile` who have
+    billing details.
+    """
+
+    class Meta:
+        model = PatientProfile
+        fields = (
+            'id',
+            'first_name',
+            'last_name',
+            'image_url',
+        )
+
+
+class BilledPlanSerializer(serializers.ModelSerializer):
+    """
+    serializer to be used by :model:`plans.CarePlan` having
+    billing details.
+    """
+    billed_activities = serializers.SerializerMethodField()
+    details_of_service = serializers.SerializerMethodField()
+
+    class Meta:
+        model = CarePlan
+        fields = (
+            'id',
+            'patient',
+            'billed_activities',
+            'details_of_service',
+        )
+        nested_serializers = [
+            {
+                'field': 'patient',
+                'serializer_class': BilledPatientSerializer
+            }
+        ]
+
+    def get_billed_activities(self, obj):
+        # TODO: Add this later when details are available
+        return []
+
+    def get_details_of_service(self, obj):
+        activities = obj.activities.order_by('activity_date')
+        serializer = BilledActivityDetailSerializer(activities, many=True)
+        return serializer.data
+
+
+class BillingPractitionerSerializer(BillingProfileSerializerMixin,
+                                    serializers.ModelSerializer):
+    """
+    serializer to be used by :model:`core.EmployeeProfile` who are billing
+    practitioners of a care plan.
+
+    NOTE:
+        - make sure to pass `organization` parameter in the request context
+        for this serializer to work
+    """
+
+    plans = serializers.SerializerMethodField()
+
+    class Meta:
+        model = EmployeeProfile
+        fields = (
+            'id',
+            'first_name',
+            'last_name',
+            'image_url',
+            'plans',
+        )
+
+    def get_plans(self, obj):
+        organization = self.context.get('organization')
+        facility = self.context.get('facility')
+        service_area = self.context.get('service_area')
+        kwargs = {
+            'patient__facility__organization': organization
+        }
+
+        if facility:
+            kwargs.update({
+                'patient__facility': facility,
+            })
+
+        if service_area:
+            kwargs.update({
+                'plan_template__service_area': service_area,
+            })
+
+        billed_plans = obj.billed_plans.filter(**kwargs)
+        serializer = BilledPlanSerializer(billed_plans, many=True)
+        return serializer.data
