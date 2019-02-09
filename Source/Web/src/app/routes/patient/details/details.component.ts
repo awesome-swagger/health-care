@@ -99,6 +99,11 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
   ) { }
 
   public ngOnInit() {
+    this.route.queryParams.subscribe((params) => {
+      if (params.show_my_tasks) {
+        this.userTasksOpen = true;
+      }
+    });
     this.route.params.subscribe((params) => {
       this.nav.patientDetailState(params.patientId, params.planId);
       this.auth.user$.subscribe((user) => {
