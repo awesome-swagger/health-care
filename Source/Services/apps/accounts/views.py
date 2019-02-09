@@ -152,13 +152,19 @@ class UserViewSet(
         user = self.get_object()
         timestamp = request.GET.get('date', None)
         plan_template = request.GET.get('plan_template', None)
+        exclude_done = request.GET.get('exclude_done', False)
+        if exclude_done == 'false':
+            exclude_done = False
+        elif exclude_done == 'true':
+            exclude_done = True
         date_format = "%Y-%m-%d"
         date_object = datetime.strptime(timestamp, date_format).date() \
             if timestamp else timezone.now().date()
         tasks = get_all_tasks_for_today(
             user,
             date_object=date_object,
-            plan_template=plan_template
+            plan_template=plan_template,
+            exclude_done=exclude_done,
         )
         return Response(data=tasks)
 

@@ -7,6 +7,8 @@ import { Store } from './store';
 @Injectable()
 export class StoreService {
 
+  // Core
+  public User = new Store(this.http, 'users');
   public Organization = new Store(this.http, 'organizations');
   public Facility = new Store(this.http, 'facilities');
   public EmployeeProfile = new Store(this.http, 'employee_profiles');
@@ -17,12 +19,16 @@ export class StoreService {
   public Medication = new Store(this.http, 'medications');
   public Procedure = new Store(this.http, 'procedures');
   public Symptom = new Store(this.http, 'symptoms');
+  // Billing
+  public BilledActivity = new Store(this.http, 'billed_activities');
+  // Patients
   public PatientProfile = new Store(this.http, 'patient_profiles');
   public ProblemArea = new Store(this.http, 'problem_areas');
   public PatientDiagnosis = new Store(this.http, 'patient_diagnosis');
   public PatientProcedure = new Store(this.http, 'patient_procedures');
   public PatientMedication = new Store(this.http, 'patient_medications');
   public PotentialPatient = new Store(this.http, 'potential_patients');
+  // Plans
   public CarePlanTemplate = new Store(this.http, 'care_plan_templates');
   public CarePlanTemplateType = new Store(this.http, 'care_plan_template_types');
   public CareTeamMember = new Store(this.http, 'care_team_members');
@@ -30,8 +36,12 @@ export class StoreService {
   public CarePlan = new Store(this.http, 'care_plans');
   public PlanConsentForm = new Store(this.http, 'plan_consent_forms');
   public GoalTemplate = new Store(this.http, 'goal_templates');
+  public Goal = new Store(this.http, 'goals');
+  public GoalProgress = new Store(this.http, 'goal_progresses');
+  public GoalComment = new Store(this.http, 'goal_comments');
   public InfoMessageQueue = new Store(this.http, 'info_message_queues');
   public InfoMessage = new Store(this.http, 'info_messages');
+  // Tasks
   public PatientTaskTemplate = new Store(this.http, 'patient_task_templates');
   public PatientTask = new Store(this.http, 'patient_tasks');
   public TeamTaskTemplate = new Store(this.http, 'team_task_templates');
@@ -47,6 +57,7 @@ export class StoreService {
   public AssessmentResponse = new Store(this.http, 'assessment_responses');
   public VitalsTaskTemplate = new Store(this.http, 'vital_task_templates');
   public VitalsQuestions = new Store(this.http, 'vital_questions');
+  public VitalResponse = new Store(this.http, 'vital_responses');
 
   constructor(private http: HttpService) { }
 }
