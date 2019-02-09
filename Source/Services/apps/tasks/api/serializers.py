@@ -353,12 +353,14 @@ class AssessmentTaskTemplateSerializer(serializers.ModelSerializer):
 
 class AssessmentResponseSerializer(RepresentationMixin,
                                    serializers.ModelSerializer):
+    assessment_task_name = serializers.SerializerMethodField()
 
     class Meta:
         model = AssessmentResponse
         fields = (
             'id',
             'assessment_task',
+            'assessment_task_name',
             'assessment_question',
             'rating',
             'behavior',
@@ -376,6 +378,9 @@ class AssessmentResponseSerializer(RepresentationMixin,
                 'serializer_class': AssessmentQuestionSerializer,
             }
         ]
+
+    def get_assessment_task_name(self, obj):
+        return obj.assessment_question.assessment_task_template.name
 
 
 class AssessmentTaskSerializer(RepresentationMixin,

@@ -330,8 +330,7 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
       }
     });
     this.getAssessmentResults(this.patient.id, this.carePlan.plan_template.id, startOfDay, endOfDay).then((assessments: any) => {
-      this.assessmentResults = _groupBy(assessments, (obj) => obj.assessment_question.assessment_task_template);
-      console.log(this.assessmentResults);
+      this.assessmentResults = _groupBy(assessments, (obj) => obj.assessment_task_name);
       if (!this.isUsingMobile) {
         // this.updatingAssessmentResults = _flatten(this.assessmentResults.concat().map((results) => results.questions));
       }
@@ -643,14 +642,6 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
   public clickSaveSymptomResult(result) {
     let resultsListIndex = this.updatingSymptomResults.findIndex((obj) => obj.id === result.id);
     this.updatingSymptomResults.splice(resultsListIndex, 1);
-  }
-
-  public format24Hour(time) {
-    let timeParse = time.split(":");
-    let suffix = (timeParse[0] >= 12)? 'PM' : 'AM';
-    let hours = (parseInt(timeParse[0]) > 12) ? parseInt(timeParse[0]) -12 : parseInt(timeParse[0]);
-    hours = (hours == 0) ? 12 : hours;
-    return `${hours}:${timeParse[1]} ${suffix}`;
   }
 
   public formatTaskType(type: string) {
