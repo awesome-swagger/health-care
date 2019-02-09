@@ -139,7 +139,8 @@ class OrganizationBilledActivity(ParentViewSetPermissionMixin,
         permissions.IsAuthenticated,
         IsAdminOrEmployeeActivityOwner,
     )
-    queryset = BilledActivity.objects.all()
+    queryset = BilledActivity.objects.filter(
+        plan__patient__payer_reimbursement=True)
     parent_lookup = [
         (
             'plan__patient__facility__organization',
@@ -150,11 +151,11 @@ class OrganizationBilledActivity(ParentViewSetPermissionMixin,
     filter_backends = (DjangoFilterBackend, )
     filterset_fields = (
         'plan__patient__facility',
-        'plan_template__service_area',
+        'plan__plan_template__service_area',
     )
 
     def get_queryset(self):
-        queryset = super(BilledActivityViewSet, self).get_queryset()
+        queryset = super(OrganizationBilledActivity, self).get_queryset()
         user = self.request.user
 
         if user.is_superuser:
@@ -177,9 +178,10 @@ class OrganizationBilledActivity(ParentViewSetPermissionMixin,
         parents_query_dict = self.get_parents_query_dict()
         organization_id = parents_query_dict['plan__patient__facility__organization']
 
-        return queryset.filter(
-            payer_reimbursement=True,
-            facility__organization__id=organization_id)
+        patient_ids = queryset.filter(
+            plan__patient__facility__organization__id=organization_id)\
+            .values_list('plan__patient', flat=True).distinct()
+        return PatientProfile.objects.filter(id__in=patient_ids)
 
     def get_billable_patients_count(self, queryset):
         patients = self._get_billable_patients(queryset)

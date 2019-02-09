@@ -1,3 +1,4 @@
+import datetime
 import random
 
 from django.urls import reverse
@@ -128,3 +129,205 @@ class TestBilledActivityUsingEmployee(BillingsMixin, APITestCase):
     def test_delete_billed_activity(self):
         response = self.client.delete(self.detail_url, {})
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+
+class TestBilledActivityOverview(BillingsMixin, APITestCase):
+    """
+    Test cases for :model:`billings.BilledActivity` particularly on the
+    overview endpoint.
+    """
+    def setUp(self):
+        self.fake = Faker()
+        self.facility = self.create_facility()
+        self.organization = self.facility.organization
+        self.employee = self.create_employee(**{
+            'organizations': [self.organization],
+            'facilities': [self.facility]
+        })
+        self.user = self.employee.user
+
+        self.url = reverse(
+            'organization-billed-activities-overview',
+            kwargs={
+                'parent_lookup_plan__patient__facility__organization': self.organization.id
+            })
+        self.client.force_authenticate(user=self.user)
+
+    def test_get_billable_patients(self):
+
+        for i in range(5):
+            facility = self.create_facility(self.organization)
+            patient = self.create_patient(**{
+                'facility': facility,
+                'payer_reimbursement': True
+            })
+            plan = self.create_care_plan(patient)
+            members = [self.create_employee() for i in range(3)]
+            members.append(self.employee)
+
+            for member in members:
+                self.create_care_team_member(**{
+                    'employee_profile': member,
+                    'plan': plan
+                })
+
+            self.create_billed_activity(**{
+                'plan': plan,
+                'added_by': self.employee
+            })
+
+        # Create dummy records for non-billable patients
+        for i in range(5):
+            facility = self.create_facility(self.organization)
+            patient = self.create_patient(**{
+                'facility': facility,
+                'payer_reimbursement': False
+            })
+            plan = self.create_care_plan(patient)
+            members = [self.create_employee() for i in range(3)]
+            members.append(self.employee)
+
+            for member in members:
+                self.create_care_team_member(**{
+                    'employee_profile': member,
+                    'plan': plan
+                })
+
+            self.create_billed_activity(**{
+                'plan': plan,
+                'added_by': self.employee
+            })
+
+        response = self.client.get(self.url)
+        self.assertEqual(response.data['billable_patients'], 5)
+
+    def test_get_total_facilities(self):
+
+        for i in range(5):
+            facility = self.create_facility(self.organization)
+            patient = self.create_patient(**{
+                'facility': facility,
+                'payer_reimbursement': True
+            })
+            plan = self.create_care_plan(patient)
+            members = [self.create_employee() for i in range(3)]
+            members.append(self.employee)
+
+            for member in members:
+                self.create_care_team_member(**{
+                    'employee_profile': member,
+                    'plan': plan
+                })
+
+            self.create_billed_activity(**{
+                'plan': plan,
+                'added_by': self.employee
+            })
+
+        # Create dummy records for non-billable patients
+        for i in range(5):
+            facility = self.create_facility(self.organization)
+            patient = self.create_patient(**{
+                'facility': facility,
+                'payer_reimbursement': False
+            })
+            plan = self.create_care_plan(patient)
+            members = [self.create_employee() for i in range(3)]
+            members.append(self.employee)
+
+            for member in members:
+                self.create_care_team_member(**{
+                    'employee_profile': member,
+                    'plan': plan
+                })
+
+            self.create_billed_activity(**{
+                'plan': plan,
+                'added_by': self.employee
+            })
+
+        response = self.client.get(self.url)
+        self.assertEqual(response.data['total_facilities'], 5)
+
+    def test_get_total_hours(self):
+        total_minutes = 0
+
+        for i in range(5):
+            facility = self.create_facility(self.organization)
+            patient = self.create_patient(**{
+                'facility': facility,
+                'payer_reimbursement': True
+            })
+            plan = self.create_care_plan(patient)
+            members = [self.create_employee() for i in range(3)]
+            members.append(self.employee)
+
+            for member in members:
+                self.create_care_team_member(**{
+                    'employee_profile': member,
+                    'plan': plan
+                })
+
+            activity = self.create_billed_activity(**{
+                'plan': plan,
+                'added_by': self.employee
+            })
+            total_minutes += activity.time_spent
+
+        # Create dummy records for non-billable patients
+        for i in range(5):
+            facility = self.create_facility(self.organization)
+            patient = self.create_patient(**{
+                'facility': facility,
+                'payer_reimbursement': False
+            })
+            plan = self.create_care_plan(patient)
+            members = [self.create_employee() for i in range(3)]
+            members.append(self.employee)
+
+            for member in members:
+                self.create_care_team_member(**{
+                    'employee_profile': member,
+                    'plan': plan
+                })
+
+            self.create_billed_activity(**{
+                'plan': plan,
+                'added_by': self.employee
+            })
+
+        total_hours = str(datetime.timedelta(minutes=total_minutes))[:-3]
+
+        response = self.client.get(self.url)
+        self.assertEqual(response.data['total_hours'], total_hours)
+
+    # def test_get_billed_activities_filter_by_facility(self):
+    #     facility = self.create_facility()
+    #     employee = self.create_employee(**{
+    #         'facilities': [facility]
+    #     })
+    #     user = employee.user
+
+    #     self.client.logout()
+    #     self.client.force_authenticate(user=user)
+
+    #     for i in range(5):
+    #         patient = self.create_patient(**{
+    #             'facility': facility,
+    #             'payer_reimbursement': True
+    #         })
+    #         plan = self.create_care_plan(patient)
+    #         members = [self.create_employee() for i in range(3)]
+    #         members.append(employee)
+
+    #         for member in members:
+    #             self.create_care_team_member(**{
+    #                 'employee_profile': member,
+    #                 'plan': plan
+    #             })
+
+    #         activity = self.create_billed_activity(**{
+    #             'plan': plan,
+    #             'added_by': employee
+    #         })
+

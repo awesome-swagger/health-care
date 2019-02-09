@@ -6,7 +6,6 @@ from ..models import BilledActivity
 from apps.core.api.mixins import RepresentationMixin
 from apps.core.api.serializers import BasicEmployeeProfileSerializer
 from apps.plans.api.serializers import CarePlanSerializer
-from apps.plans.models import CarePlan
 
 
 class BilledActivitySerializer(RepresentationMixin,
