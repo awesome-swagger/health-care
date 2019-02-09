@@ -86,8 +86,11 @@ class CarePlan(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
         on_delete=models.CASCADE)
 
     billing_practitioner = models.ForeignKey(
-        EmployeeProfile, null=True, 
-        blank=True, on_delete=models.CASCADE)
+        EmployeeProfile,
+        null=True,
+        blank=True,
+        related_name='billed_plans',
+        on_delete=models.CASCADE)
 
     def __str__(self):
         return '{} {}: {}'.format(
