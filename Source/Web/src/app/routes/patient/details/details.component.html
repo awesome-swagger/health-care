@@ -6,7 +6,7 @@
   <div class="flex alignCenter justifySpaceBetween marBottom32">
     <div>
       <label class="styledInput">
-        <input type="checkbox" class="styledInput__input" [(ngModel)]="isUsingMobile"/>
+        <input type="checkbox" class="styledInput__input" [(ngModel)]="isUsingMobile" (ngModelChange)="toggleUsingMobile($event)" />
         <span class="styledInput__box"></span>
         Using Mobile Application
       </label>
@@ -35,8 +35,11 @@
       <span class="accordion__title">Care Plan Goals - {{tableHeaderDate()}} ({{planGoals.length}})</span>
       <div class="accordion__right">
         <span class="marRight8">{{planGoals.length}} Goals</span>
-        <div class="pill" [ngStyle]="{'background': utils.percentPillColor(goalsPercentage())}">
+        <div class="pill" [ngStyle]="{'background': utils.percentPillColor(goalsPercentage())}" *ngIf="planGoals.length > 0">
           {{goalsAverage()}}/5
+        </div>
+        <div class="pill" *ngIf="planGoals.length === 0">
+          N/A
         </div>
         <div class="accordion__arrow">
           <i class="ss-standard ss-navigateright"></i>
@@ -122,8 +125,11 @@
       <span class="accordion__title">My Tasks - {{tableHeaderDate()}} ({{userTasks.length}})</span>
       <div class="accordion__right">
         <span class="marRight8">{{completedUserTasks()}}/{{userTasks.length}} Completed</span>
-        <div class="pill" [ngStyle]="{'background': utils.percentPillColor(userTasksPercentage())}">
+        <div class="pill" [ngStyle]="{'background': utils.percentPillColor(userTasksPercentage())}" *ngIf="userTasks.length > 0">
           {{userTasksPercentage()}}%
+        </div>
+        <div class="pill" *ngIf="userTasks.length === 0">
+          N/A
         </div>
         <div class="accordion__arrow">
           <i class="ss-standard ss-navigateright"></i>
@@ -200,8 +206,11 @@
       <span class="accordion__title">Care Team Tasks - {{tableHeaderDate()}} ({{teamTasks.length}})</span>
       <div class="accordion__right">
         <span class="marRight8">{{completedTeamTasks()}}/{{teamTasks.length}} Completed</span>
-        <div class="pill" [ngStyle]="{'background': utils.percentPillColor(teamTasksPercentage())}">
+        <div class="pill" [ngStyle]="{'background': utils.percentPillColor(teamTasksPercentage())}" *ngIf="teamTasks.length > 0">
           {{teamTasksPercentage()}}%
+        </div>
+        <div class="pill" *ngIf="teamTasks.length === 0">
+          N/A
         </div>
         <div class="accordion__arrow">
           <i class="ss-standard ss-navigateright"></i>
@@ -276,8 +285,11 @@
       <span class="accordion__title">Patient Tasks - {{tableHeaderDate()}} ({{patientTasks.length}})</span>
       <div class="accordion__right">
         <span class="marRight8">{{completedPatientTasks()}}/{{patientTasks.length}} Completed</span>
-        <div class="pill" [ngStyle]="{'background': utils.percentPillColor(patientTasksPercentage())}">
+        <div class="pill" [ngStyle]="{'background': utils.percentPillColor(patientTasksPercentage())}" *ngIf="patientTasks.length > 0">
           {{patientTasksPercentage()}}%
+        </div>
+        <div class="pill" *ngIf="patientTasks.length === 0">
+          N/A
         </div>
         <div class="accordion__arrow">
           <i class="ss-standard ss-navigateright"></i>
@@ -390,10 +402,10 @@
                 </div>
               </td>
               <td>
-                <a class="button button--icon--small button--icon button--center relative" *ngIf="isUpdatingPatientTask(task)" (click)="clickSavePatientTask(task)">
+                <a class="button button--icon--small button--icon button--center relative" *ngIf="isUpdatingPatientTask(task) && isPatientTaskUpdatable(task)" (click)="clickSavePatientTask(task)">
                   <i class="ss-floppydisk"></i>
                 </a>
-                <a class="button button--icon--small button--icon button--center relative" *ngIf="!isUpdatingPatientTask(task)" (click)="clickUpdatePatientTask(task)">
+                <a class="button button--icon--small button--icon button--center relative" *ngIf="!isUpdatingPatientTask(task) && isPatientTaskUpdatable(task)" (click)="clickUpdatePatientTask(task)">
                   <i class="ss-write"></i>
                 </a>
               </td>
@@ -419,7 +431,7 @@
             N/A
           </div>
         </ng-container>
-        <span class="marRight8">{{totalSatisfactionQuestions()}} Satisfaction Question</span>
+        <span class="marRight8">{{totalSatisfactionQuestions()}} Satisfaction Questions</span>
         <ng-container *ngIf="totalSatisfactionQuestions() > 0">
           <div class="pill" [ngStyle]="{'background': utils.percentPillColor(averageSatisfactionPercentage())}">
             {{averageSatisfactionScore()}}/5
@@ -617,8 +629,11 @@
       <span class="accordion__title">Symptoms - {{tableHeaderDate()}} ({{symptomResults.length}})</span>
       <div class="accordion__right">
         <span class="marRight8">{{symptomResults.length}} Symptoms</span>
-        <div class="pill" [ngStyle]="{'background': utils.percentPillColor(averageSymptomPercent())}">
+        <div class="pill" [ngStyle]="{'background': utils.percentPillColor(averageSymptomPercent())}" *ngIf="symptomResults.length > 0">
           {{averageSymptomRating()}}/5
+        </div>
+        <div class="pill" *ngIf="symptomResults.length === 0">
+          N/A
         </div>
         <div class="accordion__arrow">
           <i class="ss-standard ss-navigateright"></i>
@@ -781,9 +796,9 @@
 
   <div class="accordion" [ngClass]="{ 'isOpen' : vitalsResultsOpen }">
     <div class="accordion__head" (click)="vitalsResultsOpen=!vitalsResultsOpen">
-      <span class="accordion__title">Vitals - {{tableHeaderDate()}} ({{vitalResults.length}})</span>
+      <span class="accordion__title">Vitals - {{tableHeaderDate()}} ({{objectKeys(vitalResults).length}})</span>
       <div class="accordion__right">
-        <span class="marRight24">{{vitalResults.length}} Updates</span>
+        <span>{{objectKeys(vitalResults).length}} Updates</span>
         <div class="accordion__arrow">
           <i class="ss-standard ss-navigateright"></i>
         </div>
@@ -791,8 +806,8 @@
     </div> <!--/.accordion__head-->
     <div class="accordion__body">
       <div class="accordion__contents">
-        <ng-container *ngFor="let vital of vitalResults">
-          <h3 class="noMargin">{{vital.name}}</h3>
+        <ng-container *ngFor="let vital of objectKeys(vitalResults)">
+          <h3 class="noMargin">{{vital}}</h3>
           <table class="fullWidth">
           	<thead>
           		<tr>
@@ -894,27 +909,49 @@
           		</tr>
           	</thead>
           	<tbody>
-          		<tr *ngFor="let question of vital.questions">
-          			<td class="left">{{question.text}}</td>
-          			<td>{{formatVitalQuestionType(question.type) | titlecase}}</td>
-          			<td>{{question.results}}</td>
-          			<td>{{question.currentOccurance}} of {{question.totalOccurances}}</td>
+          		<tr *ngFor="let result of vitalResults[vital]">
+          			<td class="left">{{result.question.prompt}}</td>
+          			<td>{{formatVitalQuestionType(result.question.answer_type) | titlecase}}</td>
+          			<td>
+                  <ng-container *ngIf="!isUpdatingVitalResult(result)">
+                    <div>
+                      {{result.answer}}
+                    </div>
+                  </ng-container>
+                  <ng-container *ngIf="isUpdatingVitalResult(result)">
+                    <div class="editInput styledSelect" *ngIf="result.question.answer_type === 'boolean'">
+                      <select class="styledSelect__select" [(ngModel)]="result.answer">
+                        <option [ngValue]="true">True</option>
+                        <option [ngValue]="false">False</option>
+                      </select>
+                    </div>
+                    <app-time-picker *ngIf="result.question.answer_type === 'time'" [startingValue]="result.answer" (valueChange)="result.answer = $event;"></app-time-picker>
+                    <input type="number" class="editInput input" step="1" [(ngModel)]="result.answer" *ngIf="result.question.answer_type === 'integer'" />
+                    <input type="number" class="editInput input" step="0.01" [(ngModel)]="result.answer" *ngIf="result.question.answer_type === 'float'" />
+                    <input type="number" min="0" max="5" class="editInput input" [(ngModel)]="result.answer" *ngIf="result.question.answer_type === 'scale'" />
+                    <input type="text" class="editInput input" [(ngModel)]="result.answer" *ngIf="result.question.answer_type === 'string'" />
+                  </ng-container>
+                </td>
+          			<td>N/A of N/A</td>
           			<td>
           				<div class="iconText">
-          					<i class="iconText__icon iconText__icon--noTop ss-standard ss-up iconSmall"></i> {{question.vsPrev}}
+          					<i class="iconText__icon iconText__icon--noTop ss-standard ss-up iconSmall"></i> N/A
           				</div>
           			</td>
           			<td>
-          				{{question.vsNext}}
+          				N/A
           			</td>
           			<td>
           				<div class="iconText">
-          					<i class="iconText__icon iconText__icon--noTop ss-standard ss-hyphen iconSmall"></i> {{question.vsPlan}}
+          					<i class="iconText__icon iconText__icon--noTop ss-standard ss-hyphen iconSmall"></i> N/A
           				</div>
           			</td>
                 <td>
-                  <a class="button button--icon--small button--icon button--center relative" (click)="editPatientTask()">
+                  <a *ngIf="!isUpdatingVitalResult(result)" class="button button--icon--small button--icon button--center relative" (click)="clickUpdateVitalResult(result)">
                     <i class="ss-write"></i>
+                  </a>
+                  <a *ngIf="isUpdatingVitalResult(result)" class="button button--icon--small button--icon button--center relative" (click)="clickSaveVitalResult(result)">
+                    <i class="ss-floppydisk"></i>
                   </a>
                 </td>
           		</tr>
@@ -925,10 +962,9 @@
         <p>
           "My blood pressure seems to be stabilizing."
         </p>
-        <a [routerLink]="['/patient/asdf/messaging']" class="button button--iconText">
+        <a (click)="routeToMessaging()" class="button button--iconText">
           <i class="ss-chat"></i> Reply
         </a>
-
       </div> <!--/.accordion__contents-->
     </div> <!--/.accordion__body-->
   </div> <!--/.accordion (for vitals)-->

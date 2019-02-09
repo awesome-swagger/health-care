@@ -12,7 +12,6 @@ import { PopoverOptions } from '../../../modules/popover';
 import { RecordResultsComponent, GoalComponent, AddCTTaskComponent } from '../../../components';
 import { AuthService, NavbarService, StoreService, UtilsService } from '../../../services';
 import { GoalCommentsComponent } from './modals/goal-comments/goal-comments.component';
-import { DetailsMockData } from './detailsData';
 
 @Component({
   selector: 'app-patient-details',
@@ -23,8 +22,6 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
 
   public moment = moment;
   public objectKeys = Object.keys;
-
-  private mockData = new DetailsMockData();
 
   public user = null;
   public patient = null;
@@ -42,6 +39,7 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
   public messageQueues = [];
   // Tracks what tasks, if any, are currently being updated.
   public updatingPatientTasks = [];
+  public updatablePatientTaskTypes = ['patient_task', 'medication_task'];
   public patientTaskStatusChoices = ['done', 'missed'];
   public updatingAssessmentResults = [];
   public updatingSymptomResults = [];
@@ -108,43 +106,70 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
           return;
         }
         this.user = user;
-        this.store.PatientProfile.read(params.patientId).subscribe(
-          (patient) => {
-            this.patient = patient;
-            this.nav.addRecentPatient(this.patient);
-            let carePlanSub = this.store.CarePlan.read(params.planId).subscribe(
-              (carePlan: any) => {
-                this.carePlan = carePlan;
-                this.refetchAllTasks(this.selectedDate);
-                this.store.CarePlan.detailRoute('get', this.carePlan.id, 'care_team_members', {}, {}).subscribe(
-                  (teamMembers: any) => {
-                    this.careTeamMembers = teamMembers.filter((obj) => {
-                      return obj.employee_profile.user.id !== this.user.user.id;
-                    });
-                  },
-                  () => {},
-                  () => {},
-                );
-                let messageSub = this.store.InfoMessageQueue.readListPaged().subscribe(
-                  (messageQueues) => {
-                    return this.messageQueues = _filter(messageQueues, m => m.plan_template.id === carePlan.plan_template.id);
-                  },
-                  (err) => {},
-                  () => messageSub.unsubscribe()
-                );
-            },
-            (err) => {},
-            () => carePlanSub.unsubscribe()
-          );
-        },
-        (err) => {},
-        () => {},
-      );
+        this.getPatientProfile(params.patientId).then((patient: any) => {
+          this.patient = patient;
+          this.nav.addRecentPatient(this.patient);
+          this.getCarePlan(params.planId).then((carePlan: any) => {
+        		this.carePlan = carePlan;
+        		this.refetchAllTasks(this.selectedDate);
+            this.getCareTeam(params.planId).then((teamMembers: any) => {
+              this.careTeamMembers = teamMembers.filter((obj) => {
+                return obj.employee_profile.user.id !== this.user.user.id;
+              });
+            });
+        		let messageSub = this.store.InfoMessageQueue.readListPaged().subscribe(
+        			(messageQueues) => {
+        				return this.messageQueues = _filter(messageQueues, m => m.plan_template.id === carePlan.plan_template.id);
+        			},
+        			(err) => { },
+        			() => messageSub.unsubscribe()
+        		);
+          });
+        });
       });
     });
   }
 
   public ngOnDestroy() { }
+
+  public getPatientProfile(patientId) {
+    let promise = new Promise((resolve, reject) => {
+      let patientSub = this.store.PatientProfile.read(patientId).subscribe(
+        (patient) => resolve(patient),
+        (err) => reject(err),
+        () => {
+          patientSub.unsubscribe();
+        }
+      );
+    });
+    return promise;
+  }
+
+  public getCarePlan(planId) {
+    let promise = new Promise((resolve, reject) => {
+      let planSub = this.store.CarePlan.read(planId).subscribe(
+        (plan) => resolve(plan),
+        (err) => reject(err),
+        () => {
+          planSub.unsubscribe();
+        }
+      );
+    });
+    return promise;
+  }
+
+  public getCareTeam(planId) {
+    let promise = new Promise((resolve, reject) => {
+      let teamSub = this.store.CarePlan.detailRoute('get', this.carePlan.id, 'care_team_members', {}, {}).subscribe(
+        (teamMembers: any) => resolve(teamMembers),
+        (err) => reject(err),
+        () => {
+          teamSub.unsubscribe();
+        }
+      );
+    });
+    return promise;
+  }
 
   public getGoals(patient, planTemplate, start, end) {
     let promise = new Promise((resolve, reject) => {
@@ -260,7 +285,7 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
     return promise;
   }
 
-  public getVitalResultsReal(patient, planTemplate, start, end) {
+  public getVitalResults(patient, planTemplate, start, end) {
     let promise = new Promise((resolve, reject) => {
       let vitalSub = this.store.VitalResponse.readListPaged({
         vital_task__plan__patient: patient,
@@ -295,13 +320,23 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
     return promise;
   }
 
-  public getVitalResults(dateAsMoment = null) {
-    if (!dateAsMoment) {
-      dateAsMoment = moment();
-    }
-    return this.mockData.vitalResults.filter((obj) => {
-      return dateAsMoment.isSame(obj.date, 'day');
+  public setAllUpdatable() {
+    this.updatingPatientTasks = this.patientTasks.filter((obj) => this.isPatientTaskUpdatable(obj));
+    let assessmentKeys = Object.keys(this.assessmentResults);
+    assessmentKeys.forEach((key) => {
+      this.updatingAssessmentResults = this.updatingAssessmentResults.concat(this.assessmentResults[key]);
     });
+    this.updatingSymptomResults = this.symptomResults.concat();
+    let vitalKeys = Object.keys(this.vitalResults);
+    vitalKeys.forEach((key) => {
+      this.updatingVitalResults = this.updatingVitalResults.concat(this.vitalResults[key]);
+    });
+  }
+
+  public toggleUsingMobile() {
+    if (!this.isUsingMobile) {
+      this.setAllUpdatable();
+    }
   }
 
   public refetchAllTasks(dateAsMoment) {
@@ -326,13 +361,17 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
     this.getPatientTasks(this.patient.user.id, this.carePlan.plan_template.id, formattedDate).then((tasks: any) => {
       this.patientTasks = tasks;
       if (!this.isUsingMobile) {
-        this.updatingPatientTasks = this.patientTasks.concat();
+        this.updatingPatientTasks = this.patientTasks.filter((obj) => this.isPatientTaskUpdatable(obj));
       }
     });
+    this.updatingAssessmentResults = [];
     this.getAssessmentResults(this.patient.id, this.carePlan.plan_template.id, startOfDay, endOfDay).then((assessments: any) => {
       this.assessmentResults = _groupBy(assessments, (obj) => obj.assessment_task_name);
       if (!this.isUsingMobile) {
-        // this.updatingAssessmentResults = _flatten(this.assessmentResults.concat().map((results) => results.questions));
+        let keys = Object.keys(this.assessmentResults);
+        keys.forEach((key) => {
+          this.updatingAssessmentResults = this.updatingAssessmentResults.concat(this.assessmentResults[key]);
+        });
       }
     });
     this.getSymptomResults(this.patient.id, this.carePlan.plan_template.id, startOfDay, endOfDay).then((symptoms: any) => {
@@ -341,12 +380,15 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
         this.updatingSymptomResults = this.symptomResults.concat();
       }
     });
-    // this.getVitalResultsReal(this.patient.id, this.carePlan.plan_template.id, startOfDay, endOfDay).then((vitals: any) => {
-    //   this.vitalResults = vitals;
-    //   if (!this.isUsingMobile) {
-    //     // this.updatingVitalResults = _flatten(this.vitalResults.concat().map((results) => results.questions))
-    //   }
-    // });
+    this.getVitalResults(this.patient.id, this.carePlan.plan_template.id, startOfDay, endOfDay).then((vitals: any) => {
+      this.vitalResults = _groupBy(vitals, (obj) => obj.vital_task_name);
+      if (!this.isUsingMobile) {
+        let keys = Object.keys(this.vitalResults);
+        keys.forEach((key) => {
+          this.updatingVitalResults = this.updatingVitalResults.concat(this.vitalResults[key]);
+        });
+      }
+    });
   }
 
   public setSelectedDay(dateAsMoment) {
@@ -355,7 +397,6 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
     }
     this.selectedDate = dateAsMoment;
     this.refetchAllTasks(dateAsMoment);
-    this.vitalResults = this.getVitalResults(dateAsMoment);
   }
 
   public nextDate() {
@@ -484,7 +525,7 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
   }
 
   public outcomePercentage(outcome) {
-    // return (outcome / 5.0) * 100;
+    return (outcome / 5.0) * 100;
   }
 
   public averageSymptomRating() {
@@ -554,7 +595,7 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
        tasks: this.userTasks,
        task: task.id,
        totalMinutes: null,
-       teamMembers: this.mockData.employees,
+       teamMembers: this.careTeamMembers,
        with: null,
        syncToEHR: false,
        notes: '',
@@ -599,12 +640,25 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
     return this.updatingPatientTasks.findIndex((obj) => obj.id === task.id) >= 0;
   }
 
+  public isPatientTaskUpdatable(task) {
+    return this.updatablePatientTaskTypes.includes(task.type);
+  }
+
   public clickUpdatePatientTask(task) {
     this.updatingPatientTasks.push(task);
   }
 
   public clickSavePatientTask(task) {
-    let updateSub = this.store.PatientTask.update(task.id, {
+    let storeModel = null;
+    if (task.type === 'patient_task') {
+      storeModel = this.store.PatientTask;
+    } else if (task.type === 'medication_task') {
+      storeModel = this.store.MedicationTask;
+    }
+    if (!storeModel) {
+      return;
+    }
+    let updateSub = storeModel.update(task.id, {
       status: task.state,
     }, true).subscribe(
       (res) => {
@@ -627,8 +681,18 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
   }
 
   public clickSaveAssessmentResult(result) {
-    let resultsListIndex = this.updatingAssessmentResults.findIndex((obj) => obj.id === result.id);
-    this.updatingAssessmentResults.splice(resultsListIndex, 1);
+    let updateSub = this.store.AssessmentResponse.update(result.id, {
+      rating: result.rating,
+    }, true).subscribe(
+      (res) => {
+        let resultsListIndex = this.updatingAssessmentResults.findIndex((obj) => obj.id === result.id);
+        this.updatingAssessmentResults.splice(resultsListIndex, 1);
+      },
+      (err) => {},
+      () => {
+        updateSub.unsubscribe();
+      },
+    );
   }
 
   public isUpdatingSymptomResult(result) {
@@ -640,8 +704,41 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
   }
 
   public clickSaveSymptomResult(result) {
-    let resultsListIndex = this.updatingSymptomResults.findIndex((obj) => obj.id === result.id);
-    this.updatingSymptomResults.splice(resultsListIndex, 1);
+    let updateSub = this.store.SymptomRating.update(result.id, {
+      rating: result.rating,
+    }, true).subscribe(
+      (res) => {
+        let resultsListIndex = this.updatingSymptomResults.findIndex((obj) => obj.id === result.id);
+        this.updatingSymptomResults.splice(resultsListIndex, 1);
+      },
+      (err) => {},
+      () => {
+        updateSub.unsubscribe();
+      },
+    );
+  }
+
+  public isUpdatingVitalResult(result) {
+    return this.updatingVitalResults.findIndex((obj) => obj.id === result.id) >= 0;
+  }
+
+  public clickUpdateVitalResult(result) {
+    this.updatingVitalResults.push(result);
+  }
+
+  public clickSaveVitalResult(result) {
+    let updateSub = this.store.VitalResponse.update(result.id, {
+      response: result.answer,
+    }, true).subscribe(
+      (res) => {
+        let resultsListIndex = this.updatingVitalResults.findIndex((obj) => obj.id === result.id);
+        this.updatingVitalResults.splice(resultsListIndex, 1);
+      },
+      (err) => {},
+      () => {
+        updateSub.unsubscribe();
+      },
+    );
   }
 
   public formatTaskType(type: string) {

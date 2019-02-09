@@ -1,10 +1,11 @@
 import { Component, EventEmitter, Input, Output, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { find as _find } from 'lodash';
+import * as moment from 'moment';
 import { ModalService } from '../../modules/modals';
 import { ToastService } from '../../modules/toast';
 import { PopoverOptions } from '../../modules/popover';
-import { StoreService } from '../../services';
-import { find as _find } from 'lodash';
+import { StoreService, UtilsService } from '../../services';
 import { ProblemAreasComponent } from '../../routes/patient/modals/problem-areas/problem-areas.component';
 
 @Component({
@@ -16,7 +17,9 @@ export class PatientHeaderComponent implements OnInit, OnDestroy {
 
   public _currentPage = null;
   public patient = null;
+  public patientPlansOverview = null;
   public selectedPlan = null;
+  public selectedPlanOverview = null;
   public carePlans = [];
   public careTeamMembers = [];
   public careManager = null;
@@ -26,7 +29,7 @@ export class PatientHeaderComponent implements OnInit, OnDestroy {
   public onPlanChange = new EventEmitter<any>();
 
   public planSelectOpen = false;
-  public teamListOpen;
+  public teamListOpen = false;
   public openFinancialDetails;
 
   public planSelectOptions: PopoverOptions = {};
@@ -37,33 +40,44 @@ export class PatientHeaderComponent implements OnInit, OnDestroy {
     private modals: ModalService,
     private toast: ToastService,
     private store: StoreService,
+    public utils: UtilsService,
   ) { }
 
   public ngOnInit() {
     this.route.params.subscribe(
       (params) => {
-        this.fetchPatient(params.patientId).then(
+        this.getPatient(params.patientId).then(
           (patient: any) => {
             this.patient = patient;
-            this.fetchCarePlans(params.patientId).then(
-              (carePlans: any) => {
-                this.carePlans = carePlans;
-                this.selectedPlan = carePlans.find((obj) => {
-                  return obj.id === params.planId;
-                });
+            let overviewSub = this.store.PatientProfile.detailRoute('get', this.patient.id, 'care_plan_overview').subscribe(
+              (overview: any) => {
+                this.patientPlansOverview = overview.results;
+                this.getCarePlans(params.patientId).then(
+                  (carePlans: any) => {
+                    this.carePlans = carePlans;
+                    this.selectedPlan = carePlans.find((obj) => {
+                      return obj.id === params.planId;
+                    });
+                    this.selectedPlanOverview = this.getOverviewForPlanTemplate(this.selectedPlan.plan_template.id);
+                  },
+                  (err) => {
+                    this.toast.error('Error fetching care plans');
+                    console.log(err);
+                  },
+                );
               },
-              (err) => {
-                this.toast.error('Error fetching care plans');
-                console.log(err);
+              (err) => {},
+              () => {
+                overviewSub.unsubscribe();
               },
-            )
+            );
           },
           (err) => {
             this.toast.error('Error fetching patient');
             console.log(err);
           }
         );
-        this.fetchCareTeamMembers(params.planId).then(
+        this.getCareTeamMembers(params.planId).then(
           (teamMembers: any) => {
             this.careTeamMembers = teamMembers.filter((obj) => {
               return !obj.is_manager;
@@ -77,7 +91,7 @@ export class PatientHeaderComponent implements OnInit, OnDestroy {
             console.log(err);
           },
         );
-        this.fetchProblemAreas(params.patientId).then(
+        this.getProblemAreas(params.patientId).then(
           (problemAreas: any) => {
             this.problemAreas = problemAreas;
           },
@@ -92,7 +106,7 @@ export class PatientHeaderComponent implements OnInit, OnDestroy {
 
   public ngOnDestroy() { }
 
-  public fetchPatient(patientId) {
+  public getPatient(patientId) {
     let promise = new Promise((resolve, reject) => {
       let fetchSub = this.store.PatientProfile.read(patientId).subscribe(
         (patient) => resolve(patient),
@@ -105,7 +119,7 @@ export class PatientHeaderComponent implements OnInit, OnDestroy {
     return promise;
   }
 
-  public fetchCarePlans(patientId) {
+  public getCarePlans(patientId) {
     let promise = new Promise((resolve, reject) => {
       let carePlansSub = this.store.CarePlan.readListPaged({
         patient: patientId,
@@ -120,7 +134,7 @@ export class PatientHeaderComponent implements OnInit, OnDestroy {
     return promise;
   }
 
-  public fetchCareTeamMembers(planId) {
+  public getCareTeamMembers(planId) {
     let promise = new Promise((resolve, reject) => {
       let teamMembersSub = this.store.CarePlan.detailRoute('get', planId, 'care_team_members').subscribe(
         (teamMembers) => resolve(teamMembers),
@@ -133,7 +147,7 @@ export class PatientHeaderComponent implements OnInit, OnDestroy {
     return promise;
   }
 
-  public fetchProblemAreas(patient) {
+  public getProblemAreas(patient) {
     let promise = new Promise((resolve, reject) => {
       let problemAreasSub = this.store.ProblemArea.readListPaged({
         patient: patient,
@@ -148,8 +162,16 @@ export class PatientHeaderComponent implements OnInit, OnDestroy {
     return promise;
   }
 
+  public getOverviewForPlanTemplate(planTemplateId) {
+    return this.patientPlansOverview.find((obj) => obj.plan_template.id === planTemplateId);
+  }
+
   public changeSelectedPlan(plan) {
     this.router.navigate(['/patient', this.patient.id, this.currentPage, plan.id]);
+  }
+
+  public routeToPatientHistory() {
+    this.router.navigate(['/patient', this.patient.id, 'history', this.selectedPlan.id]);
   }
 
   public openProblemAreas() {
