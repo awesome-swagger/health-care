@@ -171,6 +171,10 @@ def get_all_tasks_for_today(user, **kwargs):
         if exclude_done:
             team_tasks = team_tasks.exclude(status='done')
 
+        if plan_template:
+            team_tasks = team_tasks.filter(
+                team_task_template__plan_template=plan_template)
+
         if team_tasks.exists():
             serializer = TeamTaskTodaySerializer(
                 team_tasks.all(),
