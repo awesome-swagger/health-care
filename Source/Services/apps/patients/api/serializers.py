@@ -3,6 +3,7 @@ import logging
 from django.db.models import Avg
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
+from django.contrib.auth import get_user_model
 
 from dateutil.relativedelta import relativedelta
 from drf_haystack.serializers import HaystackSerializerMixin
@@ -11,12 +12,13 @@ from rest_framework.authtoken.models import Token
 
 from apps.accounts.forms import CustomSetPasswordForm
 from apps.accounts.serializers import SettingsUserForSerializers
-from apps.core.api.mixins import RepresentationMixin
+from apps.core.api.mixins import (RepresentationMixin, ReferenceCheckMixin)
 from apps.core.models import EmployeeProfile
 from apps.core.api.serializers import (
     FacilitySerializer,
     MedicationSerializer,
     EmployeeUserInfo,
+    EmployeeProfileSerializer,
     ProviderTitleSerializer,
     SymptomSerializer,
     ProcedureSerializer,
@@ -26,7 +28,9 @@ from apps.patients.models import (PatientDiagnosis, PatientMedication,
                                   PatientProcedure, PatientProfile,
                                   ProblemArea, PatientVerificationCode,
                                   ReminderEmail, PotentialPatient)
-from apps.plans.api.serializers import InfoMessageSerializer
+from apps.plans.api.serializers import (InfoMessageSerializer, 
+                                        CarePlanTemplateSerializer)
+from apps.plans.models import CarePlanTemplate
 from apps.tasks.models import AssessmentResponse, SymptomRating
 
 from ..search_indexes import PatientProfileIndex
@@ -106,6 +110,54 @@ class PatientProfileSerializer(RepresentationMixin,
                 'serializer_class': InfoMessageSerializer
             }
         ]
+
+
+class AddPatientToPlanSerializer(ReferenceCheckMixin, 
+                                 serializers.ModelSerializer):
+
+    user = serializers.UUIDField(required=False)
+    first_name = serializers.CharField(max_length=128)
+    last_name = serializers.CharField(max_length=128)
+    email = serializers.EmailField()
+    phone = serializers.CharField(max_length=16)
+    plan_template = serializers.UUIDField()
+    care_manager = serializers.UUIDField()
+
+    class Meta:
+        model = PatientProfile
+        fields = (
+            'user',
+            'first_name',
+            'last_name',
+            'email',
+            'phone',
+            'plan_template',
+            'care_manager',
+            'facility'
+        )
+        ref_validators = [
+            {
+                'field': 'user',
+                'model': get_user_model(),
+            },
+            {
+                'field': 'care_manager',
+                'model': EmployeeProfile
+            },
+            {
+                'field': 'plan_template',
+                'model': CarePlanTemplate
+            }
+        ]
+
+    def validate(self, data):
+        super(AddPatientToPlanSerializer, self).validate(data)
+        user = data.get('user')
+        if not user and get_user_model().objects.filter(email=data.get('email')).exists():
+            raise serializers.ValidationError({ 
+                "user": _('A user with the email already exists .')
+            })
+        return data
 
 
 class PatientDiagnosisSerializer(serializers.ModelSerializer):

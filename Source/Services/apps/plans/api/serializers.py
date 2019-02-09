@@ -79,6 +79,7 @@ class BasicPatientPlanSerializer(serializers.ModelSerializer):
     first_name = serializers.SerializerMethodField()
     last_name = serializers.SerializerMethodField()
     image_url = serializers.SerializerMethodField()
+    facility = serializers.SerializerMethodField()
 
     class Meta:
         model = PatientProfile
@@ -87,6 +88,7 @@ class BasicPatientPlanSerializer(serializers.ModelSerializer):
             'first_name',
             'last_name',
             'image_url',
+            'facility',
         )
 
     def get_first_name(self, obj):
@@ -97,6 +99,9 @@ class BasicPatientPlanSerializer(serializers.ModelSerializer):
 
     def get_image_url(self, obj):
         return obj.user.get_image_url()
+
+    def get_facility(self, obj):
+        return obj.facility.id
 
 
 class CarePlanTemplateTypeSerializer(serializers.ModelSerializer):
@@ -178,6 +183,7 @@ class CarePlanSerializer(RepresentationMixin, serializers.ModelSerializer):
             'modified',
             'patient',
             'plan_template',
+            'billing_practitioner',
         )
         read_only_fields = (
             'id',
@@ -192,6 +198,29 @@ class CarePlanSerializer(RepresentationMixin, serializers.ModelSerializer):
             {
                 'field': 'patient',
                 'serializer_class': BasicPatientPlanSerializer,
+            },
+            {
+                'field': 'billing_practitioner',
+                'serializer_class': EmployeeProfileSerializer,
+            },
+        ]
+
+
+class CarePlanPractitionerSerializer(RepresentationMixin, serializers.ModelSerializer):
+
+    class Meta:
+        model = CarePlan
+        fields = (
+            'id',
+            'billing_practitioner',
+        )
+        read_only_fields = (
+            'id',
+        )
+        nested_serializers = [
+            {
+                'field': 'billing_practitioner',
+                'serializer_class': EmployeeProfileSerializer,
             },
         ]
 

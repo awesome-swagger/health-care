@@ -1,7 +1,8 @@
 from django.db.models import Q
 from django.utils.translation import ugettext_lazy as _
-
+from django.contrib.auth import get_user_model
 from django_filters.rest_framework import DjangoFilterBackend
+
 from drf_haystack.viewsets import HaystackViewSet
 from rest_framework import permissions, viewsets, status, mixins
 from rest_framework.decorators import action
@@ -19,6 +20,7 @@ from .serializers import (PatientDashboardSerializer,
                           PatientProcedureSerializer,
                           PatientProfileSearchSerializer,
                           PatientProfileSerializer,
+                          AddPatientToPlanSerializer,
                           PatientCarePlanSerializer,
                           ProblemAreaSerializer,
                           VerifyPatientSerializer,
@@ -30,8 +32,8 @@ from .serializers import (PatientDashboardSerializer,
 from apps.core.api.views import FacilityViewSet
 from apps.core.api.mixins import ParentViewSetPermissionMixin
 from apps.core.api.pagination import OrganizationEmployeePagination
-from apps.core.models import Facility
-from apps.plans.models import CareTeamMember
+from apps.core.models import (Facility, ProviderRole)
+from apps.plans.models import (CarePlan, CareTeamMember)
 from apps.plans.api.serializers import CarePlanGoalSerializer
 from apps.tasks.models import SymptomRating
 from apps.tasks.permissions import IsEmployeeOrPatientReadOnly
@@ -150,7 +152,6 @@ class PatientProfileViewSet(viewsets.ModelViewSet):
         serializer = CarePlanGoalSerializer(care_plans, many=True)
         return Response(serializer.data)
 
-
     @action(methods=['post'], detail=False,
             permission_classes=(permissions.IsAuthenticated, ))
     def create_account(self, request, *args, **kwargs):
@@ -162,6 +163,40 @@ class PatientProfileViewSet(viewsets.ModelViewSet):
         serializer.save()
         return Response(
             {"detail": _("Successfully created a patient account.")}
+        )
+
+    @action(methods=['post'], detail=False,
+            permission_classes=(permissions.IsAuthenticated, ))
+    def add_to_plan(self, request, *args, **kwargs):
+        serializer = AddPatientToPlanSerializer(
+            data=request.data,
+            context={'request': request}
+        )
+        serializer.is_valid(raise_exception=True)
+        
+        user = serializer.data.get('user')
+        if user:
+            patient = PatientProfile.objects.filter(user_id=user).first()
+        else:
+            user = get_user_model().objects.create(email=serializer.data.get('email'),
+                                                   first_name=serializer.data.get('first_name'),
+                                                   last_name=serializer.data.get('last_name'),
+                                                   phone=serializer.data.get('phone'))
+            patient = PatientProfile.objects.create(user=user,
+                                                    facility_id=serializer.data.get('facility'))
+        plan, created = CarePlan.objects.update_or_create(
+            patient=patient,
+            plan_template_id=serializer.data.get('plan_template')
+        )
+        care_manager, created = CareTeamMember.objects.update_or_create(
+            employee_profile_id=serializer.data.get('care_manager'),
+            role=ProviderRole.objects.filter(name='Care Manager').first(),
+            plan=plan,
+            is_manager=True
+        )
+
+        return Response(
+            {"detail": _("Successfully created a patient account and added it to the plan.")}
         )
 
     @action(methods=['get'], detail=True)
