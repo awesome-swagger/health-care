@@ -545,17 +545,19 @@ class VitalTaskTodaySerializer(serializers.ModelSerializer):
         return obj.vital_task_template.name
 
 
-class VitalResponseSerializer(serializers.ModelSerializer):
+class VitalResponseSerializer(RepresentationMixin, serializers.ModelSerializer):
     """
     serializer to be used by :model:`tasks.VitalResponse`
     """
     response = serializers.CharField(write_only=True)
+    vital_task_name = serializers.SerializerMethodField()
 
     class Meta:
         model = VitalResponse
         fields = (
             'id',
             'vital_task',
+            'vital_task_name',
             'question',
             'response',
             'answer',
@@ -567,8 +569,11 @@ class VitalResponseSerializer(serializers.ModelSerializer):
             {
                 'field': 'question',
                 'serializer_class': VitalQuestionSerializer,
-            }
+            },
         ]
+
+    def get_vital_task_name(self, obj):
+        return obj.vital_task.vital_task_template.name
 
     def format_answer(self, answer_type, response):
         if answer_type == VitalQuestion.BOOLEAN:
