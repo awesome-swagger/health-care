@@ -517,3 +517,103 @@ class TestOrganizationPatientDashboard(BaseOrganizationTestMixin, APITestCase):
             response.data['average_engagement'],
             average_engagement
         )
+
+
+class TestOrganizationPatientAdoption(TasksMixin, APITestCase):
+    """
+    Test cases for patient adoption endpoint used in `dash` page.
+    """
+
+    def setUp(self):
+        self.fake = Faker()
+        self.organization = self.create_organization()
+        self.employee = self.create_employee(**{
+            'organizations': [self.organization]
+        })
+        self.user = self.employee.user
+        self.facilities_count = 5
+
+        for i in range(self.facilities_count):
+            facility = self.create_facility(self.organization)
+            self.employee.facilities.add(facility)
+
+        self.url = reverse(
+            'organizations-patient-adoption',
+            kwargs={'pk': self.organization.id}
+        )
+        self.client.force_authenticate(user=self.user)
+
+    def test_patient_adoption_active_patients(self):
+        total_patients = 5
+        facilities = get_facilities_for_user(self.user, self.organization.id)
+
+        for facility in facilities:
+            for i in range(total_patients):
+                self.create_patient(**{
+                    'facility': facility
+                })
+
+        # Create patients for other facility
+        for i in range(3):
+            self.create_patient()
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(
+            response.data['active_patients'],
+            total_patients * facilities.count()
+        )
+
+    def test_patient_adoption_last_24_hours(self):
+        total_patients = 5
+        facilities = get_facilities_for_user(self.user, self.organization.id)
+
+        for facility in facilities:
+            for i in range(total_patients):
+                self.create_patient(**{
+                    'facility': facility
+                })
+
+        # Create patients with last_app_use 2 days ago
+        now = timezone.now()
+        days_ago = now - relativedelta(days=2)
+        for facility in facilities:
+            for i in range(total_patients):
+                self.create_patient(**{
+                    'facility': facility,
+                    'last_app_use': days_ago
+                })
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(
+            response.data['patients_last_24_hours'],
+            total_patients * facilities.count()
+        )
+
+    def test_patient_adoption_rate(self):
+        total_patients = 5
+        total_last_24_hours = 3
+        facilities = get_facilities_for_user(self.user, self.organization.id)
+        total_facilities = facilities.count()
+        now = timezone.now()
+        days_ago = now - relativedelta(days=2)
+
+        for facility in facilities:
+            for i in range(total_patients):
+                kwargs = {
+                    'facility': facility
+                }
+                if i >= total_last_24_hours:
+                    kwargs.update({
+                        'last_app_use': days_ago
+                    })
+
+                self.create_patient(**kwargs)
+
+        adoption_rate = round((total_last_24_hours * total_facilities) /
+                              (total_patients * total_facilities) * 100)
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.data['adoption_rate'], adoption_rate)
