@@ -1,6 +1,7 @@
 import datetime
 
 from django.db.models import Sum
+from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
 from django_filters.rest_framework import DjangoFilterBackend
@@ -149,12 +150,11 @@ class OrganizationBilledActivity(ParentViewSetPermissionMixin,
         )
     ]
     filter_backends = (DjangoFilterBackend, )
-    filterset_fields = (
-        'plan__patient__facility',
-        'plan__plan_template__service_area',
-        'activity_date__month',
-        'activity_date__year',
-    )
+    filterset_fields = {
+        'plan__patient__facility': ['exact'],
+        'plan__plan_template__service_area': ['exact'],
+        'activity_date': ['month', 'year'],
+    }
 
     def get_queryset(self):
         queryset = super(OrganizationBilledActivity, self).get_queryset()
@@ -221,6 +221,17 @@ class OrganizationBilledActivity(ParentViewSetPermissionMixin,
         """
         base_queryset = self.get_queryset()
         queryset = self.filter_queryset(base_queryset)
+
+        # By default, filter queryset by current month and year if
+        # query parameters for `activity_date` is not given
+        query_parameters = self.request.query_params.keys()
+        if 'activity_date__month' not in query_parameters and \
+           'activity_date__year' not in query_parameters:
+            this_month = timezone.now().date().replace(day=1)
+            queryset = queryset.filter(
+                activity_date__year=this_month.year,
+                activity_date__month=this_month.month
+            )
 
         # TODO: Add this when the model is ready
         total_practitioners = 0
