@@ -923,6 +923,8 @@ class BillingPractitionerSerializer(serializers.ModelSerializer):
     first_name = serializers.SerializerMethodField()
     last_name = serializers.SerializerMethodField()
     image_url = serializers.SerializerMethodField()
+    total_billable_patients = serializers.SerializerMethodField()
+    total_patients = serializers.SerializerMethodField()
 
     class Meta:
         model = EmployeeProfile
@@ -932,7 +934,17 @@ class BillingPractitionerSerializer(serializers.ModelSerializer):
             'last_name',
             'image_url',
             'plans',
+            'total_billable_patients',
+            'total_patients',
         )
+
+    def get_total_billable_patients(self, obj):
+        return obj.billable_plans.filter(patient__payer_reimbursement=True)\
+            .values_list('patient', flat=True).distinct().count()
+
+    def get_total_patients(self, obj):
+        return obj.billable_plans.values_list(
+            'patient', flat=True).distinct().count()
 
     def get_plans(self, obj):
         now = timezone.now().date()
