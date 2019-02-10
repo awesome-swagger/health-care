@@ -108,19 +108,3 @@ class ReferenceCheckMixin(object):
                         raise serializers.ValidationError({ field: _('Given instance does not exist.')})
 
         return data
-
-
-class BillingProfileSerializerMixin(object):
-
-    first_name = serializers.SerializerMethodField()
-    last_name = serializers.SerializerMethodField()
-    image_url = serializers.SerializerMethodField()
-
-    def get_first_name(self, obj):
-        return obj.user.first_name
-
-    def get_last_name(self, obj):
-        return obj.user.last_name
-
-    def get_image_url(self, obj):
-        return obj.user.get_image_url()

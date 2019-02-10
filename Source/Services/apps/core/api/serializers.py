@@ -35,7 +35,7 @@ from ..search_indexes import (
     SymptomIndex,
 )
 from ..utils import get_facilities_for_user
-from .mixins import RepresentationMixin, BillingProfileSerializerMixin
+from .mixins import RepresentationMixin
 
 
 class OrganizationSerializer(serializers.ModelSerializer):
@@ -841,12 +841,15 @@ class BilledActivityDetailSerializer(RepresentationMixin,
         ]
 
 
-class BilledPatientSerializer(BillingProfileSerializerMixin,
-                              serializers.ModelSerializer):
+class BilledPatientSerializer(serializers.ModelSerializer):
     """
     serializer to be used by :model:`patients.PatientProfile` who have
     billing details.
     """
+
+    first_name = serializers.SerializerMethodField()
+    last_name = serializers.SerializerMethodField()
+    image_url = serializers.SerializerMethodField()
 
     class Meta:
         model = PatientProfile
@@ -856,6 +859,15 @@ class BilledPatientSerializer(BillingProfileSerializerMixin,
             'last_name',
             'image_url',
         )
+
+    def get_first_name(self, obj):
+        return obj.user.first_name
+
+    def get_last_name(self, obj):
+        return obj.user.last_name
+
+    def get_image_url(self, obj):
+        return obj.user.get_image_url()
 
 
 class BilledPlanSerializer(serializers.ModelSerializer):
@@ -891,8 +903,7 @@ class BilledPlanSerializer(serializers.ModelSerializer):
         return serializer.data
 
 
-class BillingPractitionerSerializer(BillingProfileSerializerMixin,
-                                    serializers.ModelSerializer):
+class BillingPractitionerSerializer(serializers.ModelSerializer):
     """
     serializer to be used by :model:`core.EmployeeProfile` who are billing
     practitioners of a care plan.
@@ -903,6 +914,9 @@ class BillingPractitionerSerializer(BillingProfileSerializerMixin,
     """
 
     plans = serializers.SerializerMethodField()
+    first_name = serializers.SerializerMethodField()
+    last_name = serializers.SerializerMethodField()
+    image_url = serializers.SerializerMethodField()
 
     class Meta:
         model = EmployeeProfile
@@ -935,3 +949,12 @@ class BillingPractitionerSerializer(BillingProfileSerializerMixin,
         billed_plans = obj.billed_plans.filter(**kwargs)
         serializer = BilledPlanSerializer(billed_plans, many=True)
         return serializer.data
+
+    def get_first_name(self, obj):
+        return obj.user.first_name
+
+    def get_last_name(self, obj):
+        return obj.user.last_name
+
+    def get_image_url(self, obj):
+        return obj.user.get_image_url()

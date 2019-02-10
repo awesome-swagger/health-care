@@ -631,7 +631,9 @@ class OrganizationBillingPractitionerViewSet(ParentViewSetPermissionMixin,
 
     serializer_class = BillingPractitionerSerializer
     permission_clases = (permissions.IsAuthenticated, IsAdminOrEmployee)
-    queryset = EmployeeProfile.objects.filter(billed_plans__isnull=False)
+    queryset = EmployeeProfile.objects.filter(
+        billed_plans__isnull=False,
+        billed_plans__patient__payer_reimbursement=True)
     parent_lookup = [
         ('organizations', Organization, OrganizationViewSet)
     ]

@@ -16,6 +16,7 @@ from rest_framework.test import APITestCase
 from ..tests.mixins import CoreMixin
 from apps.accounts.tests.factories import AdminUserFactory
 from apps.billings.tests.mixins import BillingsMixin
+from apps.plans.tests.mixins import PlansMixin
 from apps.tasks.tests.mixins import TasksMixin
 
 
@@ -508,3 +509,101 @@ class TestFacilityEmployee(BillingsMixin, TasksMixin, APITestCase):
         verify_url = reverse('verify_change_email')
         response = self.client.post(verify_url, verify_payload)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+class TestOrganizationBillingPractitioner(PlansMixin, APITestCase):
+    """
+    Test cases for :model:`tasks.EmployeeProfile` using an employee
+    as the logged in user.
+    """
+
+    def setUp(self):
+        self.fake = Faker()
+        self.organization = self.create_organization()
+        self.organization_managed = self.create_organization()
+        self.facility = self.create_facility()
+        self.facility_managed = self.create_facility()
+        self.role = self.create_provider_role()
+        self.employee = self.create_employee(**{
+            'organizations': [self.organization],
+            'organizations_managed': [self.organization_managed],
+            'facilities': [self.facility],
+            'facilities_managed': [self.facility_managed],
+            'roles': [self.role]
+        })
+        self.user = self.employee.user
+
+        self.url = reverse(
+            'organization-billing-practitioners-list',
+            kwargs={
+                'parent_lookup_organizations': self.organization.id
+            })
+        self.client.force_authenticate(user=self.user)
+
+    def test_get_billing_practitioners_list(self):
+        practitioners_count = 5
+
+        for i in range(practitioners_count):
+            employee = self.create_employee(**{
+                'organizations': [self.organization],
+            })
+            facility = self.create_facility(self.organization)
+            patient = self.create_patient(**{
+                'facility': facility,
+                'payer_reimbursement': True
+            })
+            self.create_care_plan(patient, **{
+                'billing_practitioner': employee
+            })
+
+        # Create dummy records for practitioners belonging to other
+        # organizations
+        for i in range(practitioners_count):
+            employee = self.create_employee()
+            facility = self.create_facility()
+            patient = self.create_patient(**{
+                'facility': facility,
+                'payer_reimbursement': True
+            })
+            self.create_care_plan(patient, **{
+                'billing_practitioner': employee
+            })
+
+        response = self.client.get(self.url)
+        self.assertEqual(response.data['count'], practitioners_count)
+
+    def test_get_billing_practitioners_list_unauthorized(self):
+        practitioners_count = 5
+
+        self.client.logout()
+        logged_employee = self.create_employee()
+        self.client.force_authenticate(user=logged_employee.user)
+
+        for i in range(practitioners_count):
+            employee = self.create_employee(**{
+                'organizations': [self.organization],
+            })
+            facility = self.create_facility(self.organization)
+            patient = self.create_patient(**{
+                'facility': facility,
+                'payer_reimbursement': True
+            })
+            self.create_care_plan(patient, **{
+                'billing_practitioner': employee
+            })
+
+        # Create dummy records for practitioners belonging to other
+        # organizations
+        for i in range(practitioners_count):
+            employee = self.create_employee()
+            facility = self.create_facility()
+            patient = self.create_patient(**{
+                'facility': facility,
+                'payer_reimbursement': True
+            })
+            self.create_care_plan(patient, **{
+                'billing_practitioner': employee
+            })
+
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
