@@ -1037,3 +1037,41 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
             len(response.data['results'][0]['plans'][0]['details_of_service']),
             activity_count
         )
+
+    def test_get_plans_details_of_service_filter_month_year(self):
+        activity_count = 5
+        now = timezone.now().date()
+        last_month = now - relativedelta(months=1)
+
+        patient = self.create_patient(**{
+            'facility': self.facility,
+            'payer_reimbursement': True
+        })
+        plan = self.create_care_plan(patient, **{
+            'billing_practitioner': self.employee
+        })
+
+        for i in range(activity_count):
+            self.create_billed_activity(**{
+                'plan': plan,
+                'added_by': self.employee
+            })
+
+        # create billed activity last month
+        for i in range(activity_count):
+            self.create_billed_activity(**{
+                'plan': plan,
+                'added_by': self.employee,
+                'activity_date': last_month
+            })
+
+        query_params = urllib.parse.urlencode({
+            'billed_plans__activities__activity_date__month': last_month.month,
+            'billed_plans__activities__activity_date__year': last_month.year
+        })
+        filter_url = f'{self.url}?{query_params}'
+        response = self.client.get(filter_url)
+        self.assertEqual(
+            len(response.data['results'][0]['plans'][0]['details_of_service']),
+            activity_count
+        )
