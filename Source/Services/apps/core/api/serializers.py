@@ -939,11 +939,11 @@ class BillingPractitionerSerializer(serializers.ModelSerializer):
         )
 
     def get_total_billable_patients(self, obj):
-        return obj.billable_plans.filter(patient__payer_reimbursement=True)\
+        return obj.billed_plans.filter(patient__payer_reimbursement=True)\
             .values_list('patient', flat=True).distinct().count()
 
     def get_total_patients(self, obj):
-        return obj.billable_plans.values_list(
+        return obj.billed_plans.values_list(
             'patient', flat=True).distinct().count()
 
     def get_plans(self, obj):

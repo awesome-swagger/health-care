@@ -873,6 +873,76 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
             plans_count
         )
 
+    def test_get_billing_practitioners_total_billable_patients(self):
+        patients_count = 5
+
+        for i in range(patients_count):
+            patient = self.create_patient(**{
+                'facility': self.facility,
+                'payer_reimbursement': True
+            })
+            plan = self.create_care_plan(patient, **{
+                'billing_practitioner': self.employee
+            })
+            self.create_billed_activity(**{
+                'plan': plan
+            })
+
+        # Create dummy records for non-billable patients
+        for i in range(patients_count):
+            patient = self.create_patient(**{
+                'facility': self.facility,
+                'payer_reimbursement': False
+            })
+            plan = self.create_care_plan(patient, **{
+                'billing_practitioner': self.employee
+            })
+            self.create_billed_activity(**{
+                'plan': plan
+            })
+
+        response = self.client.get(self.url)
+        self.assertEqual(
+            response.data['results'][0]['total_billable_patients'],
+            patients_count
+        )
+
+    def test_get_billing_practitioners_total_patients(self):
+        patients_count = 5
+        total_patient_count = patients_count * 2
+
+        # Create records for billable patients
+        for i in range(patients_count):
+            patient = self.create_patient(**{
+                'facility': self.facility,
+                'payer_reimbursement': True
+            })
+            plan = self.create_care_plan(patient, **{
+                'billing_practitioner': self.employee
+            })
+            self.create_billed_activity(**{
+                'plan': plan
+            })
+
+        # Create records for non-billable patients
+        for i in range(patients_count):
+            patient = self.create_patient(**{
+                'facility': self.facility,
+                'payer_reimbursement': False
+            })
+            plan = self.create_care_plan(patient, **{
+                'billing_practitioner': self.employee
+            })
+            self.create_billed_activity(**{
+                'plan': plan
+            })
+
+        response = self.client.get(self.url)
+        self.assertEqual(
+            response.data['results'][0]['total_patients'],
+            total_patient_count
+        )
+
     def test_get_billing_practitioners_plans_filter_facility(self):
         plans_count = 5
 
