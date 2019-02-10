@@ -1,3 +1,4 @@
+from django_filters.rest_framework import DjangoFilterBackend
 from drf_haystack.viewsets import HaystackViewSet
 from rest_framework import mixins, permissions, serializers, status, viewsets
 from rest_framework.decorators import action
@@ -620,9 +621,9 @@ class OrganizationBillingPractitionerViewSet(ParentViewSetPermissionMixin,
     ---
     Results can be filtered by `facility` and `service_area`. For example:
 
-        GET /api/organizations/<organization-ID>/billing_practitioners/?facility=<facility-ID>
-        GET /api/organizations/<organization-ID>/billing_practitioners/?service_area=<service-area-ID>
-        GET /api/organizations/<organization-ID>/billing_practitioners/?facility=<facility-ID>&service_area=<service-area-ID>
+        GET /api/organizations/<organization-ID>/billing_practitioners/?billed_plans__patient__facility=<facility-ID>
+        GET /api/organizations/<organization-ID>/billing_practitioners/?billed_plans__plan_template__service_area=<service-area-ID>
+        GET /api/organizations/<organization-ID>/billing_practitioners/?billed_plans__patient__facility=<facility-ID>&billed_plans__plan_template__service_area=<service-area-ID>
 
     USAGE
     ---
@@ -639,6 +640,11 @@ class OrganizationBillingPractitionerViewSet(ParentViewSetPermissionMixin,
     ]
     pagination_class = OrganizationEmployeePagination
     parent_field = 'organizations'
+    filter_backends = (DjangoFilterBackend, )
+    filterset_fields = (
+        'billed_plans__patient__facility',
+        'billed_plans__plan_template__service_area'
+    )
 
     def get_queryset(self):
         queryset = super(OrganizationBillingPractitionerViewSet,
@@ -655,15 +661,17 @@ class OrganizationBillingPractitionerViewSet(ParentViewSetPermissionMixin,
             'organization': self.parent_obj
         })
 
-        if 'facility' in self.request.GET:
-            facility = Facility.objects.get(id=self.request.GET['facility'])
+        if 'billed_plans__patient__facility' in self.request.GET:
+            facility_id = self.request.GET['billed_plans__patient__facility']
+            facility = Facility.objects.get(id=facility_id)
             context.update({
                 'facility': facility
             })
 
-        if 'service_area' in self.request.GET:
-            service_area = ServiceArea.objects.get(
-                id=self.request.GET['service_area'])
+        if 'billed_plans__plan_template__service_area' in self.request.GET:
+            service_area_id = self.request.GET.get(
+                'billed_plans__plan_template__service_area')
+            service_area = ServiceArea.objects.get(id=service_area_id)
             context.update({
                 'service_area': service_area
             })
