@@ -204,6 +204,61 @@ class TestBilledActivityOverview(BillingsMixin, APITestCase):
         response = self.client.get(self.url)
         self.assertEqual(response.data['billable_patients'], 5)
 
+    def test_get_total_practitioners(self):
+
+        for i in range(5):
+            facility = self.create_facility(self.organization)
+            billing_practitioner = self.create_employee(**{
+                'organizations': [self.organization],
+                'facilities': [facility]
+            })
+            patient = self.create_patient(**{
+                'facility': facility,
+                'payer_reimbursement': True
+            })
+            plan = self.create_care_plan(patient, **{
+                'billing_practitioner': billing_practitioner
+            })
+            members = [self.create_employee() for i in range(3)]
+            members.append(self.employee)
+            members.append(billing_practitioner)
+
+            for member in members:
+                self.create_care_team_member(**{
+                    'employee_profile': member,
+                    'plan': plan
+                })
+
+            self.create_billed_activity(**{
+                'plan': plan,
+                'added_by': self.employee
+            })
+
+        # Create dummy records for non-billable patients
+        for i in range(5):
+            facility = self.create_facility(self.organization)
+            patient = self.create_patient(**{
+                'facility': facility,
+                'payer_reimbursement': False
+            })
+            plan = self.create_care_plan(patient)
+            members = [self.create_employee() for i in range(3)]
+            members.append(self.employee)
+
+            for member in members:
+                self.create_care_team_member(**{
+                    'employee_profile': member,
+                    'plan': plan
+                })
+
+            self.create_billed_activity(**{
+                'plan': plan,
+                'added_by': self.employee
+            })
+
+        response = self.client.get(self.url)
+        self.assertEqual(response.data['total_practitioners'], 5)
+
     def test_get_total_facilities(self):
 
         for i in range(5):
