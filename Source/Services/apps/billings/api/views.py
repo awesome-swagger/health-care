@@ -213,6 +213,7 @@ class OrganizationBilledActivity(ParentViewSetPermissionMixin,
             - GET /api/organizations/<organization-ID>/billed_activities/overview/?plan__patient__facility=<facility-ID>
             - GET /api/organizations/<organization-ID>/billed_activities/overview/?plan_template__service_area=<service-area-ID>
             - GET /api/organizations/<organization-ID>/billed_activities/overview/?plan__patient__facility=<facility-ID>&plan_template__service_area=<service-area-ID>
+            - - GET /api/organizations/<organization-ID>/billed_activities/overview/?activity_date__month=10&activity_date__year=2019
 
         Page Usage
         ---
@@ -227,7 +228,7 @@ class OrganizationBilledActivity(ParentViewSetPermissionMixin,
         query_parameters = self.request.query_params.keys()
         if 'activity_date__month' not in query_parameters and \
            'activity_date__year' not in query_parameters:
-            this_month = timezone.now().date().replace(day=1)
+            this_month = timezone.now()
             queryset = queryset.filter(
                 activity_date__year=this_month.year,
                 activity_date__month=this_month.month

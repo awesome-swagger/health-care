@@ -7,6 +7,7 @@ from rest_framework.response import Response
 
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
 from apps.core.models import (Diagnosis, EmployeeProfile, Insurance, Notification,
@@ -619,11 +620,13 @@ class OrganizationBillingPractitionerViewSet(ParentViewSetPermissionMixin,
 
     FILTERING
     ---
-    Results can be filtered by `facility` and `service_area`. For example:
+    Results can be filtered by `facility`, `service_area`, `month` and `year`.
+    For example:
 
         GET /api/organizations/<organization-ID>/billing_practitioners/?billed_plans__patient__facility=<facility-ID>
         GET /api/organizations/<organization-ID>/billing_practitioners/?billed_plans__plan_template__service_area=<service-area-ID>
         GET /api/organizations/<organization-ID>/billing_practitioners/?billed_plans__patient__facility=<facility-ID>&billed_plans__plan_template__service_area=<service-area-ID>
+        GET /api/organizations/<organization-ID>/billing_practitioners/?billed_plans__activities__activity_date__month=10&billed_plans__activities__activity_date__year=2019
 
     USAGE
     ---
@@ -641,16 +644,34 @@ class OrganizationBillingPractitionerViewSet(ParentViewSetPermissionMixin,
     pagination_class = OrganizationEmployeePagination
     parent_field = 'organizations'
     filter_backends = (DjangoFilterBackend, )
-    filterset_fields = (
-        'billed_plans__patient__facility',
-        'billed_plans__plan_template__service_area'
-    )
+    filterset_fields = {
+        'billed_plans__patient__facility': ['exact'],
+        'billed_plans__plan_template__service_area': ['exact'],
+        'billed_plans__activities__activity_date': ['month', 'year']
+    }
 
     def get_queryset(self):
         queryset = super(OrganizationBillingPractitionerViewSet,
                          self).get_queryset()
 
         # Call `distinct()` to remove duplicates
+        return queryset.distinct()
+
+    def filter_queryset(self, queryset):
+        queryset = super(OrganizationBillingPractitionerViewSet,
+                         self).filter_queryset(queryset)
+
+        # By default, filter queryset by current month and year if
+        # query parameters for `activity_date` is not given
+        query_parameters = self.request.query_params.keys()
+        if 'billed_plans__activities__activity_date__month' not in query_parameters and \
+           'billed_plans__activities__activity_date__year' not in query_parameters:
+            this_month = timezone.now()
+            queryset = queryset.filter(
+                billed_plans__activities__activity_date__year=this_month.year,
+                billed_plans__activities__activity_date__month=this_month.month
+            )
+
         return queryset.distinct()
 
     def get_serializer_context(self):
