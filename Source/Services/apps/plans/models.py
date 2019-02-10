@@ -114,6 +114,10 @@ class CarePlan(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
         total = time_spent['total'] or 0
         return str(datetime.timedelta(minutes=total))[:-3]
 
+    @property
+    def care_manager(self):
+        return self.care_team_members.filter(is_manager=True)
+
 
 class PlanConsent(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
     plan = models.ForeignKey(

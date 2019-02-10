@@ -885,11 +885,16 @@ class BilledPlanSerializer(serializers.ModelSerializer):
             'patient',
             'billed_activities',
             'details_of_service',
+            'care_manager',
         )
         nested_serializers = [
             {
                 'field': 'patient',
                 'serializer_class': BilledPatientSerializer
+            },
+            {
+                'field': 'care_manager',
+                'serializer_class': BasicEmployeeProfileSerializer
             }
         ]
 
