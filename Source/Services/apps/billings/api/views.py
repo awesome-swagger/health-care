@@ -193,6 +193,10 @@ class OrganizationBilledActivity(ParentViewSetPermissionMixin,
         patients = self._get_billable_patients(queryset)
         return patients.values_list('facility', flat=True).distinct().count()
 
+    def get_total_practitioners(self, queryset):
+        return queryset.values_list('plan__billing_practitioner',
+                                    flat=True).distinct().count()
+
     @action(methods=['get'], detail=False)
     def overview(self, request, *args, **kwargs):
         """
@@ -234,8 +238,7 @@ class OrganizationBilledActivity(ParentViewSetPermissionMixin,
                 activity_date__month=this_month.month
             )
 
-        # TODO: Add this when the model is ready
-        total_practitioners = 0
+        # TODO: Add this when details are provided
         total_billable = 0
 
         time_spent = queryset.aggregate(total=Sum('time_spent'))
@@ -245,7 +248,7 @@ class OrganizationBilledActivity(ParentViewSetPermissionMixin,
         data = {
             'billable_patients': self.get_billable_patients_count(queryset),
             'total_facilities': self.get_total_facilities(queryset),
-            'total_practitioners': total_practitioners,
+            'total_practitioners': self.get_total_practitioners(queryset),
             'total_hours': total_hours,
             'total_billable': total_billable
         }
