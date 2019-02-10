@@ -342,13 +342,12 @@ def careplan_pre_save(sender, instance, update_fields=None, **kwargs):
     """
     Sends an email to the previous billing practitioner of the plan.
     """
-    plan = CarePlan.objects.get(id=instance.id)
-    pre_practitioner = plan.billing_practitioner
+    pre_practitioner = instance.billing_practitioner
 
     if pre_practitioner:
         subject = 'Notification from CareAdopt'
         context = {
-            "plan": plan,
+            "plan": instance,
             "subject": subject,
             "admin_email": settings.DEFAULT_FROM_EMAIL,
         }
