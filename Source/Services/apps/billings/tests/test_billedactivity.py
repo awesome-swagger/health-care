@@ -3,7 +3,9 @@ import random
 import urllib
 
 from django.urls import reverse
+from django.utils import timezone
 
+from dateutil.relativedelta import relativedelta
 from faker import Faker
 from rest_framework import status
 from rest_framework.test import APITestCase
@@ -491,6 +493,87 @@ class TestBilledActivityOverview(BillingsMixin, APITestCase):
         query_params = urllib.parse.urlencode({
             'plan__patient__facility': main_facility.id,
             'plan__plan_template__service_area': service_area.id
+        })
+        filter_url = f'{self.url}?{query_params}'
+        response = self.client.get(filter_url)
+        self.assertEqual(response.data['billable_patients'], 5)
+
+    def test_get_billable_patients_filter_month_year(self):
+        now = timezone.now().date().replace(day=1)
+        last_month = now - relativedelta(months=1)
+        next_month = now + relativedelta(months=1)
+
+        for i in range(5):
+            facility = self.create_facility(self.organization)
+            patient = self.create_patient(**{
+                'facility': facility,
+                'payer_reimbursement': True
+            })
+            plan = self.create_care_plan(patient)
+            members = [self.create_employee() for i in range(3)]
+            members.append(self.employee)
+
+            for member in members:
+                self.create_care_team_member(**{
+                    'employee_profile': member,
+                    'plan': plan
+                })
+
+            self.create_billed_activity(**{
+                'plan': plan,
+                'added_by': self.employee,
+                'activity_date': now
+            })
+
+        # Create dummy records for billable patients last month
+        for i in range(5):
+            facility = self.create_facility(self.organization)
+            patient = self.create_patient(**{
+                'facility': facility,
+                'payer_reimbursement': True
+            })
+            plan = self.create_care_plan(patient)
+            members = [self.create_employee() for i in range(3)]
+            members.append(self.employee)
+
+            for member in members:
+                self.create_care_team_member(**{
+                    'employee_profile': member,
+                    'plan': plan
+                })
+
+            self.create_billed_activity(**{
+                'plan': plan,
+                'added_by': self.employee,
+                'activity_date': last_month
+            })
+
+        # Create dummy records for billable patients next month
+        for i in range(5):
+            facility = self.create_facility(self.organization)
+            patient = self.create_patient(**{
+                'facility': facility,
+                'payer_reimbursement': True
+            })
+            plan = self.create_care_plan(patient)
+            members = [self.create_employee() for i in range(3)]
+            members.append(self.employee)
+
+            for member in members:
+                self.create_care_team_member(**{
+                    'employee_profile': member,
+                    'plan': plan
+                })
+
+            self.create_billed_activity(**{
+                'plan': plan,
+                'added_by': self.employee,
+                'activity_date': next_month
+            })
+
+        query_params = urllib.parse.urlencode({
+            'activity_date__month': now.month,
+            'activity_date__year': now.year
         })
         filter_url = f'{self.url}?{query_params}'
         response = self.client.get(filter_url)
