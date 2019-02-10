@@ -697,6 +697,20 @@ class OrganizationBillingPractitionerViewSet(ParentViewSetPermissionMixin,
                 'service_area': service_area
             })
 
+        if 'billed_plans__activities__activity_date__month' in self.request.GET:
+            activity_month = self.request.GET.get(
+                'billed_plans__activities__activity_date__month')
+            context.update({
+                'activity_month': activity_month
+            })
+
+        if 'billed_plans__activities__activity_date__year' in self.request.GET:
+            activity_year = self.request.GET.get(
+                'billed_plans__activities__activity_date__year')
+            context.update({
+                'activity_year': activity_year
+            })
+
         return context
 
 

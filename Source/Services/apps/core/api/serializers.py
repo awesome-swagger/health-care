@@ -903,7 +903,8 @@ class BilledPlanSerializer(serializers.ModelSerializer):
         return []
 
     def get_details_of_service(self, obj):
-        activities = obj.activities.order_by('activity_date')
+        activities = obj.activities.filter(**self.context)\
+            .order_by('activity_date')
         serializer = BilledActivityDetailSerializer(activities, many=True)
         return serializer.data
 
@@ -934,11 +935,16 @@ class BillingPractitionerSerializer(serializers.ModelSerializer):
         )
 
     def get_plans(self, obj):
+        now = timezone.now().date()
         organization = self.context.get('organization')
         facility = self.context.get('facility')
         service_area = self.context.get('service_area')
+        activity_month = self.context.get('activity_month', now.month)
+        activity_year = self.context.get('activity_year', now.year)
         kwargs = {
-            'patient__facility__organization': organization
+            'patient__facility__organization': organization,
+            'activities__activity_date__month': activity_month,
+            'activities__activity_date__year': activity_year
         }
 
         if facility:
@@ -951,8 +957,25 @@ class BillingPractitionerSerializer(serializers.ModelSerializer):
                 'plan_template__service_area': service_area,
             })
 
-        billed_plans = obj.billed_plans.filter(**kwargs)
-        serializer = BilledPlanSerializer(billed_plans, many=True)
+        if service_area:
+            kwargs.update({
+                'plan_template__service_area': service_area,
+            })
+
+        if service_area:
+            kwargs.update({
+                'plan_template__service_area': service_area,
+            })
+
+        activity_context = {
+            'activity_date__month': activity_month,
+            'activity_date__year': activity_year
+        }
+        billed_plans = obj.billed_plans.filter(**kwargs).distinct()
+        serializer = BilledPlanSerializer(
+            billed_plans,
+            many=True,
+            context=activity_context)
         return serializer.data
 
     def get_first_name(self, obj):
