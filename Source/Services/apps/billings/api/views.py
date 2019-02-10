@@ -152,6 +152,8 @@ class OrganizationBilledActivity(ParentViewSetPermissionMixin,
     filterset_fields = (
         'plan__patient__facility',
         'plan__plan_template__service_area',
+        'activity_date__month',
+        'activity_date__year',
     )
 
     def get_queryset(self):
