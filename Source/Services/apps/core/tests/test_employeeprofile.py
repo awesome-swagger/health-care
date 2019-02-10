@@ -17,7 +17,6 @@ from rest_framework.test import APITestCase
 from ..tests.mixins import CoreMixin
 from apps.accounts.tests.factories import AdminUserFactory
 from apps.billings.tests.mixins import BillingsMixin
-from apps.plans.tests.mixins import PlansMixin
 from apps.tasks.tests.mixins import TasksMixin
 
 
@@ -512,7 +511,7 @@ class TestFacilityEmployee(BillingsMixin, TasksMixin, APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
-class TestOrganizationBillingPractitioner(PlansMixin, APITestCase):
+class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
     """
     Test cases for :model:`tasks.EmployeeProfile` using an employee
     as the logged in user.
@@ -908,3 +907,26 @@ class TestOrganizationBillingPractitioner(PlansMixin, APITestCase):
         filter_url = f'{self.url}?{query_params}'
         response = self.client.get(filter_url)
         self.assertEqual(len(response.data['results'][0]['plans']), plan_count)
+
+    def test_get_plans_details_of_service(self):
+        activity_count = 5
+
+        patient = self.create_patient(**{
+            'facility': self.facility,
+            'payer_reimbursement': True
+        })
+        plan = self.create_care_plan(patient, **{
+            'billing_practitioner': self.employee
+        })
+
+        for i in range(activity_count):
+            self.create_billed_activity(**{
+                'plan': plan,
+                'added_by': self.employee
+            })
+
+        response = self.client.get(self.url)
+        self.assertEqual(
+            len(response.data['results'][0]['plans'][0]['details_of_service']),
+            activity_count
+        )
