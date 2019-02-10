@@ -47,7 +47,8 @@ from .serializers import (DiagnosisSerializer, EmployeeProfileSerializer,
                           InviteEmployeeSerializer,
                           OrganizationPatientOverviewSerializer,
                           OrganizationPatientDashboardSerializer,
-                          BillingPractitionerSerializer,)
+                          BillingPractitionerSerializer,
+                          OrganizationPatientAdoptionSerializer,)
 
 
 class OrganizationViewSet(viewsets.ModelViewSet):
@@ -171,6 +172,34 @@ class OrganizationViewSet(viewsets.ModelViewSet):
             'filter_allowed': True
         }
         serializer = OrganizationPatientDashboardSerializer(
+            organization, context=context)
+        return Response(serializer.data)
+
+    @action(methods=['get'], detail=True,
+            permission_classes=(IsAdminOrEmployee, ))
+    def patient_adoption(self, request, *args, **kwargs):
+        """
+        Returns the percentage of active patients interacting with the app
+        for the last 24 hours.
+
+        Returns the following data in a specific organization:
+
+            - active patients interacting with the app for the last 24 hours
+            - total active patients
+            - patient adoption rate
+
+        USAGE
+        ---
+        This endpoint will primarily populate the `Patient Adoption` section
+        in the `dash` page.
+
+        """
+        organization = self.get_object()
+
+        context = {
+            'request': request
+        }
+        serializer = OrganizationPatientAdoptionSerializer(
             organization, context=context)
         return Response(serializer.data)
 

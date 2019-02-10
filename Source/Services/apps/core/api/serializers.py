@@ -6,6 +6,7 @@ from django.db.models import Q, Avg, Sum
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
+from dateutil.relativedelta import relativedelta
 from drf_haystack.serializers import HaystackSerializerMixin
 from rest_framework import serializers
 
@@ -263,6 +264,38 @@ class OrganizationPatientOverviewSerializer(BaseOrganizationPatientSerializer):
             'average_engagement',
             'risk_level',
         )
+
+
+class OrganizationPatientAdoptionSerializer(BaseOrganizationPatientSerializer):
+
+    patients_last_24_hours = serializers.SerializerMethodField()
+    adoption_rate = serializers.SerializerMethodField()
+
+    class Meta(BaseOrganizationPatientSerializer.Meta):
+        model = Organization
+        fields = (
+            'id',
+            'active_patients',
+            'patients_last_24_hours',
+            'adoption_rate',
+        )
+
+    def get_patients_last_24_hours(self, obj):
+        now = timezone.now()
+        last_24_hours = now - relativedelta(hours=24)
+        request = self.context['request']
+        facilities = get_facilities_for_user(request.user, obj.id)
+        return PatientProfile.objects.filter(
+            facility__in=facilities,
+            is_active=True,
+            last_app_use__gte=last_24_hours).count()
+
+    def get_adoption_rate(self, obj):
+        patients_last_24_hours = self.get_patients_last_24_hours(obj)
+        active_patients = self.get_active_patients(obj)
+
+        return round((patients_last_24_hours / active_patients) * 100) \
+            if active_patients > 0 else 0
 
 
 # TODO: DELETE on a facility should mark it inactive rather than removing it
