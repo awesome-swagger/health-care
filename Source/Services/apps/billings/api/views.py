@@ -96,7 +96,8 @@ class BilledActivityViewSet(viewsets.ModelViewSet):
             permission_classes=(permissions.IsAuthenticated, ))
     def total_tracked_time(self, request, *args, **kwargs):
         user = request.user
-        spent_time = BilledActivity().total_spent_time(user.employee_profile) if user.is_employee else 0
+        spent_time = user.employee_profile.billable_hours if user.is_employee else 0
+
         return Response(
             {"total_tracked_time": spent_time}
         )

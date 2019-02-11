@@ -149,10 +149,9 @@ class OrganizationViewSet(viewsets.ModelViewSet):
 
             GET /api/organizations/<organization-ID>/dashboard_analytics/?patient=<patient-ID>
             GET /api/organizations/<organization-ID>/dashboard_analytics/?facility=<facility-ID>
+            GET /api/organizations/<organization-ID>/dashboard_analytics/?users=<user-ID>,<user-ID>...
             GET /api/organizations/<organization-ID>/dashboard_analytics/?facility=<facility-ID>&patient=<patient-ID>
 
-
-        TODO: RISK LEVEL BREAKDOWN CHART
         """
         organization = self.get_object()
 

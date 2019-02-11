@@ -79,6 +79,10 @@ class BaseOrganizationPatientSerializer(serializers.ModelSerializer):
     average_satisfaction = serializers.SerializerMethodField()
     average_engagement = serializers.SerializerMethodField()
     risk_level = serializers.SerializerMethodField()
+    on_track = serializers.SerializerMethodField()
+    low_risk = serializers.SerializerMethodField()
+    med_risk = serializers.SerializerMethodField()
+    high_risk = serializers.SerializerMethodField()
 
     class Meta:
         model = Organization
@@ -94,27 +98,58 @@ class BaseOrganizationPatientSerializer(serializers.ModelSerializer):
             'risk_level',
         )
 
+    def _get_filter_patient_ids(self):
+        request = self.context['request']
+        users = request.GET.get('users', '').split(',')
+        if users:
+            patients = []
+            for user in users:
+                user = EmployeeProfile.objects.get(user)
+                patients += [ii.plan.patient.id for ii in user.assigned_roles]
+            return patients
+        else:
+            return [ii.id for ii in PatientProfile.objects.all()]
+
     def get_active_patients(self, obj):
         request = self.context['request']
         facilities = get_facilities_for_user(request.user, obj.id)
+        patients = self._get_filter_patient_ids()
         return PatientProfile.objects.filter(
-            facility__in=facilities, is_active=True).count()
+            facility__in=facilities, 
+            is_active=True, 
+            id__in=patients).count()
 
     def get_invited_patients(self, obj):
         request = self.context['request']
         facilities = get_facilities_for_user(request.user, obj.id)
+        patients = self._get_filter_patient_ids()
         return PatientProfile.objects.filter(
             facility__in=facilities,
+            id__in=patients,
             is_invited=True,
             is_active=False).count()
 
     def get_potential_patients(self, obj):
         request = self.context['request']
         facilities = get_facilities_for_user(request.user, obj.id)
+        patients = self._get_filter_patient_ids()
         return PotentialPatient.objects.filter(
             facility__in=facilities,
+            id__in=patients,
             patient_profile__isnull=True).count()
 
+    def get_on_track(self, obj):
+        return 0
+
+    def get_low_risk(self, obj):
+        return 0
+        
+    def get_med_risk(self, obj):
+        return 0
+        
+    def get_high_risk(self, obj):
+        return 0
+        
     def get_total_facilities(self, obj):
         request = self.context['request']
         facilities = get_facilities_for_user(request.user, obj.id)
@@ -127,9 +162,11 @@ class BaseOrganizationPatientSerializer(serializers.ModelSerializer):
         request = self.context['request']
         filter_allowed = self.context.get('filter_allowed', False)
         facilities = get_facilities_for_user(request.user, obj.id)
+        patients = self._get_filter_patient_ids()
 
         kwargs = {
             'plan__patient__facility__in': facilities,
+            'id__in': patients,
             f'assessment_task_template__{assessment_type}': True
         }
 
@@ -160,9 +197,11 @@ class BaseOrganizationPatientSerializer(serializers.ModelSerializer):
         request = self.context['request']
         filter_allowed = self.context.get('filter_allowed', False)
         facilities = get_facilities_for_user(request.user, obj.id)
+        patients = self._get_filter_patient_ids()
 
         kwargs = {
             'plan__patient__facility__in': facilities,
+            'id__in': patients,
             'due_datetime__lte': now
         }
         medication_kwargs = {
@@ -245,6 +284,10 @@ class OrganizationPatientDashboardSerializer(BaseOrganizationPatientSerializer):
             'average_satisfaction',
             'average_engagement',
             'risk_level',
+            'on_track',
+            'low_risk',
+            'med_risk',
+            'high_risk'
         )
 
 

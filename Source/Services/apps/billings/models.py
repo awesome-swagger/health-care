@@ -66,10 +66,5 @@ class BilledActivity(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
     def readable_time_spent(self):
         return str(datetime.timedelta(minutes=self.time_spent))[:-3]
 
-    def total_spent_time(self, employee):
-        spent_time = BilledActivity.objects.filter(added_by=employee) \
-                                           .aggregate(Sum('time_spent'))
-        return str(datetime.timedelta(minutes=spent_time['time_spent__sum']))[:-3]
-
     def __str__(self):
         return f'{self.added_by}: {self.readable_time_spent}'
