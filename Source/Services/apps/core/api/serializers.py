@@ -321,7 +321,7 @@ class OrganizationPatientGraphSerializer(serializers.ModelSerializer):
         data = {}
 
         for i in range(months):
-            day_obj = now - relativedelta(months=0)
+            day_obj = now - relativedelta(months=i)
 
             enrolled_patients = PatientProfile.objects.filter(
                 facility__in=facilities,
