@@ -48,7 +48,8 @@ from .serializers import (DiagnosisSerializer, EmployeeProfileSerializer,
                           OrganizationPatientOverviewSerializer,
                           OrganizationPatientDashboardSerializer,
                           BillingPractitionerSerializer,
-                          OrganizationPatientAdoptionSerializer,)
+                          OrganizationPatientAdoptionSerializer,
+                          OrganizationPatientGraphSerializer)
 
 
 class OrganizationViewSet(viewsets.ModelViewSet):
@@ -200,6 +201,45 @@ class OrganizationViewSet(viewsets.ModelViewSet):
             'request': request
         }
         serializer = OrganizationPatientAdoptionSerializer(
+            organization, context=context)
+        return Response(serializer.data)
+
+    @action(methods=['get'], detail=True,
+            permission_classes=(IsAdminOrEmployee, ))
+    def patients_enrolled_over_time(self, request, *args, **kwargs):
+        """
+        returns enrolled and billable patients data each month
+        for the past 12 months.
+
+        Returns the following data in a specific organization:
+
+            {
+                'id': <organization-ID>,
+                'graph': {
+                    'February 2019': {
+                        'enrolled_patients': 100,
+                        'billable_patients': 50
+                    },
+                    'January 2019': {
+                        'enrolled_patients': 35,
+                        'billable_patients': 10
+                    }
+                    ...
+                }
+            }
+
+        USAGE
+        ---
+        This will primarily be used in the `Patients Enrolled Over Time` graph
+        in `dash` page.
+
+        """
+        organization = self.get_object()
+
+        context = {
+            'request': request
+        }
+        serializer = OrganizationPatientGraphSerializer(
             organization, context=context)
         return Response(serializer.data)
 

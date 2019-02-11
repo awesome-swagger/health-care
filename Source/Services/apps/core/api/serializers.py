@@ -298,6 +298,55 @@ class OrganizationPatientAdoptionSerializer(BaseOrganizationPatientSerializer):
             if active_patients > 0 else 0
 
 
+class OrganizationPatientGraphSerializer(serializers.ModelSerializer):
+    """
+    This serializer will return enrolled and billable patients data each month
+    for the past 12 months. This will primarily be used in the
+    `Patients Enrolled Over Time` graph in `dash` page.
+    """
+    graph = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Organization
+        fields = (
+            'id',
+            'graph',
+        )
+
+    def get_graph(self, obj):
+        request = self.context['request']
+        facilities = get_facilities_for_user(request.user, obj.id)
+        months = 12
+        now = timezone.now()
+        data = {}
+
+        for i in range(months):
+            day_obj = now - relativedelta(months=0)
+
+            enrolled_patients = PatientProfile.objects.filter(
+                facility__in=facilities,
+                is_active=True,
+                created__month=day_obj.month,
+                created__year=day_obj.year).count()
+            billable_patients = BilledActivity.objects.filter(
+                plan__patient__facility__in=facilities,
+                plan__patient__is_active=True,
+                activity_date__month=day_obj.month,
+                activity_date__year=day_obj.year).values_list(
+                    'plan__patient', flat=True).distinct().count()
+
+            monthly_data = {
+                'enrolled_patients': enrolled_patients,
+                'billable_patients': billable_patients
+            }
+
+            data.update({
+                day_obj.strftime("%B %Y"): monthly_data
+            })
+
+        return data
+
+
 # TODO: DELETE on a facility should mark it inactive rather than removing it
 # from the database.
 class FacilitySerializer(RepresentationMixin, serializers.ModelSerializer):
