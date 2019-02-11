@@ -86,8 +86,11 @@ class CarePlan(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
         on_delete=models.CASCADE)
 
     billing_practitioner = models.ForeignKey(
-        EmployeeProfile, null=True, 
-        blank=True, on_delete=models.CASCADE)
+        EmployeeProfile,
+        null=True,
+        blank=True,
+        related_name='billed_plans',
+        on_delete=models.CASCADE)
 
     def __str__(self):
         return '{} {}: {}'.format(
@@ -110,6 +113,10 @@ class CarePlan(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
                 total=Sum('time_spent'))
         total = time_spent['total'] or 0
         return str(datetime.timedelta(minutes=total))[:-3]
+
+    @property
+    def care_manager(self):
+        return self.care_team_members.filter(is_manager=True)
 
 
 class PlanConsent(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
@@ -339,13 +346,12 @@ def careplan_pre_save(sender, instance, update_fields=None, **kwargs):
     """
     Sends an email to the previous billing practitioner of the plan.
     """
-    plan = CarePlan.objects.get(id=instance.id)
-    pre_practitioner = plan.billing_practitioner
+    pre_practitioner = instance.billing_practitioner
 
     if pre_practitioner:
         subject = 'Notification from CareAdopt'
         context = {
-            "plan": plan,
+            "plan": instance,
             "subject": subject,
             "admin_email": settings.DEFAULT_FROM_EMAIL,
         }

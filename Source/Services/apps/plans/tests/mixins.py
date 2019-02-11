@@ -31,6 +31,12 @@ class PlansMixin(PatientsMixin):
             kwargs.update({
                 'plan_template': self.create_care_plan_template()
             })
+
+        if 'billing_practitioner' not in kwargs:
+            kwargs.update({
+                'billing_practitioner': self.create_employee()
+            })
+
         return CarePlanFactory(
             patient=patient,
             **kwargs

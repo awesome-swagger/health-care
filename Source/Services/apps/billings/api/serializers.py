@@ -1,3 +1,5 @@
+from django.utils.translation import ugettext_lazy as _
+
 from rest_framework import serializers
 
 from ..models import BilledActivity
@@ -48,3 +50,9 @@ class BilledActivitySerializer(RepresentationMixin,
                 'serializer_class': BasicEmployeeProfileSerializer
             }
         ]
+
+    def validate_plan(self, value):
+        if not value.patient.payer_reimbursement:
+            raise serializers.ValidationError(
+                _('Patient for this plan is not billable.'))
+        return value
