@@ -2,22 +2,22 @@
 <div class="flex marBottom32">
   <div class="marRight32">
     <label>Name</label>
-    Tamara Piccone
+    {{patient.user.first_name}} {{patient.user.last_name}}
   </div>
   <div>
     <label>Email</label>
-    tpiccone@gmail.com
+    {{patient.user.email}}
   </div>
 </div>
 <label>Subject</label>
-<input type="text" class="input fullWidth marBottom32" />
+<input type="text" class="input fullWidth marBottom32" [(ngModel)]="subjectInput" />
 <label>Message</label>
-<textarea class="input input--textarea fullWidth"></textarea>
+<textarea class="input input--textarea fullWidth" [(ngModel)]="messageInput"></textarea>
 <div class="modal__buttons">
-  <button class="button button--2nd">
+  <button class="button button--2nd" (click)="clickCancel()">
     Cancel
   </button>
-  <button class="button">
+  <button class="button" [disabled]="sendDisabled()" (click)="clickSend()">
     Send
   </button>
 </div>

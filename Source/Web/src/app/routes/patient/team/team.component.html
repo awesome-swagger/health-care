@@ -6,12 +6,17 @@
   <h2>Billing Practitioner</h2>
   <div class="flex alignCenter marBottom48" *ngIf="billingPractitioner">
     <div class="picName">
-      <img class=picName__img [src]="billingPractitioner.employee_profile.user.image_url" />
-      {{billingPractitioner.employee_profile.user.first_name}} {{billingPractitioner.employee_profile.user.last_name}}<span *ngIf="billingPractitioner.employee_profile.title">, {{billingPractitioner.employee_profile.title.abbreviation}}</span>
+      <img class=picName__img [src]="billingPractitioner.user.image_url" />
+      {{billingPractitioner.user.first_name}} {{billingPractitioner.user.last_name}}<span *ngIf="billingPractitioner.title">, {{billingPractitioner.title.abbreviation}}</span>
     </div>
     <button class="button button--icon button--icon--small"
     (click)="changeBP()">
       <i class="ss-write"></i>
+    </button>
+  </div>
+  <div class="flex alignCenter marBottom48" *ngIf="!billingPractitioner">
+    <button class="button button--iconText marRight32" (click)="changeBP()">
+      <i class="ss-plus"></i> Add Billing Practitioner
     </button>
   </div>
 

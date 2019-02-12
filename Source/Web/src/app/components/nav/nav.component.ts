@@ -24,10 +24,11 @@ import * as moment from 'moment';
 })
 export class NavComponent implements OnDestroy, OnInit {
 
+  public moment = moment;
+
   public employee = null;
   public organization = null;
   public organizations = [];
-  public patients = [];
   public activePatientsCount = 0;
   public inactivePatientsCount = 0;
   public invitedPatientsCount = 0;
@@ -109,6 +110,18 @@ export class NavComponent implements OnDestroy, OnInit {
       (err) => {},
       () => {}
     );
+    let patientCountsSub = this.store.PatientProfile.listRoute('get', 'overview', {}, {}).subscribe(
+      (patientCounts: any) => {
+        this.activePatientsCount = patientCounts.active;
+        this.inactivePatientsCount = patientCounts.inactive;
+        this.invitedPatientsCount = patientCounts.invited;
+        this.potentialPatientsCount = patientCounts.potential;
+      },
+      (err) => {},
+      () => {
+        patientCountsSub.unsubscribe();
+      }
+    );
     this.searchUpdated$
       .asObservable()
       .debounceTime(400)
@@ -134,15 +147,6 @@ export class NavComponent implements OnDestroy, OnInit {
           },
         );
       });
-
-    this.patients = [];
-    this.getPatients().then((patients: any) => {
-      patients = patientsData.results; // TODO: remove
-      this.patients = patients;
-      this.activePatientsCount = _filter(patients, p => p.is_active).length;
-      this.invitedPatientsCount = _filter(patients, p => p.is_invited).length;
-    });
-
   }
 
   public ngOnDestroy() {
@@ -166,18 +170,18 @@ export class NavComponent implements OnDestroy, OnInit {
 
   public confirmUnarchive() {
     this.modals.open(ConfirmModalComponent, {
-      'backdrop': true,
-      'closeDisabled': true,
-      'width': '384px',
-      'height': 'auto',
-      'data': {
+      backdrop: true,
+      closeDisabled: true,
+      width: '384px',
+      height: 'auto',
+      data: {
         'title': 'Unarchive Patient?',
         'body': 'This patient has been archived. Viewing this patient will unarchive them and change their status to inactive.',
         'okText': 'Continue',
         'cancelText': 'Cancel',
       }
     }).subscribe(() => {
-    // do something with result
+
     });
   }
 
@@ -208,23 +212,6 @@ export class NavComponent implements OnDestroy, OnInit {
 
   public routeToPatientPage(route) {
     this.router.navigate(['/patient', this.nav.patientDetailId, route, this.nav.patientPlanId]);
-  }
-
-  public getPatients() {
-    let promise = new Promise((resolve, reject) => {
-      let patientsSub = this.store.PatientProfile.readListPaged().subscribe(
-        (patients) => {
-          resolve(patients);
-        },
-        (err) => {
-          reject(err);
-        },
-        () => {
-          patientsSub.unsubscribe();
-        }
-      );
-    });
-    return promise;
   }
 
   public routeToAnalytics() {

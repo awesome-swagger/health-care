@@ -1,8 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { ModalService, ConfirmModalComponent } from '../../../modules/modals';
-import { StoreService } from '../../../services';
-import { ReminderEmailComponent } from './modals/reminder-email/reminder-email.component';
 import {
   uniqBy as _uniqBy,
   groupBy as _groupBy,
@@ -12,6 +9,10 @@ import {
   mean as _mean
 } from 'lodash';
 import * as moment from 'moment';
+import { ModalService, ConfirmModalComponent } from '../../../modules/modals';
+import { HttpService, StoreService } from '../../../services';
+import { AppConfig } from '../../../app.config';
+import { ReminderEmailComponent } from './modals/reminder-email/reminder-email.component';
 import patientsData from './../active/patients-data.js';
 
 @Component({
@@ -39,8 +40,8 @@ export class InvitedPatientsComponent implements OnDestroy, OnInit {
   constructor(
     private router: Router,
     private modals: ModalService,
+    private http: HttpService,
     private store: StoreService,
-
   ) { }
 
   public ngOnInit() {
@@ -142,16 +143,45 @@ export class InvitedPatientsComponent implements OnDestroy, OnInit {
     })
   }
 
-  public reminderEmail() {
-    this.modals.open(ReminderEmailComponent, {
+  public reminderEmail(patient) {
+    let modalSub = this.modals.open(ReminderEmailComponent, {
       closeDisabled: true,
+      data: {
+        patient: patient,
+      },
       width: '512px',
-    }).subscribe(() => {});
+    }).subscribe(
+      (response) => {
+        if (!response) {
+          return;
+        }
+        let url = AppConfig.apiUrl + 'reminder_email';
+        let postSub = this.http.post(url, {
+          patient: response.patient.id,
+          subject: response.subject,
+          message: response.message,
+        }).subscribe(
+          (success) => {
+            console.log('Successfully sent email');
+          },
+          (err) => {
+            console.log(err);
+          },
+          () => {
+            postSub.unsubscribe();
+          }
+        );
+      },
+      (err) => {},
+      () => {
+        modalSub.unsubscribe();
+      }
+    );
   }
 
   public confirmRemovePatient() {
     this.modals.open(ConfirmModalComponent, {
-     'closeDisabled': true,
+     closeDisabled: true,
      data: {
        title: 'Remove Patient?',
        body: 'Are you sure you want to revoke this patient’s invitation? This cannot be undone.',
