@@ -114,6 +114,24 @@ class EmployeeProfile(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
         return str(datetime.timedelta(minutes=total))[:-3]
 
 
+class BillingCoordinator(UUIDPrimaryKeyMixin):
+    facility = models.ForeignKey(Facility, on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        EmployeeProfile, 
+        related_name='billing_coordinators', 
+        on_delete=models.CASCADE)
+    coordinator = models.ForeignKey(
+        EmployeeProfile, 
+        related_name='billing_coordinators_for',
+        on_delete=models.CASCADE)
+
+    def __str__(self):
+        return '{}: {} - {}'.format(
+            self.facility.name,
+            self.user,
+            self.coordinator)
+
+
 class ProviderTitle(UUIDPrimaryKeyMixin):
     name = models.CharField(max_length=35, null=False, blank=False)
     abbreviation = models.CharField(max_length=10, null=False, blank=False)
