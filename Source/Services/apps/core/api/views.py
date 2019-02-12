@@ -1,3 +1,4 @@
+from django_filters.rest_framework import DjangoFilterBackend
 from drf_haystack.viewsets import HaystackViewSet
 from rest_framework import mixins, permissions, serializers, status, viewsets
 from rest_framework.decorators import action
@@ -6,6 +7,7 @@ from rest_framework.response import Response
 
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
 from apps.core.models import (Diagnosis, EmployeeProfile, Insurance, Notification,
@@ -19,7 +21,7 @@ from apps.core.permissions import (EmployeeProfilePermissions,
                                    FacilityPermissions,
                                    OrganizationPermissions)
 
-from apps.plans.models import CareTeamMember
+from apps.plans.models import CareTeamMember, ServiceArea
 from care_adopt_backend import utils
 from care_adopt_backend.permissions import (
     IsAdminOrEmployee,
@@ -44,7 +46,10 @@ from .serializers import (DiagnosisSerializer, EmployeeProfileSerializer,
                           EmployeeAssignmentSerializer,
                           InviteEmployeeSerializer,
                           OrganizationPatientOverviewSerializer,
-                          OrganizationPatientDashboardSerializer)
+                          OrganizationPatientDashboardSerializer,
+                          BillingPractitionerSerializer,
+                          OrganizationPatientAdoptionSerializer,
+                          OrganizationPatientGraphSerializer)
 
 
 class OrganizationViewSet(viewsets.ModelViewSet):
@@ -141,6 +146,10 @@ class OrganizationViewSet(viewsets.ModelViewSet):
             - average outcome
             - average engagement
             - risk level
+            - on track
+            - low risk
+            - med risk
+            - high risk
 
         FILTERING:
         ---
@@ -149,10 +158,9 @@ class OrganizationViewSet(viewsets.ModelViewSet):
 
             GET /api/organizations/<organization-ID>/dashboard_analytics/?patient=<patient-ID>
             GET /api/organizations/<organization-ID>/dashboard_analytics/?facility=<facility-ID>
+            GET /api/organizations/<organization-ID>/dashboard_analytics/?users=<user-ID>,<user-ID>...
             GET /api/organizations/<organization-ID>/dashboard_analytics/?facility=<facility-ID>&patient=<patient-ID>
 
-
-        TODO: RISK LEVEL BREAKDOWN CHART
         """
         organization = self.get_object()
 
@@ -168,6 +176,73 @@ class OrganizationViewSet(viewsets.ModelViewSet):
             'filter_allowed': True
         }
         serializer = OrganizationPatientDashboardSerializer(
+            organization, context=context)
+        return Response(serializer.data)
+
+    @action(methods=['get'], detail=True,
+            permission_classes=(IsAdminOrEmployee, ))
+    def patient_adoption(self, request, *args, **kwargs):
+        """
+        Returns the percentage of active patients interacting with the app
+        for the last 24 hours.
+
+        Returns the following data in a specific organization:
+
+            - active patients interacting with the app for the last 24 hours
+            - total active patients
+            - patient adoption rate
+
+        USAGE
+        ---
+        This endpoint will primarily populate the `Patient Adoption` section
+        in the `dash` page.
+
+        """
+        organization = self.get_object()
+
+        context = {
+            'request': request
+        }
+        serializer = OrganizationPatientAdoptionSerializer(
+            organization, context=context)
+        return Response(serializer.data)
+
+    @action(methods=['get'], detail=True,
+            permission_classes=(IsAdminOrEmployee, ))
+    def patients_enrolled_over_time(self, request, *args, **kwargs):
+        """
+        returns enrolled and billable patients data each month
+        for the past 12 months.
+
+        Returns the following data in a specific organization:
+
+            {
+                'id': <organization-ID>,
+                'graph': {
+                    'February 2019': {
+                        'enrolled_patients': 100,
+                        'billable_patients': 50
+                    },
+                    'January 2019': {
+                        'enrolled_patients': 35,
+                        'billable_patients': 10
+                    }
+                    ...
+                }
+            }
+
+        USAGE
+        ---
+        This will primarily be used in the `Patients Enrolled Over Time` graph
+        in `dash` page.
+
+        """
+        organization = self.get_object()
+
+        context = {
+            'request': request
+        }
+        serializer = OrganizationPatientGraphSerializer(
             organization, context=context)
         return Response(serializer.data)
 
@@ -606,6 +681,109 @@ class OrganizationEmployeeViewSet(ParentViewSetPermissionMixin,
         ('organizations', Organization, OrganizationViewSet)
     ]
     pagination_class = OrganizationEmployeePagination
+
+
+class OrganizationBillingPractitionerViewSet(ParentViewSetPermissionMixin,
+                                             NestedViewSetMixin,
+                                             mixins.ListModelMixin,
+                                             viewsets.GenericViewSet):
+    """
+    Displays all billing practitioners in a parent organization.
+
+    FILTERING
+    ---
+    Results can be filtered by `facility`, `service_area`, `month` and `year`.
+    For example:
+
+        GET /api/organizations/<organization-ID>/billing_practitioners/?billed_plans__patient__facility=<facility-ID>
+        GET /api/organizations/<organization-ID>/billing_practitioners/?billed_plans__plan_template__service_area=<service-area-ID>
+        GET /api/organizations/<organization-ID>/billing_practitioners/?billed_plans__patient__facility=<facility-ID>&billed_plans__plan_template__service_area=<service-area-ID>
+        GET /api/organizations/<organization-ID>/billing_practitioners/?billed_plans__activities__activity_date__month=10&billed_plans__activities__activity_date__year=2019
+
+    USAGE
+    ---
+    - This will primarily populate `billing` page
+    """
+
+    serializer_class = BillingPractitionerSerializer
+    permission_clases = (permissions.IsAuthenticated, IsAdminOrEmployee)
+    queryset = EmployeeProfile.objects.filter(
+        billed_plans__isnull=False,
+        billed_plans__patient__payer_reimbursement=True)
+    parent_lookup = [
+        ('organizations', Organization, OrganizationViewSet)
+    ]
+    pagination_class = OrganizationEmployeePagination
+    parent_field = 'organizations'
+    filter_backends = (DjangoFilterBackend, )
+    filterset_fields = {
+        'billed_plans__patient__facility': ['exact'],
+        'billed_plans__plan_template__service_area': ['exact'],
+        'billed_plans__activities__activity_date': ['month', 'year']
+    }
+
+    def get_queryset(self):
+        queryset = super(OrganizationBillingPractitionerViewSet,
+                         self).get_queryset()
+
+        # Call `distinct()` to remove duplicates
+        return queryset.distinct()
+
+    def filter_queryset(self, queryset):
+        queryset = super(OrganizationBillingPractitionerViewSet,
+                         self).filter_queryset(queryset)
+
+        # By default, filter queryset by current month and year if
+        # query parameters for `activity_date` is not given
+        query_parameters = self.request.query_params.keys()
+        if 'billed_plans__activities__activity_date__month' not in query_parameters and \
+           'billed_plans__activities__activity_date__year' not in query_parameters:
+            this_month = timezone.now()
+            queryset = queryset.filter(
+                billed_plans__activities__activity_date__year=this_month.year,
+                billed_plans__activities__activity_date__month=this_month.month
+            )
+
+        return queryset.distinct()
+
+    def get_serializer_context(self):
+        context = super(OrganizationBillingPractitionerViewSet,
+                        self).get_serializer_context()
+
+        context.update({
+            'organization': self.parent_obj
+        })
+
+        if 'billed_plans__patient__facility' in self.request.GET:
+            facility_id = self.request.GET['billed_plans__patient__facility']
+            facility = Facility.objects.get(id=facility_id)
+            context.update({
+                'facility': facility
+            })
+
+        if 'billed_plans__plan_template__service_area' in self.request.GET:
+            service_area_id = self.request.GET.get(
+                'billed_plans__plan_template__service_area')
+            service_area = ServiceArea.objects.get(id=service_area_id)
+            context.update({
+                'service_area': service_area
+            })
+
+        if 'billed_plans__activities__activity_date__month' in self.request.GET:
+            activity_month = self.request.GET.get(
+                'billed_plans__activities__activity_date__month')
+            context.update({
+                'activity_month': activity_month
+            })
+
+        if 'billed_plans__activities__activity_date__year' in self.request.GET:
+            activity_year = self.request.GET.get(
+                'billed_plans__activities__activity_date__year')
+            context.update({
+                'activity_year': activity_year
+            })
+
+        return context
 
 
 class OrganizationFacilityViewSet(ParentViewSetPermissionMixin,

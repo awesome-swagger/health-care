@@ -5,12 +5,14 @@ from django.db import models
 from django.db.models import Sum
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
+from django.conf import settings
 
 from apps.core.models import EmployeeProfile, ProviderRole
 from apps.patients.models import PatientProfile
 from care_adopt_backend.mixins import CreatedModifiedMixin, UUIDPrimaryKeyMixin
+from care_adopt_backend.mailer import BaseMailer
 
-from .signals import careplan_post_save, teammessage_post_save
+from .signals import (careplan_post_save, teammessage_post_save)
 
 
 class CarePlanTemplateType(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
@@ -83,6 +85,15 @@ class CarePlan(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
         related_name="care_plans",
         on_delete=models.CASCADE)
 
+    billing_practitioner = models.ForeignKey(
+        EmployeeProfile,
+        null=True,
+        blank=True,
+        related_name='billed_plans',
+        on_delete=models.CASCADE)
+
+    risk_level = models.IntegerField(null=True, blank=True)
+
     def __str__(self):
         return '{} {}: {}'.format(
             self.patient.user.first_name,
@@ -104,6 +115,10 @@ class CarePlan(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
                 total=Sum('time_spent'))
         total = time_spent['total'] or 0
         return str(datetime.timedelta(minutes=total))[:-3]
+
+    @property
+    def care_manager(self):
+        return self.care_team_members.filter(is_manager=True)
 
 
 class PlanConsent(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
@@ -329,10 +344,36 @@ class TeamMessage(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
         ordering = ('created', )
 
 
+def careplan_pre_save(sender, instance, update_fields=None, **kwargs):
+    """
+    Sends an email to the previous billing practitioner of the plan.
+    """
+    pre_practitioner = instance.billing_practitioner
+
+    if pre_practitioner:
+        subject = 'Notification from CareAdopt'
+        context = {
+            "plan": instance,
+            "subject": subject,
+            "admin_email": settings.DEFAULT_FROM_EMAIL,
+        }
+        email_template = 'core/employeeprofile/email/billing_practitioner.html'
+        return BaseMailer().send_mail(
+            subject,
+            email_template,
+            pre_practitioner.user.email,
+            context
+        )
+
+
 # Signals
 models.signals.post_save.connect(
     careplan_post_save,
     sender=CarePlan,
+)
+models.signals.pre_save.connect(
+    careplan_pre_save,
+    sender=CarePlan
 )
 models.signals.post_save.connect(
     teammessage_post_save,

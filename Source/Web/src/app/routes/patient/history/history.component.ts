@@ -3,7 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import * as moment from 'moment';
 import { ModalService, ConfirmModalComponent } from '../../../modules/modals';
 import { RecordResultsComponent } from '../../../components';
-import { NavbarService, StoreService } from '../../../services';
+import { AuthService, NavbarService, StoreService } from '../../../services';
 import { HistoryMockData } from './historyData';
 
 @Component({
@@ -13,28 +13,44 @@ import { HistoryMockData } from './historyData';
 })
 export class PatientHistoryComponent implements OnDestroy, OnInit {
 
+  public moment = moment;
+
   public mockData = new HistoryMockData();
 
+  public user = null;
   public patient = null;
   public carePlan = null;
+  public careTeamMembers = [];
   public dateFilter = moment();
   public actionChoices = [
     {
-      display: 'Patient Interaction',
-      value: 'interaction',
+      display: 'Care Plan Review',
+      value: 'care_plan_review',
     },
     {
-      display: 'Care Team Coordination',
-      value: 'coordination',
+      display: 'Phone Call',
+      value: 'phone_call',
     },
     {
       display: 'Notes',
       value: 'notes',
     },
+    {
+      display: 'Face to Face',
+      value: 'face_to_face',
+    },
+    {
+      display: 'Message',
+      value: 'message',
+    }
   ];
+  public datePickerOptions = {
+    relativeLeft: '0px',
+    relativeTop: '48px'
+  };
   public selectedActions = [];
-  public results = [];
-  public selectedResult = null;
+  public billedActivities = [];
+  public selectedActivity = null;
 
   public dateFilterOpen = false;
   public actionFilterOpen = false;
@@ -43,6 +59,7 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private modals: ModalService,
+    private auth: AuthService,
     private store: StoreService,
     private nav: NavbarService,
   ) { }
@@ -50,39 +67,107 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
   public ngOnInit() {
     this.route.params.subscribe((params) => {
       this.nav.patientDetailState(params.patientId, params.planId);
-      this.store.PatientProfile.read(params.patientId).subscribe(
-        (patient) => {
-          this.patient = patient;
-          this.nav.addRecentPatient(this.patient);
-          this.store.CarePlan.read(params.planId).subscribe(
-            (carePlan) => {
-              this.carePlan = carePlan;
-              this.results = this.mockData.results;
-              this.selectedResult = this.results[0];
+      // Get patient
+      this.getPatient(params.patientId).then((patient: any) => {
+        this.patient = patient;
+        this.nav.addRecentPatient(this.patient);
+        // Get auth user
+        this.auth.user$.subscribe((user) => {
+          if (!user) {
+            return;
+          }
+          this.user = user;
+          // Get care plan
+          this.getCarePlan(params.planId).then((carePlan: any) => {
+            this.carePlan = carePlan;
+            // Get care team
+            this.getCareTeamMembers().then((teamMembers: any) => {
+              this.careTeamMembers = teamMembers.filter((obj) => {
+                return obj.employee_profile.user.id !== this.user.user.id;
+              });
               this.selectedActions = this.actionChoices.concat();
-            },
-            (err) => {},
-            () => {},
-          );
-        },
-        (err) => {},
-        () => {},
-      );
+              // Get billed activities
+              this.getBilledActivities().then((billedActivities: any) => {
+                this.billedActivities = billedActivities;
+                this.selectedActivity = this.billedActivities[0];
+              });
+            });
+          });
+        });
+      });
     });
   }
 
   public ngOnDestroy() { }
 
+  public getPatient(patientId) {
+    let promise = new Promise((resolve, reject) => {
+      let patientSub = this.store.PatientProfile.read(patientId).subscribe(
+        (patient) => resolve(patient),
+        (err) => reject(err),
+        () => {
+          patientSub.unsubscribe();
+        }
+      );
+    });
+    return promise;
+  }
+
+  public getBilledActivities() {
+    let promise = new Promise((resolve, reject) => {
+      let billedActivitiesSub = this.store.BilledActivity.readListPaged({
+        // TODO: Filters to get only billed activities for this care plan
+        // TODO: Filters to get only billed activities for the date
+      }).subscribe(
+        (billedActivities) => {
+          let tmpDateFilter = billedActivities.filter((activity) => {
+            return moment(activity.activity_date).isSame(this.dateFilter, 'day');
+          });
+          resolve(tmpDateFilter);
+        },
+        (err) => reject(err),
+        () => {
+          billedActivitiesSub.unsubscribe();
+        }
+      );
+    });
+    return promise;
+  }
+
+  public getCareTeamMembers() {
+    let promise = new Promise((resolve, reject) => {
+      let careTeamSub = this.store.CarePlan.detailRoute('get', this.carePlan.id, 'care_team_members', {}, {}).subscribe(
+        (teamMembers: any) => resolve(teamMembers),
+        (err) => reject(err),
+        () => {
+          careTeamSub.unsubscribe();
+        },
+      );
+    });
+    return promise;
+  }
+
+  public getCarePlan(planId) {
+    let promise = new Promise((resolve, reject) => {
+      let carePlanSub = this.store.CarePlan.read(planId).subscribe(
+        (carePlan) => resolve(carePlan),
+        (err) => reject(err),
+        () => {
+          carePlanSub.unsubscribe();
+        },
+      );
+    });
+    return promise;
+  }
+
   public setSelectedDay(e) {
     this.dateFilter = e;
-  }
-
-  public getEmployee(id) {
-    return this.mockData.employees.find((obj) => obj.id === id);
-  }
-
-  public getTask(id) {
-    return this.mockData.tasks.find((obj) => obj.id === id);
+    this.dateFilterOpen = false;
+    // Get billed activities
+    this.getBilledActivities().then((billedActivities: any) => {
+      this.billedActivities = billedActivities;
+      this.selectedActivity = this.billedActivities[0];
+    });
   }
 
   public isActionChecked(action) {
@@ -108,15 +193,10 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
     }
   }
 
-  public filteredResults() {
-    return this.results.filter((result) => {
-      if (this.dateFilter) {
-        return result.date.isSame(this.dateFilter, 'day');
-      }
-      return false;
-    }).filter((result) => {
+  public filteredBilledActivities() {
+    return this.billedActivities.filter((activity) => {
       let actionValues = this.selectedActions.map((obj) => obj.value);
-      return actionValues.includes(this.getTask(result.task).category);
+      return actionValues.includes(activity.activity_type);
     });
   }
 
@@ -126,36 +206,35 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
       data: {
         patient: this.patient,
         carePlan: this.carePlan,
-        tasks: this.mockData.tasks,
+        tasks: this.mockData.tasks, // TODO: Get tasks for user
         task: null,
         totalMinutes: null,
-        teamMembers: this.mockData.employees,
+        teamMembers: this.careTeamMembers,
         with: null,
         syncToEHR: false,
         notes: '',
         patientEngagement: null,
       },
       width: '512px',
-    }).subscribe((res) => {
-      console.log(res);
-      if (!res) {
+    }).subscribe((results) => {
+      if (!results) {
         return;
       }
-      let newResult = {
-        id: this.mockData.generateRandomId(),
-        date: res.date,
-        createdBy: this.mockData.employees[0].id,
-        lastEdited: null,
-        lastEditedBy: null,
-        task: res.task,
-        totalMinutes: res.totalMinutes,
-        with: res.with,
-        syncToEHR: false,
-        notes: res.notes,
-        patientEngagement: res.patientEngagement,
-      };
-      this.mockData.results.push(newResult);
-      this.selectedResult = newResult;
+      // Create billed activity record
+      this.store.BilledActivity.create({
+        plan: this.carePlan.id,
+        activity_type: 'care_plan_review', // TODO: activity type
+        members: [
+          this.user.id, // TODO: user selected in "with" field.
+        ],
+        sync_to_ehr: results.syncToEHR,
+        added_by: this.user.id,
+        notes: results.notes,
+        time_spent: results.totalMinutes,
+      }).subscribe((newResult) => {
+        this.billedActivities.push(newResult);
+        this.selectedActivity = newResult;
+      });
     });
   }
 
@@ -165,35 +244,35 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
       data: {
         patient: this.patient,
         carePlan: this.carePlan,
-        date: result.date,
-        tasks: this.mockData.tasks,
-        task: result.task,
-        totalMinutes: result.totalMinutes,
-        teamMembers: this.mockData.employees,
-        with: result.with,
-        syncToEHR: result.syncToEHR,
+        date: moment(result.activity_date),
+        tasks: this.mockData.tasks, // TODO: Get tasks for user
+        task: null,
+        totalMinutes: result.time_spent,
+        teamMembers: this.careTeamMembers,
+        with: null, // TODO: Autofill with field
+        syncToEHR: result.sync_to_ehr,
         notes: result.notes,
-        patientEngagement: result.patientEngagement,
+        patientEngagement: 0, // TODO: Autofill patient engagement.
       },
       width: '512px',
-    }).subscribe((res) => {
-      console.log(res);
-      if (!res) {
+    }).subscribe((results) => {
+      console.log(results);
+      if (!results) {
         return;
       }
-      let resultIndex = this.mockData.results.findIndex((obj) => obj.id === result.id);
-      this.mockData.results[resultIndex] = Object.assign({}, this.mockData.results[resultIndex], {
-        date: res.date,
-        task: res.task,
-        lastEdited: moment(),
-        lastEditedBy: this.mockData.employees[0].id,
-        totalMinutes: res.totalMinutes,
-        with: res.with,
-        syncToEHR: res.syncToEHR,
-        notes: res.notes,
-        patientEngagement: res.patientEngagement,
+      this.store.BilledActivity.update(result.id, {
+        activity_type: 'care_plan_review', // TODO: activity type
+        members: [
+          this.user.id, // TODO: user selected in "with" field.
+        ],
+        sync_to_ehr: results.syncToEHR,
+        notes: results.notes,
+        time_spent: results.totalMinutes,
+      }, true).subscribe((updatedResult) => {
+        let resultIndex = this.billedActivities.findIndex((obj) => obj.id === result.id);
+        this.billedActivities[resultIndex] = updatedResult;
+        this.selectedActivity = this.billedActivities[resultIndex];
       });
-      this.selectedResult = this.mockData.results[resultIndex];
     });
   }
 

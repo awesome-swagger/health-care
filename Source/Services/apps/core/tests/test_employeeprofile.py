@@ -1,5 +1,6 @@
 import datetime
 import random
+import urllib
 
 from dateutil.relativedelta import relativedelta
 
@@ -388,11 +389,25 @@ class TestFacilityEmployee(BillingsMixin, TasksMixin, APITestCase):
 
         for i in range(plans_count):
             # Create care plans as manager
-            manager_plan = self.create_care_plan()
+            billable_patient = self.create_patient(**{
+                'payer_reimbursement': True
+            })
+            manager_plan = self.create_care_plan(billable_patient)
             self.create_care_team_member(**{
                 'employee_profile': employee,
                 'plan': manager_plan,
                 'is_manager': True
+            })
+
+        # Create dummy records for non-billable patients
+        for i in range(plans_count):
+            nonbillable_patient = self.create_patient(**{
+                'payer_reimbursement': False
+            })
+            other_plan = self.create_care_plan(nonbillable_patient)
+            self.create_care_team_member(**{
+                'employee_profile': employee,
+                'plan': other_plan
             })
 
         url = reverse(
@@ -494,3 +509,639 @@ class TestFacilityEmployee(BillingsMixin, TasksMixin, APITestCase):
         verify_url = reverse('verify_change_email')
         response = self.client.post(verify_url, verify_payload)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
+    """
+    Test cases for :model:`tasks.EmployeeProfile` using an employee
+    as the logged in user.
+    """
+
+    def setUp(self):
+        self.fake = Faker()
+        self.organization = self.create_organization()
+        self.organization_managed = self.create_organization()
+        self.facility = self.create_facility(self.organization)
+        self.facility_managed = self.create_facility()
+        self.role = self.create_provider_role()
+        self.employee = self.create_employee(**{
+            'organizations': [self.organization],
+            'organizations_managed': [self.organization_managed],
+            'facilities': [self.facility],
+            'facilities_managed': [self.facility_managed],
+            'roles': [self.role]
+        })
+        self.user = self.employee.user
+
+        self.url = reverse(
+            'organization-billing-practitioners-list',
+            kwargs={
+                'parent_lookup_organizations': self.organization.id
+            })
+        self.client.force_authenticate(user=self.user)
+
+    def test_get_billing_practitioners_list(self):
+        practitioners_count = 5
+
+        for i in range(practitioners_count):
+            employee = self.create_employee(**{
+                'organizations': [self.organization],
+            })
+            facility = self.create_facility(self.organization)
+            patient = self.create_patient(**{
+                'facility': facility,
+                'payer_reimbursement': True
+            })
+            plan = self.create_care_plan(patient, **{
+                'billing_practitioner': employee
+            })
+            self.create_billed_activity(**{
+                'plan': plan
+            })
+
+        # Create dummy records for practitioners belonging to other
+        # organizations
+        for i in range(practitioners_count):
+            employee = self.create_employee()
+            facility = self.create_facility()
+            patient = self.create_patient(**{
+                'facility': facility,
+                'payer_reimbursement': True
+            })
+            plan = self.create_care_plan(patient, **{
+                'billing_practitioner': employee
+            })
+            self.create_billed_activity(**{
+                'plan': plan
+            })
+
+        response = self.client.get(self.url)
+        self.assertEqual(response.data['count'], practitioners_count)
+
+    def test_get_billing_practitioners_list_unauthorized(self):
+        practitioners_count = 5
+
+        self.client.logout()
+        logged_employee = self.create_employee()
+        self.client.force_authenticate(user=logged_employee.user)
+
+        for i in range(practitioners_count):
+            employee = self.create_employee(**{
+                'organizations': [self.organization],
+            })
+            facility = self.create_facility(self.organization)
+            patient = self.create_patient(**{
+                'facility': facility,
+                'payer_reimbursement': True
+            })
+            plan = self.create_care_plan(patient, **{
+                'billing_practitioner': employee
+            })
+            self.create_billed_activity(**{
+                'plan': plan
+            })
+
+        # Create dummy records for practitioners belonging to other
+        # organizations
+        for i in range(practitioners_count):
+            employee = self.create_employee()
+            facility = self.create_facility()
+            patient = self.create_patient(**{
+                'facility': facility,
+                'payer_reimbursement': True
+            })
+            plan = self.create_care_plan(patient, **{
+                'billing_practitioner': employee
+            })
+            self.create_billed_activity(**{
+                'plan': plan
+            })
+
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_get_billing_practitioners_list_filter_month_year(self):
+        practitioners_count = 5
+        now = timezone.now().date()
+        last_month = now - relativedelta(months=1)
+
+        for i in range(practitioners_count):
+            employee = self.create_employee(**{
+                'organizations': [self.organization],
+            })
+            facility = self.create_facility(self.organization)
+            patient = self.create_patient(**{
+                'facility': facility,
+                'payer_reimbursement': True
+            })
+            plan = self.create_care_plan(patient, **{
+                'billing_practitioner': employee
+            })
+            self.create_billed_activity(**{
+                'plan': plan
+            })
+
+        # Create dummy records for practitioners having records last month
+        for i in range(practitioners_count):
+            employee = self.create_employee(**{
+                'organizations': [self.organization],
+            })
+            facility = self.create_facility(self.organization)
+            patient = self.create_patient(**{
+                'facility': facility,
+                'payer_reimbursement': True
+            })
+            plan = self.create_care_plan(patient, **{
+                'billing_practitioner': employee
+            })
+            self.create_billed_activity(**{
+                'plan': plan,
+                'activity_date': last_month
+            })
+
+        query_params = urllib.parse.urlencode({
+            'billed_plans__activities__activity_date__month': last_month.month,
+            'billed_plans__activities__activity_date__year': last_month.year
+        })
+        filter_url = f'{self.url}?{query_params}'
+        response = self.client.get(filter_url)
+        self.assertEqual(response.data['count'], practitioners_count)
+
+    def test_get_billing_practitioners_list_filter_facility(self):
+        practitioners_count = 5
+
+        for i in range(practitioners_count):
+            employee = self.create_employee(**{
+                'organizations': [self.organization],
+                'facilities': [self.facility]
+            })
+            patient = self.create_patient(**{
+                'facility': self.facility,
+                'payer_reimbursement': True
+            })
+            plan = self.create_care_plan(patient, **{
+                'billing_practitioner': employee
+            })
+            self.create_billed_activity(**{
+                'plan': plan
+            })
+
+        # Create dummy records for practitioners belonging to other
+        # organizations
+        for i in range(practitioners_count):
+            employee = self.create_employee()
+            facility = self.create_facility()
+            patient = self.create_patient(**{
+                'facility': facility,
+                'payer_reimbursement': True
+            })
+            plan = self.create_care_plan(patient, **{
+                'billing_practitioner': employee
+            })
+            self.create_billed_activity(**{
+                'plan': plan
+            })
+
+        query_params = urllib.parse.urlencode({
+            'billed_plans__patient__facility': self.facility.id
+        })
+        filter_url = f'{self.url}?{query_params}'
+        response = self.client.get(filter_url)
+        self.assertEqual(response.data['count'], practitioners_count)
+
+    def test_get_billing_practitioners_list_filter_service_area(self):
+        practitioners_count = 5
+        service_area = self.create_service_area()
+
+        for i in range(practitioners_count):
+            employee = self.create_employee(**{
+                'organizations': [self.organization],
+                'facilities': [self.facility]
+            })
+            patient = self.create_patient(**{
+                'payer_reimbursement': True
+            })
+            plan_template = self.create_care_plan_template(**{
+                'service_area': service_area
+            })
+            plan = self.create_care_plan(patient, **{
+                'billing_practitioner': employee,
+                'plan_template': plan_template
+            })
+            self.create_billed_activity(**{
+                'plan': plan
+            })
+
+        # Create dummy records for practitioners belonging to other
+        # organizations
+        for i in range(practitioners_count):
+            employee = self.create_employee()
+            facility = self.create_facility()
+            patient = self.create_patient(**{
+                'facility': facility,
+                'payer_reimbursement': True
+            })
+            plan = self.create_care_plan(patient, **{
+                'billing_practitioner': employee
+            })
+            self.create_billed_activity(**{
+                'plan': plan
+            })
+
+        query_params = urllib.parse.urlencode({
+            'billed_plans__plan_template__service_area': service_area.id
+        })
+        filter_url = f'{self.url}?{query_params}'
+        response = self.client.get(filter_url)
+        self.assertEqual(response.data['count'], practitioners_count)
+
+    def test_get_filter_service_area_and_facility(self):
+        practitioners_count = 5
+        service_area = self.create_service_area()
+
+        for i in range(practitioners_count):
+            employee = self.create_employee(**{
+                'organizations': [self.organization],
+                'facilities': [self.facility]
+            })
+            patient = self.create_patient(**{
+                'payer_reimbursement': True,
+                'facility': self.facility
+            })
+            plan_template = self.create_care_plan_template(**{
+                'service_area': service_area
+            })
+            plan = self.create_care_plan(patient, **{
+                'billing_practitioner': employee,
+                'plan_template': plan_template
+            })
+            self.create_billed_activity(**{
+                'plan': plan
+            })
+
+        # Create dummy records for same facility
+        for i in range(practitioners_count):
+            employee = self.create_employee(**{
+                'organizations': [self.organization],
+                'facilities': [self.facility]
+            })
+            patient = self.create_patient(**{
+                'payer_reimbursement': True,
+                'facility': self.facility
+            })
+            plan = self.create_care_plan(patient, **{
+                'billing_practitioner': employee
+            })
+            self.create_billed_activity(**{
+                'plan': plan
+            })
+
+        # Create dummy records for same service area
+        for i in range(practitioners_count):
+            employee = self.create_employee(**{
+                'organizations': [self.organization],
+                'facilities': [self.facility]
+            })
+            patient = self.create_patient(**{
+                'payer_reimbursement': True
+            })
+            plan_template = self.create_care_plan_template(**{
+                'service_area': service_area
+            })
+            plan = self.create_care_plan(patient, **{
+                'billing_practitioner': employee,
+                'plan_template': plan_template
+            })
+            self.create_billed_activity(**{
+                'plan': plan
+            })
+
+        # Create dummy records for practitioners belonging to other
+        # organizations
+        for i in range(practitioners_count):
+            employee = self.create_employee()
+            facility = self.create_facility()
+            patient = self.create_patient(**{
+                'facility': facility,
+                'payer_reimbursement': True
+            })
+            self.create_care_plan(patient, **{
+                'billing_practitioner': employee
+            })
+
+        query_params = urllib.parse.urlencode({
+            'billed_plans__plan_template__service_area': service_area.id,
+            'billed_plans__patient__facility': self.facility.id
+        })
+        filter_url = f'{self.url}?{query_params}'
+        response = self.client.get(filter_url)
+        self.assertEqual(response.data['count'], practitioners_count)
+
+    def test_get_billing_practitioners_plans(self):
+        plans_count = 5
+
+        for i in range(plans_count):
+            patient = self.create_patient(**{
+                'facility': self.facility,
+                'payer_reimbursement': True
+            })
+            plan = self.create_care_plan(patient, **{
+                'billing_practitioner': self.employee
+            })
+            self.create_billed_activity(**{
+                'plan': plan
+            })
+
+        # Create dummy records for practitioners belonging to other
+        # organizations
+        for i in range(plans_count):
+            facility = self.create_facility()
+            patient = self.create_patient(**{
+                'facility': facility,
+                'payer_reimbursement': True
+            })
+            plan = self.create_care_plan(patient, **{
+                'billing_practitioner': self.employee
+            })
+            self.create_billed_activity(**{
+                'plan': plan
+            })
+
+        response = self.client.get(self.url)
+        self.assertEqual(
+            len(response.data['results'][0]['plans']),
+            plans_count
+        )
+
+    def test_get_billing_practitioners_total_billable_patients(self):
+        patients_count = 5
+
+        for i in range(patients_count):
+            patient = self.create_patient(**{
+                'facility': self.facility,
+                'payer_reimbursement': True
+            })
+            plan = self.create_care_plan(patient, **{
+                'billing_practitioner': self.employee
+            })
+            self.create_billed_activity(**{
+                'plan': plan
+            })
+
+        # Create dummy records for non-billable patients
+        for i in range(patients_count):
+            patient = self.create_patient(**{
+                'facility': self.facility,
+                'payer_reimbursement': False
+            })
+            plan = self.create_care_plan(patient, **{
+                'billing_practitioner': self.employee
+            })
+            self.create_billed_activity(**{
+                'plan': plan
+            })
+
+        response = self.client.get(self.url)
+        self.assertEqual(
+            response.data['results'][0]['total_billable_patients'],
+            patients_count
+        )
+
+    def test_get_billing_practitioners_total_patients(self):
+        patients_count = 5
+        total_patient_count = patients_count * 2
+
+        # Create records for billable patients
+        for i in range(patients_count):
+            patient = self.create_patient(**{
+                'facility': self.facility,
+                'payer_reimbursement': True
+            })
+            plan = self.create_care_plan(patient, **{
+                'billing_practitioner': self.employee
+            })
+            self.create_billed_activity(**{
+                'plan': plan
+            })
+
+        # Create records for non-billable patients
+        for i in range(patients_count):
+            patient = self.create_patient(**{
+                'facility': self.facility,
+                'payer_reimbursement': False
+            })
+            plan = self.create_care_plan(patient, **{
+                'billing_practitioner': self.employee
+            })
+            self.create_billed_activity(**{
+                'plan': plan
+            })
+
+        response = self.client.get(self.url)
+        self.assertEqual(
+            response.data['results'][0]['total_patients'],
+            total_patient_count
+        )
+
+    def test_get_billing_practitioners_plans_filter_facility(self):
+        plans_count = 5
+
+        for i in range(plans_count):
+            patient = self.create_patient(**{
+                'facility': self.facility,
+                'payer_reimbursement': True
+            })
+            plan = self.create_care_plan(patient, **{
+                'billing_practitioner': self.employee
+            })
+            self.create_billed_activity(**{
+                'plan': plan
+            })
+
+        # Create dummy records for practitioners belonging to other
+        # facilities
+        for i in range(plans_count):
+            facility = self.create_facility(self.organization)
+            patient = self.create_patient(**{
+                'facility': facility,
+                'payer_reimbursement': True
+            })
+            plan = self.create_care_plan(patient, **{
+                'billing_practitioner': self.employee
+            })
+            self.create_billed_activity(**{
+                'plan': plan
+            })
+
+        query_params = urllib.parse.urlencode({
+            'billed_plans__patient__facility': self.facility.id
+        })
+        filter_url = f'{self.url}?{query_params}'
+        response = self.client.get(filter_url)
+        self.assertEqual(
+            len(response.data['results'][0]['plans']),
+            plans_count
+        )
+
+    def test_get_billing_practitioners_plans_filter_service_area(self):
+        plans_count = 5
+        service_area = self.create_service_area()
+
+        for i in range(plans_count):
+            patient = self.create_patient(**{
+                'facility': self.facility,
+                'payer_reimbursement': True
+            })
+            plan_template = self.create_care_plan_template(**{
+                'service_area': service_area
+            })
+            plan = self.create_care_plan(patient, **{
+                'billing_practitioner': self.employee,
+                'plan_template': plan_template
+            })
+            self.create_billed_activity(**{
+                'plan': plan
+            })
+
+        # Create dummy records for practitioners belonging to other
+        # service area
+        for i in range(plans_count):
+            facility = self.create_facility(self.organization)
+            patient = self.create_patient(**{
+                'facility': facility,
+                'payer_reimbursement': True
+            })
+            plan = self.create_care_plan(patient, **{
+                'billing_practitioner': self.employee
+            })
+            self.create_billed_activity(**{
+                'plan': plan
+            })
+
+        query_params = urllib.parse.urlencode({
+            'billed_plans__plan_template__service_area': service_area.id
+        })
+        filter_url = f'{self.url}?{query_params}'
+        response = self.client.get(filter_url)
+        self.assertEqual(
+            len(response.data['results'][0]['plans']),
+            plans_count
+        )
+
+    def test_get_plans_filter_service_area_and_facility(self):
+        plan_count = 5
+        service_area = self.create_service_area()
+
+        for i in range(plan_count):
+            patient = self.create_patient(**{
+                'payer_reimbursement': True,
+                'facility': self.facility
+            })
+            plan_template = self.create_care_plan_template(**{
+                'service_area': service_area
+            })
+            plan = self.create_care_plan(patient, **{
+                'billing_practitioner': self.employee,
+                'plan_template': plan_template
+            })
+            self.create_billed_activity(**{
+                'plan': plan
+            })
+
+        # Create dummy records for same facility
+        for i in range(plan_count):
+            patient = self.create_patient(**{
+                'payer_reimbursement': True,
+                'facility': self.facility
+            })
+            plan = self.create_care_plan(patient, **{
+                'billing_practitioner': self.employee
+            })
+            self.create_billed_activity(**{
+                'plan': plan
+            })
+
+        # Create dummy records for same service area
+        for i in range(plan_count):
+            patient = self.create_patient(**{
+                'payer_reimbursement': True
+            })
+            plan_template = self.create_care_plan_template(**{
+                'service_area': service_area
+            })
+            plan = self.create_care_plan(patient, **{
+                'billing_practitioner': self.employee,
+                'plan_template': plan_template
+            })
+            self.create_billed_activity(**{
+                'plan': plan
+            })
+
+        query_params = urllib.parse.urlencode({
+            'billed_plans__plan_template__service_area': service_area.id,
+            'billed_plans__patient__facility': self.facility.id
+        })
+        filter_url = f'{self.url}?{query_params}'
+        response = self.client.get(filter_url)
+        self.assertEqual(len(response.data['results'][0]['plans']), plan_count)
+
+    def test_get_plans_details_of_service(self):
+        activity_count = 5
+
+        patient = self.create_patient(**{
+            'facility': self.facility,
+            'payer_reimbursement': True
+        })
+        plan = self.create_care_plan(patient, **{
+            'billing_practitioner': self.employee
+        })
+
+        for i in range(activity_count):
+            self.create_billed_activity(**{
+                'plan': plan,
+                'added_by': self.employee
+            })
+
+        response = self.client.get(self.url)
+        self.assertEqual(
+            len(response.data['results'][0]['plans'][0]['details_of_service']),
+            activity_count
+        )
+
+    def test_get_plans_details_of_service_filter_month_year(self):
+        activity_count = 5
+        now = timezone.now().date()
+        last_month = now - relativedelta(months=1)
+
+        patient = self.create_patient(**{
+            'facility': self.facility,
+            'payer_reimbursement': True
+        })
+        plan = self.create_care_plan(patient, **{
+            'billing_practitioner': self.employee
+        })
+
+        for i in range(activity_count):
+            self.create_billed_activity(**{
+                'plan': plan,
+                'added_by': self.employee
+            })
+
+        # create billed activity last month
+        for i in range(activity_count):
+            self.create_billed_activity(**{
+                'plan': plan,
+                'added_by': self.employee,
+                'activity_date': last_month
+            })
+
+        query_params = urllib.parse.urlencode({
+            'billed_plans__activities__activity_date__month': last_month.month,
+            'billed_plans__activities__activity_date__year': last_month.year
+        })
+        filter_url = f'{self.url}?{query_params}'
+        response = self.client.get(filter_url)
+        self.assertEqual(
+            len(response.data['results'][0]['plans'][0]['details_of_service']),
+            activity_count
+        )

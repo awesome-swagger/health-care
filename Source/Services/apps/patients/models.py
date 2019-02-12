@@ -40,6 +40,9 @@ class PatientProfile(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
     )
     is_invited = models.BooleanField(default=False)
     is_active = models.BooleanField(default=False)
+    payer_reimbursement = models.BooleanField(
+        default=False,
+        help_text=_('Used to determine whether a patient is billable or not.'))
     last_app_use = models.DateTimeField(default=timezone.now)
 
     class Meta:

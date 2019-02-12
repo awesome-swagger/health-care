@@ -2,6 +2,7 @@ import datetime
 
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
+from django.db.models import Sum
 
 from model_utils import Choices
 
@@ -36,6 +37,7 @@ class BilledActivity(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
         )
     members = models.ManyToManyField(
         'core.EmployeeProfile',
+        blank=True,
         related_name='activities',
         )
     sync_to_ehr = models.BooleanField(

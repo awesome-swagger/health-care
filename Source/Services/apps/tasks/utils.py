@@ -160,14 +160,20 @@ def get_all_tasks_for_today(user, **kwargs):
     today_max = datetime.datetime.combine(date_object,
                                           datetime.time.max,
                                           tzinfo=pytz.utc)
+    exclude_done = kwargs.pop('exclude_done', True)
 
     if user.is_employee:
         employee = user.employee_profile
         team_tasks = TeamTask.objects.filter(
-            plan__care_team_members__employee_profile=employee,
-            plan__care_team_members__role__in=employee.roles.all(),
+            team_task_template__role__in=employee.roles.all(),
             due_datetime__range=(today_min, today_max)
-        ).exclude(status='done')
+        )
+        if exclude_done:
+            team_tasks = team_tasks.exclude(status='done')
+
+        if plan_template:
+            team_tasks = team_tasks.filter(
+                team_task_template__plan_template=plan_template)
 
         if team_tasks.exists():
             serializer = TeamTaskTodaySerializer(
@@ -180,24 +186,25 @@ def get_all_tasks_for_today(user, **kwargs):
         patient = user.patient_profile
         patient_tasks = PatientTask.objects.filter(
             plan__patient__id=patient.id,
-            due_datetime__range=(today_min, today_max)
-            ).exclude(status='done')
+            due_datetime__range=(today_min, today_max))
         medication_tasks = MedicationTask.objects.filter(
             medication_task_template__plan__patient__id=patient.id,
-            due_datetime__range=(today_min, today_max)
-            ).exclude(status='done')
+            due_datetime__range=(today_min, today_max))
         symptom_tasks = SymptomTask.objects.filter(
             plan__patient__id=patient.id,
-            due_datetime__range=(today_min, today_max),
-            is_complete=False)
+            due_datetime__range=(today_min, today_max))
         assessment_tasks = AssessmentTask.objects.filter(
             plan__patient__id=patient.id,
-            due_datetime__range=(today_min, today_max),
-            is_complete=False)
+            due_datetime__range=(today_min, today_max))
         vital_tasks = VitalTask.objects.filter(
             plan__patient__id=patient.id,
-            due_datetime__range=(today_min, today_max),
-            is_complete=False)
+            due_datetime__range=(today_min, today_max))
+        if exclude_done:
+            patient_tasks = patient_tasks.exclude(status='done')
+            medication_tasks = medication_tasks.exclude(status='done')
+            symptom_tasks = symptom_tasks.filter(is_complete=False)
+            assessment_tasks = assessment_tasks.filter(is_complete=False)
+            vital_tasks = vital_tasks.filter(is_complete=False)
 
         if plan_template:
             patient_tasks = patient_tasks.filter(

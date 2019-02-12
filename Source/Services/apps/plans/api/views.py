@@ -40,6 +40,7 @@ from .serializers import (
     ServiceAreaSerializer,
     CarePlanTemplateSerializer,
     CarePlanSerializer,
+    CarePlanPractitionerSerializer,
     PlanConsentSerializer,
     CareTeamMemberSerializer,
     GoalTemplateSerializer,
@@ -265,6 +266,22 @@ class CarePlanViewSet(viewsets.ModelViewSet):
         care_team_members = plan.care_team_members
         serializer = CareTeamMemberSerializer(care_team_members, many=True)
         return Response(serializer.data)
+
+    @action(methods=['post'], detail=False,
+            permission_classes=(permissions.IsAuthenticated, ))
+    def bulk_reassign_billing_practitioner(self, request, *args, **kwargs):
+        for ii in request.data:
+            try:
+                if ii.get('inactive'):
+                    ii['billing_practitioner'] = None
+
+                CarePlan.objects.filter(id=ii['id']).update(
+                    billing_practitioner=ii['billing_practitioner'])
+            except:
+                pass
+        return Response(
+            {"detail": _("Successfully reassigned billing practitioners.")}
+        )
 
     @action(methods=['get'], detail=True)
     def available_roles(self, request, pk=None):
