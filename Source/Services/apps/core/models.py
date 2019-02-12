@@ -75,6 +75,8 @@ class EmployeeProfile(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
     roles = models.ManyToManyField('ProviderRole', blank=True)
     specialty = models.ForeignKey(
         'ProviderSpecialty', null=True, blank=True, on_delete=models.PROTECT)
+    billing_view = models.BooleanField(default=False)
+    qualified_practitioner = models.BooleanField(default=False)
 
     class Meta:
         ordering = ('user', )

@@ -552,6 +552,8 @@ class EmployeeProfileSerializer(RepresentationMixin, serializers.ModelSerializer
             'title',
             'roles',
             'specialty',
+            'billing_view',
+            'qualified_practitioner',
             'created',
             'modified',
         )
