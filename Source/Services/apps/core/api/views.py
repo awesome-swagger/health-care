@@ -146,6 +146,10 @@ class OrganizationViewSet(viewsets.ModelViewSet):
             - average outcome
             - average engagement
             - risk level
+            - on track
+            - low risk
+            - med risk
+            - high risk
 
         FILTERING:
         ---

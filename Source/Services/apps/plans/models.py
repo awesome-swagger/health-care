@@ -92,6 +92,8 @@ class CarePlan(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
         related_name='billed_plans',
         on_delete=models.CASCADE)
 
+    risk_level = models.IntegerField(null=True, blank=True)
+
     def __str__(self):
         return '{} {}: {}'.format(
             self.patient.user.first_name,
