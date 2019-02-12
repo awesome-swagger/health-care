@@ -35,8 +35,8 @@ import { CanActivateViaAuthGuard } from './services';
 const routes: Routes = [
   {
     path: '',
-    component: StyleguideComponent,
-    data: { title: 'Styleguide' },
+    redirectTo: 'dashboard',
+    pathMatch: 'full',
   },
   {
     path: 'modals',

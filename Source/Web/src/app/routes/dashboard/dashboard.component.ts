@@ -6,6 +6,10 @@ import { ActivePatientsGraphComponent } from '../../components/graphs/active-pat
 import { PatientsEnrolledGraphComponent } from '../../components/graphs/patients-enrolled-graph/patients-enrolled-graph.component';
 import * as moment from 'moment';
 import { Subscription } from 'rxjs';
+import patientsEnrolledData from './patientsEnrolledData';
+import {
+  find as _find
+} from 'lodash';
 
 @Component({
   selector: 'app-dashboard',
@@ -21,10 +25,18 @@ export class DashboardComponent implements OnInit, OnDestroy {
   public facilities = [];
   public facilityChecked = {};
 
+  public analyticsData = null;
+
+  public patientsEnrolledData = patientsEnrolledData;
+  public filteredPatientsEnrolledData = patientsEnrolledData;
+
   public multiOpen;
   public dashTip1;
   public multi2Open;
   public multi3Open;
+
+  public patientsEnrolledStart:moment.Moment = moment().subtract(5, 'M').startOf('M');
+  public patientsEnrolledEnd:moment.Moment = moment();
 
   public datepickerOptions = {
      relativeTop: '-368px',
@@ -48,7 +60,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         'inactive': null,
         'active': null,
       };
-      let groupedByStatus = _groupBy(res, (obj) => {
+      let groupedByStatus = _groupBy(res, obj => {
         return obj.status;
       });
       this.patientsGrouped = Object.assign({}, patientGroupDefaults, groupedByStatus);
@@ -71,16 +83,19 @@ export class DashboardComponent implements OnInit, OnDestroy {
             this.facilityChecked[facility.id] = true;
           })
         })
+        this.store.Organization.detailRoute('GET', org.id, 'dashboard_analytics').subscribe(
+          res => {
+            this.analyticsData = res;
+          }
+        )
       }
     )
+
+    this.filterData();
 
   }
 
   public ngOnDestroy() { }
-
-  public testDate() {
-    return moment('2018-06-01');
-  }
 
   get defaultDates():[moment.Moment, moment.Moment] {
     const end = moment();
@@ -102,6 +117,18 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   public toggleAllFacilities(state:boolean) {
     return this.toggleAllFilterList(this.facilityChecked, state);
+  }
+
+  public filterData() {
+    this.filteredPatientsEnrolledData = this.patientsEnrolledData
+      .slice(
+        this.patientsEnrolledData.indexOf(
+          _find(this.patientsEnrolledData, d => d.month === this.patientsEnrolledStart.format('MMMM, YYYY'))
+        ),
+        this.patientsEnrolledData.indexOf(
+          _find(this.patientsEnrolledData, d => d.month === this.patientsEnrolledEnd.format('MMMM, YYYY'))
+        ),
+      );
   }
 
 }

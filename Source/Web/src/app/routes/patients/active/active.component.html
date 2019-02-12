@@ -136,7 +136,7 @@
               title="Behavioral Health Initiative">
                 <input type="checkbox" class="styledInput__input" [(ngModel)]="activeServiceAreas[serviceArea]" />
                 <span class="styledInput__box"></span>
-                {{serviceArea.name}}
+                {{serviceArea}}
               </label>
             </li>
           </ul>
@@ -336,6 +336,27 @@
           </table>
         </div> <!--/.tableWrap-->
       </div> <!--/.accordion__contents-->
+      <div class="paginationWrap">
+        <button class="button button--iconText"
+        (click)="addPatientToPlan()">
+          <i class="ss-plus"></i> Add Patient
+        </button>
+        <div class="pagination">
+            <button class="button button--icon button--icon--dis">
+                <i class="ss-standard ss-skipback"></i>
+            </button>
+            <button class="button button--icon button--icon--dis">
+                <i class="ss-standard ss-directleft"></i>
+            </button>
+            <span>1 of 1</span>
+            <button class="button button--icon">
+                <i class="ss-standard ss-directright"></i>
+            </button>
+            <button class="button button--icon">
+                <i class="ss-standard ss-skipforward"></i>
+            </button>
+        </div> <!--/.pagination-->
+      </div> <!--/.paginationWrap-->
     </div> <!--/.accordion__body-->
   </div> <!--/.accordion-->
 

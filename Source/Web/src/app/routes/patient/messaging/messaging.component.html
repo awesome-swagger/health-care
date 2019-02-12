@@ -12,7 +12,7 @@
           <div
             *ngFor="let stream of messageStreams"
             class="chat__thread"
-            [ngClass]="{ 'chat__thread--active': stream.id === currentStream.id }"
+            [ngClass]="{ 'chat__thread--active': stream?.id === currentStream?.id }"
             (click)="changeStream(stream)"
           >
             <div class="flex justifySpaceBetween alignCenter marBottom8">
@@ -23,7 +23,7 @@
               <h5 class="noMargin">{{getLastMessageTime(stream)}}</h5>
             </div>
             <p class="chat__preview">
-              {{stream.messages[stream.messages.length - 1].text}}
+              {{stream?.messages?.length && stream?.messages[stream?.messages?.length - 1].text}}
             </p>
           </div> <!--/.chat__thread-->
         </div> <!--/.chat__threads-->
@@ -33,34 +33,41 @@
         <div class="chat__contents" #chatBox>
           <div class="chat__innerContents">
 
-            <ng-container *ngFor="let messageGroup of messagesByDay(currentStream)">
+            <ng-container *ngIf="currentStream?.messages?.length">
+              <ng-container *ngFor="let messageGroup of messagesByDay(currentStream)">
 
-              <div class="chat__dayDivider">
-                <div class="chat__divider"></div>
-                <div class="chat__date">{{getDay(messageGroup[0])}}</div>
-              </div>
-
-              <div
-                *ngFor="let message of messageGroup"
-                class="chat__message"
-                [ngClass]="{ 'chat__message--right': isSelf(currentStream, message) }"
-              >
-                <div class="chat__picBubble">
-                  <img class="chat__img" src="../../../../assets/img/profile.svg" />
-                  <div class="chat__bubble">
-                    <span *ngFor="let messageLine of message.text.split('\n')">{{messageLine}}<br></span>
-                  </div>
+                <div class="chat__dayDivider">
+                  <div class="chat__divider"></div>
+                  <div class="chat__date">{{getDay(messageGroup[0])}}</div>
                 </div>
-                <h5 class="chat__info">{{getNameAndTitle(getUser(currentStream, message))}}&emsp;{{getDay(message)}}, {{getTime(message)}}</h5>
-              </div> <!--/.chat__message-->
 
+                <div
+                  *ngFor="let message of messageGroup"
+                  class="chat__message"
+                  [ngClass]="{ 'chat__message--right': isSelf(currentStream, message) }"
+                >
+                  <div class="chat__picBubble">
+                    <img class="chat__img" src="../../../../assets/img/profile.svg" />
+                    <div class="chat__bubble">
+                      <span *ngFor="let messageLine of message.text.split('\n')">{{messageLine}}<br></span>
+                    </div>
+                  </div>
+                  <h5 class="chat__info">{{getNameAndTitle(getUser(currentStream, message))}}&emsp;{{getDay(message)}}, {{getTime(message)}}</h5>
+                </div> <!--/.chat__message-->
+
+              </ng-container>
             </ng-container>
 
           </div> <!--/.chat__innerContents-->
         </div> <!--/.chat__contents-->
 
         <div class="chat__form">
-          <textarea class="input input--textarea marBottom8" placeholder="Type message&hellip;" [(ngModel)]="newMessageText"></textarea>
+          <textarea
+            class="input input--textarea marBottom8"
+            placeholder="Type message&hellip;"
+            [(ngModel)]="newMessageText"
+            (keydown.shift.enter)="addMessage()"
+          ></textarea>
           <div class="flex justifySpaceBetween">
             <label class="styledInput">
               <input type="file" class="styledInput__input" />

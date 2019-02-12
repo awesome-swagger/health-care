@@ -4,7 +4,8 @@ import { ModalService, ConfirmModalComponent } from '../../modules/modals';
 import { FinancialDetailsComponent } from './modals/financial-details/financial-details.component';
 import { CarePlanConsentComponent } from './modals/care-plan-consent/care-plan-consent.component';
 import { ProblemAreasComponent } from './modals/problem-areas/problem-areas.component';
-import { DiagnosisComponent } from './modals/diagnosis/diagnosis.component';
+import { AddDiagnosisComponent } from './modals/add-diagnosis/add-diagnosis.component';
+import { EditDiagnosisComponent } from './modals/edit-diagnosis/edit-diagnosis.component';
 import { ProcedureComponent } from './modals/procedure/procedure.component';
 import { MedicationComponent } from './modals/medication/medication.component';
 import { AddPatientToPlanComponent } from '../../components/modals/add-patient-to-plan/add-patient-to-plan.component';
@@ -234,14 +235,17 @@ export class PatientComponent implements OnDestroy, OnInit {
   }
 
   public addDiagnosis() {
-    this.modals.open(DiagnosisComponent, {
+    this.modals.open(AddDiagnosisComponent, {
       closeDisabled: true,
-      width: '576px',
+      width: '512px',
+      data: {
+        patientId: this.patient.id,
+      }
     }).subscribe(() => {});
   }
 
   public editDiagnosis() {
-    this.modals.open(DiagnosisComponent, {
+    this.modals.open(EditDiagnosisComponent, {
       closeDisabled: true,
       width: '576px',
     }).subscribe(() => {});

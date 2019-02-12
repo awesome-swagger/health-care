@@ -7,6 +7,12 @@ import { ReassignPatientsComponent } from '../../../components';
 import { ChangeEmailComponent } from './modals/change-email/change-email.component';
 import { ChangePasswordComponent } from './modals/change-password/change-password.component';
 import { EditUserDetailsComponent } from './modals/edit-user-details/edit-user-details.component';
+import {
+  filter as _filter,
+  find as _find,
+  map as _map,
+  uniqBy as _uniqBy
+} from 'lodash';
 
 @Component({
   selector: 'app-user',
@@ -19,9 +25,11 @@ export class UserComponent implements OnDestroy, OnInit {
   private paramsSub: Subscription = null;
   public organization: any = null;
   public roles = [];
+  public careTeam = [];
+  public roleDetails = {};
+  public selectedRole = [];
 
   public tooltip1Open;
-  public isOrgAdmin;
   public tooltip2Open;
   public isProvider;
   public tooltip3Open;
@@ -46,10 +54,8 @@ export class UserComponent implements OnDestroy, OnInit {
       }
       let employeeSub = this.store.EmployeeProfile.read(res.id).subscribe(
         (employee) => {
-          console.log('vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv');
-          console.log(employee);
-          console.log('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^');
           this.employee = employee;
+          console.log('employee', this.employee);
         },
         (err) => {
           this.router.navigate(['/error']);
@@ -58,6 +64,26 @@ export class UserComponent implements OnDestroy, OnInit {
           employeeSub.unsubscribe();
         },
       );
+
+      let careTeamSub = this.store.CareTeamMember.readListPaged({employee_profile: res.id}).subscribe(
+        careTeam => {
+          this.roleDetails = groupByRole(careTeam)
+          this.careTeam = careTeam;
+          console.log('roleDetails', this.roleDetails);
+        }
+      )
+
+      function groupByRole(careTeams) {
+        const roles = {};
+        careTeams.forEach(t => {
+          if (roles[t.role.id]) {
+            roles[t.role.id].push(t);
+          } else {
+            roles[t.role.id] = [t];
+          }
+        })
+        return roles;
+      }
     });
 
     const organizationSub = this.auth.organization$.subscribe(
@@ -77,7 +103,7 @@ export class UserComponent implements OnDestroy, OnInit {
       },
       err => {},
       () => rolesSub.unsubscribe()
-    )
+    );
 
   }
 
@@ -114,21 +140,6 @@ export class UserComponent implements OnDestroy, OnInit {
       closeDisabled: true,
       width: '384px',
     }).subscribe(() => {});
-  }
-
-  public confirmRemoveRole() {
-    this.modals.open(ConfirmModalComponent, {
-     'closeDisabled': true,
-     data: {
-       title: 'Remove Role?',
-       body: 'Are you sure you want to take this person out of this role? This will affect X patients.',
-       cancelText: 'Cancel',
-       okText: 'Continue',
-      },
-      width: '384px',
-    }).subscribe(() => {
-    // do something with result
-    });
   }
 
   public confirmRevokeAccess() {
@@ -175,4 +186,147 @@ export class UserComponent implements OnDestroy, OnInit {
     // do something with result
     });
   }
+
+  public confirmAddRole(i) {
+    const role = this.selectedRole[i];
+    const employeeName = `${this.employee.user.first_name} ${this.employee.user.last_name}`;
+    const cancelText = 'Cancel';
+    const okText = 'Continue';
+    this.modals.open(ConfirmModalComponent, {
+      'closeDisabled': true,
+      data: {
+        title: 'Add Role?',
+        body: `Do you want to give ${employeeName} the role of ${role.name}?`,
+        cancelText,
+        okText,
+      },
+      width: '384px',
+    }).subscribe(res => {
+      if (res === okText) {
+        const roles = _map(this.employee.roles, r => r.id);
+        roles.push(role.id);
+        this.store.EmployeeProfile.update(this.employee.id, {
+          user: this.employee.user.id,
+          roles
+        }).subscribe(
+          res => {
+            this.employee = res;
+          }
+        )
+      }
+    })
+  }
+
+  public confirmRemoveRole(role) {
+    const employeeName = `${this.employee.user.first_name} ${this.employee.user.last_name}`;
+    const cancelText = 'Cancel';
+    const okText = 'Continue';
+    const roles = _map(_filter(this.employee.roles, r => r.id !== role.id), r => r.id);
+    this.modals.open(ConfirmModalComponent, {
+      'closeDisabled': true,
+      data: {
+        title: 'Remove Role?',
+        body: `Do you want to remove the role of ${role.name} from ${employeeName}?`,
+        cancelText,
+        okText,
+      },
+      width: '384px',
+    }).subscribe(res => {
+      if (res === okText) {
+        this.store.EmployeeProfile.update(this.employee.id, {
+          user: this.employee.user.id,
+          roles
+        }).subscribe(
+          res => {
+            this.employee = res;
+          }
+        )
+      }
+    })
+  }
+
+  public confirmToggleAdmin(status:boolean, id:string = null) {
+    const action = status ? 'add' : 'remove';
+    const employeeName = `${this.employee.user.first_name} ${this.employee.user.last_name}`;
+    const orgOrFacilityName = id ? _find(this.employee.facilities, f => f.id === id).name : this.organization.name;
+    const cancelText = "Cancel";
+    const okText = "Continue";
+    this.modals.open(ConfirmModalComponent, {
+      data: {
+        title: 'Remove Administrator?', 
+        body: `Do you want to ${action} ${employeeName} as an administrator at ${orgOrFacilityName}?`,
+        cancelText,
+        okText,
+      },
+      width: '384px'
+    }).subscribe(res => {
+      if (res === okText) {
+        const facilities_managed = id
+          ? toggleManaged(_map(this.employee.facilities_managed, f => f.id), id)
+          : _map(this.employee.facilities_managed, f => f.id);
+        const organizations_managed = !id
+          ? toggleManaged(_map(this.employee.organizations_managed, o => o.id), this.organization.id)
+          : _map(this.employee.organizations_managed, o => o.id);
+        this.store.EmployeeProfile.update(this.employee.id, {
+          user: this.employee.user.id,
+          facilities_managed,
+          organizations_managed,
+        }).subscribe(
+          res => {
+            this.employee = res;
+          }
+        )
+      }
+    })
+
+    function toggleManaged(managed:string[], id:string) {
+      if (managed.indexOf(id) === -1) {
+        managed.push(id);
+        return managed;
+      } else {
+        return _filter(managed, m => m !== id);
+      }
+    }
+  }
+
+  public isFacilityManager(facilityId) {
+    return !!_find(this.employee.facilities_managed, f => f.id === facilityId);
+  }
+
+  public get isOrgAdmin() {
+    if (this.employee && this.organization) {
+      return !!_find(this.employee.organizations_managed, o => o.id === this.organization.id);
+    }
+    return false;
+  }
+
+  public roleStats(roleId, facilityId) {
+    const stats = {
+      patients: 0,
+      managing: 0,
+      careTeam: 0,
+      billing: false,
+    };
+
+    if (this.roleDetails && this.roleDetails[roleId]) {
+      const careTeamRoles = this.roleDetails[roleId];
+      stats.patients = _uniqBy(careTeamRoles, r => r.plan.patient.id).length;
+      stats.managing = _filter(careTeamRoles, r => r.is_manager).length;
+      stats.careTeam = careTeamRoles.length;
+    }
+    return stats;
+  }
+
+  public get cmCount() {
+    return this.careTeam.length;
+  }
+
+  public get ctCount() {
+    return _filter(this.careTeam, c => c.is_manager).length;
+  }
+
+  public get billableCount() {
+    return _filter(this.careTeam, c => c.is_billable).length;
+  }
+
 }

@@ -1,6 +1,6 @@
 <div class="ssContainer ssContents">
   <div class="flex alignCenter marBottom32">
-    <h1 class="noMargin">Inactive Patients (1)</h1>
+    <h1 class="noMargin">Inactive Patients ({{totalInactive}})</h1>
     <div class="tool__anchor">
       <button class="button button--icon button--icon--small"
       (click)="toolXP1Open=!toolXP1Open">
@@ -85,7 +85,7 @@
 
 
 
-  <div class="accordion" [ngClass]="{'isOpen': facilitiesOpen[facility.id]}" *ngFor="let facility of facilities">
+  <div class="accordion" [ngClass]="{'isOpen': facilitiesOpen[facility.id]}" *ngFor="let facility of facilities; let i = index">
     <div class="accordion__head" (click)="facilitiesOpen[facility.id]=!facilitiesOpen[facility.id]">
       <span class="accordion__title">{{facility.name}} (<span *ngIf="facility.inactivePatients">{{facility.inactivePatients.length}}</span>)</span>
       <div class="accordion__right">
@@ -167,6 +167,23 @@
           </table>
         </div> <!--/.tableWrap-->
       </div> <!--/.accordion__contents-->
+      <div class="paginationWrap">
+        <div class="pagination">
+            <button class="button button--icon button--icon--dis" (click)="switchNthFacilityPage(i, null, 1)">
+                <i class="ss-standard ss-skipback"></i>
+            </button>
+            <button class="button button--icon button--icon--dis" (click)="switchNthFacilityPage(i, -1)">
+                <i class="ss-standard ss-directleft"></i>
+            </button>
+            <span>{{facilityPages[facility.id]}} of {{lastPage(facilityTotals[facility.id])}}</span>
+            <button class="button button--icon" (click)="switchNthFacilityPage(i, 1)">
+                <i class="ss-standard ss-directright"></i>
+            </button>
+            <button class="button button--icon" (click)="switchNthFacilityPage(i, null, lastPage(facilityTotals[facility.id]))">
+                <i class="ss-standard ss-skipforward"></i>
+            </button>
+        </div> <!--/.pagination-->
+      </div> <!--/.paginationWrap-->
     </div> <!--/.accordion__body-->
     <div class="accordion__body" *ngIf="facility.inactivePatients && facility.inactivePatients.length === 0">
       <div class="accordion__contents">

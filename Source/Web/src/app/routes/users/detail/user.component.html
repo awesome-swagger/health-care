@@ -113,11 +113,11 @@
     </div>
     <div class="info__cell">
       <label>CM & CT</label>
-      122 & 14
+      {{ctCount}} & {{cmCount}}
     </div>
     <div class="info__cell">
       <label>Billable Patients</label>
-      107
+      {{billableCount}}
     </div>
     <div class="info__cell">
       <label>Billable Hours</label>
@@ -153,12 +153,12 @@
       <div class="accordion__body">
         <div class="accordion__contents">
           <div class="flex marBottom48 fullWidth">
-            <label class="styledInput">
+            <label class="styledInput" (click)="confirmToggleAdmin(!isOrgAdmin)">
               <input
                 type="checkbox"
                 class="styledInput__input"
                 [checked]="isOrgAdmin"
-                (change)="isOrgAdmin=!isOrgAdmin"
+                disabled
               />
               <span class="styledInput__box"></span>
               Organization Administrator
@@ -210,13 +210,17 @@
           </div> <!--/.flex (for checkboxes)-->
           <div class="divider"></div>
 
-          <ng-container *ngFor="let facility of employee?.facilities">
+          <ng-container *ngFor="let facility of employee?.facilities; let i = index">
             <div class="flex justifySpaceBetween alignCenter upperRow"><!-- start facility -->
               <h3 class="noMargin">{{facility.name}}</h3>
               <!--TODO: If role is not CM or BP, show a confirmation modal-->
-              <label class="styledInput">
-                <input type="checkbox" class="styledInput__input"
-                [checked]="facility.is_manager" />
+              <label class="styledInput" (click)="confirmToggleAdmin(!isFacilityManager(facility.id), facility.id)">
+                <input
+                  type="checkbox"
+                  class="styledInput__input"
+                  [checked]="isFacilityManager(facility.id)"
+                  disabled
+                />
                 <span class="styledInput__box"></span>
                 Facility Administrator
               </label>
@@ -252,12 +256,12 @@
                     <tbody>
                       <tr *ngFor="let role of employee?.roles">
                         <td class="left">{{role.name}}</td>
-                        <td>0</td>
-                        <td>0</td>
-                        <td>0</td>
+                        <td>{{roleStats(role.id, facility.di).patients}}</td>
+                        <td>{{roleStats(role.id, facility.di).managing}}</td>
+                        <td>{{roleStats(role.id, facility.di).careTeam}}</td>
                         <td></td>
                         <td>
-                          <button class="button button--icon button--icon--small">
+                          <button class="button button--icon button--icon--small" (click)="confirmRemoveRole(role)">
                             <i class="ss-delete"></i>
                           </button>
                         </td>
@@ -268,13 +272,13 @@
                 <label>Add Role</label>
                 <form class="flexForm">
                   <div class="styledSelect">
-                    <select class="styledSelect__select">
-                      <option *ngFor="let role of roles">
+                    <select class="styledSelect__select" [(ngModel)]="selectedRole[i]" [ngModelOptions]="{standalone: true}">
+                      <option *ngFor="let role of roles" [ngValue]="role">
                         {{role.name}}
                       </option>
                     </select>
                   </div>
-                  <button class="button button--icon button--flex">
+                  <button class="button button--icon button--flex" (click)="confirmAddRole(i)">
                     <i class="ss-plus"></i>
                   </button>
                 </form>

@@ -7,13 +7,11 @@ import { Subscription } from 'rxjs/Subscription';
 import { PopoverOptions } from '../../modules/popover';
 import { AuthService, NavbarService, StoreService } from '../../services';
 import { ModalService, ConfirmModalComponent } from '../../modules/modals';
-import patientsData from '../../routes/patients/active/patients-data.js';
 import {
   filter as _filter,
   map as _map,
   sum as _sum
 } from 'lodash';
-import notificationData from './notificationData';
 import tasksData from './tasksData';
 import * as moment from 'moment';
 
@@ -29,6 +27,7 @@ export class NavComponent implements OnDestroy, OnInit {
   public employee = null;
   public organization = null;
   public organizations = [];
+  public patients = [];
   public activePatientsCount = 0;
   public inactivePatientsCount = 0;
   public invitedPatientsCount = 0;
@@ -70,8 +69,9 @@ export class NavComponent implements OnDestroy, OnInit {
   private organizationSub: Subscription = null;
   private routeParams = null;
 
-  public notificationData = notificationData;
+  public notifications = [];
   public tasksData = tasksData;
+  public tasks = [];
 
   constructor(
     private router: Router,
@@ -110,18 +110,6 @@ export class NavComponent implements OnDestroy, OnInit {
       (err) => {},
       () => {}
     );
-    let patientCountsSub = this.store.PatientProfile.listRoute('get', 'overview', {}, {}).subscribe(
-      (patientCounts: any) => {
-        this.activePatientsCount = patientCounts.active;
-        this.inactivePatientsCount = patientCounts.inactive;
-        this.invitedPatientsCount = patientCounts.invited;
-        this.potentialPatientsCount = patientCounts.potential;
-      },
-      (err) => {},
-      () => {
-        patientCountsSub.unsubscribe();
-      }
-    );
     this.searchUpdated$
       .asObservable()
       .debounceTime(400)
@@ -147,6 +135,22 @@ export class NavComponent implements OnDestroy, OnInit {
           },
         );
       });
+
+    this.patients = [];
+    this.getPatientsOverview().then((patientOverview: any) => {
+      this.patients = patientOverview;
+      this.activePatientsCount = patientOverview.active;
+      this.inactivePatientsCount = patientOverview.inactive;
+      this.potentialPatientsCount = patientOverview.potential;
+      this.invitedPatientsCount = patientOverview.invited;
+    });
+
+    this.getNotifications().then((notifications:any) => {
+      this.notifications = notifications.results;
+    });
+    this.getTasks().then((tasks:any) => {
+      this.tasks = tasks;
+    });
   }
 
   public ngOnDestroy() {
@@ -214,12 +218,69 @@ export class NavComponent implements OnDestroy, OnInit {
     this.router.navigate(['/patient', this.nav.patientDetailId, route, this.nav.patientPlanId]);
   }
 
-  public routeToAnalytics() {
-    window.open('https://www.google.com', '_self');
+  public getPatientsOverview() {
+    let promise = new Promise((resolve, reject) => {
+      let patientsSub = this.store.PatientProfile.detailRoute('GET', '', 'overview').subscribe(
+        (patients) => {
+          resolve(patients);
+        },
+        (err) => {
+          reject(err);
+        },
+        () => {
+          patientsSub.unsubscribe();
+        }
+      );
+    });
+    return promise;
   }
 
-  public get notifCount() {
-    return _sum(_map(this.notificationData, n => n.notifications.length));
+  private getNotifications() {
+    return new Promise((resolve, reject) => {
+      this.auth.user$.subscribe(
+        user => {
+          if (!user) return;
+          let notificationsSub = this.store.User.detailRoute('GET', user.user.id, 'notifications').subscribe(
+            (notifications:any) => {
+              resolve(notifications);
+            }
+          )
+        }
+      )
+    });
+  }
+
+  public get notificationData() {
+    if (this.notifications.length) {
+      return [
+        {
+          category: 'Unread Messages',
+          notifications: _filter(this.notifications, n => n.category === 'unread_message'),
+        },
+        {
+          category: 'Flagged Patients',
+          notifications: _filter(this.notifications, n => n.category === 'flagged_patient'),
+        },
+        {
+          category: 'Assignments',
+          notifications: _filter(this.notifications, n => n.category === 'assignment'),
+        }
+      ];
+    }
+  }
+
+  private getTasks() {
+    return new Promise((resolve, reject) => {
+      let tasksSub = this.store.TeamTask.readListPaged().subscribe(
+        tasks => {
+          resolve(tasks);
+        }
+      )
+    });
+  }
+
+  public routeToAnalytics() {
+    window.open('https://www.google.com', '_self');
   }
 
   public get taskCount() {
