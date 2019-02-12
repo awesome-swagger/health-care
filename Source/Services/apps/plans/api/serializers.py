@@ -80,6 +80,7 @@ class BasicPatientPlanSerializer(serializers.ModelSerializer):
     last_name = serializers.SerializerMethodField()
     image_url = serializers.SerializerMethodField()
     facility = serializers.SerializerMethodField()
+    facility_name = serializers.SerializerMethodField()
 
     class Meta:
         model = PatientProfile
@@ -89,6 +90,7 @@ class BasicPatientPlanSerializer(serializers.ModelSerializer):
             'last_name',
             'image_url',
             'facility',
+            'facility_name',
         )
 
     def get_first_name(self, obj):
@@ -102,6 +104,9 @@ class BasicPatientPlanSerializer(serializers.ModelSerializer):
 
     def get_facility(self, obj):
         return obj.facility.id
+
+    def get_facility_name(self, obj):
+        return obj.facility.name
 
 
 class CarePlanTemplateTypeSerializer(serializers.ModelSerializer):

@@ -248,6 +248,7 @@ class CarePlanViewSet(viewsets.ModelViewSet):
         'patient',
         'patient__facility__organization',
         'plan_template',
+        'billing_practitioner',
     )
 
     def get_queryset(self):

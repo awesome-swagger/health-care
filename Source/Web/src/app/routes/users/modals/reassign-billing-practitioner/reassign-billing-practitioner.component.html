@@ -1,68 +1,96 @@
 <h1 class="modal__title">Reassign Patients</h1>
 <!--TODO: When using this modal for editing (instead of adding) a user, hide the fields for first name, last name, and title-->
-<div class="justifySpaceBetween marBottom32">
-  <p>To remove this user as a billing practitioner their patients must be reassigned a new billing practitioner or made inactive.</p>
-  <div
-    *ngFor="let facility of facilities; let i = index"
-    class="accordion"
-    [ngClass]="{ 'isOpen': accordianStatuses[i] }"
-  >
-    <div class="accordion__head" (click)="accordianStatuses[i] = !accordianStatuses[i]">
-      <span class="accordion__title">{{facility.name}} ({{facility.patients.length}})</span>
-      <div class="accordion__right">
-        <div class="accordion__arrow">
-          <i class="ss-standard ss-navigateright"></i>
-        </div>
-      </div>
-    </div>
-    <div class="accordion__body">
-      <div class="accordion__contents">
-        <label class="styledInput">
-          <input type="checkbox" class="styledInput__input" />
-          <span class="styledInput__box"></span>
-          Reassign in Bulk
-        </label>
-        <div class="tableWrap">
-          <table>
-            <thead>
-              <tr>
-                <th class="left thSortable thSortable--sortDown">
-                  <span class="left thSortable__text">Patient</span>
-                </th>
-                <th class="thSortable">
-                    <span class="thSortable__text">Billing Practitioner</span>
-                </th>
-                <th class="thSortable">
-                    <span class="thSortable__text">Remove from Plans</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let patient of facility.patients">
-                <td class="left hideOverflow">
-                  <a class="picName">
-                    <img class="picName__img" src="../../../assets/img/profile.svg" />
-                    {{patient.name}}
-                  </a>
-                </td>
-                <td><div class="model__input"><input type="text" class="input" /></div></td>
-                <td>
-                  <label class="styledInput">
-                    <input type="checkbox" class="styledInput__input" />
-                    <span class="styledInput__box"></span>
-                    Make Inactive
-                  </label>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div> <!--/.tableWrap-->
-      </div> <!--/.accordion__contents-->
-    </div> <!--/.accordion__body-->
-  </div> <!--/.accordion (for organization)-->
-  <div class="modal__buttons">
-    <button class="button button--2nd" type="button" (click)="close()">Cancel</button>
-    <button class="button" type="submit">Save</button>
-  </div>
+<div class="justifySpaceBetween marBottom32" *ngIf="plansGrouped">
+	<p>To remove this user as a billing practitioner their patients must be reassigned a new billing practitioner or made inactive.</p>
+	<div *ngFor="let facilityId of objectKeys(plansGrouped)" class="accordion" [ngClass]="{ 'isOpen': accordianStatuses[facilityId] }">
+		<div class="accordion__head" (click)="accordianStatuses[facilityId] = !accordianStatuses[facilityId]">
+			<span class="accordion__title">{{plansGrouped[facilityId][0].patient.facility_name}} ({{plansGrouped[facilityId].length}})</span>
+			<div class="accordion__right">
+				<div class="accordion__arrow">
+					<i class="ss-standard ss-navigateright"></i>
+				</div>
+			</div>
+		</div>
+		<div class="accordion__body">
+			<div class="accordion__contents">
+				<label class="styledInput">
+					<input type="checkbox" class="styledInput__input" [(ngModel)]="bulkReassign[facilityId]" />
+					<span class="styledInput__box"></span>
+					Reassign in Bulk
+				</label>
+				<div class="tableWrap fullWidth">
+					<table class="fullWidth">
+						<thead>
+							<tr>
+								<th class="left thSortable thSortable--sortDown">
+									<span class="left thSortable__text">Patient</span>
+								</th>
+								<th class="thSortable">
+									<span class="thSortable__text">Billing Practitioner</span>
+								</th>
+								<th class="thSortable">
+									<span class="thSortable__text">Remove from Plans</span>
+								</th>
+							</tr>
+						</thead>
+						<!-- Show if not bulk reassigning-->
+						<tbody *ngIf="!bulkReassign[facilityId]">
+							<tr *ngFor="let plan of plansGrouped[facilityId]">
+								<td class="left hideOverflow">
+									<a class="picName">
+										<img class="picName__img" [src]="plan.patient.image_url" />
+										{{plan.patient.first_name}} {{plan.patient.last_name}}
+									</a>
+								</td>
+								<td>
+									<div class="styledSelect">
+										<select class="styledSelect__select" [(ngModel)]="plan.selectedBP">
+											<option *ngFor="let practitioner of practitioners" [ngValue]="practitioner.id">{{practitioner.user.first_name}} {{practitioner.user.last_name}}</option>
+										</select>
+									</div>
+								</td>
+								<td>
+									<label class="styledInput">
+										<input type="checkbox" class="styledInput__input" />
+										<span class="styledInput__box"></span>
+										Make Inactive
+									</label>
+								</td>
+							</tr>
+						</tbody>
+						<!-- Show if bulk reassigning-->
+						<tbody *ngIf="bulkReassign[i]">
+							<tr>
+								<td class="left hideOverflow">
+									{{plansGrouped[facilityId].length}} Patients
+								</td>
+								<td>
+									<div class="styledSelect">
+										<select class="styledSelect__select" [(ngModel)]="bulkPractitioner[facilityId]">
+											<option *ngFor="let practitioner of practitioners" [ngValue]="practitioner.id">{{practitioner.user.first_name}} {{practitioner.user.last_name}}</option>
+										</select>
+									</div>
+								</td>
+								<td>
+									<label class="styledInput">
+										<input type="checkbox" class="styledInput__input" />
+										<span class="styledInput__box"></span>
+										Make Inactive
+									</label>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<!--/.tableWrap-->
+			</div>
+			<!--/.accordion__contents-->
+		</div>
+		<!--/.accordion__body-->
+	</div>
+	<!--/.accordion (for organization)-->
+	<div class="modal__buttons">
+		<button class="button button--2nd" type="button" (click)="clickCancel()">Cancel</button>
+		<button class="button" type="button" (click)="clickSave()">Save</button>
+	</div>
 </div>
-

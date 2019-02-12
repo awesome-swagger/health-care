@@ -103,6 +103,9 @@ export class AllModalsComponent implements OnInit {
 
   public openReassignBillingPractitioner() {
     this.modals.open(ReassignBillingPractitionerComponent, {
+      data: {
+        billingPractitioner: 'b6534b7a-f94e-4675-9598-121ac1cbfc5a',
+      },
       width: '741px',
     })
   }
