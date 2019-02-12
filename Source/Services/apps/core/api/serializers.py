@@ -113,14 +113,17 @@ class BaseOrganizationPatientSerializer(serializers.ModelSerializer):
         else:
             return [ii.id for ii in PatientProfile.objects.all()]
 
-    def get_active_patients(self, obj):
+    def _get_active_patients(self, obj):
         request = self.context['request']
         facilities = get_facilities_for_user(request.user, obj.id)
         patients = self._get_filter_patient_ids()
         return PatientProfile.objects.filter(
             facility__in=facilities, 
             is_active=True, 
-            id__in=patients).count()
+            id__in=patients)
+
+    def get_active_patients(self, obj):
+        return self._get_active_patients(obj).count()
 
     def get_invited_patients(self, obj):
         request = self.context['request']
@@ -142,16 +145,44 @@ class BaseOrganizationPatientSerializer(serializers.ModelSerializer):
             patient_profile__isnull=True).count()
 
     def get_on_track(self, obj):
-        return 0
+        active_patients = self._get_active_patients(obj)
+        cnt = 0
+        for patient in active_patients:
+            avg_risk = patient.care_plans.exclude(risk_level__isnull=True).aggregate(
+                average=Avg('risk_level'))
+            if avg_risk['average'] >= 90:
+                cnt += 1
+        return cnt
 
+    def get_high_risk(self, obj):
+        active_patients = self._get_active_patients(obj)
+        cnt = 0
+        for patient in active_patients:
+            avg_risk = patient.care_plans.exclude(risk_level__isnull=True).aggregate(
+                average=Avg('risk_level'))
+            if avg_risk['average'] < 50:
+                cnt += 1
+        return cnt
+        
     def get_low_risk(self, obj):
-        return 0
+        active_patients = self._get_active_patients(obj)
+        cnt = 0
+        for patient in active_patients:
+            avg_risk = patient.care_plans.exclude(risk_level__isnull=True).aggregate(
+                average=Avg('risk_level'))
+            if 70 <= avg_risk['average'] < 90:
+                cnt += 1
+        return cnt
         
     def get_med_risk(self, obj):
-        return 0
-        
-    def get_high_risk(self, obj):
-        return 0
+        active_patients = self._get_active_patients(obj)
+        cnt = 0
+        for patient in active_patients:
+            avg_risk = patient.care_plans.exclude(risk_level__isnull=True).aggregate(
+                average=Avg('risk_level'))
+            if 50 <= avg_risk['average'] < 70:
+                cnt += 1
+        return cnt
         
     def get_total_facilities(self, obj):
         request = self.context['request']
