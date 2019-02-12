@@ -27,7 +27,7 @@ export class ReminderEmailComponent implements OnInit {
     }
   }
 
-  public clickClose() {
+  public clickCancel() {
     this.modal.close(null);
   }
 
