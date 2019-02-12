@@ -6,16 +6,19 @@ from django.db.models import Q, Avg, Sum
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
+from dateutil.relativedelta import relativedelta
 from drf_haystack.serializers import HaystackSerializerMixin
 from rest_framework import serializers
 
 from apps.accounts.serializers import SettingsUserForSerializers
+from apps.billings.models import BilledActivity
 from apps.core.models import (Diagnosis, EmployeeProfile, Facility,
                               InvitedEmailTemplate, Medication, Organization,
                               Procedure, ProviderRole, ProviderSpecialty,
                               ProviderTitle, Symptom, Notification)
 
 from apps.patients.models import PatientProfile, PotentialPatient
+from apps.plans.models import CarePlan
 from apps.tasks.models import (
     AssessmentTask,
     PatientTask,
@@ -100,12 +103,13 @@ class BaseOrganizationPatientSerializer(serializers.ModelSerializer):
 
     def _get_filter_patient_ids(self):
         request = self.context['request']
-        users = request.GET.get('users', '').split(',')
+        users = request.GET.get('users')
         if users:
+            users = [ii for ii in users.split(',') if ii]
             patients = []
             for user in users:
-                user = EmployeeProfile.objects.get(user)
-                patients += [ii.plan.patient.id for ii in user.assigned_roles]
+                user = EmployeeProfile.objects.get(pk=user)
+                patients += [ii.plan.patient.id for ii in user.assigned_roles.all()]
             return patients
         else:
             return [ii.id for ii in PatientProfile.objects.all()]
@@ -147,7 +151,7 @@ class BaseOrganizationPatientSerializer(serializers.ModelSerializer):
         for patient in active_patients:
             avg_risk = patient.care_plans.exclude(risk_level__isnull=True).aggregate(
                 average=Avg('risk_level'))
-            if avg_risk['average'] >= 90:
+            if avg_risk['average'] and avg_risk['average'] >= 90:
                 cnt += 1
         return cnt
 
@@ -157,7 +161,7 @@ class BaseOrganizationPatientSerializer(serializers.ModelSerializer):
         for patient in active_patients:
             avg_risk = patient.care_plans.exclude(risk_level__isnull=True).aggregate(
                 average=Avg('risk_level'))
-            if avg_risk['average'] < 50:
+            if avg_risk['average'] and avg_risk['average'] < 50:
                 cnt += 1
         return cnt
         
@@ -167,7 +171,7 @@ class BaseOrganizationPatientSerializer(serializers.ModelSerializer):
         for patient in active_patients:
             avg_risk = patient.care_plans.exclude(risk_level__isnull=True).aggregate(
                 average=Avg('risk_level'))
-            if 70 <= avg_risk['average'] < 90:
+            if avg_risk['average'] and 70 <= avg_risk['average'] < 90:
                 cnt += 1
         return cnt
         
@@ -177,7 +181,7 @@ class BaseOrganizationPatientSerializer(serializers.ModelSerializer):
         for patient in active_patients:
             avg_risk = patient.care_plans.exclude(risk_level__isnull=True).aggregate(
                 average=Avg('risk_level'))
-            if 50 <= avg_risk['average'] < 70:
+            if avg_risk['average'] and 50 <= avg_risk['average'] < 70:
                 cnt += 1
         return cnt
         
@@ -335,6 +339,87 @@ class OrganizationPatientOverviewSerializer(BaseOrganizationPatientSerializer):
             'average_engagement',
             'risk_level',
         )
+
+
+class OrganizationPatientAdoptionSerializer(BaseOrganizationPatientSerializer):
+
+    patients_last_24_hours = serializers.SerializerMethodField()
+    adoption_rate = serializers.SerializerMethodField()
+
+    class Meta(BaseOrganizationPatientSerializer.Meta):
+        model = Organization
+        fields = (
+            'id',
+            'active_patients',
+            'patients_last_24_hours',
+            'adoption_rate',
+        )
+
+    def get_patients_last_24_hours(self, obj):
+        now = timezone.now()
+        last_24_hours = now - relativedelta(hours=24)
+        request = self.context['request']
+        facilities = get_facilities_for_user(request.user, obj.id)
+        return PatientProfile.objects.filter(
+            facility__in=facilities,
+            is_active=True,
+            last_app_use__gte=last_24_hours).count()
+
+    def get_adoption_rate(self, obj):
+        patients_last_24_hours = self.get_patients_last_24_hours(obj)
+        active_patients = self.get_active_patients(obj)
+
+        return round((patients_last_24_hours / active_patients) * 100) \
+            if active_patients > 0 else 0
+
+
+class OrganizationPatientGraphSerializer(serializers.ModelSerializer):
+    """
+    This serializer will return enrolled and billable patients data each month
+    for the past 12 months. This will primarily be used in the
+    `Patients Enrolled Over Time` graph in `dash` page.
+    """
+    graph = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Organization
+        fields = (
+            'id',
+            'graph',
+        )
+
+    def get_graph(self, obj):
+        request = self.context['request']
+        facilities = get_facilities_for_user(request.user, obj.id)
+        months = 12
+        now = timezone.now()
+        data = {}
+
+        for i in range(months):
+            day_obj = now - relativedelta(months=i)
+
+            enrolled_patients = PatientProfile.objects.filter(
+                facility__in=facilities,
+                is_active=True,
+                created__month=day_obj.month,
+                created__year=day_obj.year).count()
+            billable_patients = BilledActivity.objects.filter(
+                plan__patient__facility__in=facilities,
+                plan__patient__is_active=True,
+                activity_date__month=day_obj.month,
+                activity_date__year=day_obj.year).values_list(
+                    'plan__patient', flat=True).distinct().count()
+
+            monthly_data = {
+                'enrolled_patients': enrolled_patients,
+                'billable_patients': billable_patients
+            }
+
+            data.update({
+                day_obj.strftime("%B %Y"): monthly_data
+            })
+
+        return data
 
 
 # TODO: DELETE on a facility should mark it inactive rather than removing it
@@ -886,3 +971,187 @@ class InviteEmployeeSerializer(serializers.Serializer):
         mailer = EmployeeMailer()
         for employee in employees:
             mailer.send_invitation(employee, email_content)
+
+
+class BilledActivityDetailSerializer(RepresentationMixin,
+                                     serializers.ModelSerializer):
+    """
+    serializer to be used by :model:`billings.BilledActivity` to be used
+    in `billing` page
+    """
+
+    class Meta:
+        model = BilledActivity
+        fields = (
+            'id',
+            'get_activity_type_display',
+            'members',
+            'activity_date',
+            'time_spent',
+        )
+        nested_serializers = [
+            {
+                'field': 'members',
+                'serializer_class': BasicEmployeeProfileSerializer,
+                'many': True
+            }
+        ]
+
+
+class BilledPatientSerializer(serializers.ModelSerializer):
+    """
+    serializer to be used by :model:`patients.PatientProfile` who have
+    billing details.
+    """
+
+    first_name = serializers.SerializerMethodField()
+    last_name = serializers.SerializerMethodField()
+    image_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = PatientProfile
+        fields = (
+            'id',
+            'first_name',
+            'last_name',
+            'image_url',
+        )
+
+    def get_first_name(self, obj):
+        return obj.user.first_name
+
+    def get_last_name(self, obj):
+        return obj.user.last_name
+
+    def get_image_url(self, obj):
+        return obj.user.get_image_url()
+
+
+class BilledPlanSerializer(serializers.ModelSerializer):
+    """
+    serializer to be used by :model:`plans.CarePlan` having
+    billing details.
+    """
+    billed_activities = serializers.SerializerMethodField()
+    details_of_service = serializers.SerializerMethodField()
+
+    class Meta:
+        model = CarePlan
+        fields = (
+            'id',
+            'patient',
+            'billed_activities',
+            'details_of_service',
+            'care_manager',
+        )
+        nested_serializers = [
+            {
+                'field': 'patient',
+                'serializer_class': BilledPatientSerializer
+            },
+            {
+                'field': 'care_manager',
+                'serializer_class': BasicEmployeeProfileSerializer
+            }
+        ]
+
+    def get_billed_activities(self, obj):
+        # TODO: Add this later when details are available
+        return []
+
+    def get_details_of_service(self, obj):
+        activities = obj.activities.filter(**self.context)\
+            .order_by('activity_date')
+        serializer = BilledActivityDetailSerializer(activities, many=True)
+        return serializer.data
+
+
+class BillingPractitionerSerializer(serializers.ModelSerializer):
+    """
+    serializer to be used by :model:`core.EmployeeProfile` who are billing
+    practitioners of a care plan.
+
+    NOTE:
+        - make sure to pass `organization` parameter in the request context
+        for this serializer to work
+    """
+
+    plans = serializers.SerializerMethodField()
+    first_name = serializers.SerializerMethodField()
+    last_name = serializers.SerializerMethodField()
+    image_url = serializers.SerializerMethodField()
+    total_billable_patients = serializers.SerializerMethodField()
+    total_patients = serializers.SerializerMethodField()
+
+    class Meta:
+        model = EmployeeProfile
+        fields = (
+            'id',
+            'first_name',
+            'last_name',
+            'image_url',
+            'plans',
+            'total_billable_patients',
+            'total_patients',
+        )
+
+    def get_total_billable_patients(self, obj):
+        return obj.billed_plans.filter(patient__payer_reimbursement=True)\
+            .values_list('patient', flat=True).distinct().count()
+
+    def get_total_patients(self, obj):
+        return obj.billed_plans.values_list(
+            'patient', flat=True).distinct().count()
+
+    def get_plans(self, obj):
+        now = timezone.now().date()
+        organization = self.context.get('organization')
+        facility = self.context.get('facility')
+        service_area = self.context.get('service_area')
+        activity_month = self.context.get('activity_month', now.month)
+        activity_year = self.context.get('activity_year', now.year)
+        kwargs = {
+            'patient__facility__organization': organization,
+            'activities__activity_date__month': activity_month,
+            'activities__activity_date__year': activity_year
+        }
+
+        if facility:
+            kwargs.update({
+                'patient__facility': facility,
+            })
+
+        if service_area:
+            kwargs.update({
+                'plan_template__service_area': service_area,
+            })
+
+        if service_area:
+            kwargs.update({
+                'plan_template__service_area': service_area,
+            })
+
+        if service_area:
+            kwargs.update({
+                'plan_template__service_area': service_area,
+            })
+
+        activity_context = {
+            'activity_date__month': activity_month,
+            'activity_date__year': activity_year
+        }
+        billed_plans = obj.billed_plans.filter(**kwargs).distinct()
+        serializer = BilledPlanSerializer(
+            billed_plans,
+            many=True,
+            context=activity_context)
+        return serializer.data
+
+    def get_first_name(self, obj):
+        return obj.user.first_name
+
+    def get_last_name(self, obj):
+        return obj.user.last_name
+
+    def get_image_url(self, obj):
+        return obj.user.get_image_url()
