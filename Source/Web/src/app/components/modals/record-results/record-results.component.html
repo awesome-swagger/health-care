@@ -43,7 +43,7 @@
     <label>With</label>
     <div class="styledSelect">
       <select class="styledSelect__select" [(ngModel)]="with">
-        <option *ngFor="let employee of teamMembers" [ngValue]="employee.id">{{employee.first_name}} {{employee.last_name}}, {{employee.title}}</option>
+        <option *ngFor="let employee of teamMembers" [ngValue]="employee.id">{{employee.employee_profile.user.first_name}} {{employee.employee_profile.user.last_name}}<span *ngIf="employee.employee_profile.title">, {{employee.employee_profile.title.abbreviation}}</span></option>
       </select>
     </div>
   </div>
@@ -58,7 +58,7 @@
           </div>
         </div>
       </div>
-      <input type="checkbox" class="styledInput__input" />
+      <input type="checkbox" class="styledInput__input" [(ngModel)]="syncToEHR" />
       <span class="styledInput__box"></span> Sync to EHR
         <button class="button button--icon button--icon--small"
         (click)="tooltipRRM1Open=!tooltipRRM1Open">

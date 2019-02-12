@@ -1,28 +1,28 @@
 <h1 class="modal__title noMargin">Goal Comments</h1>
 <div class="divider"></div>
-<h2 class="goalChat__subtitle">{{goal?.name}}</h2>
+<h2 class="goalChat__subtitle">{{goal?.goal_template.name}}</h2>
 <div class="goalChat">
   <div class="chat__contents">
     <div class="chat__innerContents">
       <h2 *ngIf="comments.length === 0" class="modal__empty">Be the first to comment on this goal.</h2>
       <ng-container *ngFor="let comment of orderedComments()">
-        <div class="chat__message" *ngIf="comment.is_employee" [ngClass]="{'chat__message--right': comment.employee.id === mockData.employees[0].id}">
+        <div class="chat__message" *ngIf="comment.user.user_type === 'employee'" [ngClass]="{'chat__message--right': comment.user.id === user.id}">
           <div class="chat__picBubble">
-            <img class="chat__img" src="../../../../assets/img/profile.svg" />
+            <img class="chat__img" [src]="comment.user.image_url" />
             <div class="chat__bubble">
-              {{comment.text}}
+              {{comment.content}}
             </div>
           </div>
-          <h5 class="chat__info"><span *ngIf="comment.employee.id !== mockData.employees[0].id">{{comment.employee.first_name}} {{comment.employee.last_name}}, {{comment.employee.title}}&emsp;</span>{{formatDate(comment.date)}}</h5>
+          <h5 class="chat__info"><span *ngIf="comment.user.id !== user.id">{{comment.user.first_name}} {{comment.user.last_name}}, {{comment.user.title}}&emsp;</span>{{formatDate(comment.created)}}</h5>
         </div> <!--/.chat__message-->
-        <div class="chat__message" *ngIf="!comment.is_employee">
+        <div class="chat__message" *ngIf="comment.user.user_type !== 'employee'">
           <div class="chat__picBubble">
-            <img class="chat__img" src="../../../../assets/img/profile.svg" />
+            <img class="chat__img" [src]="comment.user.image_url" />
             <div class="chat__bubble">
-              {{comment.text}}
+              {{comment.content}}
             </div>
           </div>
-          <h5 class="chat__info">{{patient.user.first_name}} {{patient.user.last_name}}&emsp;{{formatDate(comment.date)}}</h5>
+          <h5 class="chat__info">{{comment.user.first_name}} {{comment.user.last_name}}&emsp;{{formatDate(comment.created)}}</h5>
         </div> <!--/.chat__message-->
       </ng-container>
     </div> <!--/.chat__innerContents-->

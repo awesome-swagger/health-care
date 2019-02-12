@@ -1,9 +1,7 @@
 <div class="ssContainer ssContents">
   <div class="chatWrap">
-
     <div class="chatHead">
       <app-patient-header [currentPage]="'history'"></app-patient-header>
-
        <div class="flexHeader">
          <div class="flex alignCenter">
            <div class="marRight32">
@@ -13,17 +11,20 @@
                    <span *ngIf="!dateFilter">Select Date</span>
                    <span *ngIf="dateFilter">{{dateFilter.format('MMM DD, YYYY')}}</span>
                  </div>
-                 <!--TODO: This datepicker needs a clear option when a date is selected.-->
-                 <app-date-picker class="datepicker__picker" [ngClass]="{ 'isOpen' : dateFilterOpen }" [selected]="dateFilter" (selectedChange)="setSelectedDay($event)"></app-date-picker>
+                 <app-popover [visible]="dateFilterOpen" (visibleChange)="dateFilterOpen = $event;" [options]="datePickerOptions">
+                   <!--TODO: This datepicker needs a clear option when a date is selected.-->
+                   <app-date-picker class="datepicker__picker isOpen" [selected]="dateFilter" (selectedChange)="setSelectedDay($event)"></app-date-picker>
+                 </app-popover>
                </div>
            </div>
            <div>
              <label>Filter by Action</label>
              <div class="drop">
-                 <div class="drop__input" (click)="actionFilterOpen = !actionFilterOpen">
-                   All
-                 </div>
-                 <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : actionFilterOpen }">
+               <div class="drop__input" (click)="actionFilterOpen = !actionFilterOpen">
+                 All
+               </div>
+               <app-popover [visible]="actionFilterOpen" (visibleChange)="actionFilterOpen = $event;">
+                 <ul class="drop__dropdown isOpen">
                    <div class="drop__buttons">
                      <button class="button button--iconText" (click)="checkAllActions()">
                        <i class="ss-check ss-standard"></i> Check All
@@ -40,7 +41,8 @@
                      </label>
                    </li>
                  </ul>
-               </div>
+               </app-popover>
+             </div>
            </div>
          </div> <!--/.flex (for filters)-->
          <button class="button button--iconText"
@@ -53,39 +55,50 @@
     <div class="chat chat--pad">
       <div class="chat__side">
         <div class="chat__threads">
-
-          <div class="chat__thread" *ngFor="let result of filteredResults()" [ngClass]="{'chat__thread--active': selectedResult.id === result.id}" (click)="selectedResult = result;">
-            <div class="flex alignCenter justifySpaceBetween marBottom8">
-              <h5 class="noMargin">
-                {{result.date.format('MMM DD, YYYY')}}&ensp;|&ensp;{{result.date.format('h:mm A')}}
-              </h5>
-              <div class="pill">
-                :{{result.totalMinutes}}
+          <ng-container *ngIf="filteredBilledActivities().length > 0">
+            <div class="chat__thread" *ngFor="let activity of filteredBilledActivities()" [ngClass]="{'chat__thread--active': selectedActivity && selectedActivity.id === activity.id}" (click)="selectedActivity = activity;">
+              <div class="flex alignCenter justifySpaceBetween marBottom8">
+                <h5 class="noMargin">
+                  {{moment(activity.activity_date).format('MMM DD, YYYY')}}&ensp;|&ensp;{{moment(activity.activity_date).format('h:mm A')}}
+                </h5>
+                <div class="pill">
+                  {{activity.readable_time_spent}}
+                </div>
               </div>
-            </div>
-            <div class="iconText iconText--wrap iconText--autoHeight marBottom8">
-              <i class="iconText__icon ss-chats"></i>
-              {{getTask(result.task).name}}
-            </div>
-            <h5 class="noMargin">
-              Added by {{getEmployee(result.createdBy).first_name}} {{getEmployee(result.createdBy).last_name}}, {{getEmployee(result.createdBy).title}}
-            </h5>
-          </div> <!--/.chat__thread-->
+              <div class="iconText iconText--wrap iconText--autoHeight marBottom8">
+                <i class="iconText__icon ss-chats"></i>
+                Task name N/A
+              </div>
+              <h5 class="noMargin">
+                Added by {{activity.added_by.user.first_name}} {{activity.added_by.user.last_name}}
+              </h5>
+            </div> <!--/.chat__thread-->
+          </ng-container>
+          <ng-container *ngIf="filteredBilledActivities().length === 0">
+            <p class="center marTop32">No activities meet criteria.</p>
+          </ng-container>
         </div> <!--/.chat__threads-->
       </div> <!--/.chat__side-->
 
-      <div class="chat__main" *ngIf="selectedResult">
+      <div class="chat__main" *ngIf="!selectedActivity">
+        <div class="chat__contents">
+          <div class="chat__innerContents">
+            <p class="center">Select an activity to view details</p>
+          </div>
+        </div>
+      </div>
+      <div class="chat__main" *ngIf="selectedActivity">
         <div class="chat__contents">
           <div class="chat__innerContents">
             <div class="historyItem">
               <div class="historyItem__buttons">
                 <button class="button button--icon button--icon--small"
-                (click)="editResults(selectedResult)">
+                (click)="editResults(selectedActivity)">
                   <i class="ss-write"></i>
                 </button>
                 <!--TODO: Hide the delete button if the item is a care plan task-->
                 <button class="button button--icon button--icon--small"
-                (click)="confirmDelete(selectedResult)">
+                (click)="confirmDelete(selectedActivity)">
                   <i class="ss-delete"></i>
                 </button>
               </div>
@@ -94,31 +107,25 @@
                 <span>Care Plan Task</span>
                 <span *ngIf="">Action</span>
               </label>
-              <h2 class="noMargin">{{getTask(selectedResult.task).name}}</h2>
+              <h2 class="noMargin">Task Name N/A</h2>
               <div class="divider divider--smallMargin"></div>
-              <h5>Added by {{getEmployee(selectedResult.createdBy).first_name}} {{getEmployee(selectedResult.createdBy).last_name}}, {{getEmployee(selectedResult.createdBy).title}}&emsp;{{selectedResult.date.format('MMM DD, YYYY')}}&ensp;|&ensp;{{selectedResult.date.format('h:mm A')}}</h5>
-              <h5 class="noMargin" *ngIf="selectedResult.lastEditedBy">Last edited by {{getEmployee(selectedResult.lastEditedBy).first_name}} {{getEmployee(selectedResult.lastEditedBy).last_name}}, {{getEmployee(selectedResult.lastEditedBy).title}}&emsp;{{selectedResult.lastEdited.format('MMM DD, YYYY')}}&ensp;|&ensp;{{selectedResult.lastEdited.format('h:mm A')}}</h5>
+              <h5>Added by {{selectedActivity.added_by.user.first_name}} {{selectedActivity.added_by.user.last_name}}&emsp;{{moment(selectedActivity.activity_date).format('MMM DD, YYYY')}}&ensp;|&ensp;{{moment(selectedActivity.activity_date).format('h:mm A')}}</h5>
+              <!-- <h5 class="noMargin" *ngIf="selectedActivity.lastEditedBy">Last edited by {{getEmployee(selectedActivity.lastEditedBy).first_name}} {{getEmployee(selectedActivity.lastEditedBy).last_name}}, {{getEmployee(selectedActivity.lastEditedBy).title}}&emsp;{{selectedActivity.lastEdited.format('MMM DD, YYYY')}}&ensp;|&ensp;{{selectedActivity.lastEdited.format('h:mm A')}}</h5> -->
               <div class="divider divider--smallTop"></div>
 
               <label>Total Time</label>
               <div class="pill marBottom32">
-                :{{selectedResult.totalMinutes}}
+                {{selectedActivity.readable_time_spent}}
               </div>
 
               <!--TODO: Hide the participants section if not a care plan task-->
               <div class="marBottom32">
                 <label>Participants</label>
                 <ul class="nameList marBottom32">
-                  <li class="nameList__item nameList__item--left nameList__item--pad">
+                  <li class="nameList__item nameList__item--left nameList__item--pad" *ngFor="let member of selectedActivity.members">
                     <div class="picName">
-                      <img class="picName__img" src="../../assets/img/profile.svg" />
-                      {{getEmployee(selectedResult.createdBy).first_name}} {{getEmployee(selectedResult.createdBy).last_name}}, {{getEmployee(selectedResult.createdBy).title}}
-                    </div>
-                  </li>
-                  <li class="nameList__item nameList__item--left nameList__item--pad">
-                    <div class="picName">
-                      <img class="picName__img" src="../../assets/img/profile.svg" />
-                      {{getEmployee(selectedResult.with).first_name}} {{getEmployee(selectedResult.with).last_name}}, {{getEmployee(selectedResult.with).title}}
+                      <img class="picName__img" [src]="member.user.image_url" />
+                      {{member.user.first_name}} {{member.user.last_name}}
                     </div>
                   </li>
                 </ul>
@@ -126,16 +133,15 @@
 
               <label>Notes</label>
               <p class="marBottom32">
-                {{selectedResult.notes}}
+                {{selectedActivity.notes}}
               </p>
-
               <label class="noMargin">Syncing</label>
-              <div class="iconText">
+              <div class="iconText" *ngIf="selectedActivity.sync_to_ehr">
                 <i class="iconText__icon ss-transfer"></i> Synced to EHR
               </div>
-
-
-
+              <div class="iconText" *ngIf="!selectedActivity.sync_to_ehr">
+                Not synced to EHR
+              </div>
             </div> <!--/.historyItem-->
           </div> <!--/.chat__innerContents-->
         </div> <!--/.chat__contents-->
