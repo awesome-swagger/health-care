@@ -15,7 +15,8 @@ from apps.billings.models import BilledActivity
 from apps.core.models import (Diagnosis, EmployeeProfile, Facility,
                               InvitedEmailTemplate, Medication, Organization,
                               Procedure, ProviderRole, ProviderSpecialty,
-                              ProviderTitle, Symptom, Notification)
+                              ProviderTitle, Symptom, Notification,
+                              BillingCoordinator)
 
 from apps.patients.models import PatientProfile, PotentialPatient
 from apps.plans.models import CarePlan
@@ -347,6 +348,18 @@ class OrganizationPatientGraphSerializer(serializers.ModelSerializer):
         return data
 
 
+class EmployeeIDSerializer(serializers.ModelSerializer):
+    """
+    Serializer to be used for :model:`core.EmployeeProfile` with ID field.
+    """
+
+    class Meta:
+        model = EmployeeProfile
+        fields = (
+            'id',
+        )
+
+
 # TODO: DELETE on a facility should mark it inactive rather than removing it
 # from the database.
 class FacilitySerializer(RepresentationMixin, serializers.ModelSerializer):
@@ -603,6 +616,34 @@ class EmployeeProfileSerializer(RepresentationMixin, serializers.ModelSerializer
         ]
 
 
+class BillingCoordinatorSerializer(RepresentationMixin, serializers.ModelSerializer):
+    class Meta:
+        model = BillingCoordinator
+        fields = (
+            'id',
+            'facility',
+            'user',
+            'coordinator',
+        )
+        read_only_fields = (
+            'id',
+        )
+        nested_serializers = [
+            {
+                'field': 'facility',
+                'serializer_class': FacilitySerializer,
+            },
+            {
+                'field': 'user',
+                'serializer_class': EmployeeProfileSerializer,
+            },
+            {
+                'field': 'coordinator',
+                'serializer_class': EmployeeProfileSerializer,
+            },
+        ]
+
+
 class EmployeeAssignmentSerializer(serializers.ModelSerializer):
     """
     Serializer to be used for employee's assignment details
@@ -854,18 +895,6 @@ class SymptomSearchSerializer(HaystackSerializerMixin,
     class Meta(SymptomSerializer.Meta):
         index_classes = [SymptomIndex]
         search_fields = ('text', 'name')
-
-
-class EmployeeIDSerializer(serializers.ModelSerializer):
-    """
-    Serializer to be used for :model:`core.EmployeeProfile` with ID field.
-    """
-
-    class Meta:
-        model = EmployeeProfile
-        fields = (
-            'id',
-        )
 
 
 class InviteEmployeeSerializer(serializers.Serializer):
