@@ -11,6 +11,16 @@ from .signals import (
     assessmentresponse_post_delete,
     vitalresponse_post_delete,
     medicationtasktemplate_post_save,
+    patienttask_post_save,
+    patienttask_post_delete,
+    symptomtask_post_save,
+    symptomtask_post_delete,
+    medicationtask_post_save,
+    medicationtask_post_delete,
+    assessmenttask_post_save,
+    assessmenttask_post_delete,
+    vitaltask_post_save,
+    vitaltask_post_delete,
 )
 from care_adopt_backend.mixins import UUIDPrimaryKeyMixin, CreatedModifiedMixin
 from apps.core.models import (ProviderRole, Symptom, )
@@ -522,4 +532,44 @@ models.signals.post_delete.connect(
 models.signals.post_save.connect(
     medicationtasktemplate_post_save,
     sender=MedicationTaskTemplate
+)
+models.signals.post_save.connect(
+    patienttask_post_save,
+    sender=PatientTask
+)
+models.signals.post_delete.connect(
+    patienttask_post_delete,
+    sender=PatientTask
+)
+models.signals.post_save.connect(
+    symptomtask_post_save,
+    sender=SymptomTask
+)
+models.signals.post_delete.connect(
+    symptomtask_post_delete,
+    sender=SymptomTask
+)
+models.signals.post_save.connect(
+    medicationtask_post_save,
+    sender=MedicationTask
+)
+models.signals.post_delete.connect(
+    medicationtask_post_delete,
+    sender=MedicationTask
+)
+models.signals.post_save.connect(
+    assessmenttask_post_save,
+    sender=AssessmentTask
+)
+models.signals.post_delete.connect(
+    assessmenttask_post_delete,
+    sender=AssessmentTask
+)
+models.signals.post_save.connect(
+    vitaltask_post_save,
+    sender=VitalTask
+)
+models.signals.post_delete.connect(
+    vitaltask_post_delete,
+    sender=VitalTask
 )
