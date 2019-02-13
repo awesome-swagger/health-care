@@ -391,17 +391,29 @@ class OrganizationPatientRiskLevelSerializer(serializers.ModelSerializer):
             'high_risk'
         )
 
+    def _get_care_team_members(self, request):
+        request_employees = request.GET.get('employees')
+        employee_ids = request_employees.split(',')
+        employee_ids = list(filter(None, employee_ids))
+        return EmployeeProfile.objects.filter(id__in=employee_ids)
+
     def _get_risk_level(self, obj, risk_level_kwargs):
         request = self.context['request']
-        care_team_members = self.context.get('care_team_members', [])
+        care_team_members = self._get_care_team_members(request)
+        filter_allowed = self.context.get('filter_allowed', False)
         facilities = get_facilities_for_user(request.user, obj.id)
         base_kwargs = {
             'facility__in': facilities,
             'is_active': True,
         }
-        if len(care_team_members) > 0:
+        if care_team_members.exists() and filter_allowed:
             base_kwargs.update({
                 'care_plans__care_team_members__employee_profile__in': care_team_members
+            })
+
+        if 'facility' in request.GET and filter_allowed:
+            base_kwargs.update({
+                'facility__id': request.GET.get('facility')
             })
 
         kwargs = {**base_kwargs, **risk_level_kwargs}

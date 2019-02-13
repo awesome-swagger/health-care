@@ -260,6 +260,16 @@ class OrganizationViewSet(viewsets.ModelViewSet):
             - number of patients at medium risk
             - number of patients at high risk
 
+        FILTERING (for organization and facility admins only)
+        ---
+        number of patients in risk levels can be filtered by **facility** and
+        **employees**(*comma separated IDs*). For Example:
+
+            GET /api/organizations/<organization-ID>/patient_risk_levels/?facility=<facility-ID>
+            GET /api/organizations/<organization-ID>/patient_risk_levels/?employees=<employee-ID>,<employee-ID>...
+            GET /api/organizations/<organization-ID>/patient_risk_levels/?facility=<facility-ID>&employees=<employee-ID>,<employee-ID>...
+
+
         USAGE
         ---
         This endpoint will primarily populate the `Patient Risk Levels` section
@@ -268,8 +278,16 @@ class OrganizationViewSet(viewsets.ModelViewSet):
         """
         organization = self.get_object()
 
+        if 'employees' in request.GET or 'facility' in request.GET:
+            has_permission = self.check_if_organization_or_facility_admin(
+                organization)
+            if not has_permission:
+                message = _('Must be an organization or facility admin.')
+                self.permission_denied(self.request, message)
+
         context = {
-            'request': request
+            'request': request,
+            'filter_allowed': True
         }
         serializer = OrganizationPatientRiskLevelSerializer(
             organization, context=context)
