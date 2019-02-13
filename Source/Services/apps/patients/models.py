@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
@@ -44,6 +45,13 @@ class PatientProfile(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
         default=False,
         help_text=_('Used to determine whether a patient is billable or not.'))
     last_app_use = models.DateTimeField(default=timezone.now)
+    risk_level = models.IntegerField(
+        default=0,
+        validators=[
+            MaxValueValidator(100),
+            MinValueValidator(0)
+        ]
+     )
 
     class Meta:
         ordering = ('user', )
