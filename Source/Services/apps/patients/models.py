@@ -21,6 +21,11 @@ from .signals import reminder_email_post_save
 
 class PatientProfile(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
 
+    RISK_LEVEL_MIN_ON_TRACK = 90  # range is 90-100
+    RISK_LEVEL_MIN_LOW_RISK = 75  # range is 75-89
+    RISK_LEVEL_MIN_MED_RISK = 51  # range is 51-74
+    RISK_LEVEL_MIN_HIGH_RISK = 0  # range is 0-50
+
     user = models.OneToOneField(
         EmailUser, on_delete=models.CASCADE, related_name='patient_profile')
     facility = models.ForeignKey(

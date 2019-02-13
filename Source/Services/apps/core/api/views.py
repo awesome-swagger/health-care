@@ -49,7 +49,8 @@ from .serializers import (DiagnosisSerializer, EmployeeProfileSerializer,
                           OrganizationPatientDashboardSerializer,
                           BillingPractitionerSerializer,
                           OrganizationPatientAdoptionSerializer,
-                          OrganizationPatientGraphSerializer)
+                          OrganizationPatientGraphSerializer,
+                          OrganizationPatientRiskLevelSerializer)
 
 
 class OrganizationViewSet(viewsets.ModelViewSet):
@@ -243,6 +244,34 @@ class OrganizationViewSet(viewsets.ModelViewSet):
             'request': request
         }
         serializer = OrganizationPatientGraphSerializer(
+            organization, context=context)
+        return Response(serializer.data)
+
+    @action(methods=['get'], detail=True,
+            permission_classes=(IsAdminOrEmployee, ))
+    def patient_risk_levels(self, request, *args, **kwargs):
+        """
+        Returns the number of patients in their respective risk levels.
+
+        Returns the following data in a specific organization:
+
+            - number of patients on track
+            - number of patients at low risk
+            - number of patients at medium risk
+            - number of patients at high risk
+
+        USAGE
+        ---
+        This endpoint will primarily populate the `Patient Risk Levels` section
+        in the `dash` page.
+
+        """
+        organization = self.get_object()
+
+        context = {
+            'request': request
+        }
+        serializer = OrganizationPatientRiskLevelSerializer(
             organization, context=context)
         return Response(serializer.data)
 

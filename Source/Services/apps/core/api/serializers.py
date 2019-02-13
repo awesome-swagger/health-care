@@ -373,6 +373,68 @@ class OrganizationPatientAdoptionSerializer(BaseOrganizationPatientSerializer):
             if active_patients > 0 else 0
 
 
+class OrganizationPatientRiskLevelSerializer(serializers.ModelSerializer):
+    """
+    Serializer to be used for breakdown of patient risk levels
+    """
+    on_track = serializers.SerializerMethodField()
+    low_risk = serializers.SerializerMethodField()
+    med_risk = serializers.SerializerMethodField()
+    high_risk = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Organization
+        fields = (
+            'on_track',
+            'low_risk',
+            'med_risk',
+            'high_risk'
+        )
+
+    def _get_risk_level(self, obj, risk_level_kwargs):
+        request = self.context['request']
+        care_team_members = self.context.get('care_team_members', [])
+        facilities = get_facilities_for_user(request.user, obj.id)
+        base_kwargs = {
+            'facility__in': facilities,
+            'is_active': True,
+        }
+        if len(care_team_members) > 0:
+            base_kwargs.update({
+                'care_plans__care_team_members__employee_profile__in': care_team_members
+            })
+
+        kwargs = {**base_kwargs, **risk_level_kwargs}
+
+        return PatientProfile.objects.filter(**kwargs).distinct().count()
+
+    def get_on_track(self, obj):
+        kwargs = {
+            'risk_level__gte': PatientProfile.RISK_LEVEL_MIN_ON_TRACK
+        }
+        return self._get_risk_level(obj, kwargs)
+
+    def get_high_risk(self, obj):
+        kwargs = {
+            'risk_level__lt': PatientProfile.RISK_LEVEL_MIN_MED_RISK
+        }
+        return self._get_risk_level(obj, kwargs)
+
+    def get_low_risk(self, obj):
+        kwargs = {
+            'risk_level__gte': PatientProfile.RISK_LEVEL_MIN_LOW_RISK,
+            'risk_level__lt': PatientProfile.RISK_LEVEL_MIN_ON_TRACK
+        }
+        return self._get_risk_level(obj, kwargs)
+
+    def get_med_risk(self, obj):
+        kwargs = {
+            'risk_level__gte': PatientProfile.RISK_LEVEL_MIN_MED_RISK,
+            'risk_level__lt': PatientProfile.RISK_LEVEL_MIN_LOW_RISK
+        }
+        return self._get_risk_level(obj, kwargs)
+
+
 class OrganizationPatientGraphSerializer(serializers.ModelSerializer):
     """
     This serializer will return enrolled and billable patients data each month
