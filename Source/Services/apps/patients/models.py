@@ -61,6 +61,25 @@ class PatientProfile(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
         return self.care_plans.order_by('created').last()
 
 
+class PatientStat(UUIDPrimaryKeyMixin):
+
+    patient = models.OneToOneField(
+        PatientProfile, on_delete=models.CASCADE, related_name='patient_stat')
+    readmissions_count = models.IntegerField()
+    readmissions_percent = models.FloatField()
+    readmissions_cost = models.FloatField()
+    ed_visits = models.IntegerField()
+    opioid_use = models.IntegerField()
+    admits = models.IntegerField()
+    avg_stay_length = models.FloatField()
+    pcp_visits = models.IntegerField()
+    specialist_visits = models.IntegerField()
+    total_cost = models.FloatField()
+
+    def __str__(self):
+        return self.patient
+
+
 class ProblemArea(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
     patient = models.ForeignKey(
         PatientProfile, null=False, blank=False, on_delete=models.CASCADE)
