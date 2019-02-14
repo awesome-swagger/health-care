@@ -12,7 +12,7 @@ from rest_framework.permissions import IsAdminUser
 from rest_framework_extensions.mixins import NestedViewSetMixin
 
 from ..models import (PatientDiagnosis, PatientMedication, PatientProcedure,
-                      PatientProfile, ProblemArea, PotentialPatient)
+                      PatientProfile, ProblemArea, PotentialPatient, PatientStat)
 from ..permissions import PatientProfilePermissions, PatientSearchPermissions
 from .serializers import (PatientDashboardSerializer,
                           PatientDiagnosisSerializer,
@@ -26,6 +26,7 @@ from .serializers import (PatientDashboardSerializer,
                           VerifyPatientSerializer,
                           ReminderEmailSerializer,
                           CreatePatientSerializer,
+                          PatientStatSerializer,
                           PotentialPatientSerializer,
                           FacilityInactivePatientSerializer,
                           LatestPatientSymptomSerializer)
@@ -236,6 +237,22 @@ class PatientDiagnosisViewSet(viewsets.ModelViewSet):
             return qs.filter(patient__id=patient_profile.id)
         else:
             return qs.none()
+
+
+class PatientStatViewSet(viewsets.ModelViewSet):
+    serializer_class = PatientStatSerializer
+    permission_classes = (permissions.IsAuthenticated, )
+    queryset = PatientStat.objects.all()
+
+    def get_queryset(self):
+        qs = self.queryset
+        patient = self.request.query_params.get('patient')
+        if patient:
+            try:
+                return [PatientProfile.objects.get(pk=patient).patient_stat]
+            except:
+                pass
+        return qs.none()
 
 
 class ProblemAreaViewSet(viewsets.ModelViewSet):

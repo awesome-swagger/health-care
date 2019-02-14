@@ -27,6 +27,7 @@ from apps.patients.api.views import (
     PatientProfileViewSet,
     PatientDiagnosisViewSet,
     ProblemAreaViewSet,
+    PatientStatViewSet,
     PatientProcedureViewSet,
     PatientMedicationViewSet,
     PatientProfileSearchViewSet,
@@ -225,6 +226,8 @@ patient_routes.register(
 router.register(r'problem_areas', ProblemAreaViewSet, base_name='problem_areas')
 router.register(
     r'patient_diagnosis', PatientDiagnosisViewSet, base_name='patient_diagnosis')
+router.register(
+    r'patient_stats', PatientStatViewSet, base_name='patient_stats')
 router.register(
     r'patient_procedures', PatientProcedureViewSet, base_name='patient_procedures')
 router.register(
