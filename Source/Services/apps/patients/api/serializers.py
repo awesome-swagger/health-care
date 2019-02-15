@@ -27,7 +27,8 @@ from apps.core.api.serializers import (
 from apps.patients.models import (PatientDiagnosis, PatientMedication,
                                   PatientProcedure, PatientProfile,
                                   ProblemArea, PatientVerificationCode,
-                                  ReminderEmail, PotentialPatient)
+                                  ReminderEmail, PotentialPatient,
+                                  PatientStat)
 from apps.plans.api.serializers import (InfoMessageSerializer, 
                                         CarePlanTemplateSerializer)
 from apps.plans.models import CarePlanTemplate
@@ -166,6 +167,17 @@ class PatientDiagnosisSerializer(serializers.ModelSerializer):
     class Meta:
         model = PatientDiagnosis
         fields = '__all__'
+
+
+class PatientStatSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PatientStat
+        fields = '__all__'
+        read_only_fields = (
+            'id',
+            'created',
+            'modified',
+        )
 
 
 class SimplifiedEmployeeProfileSerializer(RepresentationMixin, serializers.ModelSerializer):
