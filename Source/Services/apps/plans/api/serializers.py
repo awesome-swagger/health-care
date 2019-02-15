@@ -184,6 +184,7 @@ class CarePlanSerializer(RepresentationMixin, serializers.ModelSerializer):
             'patient',
             'plan_template',
             'billing_practitioner',
+            'next_checkin'
         )
         read_only_fields = (
             'id',
