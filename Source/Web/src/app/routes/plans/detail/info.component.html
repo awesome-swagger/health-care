@@ -3,9 +3,10 @@
   <div class="accordion" [ngClass]="{ 'isOpen' : accordionOpen[facility.id] }" *ngFor="let facility of facilities">
     <div class="accordion__head" (click)="accordionOpen[facility.id] = !accordionOpen[facility.id]">
       <span class="accordion__title">{{facility.name}} (<span *ngIf="facility.plans">{{facility.plans.length}}</span><span *ngIf="!facility.plans">0</span>)</span>
+      <!-- Shows if stats are available for plan -->
       <div class="accordion__right" *ngIf="facility.plans && facility.plans.length > 0">
-        <div class="pill pill--red marRight16">
-          Time 2:17
+        <div class="pill marRight16">
+          Time 0:00
         </div>
         <div class="pill" [ngStyle]="{'background': utils.percentPillColor(totalFacilityRiskLevel(facility))}">
           {{utils.getRiskLevelText(totalFacilityRiskLevel(facility))}} {{totalFacilityRiskLevel(facility)}}%
@@ -14,6 +15,7 @@
           <i class="ss-standard ss-navigateright"></i>
         </div>
       </div>
+      <!-- Shows if no stats are available for plan -->
       <div class="accordion__right" *ngIf="!facility.plans || facility.plans.length === 0">
         <div class="pill marRight16">
           Time 0:00
@@ -39,10 +41,12 @@
                   <div class="tool">
                     <span class="thSortable__text">Other Plans</span>
                     <div class="tool__anchor">
-                      <button class="button button--icon button--icon--small" (click)="tooltip3Open=!tooltip3Open"><i class="ss-info"></i></button>
-                      <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltip3Open }">
-                        <div class="tool__text">This is the number of additional care plans a patient has. Click the number for details.</div>
-                      </div>
+                      <button class="button button--icon button--icon--small" (click)="otherPlansInfoOpen[facility.id]=!otherPlansInfoOpen[facility.id]"><i class="ss-info"></i></button>
+                      <app-popover [visible]="otherPlansInfoOpen[facility.id]" (visibleChange)="otherPlansInfoOpen[facility.id] = $event;">
+                        <div class="tool__tip tool__tip--bottom isOpen">
+                          <div class="tool__text">This is the number of additional care plans a patient has. Click the number for details.</div>
+                        </div>
+                      </app-popover>
                     </div>
                   </div>
                 </th>
@@ -79,19 +83,23 @@
                   </a>
                 </td>
                 <td>
-                  <a class="tool__anchor justifyCenter" (click)="tooltip1Open=!tooltip1Open">
-                    {{plan.other_plans}}
-                    <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltip1Open }">
-                      <div class="iconText iconText--white iconText--autoHeight marBottom8">
-                        <i class="iconText__icon iconText__icon--noTop icomoon-cocm"></i> Anxiety
+                  <a class="tool__anchor justifyCenter">
+                    <span (click)="otherPlansOpen[plan.id]=!otherPlansOpen[plan.id]">
+                      {{plan.other_plans}}
+                    </span>
+                    <app-popover [visible]="otherPlansOpen[plan.id]" (visibleChange)="otherPlansOpen[plan.id] = $event;">
+                      <div class="tool__tip tool__tip--bottom isOpen">
+                        <div class="iconText iconText--white iconText--autoHeight marBottom8">
+                          Anxiety
+                        </div>
+                        <div class="iconText iconText--white iconText--autoHeight">
+                          Heart Diseases and Such
+                        </div>
                       </div>
-                      <div class="iconText iconText--white iconText--autoHeight">
-                        <i class="iconText__icon ss-heart"></i> Heart Diseases and Such
-                      </div>
-                    </div>
+                    </app-popover>
                   </a>
                 </td>
-                <td><div class="pill pill--purple">:14</div>
+                <td><div class="pill">:00</div>
                 </td>
                 <td>
                   <!--TODO: This link should also open the care team tasks accordion on the plan instance overview page-->
@@ -99,13 +107,13 @@
                 </td>
                 <td>
                   <div class="progress">
-                    Week 0 of 12
+                    Week 0 of {{plan.plan_template.duration_weeks}}
                     <div class="progress__bg">
-                      <div class="progress__bar"></div>
+                      <div class="progress__bar" [ngStyle]="{width: (1 / plan.plan_template.duration_weeks) * 100 + '%'}"></div>
                     </div>
                   </div>
                 </td>
-                <td>7 Days</td>
+                <td>N/A</td>
                 <td><div class="pill" [ngStyle]="{'background': utils.percentPillColor(plan.average_engagement)}">{{plan.average_engagement}}%</div></td>
                 <td><div class="pill" [ngStyle]="{'background': utils.percentPillColor(plan.average_outcome)}">{{plan.average_outcome}}%</div></td>
                 <td><div class="pill" [ngStyle]="{'background': utils.percentPillColor(plan.risk_level)}">{{utils.getRiskLevelText(plan.risk_level)}} {{plan.risk_level}}%</div></td>

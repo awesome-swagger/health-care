@@ -15,7 +15,7 @@
           </div>
           <h5 class="chat__info"><span *ngIf="comment.user.id !== user.id">{{comment.user.first_name}} {{comment.user.last_name}}, {{comment.user.title}}&emsp;</span>{{formatDate(comment.created)}}</h5>
         </div> <!--/.chat__message-->
-        <div class="chat__message" *ngIf="comment.user.user_type !== 'employee'">
+        <div class="chat__message chat__message--teal" *ngIf="comment.user.user_type !== 'employee'">
           <div class="chat__picBubble">
             <img class="chat__img" [src]="comment.user.image_url" />
             <div class="chat__bubble">

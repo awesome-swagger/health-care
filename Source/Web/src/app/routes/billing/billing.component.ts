@@ -16,6 +16,7 @@ export class BillingComponent implements OnDestroy, OnInit {
   public organization = null;
   public isManager = false;
   public selectedMonth: moment.Moment = moment().startOf('month');
+  public overviewStats = null;
   public billingData = null;
   public patients = [];
   public facilities = [];
@@ -65,9 +66,7 @@ export class BillingComponent implements OnDestroy, OnInit {
       if (!user) {
         return;
       }
-      this.auth.organization$.subscribe((organization) => {
-        this.user = user;
-      });
+      this.user = user;
     });
     this.orgSub = this.auth.organization$.subscribe((organization) => {
       if (!organization) {
@@ -75,6 +74,12 @@ export class BillingComponent implements OnDestroy, OnInit {
       }
       this.organization = organization;
       this.isManager = this.organization.is_manager;
+      this.getActivityOverview(this.organization.id).then((overviewStats) => {
+        this.overviewStats = overviewStats;
+      });
+      this.getBillingPractitioners(this.organization.id).then((bps) => {
+        console.log(bps);
+      });
     });
   }
 
@@ -82,6 +87,35 @@ export class BillingComponent implements OnDestroy, OnInit {
     if (this.authSub) {
       this.authSub.unsubscribe();
     }
+    if (this.orgSub) {
+      this.orgSub.unsubscribe();
+    }
+  }
+
+  public getActivityOverview(organizationId) {
+    let promise = new Promise((resolve, reject) => {
+      let overviewSub = this.store.Organization.detailRoute('get', organizationId, 'billed_activities/overview').subscribe(
+        (data) => resolve(data),
+        (err) => reject(err),
+        () => {
+          overviewSub.unsubscribe();
+        }
+      );
+    });
+    return promise;
+  }
+
+  public getBillingPractitioners(organizationId) {
+    let promise = new Promise((resolve, reject) => {
+      let bpSub = this.store.Organization.detailRoute('get', organizationId, 'billing_practitioners').subscribe(
+        (data) => resolve(data),
+        (err) => reject(err),
+        () => {
+          bpSub.unsubscribe();
+        }
+      )
+    });
+    return promise;
   }
 
   public filteredBilling() {

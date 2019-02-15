@@ -26,9 +26,10 @@ export class PlanInfoComponent implements OnDestroy, OnInit {
   public planTemplate: any = null;
   public facilities = [];
   public accordionOpen = {};
+  public otherPlansInfoOpen = {};
+  public otherPlansOpen = {};
 
   public accord1Open;
-  public tooltip3Open;
   public tooltip1Open;
   public tooltip2Open;
   public accord2Open;

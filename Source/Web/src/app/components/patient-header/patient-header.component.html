@@ -5,7 +5,7 @@
   </div>
   <div class="drop">
     <div class="drop__input drop__input--select" (click)="planSelectOpen=!planSelectOpen">
-      <h3 class="noMargin">{{selectedPlan?.plan_template.name}}<!--<i class="icomoon-cocm"></i>--><span *ngIf="selectedPlan?.plan_template.service_area">, {{selectedPlan.plan_template.service_area.name}}</span></h3>
+      <h3 class="noMargin">{{selectedPlan?.plan_template.name}}<span *ngIf="selectedPlan?.plan_template.service_area">, {{selectedPlan.plan_template.service_area.name}}</span></h3>
     </div>
     <app-popover [visible]="planSelectOpen" (visibleChange)="planSelectOpen = $event;" [options]="planSelectOptions">
       <ul class="drop__dropdown drop__dropdown--select isOpen">

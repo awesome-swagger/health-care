@@ -183,6 +183,25 @@ export class PlansComponent implements OnDestroy, OnInit {
     return promise;
   }
 
+  public zeroPad(num) {
+    return num < 10 ? `0${num}` : `${num}`;
+  }
+
+  public totalTimeCount(templates) {
+    let hours = 0;
+    let minutes = 0;
+    templates.forEach((obj) => {
+      let timeCountSplit = obj.averages.time_count.split(":");
+      let splitHours = parseInt(timeCountSplit[0]);
+      let splitMinutes = parseInt(timeCountSplit[1]);
+      hours += splitHours;
+      minutes += splitMinutes;
+    });
+    hours += Math.floor((minutes / 60));
+    minutes = minutes % 60;
+    return `${hours}:${this.zeroPad(minutes)}`;
+  }
+
   public addPlan() {
     this.modals.open(AddPlanComponent, {
       closeDisabled: true,

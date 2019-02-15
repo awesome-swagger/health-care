@@ -168,26 +168,26 @@
           </div>
         </div>
       </label>
-      {{totalBillablePatients()}}
+      {{overviewStats?.billable_patients}}
     </div>
     <div class="info__cell">
       <label>Total Facilities</label>
-      {{totalFacilities()}}
+      {{overviewStats?.total_facilities}}
     </div>
     <div class="info__cell">
       <label>Total Practitioners</label>
-      {{totalPractitioners()}}
+      {{overviewStats?.total_practitioners}}
     </div>
     <div class="info__cell">
       <label>Total Hours</label>
-      <div class="pill pill--lime">
-        {{totalHours()}}
+      <div class="pill">
+        {{overviewStats?.total_hours}}
       </div>
     </div>
     <div class="info__cell">
       <label>Total $</label>
-      <div class="pill pill--yellow">
-        ${{totalDollars()}}
+      <div class="pill">
+        N/A
       </div>
     </div>
   </div>
