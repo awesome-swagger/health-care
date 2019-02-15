@@ -101,6 +101,12 @@ class BaseOrganizationPatientSerializer(serializers.ModelSerializer):
             'risk_level',
         )
 
+    def _get_care_team_members(self, request):
+        request_employees = request.GET.get('employees', '')
+        employee_ids = request_employees.split(',')
+        employee_ids = list(filter(None, employee_ids))
+        return EmployeeProfile.objects.filter(id__in=employee_ids)
+
     def _get_filter_patient_ids(self):
         request = self.context['request']
         users = request.GET.get('users')
@@ -114,36 +120,68 @@ class BaseOrganizationPatientSerializer(serializers.ModelSerializer):
         else:
             return [ii.id for ii in PatientProfile.objects.all()]
 
-    def _get_active_patients(self, obj):
-        request = self.context['request']
-        facilities = get_facilities_for_user(request.user, obj.id)
-        patients = self._get_filter_patient_ids()
-        return PatientProfile.objects.filter(
-            facility__in=facilities, 
-            is_active=True, 
-            id__in=patients)
-
     def get_active_patients(self, obj):
-        return self._get_active_patients(obj).count()
+        request = self.context['request']
+        care_team_members = self._get_care_team_members(request)
+        filter_allowed = self.context.get('filter_allowed', False)
+        facilities = get_facilities_for_user(request.user, obj.id)
+
+        kwargs = {
+            'facility__in': facilities,
+            'is_active': True,
+        }
+
+        if care_team_members.exists() and filter_allowed:
+            kwargs.update({
+                'care_plans__care_team_members__employee_profile__in': care_team_members
+            })
+
+        if 'facility' in request.GET and filter_allowed:
+            kwargs.update({
+                'facility__id': request.GET.get('facility')
+            })
+
+        return PatientProfile.objects.filter(**kwargs).distinct().count()
 
     def get_invited_patients(self, obj):
         request = self.context['request']
+        care_team_members = self._get_care_team_members(request)
+        filter_allowed = self.context.get('filter_allowed', False)
         facilities = get_facilities_for_user(request.user, obj.id)
-        patients = self._get_filter_patient_ids()
-        return PatientProfile.objects.filter(
-            facility__in=facilities,
-            id__in=patients,
-            is_invited=True,
-            is_active=False).count()
+
+        kwargs = {
+            'facility__in': facilities,
+            'is_active': False,
+            'is_invited': True
+        }
+
+        if care_team_members.exists() and filter_allowed:
+            kwargs.update({
+                'care_plans__care_team_members__employee_profile__in': care_team_members
+            })
+
+        if 'facility' in request.GET and filter_allowed:
+            kwargs.update({
+                'facility__id': request.GET.get('facility')
+            })
+        return PatientProfile.objects.filter(**kwargs).distinct().count()
 
     def get_potential_patients(self, obj):
         request = self.context['request']
+        filter_allowed = self.context.get('filter_allowed', False)
         facilities = get_facilities_for_user(request.user, obj.id)
-        patients = self._get_filter_patient_ids()
-        return PotentialPatient.objects.filter(
-            facility__in=facilities,
-            id__in=patients,
-            patient_profile__isnull=True).count()
+
+        kwargs = {
+            'facility__in': facilities,
+            'patient_profile__isnull': True,
+        }
+
+        if 'facility' in request.GET and filter_allowed:
+            kwargs.update({
+                'facility__id': request.GET.get('facility')
+            })
+
+        return PotentialPatient.objects.filter(**kwargs).count()
 
     def get_total_facilities(self, obj):
         request = self.context['request']
@@ -155,19 +193,18 @@ class BaseOrganizationPatientSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(_('Invalid assessment type.'))
 
         request = self.context['request']
+        care_team_members = self._get_care_team_members(request)
         filter_allowed = self.context.get('filter_allowed', False)
         facilities = get_facilities_for_user(request.user, obj.id)
-        patients = self._get_filter_patient_ids()
 
         kwargs = {
             'plan__patient__facility__in': facilities,
-            'id__in': patients,
             f'assessment_task_template__{assessment_type}': True
         }
 
-        if 'patient' in request.GET and filter_allowed:
+        if care_team_members.exists() and filter_allowed:
             kwargs.update({
-                'plan__patient__id': request.GET.get('patient')
+                'plan__care_team_members__employee_profile__in': care_team_members
             })
 
         if 'facility' in request.GET and filter_allowed:
@@ -190,13 +227,12 @@ class BaseOrganizationPatientSerializer(serializers.ModelSerializer):
     def get_average_engagement(self, obj):
         now = timezone.now()
         request = self.context['request']
+        care_team_members = self._get_care_team_members(request)
         filter_allowed = self.context.get('filter_allowed', False)
         facilities = get_facilities_for_user(request.user, obj.id)
-        patients = self._get_filter_patient_ids()
 
         kwargs = {
             'plan__patient__facility__in': facilities,
-            'id__in': patients,
             'due_datetime__lte': now
         }
         medication_kwargs = {
@@ -204,12 +240,12 @@ class BaseOrganizationPatientSerializer(serializers.ModelSerializer):
             'due_datetime__lte': now
         }
 
-        if 'patient' in request.GET and filter_allowed:
+        if care_team_members.exists() and filter_allowed:
             kwargs.update({
-                'plan__patient__id': request.GET.get('patient')
+                'plan__care_team_members__employee_profile__in': care_team_members
             })
             medication_kwargs.update({
-                'medication_task_template__plan__patient__id': request.GET.get('patient')
+                'medication_task_template__plan__care_team_members__employee_profile__in': care_team_members
             })
 
         if 'facility' in request.GET and filter_allowed:
@@ -315,11 +351,27 @@ class OrganizationPatientAdoptionSerializer(BaseOrganizationPatientSerializer):
         now = timezone.now()
         last_24_hours = now - relativedelta(hours=24)
         request = self.context['request']
+        care_team_members = self._get_care_team_members(request)
+        filter_allowed = self.context.get('filter_allowed', False)
         facilities = get_facilities_for_user(request.user, obj.id)
-        return PatientProfile.objects.filter(
-            facility__in=facilities,
-            is_active=True,
-            last_app_use__gte=last_24_hours).count()
+
+        kwargs = {
+            'facility__in': facilities,
+            'is_active': True,
+            'last_app_use__gte': last_24_hours
+        }
+
+        if care_team_members.exists() and filter_allowed:
+            kwargs.update({
+                'care_plans__care_team_members__employee_profile__in': care_team_members
+            })
+
+        if 'facility' in request.GET and filter_allowed:
+            kwargs.update({
+                'facility__id': request.GET.get('facility')
+            })
+
+        return PatientProfile.objects.filter(**kwargs).count()
 
     def get_adoption_rate(self, obj):
         patients_last_24_hours = self.get_patients_last_24_hours(obj)

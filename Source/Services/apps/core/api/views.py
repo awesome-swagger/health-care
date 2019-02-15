@@ -155,17 +155,16 @@ class OrganizationViewSet(viewsets.ModelViewSet):
         FILTERING:
         ---
         Engagement, satisfaction, outcome, and risk levels can be filtered by
-        **patient** and **facility**. See below for example requests:
+        **employees** and **facility**. See below for example requests:
 
-            GET /api/organizations/<organization-ID>/dashboard_analytics/?patient=<patient-ID>
             GET /api/organizations/<organization-ID>/dashboard_analytics/?facility=<facility-ID>
-            GET /api/organizations/<organization-ID>/dashboard_analytics/?users=<user-ID>,<user-ID>...
-            GET /api/organizations/<organization-ID>/dashboard_analytics/?facility=<facility-ID>&patient=<patient-ID>
+            GET /api/organizations/<organization-ID>/dashboard_analytics/?employees=<employee-ID>,<employee-ID>...
+            GET /api/organizations/<organization-ID>/dashboard_analytics/?facility=<facility-ID>&employees=<employee-ID>,<employee-ID>...
 
         """
         organization = self.get_object()
 
-        if 'patient' in request.GET or 'facility' in request.GET:
+        if 'employees' in request.GET or 'facility' in request.GET:
             has_permission = self.check_if_organization_or_facility_admin(
                 organization)
             if not has_permission:
@@ -201,8 +200,16 @@ class OrganizationViewSet(viewsets.ModelViewSet):
         """
         organization = self.get_object()
 
+        if 'employees' in request.GET or 'facility' in request.GET:
+            has_permission = self.check_if_organization_or_facility_admin(
+                organization)
+            if not has_permission:
+                message = _('Must be an organization or facility admin.')
+                self.permission_denied(self.request, message)
+
         context = {
-            'request': request
+            'request': request,
+            'filter_allowed': True
         }
         serializer = OrganizationPatientAdoptionSerializer(
             organization, context=context)
