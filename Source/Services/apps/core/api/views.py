@@ -152,7 +152,7 @@ class OrganizationViewSet(viewsets.ModelViewSet):
             - med risk
             - high risk
 
-        FILTERING:
+        FILTERING
         ---
         Engagement, satisfaction, outcome, and risk levels can be filtered by
         **employees** and **facility**. See below for example requests:
@@ -191,6 +191,15 @@ class OrganizationViewSet(viewsets.ModelViewSet):
             - active patients interacting with the app for the last 24 hours
             - total active patients
             - patient adoption rate
+
+        FILTERING
+        ---
+        Results can be filtered by **employees** and **facility**.
+        See below for example requests:
+
+            GET /api/organizations/<organization-ID>/patient_adoption/?facility=<facility-ID>
+            GET /api/organizations/<organization-ID>/patient_adoption/?employees=<employee-ID>,<employee-ID>...
+            GET /api/organizations/<organization-ID>/patient_adoption/?facility=<facility-ID>&employees=<employee-ID>,<employee-ID>...
 
         USAGE
         ---
@@ -247,8 +256,16 @@ class OrganizationViewSet(viewsets.ModelViewSet):
         """
         organization = self.get_object()
 
+        if 'employees' in request.GET or 'facility' in request.GET:
+            has_permission = self.check_if_organization_or_facility_admin(
+                organization)
+            if not has_permission:
+                message = _('Must be an organization or facility admin.')
+                self.permission_denied(self.request, message)
+
         context = {
-            'request': request
+            'request': request,
+            'filter_allowed': True
         }
         serializer = OrganizationPatientGraphSerializer(
             organization, context=context)

@@ -470,26 +470,61 @@ class OrganizationPatientGraphSerializer(serializers.ModelSerializer):
             'graph',
         )
 
+    def _get_care_team_members(self, request):
+        request_employees = request.GET.get('employees', '')
+        employee_ids = request_employees.split(',')
+        employee_ids = list(filter(None, employee_ids))
+        return EmployeeProfile.objects.filter(id__in=employee_ids)
+
     def get_graph(self, obj):
         request = self.context['request']
+        care_team_members = self._get_care_team_members(request)
+        filter_allowed = self.context.get('filter_allowed', False)
         facilities = get_facilities_for_user(request.user, obj.id)
         months = 12
         now = timezone.now()
         data = {}
+        enrolled_kwargs = {
+            'facility__in': facilities,
+            'is_active': True
+        }
+        billable_kwargs = {
+            'plan__patient__facility__in': facilities,
+            'plan__patient__is_active': True
+        }
+
+        if care_team_members.exists() and filter_allowed:
+            enrolled_kwargs.update({
+                'care_plans__care_team_members__employee_profile__in': care_team_members
+            })
+            billable_kwargs.update({
+                'plan__care_team_members__employee_profile__in': care_team_members
+            })
+
+        if 'facility' in request.GET and filter_allowed:
+            enrolled_kwargs.update({
+                'facility__id': request.GET.get('facility')
+            })
+            billable_kwargs.update({
+                'plan__patient__facility__id': request.GET.get('facility')
+            })
 
         for i in range(months):
             day_obj = now - relativedelta(months=i)
 
+            enrolled_kwargs.update({
+                'created__month': day_obj.month,
+                'created__year': day_obj.year
+            })
+            billable_kwargs.update({
+                'activity_date__month': day_obj.month,
+                'activity_date__year': day_obj.year
+            })
+
             enrolled_patients = PatientProfile.objects.filter(
-                facility__in=facilities,
-                is_active=True,
-                created__month=day_obj.month,
-                created__year=day_obj.year).count()
+                **enrolled_kwargs).distinct().count()
             billable_patients = BilledActivity.objects.filter(
-                plan__patient__facility__in=facilities,
-                plan__patient__is_active=True,
-                activity_date__month=day_obj.month,
-                activity_date__year=day_obj.year).values_list(
+                **billable_kwargs).values_list(
                     'plan__patient', flat=True).distinct().count()
 
             monthly_data = {
