@@ -596,7 +596,7 @@ class PotentialPatientViewSet(viewsets.ModelViewSet):
         return queryset
 
 
-class FacilityInactivePatientViewSet(ParentViewSetPermissionMixin,
+class FacilityPatientViewSet(ParentViewSetPermissionMixin,
                                      NestedViewSetMixin,
                                      mixins.ListModelMixin,
                                      viewsets.GenericViewSet):
@@ -606,12 +606,24 @@ class FacilityInactivePatientViewSet(ParentViewSetPermissionMixin,
 
     serializer_class = FacilityInactivePatientSerializer
     permission_clases = (permissions.IsAuthenticated, IsAdminOrEmployee)
-    queryset = PatientProfile.objects.filter(
-        is_active=False).order_by('last_app_use')
+    queryset = PatientProfile.objects.all()
     parent_lookup = [
         ('facility', Facility, FacilityViewSet)
     ]
     pagination_class = OrganizationEmployeePagination
+
+    def get_queryset(self):
+        qs = super(FacilityPatientViewSet, self).get_queryset()
+        _type = self.request.query_params.get('type', '').lower()
+        if _type == 'active':
+            qs = qs.filter(is_active=True)
+        elif _type == 'inactive':
+            qs = qs.filter(is_active=False)
+        elif _type == 'invited':
+            qs = qs.filter(is_invited=True)
+        else:
+            qs = qs.none()
+        return qs.order_by('last_app_use')
 
 
 class PatientProfileCarePlan(ListAPIView):
