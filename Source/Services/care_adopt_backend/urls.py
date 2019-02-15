@@ -21,7 +21,7 @@ from apps.core.api.views import (
     OrganizationEmployeeViewSet, SymptomSearchViewSet, FacilityEmployeeViewSet,
     OrganizationFacilityViewSet, DiagnosisSearchViewSet, OrganizationInsuranceViewSet,
     ProviderTitleSearchViewSet, ProviderRoleSearchViewSet, NotificationViewSet,
-    OrganizationAffiliatesViewSet,
+    OrganizationAffiliatesViewSet, BillingCoordinatorViewSet,
     OrganizationBillingPractitionerViewSet,)
 from apps.patients.api.views import (
     PatientProfileViewSet,
@@ -107,6 +107,12 @@ router.register(
     r'billed_activities',
     BilledActivityViewSet,
     base_name='billed_activities'
+)
+
+router.register(
+    r'billing_coordinators',
+    BillingCoordinatorViewSet,
+    base_name='billing_coordinators'
 )
 
 # Core

@@ -13,7 +13,7 @@ from django.utils.translation import ugettext_lazy as _
 from apps.core.models import (Diagnosis, EmployeeProfile, Insurance, Notification,
                               InvitedEmailTemplate, Medication, Organization,
                               Procedure, ProviderRole, ProviderSpecialty,
-                              ProviderTitle, Symptom, Facility)
+                              ProviderTitle, Symptom, Facility, BillingCoordinator)
 
 from rest_framework_extensions.mixins import NestedViewSetMixin
 
@@ -50,7 +50,8 @@ from .serializers import (DiagnosisSerializer, EmployeeProfileSerializer,
                           BillingPractitionerSerializer,
                           OrganizationPatientAdoptionSerializer,
                           OrganizationPatientGraphSerializer,
-                          OrganizationPatientRiskLevelSerializer)
+                          OrganizationPatientRiskLevelSerializer,
+                          BillingCoordinatorSerializer)
 
 
 class OrganizationViewSet(viewsets.ModelViewSet):
@@ -360,6 +361,24 @@ class FacilityViewSet(viewsets.ModelViewSet):
         )
 
 
+class BillingCoordinatorViewSet(viewsets.ModelViewSet):
+  
+    serializer_class = BillingCoordinatorSerializer
+    permission_classes = (permissions.IsAuthenticated, )
+
+    def get_queryset(self):
+        qs = BillingCoordinator.objects.all()
+        user = self.request.query_params.get('user')
+        facility = self.request.query_params.get('facility')
+
+        if user:
+            qs = qs.filter(user_id=user)
+        if facility:
+            qs = qs.filter(facility_id=facility)
+
+        return qs
+
+
 class ProviderTitleViewSet(
     mixins.RetrieveModelMixin,
     mixins.ListModelMixin,
@@ -513,6 +532,8 @@ class EmployeeProfileViewSet(viewsets.ModelViewSet):
         patient_profile = utils.patient_profile_or_none(self.request.user)
         organization = self.request.query_params.get('organization_id')
         role = self.request.query_params.get('role_id')
+        billing_view = self.request.query_params.get('billing_view')
+
         if organization:
             qs = qs.filter(
                 Q(organizations__id__in=[organization]) |
@@ -522,6 +543,8 @@ class EmployeeProfileViewSet(viewsets.ModelViewSet):
             qs = qs.filter(
                 Q(roles__id__in=[role])
             )
+        if billing_view:
+            qs = qs.filter(billing_view=billing_view=='true')
         if employee_profile is not None:
             # TODO: For employees, only return employees in the same facilities/organizations
             return qs.all()
