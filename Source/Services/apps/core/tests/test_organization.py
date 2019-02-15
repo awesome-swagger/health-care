@@ -434,14 +434,21 @@ class TestOrganizationPatientDashboard(BaseOrganizationTestMixin, APITestCase):
             potential_patients * facilities.count()
         )
 
-    def test_organization_filter_by_patient_permission_denied(self):
+    def test_organization_filter_by_employees_permission_denied(self):
         facility = self.create_facility(self.organization)
-        patient = self.create_patient(**{
+        employee = self.create_employee(**{
+            'organizations': [self.organization],
+            'facilities': [facility]
+        })
+        self.create_patient(**{
             'facility': facility
         })
 
+        self.client.logout()
+        self.client.force_authenticate(user=employee.user)
+
         query_params = urlencode({
-            'patient': patient.id
+            'employees': self.employee.id
         })
 
         filter_url = f'{self.url}?{query_params}'
@@ -449,7 +456,7 @@ class TestOrganizationPatientDashboard(BaseOrganizationTestMixin, APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    def test_organization_filter_by_patient_average_engagement(self):
+    def test_organization_filter_by_employees_average_engagement(self):
         self.client.logout()
         facility = self.create_facility(self.organization)
 
@@ -465,9 +472,20 @@ class TestOrganizationPatientDashboard(BaseOrganizationTestMixin, APITestCase):
         })
         average_engagement = self.generate_average_engagement_records(
             patient=patient)
+        for plan in patient.care_plans.all():
+            self.create_care_team_member(**{
+                'employee_profile': employee,
+                'plan': plan
+            })
+
+        other_patient = self.create_patient(**{
+            'facility': facility
+        })
+        self.generate_average_engagement_records(
+            patient=other_patient)
 
         query_params = urlencode({
-            'patient': patient.id
+            'employees': employee.id
         })
 
         filter_url = f'{self.url}?{query_params}'
