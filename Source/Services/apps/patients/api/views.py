@@ -244,15 +244,19 @@ class PatientStatViewSet(viewsets.ModelViewSet):
     permission_classes = (permissions.IsAuthenticated, )
     queryset = PatientStat.objects.all()
 
-    def get_queryset(self):
-        qs = self.queryset
-        patient = self.request.query_params.get('patient')
-        if patient:
-            try:
-                return [PatientProfile.objects.get(pk=patient).patient_stat]
-            except:
-                pass
-        return qs.none()
+    @action(methods=['get'], detail=False)
+    def recent(self, request, *args, **kwargs):
+        try:
+            patient_id = request.GET.get('patient')
+            patient = PatientProfile.objects.get(pk=patient_id)
+            stat = PatientStat.objects.filter(mrn=patient.emr_code).order_by('-created').first()
+            serializer =  PatientStatSerializer(stat)
+            return Response(
+                serializer.data,
+                status=status.HTTP_200_OK
+            )
+        except Exception as e:
+            return Response({})
 
 
 class ProblemAreaViewSet(viewsets.ModelViewSet):

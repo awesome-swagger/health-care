@@ -16,7 +16,7 @@ class PatientProfileAdmin(admin.ModelAdmin):
 
 
 class PatientStatAdmin(admin.ModelAdmin):
-    list_display = ('patient', 'readmissions_count', 'admits', 'total_cost')
+    list_display = ('mrn', 'readmissions_count', 'admits', 'total_cost')
 
 
 class ProblemAreaAdmin(admin.ModelAdmin):

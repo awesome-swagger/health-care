@@ -172,6 +172,11 @@ class PatientStatSerializer(serializers.ModelSerializer):
     class Meta:
         model = PatientStat
         fields = '__all__'
+        read_only_fields = (
+            'id',
+            'created',
+            'modified',
+        )
 
 
 class SimplifiedEmployeeProfileSerializer(RepresentationMixin, serializers.ModelSerializer):
