@@ -101,6 +101,12 @@ class BaseOrganizationPatientSerializer(serializers.ModelSerializer):
             'risk_level',
         )
 
+    def _get_care_team_members(self, request):
+        request_employees = request.GET.get('employees', '')
+        employee_ids = request_employees.split(',')
+        employee_ids = list(filter(None, employee_ids))
+        return EmployeeProfile.objects.filter(id__in=employee_ids)
+
     def _get_filter_patient_ids(self):
         request = self.context['request']
         users = request.GET.get('users')
@@ -114,77 +120,69 @@ class BaseOrganizationPatientSerializer(serializers.ModelSerializer):
         else:
             return [ii.id for ii in PatientProfile.objects.all()]
 
-    def _get_active_patients(self, obj):
-        request = self.context['request']
-        facilities = get_facilities_for_user(request.user, obj.id)
-        patients = self._get_filter_patient_ids()
-        return PatientProfile.objects.filter(
-            facility__in=facilities, 
-            is_active=True, 
-            id__in=patients)
-
     def get_active_patients(self, obj):
-        return self._get_active_patients(obj).count()
+        request = self.context['request']
+        care_team_members = self._get_care_team_members(request)
+        filter_allowed = self.context.get('filter_allowed', False)
+        facilities = get_facilities_for_user(request.user, obj.id)
+
+        kwargs = {
+            'facility__in': facilities,
+            'is_active': True,
+        }
+
+        if care_team_members.exists() and filter_allowed:
+            kwargs.update({
+                'care_plans__care_team_members__employee_profile__in': care_team_members
+            })
+
+        if 'facility' in request.GET and filter_allowed:
+            kwargs.update({
+                'facility__id': request.GET.get('facility')
+            })
+
+        return PatientProfile.objects.filter(**kwargs).distinct().count()
 
     def get_invited_patients(self, obj):
         request = self.context['request']
+        care_team_members = self._get_care_team_members(request)
+        filter_allowed = self.context.get('filter_allowed', False)
         facilities = get_facilities_for_user(request.user, obj.id)
-        patients = self._get_filter_patient_ids()
-        return PatientProfile.objects.filter(
-            facility__in=facilities,
-            id__in=patients,
-            is_invited=True,
-            is_active=False).count()
+
+        kwargs = {
+            'facility__in': facilities,
+            'is_active': False,
+            'is_invited': True
+        }
+
+        if care_team_members.exists() and filter_allowed:
+            kwargs.update({
+                'care_plans__care_team_members__employee_profile__in': care_team_members
+            })
+
+        if 'facility' in request.GET and filter_allowed:
+            kwargs.update({
+                'facility__id': request.GET.get('facility')
+            })
+        return PatientProfile.objects.filter(**kwargs).distinct().count()
 
     def get_potential_patients(self, obj):
         request = self.context['request']
+        filter_allowed = self.context.get('filter_allowed', False)
         facilities = get_facilities_for_user(request.user, obj.id)
-        patients = self._get_filter_patient_ids()
-        return PotentialPatient.objects.filter(
-            facility__in=facilities,
-            id__in=patients,
-            patient_profile__isnull=True).count()
 
-    def get_on_track(self, obj):
-        active_patients = self._get_active_patients(obj)
-        cnt = 0
-        for patient in active_patients:
-            avg_risk = patient.care_plans.exclude(risk_level__isnull=True).aggregate(
-                average=Avg('risk_level'))
-            if avg_risk['average'] and avg_risk['average'] >= 90:
-                cnt += 1
-        return cnt
+        kwargs = {
+            'facility__in': facilities,
+            'patient_profile__isnull': True,
+        }
 
-    def get_high_risk(self, obj):
-        active_patients = self._get_active_patients(obj)
-        cnt = 0
-        for patient in active_patients:
-            avg_risk = patient.care_plans.exclude(risk_level__isnull=True).aggregate(
-                average=Avg('risk_level'))
-            if avg_risk['average'] and avg_risk['average'] < 50:
-                cnt += 1
-        return cnt
-        
-    def get_low_risk(self, obj):
-        active_patients = self._get_active_patients(obj)
-        cnt = 0
-        for patient in active_patients:
-            avg_risk = patient.care_plans.exclude(risk_level__isnull=True).aggregate(
-                average=Avg('risk_level'))
-            if avg_risk['average'] and 70 <= avg_risk['average'] < 90:
-                cnt += 1
-        return cnt
-        
-    def get_med_risk(self, obj):
-        active_patients = self._get_active_patients(obj)
-        cnt = 0
-        for patient in active_patients:
-            avg_risk = patient.care_plans.exclude(risk_level__isnull=True).aggregate(
-                average=Avg('risk_level'))
-            if avg_risk['average'] and 50 <= avg_risk['average'] < 70:
-                cnt += 1
-        return cnt
-        
+        if 'facility' in request.GET and filter_allowed:
+            kwargs.update({
+                'facility__id': request.GET.get('facility')
+            })
+
+        return PotentialPatient.objects.filter(**kwargs).count()
+
     def get_total_facilities(self, obj):
         request = self.context['request']
         facilities = get_facilities_for_user(request.user, obj.id)
@@ -195,19 +193,18 @@ class BaseOrganizationPatientSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(_('Invalid assessment type.'))
 
         request = self.context['request']
+        care_team_members = self._get_care_team_members(request)
         filter_allowed = self.context.get('filter_allowed', False)
         facilities = get_facilities_for_user(request.user, obj.id)
-        patients = self._get_filter_patient_ids()
 
         kwargs = {
             'plan__patient__facility__in': facilities,
-            'id__in': patients,
             f'assessment_task_template__{assessment_type}': True
         }
 
-        if 'patient' in request.GET and filter_allowed:
+        if care_team_members.exists() and filter_allowed:
             kwargs.update({
-                'plan__patient__id': request.GET.get('patient')
+                'plan__care_team_members__employee_profile__in': care_team_members
             })
 
         if 'facility' in request.GET and filter_allowed:
@@ -230,13 +227,12 @@ class BaseOrganizationPatientSerializer(serializers.ModelSerializer):
     def get_average_engagement(self, obj):
         now = timezone.now()
         request = self.context['request']
+        care_team_members = self._get_care_team_members(request)
         filter_allowed = self.context.get('filter_allowed', False)
         facilities = get_facilities_for_user(request.user, obj.id)
-        patients = self._get_filter_patient_ids()
 
         kwargs = {
             'plan__patient__facility__in': facilities,
-            'id__in': patients,
             'due_datetime__lte': now
         }
         medication_kwargs = {
@@ -244,12 +240,12 @@ class BaseOrganizationPatientSerializer(serializers.ModelSerializer):
             'due_datetime__lte': now
         }
 
-        if 'patient' in request.GET and filter_allowed:
+        if care_team_members.exists() and filter_allowed:
             kwargs.update({
-                'plan__patient__id': request.GET.get('patient')
+                'plan__care_team_members__employee_profile__in': care_team_members
             })
             medication_kwargs.update({
-                'medication_task_template__plan__patient__id': request.GET.get('patient')
+                'medication_task_template__plan__care_team_members__employee_profile__in': care_team_members
             })
 
         if 'facility' in request.GET and filter_allowed:
@@ -319,10 +315,6 @@ class OrganizationPatientDashboardSerializer(BaseOrganizationPatientSerializer):
             'average_satisfaction',
             'average_engagement',
             'risk_level',
-            'on_track',
-            'low_risk',
-            'med_risk',
-            'high_risk'
         )
 
 
@@ -359,11 +351,27 @@ class OrganizationPatientAdoptionSerializer(BaseOrganizationPatientSerializer):
         now = timezone.now()
         last_24_hours = now - relativedelta(hours=24)
         request = self.context['request']
+        care_team_members = self._get_care_team_members(request)
+        filter_allowed = self.context.get('filter_allowed', False)
         facilities = get_facilities_for_user(request.user, obj.id)
-        return PatientProfile.objects.filter(
-            facility__in=facilities,
-            is_active=True,
-            last_app_use__gte=last_24_hours).count()
+
+        kwargs = {
+            'facility__in': facilities,
+            'is_active': True,
+            'last_app_use__gte': last_24_hours
+        }
+
+        if care_team_members.exists() and filter_allowed:
+            kwargs.update({
+                'care_plans__care_team_members__employee_profile__in': care_team_members
+            })
+
+        if 'facility' in request.GET and filter_allowed:
+            kwargs.update({
+                'facility__id': request.GET.get('facility')
+            })
+
+        return PatientProfile.objects.filter(**kwargs).count()
 
     def get_adoption_rate(self, obj):
         patients_last_24_hours = self.get_patients_last_24_hours(obj)
@@ -371,6 +379,80 @@ class OrganizationPatientAdoptionSerializer(BaseOrganizationPatientSerializer):
 
         return round((patients_last_24_hours / active_patients) * 100) \
             if active_patients > 0 else 0
+
+
+class OrganizationPatientRiskLevelSerializer(serializers.ModelSerializer):
+    """
+    Serializer to be used for breakdown of patient risk levels
+    """
+    on_track = serializers.SerializerMethodField()
+    low_risk = serializers.SerializerMethodField()
+    med_risk = serializers.SerializerMethodField()
+    high_risk = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Organization
+        fields = (
+            'on_track',
+            'low_risk',
+            'med_risk',
+            'high_risk'
+        )
+
+    def _get_care_team_members(self, request):
+        request_employees = request.GET.get('employees', '')
+        employee_ids = request_employees.split(',')
+        employee_ids = list(filter(None, employee_ids))
+        return EmployeeProfile.objects.filter(id__in=employee_ids)
+
+    def _get_risk_level_count(self, obj, risk_level_kwargs):
+        request = self.context['request']
+        care_team_members = self._get_care_team_members(request)
+        filter_allowed = self.context.get('filter_allowed', False)
+        facilities = get_facilities_for_user(request.user, obj.id)
+        base_kwargs = {
+            'facility__in': facilities,
+            'is_active': True,
+        }
+        if care_team_members.exists() and filter_allowed:
+            base_kwargs.update({
+                'care_plans__care_team_members__employee_profile__in': care_team_members
+            })
+
+        if 'facility' in request.GET and filter_allowed:
+            base_kwargs.update({
+                'facility__id': request.GET.get('facility')
+            })
+
+        kwargs = {**base_kwargs, **risk_level_kwargs}
+
+        return PatientProfile.objects.filter(**kwargs).distinct().count()
+
+    def get_on_track(self, obj):
+        kwargs = {
+            'risk_level__gte': PatientProfile.RISK_LEVEL_MIN_ON_TRACK
+        }
+        return self._get_risk_level_count(obj, kwargs)
+
+    def get_high_risk(self, obj):
+        kwargs = {
+            'risk_level__lt': PatientProfile.RISK_LEVEL_MIN_MED_RISK
+        }
+        return self._get_risk_level_count(obj, kwargs)
+
+    def get_low_risk(self, obj):
+        kwargs = {
+            'risk_level__gte': PatientProfile.RISK_LEVEL_MIN_LOW_RISK,
+            'risk_level__lt': PatientProfile.RISK_LEVEL_MIN_ON_TRACK
+        }
+        return self._get_risk_level_count(obj, kwargs)
+
+    def get_med_risk(self, obj):
+        kwargs = {
+            'risk_level__gte': PatientProfile.RISK_LEVEL_MIN_MED_RISK,
+            'risk_level__lt': PatientProfile.RISK_LEVEL_MIN_LOW_RISK
+        }
+        return self._get_risk_level_count(obj, kwargs)
 
 
 class OrganizationPatientGraphSerializer(serializers.ModelSerializer):
@@ -388,26 +470,61 @@ class OrganizationPatientGraphSerializer(serializers.ModelSerializer):
             'graph',
         )
 
+    def _get_care_team_members(self, request):
+        request_employees = request.GET.get('employees', '')
+        employee_ids = request_employees.split(',')
+        employee_ids = list(filter(None, employee_ids))
+        return EmployeeProfile.objects.filter(id__in=employee_ids)
+
     def get_graph(self, obj):
         request = self.context['request']
+        care_team_members = self._get_care_team_members(request)
+        filter_allowed = self.context.get('filter_allowed', False)
         facilities = get_facilities_for_user(request.user, obj.id)
         months = 12
         now = timezone.now()
         data = {}
+        enrolled_kwargs = {
+            'facility__in': facilities,
+            'is_active': True
+        }
+        billable_kwargs = {
+            'plan__patient__facility__in': facilities,
+            'plan__patient__is_active': True
+        }
+
+        if care_team_members.exists() and filter_allowed:
+            enrolled_kwargs.update({
+                'care_plans__care_team_members__employee_profile__in': care_team_members
+            })
+            billable_kwargs.update({
+                'plan__care_team_members__employee_profile__in': care_team_members
+            })
+
+        if 'facility' in request.GET and filter_allowed:
+            enrolled_kwargs.update({
+                'facility__id': request.GET.get('facility')
+            })
+            billable_kwargs.update({
+                'plan__patient__facility__id': request.GET.get('facility')
+            })
 
         for i in range(months):
             day_obj = now - relativedelta(months=i)
 
+            enrolled_kwargs.update({
+                'created__month': day_obj.month,
+                'created__year': day_obj.year
+            })
+            billable_kwargs.update({
+                'activity_date__month': day_obj.month,
+                'activity_date__year': day_obj.year
+            })
+
             enrolled_patients = PatientProfile.objects.filter(
-                facility__in=facilities,
-                is_active=True,
-                created__month=day_obj.month,
-                created__year=day_obj.year).count()
+                **enrolled_kwargs).distinct().count()
             billable_patients = BilledActivity.objects.filter(
-                plan__patient__facility__in=facilities,
-                plan__patient__is_active=True,
-                activity_date__month=day_obj.month,
-                activity_date__year=day_obj.year).values_list(
+                **billable_kwargs).values_list(
                     'plan__patient', flat=True).distinct().count()
 
             monthly_data = {

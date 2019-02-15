@@ -49,7 +49,8 @@ from .serializers import (DiagnosisSerializer, EmployeeProfileSerializer,
                           OrganizationPatientDashboardSerializer,
                           BillingPractitionerSerializer,
                           OrganizationPatientAdoptionSerializer,
-                          OrganizationPatientGraphSerializer)
+                          OrganizationPatientGraphSerializer,
+                          OrganizationPatientRiskLevelSerializer)
 
 
 class OrganizationViewSet(viewsets.ModelViewSet):
@@ -151,20 +152,19 @@ class OrganizationViewSet(viewsets.ModelViewSet):
             - med risk
             - high risk
 
-        FILTERING:
+        FILTERING
         ---
         Engagement, satisfaction, outcome, and risk levels can be filtered by
-        **patient** and **facility**. See below for example requests:
+        **employees** and **facility**. See below for example requests:
 
-            GET /api/organizations/<organization-ID>/dashboard_analytics/?patient=<patient-ID>
             GET /api/organizations/<organization-ID>/dashboard_analytics/?facility=<facility-ID>
-            GET /api/organizations/<organization-ID>/dashboard_analytics/?users=<user-ID>,<user-ID>...
-            GET /api/organizations/<organization-ID>/dashboard_analytics/?facility=<facility-ID>&patient=<patient-ID>
+            GET /api/organizations/<organization-ID>/dashboard_analytics/?employees=<employee-ID>,<employee-ID>...
+            GET /api/organizations/<organization-ID>/dashboard_analytics/?facility=<facility-ID>&employees=<employee-ID>,<employee-ID>...
 
         """
         organization = self.get_object()
 
-        if 'patient' in request.GET or 'facility' in request.GET:
+        if 'employees' in request.GET or 'facility' in request.GET:
             has_permission = self.check_if_organization_or_facility_admin(
                 organization)
             if not has_permission:
@@ -192,6 +192,15 @@ class OrganizationViewSet(viewsets.ModelViewSet):
             - total active patients
             - patient adoption rate
 
+        FILTERING
+        ---
+        Results can be filtered by **employees** and **facility**.
+        See below for example requests:
+
+            GET /api/organizations/<organization-ID>/patient_adoption/?facility=<facility-ID>
+            GET /api/organizations/<organization-ID>/patient_adoption/?employees=<employee-ID>,<employee-ID>...
+            GET /api/organizations/<organization-ID>/patient_adoption/?facility=<facility-ID>&employees=<employee-ID>,<employee-ID>...
+
         USAGE
         ---
         This endpoint will primarily populate the `Patient Adoption` section
@@ -200,8 +209,16 @@ class OrganizationViewSet(viewsets.ModelViewSet):
         """
         organization = self.get_object()
 
+        if 'employees' in request.GET or 'facility' in request.GET:
+            has_permission = self.check_if_organization_or_facility_admin(
+                organization)
+            if not has_permission:
+                message = _('Must be an organization or facility admin.')
+                self.permission_denied(self.request, message)
+
         context = {
-            'request': request
+            'request': request,
+            'filter_allowed': True
         }
         serializer = OrganizationPatientAdoptionSerializer(
             organization, context=context)
@@ -239,10 +256,64 @@ class OrganizationViewSet(viewsets.ModelViewSet):
         """
         organization = self.get_object()
 
+        if 'employees' in request.GET or 'facility' in request.GET:
+            has_permission = self.check_if_organization_or_facility_admin(
+                organization)
+            if not has_permission:
+                message = _('Must be an organization or facility admin.')
+                self.permission_denied(self.request, message)
+
         context = {
-            'request': request
+            'request': request,
+            'filter_allowed': True
         }
         serializer = OrganizationPatientGraphSerializer(
+            organization, context=context)
+        return Response(serializer.data)
+
+    @action(methods=['get'], detail=True,
+            permission_classes=(IsAdminOrEmployee, ))
+    def patient_risk_levels(self, request, *args, **kwargs):
+        """
+        Returns the number of patients in their respective risk levels.
+
+        Returns the following data in a specific organization:
+
+            - number of patients on track
+            - number of patients at low risk
+            - number of patients at medium risk
+            - number of patients at high risk
+
+        FILTERING (for organization and facility admins only)
+        ---
+        number of patients in risk levels can be filtered by **facility** and
+        **employees**(*comma separated IDs*). For Example:
+
+            GET /api/organizations/<organization-ID>/patient_risk_levels/?facility=<facility-ID>
+            GET /api/organizations/<organization-ID>/patient_risk_levels/?employees=<employee-ID>,<employee-ID>...
+            GET /api/organizations/<organization-ID>/patient_risk_levels/?facility=<facility-ID>&employees=<employee-ID>,<employee-ID>...
+
+
+        USAGE
+        ---
+        This endpoint will primarily populate the `Patient Risk Levels` section
+        in the `dash` page.
+
+        """
+        organization = self.get_object()
+
+        if 'employees' in request.GET or 'facility' in request.GET:
+            has_permission = self.check_if_organization_or_facility_admin(
+                organization)
+            if not has_permission:
+                message = _('Must be an organization or facility admin.')
+                self.permission_denied(self.request, message)
+
+        context = {
+            'request': request,
+            'filter_allowed': True
+        }
+        serializer = OrganizationPatientRiskLevelSerializer(
             organization, context=context)
         return Response(serializer.data)
 
