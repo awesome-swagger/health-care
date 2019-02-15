@@ -93,6 +93,7 @@ class CarePlan(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
         on_delete=models.CASCADE)
 
     risk_level = models.IntegerField(null=True, blank=True)
+    next_checkin = models.DateField(null=True, blank=True)
 
     def __str__(self):
         return '{} {}: {}'.format(
