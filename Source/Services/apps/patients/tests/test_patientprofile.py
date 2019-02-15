@@ -443,7 +443,7 @@ class TestPatientProfileDashboard(TasksMixin, APITestCase):
 
 class TestFacilityInactivePatient(PlansMixin, APITestCase):
     """
-    Test cases for :view:`patients.FacilityInactivePatientViewSet` using an
+    Test cases for :view:`patients.FacilityPatientViewSet` using an
     employee as the logged in user.
     """
 

@@ -19,6 +19,10 @@ class EmployeeProfileAdmin(admin.ModelAdmin):
     list_display = ('user', 'title', 'specialty', )
 
 
+class BillingCoordinatorAdmin(admin.ModelAdmin):
+    list_display = ('facility', 'user', 'coordinator', )
+
+
 class ProviderTitleAdmin(admin.ModelAdmin):
     list_display = ('name', 'abbreviation', )
 
@@ -68,3 +72,4 @@ admin.site.register(models.Procedure, ProcedureAdmin)
 admin.site.register(models.Symptom, SymptomAdmin)
 admin.site.register(models.InvitedEmailTemplate, InvitedEmailTemplateAdmin)
 admin.site.register(models.Notification, NotificationAdmin)
+admin.site.register(models.BillingCoordinator, BillingCoordinatorAdmin)
