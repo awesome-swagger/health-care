@@ -145,46 +145,6 @@ class BaseOrganizationPatientSerializer(serializers.ModelSerializer):
             id__in=patients,
             patient_profile__isnull=True).count()
 
-    def get_on_track(self, obj):
-        active_patients = self._get_active_patients(obj)
-        cnt = 0
-        for patient in active_patients:
-            avg_risk = patient.care_plans.exclude(risk_level__isnull=True).aggregate(
-                average=Avg('risk_level'))
-            if avg_risk['average'] and avg_risk['average'] >= 90:
-                cnt += 1
-        return cnt
-
-    def get_high_risk(self, obj):
-        active_patients = self._get_active_patients(obj)
-        cnt = 0
-        for patient in active_patients:
-            avg_risk = patient.care_plans.exclude(risk_level__isnull=True).aggregate(
-                average=Avg('risk_level'))
-            if avg_risk['average'] and avg_risk['average'] < 50:
-                cnt += 1
-        return cnt
-        
-    def get_low_risk(self, obj):
-        active_patients = self._get_active_patients(obj)
-        cnt = 0
-        for patient in active_patients:
-            avg_risk = patient.care_plans.exclude(risk_level__isnull=True).aggregate(
-                average=Avg('risk_level'))
-            if avg_risk['average'] and 70 <= avg_risk['average'] < 90:
-                cnt += 1
-        return cnt
-        
-    def get_med_risk(self, obj):
-        active_patients = self._get_active_patients(obj)
-        cnt = 0
-        for patient in active_patients:
-            avg_risk = patient.care_plans.exclude(risk_level__isnull=True).aggregate(
-                average=Avg('risk_level'))
-            if avg_risk['average'] and 50 <= avg_risk['average'] < 70:
-                cnt += 1
-        return cnt
-        
     def get_total_facilities(self, obj):
         request = self.context['request']
         facilities = get_facilities_for_user(request.user, obj.id)
@@ -319,10 +279,6 @@ class OrganizationPatientDashboardSerializer(BaseOrganizationPatientSerializer):
             'average_satisfaction',
             'average_engagement',
             'risk_level',
-            'on_track',
-            'low_risk',
-            'med_risk',
-            'high_risk'
         )
 
 
@@ -392,12 +348,12 @@ class OrganizationPatientRiskLevelSerializer(serializers.ModelSerializer):
         )
 
     def _get_care_team_members(self, request):
-        request_employees = request.GET.get('employees')
+        request_employees = request.GET.get('employees', '')
         employee_ids = request_employees.split(',')
         employee_ids = list(filter(None, employee_ids))
         return EmployeeProfile.objects.filter(id__in=employee_ids)
 
-    def _get_risk_level(self, obj, risk_level_kwargs):
+    def _get_risk_level_count(self, obj, risk_level_kwargs):
         request = self.context['request']
         care_team_members = self._get_care_team_members(request)
         filter_allowed = self.context.get('filter_allowed', False)
@@ -424,27 +380,27 @@ class OrganizationPatientRiskLevelSerializer(serializers.ModelSerializer):
         kwargs = {
             'risk_level__gte': PatientProfile.RISK_LEVEL_MIN_ON_TRACK
         }
-        return self._get_risk_level(obj, kwargs)
+        return self._get_risk_level_count(obj, kwargs)
 
     def get_high_risk(self, obj):
         kwargs = {
             'risk_level__lt': PatientProfile.RISK_LEVEL_MIN_MED_RISK
         }
-        return self._get_risk_level(obj, kwargs)
+        return self._get_risk_level_count(obj, kwargs)
 
     def get_low_risk(self, obj):
         kwargs = {
             'risk_level__gte': PatientProfile.RISK_LEVEL_MIN_LOW_RISK,
             'risk_level__lt': PatientProfile.RISK_LEVEL_MIN_ON_TRACK
         }
-        return self._get_risk_level(obj, kwargs)
+        return self._get_risk_level_count(obj, kwargs)
 
     def get_med_risk(self, obj):
         kwargs = {
             'risk_level__gte': PatientProfile.RISK_LEVEL_MIN_MED_RISK,
             'risk_level__lt': PatientProfile.RISK_LEVEL_MIN_LOW_RISK
         }
-        return self._get_risk_level(obj, kwargs)
+        return self._get_risk_level_count(obj, kwargs)
 
 
 class OrganizationPatientGraphSerializer(serializers.ModelSerializer):
