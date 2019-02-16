@@ -1199,7 +1199,8 @@ class BilledPlanSerializer(serializers.ModelSerializer):
             },
             {
                 'field': 'care_manager',
-                'serializer_class': BasicEmployeeProfileSerializer
+                'serializer_class': BasicEmployeeProfileSerializer,
+                'many': True
             }
         ]
 
