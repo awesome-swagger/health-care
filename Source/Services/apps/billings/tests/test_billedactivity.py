@@ -182,6 +182,33 @@ class TestBilledActivityUsingEmployee(BillingsMixin, APITestCase):
         response = self.client.get(plan_url)
         self.assertEqual(response.data['is_billed'], True)
 
+    def test_get_billed_activities_filter_activity_date(self):
+        now = timezone.now()
+        last_week = now - relativedelta(days=7)
+        filtered_results = 3
+
+        for i in range(filtered_results):
+            self.activity = self.create_billed_activity(**{
+                'plan': self.plan,
+                'added_by': self.employee,
+                'activity_date': last_week.date()
+            })
+
+        # Create dummy records for billed activities without assigning
+        # `activity_date`. Defaults to current date
+        for i in range(filtered_results):
+            self.activity = self.create_billed_activity(**{
+                'plan': self.plan,
+                'added_by': self.employee
+            })
+
+        query_params = urllib.parse.urlencode({
+            'activity_date': last_week.date()
+        })
+        filter_url = f'{self.url}?{query_params}'
+        response = self.client.get(filter_url)
+        self.assertEqual(response.data['count'], filtered_results)
+
 
 class TestBilledActivityOverview(BillingsMixin, APITestCase):
     """
