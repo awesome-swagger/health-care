@@ -12,7 +12,7 @@ from rest_framework.permissions import IsAdminUser
 from rest_framework_extensions.mixins import NestedViewSetMixin
 
 from ..models import (PatientDiagnosis, PatientMedication, PatientProcedure,
-                      PatientProfile, ProblemArea, PotentialPatient)
+                      PatientProfile, ProblemArea, PotentialPatient, PatientStat)
 from ..permissions import PatientProfilePermissions, PatientSearchPermissions
 from .serializers import (PatientDashboardSerializer,
                           PatientDiagnosisSerializer,
@@ -26,6 +26,7 @@ from .serializers import (PatientDashboardSerializer,
                           VerifyPatientSerializer,
                           ReminderEmailSerializer,
                           CreatePatientSerializer,
+                          PatientStatSerializer,
                           PotentialPatientSerializer,
                           FacilityInactivePatientSerializer,
                           LatestPatientSymptomSerializer)
@@ -236,6 +237,26 @@ class PatientDiagnosisViewSet(viewsets.ModelViewSet):
             return qs.filter(patient__id=patient_profile.id)
         else:
             return qs.none()
+
+
+class PatientStatViewSet(viewsets.ModelViewSet):
+    serializer_class = PatientStatSerializer
+    permission_classes = (permissions.IsAuthenticated, )
+    queryset = PatientStat.objects.all()
+
+    @action(methods=['get'], detail=False)
+    def recent(self, request, *args, **kwargs):
+        try:
+            patient_id = request.GET.get('patient')
+            patient = PatientProfile.objects.get(pk=patient_id)
+            stat = PatientStat.objects.filter(mrn=patient.emr_code).order_by('-created').first()
+            serializer =  PatientStatSerializer(stat)
+            return Response(
+                serializer.data,
+                status=status.HTTP_200_OK
+            )
+        except Exception as e:
+            return Response({})
 
 
 class ProblemAreaViewSet(viewsets.ModelViewSet):
@@ -575,7 +596,7 @@ class PotentialPatientViewSet(viewsets.ModelViewSet):
         return queryset
 
 
-class FacilityInactivePatientViewSet(ParentViewSetPermissionMixin,
+class FacilityPatientViewSet(ParentViewSetPermissionMixin,
                                      NestedViewSetMixin,
                                      mixins.ListModelMixin,
                                      viewsets.GenericViewSet):
@@ -585,12 +606,24 @@ class FacilityInactivePatientViewSet(ParentViewSetPermissionMixin,
 
     serializer_class = FacilityInactivePatientSerializer
     permission_clases = (permissions.IsAuthenticated, IsAdminOrEmployee)
-    queryset = PatientProfile.objects.filter(
-        is_active=False).order_by('last_app_use')
+    queryset = PatientProfile.objects.all()
     parent_lookup = [
         ('facility', Facility, FacilityViewSet)
     ]
     pagination_class = OrganizationEmployeePagination
+
+    def get_queryset(self):
+        qs = super(FacilityPatientViewSet, self).get_queryset()
+        _type = self.request.query_params.get('type', '').lower()
+        if _type == 'active':
+            qs = qs.filter(is_active=True)
+        elif _type == 'inactive':
+            qs = qs.filter(is_active=False)
+        elif _type == 'invited':
+            qs = qs.filter(is_invited=True)
+        else:
+            qs = qs.none()
+        return qs.order_by('last_app_use')
 
 
 class PatientProfileCarePlan(ListAPIView):

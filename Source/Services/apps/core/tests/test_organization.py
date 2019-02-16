@@ -1,3 +1,5 @@
+import random
+
 from urllib.parse import urlencode
 
 from django.db.models import Avg
@@ -432,14 +434,21 @@ class TestOrganizationPatientDashboard(BaseOrganizationTestMixin, APITestCase):
             potential_patients * facilities.count()
         )
 
-    def test_organization_filter_by_patient_permission_denied(self):
+    def test_organization_filter_by_employees_permission_denied(self):
         facility = self.create_facility(self.organization)
-        patient = self.create_patient(**{
+        employee = self.create_employee(**{
+            'organizations': [self.organization],
+            'facilities': [facility]
+        })
+        self.create_patient(**{
             'facility': facility
         })
 
+        self.client.logout()
+        self.client.force_authenticate(user=employee.user)
+
         query_params = urlencode({
-            'patient': patient.id
+            'employees': self.employee.id
         })
 
         filter_url = f'{self.url}?{query_params}'
@@ -447,7 +456,7 @@ class TestOrganizationPatientDashboard(BaseOrganizationTestMixin, APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    def test_organization_filter_by_patient_average_engagement(self):
+    def test_organization_filter_by_employees_average_engagement(self):
         self.client.logout()
         facility = self.create_facility(self.organization)
 
@@ -463,9 +472,20 @@ class TestOrganizationPatientDashboard(BaseOrganizationTestMixin, APITestCase):
         })
         average_engagement = self.generate_average_engagement_records(
             patient=patient)
+        for plan in patient.care_plans.all():
+            self.create_care_team_member(**{
+                'employee_profile': employee,
+                'plan': plan
+            })
+
+        other_patient = self.create_patient(**{
+            'facility': facility
+        })
+        self.generate_average_engagement_records(
+            patient=other_patient)
 
         query_params = urlencode({
-            'patient': patient.id
+            'employees': employee.id
         })
 
         filter_url = f'{self.url}?{query_params}'
@@ -713,3 +733,196 @@ class TestOrganizationPatientGraph(BillingsMixin, TasksMixin, APITestCase):
             response.data['graph'][now.strftime("%B %Y")]['billable_patients'],
             total_billable_patients * facilities_count
         )
+
+
+class TestOrganizationPatientRiskLevel(TasksMixin, APITestCase):
+    """
+    Test cases for patient risk level endpoint used in `dash` page.
+    """
+
+    def setUp(self):
+        self.fake = Faker()
+        self.organization = self.create_organization()
+        self.facility = self.create_facility(self.organization)
+        self.employee = self.create_employee(**{
+            'organizations': [self.organization],
+            'organizations_managed': [self.organization],
+            'facilities': [self.facility]
+        })
+        self.user = self.employee.user
+
+        self.url = reverse(
+            'organizations-patient-risk-levels',
+            kwargs={'pk': self.organization.id}
+        )
+        self.client.force_authenticate(user=self.user)
+
+    def create_on_track_patients(self, patients_on_track=1):
+        total_care_plans = 10
+        now = timezone.now()
+        due_datetime = now - relativedelta(days=3)
+
+        for p in range(patients_on_track):
+            patient = self.create_patient(**{
+                'facility': self.facility
+            })
+
+            for c in range(total_care_plans):
+                plan = self.create_care_plan(patient=patient)
+
+                template = self.create_assessment_task_template(**{
+                    'tracks_outcome': True
+                })
+                task = self.create_assessment_task(**{
+                    'plan': plan,
+                    'assessment_task_template': template
+                })
+                self.create_multiple_assessment_questions(template)
+                questions = template.questions.all()
+                for question in questions:
+                    self.create_assessment_response(task, question, rating=5)
+
+                self.generate_patient_tasks(
+                    plan, due_datetime, with_incomplete=False)
+                self.generate_medication_tasks(
+                    plan, due_datetime, with_incomplete=False)
+                self.generate_symptom_tasks(
+                    plan, due_datetime, with_incomplete=False)
+                self.generate_vital_tasks(
+                    plan, due_datetime, with_incomplete=False)
+
+    def create_low_risk_patients(self, patients_low_risk=1):
+        total_care_plans = 10
+        now = timezone.now()
+        due_datetime = now - relativedelta(days=3)
+
+        for p in range(patients_low_risk):
+            patient = self.create_patient(**{
+                'facility': self.facility
+            })
+
+            for c in range(total_care_plans):
+                plan = self.create_care_plan(patient=patient)
+
+                template = self.create_assessment_task_template(**{
+                    'tracks_outcome': True
+                })
+                task = self.create_assessment_task(**{
+                    'plan': plan,
+                    'assessment_task_template': template
+                })
+                self.create_multiple_assessment_questions(template)
+                questions = template.questions.all()
+                for question in questions:
+                    self.create_assessment_response(task, question, rating=5)
+
+                self.generate_patient_tasks(
+                    plan, due_datetime)
+                self.generate_medication_tasks(
+                    plan, due_datetime)
+                self.generate_symptom_tasks(
+                    plan, due_datetime)
+                self.generate_vital_tasks(
+                    plan, due_datetime)
+
+    def create_med_risk_patients(self, patients_med_risk=1):
+        total_care_plans = 10
+        now = timezone.now()
+        due_datetime = now - relativedelta(days=3)
+
+        for p in range(patients_med_risk):
+            patient = self.create_patient(**{
+                'facility': self.facility
+            })
+
+            for c in range(total_care_plans):
+                plan = self.create_care_plan(patient=patient)
+
+                template = self.create_assessment_task_template(**{
+                    'tracks_outcome': True
+                })
+                task = self.create_assessment_task(**{
+                    'plan': plan,
+                    'assessment_task_template': template
+                })
+                self.create_multiple_assessment_questions(template)
+                questions = template.questions.all()
+                for question in questions:
+                    self.create_assessment_response(task, question, rating=4)
+
+                self.generate_patient_tasks(
+                    plan, due_datetime)
+                self.generate_medication_tasks(
+                    plan, due_datetime)
+                self.generate_symptom_tasks(
+                    plan, due_datetime)
+                self.generate_vital_tasks(
+                    plan, due_datetime)
+
+                self.generate_patient_tasks(
+                    plan, due_datetime, with_incomplete=False)
+                self.generate_medication_tasks(
+                    plan, due_datetime, with_incomplete=False)
+                self.generate_symptom_tasks(
+                    plan, due_datetime, with_incomplete=False)
+                self.generate_vital_tasks(
+                    plan, due_datetime, with_incomplete=False)
+
+    def create_high_risk_patients(self, patients_high_risk=1):
+        total_care_plans = 10
+        now = timezone.now()
+        due_datetime = now - relativedelta(days=3)
+
+        for p in range(patients_high_risk):
+            patient = self.create_patient(**{
+                'facility': self.facility
+            })
+
+            for c in range(total_care_plans):
+                plan = self.create_care_plan(patient=patient)
+
+                template = self.create_assessment_task_template(**{
+                    'tracks_outcome': True
+                })
+                task = self.create_assessment_task(**{
+                    'plan': plan,
+                    'assessment_task_template': template
+                })
+                self.create_multiple_assessment_questions(template)
+                questions = template.questions.all()
+                for question in questions:
+                    self.create_assessment_response(
+                        task, question, rating=random.randint(1, 2))
+
+                self.generate_patient_tasks(
+                    plan, due_datetime)
+                self.generate_medication_tasks(
+                    plan, due_datetime)
+                self.generate_symptom_tasks(
+                    plan, due_datetime)
+                self.generate_vital_tasks(
+                    plan, due_datetime)
+
+    def test_patient_risk_level_on_track(self):
+        patients_on_track = 3
+        self.create_on_track_patients(patients_on_track)
+        response = self.client.get(self.url)
+        self.assertAlmostEqual(response.data['on_track'], patients_on_track)
+
+    def test_patient_risk_level_low_risk(self):
+        patients_low_risk = 4
+        self.create_low_risk_patients(patients_low_risk)
+        response = self.client.get(self.url)
+        self.assertAlmostEqual(response.data['low_risk'], patients_low_risk)
+
+    def test_patient_risk_level_med_risk(self):
+        patients_med_risk = 5
+        self.create_med_risk_patients(patients_med_risk)
+        response = self.client.get(self.url)
+        self.assertAlmostEqual(response.data['med_risk'], patients_med_risk)
+
+    def test_patient_risk_level_high_risk(self):
+        patients_high_risk = 2
+        self.create_high_risk_patients(patients_high_risk)
+        response = self.client.get(self.url)
+        self.assertAlmostEqual(response.data['high_risk'], patients_high_risk)

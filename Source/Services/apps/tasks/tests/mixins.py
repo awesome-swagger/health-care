@@ -91,9 +91,12 @@ class TasksMixin(PlansMixin):
 
         appear_time = datetime.time(8, 0, 0)
         due_time = datetime.time(17, 0, 0)
+        medication = self.create_patient_medication(**{
+            'patient': plan.patient
+        })
         return MedicationTaskTemplateFactory(
             plan=plan,
-            patient_medication=self.create_patient_medication(),
+            patient_medication=medication,
             start_on_day=5,
             appear_time=appear_time,
             due_time=due_time,
@@ -260,7 +263,8 @@ class TasksMixin(PlansMixin):
 
     def create_assessment_response(self,
                                    assessment_task=None,
-                                   assessment_question=None):
+                                   assessment_question=None,
+                                   **kwargs):
         if assessment_task is None:
             assessment_task = self.create_assessment_task()
 
@@ -269,10 +273,15 @@ class TasksMixin(PlansMixin):
                 assessment_task.assessment_task_template
             )
 
+        if 'rating' not in kwargs:
+            kwargs.update({
+                'rating': random.randint(1, 5)
+            })
+
         return AssessmentResponseFactory(
             assessment_task=assessment_task,
             assessment_question=assessment_question,
-            rating=random.randint(1, 5)
+            **kwargs
         )
 
     def create_multiple_assessment_questions(self, assessment_task_template):
@@ -522,7 +531,7 @@ class TasksMixin(PlansMixin):
             'due_datetime': due_datetime
         })
 
-    def generate_vital_tasks(self, plan, due_datetime):
+    def generate_vital_tasks(self, plan, due_datetime, with_incomplete=True):
         template = self.create_vital_task_template()
         task = self.create_vital_task(**{
             'plan': plan,
@@ -532,15 +541,16 @@ class TasksMixin(PlansMixin):
         self.create_responses_to_multiple_vital_questions(template,
                                                           task)
 
-        # create incomplete vital tasks
-        incomplete_template = self.create_vital_task_template()
-        self.create_vital_task(**{
-            'plan': plan,
-            'vital_task_template': incomplete_template,
-            'due_datetime': due_datetime
-        })
+        if with_incomplete:
+            # create incomplete vital tasks
+            incomplete_template = self.create_vital_task_template()
+            self.create_vital_task(**{
+                'plan': plan,
+                'vital_task_template': incomplete_template,
+                'due_datetime': due_datetime
+            })
 
-    def generate_patient_tasks(self, plan, due_datetime):
+    def generate_patient_tasks(self, plan, due_datetime, with_incomplete=True):
         template = self.create_patient_task_template()
         self.create_patient_task(**{
             'plan': plan,
@@ -549,14 +559,17 @@ class TasksMixin(PlansMixin):
             'status': 'done'
         })
 
-        incomplete_template = self.create_patient_task_template()
-        self.create_patient_task(**{
-            'plan': plan,
-            'patient_task_template': incomplete_template,
-            'due_datetime': due_datetime
-        })
+        if with_incomplete:
+            incomplete_template = self.create_patient_task_template()
+            self.create_patient_task(**{
+                'plan': plan,
+                'patient_task_template': incomplete_template,
+                'due_datetime': due_datetime
+            })
 
-    def generate_medication_tasks(self, plan, due_datetime):
+    def generate_medication_tasks(self, plan,
+                                  due_datetime,
+                                  with_incomplete=True):
         template = self.create_medication_task_template(plan)
         self.create_medication_task(**{
             'medication_task_template': template,
@@ -564,13 +577,14 @@ class TasksMixin(PlansMixin):
             'status': 'done'
         })
 
-        incomplete_template = self.create_medication_task_template(plan)
-        self.create_medication_task(**{
-            'medication_task_template': incomplete_template,
-            'due_datetime': due_datetime
-        })
+        if with_incomplete:
+            incomplete_template = self.create_medication_task_template(plan)
+            self.create_medication_task(**{
+                'medication_task_template': incomplete_template,
+                'due_datetime': due_datetime
+            })
 
-    def generate_symptom_tasks(self, plan, due_datetime):
+    def generate_symptom_tasks(self, plan, due_datetime, with_incomplete=True):
         template = self.create_symptom_task_template()
         symptom_task = self.create_symptom_task(**{
             'plan': plan,
@@ -579,12 +593,13 @@ class TasksMixin(PlansMixin):
         })
         self.create_symptom_rating(symptom_task)
 
-        incomplete_template = self.create_symptom_task_template()
-        self.create_symptom_task(**{
-            'plan': plan,
-            'symptom_task_template': incomplete_template,
-            'due_datetime': due_datetime
-        })
+        if with_incomplete:
+            incomplete_template = self.create_symptom_task_template()
+            self.create_symptom_task(**{
+                'plan': plan,
+                'symptom_task_template': incomplete_template,
+                'due_datetime': due_datetime
+            })
 
 
 class StateTestMixin(object):

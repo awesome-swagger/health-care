@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
@@ -19,6 +20,11 @@ from .signals import reminder_email_post_save
 
 
 class PatientProfile(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
+
+    RISK_LEVEL_MIN_ON_TRACK = 90  # range is 90-100
+    RISK_LEVEL_MIN_LOW_RISK = 75  # range is 75-89
+    RISK_LEVEL_MIN_MED_RISK = 51  # range is 51-74
+    RISK_LEVEL_MIN_HIGH_RISK = 0  # range is 0-50
 
     user = models.OneToOneField(
         EmailUser, on_delete=models.CASCADE, related_name='patient_profile')
@@ -44,6 +50,13 @@ class PatientProfile(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
         default=False,
         help_text=_('Used to determine whether a patient is billable or not.'))
     last_app_use = models.DateTimeField(default=timezone.now)
+    risk_level = models.IntegerField(
+        default=0,
+        validators=[
+            MaxValueValidator(100),
+            MinValueValidator(0)
+        ]
+     )
 
     class Meta:
         ordering = ('user', )
@@ -59,6 +72,24 @@ class PatientProfile(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
     @property
     def latest_care_plan(self):
         return self.care_plans.order_by('created').last()
+
+
+class PatientStat(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
+
+    mrn = models.CharField(max_length=20)
+    readmissions_count = models.IntegerField()
+    readmissions_percent = models.FloatField()
+    readmissions_cost = models.FloatField()
+    ed_visits = models.IntegerField()
+    opioid_use = models.IntegerField()
+    admits = models.IntegerField()
+    avg_stay_length = models.FloatField()
+    pcp_visits = models.IntegerField()
+    specialist_visits = models.IntegerField()
+    total_cost = models.FloatField()
+
+    def __str__(self):
+        return self.mrn
 
 
 class ProblemArea(CreatedModifiedMixin, UUIDPrimaryKeyMixin):

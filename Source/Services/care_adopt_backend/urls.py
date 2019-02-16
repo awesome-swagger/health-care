@@ -21,17 +21,18 @@ from apps.core.api.views import (
     OrganizationEmployeeViewSet, SymptomSearchViewSet, FacilityEmployeeViewSet,
     OrganizationFacilityViewSet, DiagnosisSearchViewSet, OrganizationInsuranceViewSet,
     ProviderTitleSearchViewSet, ProviderRoleSearchViewSet, NotificationViewSet,
-    OrganizationAffiliatesViewSet,
+    OrganizationAffiliatesViewSet, BillingCoordinatorViewSet,
     OrganizationBillingPractitionerViewSet,)
 from apps.patients.api.views import (
     PatientProfileViewSet,
     PatientDiagnosisViewSet,
     ProblemAreaViewSet,
+    PatientStatViewSet,
     PatientProcedureViewSet,
     PatientMedicationViewSet,
     PatientProfileSearchViewSet,
     PotentialPatientViewSet,
-    FacilityInactivePatientViewSet,
+    FacilityPatientViewSet,
 )
 from apps.plans.api.views import (
     CarePlanTemplateTypeViewSet,
@@ -108,6 +109,12 @@ router.register(
     base_name='billed_activities'
 )
 
+router.register(
+    r'billing_coordinators',
+    BillingCoordinatorViewSet,
+    base_name='billing_coordinators'
+)
+
 # Core
 
 organization_routes = router.register(
@@ -164,9 +171,9 @@ facility_routes.register(
     parents_query_lookups=['facilities']
 )
 facility_routes.register(
-    r'inactive_patients',
-    FacilityInactivePatientViewSet,
-    base_name='facility-inactive-patients',
+    r'patients',
+    FacilityPatientViewSet,
+    base_name='facility-patients',
     parents_query_lookups=['facility']
 )
 facility_routes.register(
@@ -225,6 +232,8 @@ patient_routes.register(
 router.register(r'problem_areas', ProblemAreaViewSet, base_name='problem_areas')
 router.register(
     r'patient_diagnosis', PatientDiagnosisViewSet, base_name='patient_diagnosis')
+router.register(
+    r'patient_stats', PatientStatViewSet, base_name='patient_stats')
 router.register(
     r'patient_procedures', PatientProcedureViewSet, base_name='patient_procedures')
 router.register(

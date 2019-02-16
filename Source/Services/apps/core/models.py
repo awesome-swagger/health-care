@@ -75,6 +75,8 @@ class EmployeeProfile(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
     roles = models.ManyToManyField('ProviderRole', blank=True)
     specialty = models.ForeignKey(
         'ProviderSpecialty', null=True, blank=True, on_delete=models.PROTECT)
+    billing_view = models.BooleanField(default=False)
+    qualified_practitioner = models.BooleanField(default=False)
 
     class Meta:
         ordering = ('user', )
@@ -110,6 +112,24 @@ class EmployeeProfile(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
         time_spent = self.added_activities.aggregate(total=Sum('time_spent'))
         total = time_spent['total'] or 0
         return str(datetime.timedelta(minutes=total))[:-3]
+
+
+class BillingCoordinator(UUIDPrimaryKeyMixin):
+    facility = models.ForeignKey(Facility, on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        EmployeeProfile, 
+        related_name='billing_coordinators', 
+        on_delete=models.CASCADE)
+    coordinator = models.ForeignKey(
+        EmployeeProfile, 
+        related_name='billing_coordinators_for',
+        on_delete=models.CASCADE)
+
+    def __str__(self):
+        return '{}: {} - {}'.format(
+            self.facility.name,
+            self.user,
+            self.coordinator)
 
 
 class ProviderTitle(UUIDPrimaryKeyMixin):
