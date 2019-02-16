@@ -119,7 +119,10 @@ class CarePlan(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
 
     @property
     def care_manager(self):
-        return self.care_team_members.filter(is_manager=True)
+        employee_ids = self.care_team_members.filter(
+            is_manager=True).values_list(
+                'employee_profile', flat=True).distinct()
+        return EmployeeProfile.objects.filter(id__in=employee_ids)
 
 
 class PlanConsent(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
