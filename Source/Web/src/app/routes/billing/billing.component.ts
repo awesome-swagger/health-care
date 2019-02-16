@@ -17,6 +17,9 @@ export class BillingComponent implements OnDestroy, OnInit {
   public isManager = false;
   public selectedMonth: moment.Moment = moment().startOf('month');
   public overviewStats = null;
+
+  public billingPractitioners = [];
+
   public billingData = null;
   public patients = [];
   public facilities = [];
@@ -74,11 +77,11 @@ export class BillingComponent implements OnDestroy, OnInit {
       }
       this.organization = organization;
       this.isManager = this.organization.is_manager;
-      this.getActivityOverview(this.organization.id).then((overviewStats) => {
+      this.getActivityOverview(this.organization.id).then((overviewStats: any) => {
         this.overviewStats = overviewStats;
       });
-      this.getBillingPractitioners(this.organization.id).then((bps) => {
-        console.log(bps);
+      this.getBillingPractitioners(this.organization.id).then((billingPractitioners: any) => {
+        this.billingPractitioners = billingPractitioners;
       });
     });
   }
@@ -108,7 +111,7 @@ export class BillingComponent implements OnDestroy, OnInit {
   public getBillingPractitioners(organizationId) {
     let promise = new Promise((resolve, reject) => {
       let bpSub = this.store.Organization.detailRoute('get', organizationId, 'billing_practitioners').subscribe(
-        (data) => resolve(data),
+        (data: any) => resolve(data.results),
         (err) => reject(err),
         () => {
           bpSub.unsubscribe();

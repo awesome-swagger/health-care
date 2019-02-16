@@ -15,6 +15,8 @@ import { ProblemAreasComponent } from '../../routes/patient/modals/problem-areas
 })
 export class PatientHeaderComponent implements OnInit, OnDestroy {
 
+  public moment = moment;
+
   public _currentPage = null;
   public patient = null;
   public patientPlansOverview = null;
@@ -30,8 +32,6 @@ export class PatientHeaderComponent implements OnInit, OnDestroy {
 
   public planSelectOpen = false;
   public teamListOpen = false;
-  public openFinancialDetails;
-
   public planSelectOptions: PopoverOptions = {};
 
   constructor(
@@ -183,6 +183,10 @@ export class PatientHeaderComponent implements OnInit, OnDestroy {
       },
       width: '560px',
     });
+  }
+
+  public openFinancialDetails() {
+
   }
 
   @Input()

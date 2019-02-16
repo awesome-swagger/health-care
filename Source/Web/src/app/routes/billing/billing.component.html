@@ -191,14 +191,14 @@
       </div>
     </div>
   </div>
-  <ng-container *ngFor="let facility of selectedFacilities">
-    <h2 class="marBottom16 marTop48">{{facility.name}}: Billing Practitioners ({{getAllBPsForFacility(facility.id).length}}) Billable Patients ({{facilityBillablePatients(facility.id)}})</h2>
-    <div class="accordion" *ngFor="let bp of getAllBPsForFacility(facility.id)" [ngClass]="{ 'isOpen' : practitionerDropdownOpen[bp.id] }">
+  <ng-container>
+    <h2 class="marBottom16 marTop48">Facility Name: Billing Practitioners (0) Billable Patients (0)</h2>
+    <div class="accordion" *ngFor="let bp of billingPractitioners" [ngClass]="{ 'isOpen' : practitionerDropdownOpen[bp.id] }">
       <div class="accordion__head" (click)="practitionerDropdownOpen[bp.id]=!practitionerDropdownOpen[bp.id]">
-        <span class="accordion__title">Billing Practitioner: {{bp.first_name}} {{bp.last_name}}, {{bp.title}} ({{bpBillablePatients(bp.id, facility.id)}})</span>
+        <span class="accordion__title">Billing Practitioner: {{bp.first_name}} {{bp.last_name}}<span *ngIf="bp.title">, {{bp.title}}</span> ({{bp.plans.length}})</span>
         <div class="accordion__right">
-          <div class="pill"  [ngStyle]="{'background': getPillColor(percentBilled(bp.id, facility.id))}">
-            Billed {{patientsBilled(billingDataByBP(bp.id, facility.id))}} / {{bpBillablePatients(bp.id, facility.id)}}
+          <div class="pill">
+            Billed 0 / 0
           </div>
           <div class="accordion__arrow">
             <i class="ss-standard ss-navigateright"></i>
@@ -208,12 +208,12 @@
       <div class="accordion__body">
         <div class="accordion__contents">
 
-          <div class="info" [ngClass]="{ 'info--green' : data.isBilled }" *ngFor="let data of billingDataByBP(bp.id, facility.id)">
+          <div class="info" [ngClass]="{ 'info--green' : plan.is_billed }" *ngFor="let plan of bp.plans">
             <div class="flex justifySpaceBetween marBottom24">
               <div>
                 <a [routerLink]="['/patient/asdf/']" class="picName">
                   <img class="picName__img" src="../../../assets/img/profile.svg" />
-                  {{getPatient(data.patient).first_name}} {{getPatient(data.patient).last_name}}
+                  {{plan.patient}}
                 </a>
               </div>
               <div class="flex alignCenter">
@@ -223,14 +223,13 @@
                 <div>
                   <a class="picName" [routerLink]="['/user/asdf']">
                     <img class="picName__img" src="../../../assets/img/profile.svg" />
-                    {{getEmployee(data.billingCoordinator).first_name}} {{getEmployee(data.billingCoordinator).last_name}}, {{getEmployee(data.billingCoordinator).title}}
+                    N/A
                   </a>
                 </div>
               </div>
               <div>
                 <label class="styledInput">
-                  <input type="checkbox" class="styledInput__input"
-                  [checked]="data.isBilled" (change)="data.isBilled=!data.isBilled" />
+                  <input type="checkbox" class="styledInput__input" [checked]="plan.is_billed" (change)="plan.is_billed=!plan.is_billed" />
                   <span class="styledInput__box"></span>
                   Billed
                 </label>
@@ -240,7 +239,7 @@
                   Total
                 </div>
                 <div>
-                  <h1 class="noMargin">${{entriesSubtotal(data.entries)}}</h1>
+                  <h1 class="noMargin">N/A</h1>
                 </div>
               </div>
             </div> <!--/ top row of billing info-->
@@ -258,20 +257,20 @@
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let entry of data.entries">
-                  <td class="left">{{entry.name}}</td>
-                  <td>{{getBillingType(entry.billingType).acronym}}</td>
-                  <td>{{getBillingType(entry.billingType).code}}</td>
-                  <td>{{minutesToHours(entry.totalMinutes)}}</td>
-                  <td>{{entry.date}}</td>
-                  <td>{{entry.description}}</td>
-                  <td>${{entry.subtotal}}</td>
+                <tr *ngFor="let activity of plan.billed_activities">
+                  <td class="left">{{activity.name}}</td>
+                  <td>{{getBillingType(activity.billingType).acronym}}</td>
+                  <td>{{getBillingType(activity.billingType).code}}</td>
+                  <td>{{minutesToHours(activity.totalMinutes)}}</td>
+                  <td>{{activity.date}}</td>
+                  <td>{{activity.description}}</td>
+                  <td>${{activity.subtotal}}</td>
                 </tr>
               </tbody>
             </table>
 
-            <div class="accordion" [ngClass]="{ 'isOpen' : detailsOpen[data.patient] }">
-              <div class="flex justifySpaceBetween alignCenter" (click)="detailsOpen[data.patient]=!detailsOpen[data.patient]">
+            <div class="accordion" [ngClass]="{ 'isOpen' : detailsOpen[plan.id] }">
+              <div class="flex justifySpaceBetween alignCenter" (click)="detailsOpen[plan.id]=!detailsOpen[plan.id]">
                 <div class="flex alignCenter">
                   <label class="accordion__label">Details of Service</label>
                   <div class="accordion__arrow accordion__arrow--lt">
@@ -285,7 +284,7 @@
                   <div>
                     <a class="picName" [routerLink]="['/user/asdf']">
                       <img class="picName__img" src="../../../assets/img/profile.svg" />
-                      {{getEmployee(data.careManager).first_name}} {{getEmployee(data.careManager).last_name}}, {{getEmployee(data.careManager).title}}
+                      N/A
                     </a>
                   </div>
                 </div>
@@ -302,16 +301,16 @@
                       </tr>
                     </thead>
                     <tbody>
-                      <tr *ngFor="let details of data.details">
-                        <td class="left">{{details.action}}</td>
+                      <tr *ngFor="let details of plan.details_of_service">
+                        <td class="left">{{details.get_activity_type_display}}</td>
                         <td class="left">
                           <a [routerLink]="['/user/asdf']" class="picName">
                             <img class="picName__img" src="../../../assets/img/profile.svg" />
-                            {{details.with}}
+                            N/A
                           </a>
                         </td>
-                        <td class="left">{{details.date}}, {{details.time}}</td>
-                        <td>{{details.duration}} minutes</td>
+                        <td class="left">{{details.activity_date}}</td>
+                        <td>{{details.time_spent}} minutes</td>
                       </tr>
                     </tbody>
                   </table>
