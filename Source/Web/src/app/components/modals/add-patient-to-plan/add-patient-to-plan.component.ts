@@ -175,5 +175,14 @@ export class AddPatientToPlanComponent implements OnInit {
         }
       )
     }
+
+    if (this.enrollPatientChecked) {
+      this.store.CarePlan.create({
+        patient: this.selectedPatient.id,
+        plan_template: this.selectedPlan.id,
+      }).subscribe(res => {
+        this.modals.close(res);
+      })
+    }
   }
 }

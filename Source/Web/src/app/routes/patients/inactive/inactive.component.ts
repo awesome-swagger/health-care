@@ -69,7 +69,7 @@ export class InactivePatientsComponent implements OnDestroy, OnInit {
 
   private getInactivePatients(facilityId) {
     return new Promise((resolve, reject) => {
-      let inactivePatientsSub = this.store.Facility.detailRoute('get', facilityId, 'inactive_patients', {}, {}).subscribe(
+      let inactivePatientsSub = this.store.Facility.detailRoute('get', facilityId, 'patients', {}, { type: 'inactive' }).subscribe(
         (inactivePatients:any) => resolve(inactivePatients),
         err => reject(err),
         () => inactivePatientsSub.unsubscribe()

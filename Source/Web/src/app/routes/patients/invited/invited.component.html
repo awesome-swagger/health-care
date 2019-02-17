@@ -1,6 +1,6 @@
 <div class="ssContainer ssContents">
   <div class="flex alignCenter marBottom32">
-    <h1 class="noMargin">Invited Patients ({{invitedPatients?.length}})</h1>
+    <h1 class="noMargin">Invited Patients ({{totalInvited}})</h1>
     <div class="tool__anchor">
       <button class="button button--icon button--icon--small"
       (click)="toolIP1Open=!toolIP1Open">
@@ -83,61 +83,61 @@
     </div> <!--/ container for care plan name filter-->
   </div> <!--/.flex (for filters)-->
 
-  <div class="accordion" [ngClass]="{ 'isOpen' : accord1Open }" *ngFor="let facility of uniqueFacilities()">
-    <div class="accordion__head" (click)="accord1Open=!accord1Open">
-      <span class="accordion__title">{{facility.name}} ({{getPatientsForFacility(facility).length}})</span>
-      <div class="accordion__right">
-        <div class="accordion__arrow">
-          <i class="ss-standard ss-navigateright"></i>
+  <ng-container *ngFor="let facility of facilities">
+    <div class="accordion" [ngClass]="{ 'isOpen' : facilityAccordOpen[facility.id] }">
+      <div class="accordion__head" (click)="facilityAccordOpen[facility.id] = !facilityAccordOpen[facility.id]">
+        <span class="accordion__title">{{facility?.name}} ({{facility?.invitedPatients?.length || 0}})</span>
+        <div class="accordion__right">
+          <div class="accordion__arrow">
+            <i class="ss-standard ss-navigateright"></i>
+          </div>
         </div>
-      </div>
-    </div> <!--/.accordion__head-->
-    <div class="accordion__body">
-      <div class="accordion__contents">
-        <div class="tableWrap fullWidth">
-          <table class="fullWidth">
-            <thead>
-              <tr>
-                <th class="thSortable">
-                  <span class="thSortable__text thSortable__text--left">Patient</span>
-                </th>
-                <th class="thSortable">
-                  <span class="thSortable__text thSortable__text--left">Care Plan</span>
-                </th>
-                <th class="thSortable">
-                  <div class="tool justifyCenter">
-                    <span class="thSortable__text">Also</span>
-                    <div class="tool__anchor">
-                      <button class="button button--icon button--icon--small" (click)="tooltip2Open=!tooltip2Open">
-                        <i class="ss-help"></i>
-                      </button>
-                      <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltip2Open }">
-                        <div class="tool__text">This is the number of additional care plans a patient has. Click the number for details.</div>
+      </div> <!--/.accordion__head-->
+      <div class="accordion__body">
+        <div class="accordion__contents">
+          <div class="tableWrap fullWidth">
+            <table class="fullWidth">
+              <thead>
+                <tr>
+                  <th class="thSortable">
+                    <span class="thSortable__text thSortable__text--left">Patient</span>
+                  </th>
+                  <th class="thSortable">
+                    <span class="thSortable__text thSortable__text--left">Care Plan</span>
+                  </th>
+                  <th class="thSortable">
+                    <div class="tool justifyCenter">
+                      <span class="thSortable__text">Also</span>
+                      <div class="tool__anchor">
+                        <button class="button button--icon button--icon--small" (click)="tooltip2Open=!tooltip2Open">
+                          <i class="ss-help"></i>
+                        </button>
+                        <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltip2Open }">
+                          <div class="tool__text">This is the number of additional care plans a patient has. Click the number for details.</div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </th>
-                <th class="thSortable">
-                  <span class="thSortable__text thSortable__text--left">Emails Sent</span>
-                </th>
-                <th class="thSortable thSortable--sortDown">
-                  <span class="thSortable__text thSortable__text--left">Enrolled</span>
-                </th>
-                <th class="thSortable">
-                  <span class="thSortable__text thSortable__text--left">Phone</span>
-                </th>
-                <th class="noPad"></th>
-                <th class="noPad"></th>
-              </tr>
-            </thead>
-            <tbody>
-              <ng-container *ngFor="let patient of getPatientsForFacility(facility); let i = index">
-                <ng-container *ngFor="let plan of patient.care_plans; let j = index">
-                  <tr *ngIf="activeServiceAreas[plan.service_area] && activeCarePlans[plan.name]">
-                    <td class="left">{{patient.user.first_name}} {{patient.user.last_name}}</td>
+                  </th>
+                  <th class="thSortable">
+                    <span class="thSortable__text thSortable__text--left">Emails Sent</span>
+                  </th>
+                  <th class="thSortable thSortable--sortDown">
+                    <span class="thSortable__text thSortable__text--left">Enrolled</span>
+                  </th>
+                  <th class="thSortable">
+                    <span class="thSortable__text thSortable__text--left">Phone</span>
+                  </th>
+                  <th class="noPad"></th>
+                  <th class="noPad"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <ng-container *ngFor="let patient of facility?.invitedPatients; let i = index">
+                  <tr>
+                    <td class="left">{{patient.full_name}}</td>
                     <td>
                       <div class="iconText">
-                        {{plan.name}}
+                        {{patient.care_plan}}
                       </div>
                     </td>
                     <td>
@@ -155,8 +155,8 @@
                       </a>
                     </td>
                     <td>{{patient.emails_sent}}</td>
-                    <td class="left">{{daysSinceEnroll(patient)}} days ago</td>
-                    <td class="left">{{patient.user.phone}}</td>
+                    <td class="left">0 days ago</td>
+                    <td class="left">{{patient.phone}}</td>
                     <td class="noPad">
                       <button class="button button--center button--icon"
                       (click)="reminderEmail()">
@@ -171,11 +171,11 @@
                     </td>
                   </tr>
                 </ng-container>
-              </ng-container>
-            </tbody>
-          </table>
-        </div> <!--/.tableWrap-->
-      </div> <!--/.accordion__contents-->
-    </div> <!--/.accordion__body-->
-  </div> <!--/.accordion-->
+              </tbody>
+            </table>
+          </div> <!--/.tableWrap-->
+        </div> <!--/.accordion__contents-->
+      </div> <!--/.accordion__body-->
+    </div> <!--/.accordion-->
+  </ng-container>
 </div> <!--/.ssContainer-->

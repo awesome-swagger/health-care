@@ -24,10 +24,10 @@
           </div>
           <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : multi4Open }">
             <div class="drop__buttons">
-              <button class="button button--iconText" (click)="toggleAllCarePlans(true)">
+              <button class="button button--iconText" (click)="toggleAllUsers(true)">
                 <i class="ss-check ss-standard"></i> Check All
               </button>
-              <button class="button button--iconText" (click)="toggleAllCarePlans(false)">
+              <button class="button button--iconText" (click)="toggleAllUsers(false)">
                 <i class="ss-ban"></i> Uncheck All
               </button>
             </div>
@@ -41,7 +41,7 @@
                 class="drop__checkbox styledInput"
                 title="Behavioral Health Initiative"
               >
-                <input type="checkbox" class="styledInput__input" />
+                <input type="checkbox" class="styledInput__input" [(ngModel)]="activeUsers[user.id]" />
                 <span class="styledInput__box"></span>
                 {{user?.user?.first_name}} {{user?.user?.last_name}}
               </label>
@@ -59,16 +59,16 @@
   <div class="info info--horiz">
     <div class="info__cell">
       <label>Active Patients</label>
-      {{activePatients.length}}
+      {{average?.total_patients}}
     </div>
     <div class="info__cell">
       <label>Facilities</label>
-      {{uniqueFacilities().length}}
+      {{average?.total_facilities}}
     </div>
     <div class="info__cell">
       <label>Avg Time</label>
       <div class="pill" [ngClass]="avgTimePillColor()">
-        {{formatTime(avgTimeInMinutes) || ''}}
+        {{average?.totalTime || '0:00'}}
       </div>
     </div>
     <div class="info__cell">
@@ -76,24 +76,24 @@
       <div
         class="pill"
         [ngClass]="{
-          'pill--lime': avgEngagement >= 90,
-          'pill--yellow': avgEngagement < 90 && avgEngagement >= 70,
-          'pill--red': avgEngagement < 70 && avgEngagement >= 50,
-          'pill--purple': avgEngagement < 50
+          'pill--lime': average?.average_engagement >= 90,
+          'pill--yellow': average?.average_engagement < 90 && average?.average_engagement >= 70,
+          'pill--red': average?.average_engagement < 70 && average?.average_engagement >= 50,
+          'pill--purple': average?.average_engagement < 50
         }"
-      >{{avgEngagement || ''}}%</div>
+      >{{average?.average_engagement || '0'}}%</div>
     </div>
     <div class="info__cell">
       <label>Avg Outcome</label>
       <div
         class="pill"
         [ngClass]="{
-          'pill--lime': avgOutcomes >= 90,
-          'pill--yellow': avgOutcomes < 90 && avgOutcomes >= 70,
-          'pill--red': avgOutcomes < 70 && avgOutcomes >= 50,
-          'pill--purple': avgOutcomes < 50
+          'pill--lime': average?.average_outcome >= 90,
+          'pill--yellow': average?.average_outcome < 90 && average?.average_outcome >= 70,
+          'pill--red': average?.average_outcome < 70 && average?.average_outcome >= 50,
+          'pill--purple': average?.average_outcome < 50
         }"
-      >{{avgOutcomes || ''}}%</div>
+      >{{average?.average_outcome || '0'}}%</div>
     </div>
     <div class="info__cell">
       <label>Avg Risk Level</label>
@@ -184,7 +184,7 @@
       <span class="accordion__title">{{facility.name}} ({{getPatientsForFacility(facility).length}})</span>
       <div class="accordion__right">
         <div class="pill marRight32" [ngClass]="avgFacilityTimeColor(facility)">
-          {{formatTime(avgFacilityTimeInMinutes(facility)) || ''}}
+          {{formatTime(avgFacilityTimeInMinutes(facility)) || '0:00'}}
         </div>
         <div
           class="pill"
@@ -249,7 +249,7 @@
             <tbody>
               <ng-container *ngFor="let patient of getPatientsForFacility(facility); let i = index">
                 <ng-container *ngFor="let plan of patient.care_plans; let j = index">
-                  <tr *ngIf="activeServiceAreas[plan.service_area] && activeCarePlans[plan.name]">
+                  <tr *ngIf="activeServiceAreas[plan.service_area] && activeCarePlans[plan.name] && hasActiveUser(plan)">
                     <td class="left hideOverflow">
                       <a class="picName" (click)="routeToPatient(patient)">
                         <img class="picName__img" [src]="patient.user.image_url" *ngIf="patient.user.image_url" />
@@ -276,7 +276,7 @@
                         </div>
                       </a>
                     </td>
-                    <td><div class="pill" [ngClass]="timePillColor(plan)">{{formatTime(plan.time_in_minutes)}}</div>
+                    <td><div class="pill" [ngClass]="timePillColor(plan)">{{formatTime(plan.time_in_minutes) || '0:00'}}</div>
                     </td>
                     <td>
                       <!--TODO: Clicking this link should also open the My Tasks accordion on the patient details page-->
@@ -325,7 +325,7 @@
                     </td>
                     <td class="noPad">
                       <button class="button button--center button--icon button--icon--small"
-                      (click)="confirmRemovePatient()">
+                      (click)="confirmRemovePatient(patient, plan)">
                         <i class="ss-delete"></i>
                       </button>
                     </td>
