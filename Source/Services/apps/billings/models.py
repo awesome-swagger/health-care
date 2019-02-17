@@ -2,7 +2,6 @@ import datetime
 
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
-from django.db.models import Sum
 
 from model_utils import Choices
 
@@ -56,6 +55,9 @@ class BilledActivity(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
         )
     time_spent = models.PositiveIntegerField(
         help_text=_('in minutes'))
+    is_billed = models.BooleanField(
+        default=False,
+        help_text=_('Determines if the instance has been billed externally.'))
 
     class Meta:
         ordering = ('-created', )
