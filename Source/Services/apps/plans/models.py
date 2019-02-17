@@ -95,6 +95,16 @@ class CarePlan(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
     risk_level = models.IntegerField(null=True, blank=True)
     next_checkin = models.DateField(null=True, blank=True)
 
+    # `is_billed` will be set by the signals. This will be toggled to
+    # True/False depending on if all BilledActivity of this instance has
+    # been billed or not
+    is_billed = models.BooleanField(
+        default=False,
+        editable=False,
+        help_text=_(
+            'Determines if all BilledActivity of this instance has been billed'
+        ))
+
     def __str__(self):
         return '{} {}: {}'.format(
             self.patient.user.first_name,

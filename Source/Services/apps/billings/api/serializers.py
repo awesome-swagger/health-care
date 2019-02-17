@@ -27,6 +27,7 @@ class BilledActivitySerializer(RepresentationMixin,
             'notes',
             'time_spent',
             'readable_time_spent',
+            'is_billed',
             'created',
             'modified',
         )

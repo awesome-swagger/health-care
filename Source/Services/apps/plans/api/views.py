@@ -34,6 +34,7 @@ from ..models import (
 from ..permissions import (
     CareTeamMemberPermissions,
     MessageRecipientPermissions,
+    IsAdminOrEmployeePlanMember,
 )
 from .serializers import (
     CarePlanTemplateTypeSerializer,
@@ -447,6 +448,33 @@ class CarePlanViewSet(viewsets.ModelViewSet):
             'risk_level': risk_level
         }
         return Response(data)
+
+    @action(methods=['POST'],
+            detail=True,
+            permission_classes=(permissions.IsAuthenticated,
+                                IsAdminOrEmployeePlanMember))
+    def bill_time(self, request, *args, **kwargs):
+        """
+        Sets the care plan along with its all activities to billed.
+
+        Sample Request
+        ---
+
+            POST /api/care_plans/<care-plan-ID>/bill_time/
+            data: {}
+
+        """
+        plan = self.get_object()
+        if not plan.is_billed:
+            plan.activities.update(is_billed=True)
+            plan.is_billed = True
+            plan.save(update_fields=['is_billed'])
+
+        serializer = self.get_serializer(instance=plan)
+        return Response(
+            data=serializer.data,
+            status=status.HTTP_201_CREATED
+        )
 
 
 class PlanConsentViewSet(viewsets.ModelViewSet):

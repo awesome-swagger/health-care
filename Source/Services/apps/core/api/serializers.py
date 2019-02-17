@@ -1134,10 +1134,15 @@ class BilledActivityDetailSerializer(RepresentationMixin,
             'id',
             'get_activity_type_display',
             'members',
+            'added_by',
             'activity_date',
             'time_spent',
         )
         nested_serializers = [
+            {
+                'field': 'added_by',
+                'serializer_class': BasicEmployeeProfileSerializer
+            },
             {
                 'field': 'members',
                 'serializer_class': BasicEmployeeProfileSerializer,
