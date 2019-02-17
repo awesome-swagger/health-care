@@ -5,6 +5,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from model_utils import Choices
 
+from .signals import billedactivity_post_save
 from care_adopt_backend.mixins import (CreatedModifiedMixin,
                                        UUIDPrimaryKeyMixin)
 
@@ -70,3 +71,10 @@ class BilledActivity(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
 
     def __str__(self):
         return f'{self.added_by}: {self.readable_time_spent}'
+
+
+# SIGNALS
+models.signals.post_save.connect(
+    billedactivity_post_save,
+    sender=BilledActivity
+)
