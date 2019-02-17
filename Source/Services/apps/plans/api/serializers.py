@@ -34,7 +34,7 @@ from apps.core.api.serializers import (
     BasicEmployeeProfileSerializer,
     EmployeeProfileSerializer,
 )
-from apps.core.models import EmployeeProfile
+from apps.core.models import EmployeeProfile, Facility
 from apps.patients.models import PatientProfile
 from apps.tasks.models import (
     AssessmentTask,
@@ -72,14 +72,27 @@ class BasicEmployeePlanSerializer(serializers.ModelSerializer):
         return obj.user.get_image_url()
 
 
-class BasicPatientPlanSerializer(serializers.ModelSerializer):
+class BasicFacilityPlanSerializer(serializers.ModelSerializer):
+    """
+    Basic serializer for :model:`core.Facility`
+    """
+
+    class Meta:
+        model = Facility
+        fields = (
+            'id',
+            'name',
+        )
+
+
+class BasicPatientPlanSerializer(RepresentationMixin,
+                                 serializers.ModelSerializer):
     """
     basic serializer for :model:`patients.PatientProfile`
     """
     first_name = serializers.SerializerMethodField()
     last_name = serializers.SerializerMethodField()
     image_url = serializers.SerializerMethodField()
-    facility = serializers.SerializerMethodField()
 
     class Meta:
         model = PatientProfile
@@ -90,6 +103,12 @@ class BasicPatientPlanSerializer(serializers.ModelSerializer):
             'image_url',
             'facility',
         )
+        nested_serializers = [
+            {
+                'field': 'facility',
+                'serializer_class': BasicFacilityPlanSerializer,
+            }
+        ]
 
     def get_first_name(self, obj):
         return obj.user.first_name
@@ -99,9 +118,6 @@ class BasicPatientPlanSerializer(serializers.ModelSerializer):
 
     def get_image_url(self, obj):
         return obj.user.get_image_url()
-
-    def get_facility(self, obj):
-        return obj.facility.id
 
 
 class CarePlanTemplateTypeSerializer(serializers.ModelSerializer):
