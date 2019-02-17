@@ -200,12 +200,14 @@ class CarePlanSerializer(RepresentationMixin, serializers.ModelSerializer):
             'patient',
             'plan_template',
             'billing_practitioner',
-            'next_checkin'
+            'next_checkin',
+            'is_billed',
         )
         read_only_fields = (
             'id',
             'created',
             'modified',
+            'is_billed',
         )
         nested_serializers = [
             {

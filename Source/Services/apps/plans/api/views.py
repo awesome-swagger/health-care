@@ -469,10 +469,10 @@ class CarePlanViewSet(viewsets.ModelViewSet):
             plan.activities.update(is_billed=True)
             plan.is_billed = True
             plan.save(update_fields=['is_billed'])
+
+        serializer = self.get_serializer(instance=plan)
         return Response(
-            data={
-                'message': _('Successfully billed the given care plan.')
-            },
+            data=serializer.data,
             status=status.HTTP_201_CREATED
         )
 
