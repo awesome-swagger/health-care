@@ -87,7 +87,7 @@
   				{{selectedStatus|titlecase}}
   			</div>
   			<app-popover [visible]="filterStatusOpen" (visibleChange)="filterStatusOpen = $event;">
-  				<ul class="drop__dropdown fullWidth isOpen" (click)="filterStatusOpen = !filterStatusOpen">
+  				<ul class="drop__dropdown fullWidth isOpen">
             <li class="drop__option" (click)="setSelectedStatus('all')">
   						<a class="drop__link">
   							All Billings
@@ -174,14 +174,14 @@
       </div>
     </div>
   </div>
-  <ng-container>
-    <h2 class="marBottom16 marTop48">Facility Name: Billing Practitioners (0) Billable Patients (0)</h2>
-    <div class="accordion" *ngFor="let bp of billingPractitioners" [ngClass]="{ 'isOpen' : practitionerDropdownOpen[bp.id] }">
+  <ng-container *ngFor="let facility of getUniqueFacilities()">
+    <h2 class="marBottom16 marTop48">{{facility.name}}: Billing Practitioners ({{getFacilityPractitioners(facility.id).length}}) Billable Patients ({{facilityBillablePatientsCount(facility.id)}})</h2>
+    <div class="accordion" *ngFor="let bp of getFacilityPractitioners(facility.id)" [ngClass]="{ 'isOpen' : practitionerDropdownOpen[bp.id] }">
       <div class="accordion__head" (click)="practitionerDropdownOpen[bp.id]=!practitionerDropdownOpen[bp.id]">
-        <span class="accordion__title">Billing Practitioner: {{bp.first_name}} {{bp.last_name}}<span *ngIf="bp.title">, {{bp.title}}</span> ({{bp.plans.length}})</span>
+        <span class="accordion__title">Billing Practitioner: {{bp.first_name}} {{bp.last_name}}<span *ngIf="bp.title">, {{bp.title}}</span> ({{getPractitionerPlansAtFacility(bp.id, facility.id).length}})</span>
         <div class="accordion__right">
-          <div class="pill">
-            Billed 0 / 0
+          <div class="pill" [ngStyle]="{'background': utils.percentPillColor(getBilledPercent(bp.id, facility.id)) }">
+            Billed {{plansBilledCount(getPractitionerPlansAtFacility(bp.id, facility.id))}} / {{getPractitionerPlansAtFacility(bp.id, facility.id).length}}
           </div>
           <div class="accordion__arrow">
             <i class="ss-standard ss-navigateright"></i>
@@ -190,11 +190,10 @@
       </div> <!--/.accordion__head-->
       <div class="accordion__body">
         <div class="accordion__contents">
-
-          <div class="info" [ngClass]="{ 'info--green' : plan.is_billed }" *ngFor="let plan of bp.plans">
+          <div class="info" [ngClass]="{ 'info--green' : plan.is_billed }" *ngFor="let plan of getPractitionerPlansAtFacility(bp.id, facility.id)">
             <div class="flex justifySpaceBetween marBottom24">
               <div>
-                <a (click)="routeToPatient(plan.patient)" class="picName">
+                <a (click)="routeToPatient(plan.patient.id)" class="picName">
                   <img class="picName__img" [src]="plan.patient.image_url" />
                   {{plan.patient.first_name}} {{plan.patient.last_name}}
                 </a>
@@ -212,7 +211,7 @@
               </div>
               <div>
                 <label class="styledInput">
-                  <input type="checkbox" class="styledInput__input" [checked]="plan.is_billed" (change)="plan.is_billed=!plan.is_billed" />
+                  <input type="checkbox" class="styledInput__input" [disabled]="plan.is_billed" [checked]="plan.is_billed" (click)="markPlanBilled(plan)" />
                   <span class="styledInput__box"></span>
                   Billed
                 </label>
@@ -292,7 +291,7 @@
                             {{details.added_by.user.first_name}} {{details.added_by.user.last_name}}
                           </a>
                         </td>
-                        <td class="left">{{moment(details.activity_date).format('MMMM d, YYYY')}}</td>
+                        <td class="left">{{moment(details.activity_date).format('MMMM D, YYYY')}}</td>
                         <td>{{details.time_spent}} minutes</td>
                       </tr>
                     </tbody>

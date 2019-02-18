@@ -2,9 +2,13 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import  { Subscription } from 'rxjs';
 import * as moment from 'moment';
-import { sumBy as _sumBy, uniqBy as _uniqBy, groupBy as _groupBy } from 'lodash';
-import { AuthService, StoreService } from '../../services';
-import mockData from './billingData';
+import {
+  sumBy as _sumBy,
+  uniqBy as _uniqBy,
+  groupBy as _groupBy,
+  flattenDeep as _flattenDeep,
+} from 'lodash';
+import { AuthService, StoreService, UtilsService, } from '../../services';
 
 @Component({
   selector: 'app-billing',
@@ -57,11 +61,10 @@ export class BillingComponent implements OnDestroy, OnInit {
     private router: Router,
     private auth: AuthService,
     private store: StoreService,
+    public utils: UtilsService,
   ) { }
 
   public ngOnInit() {
-    this.billingData = mockData.billingData;
-    this.employees = this.getUniqueBPs();
     this.authSub = this.auth.user$.subscribe((user) => {
       if (!user) {
         return;
@@ -157,7 +160,6 @@ export class BillingComponent implements OnDestroy, OnInit {
     });
     this.resolveBillingPractitioners(this.organization.id).then((billingPractitioners: any) => {
       this.billingPractitioners = billingPractitioners.map((bp) => {
-      // TODO: Remove when actual filters are available
         let filteredPlans = bp.plans.filter((plan) => {
           if (this.selectedStatus === 'all') {
             return true;
@@ -173,41 +175,6 @@ export class BillingComponent implements OnDestroy, OnInit {
         return bp;
       });
     });
-  }
-
-  public filteredBilling() {
-    return this.billingData.filter((billingObj) => {
-      if (this.selectedStatus === 'all') {
-        return true;
-      } else if (this.selectedStatus === 'not-billed') {
-        return !billingObj.isBilled;
-      } else if (this.selectedStatus === 'billed') {
-        return billingObj.isBilled;
-      } else {
-        return true;
-      }
-    }).filter((billingObj) => {
-      if (!this.selectedEmployee) {
-        return true;
-      }
-      return billingObj.billingPractitioner === this.selectedEmployee.id;
-    });
-  }
-
-  public getPillColor(percentage) {
-    if (percentage >= 90) {
-      return '#4caf50';
-    } else if (percentage <= 89 && percentage >= 70) {
-      return '#ff9800';
-    } else if (percentage <= 69 && percentage >= 50) {
-       return '#ca2c4e';
-    } else {
-      return '#880e4f';
-    }
-  }
-
-  public getUniqueBPs() {
-    return _uniqBy(this.billingData.map((obj) => this.getEmployee(obj.billingPractitioner)), (obj) => obj.id);
   }
 
   public decrementMonth() {
@@ -262,8 +229,60 @@ export class BillingComponent implements OnDestroy, OnInit {
     this.employeeSearch = `${employee.first_name} ${employee.last_name}, ${employee.title}`;
   }
 
-  public getEmployee(id) {
-    return mockData.employees.find((obj) => obj.id === id);
+  public getUniqueFacilities() {
+    let facilities = this.billingPractitioners.map((bp) => {
+      return bp.plans.map((plan) => plan.patient.facility);
+    });
+    facilities = _uniqBy(_flattenDeep(facilities), (obj) => obj.id);
+    return facilities;
+  }
+
+  public getFacilityPractitioners(facilityId) {
+    let practitioners = this.billingPractitioners.filter((obj) => {
+      let facilityIds = obj.plans.map((plan) => plan.patient.facility.id);
+      return facilityIds.includes(facilityId);
+    });
+    return practitioners;
+  }
+
+  public getPractitionerPlansAtFacility(practitionerId, facilityId) {
+    let practitioner = this.billingPractitioners.find((obj) => obj.id === practitionerId);
+    if (!practitioner) {
+      return [];
+    }
+    return practitioner.plans.filter((obj) => {
+      return obj.patient.facility.id === facilityId;
+    });
+  }
+
+  public plansBilledCount(plans) {
+    return plans.filter((obj) => obj.is_billed).length;
+  }
+
+  public facilityBillablePatientsCount(facilityId) {
+    let practitioners = this.getFacilityPractitioners(facilityId);
+    return _sumBy(practitioners, (obj) => {
+      let plansCount = this.getPractitionerPlansAtFacility(obj.id, facilityId).length;
+      return plansCount;
+    });
+  }
+
+  public getBilledPercent(practitionerId, facilityId) {
+    let calc = this.plansBilledCount(this.getPractitionerPlansAtFacility(practitionerId, facilityId)) /
+              this.getPractitionerPlansAtFacility(practitionerId, facilityId).length;
+    return calc * 100;
+  }
+
+  public markPlanBilled(plan) {
+    let billSub = this.store.CarePlan.detailRoute('post', plan.id, 'bill_time').subscribe(
+      (success) => {
+        plan.is_billed = true;
+      },
+      (err) => {},
+      () => {
+        billSub.unsubscribe();
+      }
+    );
   }
 
   public minutesToHours(n) {
