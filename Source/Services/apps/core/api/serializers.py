@@ -1187,6 +1187,7 @@ class BilledPlanSerializer(serializers.ModelSerializer):
     """
     billed_activities = serializers.SerializerMethodField()
     details_of_service = serializers.SerializerMethodField()
+    care_manager = BasicEmployeeProfileSerializer(many=True)
 
     class Meta:
         model = CarePlan
@@ -1201,11 +1202,6 @@ class BilledPlanSerializer(serializers.ModelSerializer):
             {
                 'field': 'patient',
                 'serializer_class': BilledPatientSerializer
-            },
-            {
-                'field': 'care_manager',
-                'serializer_class': BasicEmployeeProfileSerializer,
-                'many': True
             }
         ]
 
