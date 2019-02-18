@@ -1145,6 +1145,7 @@ class BilledActivityDetailSerializer(RepresentationMixin,
             'get_activity_type_display',
             'members',
             'added_by',
+            'is_billed',
             'activity_date',
             'time_spent',
         )
@@ -1211,6 +1212,7 @@ class BilledPlanSerializer(RepresentationMixin, serializers.ModelSerializer):
         fields = (
             'id',
             'patient',
+            'is_billed',
             'billed_activities',
             'details_of_service',
             'care_manager',
