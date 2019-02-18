@@ -861,7 +861,19 @@ class CarePlanByTemplateFacilitySerializer(CarePlanOverviewSerializer):
     serializer to be used by :model:`plans.CarePlan` with
     data relevant in dashboard average endpoint
     """
-    pass
+    class Meta(CarePlanOverviewSerializer.Meta):
+        fields = (
+            'id',
+            'patient',
+            'plan_template',
+            'other_plans',
+            'tasks_this_week',
+            'average_outcome',
+            'average_engagement',
+            'risk_level',
+            'created'
+        )
+
 
 
 class PatientCarePlanOverviewSerializer(CarePlanOverviewSerializer):
