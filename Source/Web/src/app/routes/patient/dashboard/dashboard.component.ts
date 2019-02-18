@@ -13,6 +13,7 @@ export class PatientDashboardComponent implements OnDestroy, OnInit {
 
   public patient = null;
   public carePlans = null;
+  public patientAverage = null;
 
   public datepickerOptions = {
      relativeTop: '-368px',
@@ -35,6 +36,13 @@ export class PatientDashboardComponent implements OnDestroy, OnInit {
       this.getCarePlans(params.patientId).then((plans) => {
         this.carePlans = plans;
       });
+
+      this.store.CarePlan.detailRoute('GET', null, 'patient_average', {}, {
+        patient: params.patientId,
+        plan: params.planId,
+      }).subscribe(res => {
+        this.patientAverage = res;
+      })
     });
   }
 
