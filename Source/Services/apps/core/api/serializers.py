@@ -603,6 +603,16 @@ class FacilitySerializer(RepresentationMixin, serializers.ModelSerializer):
         ]
 
 
+class BasicFacilitySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Facility
+        fields = (
+            'id',
+            'name',
+        )
+
+
 class InsuranceSerializer(RepresentationMixin, serializers.ModelSerializer):
     class Meta:
         model = Facility
@@ -1151,7 +1161,8 @@ class BilledActivityDetailSerializer(RepresentationMixin,
         ]
 
 
-class BilledPatientSerializer(serializers.ModelSerializer):
+class BilledPatientSerializer(RepresentationMixin,
+                              serializers.ModelSerializer):
     """
     serializer to be used by :model:`patients.PatientProfile` who have
     billing details.
@@ -1168,7 +1179,14 @@ class BilledPatientSerializer(serializers.ModelSerializer):
             'first_name',
             'last_name',
             'image_url',
+            'facility',
         )
+        nested_serializers = [
+            {
+                'field': 'facility',
+                'serializer_class': BasicFacilitySerializer
+            }
+        ]
 
     def get_first_name(self, obj):
         return obj.user.first_name
@@ -1180,14 +1198,13 @@ class BilledPatientSerializer(serializers.ModelSerializer):
         return obj.user.get_image_url()
 
 
-class BilledPlanSerializer(serializers.ModelSerializer):
+class BilledPlanSerializer(RepresentationMixin, serializers.ModelSerializer):
     """
     serializer to be used by :model:`plans.CarePlan` having
     billing details.
     """
     billed_activities = serializers.SerializerMethodField()
     details_of_service = serializers.SerializerMethodField()
-    care_manager = BasicEmployeeProfileSerializer(many=True)
 
     class Meta:
         model = CarePlan
@@ -1202,6 +1219,11 @@ class BilledPlanSerializer(serializers.ModelSerializer):
             {
                 'field': 'patient',
                 'serializer_class': BilledPatientSerializer
+            },
+            {
+                'field': 'care_manager',
+                'serializer_class': BasicEmployeeProfileSerializer,
+                'many': True
             }
         ]
 
