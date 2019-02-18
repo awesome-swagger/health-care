@@ -136,7 +136,7 @@
 
   <div class="info info--horiz marBottom48">
     <div class="info__cell">
-      <label class="tool info__tool justifyCenter">
+      <div class="psuedo-label tool info__tool justifyCenter">
         Billable Patients
         <div class="tool__anchor">
           <button class="button button--icon button--icon--small" (click)="billablePatientsHelpOpen = !billablePatientsHelpOpen">
@@ -150,7 +150,7 @@
             </div>
           </app-popover>
         </div>
-      </label>
+      </div>
       {{overviewStats?.billable_patients}}
     </div>
     <div class="info__cell">

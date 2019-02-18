@@ -2,8 +2,10 @@ import { Component, Input, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import * as moment from 'moment';
 import { ModalService } from '../../modules/modals';
-import { PlanDurationComponent } from '../../components/modals/plan-duration/plan-duration.component';
 import { AuthService, StoreService, UtilsService } from '../../services';
+import { PlanDurationComponent } from '../../components/modals/plan-duration/plan-duration.component';
+import { ReassignPatientsComponent, } from '../../components/modals/reassign-patients/reassign-patients.component';
+import { AddPlanComponent } from '../../routes/plans/modals/add-plan/add-plan.component';
 
 @Component({
   selector: 'app-plan-header',
@@ -18,8 +20,6 @@ export class PlanHeaderComponent implements OnInit, OnDestroy {
   public editName = false;
   public newPlanName = '';
   public carePlanAverage = null;
-
-  public openReassignPatients;
   public addPlan;
 
   constructor(
@@ -101,6 +101,24 @@ export class PlanHeaderComponent implements OnInit, OnDestroy {
     );
   }
 
+  public duplicatePlan() {
+    this.modals.open(AddPlanComponent, {
+      closeDisabled: true,
+      data: {
+        duplicating: true,
+      },
+      width: '480px',
+    });
+  }
+
+  public openReassignPatients() {
+    this.modals.open(ReassignPatientsComponent, {
+      closeDisabled: true,
+      width: 'calc(100vw - 48px)',
+      minWidth: '976px',
+    }).subscribe(() => {});
+  }
+
   public getAverages(organization, planId) {
     let promise = new Promise((resolve, reject) => {
       let averagesSub = this.store.CarePlanTemplate.detailRoute('get', planId, 'average', {}, {
@@ -127,17 +145,5 @@ export class PlanHeaderComponent implements OnInit, OnDestroy {
 
   public set planTemplate(value) {
     this._planTemplate = value;
-  }
-
-  public getPillColor(percentage) {
-    if (percentage >= 90) {
-      return '#4caf50';
-    } else if (percentage <= 89 && percentage >= 70) {
-      return '#ff9800';
-    } else if (percentage <= 69 && percentage >= 50) {
-       return '#ca2c4e';
-    } else {
-      return '#880e4f';
-    }
   }
 }

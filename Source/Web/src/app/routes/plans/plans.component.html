@@ -168,7 +168,8 @@
               <th class="thSortable">
                 <span class="thSortable__text">Avg Outcome</span>
               </th>
-              <th class="thSortable thSortable--sortDown thSortable--sortUp">
+              <!-- <th class="thSortable thSortable--sortDown thSortable--sortUp"> -->
+              <th class="thSortable">
                 <span class="thSortable__text">Risk Level</span>
               </th>
               <!-- <th></th> -->
@@ -184,31 +185,41 @@
               <td>{{item.averages.total_facilities}}</td>
               <td>
                 <div class="pill">
-                  {{item.averages.time_count}}
+                  <span *ngIf="!item.averages.time_count">0:00</span>
+                  <span *ngIf="item.averages.time_count">{{item.averages.time_count}}</span>
                 </div>
               </td>
               <td>{{item.duration_weeks}} weeks</td>
               <td>
-                <div class="pill" [ngStyle]="{'background': utils.percentPillColor(item.averages.average_engagement)}">
+                <div class="pill" *ngIf="item.averages.total_patients === 0">
+                  N/A
+                </div>
+                <div class="pill" *ngIf="item.averages.total_patients > 0" [ngStyle]="{'background': utils.percentPillColor(item.averages.average_engagement)}">
                   {{item.averages.average_engagement}}%
                 </div>
               </td>
               <td>
-                <div class="pill" [ngStyle]="{'background': utils.percentPillColor(item.averages.average_outcome)}">
+                <div class="pill" *ngIf="item.averages.total_patients === 0">
+                  N/A
+                </div>
+                <div class="pill" *ngIf="item.averages.total_patients > 0" [ngStyle]="{'background': utils.percentPillColor(item.averages.average_outcome)}">
                   {{item.averages.average_outcome}}%
                 </div>
               </td>
               <td>
-                <div class="pill" [ngStyle]="{'background': utils.percentPillColor(item.averages.risk_level)}">
+                <div class="pill" *ngIf="item.averages.total_patients === 0">
+                  N/A
+                </div>
+                <div class="pill" *ngIf="item.averages.total_patients > 0" [ngStyle]="{'background': utils.percentPillColor(item.averages.risk_level)}">
                   {{utils.getRiskLevelText(item.averages.risk_level)}} {{item.averages.risk_level}}%
                 </div>
               </td>
-              <!-- <td>
+              <td>
                 <button class="button button--icon"
-                (click)="copyPlan()">
+                (click)="duplicatePlan()">
                   <i class="ss-files"></i>
                 </button>
-              </td> -->
+              </td>
             </tr>
           </tbody>
         </table>

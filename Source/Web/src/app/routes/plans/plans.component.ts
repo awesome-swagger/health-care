@@ -225,13 +225,6 @@ export class PlansComponent implements OnDestroy, OnInit {
     });
   }
 
-  public copyPlan() {
-    this.modals.open(AddPlanComponent, {
-      closeDisabled: true,
-      width: '480px',
-    }).subscribe(() => {});
-  }
-
   public clickCheckAllFacilities() {
     this.facilitiesChecked = {};
     this.facilities.map((obj) => {
@@ -253,6 +246,9 @@ export class PlansComponent implements OnDestroy, OnInit {
     if (!templates || templates.length === 0) {
       return 0;
     }
-    return _sumBy(templates, (template) => template.averages.risk_level) / templates.length;
+    let activeTemplates = templates.filter((obj) => {
+      return obj.averages.total_patients > 0;
+    });
+    return _sumBy(activeTemplates, (template) => template.averages.risk_level) / activeTemplates.length;
   }
 }
