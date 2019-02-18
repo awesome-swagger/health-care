@@ -603,6 +603,16 @@ class FacilitySerializer(RepresentationMixin, serializers.ModelSerializer):
         ]
 
 
+class BasicFacilitySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Facility
+        fields = (
+            'id',
+            'name',
+        )
+
+
 class InsuranceSerializer(RepresentationMixin, serializers.ModelSerializer):
     class Meta:
         model = Facility
@@ -1135,6 +1145,7 @@ class BilledActivityDetailSerializer(RepresentationMixin,
             'get_activity_type_display',
             'members',
             'added_by',
+            'is_billed',
             'activity_date',
             'time_spent',
         )
@@ -1151,7 +1162,8 @@ class BilledActivityDetailSerializer(RepresentationMixin,
         ]
 
 
-class BilledPatientSerializer(serializers.ModelSerializer):
+class BilledPatientSerializer(RepresentationMixin,
+                              serializers.ModelSerializer):
     """
     serializer to be used by :model:`patients.PatientProfile` who have
     billing details.
@@ -1168,7 +1180,14 @@ class BilledPatientSerializer(serializers.ModelSerializer):
             'first_name',
             'last_name',
             'image_url',
+            'facility',
         )
+        nested_serializers = [
+            {
+                'field': 'facility',
+                'serializer_class': BasicFacilitySerializer
+            }
+        ]
 
     def get_first_name(self, obj):
         return obj.user.first_name
@@ -1180,7 +1199,7 @@ class BilledPatientSerializer(serializers.ModelSerializer):
         return obj.user.get_image_url()
 
 
-class BilledPlanSerializer(serializers.ModelSerializer):
+class BilledPlanSerializer(RepresentationMixin, serializers.ModelSerializer):
     """
     serializer to be used by :model:`plans.CarePlan` having
     billing details.
@@ -1193,6 +1212,7 @@ class BilledPlanSerializer(serializers.ModelSerializer):
         fields = (
             'id',
             'patient',
+            'is_billed',
             'billed_activities',
             'details_of_service',
             'care_manager',
