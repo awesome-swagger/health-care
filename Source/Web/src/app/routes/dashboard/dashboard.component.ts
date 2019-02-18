@@ -8,8 +8,11 @@ import * as moment from 'moment';
 import { Subscription } from 'rxjs';
 import patientsEnrolledData from './patientsEnrolledData';
 import {
-  find as _find
+  filter as _filter,
+  find as _find,
+  map as _map,
 } from 'lodash';
+import { map } from 'd3';
 
 @Component({
   selector: 'app-dashboard',
@@ -18,6 +21,7 @@ import {
 })
 export class DashboardComponent implements OnInit, OnDestroy {
 
+  public org = null;
   public patients = null;
   public patientsGrouped = null;
   public employees = [];
@@ -25,9 +29,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
   public facilities = [];
   public facilityChecked = {};
 
+  public riskLevelBreakdown = null;
+  public billingOverview = null;
+
   public analyticsData = null;
 
-  public patientsEnrolledData = patientsEnrolledData;
+  public patientsEnrolledData = [];
   public filteredPatientsEnrolledData = patientsEnrolledData;
 
   public multiOpen;
@@ -68,13 +75,36 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     this.organizationSub = this.auth.organization$.subscribe(
       org => {
+
         if (!org) return;
+        this.org = org;
         this.store.EmployeeProfile.readList().subscribe((res) => {
           this.employees = res.results;
           this.employees.forEach(employee => {
-            this.employeeChecked[employee.id] = true;
+            this.employeeChecked[employee.id] = false;
           })
+          this.refreshRiskLevels()
         })
+
+        this.store.Organization.detailRoute('GET', org.id, 'patients_enrolled_over_time').subscribe(
+          (res:any) => {
+            this.patientsEnrolledData = _map(Object.keys(res.graph), month => {
+              return {
+                month,
+                enrolled: res.graph[month].enrolled_patients,
+                billable: res.graph[month].billable_patients,
+              }
+            }).reverse();
+            this.filterData();
+          }
+        )
+
+        this.store.Organization.detailRoute('GET', org.id, 'billed_activities/overview').subscribe(
+          (res:any) => {
+            this.billingOverview = res;
+          }
+        )
+
         this.store.Facility.readList({
           organization_id: org.id,
         }).subscribe((res) => {
@@ -104,11 +134,26 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return [start, end];
   }
 
+  public refreshAll() {
+    this.refreshRiskLevels();
+  }
+
+  public refreshRiskLevels() {
+    if (this.org) {
+      this.store.Organization.detailRoute('GET', this.org.id, 'patient_risk_levels', {}, {
+        employees: _filter(Object.keys(this.employeeChecked), id => this.employeeChecked[id]).join(','),
+      }).subscribe((res:any) => {
+        this.riskLevelBreakdown = res;
+      });
+    }
+  }
+
   public toggleAllFilterList(list:any, state:boolean) {
     const keys = Object.keys(list);
     keys.forEach(key => {
      list[key] = state;
     })
+    this.refreshAll();
   }
 
   public toggleAllUsers(state:boolean) {
@@ -123,12 +168,25 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.filteredPatientsEnrolledData = this.patientsEnrolledData
       .slice(
         this.patientsEnrolledData.indexOf(
-          _find(this.patientsEnrolledData, d => d.month === this.patientsEnrolledStart.format('MMMM, YYYY'))
+          _find(this.patientsEnrolledData, d => d.month == this.patientsEnrolledStart.format('MMMM YYYY'))
         ),
         this.patientsEnrolledData.indexOf(
-          _find(this.patientsEnrolledData, d => d.month === this.patientsEnrolledEnd.format('MMMM, YYYY'))
+          _find(this.patientsEnrolledData, d => d.month == this.patientsEnrolledEnd.format('MMMM YYYY'))
         ),
       );
+  }
+
+  public get riskLevelPercent() {
+    if (this.riskLevelBreakdown) {
+      let { on_track, low_risk, med_risk, high_risk } = this.riskLevelBreakdown;
+      const total = on_track + low_risk + med_risk + high_risk;
+      on_track = Math.floor(on_track / total * 100);
+      low_risk = Math.floor(low_risk / total * 100);
+      med_risk = Math.floor(med_risk / total * 100);
+      high_risk = Math.floor(high_risk / total * 100);
+      return { on_track, low_risk, med_risk, high_risk };
+    }
+    return { on_track: 0, low_risk: 0, med_risk: 0, high_risk: 0 }
   }
 
 }

@@ -139,46 +139,46 @@
   <div class="info info--horiz">
     <div class="info__cell">
       <label>Readmits</label>
-      {{patient?.statistics?.readmits}}
+      {{patientStats?.readmissions_count}}
     </div>
     <div class="info__cell">
       <label>Readmit %</label>
-      {{patient?.statistics?.readmitPercent}}
+      {{patientStats?.readmissions_percent}}
     </div>
     <div class="info__cell">
       <label>Cost of Readmits</label>
-      {{patient?.statistics?.readmitCost}}
+      {{patientStats?.readmissions_cost}}
     </div>
     <div class="info__cell">
       <label>ED Visits</label>
-      {{patient?.statistics?.edVisits}}
+      {{patientStats?.ed_visits}}
     </div>
     <div class="info__cell">
       <label>Opioid Use</label>
-      {{patient?.statistics?.opioidUse}}
+      {{patientStats?.opioid_use}}
     </div>
   </div> <!--/.info (first one for patient stats)-->
 
   <div class="info info--horiz">
     <div class="info__cell">
       <label>Admits</label>
-      {{patient?.statistics?.admits}}
+      {{patientStats?.admits}}
     </div>
     <div class="info__cell">
       <label>Avg Stay</label>
-      {{patient?.statistics?.avgStay}}
+      {{patientStats?.avg_stay_length}}
     </div>
     <div class="info__cell">
       <label>PCP Visits</label>
-      {{patient?.statistics?.pcpVisits}}
+      {{patientStats?.pcp_visits}}
     </div>
     <div class="info__cell">
       <label>Specialist Visits</label>
-      {{patient?.statistics?.specialistVisits}}
+      {{patientStats?.specialist_visits}}
     </div>
     <div class="info__cell">
       <label>Total Cost</label>
-      {{patient?.statistics?.totalCost}}
+      {{patientStats?.total_cost}}
     </div>
   </div> <!--/.info (second one for patient stats)-->
 </div>

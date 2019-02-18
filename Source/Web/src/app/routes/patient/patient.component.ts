@@ -21,6 +21,7 @@ import * as moment from 'moment';
 import {
   find as _find
 } from 'lodash';
+import { st } from '@angular/core/src/render3';
 
 @Component({
   selector: 'app-patient',
@@ -36,6 +37,7 @@ export class PatientComponent implements OnDestroy, OnInit {
   public problemAreas = [];
   public patientProcedures = [];
   public teamListOpen = -1;
+  public patientStats = null;
 
   public editName;
   public tooltipPSOpen;
@@ -53,7 +55,7 @@ export class PatientComponent implements OnDestroy, OnInit {
   public ngOnInit() {
     this.nav.normalState();
     this.routeSub = this.route.params.subscribe((params) => {
-      this.getPatient(params.patientId).then((patient) => {
+      this.getPatient(params.patientId).then((patient:any) => {
         this.patient = patient;
         this.nav.addRecentPatient(this.patient);
         this.getCarePlans(this.patient.id).then((carePlans: any) => {
@@ -66,6 +68,10 @@ export class PatientComponent implements OnDestroy, OnInit {
           this.patientProcedures = patientProcedures;
           console.log(this.patientProcedures);
         });
+
+        this.store.PatientStat.readListPaged().subscribe(res => {
+          this.patientStats = _find(res, stat => stat.mrn === patient.emr_code);
+        })
 
         this.getPatientDiagnoses(this.patient);
         

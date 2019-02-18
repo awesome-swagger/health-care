@@ -14,20 +14,36 @@ export class ActivePatientsGraphComponent implements OnInit {
 
   @ViewChild('chart') private chartContainer: ElementRef;
 
+  private _data = null;
+
   constructor() { }
 
-  ngOnInit() {
+  @Input()
+  public get data() {
+    return this._data;
+  }
 
+  public set data(percent) {
+    this._data = percent;
+    this.drawChart();
+  }
+
+  ngOnInit() {
+    this.drawChart();
+  }
+
+  private drawChart() {
+    if (!this.data) return;
     class PatientData {
       name: string;
       value: number;
       color: string;
     }
     var data = [
-      {name: "On Track", value: 401, color: '#6DB744' },
-      {name: "Low Risk", value: 110, color: '#F1A949' },
-      {name: "Med Risk", value: 74, color: '#CA2C4E' },
-      {name: "High Risk", value: 31, color: '#880E4F' },
+      {name: "On Track", value: this.data.on_track, color: '#6DB744' },
+      {name: "Low Risk", value: this.data.low_risk, color: '#F1A949' },
+      {name: "Med Risk", value: this.data.med_risk, color: '#CA2C4E' },
+      {name: "High Risk", value: this.data.high_risk, color: '#880E4F' },
     ];
 
     const total = _sum(_map(data, d => d.value));
@@ -39,6 +55,7 @@ export class ActivePatientsGraphComponent implements OnInit {
     var radius = Math.min(width, height) / 2;
 
     let element = this.chartContainer.nativeElement;
+    element.innerHTML = '';
     var svg = d3.select(element)
     .append('svg')
     .attr('class', 'pie')
@@ -83,6 +100,7 @@ export class ActivePatientsGraphComponent implements OnInit {
       .style('font-size', '2rem')
       .style('font-weight', 100)
       .text('active patients');
+
 
   }
 

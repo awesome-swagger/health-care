@@ -28,6 +28,7 @@ export class StoreService {
   public PatientProcedure = new Store(this.http, 'patient_procedures');
   public PatientMedication = new Store(this.http, 'patient_medications');
   public PotentialPatient = new Store(this.http, 'potential_patients');
+  public PatientStat = new Store(this.http, 'patient_stats');
   // Plans
   public CarePlanTemplate = new Store(this.http, 'care_plan_templates');
   public CarePlanTemplateType = new Store(this.http, 'care_plan_template_types');
