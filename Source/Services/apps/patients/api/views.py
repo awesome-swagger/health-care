@@ -342,6 +342,9 @@ class PatientMedicationViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         queryset = super(PatientMedicationViewSet, self).get_queryset()
+        patient = self.request.query_params.get('patient')
+        if patient:
+            queryset = queryset.filter(patient_id=patient)
 
         if self.request.user.is_employee:
             employee = self.request.user.employee_profile
