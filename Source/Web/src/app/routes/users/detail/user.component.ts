@@ -28,6 +28,8 @@ export class UserComponent implements OnDestroy, OnInit {
   public careTeam = [];
   public roleDetails = {};
   public selectedRole = [];
+  public billingPractitioners = [];
+  public selectedBillingPractitioner = [];
 
   public tooltip1Open;
   public tooltip2Open;
@@ -56,6 +58,17 @@ export class UserComponent implements OnDestroy, OnInit {
         (employee) => {
           this.employee = employee;
           console.log('employee', this.employee);
+
+          this.store.BillingCoordinator.readListPaged().subscribe((res:any) => {
+            res.forEach(bc => {
+              if (bc.user.id !== this.employee.id) return;
+              const facility = _find(this.employee.facilities, f => f.id = bc.facility.id);
+              if (!facility.billingCoordinators) {
+                facility.billingCoordinators = [];
+              }
+              facility.billingCoordinators.push(bc);
+            })
+          })
         },
         (err) => {
           this.router.navigate(['/error']);
@@ -76,6 +89,7 @@ export class UserComponent implements OnDestroy, OnInit {
       function groupByRole(careTeams) {
         const roles = {};
         careTeams.forEach(t => {
+          if (!t.role) return;
           if (roles[t.role.id]) {
             roles[t.role.id].push(t);
           } else {
@@ -104,6 +118,10 @@ export class UserComponent implements OnDestroy, OnInit {
       err => {},
       () => rolesSub.unsubscribe()
     );
+
+    const employeesSub = this.store.EmployeeProfile.readListPaged().subscribe(res => {
+      this.billingPractitioners = _filter(res, employee => employee.billing_view)
+    })
 
   }
 
@@ -157,18 +175,28 @@ export class UserComponent implements OnDestroy, OnInit {
     });
   }
 
-  public confirmRemoveBC() {
+  public confirmRemoveBC(bc) {
+    const cancelText = 'Cancel';
+    const okText = 'Continue';
     this.modals.open(ConfirmModalComponent, {
      'closeDisabled': true,
      data: {
        title: 'Remove BC?',
        body: 'Are you sure you want to remove this billing coordinator?',
-       cancelText: 'Cancel',
-       okText: 'Continue',
+       cancelText,
+       okText,
       },
       width: '384px',
-    }).subscribe(() => {
-    // do something with result
+    }).subscribe((res) => {
+      if (res === okText) {
+        this.store.BillingCoordinator.destroy(bc.id).subscribe((res:any) => {
+          this.employee.facilities.forEach(facility => {
+            if (facility.billingCoordinators) {
+              facility.billingCoordinators = _filter(facility.billingCoordinators, b => b.id !== bc.id);
+            }
+          })
+        })
+      }
     });
   }
 
@@ -217,6 +245,38 @@ export class UserComponent implements OnDestroy, OnInit {
     })
   }
 
+  public confirmAddBC(i) {
+    const billingPractitioner = this.selectedBillingPractitioner[i];
+    const name = `${billingPractitioner.user.first_name} ${billingPractitioner.user.last_name}`;
+    const cancelText = 'Cancel';
+    const okText = 'Continue';
+    this.modals.open(ConfirmModalComponent, {
+      'closeDisabled': true,
+      data: {
+        title: 'Add Billing Coordinator?',
+        body: `Do you want to make ${name} a billing coordinator`,
+        cancelText,
+        okText,
+      },
+      width: '384px',
+    }).subscribe(res => {
+      if (res === okText) {
+        this.store.BillingCoordinator.create({
+          facility: this.employee.facilities[i].id,
+          user: this.employee.id,
+          coordinator: billingPractitioner.id,
+        }).subscribe((res:any) => {
+          const facility = this.employee.facilities[i];
+          if (!facility.billingCoordinators) {
+            facility.billingCoordinators = [];
+          }
+          facility.billingCoordinators.push(res);
+        })
+      }
+    })
+
+  }
+
   public confirmRemoveRole(role) {
     const employeeName = `${this.employee.user.first_name} ${this.employee.user.last_name}`;
     const cancelText = 'Cancel';
@@ -244,6 +304,57 @@ export class UserComponent implements OnDestroy, OnInit {
       }
     })
   }
+
+  confirmToggleBillingView(status:boolean) {
+    const action = status ? ['give', 'to'] : ['remove', 'from'];
+    const employeeName = `${this.employee.user.first_name} ${this.employee.user.last_name}`;
+    const cancelText = "Cancel";
+    const okText = "Continue";
+    this.modals.open(ConfirmModalComponent, {
+      data: {
+        title: 'Billing View', 
+        body: `Do you want to ${action[0]} billing view rights ${action[1]} ${employeeName}?`,
+        cancelText,
+        okText,
+      },
+      width: '384px'
+    }).subscribe(res => {
+      if (res === okText) {
+        this.store.EmployeeProfile.update(this.employee.id, {
+          user: this.employee.user.id,
+          billing_view: status,
+        }).subscribe(res => {
+          this.employee.billing_view = status;
+        })
+      }
+    })
+  }
+
+  confirmToggleQualifiedPractitioner(status:boolean) {
+    const action = status ? ['give', 'to'] : ['remove', 'from'];
+    const employeeName = `${this.employee.user.first_name} ${this.employee.user.last_name}`;
+    const cancelText = "Cancel";
+    const okText = "Continue";
+    this.modals.open(ConfirmModalComponent, {
+      data: {
+        title: 'Billing View', 
+        body: `Do you want to ${action[0]} the qualified practitioner role ${action[1]} ${employeeName}?`,
+        cancelText,
+        okText,
+      },
+      width: '384px'
+    }).subscribe(res => {
+      if (res === okText) {
+        this.store.EmployeeProfile.update(this.employee.id, {
+          user: this.employee.user.id,
+          qualified_practitioner: status,
+        }).subscribe(res => {
+          this.employee.qualified_practitioner = status;
+        })
+      }
+    })
+  }
+
 
   public confirmToggleAdmin(status:boolean, id:string = null) {
     const action = status ? 'add' : 'remove';

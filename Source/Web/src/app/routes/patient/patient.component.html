@@ -51,7 +51,7 @@
         <div class="flex alignCenter justifyCenter">
           <div class="picName marRight8">
             <img class="picName__img" src="../../../assets/img/profile.svg" />
-            {{plan.careTeam ? plan.careTeam[0] : ''}}
+            {{plan.careTeam ? plan.careTeam[0]?.employee_profile?.user?.first_name + ' ' + plan.careTeam[0]?.employee_profile?.user?.last_name : ''}}
           </div>
           <div class="tool__anchor">
             <a class="flex alignCenter" (click)="teamListOpen === i ? teamListOpen = -1 : teamListOpen = i">
@@ -62,7 +62,7 @@
               <div class="tool__text">
                 <div *ngFor="let practitioner of plan.careTeam?.slice(1)" class="picName marBottom16">
                   <img class="picName__img" src="../../../assets/img/profile--2.svg" />
-                  {{practitioner}}
+                  {{practitioner?.employee_profile?.user?.first_name + ' ' + practitioner?.employee_profile?.user?.last_name}}
                 </div>
               </div>
             </div>

@@ -121,14 +121,6 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
       })
     })
 
-    setTimeout(() => {
-      console.log('vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv');
-      console.log(this.activePatients);
-      console.log(this.activeCarePlans);
-      console.log(this.activeServiceAreas);
-      console.log('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^');
-    }, 16000)
-
   }
 
   public ngOnDestroy() { }

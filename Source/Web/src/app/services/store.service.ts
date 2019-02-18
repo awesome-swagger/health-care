@@ -21,6 +21,7 @@ export class StoreService {
   public Symptom = new Store(this.http, 'symptoms');
   // Billing
   public BilledActivity = new Store(this.http, 'billed_activities');
+  public BillingCoordinator = new Store(this.http, 'billing_coordinators');
   // Patients
   public PatientProfile = new Store(this.http, 'patient_profiles');
   public ProblemArea = new Store(this.http, 'problem_areas');

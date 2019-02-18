@@ -60,6 +60,14 @@ export class PatientComponent implements OnDestroy, OnInit {
         this.nav.addRecentPatient(this.patient);
         this.getCarePlans(this.patient.id).then((carePlans: any) => {
           this.carePlans = carePlans;
+          this.carePlans.forEach(plan => {
+            this.getCareTeam(plan).then(res => {
+              console.log('vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv');
+              console.log(res);
+              console.log('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^');
+              plan.careTeam = res;
+            });
+          })
         });
         this.getProblemAreas(this.patient.id).then((problemAreas: any) => {
           this.problemAreas = problemAreas;
@@ -120,7 +128,7 @@ export class PatientComponent implements OnDestroy, OnInit {
 
   public getCarePlans(patientId) {
     return new Promise((resolve, reject) => {
-        let carePlanSub = this.store.PatientProfile.detailRoute('get', patientId, 'care_plans').subscribe(
+        let carePlanSub = this.store.CarePlan.readListPaged({patient: patientId}).subscribe(
           (plans) => {
             resolve(plans);
           },
@@ -131,6 +139,14 @@ export class PatientComponent implements OnDestroy, OnInit {
             carePlanSub.unsubscribe();
           }
         )
+    });
+  }
+
+  public getCareTeam(plan) {
+    return new Promise((resolve, reject) => {
+        this.store.CarePlan.detailRoute('GET', plan.id, 'care_team_members').subscribe((res:any) => {
+          resolve(res);
+        })
     });
   }
 
