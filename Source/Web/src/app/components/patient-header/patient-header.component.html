@@ -20,8 +20,20 @@
     </div>
   </div>
   <div class="flex alignCenter">
-    <label class="marRight8">My Next <br>Check-In</label>
-    <input class="input" type="text" />
+    <div>
+      <label class="noMargin marRight8">My Next <br>Check-In</label>
+    </div>
+    <div>
+      <div class="datepicker">
+        <div class="datepicker__date" (click)="showDate=!showDate">
+          <span *ngIf="!selectedPlanCheckin">Select Date</span>
+          <span *ngIf="selectedPlanCheckin">{{selectedPlanCheckin.format('ddd, MMM, D')}}</span>
+        </div>
+        <app-popover [visible]="showDate" (visibleChange)="showDate = $event;" [options]="datePickerOptions">
+          <app-date-picker class="datepicker__picker isOpen" [selected]="selectedPlanCheckin" (selectedChange)="setCheckinDate($event)"></app-date-picker>
+        </app-popover>
+      </div> <!--/.datepicker-->
+    </div>
   </div>
 </div> <!--/.flex (for title area)-->
 

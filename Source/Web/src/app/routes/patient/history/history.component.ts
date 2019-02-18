@@ -117,13 +117,10 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
     let promise = new Promise((resolve, reject) => {
       let billedActivitiesSub = this.store.BilledActivity.readListPaged({
         // TODO: Filters to get only billed activities for this care plan
-        // TODO: Filters to get only billed activities for the date
+        activity_date: this.dateFilter.format('YYYY-MM-DD'),
       }).subscribe(
         (billedActivities) => {
-          let tmpDateFilter = billedActivities.filter((activity) => {
-            return moment(activity.activity_date).isSame(this.dateFilter, 'day');
-          });
-          resolve(tmpDateFilter);
+          resolve(billedActivities);
         },
         (err) => reject(err),
         () => {
@@ -225,7 +222,7 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
         return;
       }
       // Create billed activity record
-      this.store.BilledActivity.create({
+      let createSub = this.store.BilledActivity.create({
         plan: this.carePlan.id,
         activity_type: 'care_plan_review', // TODO: activity type
         members: [
@@ -235,10 +232,16 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
         added_by: this.user.id,
         notes: results.notes,
         time_spent: results.totalMinutes,
-      }).subscribe((newResult) => {
-        this.billedActivities.push(newResult);
-        this.selectedActivity = newResult;
-      });
+      }).subscribe(
+        (newResult) => {
+          this.billedActivities.push(newResult);
+          this.selectedActivity = newResult;
+        },
+        (err) => {},
+        () => {
+          createSub.unsubscribe();
+        }
+      );
     });
   }
 
@@ -263,7 +266,7 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
       if (!results) {
         return;
       }
-      this.store.BilledActivity.update(result.id, {
+      let updateSub = this.store.BilledActivity.update(result.id, {
         activity_type: 'care_plan_review', // TODO: activity type
         members: [
           this.user.id, // TODO: user selected in "with" field.
@@ -271,11 +274,17 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
         sync_to_ehr: results.syncToEHR,
         notes: results.notes,
         time_spent: results.totalMinutes,
-      }, true).subscribe((updatedResult) => {
-        let resultIndex = this.billedActivities.findIndex((obj) => obj.id === result.id);
-        this.billedActivities[resultIndex] = updatedResult;
-        this.selectedActivity = this.billedActivities[resultIndex];
-      });
+      }, true).subscribe(
+        (updatedResult) => {
+          let resultIndex = this.billedActivities.findIndex((obj) => obj.id === result.id);
+          this.billedActivities[resultIndex] = updatedResult;
+          this.selectedActivity = this.billedActivities[resultIndex];
+        },
+        (err) => {},
+        () => {
+          updateSub.unsubscribe();
+        }
+      );
     });
   }
 

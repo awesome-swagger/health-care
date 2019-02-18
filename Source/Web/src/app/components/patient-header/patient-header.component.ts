@@ -22,6 +22,7 @@ export class PatientHeaderComponent implements OnInit, OnDestroy {
   public patientPlansOverview = null;
   public selectedPlan = null;
   public selectedPlanOverview = null;
+  public selectedPlanCheckin = null;
   public carePlans = [];
   public careTeamMembers = [];
   public careManager = null;
@@ -33,6 +34,10 @@ export class PatientHeaderComponent implements OnInit, OnDestroy {
   public planSelectOpen = false;
   public teamListOpen = false;
   public planSelectOptions: PopoverOptions = {};
+  public datePickerOptions: PopoverOptions = {
+    relativeTop: '48px',
+    relativeRight: '0px',
+  };
 
   constructor(
     private route: ActivatedRoute,
@@ -59,6 +64,9 @@ export class PatientHeaderComponent implements OnInit, OnDestroy {
                       return obj.id === params.planId;
                     });
                     this.selectedPlanOverview = this.getOverviewForPlanTemplate(this.selectedPlan.plan_template.id);
+                    if (this.selectedPlan.next_checkin) {
+                      this.selectedPlanCheckin = moment(this.selectedPlan.next_checkin);
+                    }
                   },
                   (err) => {
                     this.toast.error('Error fetching care plans');
@@ -187,6 +195,29 @@ export class PatientHeaderComponent implements OnInit, OnDestroy {
 
   public openFinancialDetails() {
 
+  }
+
+  public setCheckinDate(e) {
+    if (!this.selectedPlanCheckin || !e) {
+      return;
+    }
+    // Make sure date has actually changed
+    if (this.selectedPlanCheckin.isSame(e, 'day')) {
+      return;
+    } else {
+      this.store.CarePlan.update(this.selectedPlan.id, {
+        next_checkin: e.format('YYYY-MM-DD')
+      }).subscribe(
+        (success) => {
+          let plan = this.carePlans.find((obj) => obj.id === this.selectedPlan.id);
+          plan.next_checkin = success.next_checkin;
+          this.selectedPlan = plan;
+          this.selectedPlanCheckin = moment(this.selectedPlan.next_checkin);
+        },
+        (err) => {},
+        () => {}
+      );
+    }
   }
 
   @Input()
