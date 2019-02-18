@@ -191,6 +191,9 @@ export class PlansComponent implements OnDestroy, OnInit {
     let hours = 0;
     let minutes = 0;
     templates.forEach((obj) => {
+      if (!obj.averages.time_count) {
+        return;
+      }
       let timeCountSplit = obj.averages.time_count.split(":");
       let splitHours = parseInt(timeCountSplit[0]);
       let splitMinutes = parseInt(timeCountSplit[1]);

@@ -38,29 +38,18 @@
   		<label>Facility</label>
   		<div class="drop">
   			<div class="drop__input" (click)="filterFacilitiesOpen = !filterFacilitiesOpen">
-  				All
+  				<span *ngIf="selectedFacility">{{selectedFacility.name}}</span>
+          <span *ngIf="!selectedFacility">All</span>
   			</div>
   			<app-popover [visible]="filterFacilitiesOpen" (visibleChange)="filterFacilitiesOpen = $event;">
-  				<ul class="drop__dropdown isOpen">
-  					<div class="drop__buttons">
-  						<button class="button button--iconText" (click)="checkAllFacilities()">
-  							<i class="ss-check ss-standard"></i> Check All
-  						</button>
-  						<button class="button button--iconText" (click)="uncheckAllFacilities()">
-  							<i class="ss-ban"></i> Uncheck All
-  						</button>
-  					</div>
-
-  					<li class="drop__option">
-  						<input class="input input--search drop__innerInput" type="text" placeholder="Search" [(ngModel)]="facilitySearch" (ngModelChange)="filterFacilities()" />
-  					</li>
-
+  				<ul class="drop__dropdown fullWidth isOpen">
+            <li class="drop__option">
+              <input class="input input--search drop__innerInput" type="text" placeholder="Search" [(ngModel)]="facilitySearch" (ngModelChange)="filterFacilities()" />
+            </li>
   					<li class="drop__option" *ngFor="let facility of facilitiesShown">
-  						<label class="drop__checkbox styledInput">
-  							<input type="checkbox" class="styledInput__input" [checked]="isFacilitySelected(facility)" (click)="toggleFacility(facility)" />
-  							<span class="styledInput__box"></span>
-  							{{facility.name}}
-  						</label>
+              <a class="drop__link" (click)="setSelectedFacility(facility)">
+                {{facility.name}}
+              </a>
   					</li>
   				</ul>
   			</app-popover>
@@ -72,29 +61,18 @@
   		<label>Service Area</label>
   		<div class="drop">
   			<div class="drop__input" (click)="filterServiceOpen = !filterServiceOpen">
-  				All
+  				<span *ngIf="selectedServiceArea">{{selectedServiceArea.name}}</span>
+          <span *ngIf="!selectedServiceArea">All</span>
   			</div>
   			<app-popover [visible]="filterServiceOpen" (visibleChange)="filterServiceOpen = $event;">
-  				<ul class="drop__dropdown isOpen">
-  					<div class="drop__buttons">
-  						<button class="button button--iconText" (click)="checkAllServiceAreas()">
-  							<i class="ss-check ss-standard"></i> Check All
-  						</button>
-  						<button class="button button--iconText" (click)="uncheckAllServiceAreas()">
-  							<i class="ss-ban"></i> Uncheck All
-  						</button>
-  					</div>
-
-  					<li class="drop__option">
+  				<ul class="drop__dropdown fullWidth isOpen">
+            <li class="drop__option">
   						<input class="input input--search drop__innerInput" type="text" placeholder="Search" [(ngModel)]="serviceSearch" (ngModelChange)="filterServiceArea()" />
-  					</li>
-
+            </li>
   					<li class="drop__option" *ngFor="let serviceArea of serviceAreasShown">
-  						<label class="drop__checkbox styledInput">
-  							<input type="checkbox" class="styledInput__input" [checked]="isServiceAreaSelected(serviceArea)" (click)="toggleServiceArea(serviceArea)" />
-  							<span class="styledInput__box"></span>
-  							{{serviceArea.name}}
-  						</label>
+              <a class="drop__link" (click)="setSelectedServiceArea(serviceArea)">
+                {{serviceArea.name}}
+              </a>
   					</li>
   				</ul>
   			</app-popover>
@@ -110,17 +88,21 @@
   			</div>
   			<app-popover [visible]="filterStatusOpen" (visibleChange)="filterStatusOpen = $event;">
   				<ul class="drop__dropdown fullWidth isOpen" (click)="filterStatusOpen = !filterStatusOpen">
-  					<li class="drop__option">
-  						<a class="drop__link" (click)="selectedStatus = 'all'">
+            <li class="drop__option" (click)="setSelectedStatus('all')">
+  						<a class="drop__link">
   							All Billings
   						</a>
-  						<a class="drop__link" (click)="selectedStatus = 'not-billed'">
+            </li>
+            <li class="drop__option" (click)="setSelectedStatus('not-billed')">
+  						<a class="drop__link">
   							Not-billed
   						</a>
-  						<a class="drop__link" (click)="selectedStatus = 'billed'">
+            </li>
+            <li class="drop__option" (click)="setSelectedStatus('billed')">
+  						<a class="drop__link">
   							Billed
   						</a>
-  					</li>
+            </li>
   				</ul>
   			</app-popover>
   		</div>
@@ -157,15 +139,16 @@
       <label class="tool info__tool justifyCenter">
         Billable Patients
         <div class="tool__anchor">
-          <button class="button button--icon button--icon--small"
-          (click)="billablePatientsHelpOpen=!billablePatientsHelpOpen">
+          <button class="button button--icon button--icon--small" (click)="billablePatientsHelpOpen = !billablePatientsHelpOpen">
             <i class="ss-help"></i>
           </button>
-          <div class="tool__tip" [ngClass]="{ 'isOpen' : billablePatientsHelpOpen }">
-            <div class="tool__text">
-              Billable patients qualify for reimbursement.
+          <app-popover [visible]="billablePatientsHelpOpen" (visibleChange)="billablePatientsHelpOpen = $event;">
+            <div class="tool__tip isOpen">
+              <div class="tool__text">
+                Billable patients qualify for reimbursement.
+              </div>
             </div>
-          </div>
+          </app-popover>
         </div>
       </label>
       {{overviewStats?.billable_patients}}
@@ -211,9 +194,9 @@
           <div class="info" [ngClass]="{ 'info--green' : plan.is_billed }" *ngFor="let plan of bp.plans">
             <div class="flex justifySpaceBetween marBottom24">
               <div>
-                <a [routerLink]="['/patient/asdf/']" class="picName">
-                  <img class="picName__img" src="../../../assets/img/profile.svg" />
-                  {{plan.patient}}
+                <a (click)="routeToPatient(plan.patient)" class="picName">
+                  <img class="picName__img" [src]="plan.patient.image_url" />
+                  {{plan.patient.first_name}} {{plan.patient.last_name}}
                 </a>
               </div>
               <div class="flex alignCenter">
@@ -258,13 +241,13 @@
               </thead>
               <tbody>
                 <tr *ngFor="let activity of plan.billed_activities">
-                  <td class="left">{{activity.name}}</td>
-                  <td>{{getBillingType(activity.billingType).acronym}}</td>
-                  <td>{{getBillingType(activity.billingType).code}}</td>
-                  <td>{{minutesToHours(activity.totalMinutes)}}</td>
-                  <td>{{activity.date}}</td>
-                  <td>{{activity.description}}</td>
-                  <td>${{activity.subtotal}}</td>
+                  <td class="left">Name</td>
+                  <td>Type</td>
+                  <td>CPT Code</td>
+                  <td>Time</td>
+                  <td>Date Achieved</td>
+                  <td>Description</td>
+                  <td>Subtotal</td>
                 </tr>
               </tbody>
             </table>
@@ -282,9 +265,9 @@
                     Care Manager
                   </div>
                   <div>
-                    <a class="picName" [routerLink]="['/user/asdf']">
-                      <img class="picName__img" src="../../../assets/img/profile.svg" />
-                      N/A
+                    <a class="picName" (click)="routeToUser(plan.care_manager[0].id)">
+                      <img class="picName__img" [src]="plan.care_manager[0].user.image_url" />
+                      {{plan.care_manager[0].user.first_name}} {{plan.care_manager[0].user.last_name}}
                     </a>
                   </div>
                 </div>
@@ -304,12 +287,12 @@
                       <tr *ngFor="let details of plan.details_of_service">
                         <td class="left">{{details.get_activity_type_display}}</td>
                         <td class="left">
-                          <a [routerLink]="['/user/asdf']" class="picName">
-                            <img class="picName__img" src="../../../assets/img/profile.svg" />
-                            N/A
+                          <a (click)="routeToUser(details.added_by.id)" class="picName">
+                            <img class="picName__img" [src]="details.added_by.user.image_url" />
+                            {{details.added_by.user.first_name}} {{details.added_by.user.last_name}}
                           </a>
                         </td>
-                        <td class="left">{{details.activity_date}}</td>
+                        <td class="left">{{moment(details.activity_date).format('MMMM d, YYYY')}}</td>
                         <td>{{details.time_spent}} minutes</td>
                       </tr>
                     </tbody>
