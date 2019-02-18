@@ -133,6 +133,55 @@ class TestBilledActivityUsingEmployee(BillingsMixin, APITestCase):
         response = self.client.delete(self.detail_url, {})
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
+    def test_update_care_plan_billed_time_on_signal(self):
+        payload = {
+            'is_billed': True,
+        }
+        self.client.patch(self.detail_url, payload)
+        plan_url = reverse(
+            'care_plans-detail',
+            kwargs={'pk': self.plan.id}
+        )
+        response = self.client.get(plan_url)
+        self.assertEqual(response.data['is_billed'], True)
+
+    def test_update_care_plan_billed_time_on_signal_incomplete(self):
+        activities_count = 5
+
+        for i in range(activities_count):
+            self.create_billed_activity(**{
+                'plan': self.plan,
+                'added_by': self.employee,
+                'is_billed': True
+            })
+        plan_url = reverse(
+            'care_plans-detail',
+            kwargs={'pk': self.plan.id}
+        )
+        response = self.client.get(plan_url)
+        self.assertEqual(response.data['is_billed'], False)
+
+    def test_update_care_plan_billed_time_on_signal_complete(self):
+        activities_count = 5
+        payload = {
+            'is_billed': True,
+        }
+
+        for i in range(activities_count):
+            self.create_billed_activity(**{
+                'plan': self.plan,
+                'added_by': self.employee,
+                'is_billed': True
+            })
+        self.client.patch(self.detail_url, payload)
+
+        plan_url = reverse(
+            'care_plans-detail',
+            kwargs={'pk': self.plan.id}
+        )
+        response = self.client.get(plan_url)
+        self.assertEqual(response.data['is_billed'], True)
+
 
 class TestBilledActivityOverview(BillingsMixin, APITestCase):
     """

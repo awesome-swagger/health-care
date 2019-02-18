@@ -34,7 +34,7 @@ from apps.core.api.serializers import (
     BasicEmployeeProfileSerializer,
     EmployeeProfileSerializer,
 )
-from apps.core.models import EmployeeProfile
+from apps.core.models import EmployeeProfile, Facility
 from apps.patients.models import PatientProfile
 from apps.tasks.models import (
     AssessmentTask,
@@ -72,7 +72,21 @@ class BasicEmployeePlanSerializer(serializers.ModelSerializer):
         return obj.user.get_image_url()
 
 
-class BasicPatientPlanSerializer(serializers.ModelSerializer):
+class BasicFacilityPlanSerializer(serializers.ModelSerializer):
+    """
+    Basic serializer for :model:`core.Facility`
+    """
+
+    class Meta:
+        model = Facility
+        fields = (
+            'id',
+            'name',
+        )
+
+
+class BasicPatientPlanSerializer(RepresentationMixin,
+                                 serializers.ModelSerializer):
     """
     basic serializer for :model:`patients.PatientProfile`
     """
@@ -92,6 +106,12 @@ class BasicPatientPlanSerializer(serializers.ModelSerializer):
             'facility',
             'facility_name',
         )
+        nested_serializers = [
+            {
+                'field': 'facility',
+                'serializer_class': BasicFacilityPlanSerializer,
+            }
+        ]
 
     def get_first_name(self, obj):
         return obj.user.first_name
@@ -189,12 +209,14 @@ class CarePlanSerializer(RepresentationMixin, serializers.ModelSerializer):
             'patient',
             'plan_template',
             'billing_practitioner',
-            'next_checkin'
+            'next_checkin',
+            'is_billed',
         )
         read_only_fields = (
             'id',
             'created',
             'modified',
+            'is_billed',
         )
         nested_serializers = [
             {
