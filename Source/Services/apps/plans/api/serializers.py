@@ -37,6 +37,7 @@ from apps.core.api.serializers import (
 from apps.core.models import EmployeeProfile, Facility
 from apps.patients.models import PatientProfile
 from apps.tasks.models import (
+    TeamTask,
     AssessmentTask,
     PatientTask,
     MedicationTask,
@@ -765,33 +766,24 @@ class CarePlanOverviewSerializer(serializers.ModelSerializer):
         end_date = datetime.datetime.combine(end,
                                              datetime.time.max,
                                              tzinfo=pytz.utc)
+        num_tasks = 0
+        request = self.context.get('request')
+        user = request.user
 
-        patient_tasks = PatientTask.objects.filter(
-            plan=obj,
-            due_datetime__range=(start_date, end_date))
-        medication_tasks = MedicationTask.objects.filter(
-            medication_task_template__plan=obj,
-            due_datetime__range=(start_date, end_date))
-        symptom_tasks = SymptomTask.objects.filter(
-            plan=obj,
-            due_datetime__range=(start_date, end_date))
-        assessment_tasks = AssessmentTask.objects.filter(
-            plan=obj,
-            due_datetime__range=(start_date, end_date))
-        vital_tasks = VitalTask.objects.filter(
-            plan=obj,
-            due_datetime__range=(start_date, end_date))
+        if user.is_employee:
+            member = obj.care_team_members.filter(
+                employee_profile=user.employee_profile) \
+                .first()
+            if member and member.role:
+                role = member.role
 
-        total_patient_tasks = patient_tasks.count()
-        total_medication_tasks = medication_tasks.count()
-        total_symptom_tasks = symptom_tasks.count()
-        total_assessment_tasks = assessment_tasks.count()
-        total_vital_tasks = vital_tasks.count()
-        return total_patient_tasks + \
-            total_medication_tasks + \
-            total_symptom_tasks + \
-            total_assessment_tasks + \
-            total_vital_tasks
+                team_tasks = TeamTask.objects.filter(
+                    plan=obj,
+                    team_task_template__role=role,
+                    due_datetime__range=(start_date, end_date))
+                num_tasks = team_tasks.count()
+
+        return num_tasks
 
     def get_average_outcome(self, obj):
         tasks = AssessmentTask.objects.filter(
