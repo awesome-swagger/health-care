@@ -214,7 +214,6 @@ class TestPatientProfile(TasksMixin, APITestCase):
         self.assertNotEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
 
-
 class TestPatientProfileUsingEmployee(PatientsMixin, APITestCase):
     """
     Test cases for :model:`tasks.PatientProfile` using an employee
@@ -223,7 +222,10 @@ class TestPatientProfileUsingEmployee(PatientsMixin, APITestCase):
 
     def setUp(self):
         self.fake = Faker()
-        self.employee = self.create_employee()
+        self.facility = self.create_facility()
+        self.employee = self.create_employee(**{
+            'facilities_managed': [self.facility]
+        })
         self.user = self.employee.user
         self.client.force_authenticate(user=self.user)
 
@@ -261,6 +263,62 @@ class TestPatientProfileUsingEmployee(PatientsMixin, APITestCase):
         url = reverse('patient-verification')
         response = self.client.post(url, payload)
         self.assertTrue(response.data['is_active'])
+
+    def test_partial_update_mrn_for_patient_existing(self):
+        patient = self.create_patient(**{
+            'facility': self.facility
+        })
+        url = reverse('patient_profiles-detail', kwargs={'pk': patient.id})
+        mrn = '12345'
+        payload = {
+            'mrn': mrn
+        }
+        response = self.client.patch(url, payload)
+        self.assertEqual(response.data['mrn'], mrn)
+
+    def test_partial_update_mrn_for_patient(self):
+        patient = self.create_patient(**{
+            'facility': self.facility,
+            'mrn': '12345'
+        })
+        url = reverse('patient_profiles-detail', kwargs={'pk': patient.id})
+        new_mrn = '67890'
+        payload = {
+            'mrn': new_mrn
+        }
+        response = self.client.patch(url, payload)
+        self.assertEqual(response.data['mrn'], new_mrn)
+
+    def test_partial_update_mrn_for_patient_the_same(self):
+        patient = self.create_patient(**{
+            'facility': self.facility,
+            'mrn': '12345'
+        })
+        url = reverse('patient_profiles-detail', kwargs={'pk': patient.id})
+        mrn = '12345'
+        payload = {
+            'mrn': mrn
+        }
+        response = self.client.patch(url, payload)
+        self.assertEqual(response.data['mrn'], mrn)
+
+    def test_partial_update_mrn_for_patient_invalid(self):
+        mrn = '12345'
+        self.create_patient(**{
+            'facility': self.facility,
+            'mrn': mrn
+        })
+
+        patient = self.create_patient(**{
+            'facility': self.facility,
+        })
+        url = reverse('patient_profiles-detail', kwargs={'pk': patient.id})
+
+        payload = {
+            'mrn': mrn
+        }
+        response = self.client.patch(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 
 class TestPatientProfileSearchViewSet(PatientsMixin, APITestCase):
