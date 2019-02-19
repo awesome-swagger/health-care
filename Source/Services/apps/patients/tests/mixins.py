@@ -34,6 +34,22 @@ class PatientsMixin(CoreMixin):
                 'is_active': True
             })
 
+        if 'insurance' not in kwargs:
+            insurance = self.create_insurance(**{
+                'organization': kwargs.get('facility').organization
+            })
+            kwargs.update({
+                'insurance': insurance
+            })
+
+        if 'secondary_insurance' not in kwargs:
+            secondary_insurance = self.create_insurance(**{
+                'organization': kwargs.get('facility').organization
+            })
+            kwargs.update({
+                'secondary_insurance': secondary_insurance
+            })
+
         return PatientProfileFactory(
             user=user,
             **kwargs
