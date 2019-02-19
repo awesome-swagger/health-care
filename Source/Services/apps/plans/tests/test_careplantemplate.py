@@ -376,7 +376,7 @@ class TestCarePlanTemplateUsingPatient(TasksMixin, APITestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
 
-class TestCarePlanTemplateAverage(BillingsMixin, TasksMixin, APITestCase):
+class TestCarePlanTemplateAverage(BillingsMixin, APITestCase):
     """
     Test cases for the average endpoint of :model:`plans.CarePlanTemplate`
     """

@@ -93,7 +93,6 @@ class CarePlan(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
         on_delete=models.CASCADE)
 
     risk_level = models.IntegerField(null=True, blank=True)
-    next_checkin = models.DateField(null=True, blank=True)
 
     # `is_billed` will be set by the signals. This will be toggled to
     # True/False depending on if all BilledActivity of this instance has
@@ -164,6 +163,7 @@ class CareTeamMember(UUIDPrimaryKeyMixin):
         CarePlan, null=False, blank=False, related_name="care_team_members",
         on_delete=models.CASCADE)
     is_manager = models.BooleanField(default=False)
+    next_checkin = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         if self.is_manager:

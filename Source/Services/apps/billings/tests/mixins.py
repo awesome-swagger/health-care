@@ -1,10 +1,10 @@
 import random
 
 from .factories import BilledActivityFactory
-from apps.plans.tests.mixins import PlansMixin
+from apps.tasks.tests.mixins import TasksMixin
 
 
-class BillingsMixin(PlansMixin):
+class BillingsMixin(TasksMixin):
 
     def create_billed_activity(self, **kwargs):
 
@@ -16,6 +16,14 @@ class BillingsMixin(PlansMixin):
         if 'plan' not in kwargs:
             kwargs.update({
                 'plan': self.create_care_plan()
+            })
+
+        if 'team_task' not in kwargs:
+            team_task = self.create_team_task(**{
+                'plan': kwargs.get('plan')
+            })
+            kwargs.update({
+                'team_task': team_task
             })
 
         if 'time_spent' not in kwargs:

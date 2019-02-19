@@ -30,6 +30,11 @@ class BilledActivity(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
         on_delete=models.SET_NULL,
         null=True
         )
+    team_task = models.ForeignKey(
+        'tasks.TeamTask',
+        related_name='activities',
+        on_delete=models.SET_NULL,
+        null=True)
     activity_type = models.CharField(
         max_length=32,
         choices=ACTIVITY_TYPE,

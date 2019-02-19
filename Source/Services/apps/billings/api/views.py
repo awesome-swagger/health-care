@@ -56,6 +56,10 @@ class BilledActivityViewSet(viewsets.ModelViewSet):
         IsAdminOrEmployeeActivityOwner,
     )
     queryset = BilledActivity.objects.all()
+    filter_backends = (DjangoFilterBackend, )
+    filterset_fields = (
+        'activity_date',
+    )
 
     def get_queryset(self):
         queryset = super(BilledActivityViewSet, self).get_queryset()
