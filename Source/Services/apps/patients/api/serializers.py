@@ -23,6 +23,7 @@ from apps.core.api.serializers import (
     SymptomSerializer,
     ProcedureSerializer,
     PatientUserInfo,
+    InsuranceSerializer,
 )
 from apps.patients.models import (PatientDiagnosis, PatientMedication,
                                   PatientProcedure, PatientProfile,
@@ -89,6 +90,16 @@ class PatientProfileSerializer(RepresentationMixin,
             'payer_reimbursement',
             'last_app_use',
             'risk_level',
+            'height_feet',
+            'height_inches',
+            'ethnicity',
+            'insurance',
+            'secondary_insurance',
+            'communication_preference',
+            'source',
+            'telemedicine',
+            'cognitive_ability',
+            'mrn',
             'diagnosis',
             'message_for_day',
             'created',
@@ -96,6 +107,7 @@ class PatientProfileSerializer(RepresentationMixin,
         )
         read_only_fields = (
             'id',
+            'risk_level',
             'created',
             'modified',
         )
@@ -111,7 +123,15 @@ class PatientProfileSerializer(RepresentationMixin,
             {
                 'field': 'message_for_day',
                 'serializer_class': InfoMessageSerializer
-            }
+            },
+            {
+                'field': 'insurance',
+                'serializer_class': InsuranceSerializer
+            },
+            {
+                'field': 'secondary_insurance',
+                'serializer_class': InsuranceSerializer
+            },
         ]
 
 
