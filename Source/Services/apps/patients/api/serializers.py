@@ -134,6 +134,17 @@ class PatientProfileSerializer(RepresentationMixin,
             },
         ]
 
+    def validate_mrn(self, value):
+        if value:
+            queryset = PatientProfile.objects.all()
+            if self.instance:
+                queryset = queryset.exclude(id=self.instance.id)
+
+            if queryset.filter(mrn=value).exists():
+                raise serializers.ValidationError(_('MRN must be unique.'))
+
+        return value
+
 
 class AddPatientToPlanSerializer(ReferenceCheckMixin, 
                                  serializers.ModelSerializer):
