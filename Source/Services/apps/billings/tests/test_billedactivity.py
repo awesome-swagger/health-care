@@ -60,6 +60,12 @@ class TestBilledActivityUsingEmployee(BillingsMixin, APITestCase):
         response = self.client.get(self.detail_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    def test_get_billed_activity_detail_team_task_field(self):
+        response = self.client.get(self.detail_url)
+        self.assertIsNotNone(
+            response.data['team_task']['team_task_template']['category']
+        )
+
     def test_get_billed_activity_detail_unauthenticated(self):
         self.client.logout()
         response = self.client.get(self.detail_url)

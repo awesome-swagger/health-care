@@ -1107,6 +1107,29 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
             activity_count
         )
 
+    def test_get_plans_details_of_service_team_task_field(self):
+        activity_count = 5
+
+        patient = self.create_patient(**{
+            'facility': self.facility,
+            'payer_reimbursement': True
+        })
+        plan = self.create_care_plan(patient, **{
+            'billing_practitioner': self.employee
+        })
+
+        for i in range(activity_count):
+            self.create_billed_activity(**{
+                'plan': plan,
+                'added_by': self.employee
+            })
+
+        response = self.client.get(self.url)
+        self.assertIsNotNone(
+            response.data['results'][0]['plans'][0]['details_of_service'][0][
+                'team_task']['team_task_template']
+        )
+
     def test_get_plans_details_of_service_filter_month_year(self):
         activity_count = 5
         now = timezone.now().date()
