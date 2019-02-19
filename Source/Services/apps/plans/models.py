@@ -363,10 +363,10 @@ def careplan_pre_save(sender, instance, update_fields=None, **kwargs):
     """
     Sends an email to the previous billing practitioner of the plan.
     """
-    if instance.id:
-        plan = CarePlan.objects.get(id=instance.id)
+    plan = CarePlan.objects.filter(id=instance.id).first()
+    # for only update
+    if plan:
         old_practitioner = plan.billing_practitioner
-
         new_practitioner = instance.billing_practitioner
 
         if old_practitioner and old_practitioner != new_practitioner:
