@@ -640,7 +640,7 @@ class TestOrganizationPatientAdoption(TasksMixin, APITestCase):
         self.assertEqual(response.data['adoption_rate'], adoption_rate)
 
 
-class TestOrganizationPatientGraph(BillingsMixin, TasksMixin, APITestCase):
+class TestOrganizationPatientGraph(BillingsMixin, APITestCase):
     """
     Test cases for patient adoption endpoint used in `dash` page.
     """

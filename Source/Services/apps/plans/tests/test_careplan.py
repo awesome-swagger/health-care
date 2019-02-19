@@ -28,7 +28,7 @@ from apps.tasks.tests.mixins import TasksMixin
 from apps.accounts.tests.factories import RegularUserFactory
 
 
-class TestCarePlanUsingEmployee(BillingsMixin, TasksMixin, APITestCase):
+class TestCarePlanUsingEmployee(BillingsMixin, APITestCase):
     """
     Test cases for :model:`plans.CarePlan1 using an employee as the logged in
     user.

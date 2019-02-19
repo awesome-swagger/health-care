@@ -26,6 +26,8 @@ from apps.tasks.models import (
     MedicationTask,
     SymptomTask,
     VitalTask,
+    TeamTask,
+    TeamTaskTemplate,
 )
 from care_adopt_backend import utils
 
@@ -1131,6 +1133,54 @@ class InviteEmployeeSerializer(serializers.Serializer):
             mailer.send_invitation(employee, email_content)
 
 
+class ActivityTeamTaskTemplateSerializer(RepresentationMixin,
+                                         serializers.ModelSerializer):
+
+    class Meta:
+        model = TeamTaskTemplate
+        fields = (
+            'id',
+            'plan_template',
+            'name',
+            'is_manager_task',
+            'category',
+            'role',
+            'start_on_day',
+            'frequency',
+            'repeat_amount',
+            'appear_time',
+            'due_time',
+        )
+        nested_serializers = [
+            {
+                'field': 'role',
+                'serializer_class': ProviderRoleSerializer,
+            }
+        ]
+
+
+class ActivityTeamTaskSerializer(RepresentationMixin,
+                                 serializers.ModelSerializer):
+    """
+    serializer for :model:`tasks.TeamTask`
+    """
+
+    class Meta:
+        model = TeamTask
+        fields = (
+            'id',
+            'plan',
+            'team_task_template',
+            'status',
+        )
+        nested_serializers = [
+            {
+                'field': 'team_task_template',
+                'serializer_class': ActivityTeamTaskTemplateSerializer,
+            },
+        ]
+
+
 class BilledActivityDetailSerializer(RepresentationMixin,
                                      serializers.ModelSerializer):
     """
@@ -1143,6 +1193,7 @@ class BilledActivityDetailSerializer(RepresentationMixin,
         fields = (
             'id',
             'get_activity_type_display',
+            'team_task',
             'members',
             'added_by',
             'is_billed',
@@ -1150,6 +1201,10 @@ class BilledActivityDetailSerializer(RepresentationMixin,
             'time_spent',
         )
         nested_serializers = [
+            {
+                'field': 'team_task',
+                'serializer_class': ActivityTeamTaskSerializer
+            },
             {
                 'field': 'added_by',
                 'serializer_class': BasicEmployeeProfileSerializer
