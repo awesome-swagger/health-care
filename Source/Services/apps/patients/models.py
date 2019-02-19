@@ -133,7 +133,7 @@ class PatientProfile(AddressMixin, CreatedModifiedMixin, UUIDPrimaryKeyMixin):
     mrn = models.CharField(
         max_length=64,
         blank=True,
-        unique=True)
+        help_text=_('When provided, this should be unique.'))
 
     class Meta:
         ordering = ('user', )
