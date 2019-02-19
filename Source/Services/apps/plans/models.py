@@ -66,6 +66,7 @@ class CarePlanTemplate(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
         blank=True,
         null=True
     )
+    # `duration_weeks` will be -1 for ongoing plans
     duration_weeks = models.IntegerField(null=False, blank=False)
     is_active = models.BooleanField(default=True)
 

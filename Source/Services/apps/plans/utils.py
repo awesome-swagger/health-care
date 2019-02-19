@@ -27,6 +27,8 @@ def create_tasks_from_template(template,
                                instance_model,
                                template_config={}):
 
+    # for ongoing plans (duration_weeks = -1), set it as 3 years
+    duration_weeks = 157 if duration_weeks == -1 else duration_weeks
     date_end = timezone.now() + relativedelta(weeks=duration_weeks)
     plan_end = datetime.combine(date_end.date(), time.max, tzinfo=pytz.utc)
 
