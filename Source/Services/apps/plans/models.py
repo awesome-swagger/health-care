@@ -103,6 +103,7 @@ class CarePlan(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
         help_text=_(
             'Determines if all BilledActivity of this instance has been billed'
         ))
+    is_active = models.BooleanField(default=True)
 
     def __str__(self):
         return '{} {}: {}'.format(
