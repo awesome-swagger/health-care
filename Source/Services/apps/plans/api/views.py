@@ -36,6 +36,7 @@ from ..permissions import (
     MessageRecipientPermissions,
     IsAdminOrEmployeePlanMember,
 )
+from ..utils import duplicate_tasks
 from .serializers import (
     CarePlanTemplateTypeSerializer,
     ServiceAreaSerializer,
@@ -260,9 +261,43 @@ class CarePlanTemplateViewSet(viewsets.ModelViewSet):
                 plan.save()
             except:
                 pass
-                
+
         return Response(
             {"detail": _("Successfully reassigned patients.")}
+        )
+
+
+    @action(methods=['POST'],
+            detail=True,
+            permission_classes=(permissions.IsAuthenticated,
+                                IsAdminOrEmployeePlanMember))
+    def duplicate(self, request, *args, **kwargs):
+        """
+        Duplicate the care plan template and its task templates
+
+        Sample Request
+        ---
+
+            POST /api/care_plans/<care-plan-ID>/duplicate/
+            data: { "name": <new template name> }
+
+        """
+        plan_template = self.get_object()
+        new_template = self.get_object()
+        new_template.pk = None
+        new_template.name = request.data.get('name')
+        new_template.save()
+
+        duplicate_tasks(plan_template.goals.all(), new_template)
+        duplicate_tasks(plan_template.info_message_queues.all(), new_template)
+        duplicate_tasks(plan_template.patient_tasks.all(), new_template)
+        duplicate_tasks(plan_template.team_tasks.all(), new_template)
+        duplicate_tasks(plan_template.symptom_tasks.all(), new_template)
+        duplicate_tasks(plan_template.assessment_tasks.all(), new_template)
+        duplicate_tasks(plan_template.vital_templates.all(), new_template)
+
+        return Response(
+            {"detail": _("Successfully duplicated.")}
         )
 
 

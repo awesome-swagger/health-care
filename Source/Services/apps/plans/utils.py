@@ -211,3 +211,10 @@ def create_tasks_from_template(template,
                 due_datetime=due,
                 appear_datetime=appear,
                 **template_config)
+
+
+def duplicate_tasks(queryset, new_plan_template):
+    for ii in queryset:
+        ii.pk = None
+        ii.plan_template = new_plan_template
+        ii.save()
