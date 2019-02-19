@@ -234,6 +234,37 @@ class CarePlanTemplateViewSet(viewsets.ModelViewSet):
         serializer = CarePlanTemplateAverageSerializer(template)
         return Response(serializer.data)
 
+    @action(methods=['post'], detail=False,
+            permission_classes=(permissions.IsAuthenticated, ))
+    def bulk_reassign_plan(self, request, *args, **kwargs):
+        """
+        data = [
+            {
+                "plan": <id>,
+                "plan_template": <id>,
+                "care_manager": <id>,
+                "inactive": false / true
+            },
+        ...
+        ]
+        """
+        for ii in request.data:
+            try:
+                plan = CarePlan.objects.get(pk=ii['plan'])
+                if ii.get('inactive'):
+                    plan.is_active = False
+                else:
+                    plan.plan_template_id = ii['plan_template']
+                    plan.care_team_members.filter(is_manager=True) \
+                                          .update(employee_profile_id=ii['care_manager'])
+                plan.save()
+            except:
+                pass
+                
+        return Response(
+            {"detail": _("Successfully reassigned patients.")}
+        )
+
 
 class CarePlanViewSet(viewsets.ModelViewSet):
     """
