@@ -17,7 +17,6 @@ from rest_framework.test import APITestCase
 from ..tests.mixins import CoreMixin
 from apps.accounts.tests.factories import AdminUserFactory
 from apps.billings.tests.mixins import BillingsMixin
-from apps.tasks.tests.mixins import TasksMixin
 
 
 class TestEmployeeProfile(CoreMixin, APITestCase):
@@ -199,7 +198,7 @@ class TestOrganizationFacility(CoreMixin, APITestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
 
-class TestFacilityEmployee(BillingsMixin, TasksMixin, APITestCase):
+class TestFacilityEmployee(BillingsMixin, APITestCase):
     """
     Test cases for :model:`tasks.EmployeeProfile` using an employee
     as the logged in user.
