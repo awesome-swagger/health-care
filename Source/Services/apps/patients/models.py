@@ -5,8 +5,13 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
-from .signals import patientprofile_post_save
-from care_adopt_backend.mixins import CreatedModifiedMixin, UUIDPrimaryKeyMixin
+from model_utils import Choices
+
+from .signals import (
+    reminder_email_post_save,
+    patientprofile_post_save,
+    emergencycontact_post_save,
+)
 from apps.accounts.models import EmailUser
 from apps.core.models import (
     Facility,
@@ -15,16 +20,41 @@ from apps.core.models import (
     Procedure,
     Medication,
 )
+from care_adopt_backend.mixins import (
+    CreatedModifiedMixin,
+    UUIDPrimaryKeyMixin,
+    AddressMixin,
+)
 
-from .signals import reminder_email_post_save
 
-
-class PatientProfile(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
+class PatientProfile(AddressMixin, CreatedModifiedMixin, UUIDPrimaryKeyMixin):
 
     RISK_LEVEL_MIN_ON_TRACK = 90  # range is 90-100
     RISK_LEVEL_MIN_LOW_RISK = 75  # range is 75-89
     RISK_LEVEL_MIN_MED_RISK = 51  # range is 51-74
     RISK_LEVEL_MIN_HIGH_RISK = 0  # range is 0-50
+
+    COMMUNICATION_PREFERENCE = Choices(
+        ('phone', _('Phone')),
+        ('text_message', _('Text Message')),
+        ('in_app_messaging', _('In-App Messaging')),
+    )
+    TELEMEDICINE = Choices(
+        ('interested', _('Interested')),
+        ('not_interested', _('Not Interested')),
+        ('not_applicable', _('Not Applicable')),
+    )
+    COGNITIVE_ABILITY = Choices(
+        ('high', _('High')),
+        ('medium', _('Medium')),
+        ('low', _('Low')),
+    )
+    SOURCE = Choices(
+        ('analytics_app', _('Analytics App')),
+        ('md_request', _('MD Request')),
+        ('care_team_request', _('Care Team Request')),
+        ('care_manager', _('Care Manager')),
+    )
 
     user = models.OneToOneField(
         EmailUser, on_delete=models.CASCADE, related_name='patient_profile')
@@ -58,6 +88,53 @@ class PatientProfile(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
         ]
      )
 
+    height_feet = models.PositiveIntegerField(
+        default=4,
+        validators=[
+            MinValueValidator(1)
+        ])
+    height_inches = models.PositiveIntegerField(
+        default=0,
+        validators=[
+            MaxValueValidator(11),
+            MinValueValidator(0)
+        ])
+    ethnicity = models.CharField(
+        max_length=128,
+        blank=True)
+    insurance = models.ForeignKey(
+        'core.Insurance',
+        blank=True,
+        null=True,
+        related_name='primary_patients',
+        on_delete=models.SET_NULL)
+    secondary_insurance = models.ForeignKey(
+        'core.Insurance',
+        blank=True,
+        null=True,
+        related_name='secondary_patients',
+        on_delete=models.SET_NULL)
+    communication_preference = models.CharField(
+        max_length=64,
+        choices=COMMUNICATION_PREFERENCE,
+        default=COMMUNICATION_PREFERENCE.phone)
+    source = models.CharField(
+        max_length=64,
+        choices=SOURCE,
+        blank=True)
+    telemedicine = models.CharField(
+        max_length=64,
+        choices=TELEMEDICINE,
+        default=TELEMEDICINE.interested)
+    cognitive_ability = models.CharField(
+        max_length=64,
+        choices=COGNITIVE_ABILITY,
+        default=COGNITIVE_ABILITY.high)
+    mrn = models.CharField(
+        max_length=64,
+        blank=True,
+        unique=True)
+
     class Meta:
         ordering = ('user', )
 
@@ -72,6 +149,43 @@ class PatientProfile(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
     @property
     def latest_care_plan(self):
         return self.care_plans.order_by('created').last()
+
+
+class EmergencyContact(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
+    """
+    Stores the person to contact in case the patient is in emergency.
+    """
+    patient = models.ForeignKey(
+        'patients.PatientProfile',
+        related_name='emergency_contacts',
+        on_delete=models.CASCADE)
+    first_name = models.CharField(
+        _('first name'),
+        max_length=30)
+    last_name = models.CharField(
+        _('last name'),
+        max_length=30)
+    relationship = models.CharField(
+        max_length=128,
+        blank=True)
+    phone = models.CharField(
+        max_length=16,
+        verbose_name='Phone number')
+    email = models.EmailField()
+    is_primary = models.BooleanField(
+        default=True)
+
+    class Meta:
+        ordering = ('patient', 'created')
+        verbose_name = _('Emergency Contact')
+        verbose_name_plural = _('Emergency Contacts')
+
+    @property
+    def full_name(self):
+        return f'{self.first_name} {self.last_name}'
+
+    def __str__(self):
+        return f'{self.full_name}'
 
 
 class PatientStat(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
@@ -252,4 +366,9 @@ models.signals.post_save.connect(
 models.signals.post_save.connect(
     reminder_email_post_save,
     sender=ReminderEmail,
+)
+
+models.signals.post_save.connect(
+    emergencycontact_post_save,
+    sender=EmergencyContact,
 )
