@@ -5,7 +5,7 @@ import * as moment from 'moment';
 import { ModalService } from '../../modules/modals';
 import { ToastService } from '../../modules/toast';
 import { PopoverOptions } from '../../modules/popover';
-import { StoreService, UtilsService } from '../../services';
+import { AuthService, StoreService, UtilsService } from '../../services';
 import { ProblemAreasComponent } from '../../routes/patient/modals/problem-areas/problem-areas.component';
 
 @Component({
@@ -18,15 +18,22 @@ export class PatientHeaderComponent implements OnInit, OnDestroy {
   public moment = moment;
 
   public _currentPage = null;
+  public employee = null;
+  public isCareTeamMember = false;
+  public employeeCTRoles = [];
   public patient = null;
+  public carePlans = [];
   public patientPlansOverview = null;
   public selectedPlan = null;
   public selectedPlanOverview = null;
-  public selectedPlanCheckin = null;
-  public carePlans = [];
+  public allTeamMembers = [];
   public careTeamMembers = [];
   public careManager = null;
   public problemAreas = [];
+  public editCheckin = false;
+  public myCheckinDate: moment.Moment = null;
+  public checkinRevertValue: moment.Moment = null;
+  public nextCheckinTeamMember = null;
 
   @Output()
   public onPlanChange = new EventEmitter<any>();
@@ -39,80 +46,82 @@ export class PatientHeaderComponent implements OnInit, OnDestroy {
     relativeRight: '0px',
   };
 
+  private routeSub = null;
+  private employeeSub = null;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private modals: ModalService,
     private toast: ToastService,
+    private auth: AuthService,
     private store: StoreService,
     public utils: UtilsService,
   ) { }
 
   public ngOnInit() {
-    this.route.params.subscribe(
-      (params) => {
-        this.getPatient(params.patientId).then(
-          (patient: any) => {
-            this.patient = patient;
-            let overviewSub = this.store.PatientProfile.detailRoute('get', this.patient.id, 'care_plan_overview').subscribe(
-              (overview: any) => {
-                this.patientPlansOverview = overview.results;
-                this.getCarePlans(params.patientId).then(
-                  (carePlans: any) => {
-                    this.carePlans = carePlans;
-                    this.selectedPlan = carePlans.find((obj) => {
-                      return obj.id === params.planId;
-                    });
-                    this.selectedPlanOverview = this.getOverviewForPlanTemplate(this.selectedPlan.plan_template.id);
-                    if (this.selectedPlan.next_checkin) {
-                      this.selectedPlanCheckin = moment(this.selectedPlan.next_checkin);
-                    }
-                  },
-                  (err) => {
-                    this.toast.error('Error fetching care plans');
-                    console.log(err);
-                  },
-                );
-              },
-              (err) => {},
-              () => {
-                overviewSub.unsubscribe();
-              },
-            );
-          },
-          (err) => {
-            this.toast.error('Error fetching patient');
-            console.log(err);
-          }
-        );
-        this.getCareTeamMembers(params.planId).then(
-          (teamMembers: any) => {
-            this.careTeamMembers = teamMembers.filter((obj) => {
-              return !obj.is_manager;
-            });
-            this.careManager = teamMembers.filter((obj) => {
-              return obj.is_manager;
-            })[0];
-          },
-          (err) => {
-            this.toast.error('Error fetching care team members');
-            console.log(err);
-          },
-        );
-        this.getProblemAreas(params.patientId).then(
-          (problemAreas: any) => {
-            this.problemAreas = problemAreas;
-          },
-          (err) => {
-            this.toast.error('Error fetching problem areas');
-            console.log(err);
-          }
-        );
-      }
-    );
+  	this.routeSub = this.route.params.subscribe((params) => {
+  		this.employeeSub = this.auth.user$.subscribe((employee) => {
+  			if (!employee) {
+  				return;
+  			}
+  			this.employee = employee;
+  			this.getPatient(params.patientId).then((patient: any) => {
+  				this.patient = patient;
+  			});
+        this.getCarePlans(params.patientId).then((carePlans: any) => {
+          this.carePlans = carePlans;
+          this.selectedPlan = carePlans.find((obj) => {
+            return obj.id === params.planId;
+          });
+    			this.getCarePlanOverview(params.patientId).then((overview: any) => {
+    				this.patientPlansOverview = overview.results;
+            this.selectedPlanOverview = this.getOverviewForPlanTemplate(this.selectedPlan.plan_template.id);
+    			});
+        });
+  			this.getCareTeamMembers(params.planId).then((teamMembers: any) => {
+          this.allTeamMembers = teamMembers;
+          // Get care manager
+  				this.careManager = teamMembers.filter((obj) => {
+  					return obj.is_manager;
+  				})[0];
+          // Get regular team members
+  				this.careTeamMembers = teamMembers.filter((obj) => {
+  					return !obj.is_manager;
+  				});
+          let employeeCTRoles = teamMembers.filter((obj) => {
+  					return obj.employee_profile.id === this.employee.id;
+  				});
+          this.isCareTeamMember = !!employeeCTRoles[0];
+          this.employeeCTRoles = employeeCTRoles;
+          // Set next checkin date and time
+  				if (this.isCareTeamMember && this.employeeCTRoles) {
+            this.myCheckinDate = moment(this.employeeCTRoles[0].next_checkin);
+  				}
+          // Get team member with closest check in date
+          this.nextCheckinTeamMember = teamMembers.sort((obj1: any, obj2: any) => {
+            let date1 = new Date(obj1.next_checkin);
+            let date2 = new Date(obj2.next_checkin);
+            if (date1 > date2) return 1;
+            if (date1 < date2) return -1;
+            return 0;
+          })[0];
+  			});
+  			this.getProblemAreas(params.patientId).then((problemAreas: any) => {
+  				this.problemAreas = problemAreas;
+  			});
+  		});
+  	});
   }
 
-  public ngOnDestroy() { }
+  public ngOnDestroy() {
+    if (this.routeSub) {
+      this.routeSub.unsubscribe();
+    }
+    if (this.employeeSub) {
+      this.employeeSub.unsubscribe();
+    }
+  }
 
   public getPatient(patientId) {
     let promise = new Promise((resolve, reject) => {
@@ -137,6 +146,19 @@ export class PatientHeaderComponent implements OnInit, OnDestroy {
         () => {
           carePlansSub.unsubscribe();
         },
+      );
+    });
+    return promise;
+  }
+
+  public getCarePlanOverview(patientId) {
+    let promise = new Promise((resolve, reject) => {
+      let overviewSub = this.store.PatientProfile.detailRoute('get', patientId, 'care_plan_overview').subscribe(
+        (overview) => resolve(overview),
+        (err) => reject(err),
+        () => {
+          overviewSub.unsubscribe();
+        }
       );
     });
     return promise;
@@ -197,27 +219,62 @@ export class PatientHeaderComponent implements OnInit, OnDestroy {
 
   }
 
-  public setCheckinDate(e) {
-    if (!this.selectedPlanCheckin || !e) {
+  public parseTime(time) {
+    return time.format('HH:mm:00');
+  }
+
+  public clickEditCheckin() {
+    this.editCheckin = true;
+    this.checkinRevertValue = this.myCheckinDate.clone();
+  }
+
+  public setCheckinDate(e: moment.Moment) {
+    this.myCheckinDate.date(e.date());
+  }
+
+  public setCheckinTime(e) {
+    let timeSplit = e.split(':');
+    this.myCheckinDate.set({
+      hour: timeSplit[0],
+      minute: timeSplit[1],
+    });
+  }
+
+  public revertCheckin() {
+    this.editCheckin = false;
+    this.myCheckinDate = this.checkinRevertValue;
+    this.checkinRevertValue = null;
+  }
+
+  public saveCheckin() {
+    if (!this.myCheckinDate) {
       return;
     }
-    // Make sure date has actually changed
-    if (this.selectedPlanCheckin.isSame(e, 'day')) {
-      return;
-    } else {
-      this.store.CarePlan.update(this.selectedPlan.id, {
-        next_checkin: e.format('YYYY-MM-DD')
-      }).subscribe(
+    this.editCheckin = null;
+    this.checkinRevertValue = null;
+    // Updates checkin date of all care team roles
+    this.employeeCTRoles.forEach((obj) => {
+      let updateSub = this.store.CareTeamMember.update(obj.id, {
+        next_checkin: this.myCheckinDate.toISOString()
+      }, true).subscribe(
         (success) => {
-          let plan = this.carePlans.find((obj) => obj.id === this.selectedPlan.id);
-          plan.next_checkin = success.next_checkin;
-          this.selectedPlan = plan;
-          this.selectedPlanCheckin = moment(this.selectedPlan.next_checkin);
+          obj.next_checkin = success.next_checkin;
         },
         (err) => {},
-        () => {}
+        () => {
+          // Recalculate next checkin in overview section
+          // Get team member with closest check in date
+          this.nextCheckinTeamMember = this.allTeamMembers.sort((obj1: any, obj2: any) => {
+            let date1 = new Date(obj1.next_checkin);
+            let date2 = new Date(obj2.next_checkin);
+            if (date1 > date2) return 1;
+            if (date1 < date2) return -1;
+            return 0;
+          })[0];
+          updateSub.unsubscribe();
+        }
       );
-    }
+    });
   }
 
   @Input()

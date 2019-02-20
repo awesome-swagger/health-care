@@ -19,20 +19,41 @@
       </app-popover>
     </div>
   </div>
-  <div class="flex alignCenter">
-    <div>
-      <label class="noMargin marRight8">My Next <br>Check-In</label>
+  <div class="flex alignCenter" *ngIf="isCareTeamMember">
+    <div class="marRight16">
+      <label class="smallLabel noMargin">My Next <br>Check-In</label>
     </div>
-    <div>
-      <div class="datepicker">
-        <div class="datepicker__date" (click)="showDate=!showDate">
-          <span *ngIf="!selectedPlanCheckin">Select Date</span>
-          <span *ngIf="selectedPlanCheckin">{{selectedPlanCheckin.format('ddd, MMM, D')}}</span>
-        </div>
-        <app-popover [visible]="showDate" (visibleChange)="showDate = $event;" [options]="datePickerOptions">
-          <app-date-picker class="datepicker__picker isOpen" [selected]="selectedPlanCheckin" (selectedChange)="setCheckinDate($event)"></app-date-picker>
-        </app-popover>
-      </div> <!--/.datepicker-->
+    <div class="flex alignCenter" *ngIf="!editCheckin">
+      <div>
+        <span class="checkinText">{{myCheckinDate.format('MMM DD, YYYY')}} at {{myCheckinDate.format('hh:mm A')}}</span>
+      </div>
+      <button class="button button--icon button--icon--small" (click)="clickEditCheckin()">
+        <i class="ss-write"></i>
+      </button>
+    </div>
+    <div class="flex alignCenter" *ngIf="editCheckin">
+      <div class="marRight8">
+        <div class="datepicker">
+          <div class="datepicker__date" (click)="showDate=!showDate">
+            <span *ngIf="!myCheckinDate">Select Date</span>
+            <span *ngIf="myCheckinDate">{{myCheckinDate.format('ddd, MMM D')}}</span>
+          </div>
+          <app-popover [visible]="showDate" (visibleChange)="showDate = $event;" [options]="datePickerOptions">
+            <app-date-picker class="datepicker__picker isOpen" [selected]="myCheckinDate" (selectedChange)="setCheckinDate($event)"></app-date-picker>
+          </app-popover>
+        </div> <!--/.datepicker-->
+      </div>
+      <div>
+        <app-time-picker [startingValue]="parseTime(myCheckinDate)" (valueChange)="setCheckinTime($event)"></app-time-picker>
+      </div>
+      <div class="flex alignCenter">
+        <button class="button button--icon button--icon--small" (click)="revertCheckin()">
+          <i class="ss-undo"></i>
+        </button>
+        <button class="button button--icon button--icon--small" (click)="saveCheckin()">
+          <i class="ss-floppydisk"></i>
+        </button>
+      </div>
     </div>
   </div>
 </div> <!--/.flex (for title area)-->
@@ -74,8 +95,26 @@
   </div>
   <div class="info__cell">
     <label>Next&nbsp;Check-In</label>
-    <a (click)="routeToPatientHistory()" class="justifyCenter" *ngIf="selectedPlan?.next_checkin">{{moment(selectedPlan?.next_checkin).fromNow()}}</a>
-    <a (click)="routeToPatientHistory()" class="justifyCenter" *ngIf="!selectedPlan?.next_checkin">N/A</a>
+    <div class="flex alignCenter justifyCenter">
+      <a class="justifyCenter" *ngIf="!nextCheckinTeamMember">Not Scheduled</a>
+      <div class="tool__anchor" *ngIf="nextCheckinTeamMember">
+        <a class="flex alignCenter" (click)="nextCheckinVisible=!nextCheckinVisible">
+          <span class="marRight8">{{moment(nextCheckinTeamMember.next_checkin).fromNow()}}</span>
+          <img src="../../../assets/img/arrow-down.svg" />
+        </a>
+        <app-popover [visible]="nextCheckinVisible" (visibleChange)="nextCheckinVisible = $event;">
+          <div class="tool__tip tool__tip--bottom isOpen">
+            <div class="tool__text">
+              <span>{{nextCheckinTeamMember.employee_profile.user.first_name}} {{nextCheckinTeamMember.employee_profile.user.last_name}}, {{nextCheckinTeamMember.employee_profile.title.abbreviation}}</span><br/>
+              <span *ngIf="nextCheckinTeamMember.role">{{nextCheckinTeamMember.role.name}}</span>
+              <span *ngIf="nextCheckinTeamMember.is_manager">Care Manager</span>
+              <br />
+              <span>{{moment(nextCheckinTeamMember.next_checkin).format('MMMM D, YYYY')}}</span>
+            </div>
+          </div>
+        </app-popover>
+      </div>
+    </div>
   </div>
   <div class="info__cell">
     <label>Last&nbsp;Contact</label>
