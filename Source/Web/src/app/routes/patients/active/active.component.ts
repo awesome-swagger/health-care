@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { ModalService, ConfirmModalComponent } from '../../../modules/modals';
 import { AddPatientToPlanComponent } from '../../../components';
 import { StoreService, AuthService } from '../../../services';
@@ -45,6 +45,7 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
   constructor(
     private auth: AuthService,
     private router: Router,
+    private route: ActivatedRoute,
     private modals: ModalService,
     private store: StoreService,
     private utils: UtilsService,
@@ -102,6 +103,14 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
         this.users = employees;
         this.users.forEach(user => {
           this.activeUsers[user.id] = true;
+        })
+        this.route.params.subscribe((params) => {
+          if (!params || !params.userId) return;
+          Object.keys(this.activeUsers).forEach(id => {
+            if (id !== params.userId) {
+              this.activeUsers[id] = false;
+            }
+          })
         })
       },
       (err) => {

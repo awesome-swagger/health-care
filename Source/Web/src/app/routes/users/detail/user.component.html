@@ -102,7 +102,7 @@
   <div class="flex justifySpaceBetween">
     <h2 class="noMargin">Assignments (Current Month-to-Date)</h2>
     <!--TODO: When this link is clicked, filter active patients list by this provider-->
-    <a [routerLink]="['/patients/active']" class="button button--iconText">
+    <a [routerLink]="['/patients/active', employee?.id]" class="button button--iconText">
       <i class="ss-standard ss-view"></i> View Patients List
     </a>
   </div>

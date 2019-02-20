@@ -313,7 +313,7 @@ export class UserComponent implements OnDestroy, OnInit {
     this.modals.open(ConfirmModalComponent, {
       data: {
         title: 'Billing View', 
-        body: `Do you want to ${action[0]} billing view rights ${action[1]} ${employeeName}?`,
+        body: `Do you want to ${action[0]} billing view ${action[1]} ${employeeName}?`,
         cancelText,
         okText,
       },

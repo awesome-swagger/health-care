@@ -133,10 +133,10 @@
         <label class="adopt__label">Patient Adoptions</label>
         <div class="adopt">
           <p class="adopt__text">Over the past 24 hours</p>
-          <h1 class="adopt__header">573</h1>
-          <p class="adopt__text">of 616 patients care plans used CareAdopt, for a</p>
+          <h1 class="adopt__header">{{patientAdoption?.patients_last_24_hours}}</h1>
+          <p class="adopt__text">of {{patientAdoption?.active_patients}} patients care plans used CareAdopt, for a</p>
           <div class="adopt__numberWrap">
-            <h1 class="chart__number"><span class="percent">93</span></h1>
+            <h1 class="chart__number"><span class="percent">{{patientAdoption?.adoption_rate}}</span></h1>
           </div>
           <p class="adopt__text">patient adoption rate.</p>
         </div> <!--/.adopt-->

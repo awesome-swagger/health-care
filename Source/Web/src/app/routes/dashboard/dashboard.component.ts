@@ -30,6 +30,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   public facilityChecked = {};
 
   public riskLevelBreakdown = null;
+  public patientAdoption = null;
   public billingOverview = null;
 
   public analyticsData = null;
@@ -96,6 +97,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
               }
             }).reverse();
             this.filterData();
+          }
+        )
+
+        this.store.Organization.detailRoute('GET', org.id, 'patient_adoption').subscribe(
+          (res:any) => {
+            this.patientAdoption = res;
+            console.log('vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv');
+            console.log(this.patientAdoption);
+            console.log('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^');
           }
         )
 
