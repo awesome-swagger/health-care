@@ -29,7 +29,7 @@ from apps.patients.models import (PatientDiagnosis, PatientMedication,
                                   PatientProcedure, PatientProfile,
                                   ProblemArea, PatientVerificationCode,
                                   ReminderEmail, PotentialPatient,
-                                  PatientStat)
+                                  PatientStat, EmergencyContact)
 from apps.plans.api.serializers import (InfoMessageSerializer, 
                                         CarePlanTemplateSerializer)
 from apps.plans.models import CarePlanTemplate
@@ -574,3 +574,36 @@ class LatestPatientSymptomSerializer(serializers.ModelSerializer):
             'created',
             'modified',
         )
+
+
+class EmergencyContactSerializer(serializers.ModelSerializer):
+    """
+    serializer to be used for :model:`patients.EmergencyContact`
+    """
+
+    class Meta:
+        model = EmergencyContact
+        fields = (
+            'id',
+            'patient',
+            'first_name',
+            'last_name',
+            'relationship',
+            'phone',
+            'email',
+            'is_primary',
+            'created',
+            'modified',
+        )
+        read_only_fields = (
+            'id',
+            'patient',
+            'created',
+            'modified',
+        )
+        nested_serializers = [
+            {
+                'field': 'patient',
+                'serializer_class': BasicPatientSerializer,
+            }
+        ]
