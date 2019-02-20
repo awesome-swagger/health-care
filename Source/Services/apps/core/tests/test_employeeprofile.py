@@ -17,7 +17,6 @@ from rest_framework.test import APITestCase
 from ..tests.mixins import CoreMixin
 from apps.accounts.tests.factories import AdminUserFactory
 from apps.billings.tests.mixins import BillingsMixin
-from apps.tasks.tests.mixins import TasksMixin
 
 
 class TestEmployeeProfile(CoreMixin, APITestCase):
@@ -199,7 +198,7 @@ class TestOrganizationFacility(CoreMixin, APITestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
 
-class TestFacilityEmployee(BillingsMixin, TasksMixin, APITestCase):
+class TestFacilityEmployee(BillingsMixin, APITestCase):
     """
     Test cases for :model:`tasks.EmployeeProfile` using an employee
     as the logged in user.
@@ -1106,6 +1105,29 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
         self.assertEqual(
             len(response.data['results'][0]['plans'][0]['details_of_service']),
             activity_count
+        )
+
+    def test_get_plans_details_of_service_team_task_field(self):
+        activity_count = 5
+
+        patient = self.create_patient(**{
+            'facility': self.facility,
+            'payer_reimbursement': True
+        })
+        plan = self.create_care_plan(patient, **{
+            'billing_practitioner': self.employee
+        })
+
+        for i in range(activity_count):
+            self.create_billed_activity(**{
+                'plan': plan,
+                'added_by': self.employee
+            })
+
+        response = self.client.get(self.url)
+        self.assertIsNotNone(
+            response.data['results'][0]['plans'][0]['details_of_service'][0][
+                'team_task']['team_task_template']
         )
 
     def test_get_plans_details_of_service_filter_month_year(self):

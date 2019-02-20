@@ -25,7 +25,7 @@
         <i class="ss-write"></i>
       </button>
     <button class="button button--iconText marRight32"
-    (click)="addPlan()">
+    (click)="duplicatePlan()">
       <i class="ss-files"></i> Duplicate
     </button>
     <button class="button button--iconText"
@@ -45,8 +45,8 @@
     </div>
     <div class="info__cell">
       <label>Time Count</label>
-      <div class="pill pill--red">
-        2:46
+      <div class="pill">
+        {{carePlanAverage.time_count}}
       </div>
     </div>
     <div class="info__cell">

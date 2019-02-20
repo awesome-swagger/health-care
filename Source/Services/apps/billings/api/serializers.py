@@ -6,6 +6,30 @@ from ..models import BilledActivity
 from apps.core.api.mixins import RepresentationMixin
 from apps.core.api.serializers import BasicEmployeeProfileSerializer
 from apps.plans.api.serializers import CarePlanSerializer
+from apps.tasks.api.serializers import TeamTaskTemplateSerializer
+from apps.tasks.models import TeamTask
+
+
+class ActivityTeamTaskSerializer(RepresentationMixin,
+                                 serializers.ModelSerializer):
+    """
+    serializer for :model:`tasks.TeamTask`
+    """
+
+    class Meta:
+        model = TeamTask
+        fields = (
+            'id',
+            'plan',
+            'team_task_template',
+            'status',
+        )
+        nested_serializers = [
+            {
+                'field': 'team_task_template',
+                'serializer_class': TeamTaskTemplateSerializer,
+            },
+        ]
 
 
 class BilledActivitySerializer(RepresentationMixin,
@@ -20,6 +44,7 @@ class BilledActivitySerializer(RepresentationMixin,
             'id',
             'plan',
             'activity_type',
+            'team_task',
             'members',
             'sync_to_ehr',
             'added_by',
@@ -27,6 +52,7 @@ class BilledActivitySerializer(RepresentationMixin,
             'notes',
             'time_spent',
             'readable_time_spent',
+            'is_billed',
             'created',
             'modified',
         )
@@ -48,7 +74,11 @@ class BilledActivitySerializer(RepresentationMixin,
             {
                 'field': 'added_by',
                 'serializer_class': BasicEmployeeProfileSerializer
-            }
+            },
+            {
+                'field': 'team_task',
+                'serializer_class': ActivityTeamTaskSerializer
+            },
         ]
 
     def validate_plan(self, value):

@@ -26,6 +26,8 @@ from apps.tasks.models import (
     MedicationTask,
     SymptomTask,
     VitalTask,
+    TeamTask,
+    TeamTaskTemplate,
 )
 from care_adopt_backend import utils
 
@@ -603,6 +605,16 @@ class FacilitySerializer(RepresentationMixin, serializers.ModelSerializer):
         ]
 
 
+class BasicFacilitySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Facility
+        fields = (
+            'id',
+            'name',
+        )
+
+
 class InsuranceSerializer(RepresentationMixin, serializers.ModelSerializer):
     class Meta:
         model = Facility
@@ -1121,6 +1133,54 @@ class InviteEmployeeSerializer(serializers.Serializer):
             mailer.send_invitation(employee, email_content)
 
 
+class ActivityTeamTaskTemplateSerializer(RepresentationMixin,
+                                         serializers.ModelSerializer):
+
+    class Meta:
+        model = TeamTaskTemplate
+        fields = (
+            'id',
+            'plan_template',
+            'name',
+            'is_manager_task',
+            'category',
+            'role',
+            'start_on_day',
+            'frequency',
+            'repeat_amount',
+            'appear_time',
+            'due_time',
+        )
+        nested_serializers = [
+            {
+                'field': 'role',
+                'serializer_class': ProviderRoleSerializer,
+            }
+        ]
+
+
+class ActivityTeamTaskSerializer(RepresentationMixin,
+                                 serializers.ModelSerializer):
+    """
+    serializer for :model:`tasks.TeamTask`
+    """
+
+    class Meta:
+        model = TeamTask
+        fields = (
+            'id',
+            'plan',
+            'team_task_template',
+            'status',
+        )
+        nested_serializers = [
+            {
+                'field': 'team_task_template',
+                'serializer_class': ActivityTeamTaskTemplateSerializer,
+            },
+        ]
+
+
 class BilledActivityDetailSerializer(RepresentationMixin,
                                      serializers.ModelSerializer):
     """
@@ -1133,11 +1193,22 @@ class BilledActivityDetailSerializer(RepresentationMixin,
         fields = (
             'id',
             'get_activity_type_display',
+            'team_task',
             'members',
+            'added_by',
+            'is_billed',
             'activity_date',
             'time_spent',
         )
         nested_serializers = [
+            {
+                'field': 'team_task',
+                'serializer_class': ActivityTeamTaskSerializer
+            },
+            {
+                'field': 'added_by',
+                'serializer_class': BasicEmployeeProfileSerializer
+            },
             {
                 'field': 'members',
                 'serializer_class': BasicEmployeeProfileSerializer,
@@ -1146,7 +1217,8 @@ class BilledActivityDetailSerializer(RepresentationMixin,
         ]
 
 
-class BilledPatientSerializer(serializers.ModelSerializer):
+class BilledPatientSerializer(RepresentationMixin,
+                              serializers.ModelSerializer):
     """
     serializer to be used by :model:`patients.PatientProfile` who have
     billing details.
@@ -1163,7 +1235,14 @@ class BilledPatientSerializer(serializers.ModelSerializer):
             'first_name',
             'last_name',
             'image_url',
+            'facility',
         )
+        nested_serializers = [
+            {
+                'field': 'facility',
+                'serializer_class': BasicFacilitySerializer
+            }
+        ]
 
     def get_first_name(self, obj):
         return obj.user.first_name
@@ -1175,7 +1254,7 @@ class BilledPatientSerializer(serializers.ModelSerializer):
         return obj.user.get_image_url()
 
 
-class BilledPlanSerializer(serializers.ModelSerializer):
+class BilledPlanSerializer(RepresentationMixin, serializers.ModelSerializer):
     """
     serializer to be used by :model:`plans.CarePlan` having
     billing details.
@@ -1188,6 +1267,7 @@ class BilledPlanSerializer(serializers.ModelSerializer):
         fields = (
             'id',
             'patient',
+            'is_billed',
             'billed_activities',
             'details_of_service',
             'care_manager',
@@ -1199,7 +1279,8 @@ class BilledPlanSerializer(serializers.ModelSerializer):
             },
             {
                 'field': 'care_manager',
-                'serializer_class': BasicEmployeeProfileSerializer
+                'serializer_class': BasicEmployeeProfileSerializer,
+                'many': True
             }
         ]
 

@@ -14,7 +14,7 @@ import {
   CreateVitalComponent,
   PlanDurationComponent,
 } from '../../../components';
-import { NavbarService, StoreService } from '../../../services';
+import { AuthService, NavbarService, StoreService } from '../../../services';
 
 @Component({
   selector: 'app-plan-schedule',
@@ -25,6 +25,8 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
 
   public planTemplateId = null;
   public planTemplate = null;
+  public organization = null;
+  public planTemplateAverage = null;
   public goalTemplates = [];
   public teamTaskTemplates = [];
   public teamManagerTemplates = [];
@@ -46,19 +48,38 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
   public toolPTVOpen;
   public toolPTMOpen;
 
+  private authSub = null;
+  private routeParamsSub = null;
+
   constructor(
     private route: ActivatedRoute,
     private modals: ModalService,
+    private auth: AuthService,
     private nav: NavbarService,
     private store: StoreService,
   ) { }
 
   public ngOnInit() {
-    this.route.params.subscribe((params) => {
+    this.routeParamsSub = this.route.params.subscribe((params) => {
       this.planTemplateId = params.id;
       this.nav.planDetailState(this.planTemplateId);
       this.store.CarePlanTemplate.read(this.planTemplateId).subscribe((planTemplate) => {
         this.planTemplate = planTemplate;
+        this.authSub = this.auth.organization$.subscribe((organization) => {
+          if (!organization) {
+            return;
+          }
+          this.organization = organization;
+          this.store.CarePlanTemplate.detailRoute('get', this.planTemplate.id, 'average', {}, {
+            care_plans__patient__facility__organization: this.organization.id,
+          }).subscribe(
+            (average) => {
+              this.planTemplateAverage = average;
+            },
+            (err) => {},
+            () => {}
+          );
+        });
       });
       this.store.GoalTemplate.readListPaged({
         plan_template__id: this.planTemplateId,
@@ -101,7 +122,14 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
     });
   }
 
-  public ngOnDestroy() { }
+  public ngOnDestroy() {
+    if (this.routeParamsSub) {
+      this.routeParamsSub.unsubscribe();
+    }
+    if (this.authSub) {
+      this.authSub.unsubscribe();
+    }
+  }
 
   public patientTasksCount() {
     return this.symptomTemplates.length + this.vitalTemplates.length + this.patientTaskTemplates.length + this.assessmentTemplates.length;
@@ -202,11 +230,12 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
     let goalIndex = this.goalTemplates.findIndex((obj) => {
       return obj.id === goal.id;
     });
+    let totalPatients = this.planTemplateAverage.total_patients;
     let modalSub = this.modals.open(ConfirmModalComponent, {
      closeDisabled: true,
      data: {
        title: 'Delete Goal?',
-       body: `Are you sure you want to delete this care plan goal? This will affect X patients currently assigned to this care plan.`,
+       body: `Are you sure you want to delete this care plan goal? This will affect ${totalPatients} patients currently assigned to this care plan.`,
        cancelText: 'Cancel',
        okText: 'Confirm',
       },
@@ -325,11 +354,12 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
         return obj.id === task.id;
       });
     }
+    let totalPatients = this.planTemplateAverage.total_patients;
     let modalSub = this.modals.open(ConfirmModalComponent, {
      closeDisabled: true,
      data: {
        title: 'Delete Task?',
-       body: 'Are you sure you want to remove this task? This will affect X patients currently assigned to this care plan.',
+       body: `Are you sure you want to remove this task? This will affect ${totalPatients} patients currently assigned to this care plan.`,
        cancelText: 'Cancel',
        okText: 'confirm',
       },
@@ -404,11 +434,12 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
     let tasksIndex = this.patientTaskTemplates.findIndex((obj) => {
       return obj.id === task.id;
     });
+    let totalPatients = this.planTemplateAverage.total_patients;
     let modalSub = this.modals.open(ConfirmModalComponent, {
      closeDisabled: true,
      data: {
        title: 'Delete Task?',
-       body: 'Are you sure you want to remove this task? This will affect X patients currently assigned to this care plan.',
+       body: `Are you sure you want to remove this task? This will affect ${totalPatients} patients currently assigned to this care plan.`,
        cancelText: 'Cancel',
        okText: 'confirm',
       },
@@ -515,11 +546,12 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
     let tasksIndex = this.assessmentTemplates.findIndex((obj) => {
       return obj.id === assessment.id;
     });
+    let totalPatients = this.planTemplateAverage.total_patients;
     let modalSub = this.modals.open(ConfirmModalComponent, {
      closeDisabled: true,
      data: {
        title: 'Delete Assessment?',
-       body: 'Are you sure you want to remove this assessment? This will affect X patients currently assigned to this care plan.',
+       body: `Are you sure you want to remove this assessment? This will affect ${totalPatients} patients currently assigned to this care plan.`,
        cancelText: 'Cancel',
        okText: 'Confirm',
       },
@@ -582,11 +614,12 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
     let tasksIndex = this.symptomTemplates.findIndex((obj) => {
       return obj.id === symptom.id;
     });
+    let totalPatients = this.planTemplateAverage.total_patients;
     let modalSub = this.modals.open(ConfirmModalComponent, {
      closeDisabled: true,
      data: {
        title: 'Delete Symptom Report?',
-       body: 'Are you sure you want to remove this symptom report? This will affect X patients currently assigned to this care plan.',
+       body: `Are you sure you want to remove this symptom report? This will affect ${totalPatients} patients currently assigned to this care plan.`,
        cancelText: 'Cancel',
        okText: 'Confirm',
       },
@@ -695,11 +728,12 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
     let tasksIndex = this.vitalTemplates.findIndex((obj) => {
       return obj.id === vital.id;
     });
+    let totalPatients = this.planTemplateAverage.total_patients;
     let modalSub = this.modals.open(ConfirmModalComponent, {
      closeDisabled: true,
      data: {
        title: 'Delete Vital?',
-       body: 'Are you sure you want to remove this vital report? This will affect X patients currently assigned to this care plan.',
+       body: `Are you sure you want to remove this vital report? This will affect ${totalPatients} patients currently assigned to this care plan.`,
        cancelText: 'Cancel',
        okText: 'Confirm',
       },
@@ -779,11 +813,12 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
   }
 
   public confirmDeleteStream() {
+    let totalPatients = this.planTemplateAverage.total_patients;
     this.modals.open(ConfirmModalComponent, {
      closeDisabled: true,
      data: {
        title: 'Delete Message Stream?',
-       body: 'Are you sure you want to remove this message stream? This will affect X patients currently assigned to this care plan.',
+       body: `Are you sure you want to remove this message stream? This will affect ${totalPatients} patients currently assigned to this care plan.`,
        cancelText: 'Cancel',
        okText: 'confirm',
       },

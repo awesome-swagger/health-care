@@ -22,6 +22,8 @@ import * as moment from 'moment';
 })
 export class NavComponent implements OnDestroy, OnInit {
 
+  public moment = moment;
+
   public employee = null;
   public organization = null;
   public organizations = [];
@@ -151,7 +153,9 @@ export class NavComponent implements OnDestroy, OnInit {
     this.getNotifications().then((notifications:any) => {
       this.notifications = notifications.results;
     });
-
+    this.getTasks().then((tasks:any) => {
+      this.tasks = tasks;
+    });
   }
 
   public ngOnDestroy() {
@@ -175,18 +179,18 @@ export class NavComponent implements OnDestroy, OnInit {
 
   public confirmUnarchive() {
     this.modals.open(ConfirmModalComponent, {
-      'backdrop': true,
-      'closeDisabled': true,
-      'width': '384px',
-      'height': 'auto',
-      'data': {
+      backdrop: true,
+      closeDisabled: true,
+      width: '384px',
+      height: 'auto',
+      data: {
         'title': 'Unarchive Patient?',
         'body': 'This patient has been archived. Viewing this patient will unarchive them and change their status to inactive.',
         'okText': 'Continue',
         'cancelText': 'Cancel',
       }
     }).subscribe(() => {
-    // do something with result
+
     });
   }
 
@@ -241,7 +245,7 @@ export class NavComponent implements OnDestroy, OnInit {
       this.auth.user$.subscribe(
         user => {
           if (!user) return;
-          let notificationsSub = this.store.Users.detailRoute('GET', user.user.id, 'notifications').subscribe(
+          let notificationsSub = this.store.User.detailRoute('GET', user.user.id, 'notifications').subscribe(
             (notifications:any) => {
               resolve(notifications);
             }

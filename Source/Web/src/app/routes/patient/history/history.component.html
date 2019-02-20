@@ -67,7 +67,7 @@
               </div>
               <div class="iconText iconText--wrap iconText--autoHeight marBottom8">
                 <i class="iconText__icon ss-chats"></i>
-                Task name N/A
+                {{formatActivityType(activity.activity_type) | titlecase}}
               </div>
               <h5 class="noMargin">
                 Added by {{activity.added_by.user.first_name}} {{activity.added_by.user.last_name}}
@@ -107,7 +107,7 @@
                 <span>Care Plan Task</span>
                 <span *ngIf="">Action</span>
               </label>
-              <h2 class="noMargin">Task Name N/A</h2>
+              <h2 class="noMargin">{{formatActivityType(selectedActivity.activity_type) | titlecase}}</h2>
               <div class="divider divider--smallMargin"></div>
               <h5>Added by {{selectedActivity.added_by.user.first_name}} {{selectedActivity.added_by.user.last_name}}&emsp;{{moment(selectedActivity.activity_date).format('MMM DD, YYYY')}}&ensp;|&ensp;{{moment(selectedActivity.activity_date).format('h:mm A')}}</h5>
               <!-- <h5 class="noMargin" *ngIf="selectedActivity.lastEditedBy">Last edited by {{getEmployee(selectedActivity.lastEditedBy).first_name}} {{getEmployee(selectedActivity.lastEditedBy).last_name}}, {{getEmployee(selectedActivity.lastEditedBy).title}}&emsp;{{selectedActivity.lastEdited.format('MMM DD, YYYY')}}&ensp;|&ensp;{{selectedActivity.lastEdited.format('h:mm A')}}</h5> -->

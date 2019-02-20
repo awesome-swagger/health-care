@@ -1,3 +1,9 @@
 :host {
   width: 100%;
 }
+
+.datepicker__picker {
+  position: inherit;
+  top: auto;
+  left: auto;
+}

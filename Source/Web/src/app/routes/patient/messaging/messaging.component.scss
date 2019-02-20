@@ -130,8 +130,20 @@
 
     &:last-child { margin-bottom: 0; }
 
+    &--teal {
+      .chat__bubble {
+        background: #4CBD95;
+
+        &::before {
+          border-right-color: #4CBD95;
+          border-bottom-color: #4CBD95;
+        }
+      }
+    }
+
     /*separate styling for messages from self
     muy much nesting :( But it makes it easy to change one class on .chat__message */
+
     &--right {
       margin-left: auto;
       align-self: flex-end;

@@ -34,7 +34,7 @@ from apps.core.api.serializers import (
     BasicEmployeeProfileSerializer,
     EmployeeProfileSerializer,
 )
-from apps.core.models import EmployeeProfile
+from apps.core.models import EmployeeProfile, Facility
 from apps.patients.models import PatientProfile
 from apps.tasks.models import (
     AssessmentTask,
@@ -72,7 +72,21 @@ class BasicEmployeePlanSerializer(serializers.ModelSerializer):
         return obj.user.get_image_url()
 
 
-class BasicPatientPlanSerializer(serializers.ModelSerializer):
+class BasicFacilityPlanSerializer(serializers.ModelSerializer):
+    """
+    Basic serializer for :model:`core.Facility`
+    """
+
+    class Meta:
+        model = Facility
+        fields = (
+            'id',
+            'name',
+        )
+
+
+class BasicPatientPlanSerializer(RepresentationMixin,
+                                 serializers.ModelSerializer):
     """
     basic serializer for :model:`patients.PatientProfile`
     """
@@ -80,6 +94,7 @@ class BasicPatientPlanSerializer(serializers.ModelSerializer):
     last_name = serializers.SerializerMethodField()
     image_url = serializers.SerializerMethodField()
     facility = serializers.SerializerMethodField()
+    facility_name = serializers.SerializerMethodField()
 
     class Meta:
         model = PatientProfile
@@ -89,7 +104,14 @@ class BasicPatientPlanSerializer(serializers.ModelSerializer):
             'last_name',
             'image_url',
             'facility',
+            'facility_name',
         )
+        nested_serializers = [
+            {
+                'field': 'facility',
+                'serializer_class': BasicFacilityPlanSerializer,
+            }
+        ]
 
     def get_first_name(self, obj):
         return obj.user.first_name
@@ -102,6 +124,9 @@ class BasicPatientPlanSerializer(serializers.ModelSerializer):
 
     def get_facility(self, obj):
         return obj.facility.id
+
+    def get_facility_name(self, obj):
+        return obj.facility.name
 
 
 class CarePlanTemplateTypeSerializer(serializers.ModelSerializer):
@@ -184,12 +209,13 @@ class CarePlanSerializer(RepresentationMixin, serializers.ModelSerializer):
             'patient',
             'plan_template',
             'billing_practitioner',
-            'next_checkin'
+            'is_billed',
         )
         read_only_fields = (
             'id',
             'created',
             'modified',
+            'is_billed',
         )
         nested_serializers = [
             {
@@ -253,6 +279,7 @@ class CareTeamMemberSerializer(RepresentationMixin, serializers.ModelSerializer)
             'employee_profile',
             'role',
             'plan',
+            'next_checkin',
             'is_manager',
         )
         nested_serializers = [
@@ -843,7 +870,30 @@ class CarePlanByTemplateFacilitySerializer(CarePlanOverviewSerializer):
     serializer to be used by :model:`plans.CarePlan` with
     data relevant in dashboard average endpoint
     """
-    pass
+    time_count = serializers.SerializerMethodField()
+
+    class Meta(CarePlanOverviewSerializer.Meta):
+        fields = (
+            'id',
+            'patient',
+            'plan_template',
+            'other_plans',
+            'tasks_this_week',
+            'average_outcome',
+            'average_engagement',
+            'risk_level',
+            'time_count',
+            'created'
+        )
+
+    def get_time_count(self, obj):
+        time_spent = BilledActivity.objects.filter(
+            plan=obj, 
+            activity_date__gte=timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)) \
+        .aggregate(total=Sum('time_spent'))
+        total = time_spent['total'] or 0
+        return str(datetime.timedelta(minutes=total))[:-3]
+
 
 
 class PatientCarePlanOverviewSerializer(CarePlanOverviewSerializer):

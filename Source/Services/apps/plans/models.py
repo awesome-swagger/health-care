@@ -93,7 +93,16 @@ class CarePlan(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
         on_delete=models.CASCADE)
 
     risk_level = models.IntegerField(null=True, blank=True)
-    next_checkin = models.DateField(null=True, blank=True)
+
+    # `is_billed` will be set by the signals. This will be toggled to
+    # True/False depending on if all BilledActivity of this instance has
+    # been billed or not
+    is_billed = models.BooleanField(
+        default=False,
+        editable=False,
+        help_text=_(
+            'Determines if all BilledActivity of this instance has been billed'
+        ))
 
     def __str__(self):
         return '{} {}: {}'.format(
@@ -119,7 +128,10 @@ class CarePlan(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
 
     @property
     def care_manager(self):
-        return self.care_team_members.filter(is_manager=True)
+        employee_ids = self.care_team_members.filter(
+            is_manager=True).values_list(
+                'employee_profile', flat=True).distinct()
+        return EmployeeProfile.objects.filter(id__in=employee_ids)
 
 
 class PlanConsent(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
@@ -151,6 +163,7 @@ class CareTeamMember(UUIDPrimaryKeyMixin):
         CarePlan, null=False, blank=False, related_name="care_team_members",
         on_delete=models.CASCADE)
     is_manager = models.BooleanField(default=False)
+    next_checkin = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         if self.is_manager:

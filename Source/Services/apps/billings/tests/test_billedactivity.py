@@ -60,6 +60,12 @@ class TestBilledActivityUsingEmployee(BillingsMixin, APITestCase):
         response = self.client.get(self.detail_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    def test_get_billed_activity_detail_team_task_field(self):
+        response = self.client.get(self.detail_url)
+        self.assertIsNotNone(
+            response.data['team_task']['team_task_template']['category']
+        )
+
     def test_get_billed_activity_detail_unauthenticated(self):
         self.client.logout()
         response = self.client.get(self.detail_url)
@@ -132,6 +138,82 @@ class TestBilledActivityUsingEmployee(BillingsMixin, APITestCase):
     def test_delete_billed_activity(self):
         response = self.client.delete(self.detail_url, {})
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_update_care_plan_billed_time_on_signal(self):
+        payload = {
+            'is_billed': True,
+        }
+        self.client.patch(self.detail_url, payload)
+        plan_url = reverse(
+            'care_plans-detail',
+            kwargs={'pk': self.plan.id}
+        )
+        response = self.client.get(plan_url)
+        self.assertEqual(response.data['is_billed'], True)
+
+    def test_update_care_plan_billed_time_on_signal_incomplete(self):
+        activities_count = 5
+
+        for i in range(activities_count):
+            self.create_billed_activity(**{
+                'plan': self.plan,
+                'added_by': self.employee,
+                'is_billed': True
+            })
+        plan_url = reverse(
+            'care_plans-detail',
+            kwargs={'pk': self.plan.id}
+        )
+        response = self.client.get(plan_url)
+        self.assertEqual(response.data['is_billed'], False)
+
+    def test_update_care_plan_billed_time_on_signal_complete(self):
+        activities_count = 5
+        payload = {
+            'is_billed': True,
+        }
+
+        for i in range(activities_count):
+            self.create_billed_activity(**{
+                'plan': self.plan,
+                'added_by': self.employee,
+                'is_billed': True
+            })
+        self.client.patch(self.detail_url, payload)
+
+        plan_url = reverse(
+            'care_plans-detail',
+            kwargs={'pk': self.plan.id}
+        )
+        response = self.client.get(plan_url)
+        self.assertEqual(response.data['is_billed'], True)
+
+    def test_get_billed_activities_filter_activity_date(self):
+        now = timezone.now()
+        last_week = now - relativedelta(days=7)
+        filtered_results = 3
+
+        for i in range(filtered_results):
+            self.activity = self.create_billed_activity(**{
+                'plan': self.plan,
+                'added_by': self.employee,
+                'activity_date': last_week.date()
+            })
+
+        # Create dummy records for billed activities without assigning
+        # `activity_date`. Defaults to current date
+        for i in range(filtered_results):
+            self.activity = self.create_billed_activity(**{
+                'plan': self.plan,
+                'added_by': self.employee
+            })
+
+        query_params = urllib.parse.urlencode({
+            'activity_date': last_week.date()
+        })
+        filter_url = f'{self.url}?{query_params}'
+        response = self.client.get(filter_url)
+        self.assertEqual(response.data['count'], filtered_results)
 
 
 class TestBilledActivityOverview(BillingsMixin, APITestCase):

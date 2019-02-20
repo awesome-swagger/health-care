@@ -31,7 +31,7 @@ export class CarePlanConsentComponent implements OnInit {
     console.log(this.data);
     this.store.CarePlan.read(this.data.plan_id).subscribe((carePlan) => {
       this.carePlan = carePlan;
-      this.store.PatientProfile.read(carePlan.patient).subscribe((patient) => {
+      this.store.PatientProfile.read(carePlan.patient.id).subscribe((patient) => {
         this.patient = patient;
         this.store.PlanConsentForm.readList({
           plan: this.data.plan_id,

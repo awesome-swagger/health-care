@@ -14,7 +14,7 @@ export class AddCTMemberComponent implements OnInit {
   public availableProviders = [];
   public providersShown = [];
   public searchStr = '';
-  public dropOpen;
+  public dropOpen = false;
 
 
   constructor(
@@ -32,9 +32,8 @@ export class AddCTMemberComponent implements OnInit {
   public fetchAvailableProviders() {
     let promise = new Promise((resolve, reject) => {
       if (this.data.is_bp) {
-        let fetchSub = this.store.EmployeeProfile.readListPaged({
-          role_id: 'd8f8ba07-3063-44da-ad7e-ac9d5e2146de',
-        }).subscribe(
+      // TODO: If adding a billing practitioner only get qualitified practitioners
+        let fetchSub = this.store.EmployeeProfile.readListPaged().subscribe(
           (bps) => resolve(bps),
           (err) => reject(err),
           () => {
@@ -42,7 +41,7 @@ export class AddCTMemberComponent implements OnInit {
           },
         );
       }
-      // If adding a care manager fetch only care managers
+      // TODO: If adding a care manager fetch only care managers
       if (this.data.is_manager) {
         let fetchSub = this.store.EmployeeProfile.readListPaged().subscribe(
           (managers) => resolve(managers),

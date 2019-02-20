@@ -182,7 +182,7 @@
                 <tr *ngIf="activeCarePlans[potentialPatient.care_plan]">
                   <td class="left">{{potentialPatient.first_name}} {{potentialPatient.last_name}}</td>
                   <td>
-                    <div class="iconText"> <!-- TODO: Switch icon for care plan type -->
+                    <div class="iconText">
                       {{potentialPatient.care_plan}}
                     </div>
                   </td>
@@ -191,7 +191,7 @@
                       --
                       <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipPP2Open }">
                         <div class="iconText iconText--white iconText--autoHeight marBottom8">
-                          <i class="iconText__icon iconText__icon--noTop icomoon-cocm"></i> Anxiety
+                          Anxiety
                         </div>
                       </div>
                     </a>

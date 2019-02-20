@@ -28,7 +28,7 @@ from apps.tasks.tests.mixins import TasksMixin
 from apps.accounts.tests.factories import RegularUserFactory
 
 
-class TestCarePlanUsingEmployee(BillingsMixin, TasksMixin, APITestCase):
+class TestCarePlanUsingEmployee(BillingsMixin, APITestCase):
     """
     Test cases for :model:`plans.CarePlan1 using an employee as the logged in
     user.
@@ -890,6 +890,62 @@ class TestCarePlanUsingEmployee(BillingsMixin, TasksMixin, APITestCase):
         overview_url = f'{url}?{url_params}'
         response = self.client.get(overview_url)
         self.assertEqual(response.data['count'], 1)
+
+    def test_care_plan_bill_time(self):
+        patient = self.create_patient(**{
+            'facility': self.facility
+        })
+        plan = self.create_care_plan(patient)
+        self.create_care_team_member(**{
+            'employee_profile': self.employee,
+            'plan': plan
+        })
+
+        url = reverse(
+            'care_plans-bill-time',
+            kwargs={'pk': plan.id}
+        )
+        response = self.client.post(url, {})
+        self.assertEqual(response.data['is_billed'], True)
+
+    def test_care_plan_bill_time_activities(self):
+        activities_count = 5
+        patient = self.create_patient(**{
+            'facility': self.facility
+        })
+        plan = self.create_care_plan(patient)
+        self.create_care_team_member(**{
+            'employee_profile': self.employee,
+            'plan': plan
+        })
+
+        for i in range(activities_count):
+            self.create_billed_activity(**{
+                'plan': plan
+            })
+
+        url = reverse(
+            'care_plans-bill-time',
+            kwargs={'pk': plan.id}
+        )
+        self.client.post(url, {})
+        self.assertEqual(
+            plan.activities.filter(is_billed=True).count(),
+            activities_count
+        )
+
+    def test_care_plan_bill_time_forbidden(self):
+        patient = self.create_patient(**{
+            'facility': self.facility
+        })
+        plan = self.create_care_plan(patient)
+
+        url = reverse(
+            'care_plans-bill-time',
+            kwargs={'pk': plan.id}
+        )
+        response = self.client.post(url, {})
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
 
 class TestCarePlanPostSaveSignalFrequencyOnce(TasksMixin, APITestCase):

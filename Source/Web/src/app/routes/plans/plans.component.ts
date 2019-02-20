@@ -183,6 +183,28 @@ export class PlansComponent implements OnDestroy, OnInit {
     return promise;
   }
 
+  public zeroPad(num) {
+    return num < 10 ? `0${num}` : `${num}`;
+  }
+
+  public totalTimeCount(templates) {
+    let hours = 0;
+    let minutes = 0;
+    templates.forEach((obj) => {
+      if (!obj.averages.time_count) {
+        return;
+      }
+      let timeCountSplit = obj.averages.time_count.split(":");
+      let splitHours = parseInt(timeCountSplit[0]);
+      let splitMinutes = parseInt(timeCountSplit[1]);
+      hours += splitHours;
+      minutes += splitMinutes;
+    });
+    hours += Math.floor((minutes / 60));
+    minutes = minutes % 60;
+    return `${hours}:${this.zeroPad(minutes)}`;
+  }
+
   public addPlan() {
     this.modals.open(AddPlanComponent, {
       closeDisabled: true,
@@ -201,13 +223,6 @@ export class PlansComponent implements OnDestroy, OnInit {
       },
       width: '480px',
     });
-  }
-
-  public copyPlan() {
-    this.modals.open(AddPlanComponent, {
-      closeDisabled: true,
-      width: '480px',
-    }).subscribe(() => {});
   }
 
   public clickCheckAllFacilities() {
@@ -231,6 +246,9 @@ export class PlansComponent implements OnDestroy, OnInit {
     if (!templates || templates.length === 0) {
       return 0;
     }
-    return _sumBy(templates, (template) => template.averages.risk_level) / templates.length;
+    let activeTemplates = templates.filter((obj) => {
+      return obj.averages.total_patients > 0;
+    });
+    return _sumBy(activeTemplates, (template) => template.averages.risk_level) / activeTemplates.length;
   }
 }

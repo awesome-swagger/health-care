@@ -2,10 +2,10 @@ import datetime
 
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
-from django.db.models import Sum
 
 from model_utils import Choices
 
+from .signals import billedactivity_post_save
 from care_adopt_backend.mixins import (CreatedModifiedMixin,
                                        UUIDPrimaryKeyMixin)
 
@@ -30,6 +30,11 @@ class BilledActivity(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
         on_delete=models.SET_NULL,
         null=True
         )
+    team_task = models.ForeignKey(
+        'tasks.TeamTask',
+        related_name='activities',
+        on_delete=models.SET_NULL,
+        null=True)
     activity_type = models.CharField(
         max_length=32,
         choices=ACTIVITY_TYPE,
@@ -56,6 +61,9 @@ class BilledActivity(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
         )
     time_spent = models.PositiveIntegerField(
         help_text=_('in minutes'))
+    is_billed = models.BooleanField(
+        default=False,
+        help_text=_('Determines if the instance has been billed externally.'))
 
     class Meta:
         ordering = ('-created', )
@@ -68,3 +76,10 @@ class BilledActivity(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
 
     def __str__(self):
         return f'{self.added_by}: {self.readable_time_spent}'
+
+
+# SIGNALS
+models.signals.post_save.connect(
+    billedactivity_post_save,
+    sender=BilledActivity
+)

@@ -74,7 +74,6 @@ export class PatientComponent implements OnDestroy, OnInit {
         });
         this.getPatientProcedures(this.patient.id).then((patientProcedures: any) => {
           this.patientProcedures = patientProcedures;
-          console.log(this.patientProcedures);
         });
 
         this.store.PatientStat.readListPaged().subscribe(res => {

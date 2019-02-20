@@ -66,35 +66,35 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
 
   public ngOnInit() {
     this.route.params.subscribe((params) => {
-      this.nav.patientDetailState(params.patientId, params.planId);
-      // Get patient
-      this.getPatient(params.patientId).then((patient: any) => {
-        this.patient = patient;
-        this.nav.addRecentPatient(this.patient);
-        // Get auth user
-        this.auth.user$.subscribe((user) => {
-          if (!user) {
-            return;
-          }
-          this.user = user;
-          // Get care plan
-          this.getCarePlan(params.planId).then((carePlan: any) => {
-            this.carePlan = carePlan;
-            // Get care team
-            this.getCareTeamMembers().then((teamMembers: any) => {
-              this.careTeamMembers = teamMembers.filter((obj) => {
-                return obj.employee_profile.user.id !== this.user.user.id;
-              });
-              this.selectedActions = this.actionChoices.concat();
-              // Get billed activities
-              this.getBilledActivities().then((billedActivities: any) => {
-                this.billedActivities = billedActivities;
-                this.selectedActivity = this.billedActivities[0];
-              });
-            });
-          });
-        });
-      });
+    	this.nav.patientDetailState(params.patientId, params.planId);
+    	// Get auth user
+    	this.auth.user$.subscribe((user) => {
+    		if (!user) {
+    			return;
+    		}
+    		// Get patient
+    		this.getPatient(params.patientId).then((patient: any) => {
+    			this.patient = patient;
+    			this.nav.addRecentPatient(this.patient);
+    			this.user = user;
+    			// Get care plan
+    			this.getCarePlan(params.planId).then((carePlan: any) => {
+    				this.carePlan = carePlan;
+    				// Get care team
+    				this.getCareTeamMembers(params.planId).then((teamMembers: any) => {
+    					this.careTeamMembers = teamMembers.filter((obj) => {
+    						return obj.employee_profile.user.id !== this.user.user.id;
+    					});
+    					this.selectedActions = this.actionChoices.concat();
+    					// Get billed activities
+    					this.getBilledActivities().then((billedActivities: any) => {
+    						this.billedActivities = billedActivities;
+    						this.selectedActivity = this.billedActivities[0];
+    					});
+    				});
+    			});
+    		});
+    	});
     });
   }
 
@@ -117,13 +117,10 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
     let promise = new Promise((resolve, reject) => {
       let billedActivitiesSub = this.store.BilledActivity.readListPaged({
         // TODO: Filters to get only billed activities for this care plan
-        // TODO: Filters to get only billed activities for the date
+        activity_date: this.dateFilter.format('YYYY-MM-DD'),
       }).subscribe(
         (billedActivities) => {
-          let tmpDateFilter = billedActivities.filter((activity) => {
-            return moment(activity.activity_date).isSame(this.dateFilter, 'day');
-          });
-          resolve(tmpDateFilter);
+          resolve(billedActivities);
         },
         (err) => reject(err),
         () => {
@@ -134,9 +131,9 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
     return promise;
   }
 
-  public getCareTeamMembers() {
+  public getCareTeamMembers(planId) {
     let promise = new Promise((resolve, reject) => {
-      let careTeamSub = this.store.CarePlan.detailRoute('get', this.carePlan.id, 'care_team_members', {}, {}).subscribe(
+      let careTeamSub = this.store.CarePlan.detailRoute('get', planId, 'care_team_members', {}, {}).subscribe(
         (teamMembers: any) => resolve(teamMembers),
         (err) => reject(err),
         () => {
@@ -200,6 +197,10 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
     });
   }
 
+  public formatActivityType(type) {
+    return type.replace(/_/g, ' ');
+  }
+
   public openRecordResults() {
     this.modals.open(RecordResultsComponent, {
       closeDisabled: true,
@@ -221,7 +222,7 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
         return;
       }
       // Create billed activity record
-      this.store.BilledActivity.create({
+      let createSub = this.store.BilledActivity.create({
         plan: this.carePlan.id,
         activity_type: 'care_plan_review', // TODO: activity type
         members: [
@@ -231,10 +232,16 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
         added_by: this.user.id,
         notes: results.notes,
         time_spent: results.totalMinutes,
-      }).subscribe((newResult) => {
-        this.billedActivities.push(newResult);
-        this.selectedActivity = newResult;
-      });
+      }).subscribe(
+        (newResult) => {
+          this.billedActivities.push(newResult);
+          this.selectedActivity = newResult;
+        },
+        (err) => {},
+        () => {
+          createSub.unsubscribe();
+        }
+      );
     });
   }
 
@@ -256,11 +263,10 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
       },
       width: '512px',
     }).subscribe((results) => {
-      console.log(results);
       if (!results) {
         return;
       }
-      this.store.BilledActivity.update(result.id, {
+      let updateSub = this.store.BilledActivity.update(result.id, {
         activity_type: 'care_plan_review', // TODO: activity type
         members: [
           this.user.id, // TODO: user selected in "with" field.
@@ -268,17 +274,23 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
         sync_to_ehr: results.syncToEHR,
         notes: results.notes,
         time_spent: results.totalMinutes,
-      }, true).subscribe((updatedResult) => {
-        let resultIndex = this.billedActivities.findIndex((obj) => obj.id === result.id);
-        this.billedActivities[resultIndex] = updatedResult;
-        this.selectedActivity = this.billedActivities[resultIndex];
-      });
+      }, true).subscribe(
+        (updatedResult) => {
+          let resultIndex = this.billedActivities.findIndex((obj) => obj.id === result.id);
+          this.billedActivities[resultIndex] = updatedResult;
+          this.selectedActivity = this.billedActivities[resultIndex];
+        },
+        (err) => {},
+        () => {
+          updateSub.unsubscribe();
+        }
+      );
     });
   }
 
   public confirmDelete(result) {
     this.modals.open(ConfirmModalComponent, {
-     'closeDisabled': true,
+     closeDisabled: true,
      data: {
        title: 'Delete Record?',
        body: 'Are you sure you want to delete this history record?',
@@ -287,7 +299,8 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
       },
       width: '384px',
     }).subscribe(() => {
-    // do something with result
+      let index = this.billedActivities.findIndex((obj) => obj.id === result.id);
+      this.billedActivities = this.billedActivities.splice(index, 1);
     });
   }
 }

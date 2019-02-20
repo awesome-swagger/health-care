@@ -6,12 +6,17 @@
   <h2>Billing Practitioner</h2>
   <div class="flex alignCenter marBottom48" *ngIf="billingPractitioner">
     <div class="picName">
-      <img class=picName__img [src]="billingPractitioner.employee_profile.user.image_url" />
-      {{billingPractitioner.employee_profile.user.first_name}} {{billingPractitioner.employee_profile.user.last_name}}<span *ngIf="billingPractitioner.employee_profile.title">, {{billingPractitioner.employee_profile.title.abbreviation}}</span>
+      <img class=picName__img [src]="billingPractitioner.user.image_url" />
+      {{billingPractitioner.user.first_name}} {{billingPractitioner.user.last_name}}<span *ngIf="billingPractitioner.title">, {{billingPractitioner.title.abbreviation}}</span>
     </div>
     <button class="button button--icon button--icon--small"
     (click)="changeBP()">
       <i class="ss-write"></i>
+    </button>
+  </div>
+  <div class="flex alignCenter marBottom48" *ngIf="!billingPractitioner">
+    <button class="button button--iconText marRight32" (click)="changeBP()">
+      <i class="ss-plus"></i> Add Billing Practitioner
     </button>
   </div>
 
@@ -26,8 +31,8 @@
 
   <h2>Care Manager</h2>
   <div class="info info--team marBottom48" *ngIf="careManager">
-    <div class="info__pill pill pill--lime">
-      :32
+    <div class="info__pill pill">
+      :00
     </div>
     <button class="info__edit button button--icon button--icon--small"
     (click)="changeCM(careManager)">
@@ -43,12 +48,12 @@
     <label>Org/Location</label>
     <p class="marBottom32">Ogden Clinic: Mountain View</p>
     <div class="info__contact">
-      <div class="info__contactInner tool__anchor">
+      <div class="info__contactInner tool__anchor" *ngIf="careManager.employee_profile.user.phone">
         <button class="button button--icon" (click)="showCMPhone =! showCMPhone">
           <i class="ss-standard ss-phone"></i>
         </button>
         <div class="tool__tip tool__tip--left" [ngClass]="{ 'isOpen' : showCMPhone }">
-          <a href="tel:">(801)&nbsp;737-3456</a>
+          <a href="tel:{{careManager.employee_profile.user.phone}}">{{careManager.employee_profile.user.phone}}</a>
         </div>
       </div>
       <div class="info__contactInner tool__anchor">
@@ -58,7 +63,7 @@
         </button>
         <div class="tool__tip tool__tip--right"
         [ngClass]="{ 'isOpen' : tooltipPCT1Open }">
-          <a href="mailto:">sample@example.com</a>
+          <a href="mailto:{{careManager.employee_profile.user.email}}">{{careManager.employee_profile.user.email}}</a>
         </div>
       </div>
     </div> <!--/.info__contact-->
@@ -74,8 +79,8 @@
   <h2>Care Team</h2>
   <div class="flex wrap">
     <div class="info info--team" *ngFor="let teamMember of careTeamMembers">
-      <div class="info__pill pill pill--yellow">
-        :14
+      <div class="info__pill pill">
+        :00
       </div>
       <button class="info__edit button button--icon button--icon--small"
       (click)="removeCTMember(teamMember)">
@@ -91,14 +96,14 @@
       <label>Org/Location</label>
       <p class="marBottom32">Ogden Clinic: Mountain View</p>
       <div class="info__contact">
-        <div class="info__contactInner tool__anchor">
+        <div class="info__contactInner tool__anchor" *ngIf="teamMember.employee_profile.user.phone">
           <button class="button button--icon"
           (click)="tooltipPCT2Open=!tooltipPCT2Open">
             <i class="ss-standard ss-phone"></i>
           </button>
           <div class="tool__tip tool__tip--left"
           [ngClass]="{ 'isOpen' : tooltipPCT2Open }">
-            <a href="tel:">(555)&nbsp;555-3456</a>
+            <a href="tel:{{teamMember.employee_profile.user.phone}}">{{teamMember.employee_profile.user.phone}}</a>
           </div>
         </div>
         <div class="info__contactInner tool__anchor">
@@ -108,7 +113,7 @@
           </button>
           <div class="tool__tip tool__tip--right"
           [ngClass]="{ 'isOpen' : tooltipPCT3Open }">
-            <a href="mailto:">sample@example.com</a>
+            <a href="mailto:{{teamMember.employee_profile.user.email}}">{{teamMember.employee_profile.user.email}}</a>
           </div>
         </div>
       </div> <!--/.info__contact-->

@@ -59,7 +59,6 @@ export class StoreService {
   public AssessmentResponse = new Store(this.http, 'assessment_responses');
   public VitalsTaskTemplate = new Store(this.http, 'vital_task_templates');
   public VitalsQuestions = new Store(this.http, 'vital_questions');
-  public Users = new Store(this.http, 'users');
   public VitalResponse = new Store(this.http, 'vital_responses');
 
   constructor(private http: HttpService) { }

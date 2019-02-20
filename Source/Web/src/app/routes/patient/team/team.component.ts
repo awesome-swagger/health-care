@@ -14,6 +14,7 @@ export class PatientTeamComponent implements OnDestroy, OnInit {
 
   public patient = null;
   public planId = null;
+  public carePlan = null;
   public careTeamMembers = [];
   public availableRoles = [];
   public careManager = null;
@@ -46,53 +47,30 @@ export class PatientTeamComponent implements OnDestroy, OnInit {
     this.routeSub = this.route.params.subscribe((params) => {
       this.planId = params.planId;
       this.nav.patientDetailState(params.patientId, params.planId);
-      let patientSub = this.store.PatientProfile.read(params.patientId).subscribe(
-        (patient) => {
-          this.patient = patient;
-          this.nav.addRecentPatient(this.patient);
-          // TODO: Do not grab care plans again here
-          let carePlansSub = this.store.CarePlan.readListPaged({
-            patient: this.patient.id,
-          }).subscribe(
-            (data) => {
-              // Get the available roles for this care plan
-              this.fetchAvailableRoles(params.planId).then((availableRoles: any) => {
-                this.availableRoles = availableRoles;
-              }, (err) => {
-                this.toast.error('Error fetching available roles');
-                console.log(err);
-              });
-              // Get the assigned team members for this care plan
-              let teamMembersSub = this.store.CarePlan.detailRoute('get', params.planId, 'care_team_members').subscribe(
-                (teamMembers: any) => {
-                  this.careTeamMembers = teamMembers.filter((obj) => {
-                    return !obj.is_manager && obj.role && obj.role.id !== 'd8f8ba07-3063-44da-ad7e-ac9d5e2146de';
-                  });
-                  this.careManager = teamMembers.filter((obj) => {
-                    return obj.is_manager;
-                  })[0];
-                  this.billingPractitioner = teamMembers.filter((obj) => {
-                    console.log(obj);
-                    return obj.role && obj.role.id === 'd8f8ba07-3063-44da-ad7e-ac9d5e2146de';
-                  })[0];
-                },
-                (err) => {},
-                () => {
-                  teamMembersSub.unsubscribe();
-                },
-              );
-            },
-            (err) => {},
-            () => {
-              carePlansSub.unsubscribe();
-            },
-          );
-        },
-        (err) => {},
-        () => {
-          patientSub.unsubscribe();
-        },
-      );
+      this.getPatient(params.patientId).then((patient: any) => {
+        this.patient = patient;
+        this.nav.addRecentPatient(this.patient);
+        this.getCarePlan(params.planId).then((carePlan: any) => {
+          this.carePlan = carePlan;
+          this.billingPractitioner = this.carePlan.billing_practitioner;
+          // Get the available roles for this care plan
+          this.getAvailableRoles(params.planId).then((availableRoles: any) => {
+            this.availableRoles = availableRoles;
+          }, (err) => {
+            this.toast.error('Error fetching available roles');
+            console.log(err);
+          });
+          // Get the assigned team members for this care plan
+          this.getCareTeam(params.planId).then((teamMembers: any) => {
+            this.careTeamMembers = teamMembers.filter((obj) => {
+              return !obj.is_manager && obj.role;
+            });
+            this.careManager = teamMembers.filter((obj) => {
+              return obj.is_manager;
+            })[0];
+          });
+        });
+      });
     });
   }
 
@@ -100,6 +78,58 @@ export class PatientTeamComponent implements OnDestroy, OnInit {
     if (this.routeSub) {
       this.routeSub.unsubscribe();
     }
+  }
+
+  public getPatient(patientId) {
+    let promise = new Promise((resolve, reject) => {
+      let patientSub = this.store.PatientProfile.read(patientId).subscribe(
+        (patient) => resolve(patient),
+        (err) => reject(err),
+        () => {
+          patientSub.unsubscribe();
+        },
+      );
+    });
+    return promise;
+  }
+
+  public getCarePlan(planId) {
+    let promise = new Promise((resolve, reject) => {
+      let planSub = this.store.CarePlan.read(planId).subscribe(
+        (plan) => resolve(plan),
+        (err) => reject(err),
+        () => {
+          planSub.unsubscribe();
+        },
+      );
+    });
+    return promise;
+  }
+
+  public getAvailableRoles(planId) {
+    let promise = new Promise((resolve, reject) => {
+      let availableRolesSub = this.store.CarePlan.detailRoute('get', planId, 'available_roles').subscribe(
+        (availableRoles: any) => resolve(availableRoles),
+        (err) => reject(err),
+        () => {
+          availableRolesSub.unsubscribe();
+        }
+      );
+    });
+    return promise;
+  }
+
+  public getCareTeam(planId) {
+    let promise = new Promise((resolve, reject) => {
+      let teamMembersSub = this.store.CarePlan.detailRoute('get', planId, 'care_team_members').subscribe(
+        (teamMembers: any) => resolve(teamMembers),
+        (err) => reject(err),
+        () => {
+          teamMembersSub.unsubscribe();
+        },
+      );
+    });
+    return promise;
   }
 
   public addCTMember(role) {
@@ -123,7 +153,7 @@ export class PatientTeamComponent implements OnDestroy, OnInit {
             (newTeamMember) => {
               this.careTeamMembers.push(newTeamMember);
               // Refetch the available roles
-              this.fetchAvailableRoles(this.planId).then(
+              this.getAvailableRoles(this.planId).then(
                 (availableRoles: any) => {
                   this.availableRoles = availableRoles;
                 },
@@ -200,7 +230,7 @@ export class PatientTeamComponent implements OnDestroy, OnInit {
             (res) => {
               this.careTeamMembers.splice(
                 this.careTeamMembers.findIndex((obj) => obj.id === teamMember.id), 1);
-              this.fetchAvailableRoles(this.planId).then(
+              this.getAvailableRoles(this.planId).then(
                 (availableRoles: any) => {
                   this.availableRoles = availableRoles;
                 },
@@ -231,16 +261,20 @@ export class PatientTeamComponent implements OnDestroy, OnInit {
       width: '416px',
     }).subscribe(
       (newBp) => {
-        this.store.CareTeamMember.destroy(this.billingPractitioner.id).subscribe(
-          (success) => {
-            this.store.CareTeamMember.create({
-              employee_profile: newBp.id,
-              role: 'd8f8ba07-3063-44da-ad7e-ac9d5e2146de',
-              plan: this.planId,
-              is_manager: false,
-            }).subscribe((createdBp) => {
-              this.billingPractitioner = createdBp;
-            });
+        if (!newBp) {
+          return;
+        }
+        let updateSub = this.store.CarePlan.update(this.planId, {
+          billing_practitioner: newBp.id,
+        }, true).subscribe(
+          (updatedPlan) => {
+            this.billingPractitioner = updatedPlan.billing_practitioner;
+          },
+          (err) => {
+            this.toast.error('Error updating billing practitioner');
+          },
+          () => {
+            updateSub.unsubscribe();
           }
         );
       },
@@ -283,18 +317,5 @@ export class PatientTeamComponent implements OnDestroy, OnInit {
         modalSub.unsubscribe();
       },
     );
-  }
-
-  public fetchAvailableRoles(planId) {
-    let promise = new Promise((resolve, reject) => {
-      let availableRolesSub = this.store.CarePlan.detailRoute('get', planId, 'available_roles').subscribe(
-        (availableRoles: any) => resolve(availableRoles),
-        (err) => reject(err),
-        () => {
-          availableRolesSub.unsubscribe();
-        }
-      );
-    });
-    return promise;
   }
 }
