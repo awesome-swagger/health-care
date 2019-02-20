@@ -106,20 +106,29 @@
       </div>
       <div class="info__cell">
         <label>Avg Outcomes</label>
-        <div class="pill" [ngStyle]="{'background': utils.percentPillColor(averagesByCarePlan.average_outcome)}">
+        <div class="pill" *ngIf="averagesByCarePlan.average_outcome" [ngStyle]="{'background': utils.percentPillColor(averagesByCarePlan.average_outcome)}">
           {{averagesByCarePlan.average_outcome}}%
+        </div>
+        <div class="pill" *ngIf="!averagesByCarePlan.average_outcome">
+          N/A
         </div>
       </div>
       <div class="info__cell">
         <label>Avg Engagement</label>
-        <div class="pill" [ngStyle]="{'background': utils.percentPillColor(averagesByCarePlan.average_engagement)}">
+        <div class="pill" *ngIf="averagesByCarePlan.average_engagement" [ngStyle]="{'background': utils.percentPillColor(averagesByCarePlan.average_engagement)}">
           {{averagesByCarePlan.average_engagement}}%
+        </div>
+        <div class="pill" *ngIf="!averagesByCarePlan.average_engagement">
+          N/A
         </div>
       </div>
       <div class="info__cell">
         <label>Risk Level</label>
-        <div class="pill" [ngStyle]="{'background': utils.percentPillColor(averagesByCarePlan.risk_level)}">
+        <div class="pill" *ngIf="averagesByCarePlan.risk_level" [ngStyle]="{'background': utils.percentPillColor(averagesByCarePlan.risk_level)}">
           {{utils.getRiskLevelText(averagesByCarePlan.risk_level)}} {{averagesByCarePlan.risk_level}}%
+        </div>
+        <div class="pill" *ngIf="!averagesByCarePlan.risk_level">
+          N/A
         </div>
       </div>
     </div> <!--/.info-->
@@ -131,8 +140,11 @@
         <div class="pill marRight16">
           Time {{totalTimeCount(plan.templates)}}
         </div>
-        <div class="pill" [ngStyle]="{'background': utils.percentPillColor(totalRiskLevel(plan.templates))}">
+        <div class="pill" *ngIf="totalRiskLevel(totalRiskLevel(plan.templates))" [ngStyle]="{'background': utils.percentPillColor(totalRiskLevel(plan.templates))}">
           {{utils.getRiskLevelText(totalRiskLevel(plan.templates))}} {{totalRiskLevel(plan.templates)}}%
+        </div>
+        <div class="pill" *ngIf="!totalRiskLevel(totalRiskLevel(plan.templates))">
+          N/A
         </div>
         <div class="accordion__arrow">
           <i class="ss-standard ss-navigateright"></i>

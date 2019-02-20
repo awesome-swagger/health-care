@@ -165,7 +165,8 @@ def get_all_tasks_for_today(user, **kwargs):
     if user.is_employee:
         employee = user.employee_profile
         team_tasks = TeamTask.objects.filter(
-            team_task_template__role__in=employee.roles.all(),
+            plan__care_team_members__employee_profile__id__in=[employee.id],
+            team_task_template__role__in=employee.assigned_roles.all().values_list('role', flat=True),
             due_datetime__range=(today_min, today_max)
         )
         if exclude_done:

@@ -51,20 +51,29 @@
     </div>
     <div class="info__cell">
       <label>Avg Engagement</label>
-      <div class="pill" [ngStyle]="{'background': utils.percentPillColor(carePlanAverage.average_engagement)}">
+      <div class="pill" *ngIf="carePlanAverage.average_engagement" [ngStyle]="{'background': utils.percentPillColor(carePlanAverage.average_engagement)}">
         {{carePlanAverage.average_engagement}}%
+      </div>
+      <div class="pill" *ngIf="!carePlanAverage.average_engagement">
+        N/A
       </div>
     </div>
     <div class="info__cell">
       <label>Avg Outcome</label>
-      <div class="pill" [ngStyle]="{'background': utils.percentPillColor(carePlanAverage.average_outcome)}">
+      <div class="pill" *ngIf="carePlanAverage.average_outcome" [ngStyle]="{'background': utils.percentPillColor(carePlanAverage.average_outcome)}">
         {{carePlanAverage.average_outcome}}%
+      </div>
+      <div class="pill" *ngIf="!carePlanAverage.average_outcome">
+        N/A
       </div>
     </div>
     <div class="info__cell">
       <label>Risk Level</label>
-      <div class="pill" [ngStyle]="{'background': utils.percentPillColor(carePlanAverage.risk_level)}">
+      <div class="pill" *ngIf="carePlanAverage.risk_level" [ngStyle]="{'background': utils.percentPillColor(carePlanAverage.risk_level)}">
         {{utils.getRiskLevelText(carePlanAverage.risk_level)}} {{carePlanAverage.risk_level}}%
+      </div>
+      <div class="pill" *ngIf="!carePlanAverage.risk_level">
+        N/A
       </div>
     </div>
   </div> <!--/.info-->

@@ -247,8 +247,11 @@ export class PlansComponent implements OnDestroy, OnInit {
       return 0;
     }
     let activeTemplates = templates.filter((obj) => {
+      if (!obj.averages) {
+        return false;
+      }
       return obj.averages.total_patients > 0;
     });
-    return _sumBy(activeTemplates, (template) => template.averages.risk_level) / activeTemplates.length;
+    return (_sumBy(activeTemplates, (template) => template.averages.risk_level) / activeTemplates.length) || 0;
   }
 }
