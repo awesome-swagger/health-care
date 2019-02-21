@@ -116,7 +116,7 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
   public getBilledActivities() {
     let promise = new Promise((resolve, reject) => {
       let billedActivitiesSub = this.store.BilledActivity.readListPaged({
-        // TODO: Filters to get only billed activities for this care plan
+        plan: this.carePlan.id,
         activity_date: this.dateFilter.format('YYYY-MM-DD'),
       }).subscribe(
         (billedActivities) => {

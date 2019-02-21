@@ -5,7 +5,7 @@ import * as moment from 'moment';
 import { ModalService } from '../../modules/modals';
 import { ToastService } from '../../modules/toast';
 import { PopoverOptions } from '../../modules/popover';
-import { AuthService, StoreService, UtilsService } from '../../services';
+import { AuthService, LocalStorageService, StoreService, UtilsService } from '../../services';
 import { ProblemAreasComponent } from '../../routes/patient/modals/problem-areas/problem-areas.component';
 
 @Component({
@@ -19,6 +19,7 @@ export class PatientHeaderComponent implements OnInit, OnDestroy {
 
   public _currentPage = null;
   public employee = null;
+  public isCollapsed = false;
   public isCareTeamMember = false;
   public employeeCTRoles = [];
   public patient = null;
@@ -56,6 +57,7 @@ export class PatientHeaderComponent implements OnInit, OnDestroy {
     private toast: ToastService,
     private auth: AuthService,
     private store: StoreService,
+    private local: LocalStorageService,
     public utils: UtilsService,
   ) { }
 
@@ -96,16 +98,18 @@ export class PatientHeaderComponent implements OnInit, OnDestroy {
           this.employeeCTRoles = employeeCTRoles;
           // Set next checkin date and time
   				if (this.isCareTeamMember && this.employeeCTRoles) {
-            this.myCheckinDate = moment(this.employeeCTRoles[0].next_checkin);
+            if (this.employeeCTRoles[0].next_checkin) {
+              if (this.isBefore3DaysAgo(moment(this.employeeCTRoles[0].next_checkin))) {
+                return;
+              }
+              this.myCheckinDate = moment(this.employeeCTRoles[0].next_checkin);
+            }
   				}
           // Get team member with closest check in date
-          this.nextCheckinTeamMember = teamMembers.sort((obj1: any, obj2: any) => {
-            let date1 = new Date(obj1.next_checkin);
-            let date2 = new Date(obj2.next_checkin);
-            if (date1 > date2) return 1;
-            if (date1 < date2) return -1;
-            return 0;
-          })[0];
+          let sortedCT = this.sortTeamMembersByCheckin(this.allTeamMembers);
+          if (sortedCT.length > 0) {
+            this.nextCheckinTeamMember = sortedCT[0];
+          }
   			});
   			this.getProblemAreas(params.patientId).then((problemAreas: any) => {
   				this.problemAreas = problemAreas;
@@ -223,9 +227,38 @@ export class PatientHeaderComponent implements OnInit, OnDestroy {
     return time.format('HH:mm:00');
   }
 
+  public isBefore3DaysAgo(dateAsMoment) {
+    let threeDaysAgo = moment().subtract(3, 'days').startOf('day');
+    if (dateAsMoment.isBefore(threeDaysAgo)) {
+      return true;
+    }
+    return false;
+  }
+
+  public sortTeamMembersByCheckin(teamMembers) {
+    // removes members without a checkin date set
+    return teamMembers.filter((obj) => {
+      return obj.next_checkin && !this.isBefore3DaysAgo(moment(obj.next_checkin));
+    }).sort((left: any, right: any) => {
+      left = moment(left.next_checkin).format();
+      right = moment(right.next_checkin).format();
+      return left - right;
+    });
+  }
+
   public clickEditCheckin() {
+    if (!this.myCheckinDate) {
+      this.myCheckinDate = moment().add(1, 'd');
+      this.myCheckinDate.set({
+        hour: 0,
+        minute: 0,
+        second: 0,
+      });
+      this.checkinRevertValue = null;
+    } else {
+      this.checkinRevertValue = this.myCheckinDate.clone();
+    }
     this.editCheckin = true;
-    this.checkinRevertValue = this.myCheckinDate.clone();
   }
 
   public setCheckinDate(e: moment.Moment) {
@@ -264,13 +297,10 @@ export class PatientHeaderComponent implements OnInit, OnDestroy {
         () => {
           // Recalculate next checkin in overview section
           // Get team member with closest check in date
-          this.nextCheckinTeamMember = this.allTeamMembers.sort((obj1: any, obj2: any) => {
-            let date1 = new Date(obj1.next_checkin);
-            let date2 = new Date(obj2.next_checkin);
-            if (date1 > date2) return 1;
-            if (date1 < date2) return -1;
-            return 0;
-          })[0];
+          let sortedCT = this.sortTeamMembersByCheckin(this.allTeamMembers);
+          if (sortedCT.length > 0) {
+            this.nextCheckinTeamMember = sortedCT[0];
+          }
           updateSub.unsubscribe();
         }
       );

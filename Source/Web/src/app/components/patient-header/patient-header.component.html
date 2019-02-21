@@ -25,7 +25,8 @@
     </div>
     <div class="flex alignCenter" *ngIf="!editCheckin">
       <div>
-        <span class="checkinText">{{myCheckinDate.format('MMM DD, YYYY')}} at {{myCheckinDate.format('hh:mm A')}}</span>
+        <span class="checkinText" *ngIf="myCheckinDate && !isBefore3DaysAgo(myCheckinDate)">{{myCheckinDate.format('MMM DD, YYYY')}} at {{myCheckinDate.format('h:mm A')}}</span>
+        <span class="checkinText" *ngIf="!myCheckinDate || isBefore3DaysAgo(myCheckinDate)">Not Scheduled</span>
       </div>
       <button class="button button--icon button--icon--small" (click)="clickEditCheckin()">
         <i class="ss-write"></i>
@@ -58,7 +59,15 @@
   </div>
 </div> <!--/.flex (for title area)-->
 
-<div class="info info--horiz">
+<div class="flex justifyEnd">
+  <button class="button button--icon" *ngIf="!isCollapsed" (click)="isCollapsed = !isCollapsed">
+    <i class="ss-standard ss-navigatedown"></i>
+  </button>
+  <button class="button button--icon" *ngIf="isCollapsed" (click)="isCollapsed = !isCollapsed">
+    <i class="ss-standard ss-navigateright"></i>
+  </button>
+</div>
+<div class="info info--horiz" *ngIf="!isCollapsed">
   <div class="info__cell">
     <label>Care Team</label>
     <div class="flex alignCenter justifyCenter">
@@ -99,8 +108,7 @@
       <a class="justifyCenter" *ngIf="!nextCheckinTeamMember">Not Scheduled</a>
       <div class="tool__anchor" *ngIf="nextCheckinTeamMember">
         <a class="flex alignCenter" (click)="nextCheckinVisible=!nextCheckinVisible">
-          <span class="marRight8">{{moment(nextCheckinTeamMember.next_checkin).fromNow()}}</span>
-          <img src="../../../assets/img/arrow-down.svg" />
+          <span>{{moment(nextCheckinTeamMember.next_checkin).fromNow()}}</span>
         </a>
         <app-popover [visible]="nextCheckinVisible" (visibleChange)="nextCheckinVisible = $event;">
           <div class="tool__tip tool__tip--bottom isOpen">
