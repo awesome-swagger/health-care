@@ -55,12 +55,20 @@
     <input type="number" class="input fullWidth" min="0" />
   </div> -->
 </div>
-<label>Prescribing Practitioner</label>
-<div class="styledSelect marBottom32">
-  <select class="styledSelect__select" [(ngModel)]="prescribingPractitioner">
-    <option *ngFor="let teamMember of careTeamMembers" [value]="teamMember.employee_profile.id">{{teamMember.employee_profile.user.first_name}} {{teamMember.employee_profile.user.last_name}}<span *ngIf="teamMember.employee_profile.title">, {{teamMember.employee_profile.title.abbreviation}}</span></option>
-  </select>
+<div class="drop marBottom32">
+  <label>Diagnosing Practitioner</label>
+  <input class="input input--search fullWidth" type="text" placeholder="Search" [(ngModel)]="employeeSearchString" (keypress)="clearEmployeeSelection()" />
+  <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : employeeSearchString.length > 2 && !selectedEmployee }">
+    <li class="drop__option" *ngFor="let employee of searchEmployees" (click)="selectedEmployee = employee; employeeSearchString = employeeFullName">
+      <a class="drop__link">
+        <div class="picName">
+          {{employee?.user?.first_name}} {{employee?.user?.last_name}}
+        </div>
+      </a>
+    </li>
+  </ul>
 </div>
+
 <label>Instructions (opt)</label>
 <textarea class="input input--textarea" [(ngModel)]="instructions"></textarea>
 

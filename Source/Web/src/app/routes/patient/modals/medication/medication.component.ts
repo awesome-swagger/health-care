@@ -1,6 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { ModalService } from '../../../../modules/modals';
 import { StoreService } from '../../../../services';
+import {
+  filter as _filter
+} from 'lodash';
 
 @Component({
   selector: 'app-medication',
@@ -19,8 +22,12 @@ export class MedicationComponent implements OnInit {
     {displayName: 'Weekends', value: 'weekends'},
   ];
   public plan = null;
+  public patient = null;
   public medications = [];
   public careTeamMembers = [];
+  public employees = [];
+  public employeeSearchString:string = '';
+  public selectedEmployee = null;
   public selectedMedication = null;
   public doseMg = 0;
   public datePrescribed = null;
@@ -44,11 +51,21 @@ export class MedicationComponent implements OnInit {
 
   public ngOnInit() {
     console.log(this.data);
+    this.fetchMedications().then((medications: any) => {
+      this.medications = medications;
+    });
+
+    let employeeSub = this.store.EmployeeProfile.readListPaged().subscribe(
+      users => {
+        this.employees = users;
+      },
+      err => {},
+      () => employeeSub.unsubscribe()
+    )
+
     if (this.data) {
       this.plan = this.data.plan;
-      this.fetchMedications().then((medications: any) => {
-        this.medications = medications;
-      });
+      this.patient = this.data.patient;
       // Get the assigned team members for this care plan
       let teamMembersSub = this.store.CarePlan.detailRoute('get', this.plan.id, 'care_team_members').subscribe(
         (teamMembers: any) => {
@@ -62,10 +79,26 @@ export class MedicationComponent implements OnInit {
     }
   }
 
+  public get searchEmployees() {
+    if (this.employees) {
+      return _filter(this.employees, e => {
+        const fullName = `${e.user.first_name} ${e.user.last_name}`.toLowerCase();
+        return fullName.indexOf(this.employeeSearchString.toLowerCase()) > -1;
+      })
+    }
+    return null;
+  }
+
+  public clearEmployeeSelection() {
+    this.selectedEmployee = null;
+  }
+
   public fetchMedications() {
     let promise = new Promise((resolve, reject) => {
-      let medicationsSub = this.store.Medication.readListPaged({}).subscribe(
-        (medications) => resolve(medications),
+      let medicationsSub = this.store.Medication.readListPaged().subscribe(
+        medications => {
+          resolve(medications)
+        },
         (err) => reject(err),
         () => medicationsSub.unsubscribe()
       )
@@ -75,10 +108,9 @@ export class MedicationComponent implements OnInit {
 
   public saveDisabled() {
     return (
-      !this.plan || !this.selectedMedication || !this.doseMg ||
-      !this.datePrescribed || !this.durationDays || !this.startDay ||
-      !this.frequency || !this.repeatAmount || !this.appearTime || !this.dueTime
-    );
+      !this.selectedMedication || !this.doseMg ||
+      !this.datePrescribed || !this.durationDays ||
+      !this.selectedEmployee);
   }
 
   public clickCancel() {
@@ -86,24 +118,15 @@ export class MedicationComponent implements OnInit {
   }
 
   public clickSave() {
-    let returnData = {
-      patient_medication: {
-        patient: this.plan.patient,
-        medication: this.selectedMedication,
-        dose_mg: this.doseMg,
-        date_prescribed: this.datePrescribed.format('YYYY-MM-DD'),
-        duration_days: this.durationDays,
-        prescribing_practitioner: this.prescribingPractitioner,
-      },
-      task: {
-        start_on_day: this.startDay,
-        frequency: this.frequency,
-        repeat_amount: this.repeatsChoice === 'plan_end' ? -1 : this.repeatAmount,
-        appear_time: this.appearTime,
-        due_time: this.dueTime,
-        plan: this.plan.id,
-      }
-    };
-    this.modal.close(returnData);
+    this.store.PatientMedication.create({
+      patient: this.patient.id,
+      medication: this.selectedMedication,
+      dose_mg: this.doseMg,
+      date_prescribed: this.datePrescribed.format('YYYY-MM-DD'),
+      duration_days: this.durationDays,
+      prescribing_practitioner: this.selectedEmployee.id,
+    }).subscribe(res => {
+      this.modal.close(res);
+    })
   }
 }

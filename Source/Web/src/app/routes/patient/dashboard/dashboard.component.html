@@ -9,7 +9,7 @@
     <div class="smallChartWrap">
       <div class="smallChart">
         <label>Avg Engagement</label>
-        <app-percentage-gauge [size]="260" [percent]="71"></app-percentage-gauge>
+        <app-percentage-gauge [size]="260" [percent]="patientAverage?.average_engagement"></app-percentage-gauge>
         <p class="smallChart__desc">
           Percentage of tasks and<br />
           assessments completed
@@ -17,7 +17,7 @@
       </div> <!--/.smallChart (the 1st one)-->
       <div class="smallChart">
         <label>Avg Outcome</label>
-        <app-percentage-gauge [size]="260" [percent]="41"></app-percentage-gauge>
+        <app-percentage-gauge [size]="260" [percent]="patientAverage?.average_outcome"></app-percentage-gauge>
         <p class="smallChart__desc">
           Results of well-being<br />
           assessments
@@ -25,7 +25,7 @@
       </div> <!--/.smallChart (the 2nd one)-->
       <div class="smallChart">
         <label>Avg Risk Level</label>
-        <app-percentage-gauge [size]="260" [percent]="92"></app-percentage-gauge>
+        <app-percentage-gauge [size]="260" [percent]="patientAverage?.risk_level"></app-percentage-gauge>
         <p class="smallChart__desc">
           Average of outcome %<br />
           and engagement %
@@ -33,7 +33,7 @@
       </div> <!--/.smallChart (the 3rd one)-->
       <div class="smallChart">
         <label>Satisfaction</label>
-        <app-percentage-gauge [size]="260" [percent]="87"></app-percentage-gauge>
+        <app-percentage-gauge [size]="260" [percent]="patientAverage?.average_satisfaction"></app-percentage-gauge>
         <p class="smallChart__desc">
           Results of satisfaction<br />
           assessments

@@ -1,0 +1,16 @@
+<h1>Choose Message Recipients</h1>
+<ng-container *ngFor="let member of careTeamMembers">
+  <label class="styledInput" *ngIf="member.user.id !== data?.userId">
+    <input type="checkbox" class="styledInput__input" [(ngModel)]="userChecked[member.user.id]" />
+    <span class="styledInput__box"></span>
+    {{member.user.first_name}} {{member.user.last_name}}
+  </label>
+</ng-container>
+<div class="modal__buttons">
+  <button class="button button--2nd" (click)="close()">
+    Cancel
+  </button>
+  <button type="submit" class="button" (click)="continue()">
+    Continue
+  </button>
+</div>

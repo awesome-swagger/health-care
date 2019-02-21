@@ -51,7 +51,7 @@
         <div class="flex alignCenter justifyCenter">
           <div class="picName marRight8">
             <img class="picName__img" src="../../../assets/img/profile.svg" />
-            {{plan.careTeam ? plan.careTeam[0] : ''}}
+            {{plan.careTeam ? plan.careTeam[0]?.employee_profile?.user?.first_name + ' ' + plan.careTeam[0]?.employee_profile?.user?.last_name : ''}}
           </div>
           <div class="tool__anchor">
             <a class="flex alignCenter" (click)="teamListOpen === i ? teamListOpen = -1 : teamListOpen = i">
@@ -62,7 +62,7 @@
               <div class="tool__text">
                 <div *ngFor="let practitioner of plan.careTeam?.slice(1)" class="picName marBottom16">
                   <img class="picName__img" src="../../../assets/img/profile--2.svg" />
-                  {{practitioner}}
+                  {{practitioner?.employee_profile?.user?.first_name + ' ' + practitioner?.employee_profile?.user?.last_name}}
                 </div>
               </div>
             </div>
@@ -139,46 +139,46 @@
   <div class="info info--horiz">
     <div class="info__cell">
       <label>Readmits</label>
-      {{patient?.statistics?.readmits}}
+      {{patientStats?.readmissions_count}}
     </div>
     <div class="info__cell">
       <label>Readmit %</label>
-      {{patient?.statistics?.readmitPercent}}
+      {{patientStats?.readmissions_percent}}
     </div>
     <div class="info__cell">
       <label>Cost of Readmits</label>
-      {{patient?.statistics?.readmitCost}}
+      {{patientStats?.readmissions_cost}}
     </div>
     <div class="info__cell">
       <label>ED Visits</label>
-      {{patient?.statistics?.edVisits}}
+      {{patientStats?.ed_visits}}
     </div>
     <div class="info__cell">
       <label>Opioid Use</label>
-      {{patient?.statistics?.opioidUse}}
+      {{patientStats?.opioid_use}}
     </div>
   </div> <!--/.info (first one for patient stats)-->
 
   <div class="info info--horiz">
     <div class="info__cell">
       <label>Admits</label>
-      {{patient?.statistics?.admits}}
+      {{patientStats?.admits}}
     </div>
     <div class="info__cell">
       <label>Avg Stay</label>
-      {{patient?.statistics?.avgStay}}
+      {{patientStats?.avg_stay_length}}
     </div>
     <div class="info__cell">
       <label>PCP Visits</label>
-      {{patient?.statistics?.pcpVisits}}
+      {{patientStats?.pcp_visits}}
     </div>
     <div class="info__cell">
       <label>Specialist Visits</label>
-      {{patient?.statistics?.specialistVisits}}
+      {{patientStats?.specialist_visits}}
     </div>
     <div class="info__cell">
       <label>Total Cost</label>
-      {{patient?.statistics?.totalCost}}
+      {{patientStats?.total_cost}}
     </div>
   </div> <!--/.info (second one for patient stats)-->
 </div>
@@ -339,21 +339,20 @@
     <div class="info cols__colSmall marRight32">
       <h3>Diagnoses</h3>
       <ul class="nameList nameList--dk marBottom16">
-        <li class="nameList__item" *ngFor="let diagnosis of patient?.diagnoses">
-          <span class="asterisk">{{diagnosis}}</span>
+        <li class="nameList__item" *ngFor="let diagnosis of patientDiagnoses">
+          <span>{{diagnosis.name}}</span>
           <div class="flex">
             <button class="button button--icon button--icon--small"
             (click)="editDiagnosis()">
               <i class="ss-write"></i>
             </button>
             <button class="button button--icon button--icon--small"
-            (click)="deleteDiagnosis()">
+            (click)="deleteDiagnosis(diagnosis)">
               <i class="ss-delete"></i>
             </button>
           </div>
         </li>
       </ul>
-      <h5>* Chronic condition</h5>
       <button class="button button--iconText"
       (click)="addDiagnosis()">
         <i class="ss-plus"></i> Add Diagnosis

@@ -46,7 +46,7 @@ export class OrganizationComponent implements OnDestroy, OnInit {
         }
         this.organization = organization;
 
-        this.renewalDate = moment('January 30, 2019');
+        this.renewalDate = moment('January 30, 2022'); // TODO: this should eventually be set on the org
         this.renewalDiff = this.renewalDate.diff(moment(), 'days');
         if (this.renewalDiff <= 90) {
           this.openAlert.date = true;
@@ -65,7 +65,7 @@ export class OrganizationComponent implements OnDestroy, OnInit {
 
     let usersSub = this.store.EmployeeProfile.readListPaged().subscribe(
       users => {
-        this.userCount = 47//users.length;
+        this.userCount = users.length;
         this.availableAccountsLeft = this.availableAccounts - this.userCount;
         if (this.availableAccountsLeft <= 5) {
           this.openAlert.users = true;

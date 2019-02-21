@@ -80,15 +80,22 @@ export class AddDiagnosisComponent implements OnInit {
   }
 
   public submit() {
-    if (this.selectedDiagnosis && this.selectedEmployee) {
+    if (this.selectedDiagnosis) {
       this.store.PatientDiagnosis.create({
             type: "N/A",
             date_identified: moment().format('YYYY-MM-DD'),
             diagnosing_practitioner: this.employeeFullName,
             facility: null,
-            patient: this.data.patientId,
+            patient: this.data.patient.id,
             diagnosis: this.selectedDiagnosis.id
-      }).subscribe(() => {})
+      }).subscribe((res) => {
+        const diagnosis = this.data.patient.diagnosis;
+        diagnosis.push(res.id)
+        this.store.PatientProfile.update(this.data.patient.id, {
+          diagnosis
+        }).subscribe(() => {})
+        this.modals.close(res);
+      })
     }
   }
 

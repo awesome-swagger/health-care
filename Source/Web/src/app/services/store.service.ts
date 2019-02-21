@@ -21,6 +21,7 @@ export class StoreService {
   public Symptom = new Store(this.http, 'symptoms');
   // Billing
   public BilledActivity = new Store(this.http, 'billed_activities');
+  public BillingCoordinator = new Store(this.http, 'billing_coordinators');
   // Patients
   public PatientProfile = new Store(this.http, 'patient_profiles');
   public ProblemArea = new Store(this.http, 'problem_areas');
@@ -28,6 +29,7 @@ export class StoreService {
   public PatientProcedure = new Store(this.http, 'patient_procedures');
   public PatientMedication = new Store(this.http, 'patient_medications');
   public PotentialPatient = new Store(this.http, 'potential_patients');
+  public PatientStat = new Store(this.http, 'patient_stats');
   // Plans
   public CarePlanTemplate = new Store(this.http, 'care_plan_templates');
   public CarePlanTemplateType = new Store(this.http, 'care_plan_template_types');

@@ -65,7 +65,7 @@
         </div> <!--/.drop (for search)-->
 
         <div class="drop">
-          <div class="badge">{{taskCount}}</div>
+          <div class="badge" *ngIf="tasksData?.length">{{taskCount}}</div>
           <button class="button button--icon button--icon--nav" (click)="taskDropOpen = !taskDropOpen">
             <i class="ss-standard ss-list"></i>
           </button>

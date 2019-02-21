@@ -23,9 +23,14 @@
               <h5 class="noMargin">{{getLastMessageTime(stream)}}</h5>
             </div>
             <p class="chat__preview">
-              {{stream?.messages?.length && stream?.messages[stream?.messages?.length - 1].text}}
+              {{stream?.messages?.length ? stream?.messages[stream?.messages?.length - 1].text : 'No messages'}}
             </p>
           </div> <!--/.chat__thread-->
+          <div class="fullWidth">
+            <button class="button button--iconText addMessageButton" (click)="openAddConversation()">
+              <i class="ss-plus"></i> Add Message
+            </button>
+          </div>
         </div> <!--/.chat__threads-->
       </div> <!--/.chat__side-->
 

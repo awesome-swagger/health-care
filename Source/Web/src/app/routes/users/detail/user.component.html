@@ -102,7 +102,7 @@
   <div class="flex justifySpaceBetween">
     <h2 class="noMargin">Assignments (Current Month-to-Date)</h2>
     <!--TODO: When this link is clicked, filter active patients list by this provider-->
-    <a [routerLink]="['/patients/active']" class="button button--iconText">
+    <a [routerLink]="['/patients/active', employee?.id]" class="button button--iconText">
       <i class="ss-standard ss-view"></i> View Patients List
     </a>
   </div>
@@ -174,9 +174,13 @@
               </div>
             </div> <!--/.tool__anchor-->
 
-            <label class="styledInput">
-              <input type="checkbox" class="styledInput__input"
-              [checked]="isProvider" (change)="isProvider=!isProvider" />
+            <label class="styledInput" (click)="confirmToggleBillingView(!employee?.billing_view)">
+              <input
+                type="checkbox"
+                class="styledInput__input"
+                [checked]="employee?.billing_view"
+                disabled
+              />
               <span class="styledInput__box"></span>
               Billing View
             </label>
@@ -191,9 +195,13 @@
               </div>
             </div> <!--/.tool__anchor-->
 
-            <label class="styledInput">
-              <input type="checkbox" class="styledInput__input"
-              [checked]="isBC" (change)="isBC=!isBC"/>
+            <label class="styledInput" (click)="confirmToggleQualifiedPractitioner(!employee?.qualified_practitioner)">
+              <input
+                type="checkbox"
+                class="styledInput__input"
+                [checked]="employee?.qualified_practitioner"
+                disabled
+              />
               <span class="styledInput__box"></span>
               Qualified Practitioner
             </label>
@@ -288,18 +296,14 @@
                 <div class="bc">
                   <label>Billing Coordinators (BCs)</label>
                   <ul class="nameList">
-                    <li class="nameList__item">
+                    <li class="nameList__item" *ngFor="let billingCoordinator of facility.billingCoordinators">
                       <!--TODO: Link to user detail page-->
                       <a class="picName fullWidth">
                         <img class="picName__img" src="../../../assets/img/profile.svg"/>
-                        Paul Gordon
+                        {{billingCoordinator?.coordinator?.user?.first_name}} {{billingCoordinator?.coordinator?.user?.last_name}}
                       </a>
                       <button class="button button--icon button--icon--small"
-                      (click)="confirmRemoveBC()">
-                        <i class="ss-write"></i>
-                      </button>
-                      <button class="button button--icon button--icon--small"
-                      (click)="confirmRemoveBC()">
+                      (click)="confirmRemoveBC(billingCoordinator)">
                         <i class="ss-delete"></i>
                       </button>
                     </li>
@@ -307,33 +311,14 @@
                 </div>
                 <label>Add Billing Coordinator (BC)</label>
                 <form class="flexForm">
-                  <div class="drop">
-                    <input class="input input--search" type="text" (click)="dropOpen = !dropOpen" placeholder="Search" />
-                    <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : dropOpen }" (click)="dropOpen = !dropOpen">
-                      <li class="drop__option">
-                        <a class="drop__link">
-                          <div class="picName">
-                            <img class="picName__img" src="../../../assets/img/profile.svg" />Adam Hancock
-                          </div>
-                        </a>
-                      </li>
-                      <li class="drop__option">
-                        <a class="drop__link">
-                          <div class="picName">
-                            <img class="picName__img" src="../../../assets/img/profile.svg" />Hank Granowski
-                          </div>
-                        </a>
-                      </li>
-                      <li class="drop__option">
-                        <a class="drop__link">
-                          <div class="picName">
-                            <img class="picName__img" src="../../../assets/img/profile.svg" />Samantha Hancock
-                          </div>
-                        </a>
-                      </li>
-                    </ul>
+                  <div class="styledSelect">
+                    <select class="styledSelect__select" [(ngModel)]="selectedBillingPractitioner[i]" [ngModelOptions]="{standalone: true}">
+                      <option *ngFor="let billingPractitioner of billingPractitioners" [ngValue]="billingPractitioner">
+                        {{billingPractitioner?.user?.first_name}} {{billingPractitioner?.user?.last_name}}
+                      </option>
+                    </select>
                   </div>
-                  <button class="button button--icon">
+                  <button class="button button--icon button--flex" (click)="confirmAddBC(i)">
                     <i class="ss-plus"></i>
                   </button>
                 </form>

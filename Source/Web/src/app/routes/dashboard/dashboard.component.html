@@ -42,7 +42,7 @@
 
               <li class="drop__option" *ngFor="let employee of employees">
                 <label class="drop__checkbox styledInput">
-                  <input type="checkbox" class="styledInput__input" [(ngModel)]="employeeChecked[employee.id]" />
+                  <input type="checkbox" class="styledInput__input" [(ngModel)]="employeeChecked[employee.id]" (click)="refreshAll()" />
                   <span class="styledInput__box"></span>
                   <div class="picName">
                     <img class="picName__img" src="../../../assets/img/profile.svg" />{{employee.user.first_name}} {{employee.user.last_name}}
@@ -75,7 +75,7 @@
         <div class="dashRisk">
           <div class="dashRisk__chart">
             <!--TODO: replace fakeChart with actual js charts-->
-            <app-active-patients-graph></app-active-patients-graph>
+            <app-active-patients-graph [data]="riskLevelBreakdown"></app-active-patients-graph>
           </div> <!--/.dashRisk__chart-->
           <div class="dashRisk__key">
             <table class="dashRisk__table">
@@ -87,8 +87,8 @@
                   <td>
                     <h4 class="noMargin">On Track</h4>
                   </td>
-                  <td>401</td>
-                  <td>65%</td>
+                  <td>{{riskLevelBreakdown?.on_track}}</td>
+                  <td>{{riskLevelPercent?.on_track}}%</td>
                 </tr>
                 <tr>
                   <td>
@@ -97,8 +97,8 @@
                   <td>
                     <h4 class="noMargin">Low Risk</h4>
                   </td>
-                  <td>110</td>
-                  <td>18%</td>
+                  <td>{{riskLevelBreakdown?.low_risk}}</td>
+                  <td>{{riskLevelPercent?.low_risk}}%</td>
                 </tr>
                 <tr>
                   <td>
@@ -107,8 +107,8 @@
                   <td>
                     <h4 class="noMargin">Med Risk</h4>
                   </td>
-                  <td>74</td>
-                  <td>12%</td>
+                  <td>{{riskLevelBreakdown?.med_risk}}</td>
+                  <td>{{riskLevelPercent?.med_risk}}%</td>
                 </tr>
                 <tr>
                   <td>
@@ -117,8 +117,8 @@
                   <td>
                     <h4 class="noMargin">High Risk</h4>
                   </td>
-                  <td>31</td>
-                  <td>5%</td>
+                  <td>{{riskLevelBreakdown?.high_risk}}</td>
+                  <td>{{riskLevelPercent?.high_risk}}%</td>
                 </tr>
               </tbody>
             </table>
@@ -133,10 +133,10 @@
         <label class="adopt__label">Patient Adoptions</label>
         <div class="adopt">
           <p class="adopt__text">Over the past 24 hours</p>
-          <h1 class="adopt__header">573</h1>
-          <p class="adopt__text">of 616 patients care plans used CareAdopt, for a</p>
+          <h1 class="adopt__header">{{patientAdoption?.patients_last_24_hours}}</h1>
+          <p class="adopt__text">of {{patientAdoption?.active_patients}} patients care plans used CareAdopt, for a</p>
           <div class="adopt__numberWrap">
-            <h1 class="chart__number"><span class="percent">93</span></h1>
+            <h1 class="chart__number"><span class="percent">{{patientAdoption?.adoption_rate}}</span></h1>
           </div>
           <p class="adopt__text">patient adoption rate.</p>
         </div> <!--/.adopt-->
@@ -309,23 +309,23 @@
     <div class="info info--dk info--horiz">
       <div class="info__cell">
         <label>Total Patients</label>
-        <h1 class="info__bigNumber">616</h1>
+        <h1 class="info__bigNumber">{{billingOverview?.billable_patients}}</h1>
       </div>
       <div class="info__cell">
         <label>Total Hours</label>
-        <h1 class="info__bigNumber">235:16</h1>
+        <h1 class="info__bigNumber">{{billingOverview?.total_hours}}</h1>
       </div>
       <div class="info__cell">
         <label>Billable Patients</label>
-        <h1 class="info__bigNumber">545</h1>
+        <h1 class="info__bigNumber">{{billingOverview?.billable_patients}}</h1>
       </div>
       <div class="info__cell">
         <label>Billable Hours</label>
-        <h1 class="info__bigNumber">198:13</h1>
+        <h1 class="info__bigNumber">{{billingOverview?.total_hours}}</h1>
       </div>
       <div class="info__cell">
         <label>Est. Month Total</label>
-        <h1 class="info__bigNumber">$56,123</h1>
+        <h1 class="info__bigNumber">${{billingOverview?.total_billable}}</h1>
       </div>
     </div> <!--/.info (for current month to date)-->
 
@@ -342,23 +342,23 @@
     <div class="info info--dk info--horiz">
       <div class="info__cell">
         <label>Total Patients</label>
-        <h1 class="info__bigNumber">548</h1>
+        <h1 class="info__bigNumber">{{billingOverview?.billable_patients}}</h1>
       </div>
       <div class="info__cell">
         <label>Total Hours</label>
-        <h1 class="info__bigNumber">178:01</h1>
+        <h1 class="info__bigNumber">{{billingOverview?.total_hours}}</h1>
       </div>
       <div class="info__cell">
         <label>Billable Patients</label>
-        <h1 class="info__bigNumber">388</h1>
+        <h1 class="info__bigNumber">{{billingOverview?.billable_patients}}</h1>
       </div>
       <div class="info__cell">
         <label>Billable Hours</label>
-        <h1 class="info__bigNumber">107:22</h1>
+        <h1 class="info__bigNumber">{{billingOverview?.total_hours}}</h1>
       </div>
       <div class="info__cell">
         <label>Est. Month Total</label>
-        <h1 class="info__bigNumber">$32,881</h1>
+        <h1 class="info__bigNumber">${{billingOverview?.total_billable}}</h1>
       </div>
     </div> <!--/.info (for past month)-->
 

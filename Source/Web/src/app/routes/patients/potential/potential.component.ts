@@ -85,7 +85,6 @@ export class PotentialPatientsComponent implements OnDestroy, OnInit {
 
   public addPatientToPlan() {
     this.modals.open(AddPatientToPlanComponent, {
-      closeDisabled: true,
       data: {
         action: 'add',
         patientKnown: false,

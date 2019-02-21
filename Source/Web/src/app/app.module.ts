@@ -130,6 +130,7 @@ import { PercentageGaugeComponent } from './components/graphs/percentage-gauge/p
 import { ResultsGraphComponent } from './components/graphs/results-graph/results-graph.component';
 import { ActivePatientsGraphComponent } from './components/graphs/active-patients-graph/active-patients-graph.component';
 import { PatientsEnrolledGraphComponent } from './components/graphs/patients-enrolled-graph/patients-enrolled-graph.component';
+import { AddConversationComponent } from './routes/patient/messaging/add-conversation/add-conversation.component';
 
 @NgModule({
   imports: [
@@ -236,6 +237,7 @@ import { PatientsEnrolledGraphComponent } from './components/graphs/patients-enr
     ResultsGraphComponent,
     ActivePatientsGraphComponent,
     PatientsEnrolledGraphComponent,
+    AddConversationComponent,
   ],
   providers: [
     {provide: APP_BASE_HREF, useValue: '/'},
@@ -304,6 +306,7 @@ import { PatientsEnrolledGraphComponent } from './components/graphs/patients-enr
     AddCtComponent,
     EditBillingPractitionerComponent,
     EditCcmComponent,
+    AddConversationComponent,
   ],
 })
 export class AppModule { }

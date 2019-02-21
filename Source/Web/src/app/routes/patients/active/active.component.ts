@@ -1,13 +1,15 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { ModalService, ConfirmModalComponent } from '../../../modules/modals';
 import { AddPatientToPlanComponent } from '../../../components';
-import { StoreService } from '../../../services';
+import { StoreService, AuthService } from '../../../services';
 import { UtilsService } from '../../../services';
 import {
+  concat as _concat,
   uniqBy as _uniqBy,
   groupBy as _groupBy,
   filter as _filter,
+  find as _find,
   map as _map,
   flattenDeep as _flattenDeep,
   mean as _mean,
@@ -15,7 +17,6 @@ import {
   compact as _compact
 } from 'lodash';
 import * as moment from 'moment';
-import patientsData from './patients-data';
 
 @Component({
   selector: 'app-active',
@@ -26,12 +27,14 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
 
   public activePatients = [];
   public activePatientsGrouped = [];
+  public average = null;
 
   public accordionsOpen = [];
 
   public openAlsoTip = {};
   public activeServiceAreas = {};
   public activeCarePlans = {};
+  public activeUsers = {};
   public users = null;
   public toolAP1Open;
   public multi1Open;
@@ -40,7 +43,9 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
   public multi4Open;
 
   constructor(
+    private auth: AuthService,
     private router: Router,
+    private route: ActivatedRoute,
     private modals: ModalService,
     private store: StoreService,
     private utils: UtilsService,
@@ -54,10 +59,11 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
       this.activePatients = _filter(patients, p => p.is_active);
       this.activePatientsGrouped = this.groupPatientsByFacility(this.activePatients);
       this.activePatients.forEach((patient, i) => {
-        let carePlanSub = this.store.PatientProfile.detailRoute('get', patient.id, 'care_plans').subscribe(
+        let carePlanSub = this.store.CarePlan.readListPaged({patient: patient.id}).subscribe(
           (plans: any) => {
             this.activePatients[i].care_plans = plans.map((plan) => {
               return {
+                id: plan.id,
                 name: plan.plan_template.name,
                 service_area: plan.plan_template.service_area.name || "Undefined",
                 current_week: plan.current_week || 0,
@@ -65,11 +71,16 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
                 time_in_minutes: plan.time || 0,
                 engagement: plan.engagement || 0,
                 outcomes: plan.outcomes || 0,
-                risk_level: plan.risk_level || 0,
+                risk_level: patient.risk_level || 0,
                 next_check_in: plan.next_check_in || 0,
                 tasks_this_week: plan.tasks_this_week || 0,
               }
             });
+            this.activePatients[i].care_plans.forEach(plan => {
+              this.store.CarePlan.detailRoute('GET', plan.id, 'care_team_members').subscribe((res:any) => {
+                plan.care_team_members = res;
+              })
+            })
             this.allServiceAreas.forEach(serviceArea => {
               this.activeServiceAreas[serviceArea] = true;
             });
@@ -77,13 +88,10 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
               this.activeCarePlans[carePlan] = true;
             });
           },
-          (err) => {
-
-          },
-          () => {
-            carePlanSub.unsubscribe();
-          }
+          err => {},
+          () => carePlanSub.unsubscribe()
         )
+
       })
 
       console.log(this.uniqueFacilities());
@@ -93,6 +101,17 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
     let employeesSub = this.store.EmployeeProfile.readListPaged().subscribe(
       (employees) => {
         this.users = employees;
+        this.users.forEach(user => {
+          this.activeUsers[user.id] = true;
+        })
+        this.route.params.subscribe((params) => {
+          if (!params || !params.userId) return;
+          Object.keys(this.activeUsers).forEach(id => {
+            if (id !== params.userId) {
+              this.activeUsers[id] = false;
+            }
+          })
+        })
       },
       (err) => {
 
@@ -101,6 +120,16 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
         employeesSub.unsubscribe();
       }
     )
+
+    this.auth.organization$.subscribe(org => {
+      if (org === null) return;
+      let averageSub = this.store.CarePlan.detailRoute('GET', null, 'average', {}, {
+        patient__facility__organization: org.id
+      }).subscribe(res => {
+        this.average = res;
+      })
+    })
+
   }
 
   public ngOnDestroy() { }
@@ -142,22 +171,30 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
     return groupedByFacility;
   }
 
-  public confirmRemovePatient() {
+  public confirmRemovePatient(patient, plan) {
+    const cancelText = 'Cancel';
+    const okText = 'Continue';
     this.modals.open(ConfirmModalComponent, {
       'closeDisabled': true,
       data: {
         title: 'Remove Patient?',
         body: 'Are you sure you want to remove this patient from this plan? This will negate their current progress. This cannot be undone.',
-        cancelText: 'Cancel',
-        okText: 'Continue',
+        cancelText,
+        okText,
       },
       width: '384px',
-    }).subscribe(() => { });
+    }).subscribe((res) => {
+      if (res === okText) {
+        this.store.CarePlan.destroy(plan.id).subscribe(res => {
+          const planPatient = _find(this.activePatients, p => p.id === patient.id);
+          planPatient.care_plans = _filter(planPatient.care_plans, p => p.id !== plan.id);
+        });
+      }
+    });
   }
 
   public addPatientToPlan() {
     this.modals.open(AddPatientToPlanComponent, {
-      closeDisabled: true,
       data: {
         action: 'add',
         patientKnown: false,
@@ -165,7 +202,23 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
         planKnown: false,
       },
       width: '576px',
-    }).subscribe(() => { });
+    }).subscribe(res => {
+      const patient = _find(this.activePatients, p => p.id === res.patient.id);
+      this.activeCarePlans[res.plan_template.name] = true;
+      patient.care_plans.push({
+        id: res.id,
+        name: res.plan_template.name,
+        service_area: res.plan_template.service_area.name || "Undefined",
+        current_week: res.current_week || 0,
+        total_weeks: res.plan_template.duration_weeks || 0,
+        time_in_minutes: res.time || 0,
+        engagement: res.engagement || 0,
+        outcomes: res.outcomes || 0,
+        risk_level: patient.risk_level || 0,
+        next_check_in: res.next_check_in || 0,
+        tasks_this_week: res.tasks_this_week || 0,
+      })
+    });
   }
 
   public uniqueFacilities() {
@@ -261,8 +314,14 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
   }
 
   public toggleAllCarePlans(status) {
-    Object.keys(this.activeServiceAreas).forEach(area => {
-      this.activeServiceAreas[area] = status;
+    Object.keys(this.activeCarePlans).forEach(area => {
+      this.activeCarePlans[area] = status;
+    })
+  }
+
+  public toggleAllUsers(status) {
+    Object.keys(this.activeUsers).forEach(area => {
+      this.activeUsers[area] = status;
     })
   }
 
@@ -284,4 +343,22 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
       return this.utils.timePillColor(avgTime, avgAllotted);
     }
   }
+
+  public hasActiveUser(plan) {
+    if (plan.care_team_members && plan.care_team_members.length) {
+      for (let i = 0; i < plan.care_team_members.length; i++) {
+        if (this.activeUsers[plan.care_team_members[i].employee_profile.id]) {
+          return true;
+        }
+      }
+    } else {
+      return this.showAllUsers;
+    }
+    return false;
+  }
+
+  public get showAllUsers() {
+    return true;
+  }
+
 }

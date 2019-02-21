@@ -70,7 +70,7 @@ export class NavComponent implements OnDestroy, OnInit {
   private routeParams = null;
 
   public notifications = [];
-  public tasksData = tasksData;
+  public tasksData = [];
   public tasks = [];
 
   constructor(
@@ -84,7 +84,12 @@ export class NavComponent implements OnDestroy, OnInit {
   public ngOnInit() {
     this.authSub = this.auth.user$.subscribe(
       (res) => {
+        if (!res) return;
         this.employee = res;
+        this.getTasks(this.employee.user.id).then((tasks:any) => {
+          this.tasks = tasks;
+          this.tasksData = tasks;
+        });
       },
       (err) => {},
       () => {}
@@ -147,9 +152,6 @@ export class NavComponent implements OnDestroy, OnInit {
 
     this.getNotifications().then((notifications:any) => {
       this.notifications = notifications.results;
-    });
-    this.getTasks().then((tasks:any) => {
-      this.tasks = tasks;
     });
   }
 
@@ -269,11 +271,15 @@ export class NavComponent implements OnDestroy, OnInit {
     }
   }
 
-  private getTasks() {
+  private getTasks(userId) {
     return new Promise((resolve, reject) => {
-      let tasksSub = this.store.TeamTask.readListPaged().subscribe(
-        tasks => {
+      let tasksSub = this.store.User.detailRoute('GET', userId, 'tasks').subscribe(
+        (tasks) => {
           resolve(tasks);
+        },
+        (err) => reject(err),
+        () => {
+          tasksSub.unsubscribe();
         }
       )
     });
@@ -284,7 +290,7 @@ export class NavComponent implements OnDestroy, OnInit {
   }
 
   public get taskCount() {
-    return tasksData.checkIns.length + tasksData.tasks.length;
+    return this.tasksData.length;
   }
 
   public timeSince(d) {

@@ -1,14 +1,16 @@
 import { AfterViewChecked, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NavbarService, StoreService, AuthService } from '../../../services';
-import messageStreams from './messageStreamData.js';
+import { AddConversationComponent } from './add-conversation/add-conversation.component';
 import {
   map as _map,
   filter as _filter,
   find as _find,
-  groupBy as _groupBy
+  groupBy as _groupBy,
+  uniqBy as _uniqBy,
 } from 'lodash';
 import * as moment from 'moment';
+import { ModalService } from '../../../modules/modals';
 
 @Component({
   selector: 'app-patient-messaging',
@@ -34,10 +36,11 @@ export class PatientMessagingComponent implements AfterViewChecked, OnDestroy, O
 
   constructor(
     private auth: AuthService,
+    private modals: ModalService,
+    private nav: NavbarService,
     private route: ActivatedRoute,
     private router: Router,
     private store: StoreService,
-    private nav: NavbarService,
   ) { }
 
 
@@ -68,7 +71,7 @@ export class PatientMessagingComponent implements AfterViewChecked, OnDestroy, O
                 this.messageRecipients = res.results;
 
                 this.messageRecipients.forEach((m,i) => {
-                  this.refreshMessages(m, i, params.planId);
+                  this.getMessageStreams(m, i, params.planId);
                 })
                 this.initRefreshInterval();
               }
@@ -82,7 +85,7 @@ export class PatientMessagingComponent implements AfterViewChecked, OnDestroy, O
     this.scrollBottom();
   }
 
-  public refreshMessages(m, i, planId) {
+  public getMessageStreams(m, i, planId) {
     this.store.CarePlan.detailRoute('GET', planId, `message_recipients/${m.id}/team_messages`).subscribe(
       (res:any) => {
         this.messageStreams[i] = { id: m.id, participants: [], messages: [] };
@@ -108,6 +111,21 @@ export class PatientMessagingComponent implements AfterViewChecked, OnDestroy, O
       }
     )
 
+  }
+
+  public refreshMessages(m, i, planId) {
+    this.store.CarePlan.detailRoute('GET', planId, `message_recipients/${m.id}/team_messages`).subscribe(
+      (res:any) => {
+        this.messageStreams[i].messages = _map(res.results, message => {
+          return {
+            text: message.content,
+            userId: message.sender.id,
+            date: message.created,
+          }
+        })
+
+      }
+    );
   }
 
   public initRefreshInterval() {
@@ -204,9 +222,6 @@ export class PatientMessagingComponent implements AfterViewChecked, OnDestroy, O
       content: this.newMessageText,
     }).subscribe(
       (res:any) => {
-        console.log('vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv');
-        console.log(res);
-        console.log('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^');
         this.currentStream.messages.push({
           text: res.content,
           userId: res.sender.id,
@@ -215,12 +230,34 @@ export class PatientMessagingComponent implements AfterViewChecked, OnDestroy, O
       }
     )
 
-    // this.currentStream.messages.push({
-    //   text: this.newMessageText,
-    //   userId: this.currentUser.id,
-    //   date: moment().format()
-    // })
-
     this.newMessageText = '';
   }
+
+  public openAddConversation() {
+    this.modals.open(AddConversationComponent, {
+      AddConversationComponent,
+      width: '440px',
+      data: {
+        planId: this.planId,
+        userId: this.userId,
+        careTeam: this.careTeam,
+      }
+    }).subscribe(res => {
+      this.messageStreams.push({
+        id: res.id,
+        messages: [],
+        participants: _map(res.members, id => {
+          return {
+            id,
+            firstName: this.careTeam[id].user.first_name,
+            lastName: this.careTeam[id].user.last_name,
+            title: this.careTeam[id].title.abbreviation,
+            isCurrentUser: id === this.userId,
+          }
+        })
+      });
+      this.currentStream = this.messageStreams[this.messageStreams.length -1];
+    })
+  }
+
 }

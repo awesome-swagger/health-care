@@ -13,7 +13,6 @@ import { ModalService, ConfirmModalComponent } from '../../../modules/modals';
 import { HttpService, StoreService } from '../../../services';
 import { AppConfig } from '../../../app.config';
 import { ReminderEmailComponent } from './modals/reminder-email/reminder-email.component';
-import patientsData from './../active/patients-data.js';
 
 @Component({
   selector: 'app-invited',
@@ -28,7 +27,6 @@ export class InvitedPatientsComponent implements OnDestroy, OnInit {
   public activeCarePlans = {};
   public openAlsoTip = {};
   public toolIP1Open;
-  public accord1Open;
   public tooltip2Open;
   public tooltipPP2Open;
   public accord2Open;
@@ -36,6 +34,10 @@ export class InvitedPatientsComponent implements OnDestroy, OnInit {
   public multi2Open;
   public multi3Open;
   public multi4Open;
+
+  public facilityAccordOpen = {};
+
+  public facilities = [];
 
   constructor(
     private router: Router,
@@ -47,29 +49,46 @@ export class InvitedPatientsComponent implements OnDestroy, OnInit {
   public ngOnInit() {
     this.invitedPatients = [];
     this.invitedPatientsGrouped = [];
-    this.getPatients().then((patients: any) => {
-      patients = patientsData.results; // TODO: remove
-      this.invitedPatients = _filter(patients, p => p.is_invited);
-      this.invitedPatientsGrouped = this.groupPatientsByFacility(patients);
+    this.store.Facility.readListPaged().subscribe((res:any) => {
 
-      this.allServiceAreas.forEach(serviceArea => {
-        this.activeServiceAreas[serviceArea] = true;
-      });
+      this.facilities = res;
 
-      this.allCarePlans.forEach(carePlan => {
-        this.activeCarePlans[carePlan] = true;
-      });
+      this.facilities.forEach(f => {
+        this.facilityAccordOpen[f.id] = false;
+      })
 
-      console.log(this.uniqueFacilities());
-      console.log(this.invitedPatientsGrouped);
-    });
+      this.facilities.forEach(facility => {
+        this.getPatients(facility).then((patients: any) => {
+          facility.invitedPatients = patients.results;
+        });
+      })
+    })
+
+    setTimeout(() => {
+      console.log('vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv');
+      console.log(this.facilities);
+      console.log('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^');
+    }, 4000)
   }
 
   public ngOnDestroy() { }
 
-  public getPatients() {
+  public get totalInvited() {
+    if (this.facilities) {
+      let result = 0;
+      this.facilities.forEach(f => {
+        if (f.invitedPatients) {
+          result += f.invitedPatients.length;
+        }
+      })
+      return result;
+    }
+    return 0;
+  }
+
+  public getPatients(facility) {
     let promise = new Promise((resolve, reject) => {
-      let patientsSub = this.store.PatientProfile.readListPaged().subscribe(
+      let patientsSub = this.store.Facility.detailRoute('GET', facility.id, 'patients', {}, { type: 'invited' }).subscribe(
         (patients) => {
           resolve(patients);
         },
