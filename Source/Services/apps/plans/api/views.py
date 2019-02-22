@@ -253,7 +253,7 @@ class CarePlanViewSet(viewsets.ModelViewSet):
     )
 
     def get_queryset(self):
-        qs = CarePlan.objects.all()
+        qs = CarePlan.objects.filter(patient__facility__is_affiliate=False)
         employee_profile = utils.employee_profile_or_none(self.request.user)
         patient_profile = utils.patient_profile_or_none(self.request.user)
         if employee_profile is not None:
