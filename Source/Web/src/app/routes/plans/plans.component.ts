@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { groupBy as _groupBy, sumBy as _sumBy } from 'lodash';
+import { groupBy as _groupBy, sumBy as _sumBy, uniqBy as _uniqBy } from 'lodash';
 import { ModalService, ConfirmModalComponent } from '../../modules/modals';
 import { PopoverOptions } from '../../modules/popover';
 import { AuthService, StoreService, UtilsService } from '../../services';
@@ -60,9 +60,9 @@ export class PlansComponent implements OnDestroy, OnInit {
       this.getPlanTemplates(this.organization).then((templates: any) => {
         this.getAllTemplateAverages(this.organization, templates).then((templatesWithAverages: any) => {
           this.carePlanTemplates = templatesWithAverages;
-          this.serviceAreas = this.carePlanTemplates.map((obj) => {
+          this.serviceAreas = _uniqBy(this.carePlanTemplates.map((obj) => {
             return obj.service_area;
-          });
+          }), (obj) => obj.id);
           let templatesGrouped = _groupBy(this.carePlanTemplates, (obj) => {
             return obj.service_area.id;
           });
@@ -220,12 +220,16 @@ export class PlansComponent implements OnDestroy, OnInit {
     return `${hours}:${this.zeroPad(minutes)}`;
   }
 
-  public addPlan() {
+  public addPlan(serviceAreaId = null) {
+    let modalData = {
+      duplicating: false,
+    };
+    if (serviceAreaId) {
+      modalData['serviceAreaId'] = serviceAreaId;
+    }
     this.modals.open(AddPlanComponent, {
       closeDisabled: false,
-      data: {
-        duplicating: false,
-      },
+      data: modalData,
       width: '480px',
     }).subscribe(() => {});
   }
@@ -261,9 +265,9 @@ export class PlansComponent implements OnDestroy, OnInit {
     this.getPlanTemplates(this.organization, this.selectedFacility).then((templates: any) => {
       this.getAllTemplateAverages(this.organization, templates, this.selectedFacility).then((templatesWithAverages: any) => {
         this.carePlanTemplates = templatesWithAverages;
-        this.serviceAreas = this.carePlanTemplates.map((obj) => {
+        this.serviceAreas = _uniqBy(this.carePlanTemplates.map((obj) => {
           return obj.service_area;
-        });
+        }), (obj) => obj.id);
         let templatesGrouped = _groupBy(this.carePlanTemplates, (obj) => {
           return obj.service_area.id;
         });
