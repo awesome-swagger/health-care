@@ -71,7 +71,7 @@ export class LoginComponent implements OnDestroy, OnInit {
   }
 
   public selectOrganization() {
-    this.storage.setObj('organization', this.selectedOrganization.id);
+    this.auth.setOrganizationId(this.selectedOrganization.id);
     this.router.navigate(['/']);
   }
 
