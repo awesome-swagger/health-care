@@ -19,7 +19,11 @@ from ..models import (PatientDiagnosis,
                       PotentialPatient,
                       PatientStat,
                       EmergencyContact,)
-from ..permissions import PatientProfilePermissions, PatientSearchPermissions
+from ..permissions import (
+    PatientProfilePermissions,
+    PatientSearchPermissions,
+    EmployeeManagerOrParentPatientOwner,
+)
 from .serializers import (PatientDashboardSerializer,
                           PatientDiagnosisSerializer,
                           PatientMedicationSerializer,
@@ -707,7 +711,7 @@ class EmergencyContactViewSet(ParentViewSetPermissionMixin,
     serializer_class = EmergencyContactSerializer
     permission_classes = (
         permissions.IsAuthenticated,
-        IsEmployeeOrPatientReadOnly,
+        EmployeeManagerOrParentPatientOwner,
     )
     queryset = EmergencyContact.objects.all()
     parent_field = 'patient'
@@ -715,6 +719,14 @@ class EmergencyContactViewSet(ParentViewSetPermissionMixin,
         ('patient', PatientProfile, PatientProfileViewSet)
     ]
     pagination_class = OrganizationEmployeePagination
+    skip_parent_permission_check = True
+
+    def create(self, request, *args, **kwargs):
+        # Call `get_queryset` first before processing POST request
+        self.get_queryset()
+
+        return super(EmergencyContactViewSet, self).create(
+            request, *args, **kwargs)
 
     def perform_create(self, serializer):
         serializer.save(patient=self.parent_obj)
