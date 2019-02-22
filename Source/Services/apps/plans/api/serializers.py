@@ -270,7 +270,8 @@ class PlanConsentSerializer(serializers.ModelSerializer):
         )
 
 
-class CareTeamMemberSerializer(RepresentationMixin, serializers.ModelSerializer):
+class CareTeamMemberSerializer(RepresentationMixin,
+                               serializers.ModelSerializer):
 
     class Meta:
         model = CareTeamMember
@@ -280,6 +281,7 @@ class CareTeamMemberSerializer(RepresentationMixin, serializers.ModelSerializer)
             'role',
             'plan',
             'next_checkin',
+            'time_spent_this_month',
             'is_manager',
         )
         nested_serializers = [

@@ -290,8 +290,8 @@ class CarePlanViewSet(viewsets.ModelViewSet):
     @action(methods=['get'], detail=True)
     def care_team_members(self, request, pk=None):
         plan = CarePlan.objects.get(id=pk)
-        care_team_members = plan.care_team_members
-        serializer = CareTeamMemberSerializer(care_team_members, many=True)
+        serializer = CareTeamMemberSerializer(plan.care_team_members.all(),
+                                              many=True)
         return Response(serializer.data)
 
     @action(methods=['post'], detail=False,

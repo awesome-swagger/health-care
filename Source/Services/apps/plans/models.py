@@ -186,6 +186,23 @@ class CareTeamMember(UUIDPrimaryKeyMixin):
                 self.plan,
             )
 
+    @property
+    def total_time_spent(self):
+        time_spent = self.employee_profile.added_activities.filter(
+            plan=self.plan).aggregate(total=Sum('time_spent'))
+        total = time_spent['total'] or 0
+        return str(datetime.timedelta(minutes=total))[:-3]
+
+    @property
+    def time_spent_this_month(self):
+        now = timezone.now()
+        first_day_of_month = now.replace(day=1).date()
+        time_spent = self.employee_profile.added_activities.filter(
+            plan=self.plan, activity_date__gte=first_day_of_month)\
+            .aggregate(total=Sum('time_spent'))
+        total = time_spent['total'] or 0
+        return str(datetime.timedelta(minutes=total))[:-3]
+
 
 class GoalTemplate(UUIDPrimaryKeyMixin):
     plan_template = models.ForeignKey(
