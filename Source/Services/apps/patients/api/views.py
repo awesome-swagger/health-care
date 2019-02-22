@@ -599,10 +599,11 @@ class PotentialPatientViewSet(viewsets.ModelViewSet):
         # If user is a employee, get all organizations that they belong to
         if user.is_employee:
             employee = user.employee_profile
-            queryset = queryset.filter(
-                Q(facility__in=employee.facilities.all()) |
+            q = Q(facility__in=employee.facilities.all()) | \
                 Q(facility__in=employee.facilities_managed.all())
-            )
+            for org in employee.organizations_managed.all():
+                q |= Q(facility__in=org.facility_set.all())
+            queryset = queryset.filter(q)
 
         elif user.is_patient:
             queryset = queryset.filter(patient_profile=user.patient_profile)
