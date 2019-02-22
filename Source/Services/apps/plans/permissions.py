@@ -6,7 +6,6 @@ from care_adopt_backend.permissions import IsAdminOrEmployee
 class CareTeamMemberPermissions(IsAdminOrEmployee):
 
     def has_object_permission(self, request, view, obj):
-
         if request.method == 'DELETE':
             if request.user.is_superuser:
                 return True
@@ -19,7 +18,9 @@ class CareTeamMemberPermissions(IsAdminOrEmployee):
                 if manager_role.exists():
                     return True
 
-        return False
+            return False
+
+        return True
 
 
 class MessageRecipientPermissions(permissions.IsAuthenticated):
