@@ -157,6 +157,9 @@ export class PlanInfoComponent implements OnDestroy, OnInit {
       return 0;
     }
     let activePlans = facility.plans.filter((obj) => obj.risk_level > 0);
+    if (activePlans.length === 0) {
+      return 0;
+    }
     return _sumBy(activePlans, (plan) => plan.risk_level) / activePlans.length;
   }
 
