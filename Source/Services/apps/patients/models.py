@@ -338,6 +338,7 @@ class PotentialPatient(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
         "plans.CarePlanTemplate", null=False, blank=False, related_name="potential_patients",
         on_delete=models.CASCADE)
     phone = models.CharField(_('Phone number'), max_length=16)
+    source = models.CharField(_('Source'), max_length=256)
     facility = models.ManyToManyField('core.Facility', blank=True)
     patient_profile = models.OneToOneField(
         'patients.PatientProfile',

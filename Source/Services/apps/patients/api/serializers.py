@@ -506,6 +506,7 @@ class PotentialPatientSerializer(RepresentationMixin, serializers.ModelSerialize
             'last_name',
             'care_plan',
             'phone',
+            'source',
             'facility',
             'patient_profile',
             'created',
