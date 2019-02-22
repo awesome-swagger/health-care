@@ -66,6 +66,7 @@ class CarePlanTemplate(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
         blank=True,
         null=True
     )
+    # `duration_weeks` will be -1 for ongoing plans
     duration_weeks = models.IntegerField(null=False, blank=False)
     is_active = models.BooleanField(default=True)
 
@@ -103,6 +104,7 @@ class CarePlan(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
         help_text=_(
             'Determines if all BilledActivity of this instance has been billed'
         ))
+    is_active = models.BooleanField(default=True)
 
     def __str__(self):
         return '{} {}: {}'.format(
@@ -379,22 +381,26 @@ def careplan_pre_save(sender, instance, update_fields=None, **kwargs):
     """
     Sends an email to the previous billing practitioner of the plan.
     """
-    pre_practitioner = instance.billing_practitioner
+    plan = CarePlan.objects.filter(id=instance.id).first()
+    # for only update
+    if plan:
+        old_practitioner = plan.billing_practitioner
+        new_practitioner = instance.billing_practitioner
 
-    if pre_practitioner:
-        subject = 'Notification from CareAdopt'
-        context = {
-            "plan": instance,
-            "subject": subject,
-            "admin_email": settings.DEFAULT_FROM_EMAIL,
-        }
-        email_template = 'core/employeeprofile/email/billing_practitioner.html'
-        return BaseMailer().send_mail(
-            subject,
-            email_template,
-            pre_practitioner.user.email,
-            context
-        )
+        if old_practitioner and old_practitioner != new_practitioner:
+            subject = 'Notification from CareAdopt'
+            context = {
+                "plan": instance,
+                "subject": subject,
+                "admin_email": settings.DEFAULT_FROM_EMAIL,
+            }
+            email_template = 'core/employeeprofile/email/billing_practitioner.html'
+            return BaseMailer().send_mail(
+                subject,
+                email_template,
+                old_practitioner.user.email,
+                context
+            )
 
 
 # Signals
