@@ -496,7 +496,7 @@ class ReminderEmailSerializer(serializers.ModelSerializer):
         ]
 
 
-class PotentialPatientSerializer(serializers.ModelSerializer):
+class PotentialPatientSerializer(RepresentationMixin, serializers.ModelSerializer):
 
     class Meta:
         model = PotentialPatient
@@ -516,6 +516,12 @@ class PotentialPatientSerializer(serializers.ModelSerializer):
             'created',
             'modified',
         )
+        nested_serializers = [
+            {
+                'field': 'care_plan',
+                'serializer_class': CarePlanTemplateSerializer
+            }
+        ]
 
 
 class FacilityInactivePatientSerializer(serializers.ModelSerializer):
