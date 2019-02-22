@@ -57,10 +57,15 @@ class ParentViewSetPermissionMixin(object):
     def filter_queryset_by_parents_lookups(self, queryset):
         parents_query_dict = self.get_parents_query_dict()
         parent_field = getattr(self, 'parent_field', None)
+        skip_parent_permission_check = getattr(self,
+                                               'skip_parent_permission_check',
+                                               False)
 
         for field, model, viewset in self.parent_lookup:
             parent = model.objects.get(id=parents_query_dict[field])
-            viewset().check_object_permissions(self.request, parent)
+
+            if not skip_parent_permission_check:
+                viewset().check_object_permissions(self.request, parent)
 
             if field == parent_field:
                 self.parent_obj = parent

@@ -36,3 +36,12 @@ class PotentialPatientFactory(factory.django.DjangoModelFactory):
 
     class Meta:
         model = 'patients.PotentialPatient'
+
+
+class EmergencyContactFactory(factory.django.DjangoModelFactory):
+    """
+    Factory for :model:`patients.EmergencyContact`
+    """
+
+    class Meta:
+        model = 'patients.EmergencyContact'

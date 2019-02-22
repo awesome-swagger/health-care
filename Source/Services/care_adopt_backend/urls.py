@@ -33,6 +33,7 @@ from apps.patients.api.views import (
     PatientProfileSearchViewSet,
     PotentialPatientViewSet,
     FacilityPatientViewSet,
+    EmergencyContactViewSet,
 )
 from apps.plans.api.views import (
     CarePlanTemplateTypeViewSet,
@@ -226,6 +227,12 @@ patient_routes.register(
     r'care_plan_overview',
     PatientCarePlanOverview,
     base_name='patient-care-plan-overview',
+    parents_query_lookups=['patient']
+)
+patient_routes.register(
+    r'emergency_contacts',
+    EmergencyContactViewSet,
+    base_name='patient-emergency-contacts',
     parents_query_lookups=['patient']
 )
 

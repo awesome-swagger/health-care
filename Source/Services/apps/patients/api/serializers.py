@@ -23,12 +23,13 @@ from apps.core.api.serializers import (
     SymptomSerializer,
     ProcedureSerializer,
     PatientUserInfo,
+    InsuranceSerializer,
 )
 from apps.patients.models import (PatientDiagnosis, PatientMedication,
                                   PatientProcedure, PatientProfile,
                                   ProblemArea, PatientVerificationCode,
                                   ReminderEmail, PotentialPatient,
-                                  PatientStat)
+                                  PatientStat, EmergencyContact)
 from apps.plans.api.serializers import (InfoMessageSerializer,
                                         CarePlanTemplateSerializer)
 from apps.plans.models import CarePlanTemplate
@@ -89,6 +90,16 @@ class PatientProfileSerializer(RepresentationMixin,
             'payer_reimbursement',
             'last_app_use',
             'risk_level',
+            'height_feet',
+            'height_inches',
+            'ethnicity',
+            'insurance',
+            'secondary_insurance',
+            'communication_preference',
+            'source',
+            'telemedicine',
+            'cognitive_ability',
+            'mrn',
             'diagnosis',
             'message_for_day',
             'created',
@@ -96,6 +107,7 @@ class PatientProfileSerializer(RepresentationMixin,
         )
         read_only_fields = (
             'id',
+            'risk_level',
             'created',
             'modified',
         )
@@ -111,8 +123,27 @@ class PatientProfileSerializer(RepresentationMixin,
             {
                 'field': 'message_for_day',
                 'serializer_class': InfoMessageSerializer
-            }
+            },
+            {
+                'field': 'insurance',
+                'serializer_class': InsuranceSerializer
+            },
+            {
+                'field': 'secondary_insurance',
+                'serializer_class': InsuranceSerializer
+            },
         ]
+
+    def validate_mrn(self, value):
+        if value:
+            queryset = PatientProfile.objects.all()
+            if self.instance:
+                queryset = queryset.exclude(id=self.instance.id)
+
+            if queryset.filter(mrn=value).exists():
+                raise serializers.ValidationError(_('MRN must be unique.'))
+
+        return value
 
 
 class AddPatientToPlanSerializer(ReferenceCheckMixin,
@@ -548,3 +579,36 @@ class LatestPatientSymptomSerializer(serializers.ModelSerializer):
             'created',
             'modified',
         )
+
+
+class EmergencyContactSerializer(serializers.ModelSerializer):
+    """
+    serializer to be used for :model:`patients.EmergencyContact`
+    """
+
+    class Meta:
+        model = EmergencyContact
+        fields = (
+            'id',
+            'patient',
+            'first_name',
+            'last_name',
+            'relationship',
+            'phone',
+            'email',
+            'is_primary',
+            'created',
+            'modified',
+        )
+        read_only_fields = (
+            'id',
+            'patient',
+            'created',
+            'modified',
+        )
+        nested_serializers = [
+            {
+                'field': 'patient',
+                'serializer_class': BasicPatientSerializer,
+            }
+        ]

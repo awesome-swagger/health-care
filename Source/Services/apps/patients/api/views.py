@@ -11,9 +11,19 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAdminUser
 from rest_framework_extensions.mixins import NestedViewSetMixin
 
-from ..models import (PatientDiagnosis, PatientMedication, PatientProcedure,
-                      PatientProfile, ProblemArea, PotentialPatient, PatientStat)
-from ..permissions import PatientProfilePermissions, PatientSearchPermissions
+from ..models import (PatientDiagnosis,
+                      PatientMedication,
+                      PatientProcedure,
+                      PatientProfile,
+                      ProblemArea,
+                      PotentialPatient,
+                      PatientStat,
+                      EmergencyContact,)
+from ..permissions import (
+    PatientProfilePermissions,
+    PatientSearchPermissions,
+    EmployeeManagerOrParentPatientOwner,
+)
 from .serializers import (PatientDashboardSerializer,
                           PatientDiagnosisSerializer,
                           PatientMedicationSerializer,
@@ -29,7 +39,8 @@ from .serializers import (PatientDashboardSerializer,
                           PatientStatSerializer,
                           PotentialPatientSerializer,
                           FacilityInactivePatientSerializer,
-                          LatestPatientSymptomSerializer)
+                          LatestPatientSymptomSerializer,
+                          EmergencyContactSerializer,)
 from apps.core.api.views import FacilityViewSet
 from apps.core.api.mixins import ParentViewSetPermissionMixin
 from apps.core.api.pagination import OrganizationEmployeePagination
@@ -664,3 +675,58 @@ class PatientProfileCarePlan(ListAPIView):
             queryset = queryset.filter(user=user)
 
         return queryset
+
+
+class EmergencyContactViewSet(ParentViewSetPermissionMixin,
+                              NestedViewSetMixin,
+                              viewsets.ModelViewSet):
+    """
+    Viewset for :model:`patients.EmergencyContact`
+    ========
+
+    create:
+        Creates :model:`patients.EmergencyContact` object based on the parent
+        patient object.
+
+    update:
+        Updates :model:`patients.EmergencyContact` object based on the parent
+        patient object.
+
+    partial_update:
+        Updates one or more fields of an existing emergency contact object
+        based on the parent patient object.
+
+    retrieve:
+        Retrieves a :model:`patients.EmergencyContact` instance based on the
+        parent patient object.
+
+    list:
+        Returns list of all :model:`patients.EmergencyContact` objects based on
+        the parent patient object.
+
+    delete:
+        Deletes a :model:`patients.EmergencyContact` instance based on the
+        parent patient object.
+    """
+    serializer_class = EmergencyContactSerializer
+    permission_classes = (
+        permissions.IsAuthenticated,
+        EmployeeManagerOrParentPatientOwner,
+    )
+    queryset = EmergencyContact.objects.all()
+    parent_field = 'patient'
+    parent_lookup = [
+        ('patient', PatientProfile, PatientProfileViewSet)
+    ]
+    pagination_class = OrganizationEmployeePagination
+    skip_parent_permission_check = True
+
+    def create(self, request, *args, **kwargs):
+        # Call `get_queryset` first before processing POST request
+        self.get_queryset()
+
+        return super(EmergencyContactViewSet, self).create(
+            request, *args, **kwargs)
+
+    def perform_create(self, serializer):
+        serializer.save(patient=self.parent_obj)
