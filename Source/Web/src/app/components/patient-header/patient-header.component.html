@@ -37,7 +37,7 @@
         <div class="datepicker">
           <div class="datepicker__date" (click)="showDate=!showDate">
             <span *ngIf="!myCheckinDate">Select Date</span>
-            <span *ngIf="myCheckinDate">{{myCheckinDate.format('ddd, MMM D')}}</span>
+            <span *ngIf="myCheckinDate">{{myCheckinDate.format('M/D/YYYY')}}</span>
           </div>
           <app-popover [visible]="showDate" (visibleChange)="showDate = $event;" [options]="datePickerOptions">
             <app-date-picker class="datepicker__picker isOpen" [selected]="myCheckinDate" (selectedChange)="setCheckinDate($event)"></app-date-picker>
@@ -60,10 +60,10 @@
 </div> <!--/.flex (for title area)-->
 
 <div class="flex justifyEnd">
-  <button class="button button--icon" *ngIf="!isCollapsed" (click)="isCollapsed = !isCollapsed">
+  <button class="button button--icon" *ngIf="!isCollapsed" (click)="toggleCollapsed()">
     <i class="ss-standard ss-navigatedown"></i>
   </button>
-  <button class="button button--icon" *ngIf="isCollapsed" (click)="isCollapsed = !isCollapsed">
+  <button class="button button--icon" *ngIf="isCollapsed" (click)="toggleCollapsed()">
     <i class="ss-standard ss-navigateright"></i>
   </button>
 </div>

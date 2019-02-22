@@ -279,8 +279,8 @@
               <th class="noPad"></th>
             </tr>
           </thead>
-          <tbody *ngFor="let pTask of patientTaskTemplates">
-            <tr>
+          <tbody>
+            <tr *ngFor="let pTask of patientTaskTemplates">
               <td class="left">{{pTask.name | titlecase}}</td>
               <td>{{pTask.start_on_day}}</td>
               <td class="left">{{pTask.frequency | frequencyTransform | titlecase}}</td>

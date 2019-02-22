@@ -307,6 +307,20 @@ export class PatientHeaderComponent implements OnInit, OnDestroy {
     });
   }
 
+  public toggleCollapsed() {
+    let collapsedPatientHeaders = this.local.getObj('collapsed-patient-headers');
+    let index = collapsedPatientHeaders.findIndex((obj) => obj === this.currentPage);
+    if (index > 0) {
+      collapsedPatientHeaders.splice(index, 1);
+      this.local.setObj('collapsed-patient-headers', collapsedPatientHeaders);
+      this.isCollapsed = false;
+    } else {
+      collapsedPatientHeaders.push(this.currentPage);
+      this.local.setObj('collapsed-patient-headers', collapsedPatientHeaders);
+      this.isCollapsed = true;
+    }
+  }
+
   @Input()
   public get currentPage() {
     return this._currentPage;
@@ -314,5 +328,14 @@ export class PatientHeaderComponent implements OnInit, OnDestroy {
 
   public set currentPage(value) {
     this._currentPage = value;
+    let collapsedPatientHeaders = this.local.getObj('collapsed-patient-headers');
+    if (!collapsedPatientHeaders) {
+      this.local.setObj('collapsed-patient-headers', ['messaging', 'history']);
+      if (this._currentPage !== 'messaging' || this._currentPage !== 'history')
+      this.isCollapsed = false;
+    }
+    if (collapsedPatientHeaders.includes(this._currentPage)) {
+      this.isCollapsed = true;
+    }
   }
 }

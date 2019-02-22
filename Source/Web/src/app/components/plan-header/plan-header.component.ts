@@ -20,7 +20,6 @@ export class PlanHeaderComponent implements OnInit, OnDestroy {
   public editName = false;
   public newPlanName = '';
   public carePlanAverage = null;
-  public addPlan;
 
   constructor(
     private route: ActivatedRoute,

@@ -1,10 +1,5 @@
 <div class="ssContainer ssContents">
   <div class="right">
-    <!-- <label class="styledInput marRight48">
-      <input type="checkbox" class="styledInput__input" [(ngModel)]="showInactive" (ngModelChange)="fetchPlanTemplates()" />
-      <span class="styledInput__box"></span>
-      View Inactive Plans
-    </label> -->
     <button class="button button--iconText" (click)="addPlan()">
       <i class="ss-plus"></i>
       Add Care Plan
@@ -26,7 +21,7 @@
           </div>
         </app-popover>
       </div> <!--/.tool__anchor-->
-      <h1 class="noMargin marRight8">Care Plans ({{carePlanTemplates.length}})</h1>
+      <h1 class="noMargin marRight8">Care Plans ({{carePlanTemplates?.length}})</h1>
       <div class="tool__anchor">
         <button class="button button--icon button--icon--small"
         (click)="showCarePlanHelp=!showCarePlanHelp">
@@ -41,39 +36,7 @@
         </app-popover>
       </div> <!--/.tool__anchor-->
     </div> <!--/.flex (for page title and tooltip)-->
-    <div>
-      <label>Facilities</label>
-      <div class="drop marBottom48">
-        <div class="drop__input" (click)="facilitiesOpen=!facilitiesOpen">
-          All
-        </div>
-        <app-popover [options]="facilitiesDropOptions" [visible]="facilitiesOpen" (visibleChange)="facilitiesOpen = $event;">
-          <ul class="drop__dropdown isOpen">
-            <div class="drop__buttons">
-              <button class="button button--iconText" (click)="clickCheckAllFacilities()">
-                <i class="ss-check ss-standard"></i> Check All
-              </button>
-              <button class="button button--iconText" (click)="clickUncheckAllFacilities()">
-                <i class="ss-ban"></i> Uncheck All
-              </button>
-            </div>
-
-            <li class="drop__option">
-              <input class="input input--search drop__innerInput" type="text" placeholder="Search" />
-            </li>
-            <li class="drop__option" *ngFor="let facility of facilities">
-              <label class="drop__checkbox styledInput">
-                <input type="checkbox" class="styledInput__input" [(ngModel)]="facilitiesChecked[facility.id]" (ngModelChange)="applyFacilityFilter()" />
-                <span class="styledInput__box"></span>
-                {{facility.name}}
-              </label>
-            </li>
-          </ul>
-        </app-popover>
-      </div> <!--/.drop-->
-    </div>
   </div> <!--/.flexHeader-->
-
   <div class="flex alignCenter marBottom24">
     <h2 class="noMargin">Averages by Care Plan (Past 30 Days)</h2>
     <div class="tool__anchor">
@@ -89,6 +52,45 @@
         </div>
       </app-popover>
     </div> <!--/.tool__anchor-->
+  </div>
+  <div class="flex alignCenter justifySpaceBetween">
+    <div>
+      <label class="styledInput">
+        <input type="checkbox" class="styledInput__input" />
+        <span class="styledInput__box"></span>
+        Show Only Active Service Areas
+      </label>
+    </div>
+    <div>
+      <label>Facilities</label>
+      <div class="drop marBottom24">
+        <div class="drop__input" (click)="facilitiesOpen=!facilitiesOpen">
+          All
+        </div>
+        <app-popover [options]="facilitiesDropOptions" [visible]="facilitiesOpen" (visibleChange)="facilitiesOpen = $event;">
+          <ul class="drop__dropdown isOpen">
+            <div class="drop__buttons">
+              <button class="button button--iconText" (click)="clickCheckAllFacilities()">
+                <i class="ss-check ss-standard"></i> Check All
+              </button>
+              <button class="button button--iconText" (click)="clickUncheckAllFacilities()">
+                <i class="ss-ban"></i> Uncheck All
+              </button>
+            </div>
+            <li class="drop__option">
+              <input class="input input--search drop__innerInput" type="text" placeholder="Search" />
+            </li>
+            <li class="drop__option" *ngFor="let facility of facilities">
+              <label class="drop__checkbox styledInput">
+                <input type="checkbox" class="styledInput__input" [(ngModel)]="facilitiesChecked[facility.id]" (ngModelChange)="applyFacilityFilter()" />
+                <span class="styledInput__box"></span>
+                {{facility.name}}
+              </label>
+            </li>
+          </ul>
+        </app-popover>
+      </div> <!--/.drop-->
+    </div>
   </div>
   <div class="flex" *ngIf="averagesByCarePlan">
     <div class="info info--horiz">
@@ -157,7 +159,7 @@
           <thead>
             <tr>
               <th class="thSortable">
-                <span class="thSortable__text thSortable__text--left">Pathways</span>
+                <span class="thSortable__text thSortable__text--left">Care Plans</span>
               </th>
               <th class="thSortable">
                 <span class="thSortable__text thSortable__text--left">Status</span>
@@ -184,11 +186,10 @@
               <th class="thSortable">
                 <span class="thSortable__text">Risk Level</span>
               </th>
-              <!-- <th></th> -->
             </tr>
           </thead>
-          <tbody *ngFor="let item of plan.templates">
-            <tr>
+          <tbody>
+            <tr *ngFor="let item of plan.templates">
               <td class="left">
                 <a [routerLink]="['/plan', item.id, 'info']">{{item.name}}</a>
               </td>
@@ -235,6 +236,9 @@
             </tr>
           </tbody>
         </table>
+        <button class="button button--iconText" (click)="addPlan()">
+          <i class="ss-plus"></i> Add Care Plan
+        </button>
       </div> <!--/.accordion__contents-->
     </div> <!--/.accordion__body-->
   </div> <!--/.accordion-->
