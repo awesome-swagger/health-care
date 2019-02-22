@@ -634,23 +634,26 @@ class CarePlanTemplateAverageSerializer(serializers.ModelSerializer):
         )
 
     def get_total_patients(self, obj):
-        return obj.care_plans.values_list(
+        return obj.care_plans.filter(patient__facility__is_affiliate=False).values_list(
             'patient', flat=True).distinct().count()
 
     def get_total_facilities(self, obj):
-        return obj.care_plans.values_list(
+        return obj.care_plans.filter(patient__facility__is_affiliate=False).values_list(
             'patient__facility', flat=True).distinct().count()
 
     def get_time_count(self, obj):
         time_spent = BilledActivity.objects.filter(
-            plan__plan_template=obj).aggregate(total=Sum('time_spent'))
+            plan__plan_template=obj,
+            plan__patient__facility__is_affiliate=False
+        ).aggregate(total=Sum('time_spent'))
         total = time_spent['total'] or 0
         return str(datetime.timedelta(minutes=total))[:-3]
 
     def get_average_outcome(self, obj):
         tasks = AssessmentTask.objects.filter(
             plan__plan_template=obj,
-            assessment_task_template__tracks_outcome=True
+            assessment_task_template__tracks_outcome=True,
+            plan__patient__facility__is_affiliate=False
         ).aggregate(average=Avg('responses__rating'))
         average = tasks['average'] or 0
         avg = round((average / 5) * 100)
@@ -660,18 +663,23 @@ class CarePlanTemplateAverageSerializer(serializers.ModelSerializer):
         now = timezone.now()
         patient_tasks = PatientTask.objects.filter(
             plan__plan_template=obj,
+            plan__patient__facility__is_affiliate=False,
             due_datetime__lte=now)
         medication_tasks = MedicationTask.objects.filter(
             medication_task_template__plan__plan_template=obj,
+            medication_task_template__plan__patient__facility__is_affiliate=False,
             due_datetime__lte=now)
         symptom_tasks = SymptomTask.objects.filter(
             plan__plan_template=obj,
+            plan__patient__facility__is_affiliate=False,
             due_datetime__lte=now)
         assessment_tasks = AssessmentTask.objects.filter(
             plan__plan_template=obj,
+            plan__patient__facility__is_affiliate=False,
             due_datetime__lte=now)
         vital_tasks = VitalTask.objects.filter(
             plan__plan_template=obj,
+            plan__patient__facility__is_affiliate=False,
             due_datetime__lte=now)
 
         total_patient_tasks = patient_tasks.count()
@@ -888,7 +896,7 @@ class CarePlanByTemplateFacilitySerializer(CarePlanOverviewSerializer):
 
     def get_time_count(self, obj):
         time_spent = BilledActivity.objects.filter(
-            plan=obj, 
+            plan=obj,
             activity_date__gte=timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)) \
         .aggregate(total=Sum('time_spent'))
         total = time_spent['total'] or 0

@@ -50,7 +50,9 @@ export class PlanInfoComponent implements OnDestroy, OnInit {
         if (!facilities) {
           return;
         }
-        this.facilities = facilities;
+        this.facilities = facilities.filter((obj) => {
+          return !obj.is_affiliate;
+        });
         this.getPlanTemplate(params.id).then((planTemplate: any) => {
           this.planTemplateId = planTemplate.id;
           this.planTemplate = planTemplate;
@@ -59,7 +61,6 @@ export class PlanInfoComponent implements OnDestroy, OnInit {
             this.store.Facility.detailRoute('get', facility.id, 'care_plan_templates/' + this.planTemplateId + '/care_plans')
               .subscribe((plans: any) => {
                 facility.plans = plans.results;
-                console.log(facility.plans);
               });
           });
         }).catch(() => {
