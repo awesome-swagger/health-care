@@ -202,7 +202,10 @@
                   <span *ngIf="item.averages.time_count">{{item.averages.time_count}}</span>
                 </div>
               </td>
-              <td>{{item.duration_weeks}} weeks</td>
+              <td>
+                <span *ngIf="item.duration_weeks >= 0">{{item.duration_weeks}} weeks</span>
+                <span *ngIf="item.duration_weeks < 0">Ongoing</span>
+              </td>
               <td>
                 <div class="pill" *ngIf="item.averages.total_patients === 0">
                   N/A
