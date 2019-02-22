@@ -86,7 +86,7 @@ export class NavComponent implements OnDestroy, OnInit {
       (res) => {
         if (!res) return;
         this.employee = res;
-        this.getTasks().then((tasks:any) => {
+        this.getTasks(this.employee.user.id).then((tasks:any) => {
           this.tasks = tasks;
           this.tasksData = tasks;
         });
@@ -271,14 +271,15 @@ export class NavComponent implements OnDestroy, OnInit {
     }
   }
 
-  private getTasks() {
+  private getTasks(userId) {
     return new Promise((resolve, reject) => {
-      console.log('vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv');
-      console.log('employee', this.employee);
-      console.log('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^');
-      let tasksSub = this.store.User.detailRoute('GET', this.employee.user.id, 'tasks').subscribe(
-        tasks => {
+      let tasksSub = this.store.User.detailRoute('GET', userId, 'tasks').subscribe(
+        (tasks) => {
           resolve(tasks);
+        },
+        (err) => reject(err),
+        () => {
+          tasksSub.unsubscribe();
         }
       )
     });

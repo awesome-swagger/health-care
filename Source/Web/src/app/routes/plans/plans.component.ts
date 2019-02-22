@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { groupBy as _groupBy, sumBy as _sumBy } from 'lodash';
+import { groupBy as _groupBy, sumBy as _sumBy, uniqBy as _uniqBy } from 'lodash';
 import { ModalService, ConfirmModalComponent } from '../../modules/modals';
 import { PopoverOptions } from '../../modules/popover';
 import { AuthService, StoreService, UtilsService } from '../../services';
@@ -14,12 +14,12 @@ export class PlansComponent implements OnDestroy, OnInit {
 
   public organization = null;
   public facilities = [];
+  public selectedFacility = null;
   public facilitiesOpen = false;
   public facilitiesDropOptions: PopoverOptions = {
     relativeTop: '48px',
     relativeRight: '0px',
   };
-  public facilitiesChecked: any = {};
   public facilitiesFiltered = [];
   public averagesByCarePlan = null;
   public carePlanTemplates = [];
@@ -53,16 +53,16 @@ export class PlansComponent implements OnDestroy, OnInit {
       this.organization = organization;
       this.getFacilities(this.organization).then((facilities: any) => {
         this.facilities = facilities;
-        this.getPlansAverage(this.organization).then((plansAverage: any) => {
-          this.averagesByCarePlan = plansAverage;
-        });
+      });
+      this.getPlansAverage(this.organization).then((plansAverage: any) => {
+        this.averagesByCarePlan = plansAverage;
       });
       this.getPlanTemplates(this.organization).then((templates: any) => {
         this.getAllTemplateAverages(this.organization, templates).then((templatesWithAverages: any) => {
           this.carePlanTemplates = templatesWithAverages;
-          this.serviceAreas = this.carePlanTemplates.map((obj) => {
+          this.serviceAreas = _uniqBy(this.carePlanTemplates.map((obj) => {
             return obj.service_area;
-          });
+          }), (obj) => obj.id);
           let templatesGrouped = _groupBy(this.carePlanTemplates, (obj) => {
             return obj.service_area.id;
           });
@@ -104,11 +104,15 @@ export class PlansComponent implements OnDestroy, OnInit {
     return promise;
   }
 
-  public getPlansAverage(organization) {
+  public getPlansAverage(organization, facility = null) {
     let promise = new Promise((resolve, reject) => {
-      let plansAverage = this.store.CarePlan.listRoute('get', 'average', {}, {
+      let params = {
         patient__facility__organization: organization.id,
-      }).subscribe(
+      };
+      if (facility) {
+        params['patient__facility'] = facility.id;
+      }
+      let plansAverage = this.store.CarePlan.listRoute('get', 'average', {}, params).subscribe(
         (plansAverage) => {
           resolve(plansAverage);
         },
@@ -123,11 +127,15 @@ export class PlansComponent implements OnDestroy, OnInit {
     return promise;
   }
 
-  public getPlanTemplates(organization) {
+  public getPlanTemplates(organization, facility = null) {
     let promise = new Promise((resolve, reject) => {
-      let templatesSub = this.store.CarePlanTemplate.readListPaged({
-        // care_plans__patient__facility__organization: organization.id,
-      }).subscribe(
+      let params = {
+        care_plans__patient__facility__organization: organization.id,
+      };
+      if (facility) {
+        params['care_plans__patient__facility'] = facility.id;
+      }
+      let templatesSub = this.store.CarePlanTemplate.readListPaged(params).subscribe(
         (carePlanTemplates) => {
           resolve(carePlanTemplates);
         },
@@ -140,11 +148,15 @@ export class PlansComponent implements OnDestroy, OnInit {
     return promise;
   }
 
-  public getTemplateAverages(organization, template) {
+  public getTemplateAverages(organization, template, facility = null) {
     let promise = new Promise((resolve, reject) => {
-      let averagesSub = this.store.CarePlanTemplate.detailRoute('get', template.id, 'average', {}, {
+      let params = {
         care_plans__patient__facility__organization: organization.id,
-      }).subscribe(
+      };
+      if (facility) {
+        params['care_plans__patient__facility'] = facility.id;
+      }
+      let averagesSub = this.store.CarePlanTemplate.detailRoute('get', template.id, 'average', {}, params).subscribe(
         (carePlanTemplateAverages) => {
           resolve(carePlanTemplateAverages);
         },
@@ -165,11 +177,14 @@ export class PlansComponent implements OnDestroy, OnInit {
     return promise;
   }
 
-  public getAllTemplateAverages(organization, templates) {
+  public getAllTemplateAverages(organization, templates, facility = null) {
     let promise = new Promise((resolve, reject) => {
       let itemsProcessed = 0;
+      if (templates.length === 0) {
+        resolve(templates);
+      }
       templates.forEach((item, index, array) => {
-        this.getTemplateAverages(organization, item).then((templateAverages) => {
+        this.getTemplateAverages(organization, item, facility).then((templateAverages) => {
           item.averages = templateAverages;
           itemsProcessed++;
           if (itemsProcessed === array.length) {
@@ -205,19 +220,23 @@ export class PlansComponent implements OnDestroy, OnInit {
     return `${hours}:${this.zeroPad(minutes)}`;
   }
 
-  public addPlan() {
+  public addPlan(serviceAreaId = null) {
+    let modalData = {
+      duplicating: false,
+    };
+    if (serviceAreaId) {
+      modalData['serviceAreaId'] = serviceAreaId;
+    }
     this.modals.open(AddPlanComponent, {
-      closeDisabled: true,
-      data: {
-        duplicating: false,
-      },
+      closeDisabled: false,
+      data: modalData,
       width: '480px',
     }).subscribe(() => {});
   }
 
   public duplicatePlan() {
     this.modals.open(AddPlanComponent, {
-      closeDisabled: true,
+      closeDisabled: false,
       data: {
         duplicating: true,
       },
@@ -225,30 +244,43 @@ export class PlansComponent implements OnDestroy, OnInit {
     });
   }
 
-  public clickCheckAllFacilities() {
-    this.facilitiesChecked = {};
-    this.facilities.map((obj) => {
-      this.facilitiesChecked[obj.id] = true;
-    });
-    this.applyFacilityFilter();
-  }
-
-  public clickUncheckAllFacilities() {
-    this.facilitiesChecked = {};
-    this.applyFacilityFilter();
-  }
-
-  public applyFacilityFilter() {
-    this.facilitiesFiltered = Object.keys(this.facilitiesChecked);
-  }
-
   public totalRiskLevel(templates) {
     if (!templates || templates.length === 0) {
       return 0;
     }
     let activeTemplates = templates.filter((obj) => {
+      if (!obj.averages) {
+        return false;
+      }
       return obj.averages.total_patients > 0;
     });
-    return _sumBy(activeTemplates, (template) => template.averages.risk_level) / activeTemplates.length;
+    return (_sumBy(activeTemplates, (template) => template.averages.risk_level) / activeTemplates.length) || 0;
+  }
+
+  public setSelectedFacility(facility) {
+    this.selectedFacility = facility;
+    this.getPlansAverage(this.organization, this.selectedFacility).then((plansAverage: any) => {
+      this.averagesByCarePlan = plansAverage;
+    });
+    this.getPlanTemplates(this.organization, this.selectedFacility).then((templates: any) => {
+      this.getAllTemplateAverages(this.organization, templates, this.selectedFacility).then((templatesWithAverages: any) => {
+        this.carePlanTemplates = templatesWithAverages;
+        this.serviceAreas = _uniqBy(this.carePlanTemplates.map((obj) => {
+          return obj.service_area;
+        }), (obj) => obj.id);
+        let templatesGrouped = _groupBy(this.carePlanTemplates, (obj) => {
+          return obj.service_area.id;
+        });
+        this.planTemplatesGrouped = Object.keys(templatesGrouped).map((key: any) => {
+          return {
+            serviceArea: key,
+            serviceAreaObj: templatesGrouped[key][0].service_area,
+            totalPatients: _sumBy(templatesGrouped[key], (o) => o.averages ? o.averages.total_patients : 0),
+            templates: templatesGrouped[key],
+          };
+        });
+        console.log(this.planTemplatesGrouped);
+      });
+    });
   }
 }

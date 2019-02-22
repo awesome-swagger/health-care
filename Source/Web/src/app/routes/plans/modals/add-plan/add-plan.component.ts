@@ -30,7 +30,10 @@ export class AddPlanComponent implements OnInit {
     console.log(this.data);
     this.getServiceAreas().then((serviceAreas: any) => {
       this.serviceAreas = serviceAreas;
-      // this.selectedServiceArea = this.serviceAreas[0];
+      if (this.data && this.data.serviceAreaId) {
+        let match = this.serviceAreas.find((obj) => obj.id === this.data.serviceAreaId);
+        this.selectedServiceArea = match;
+      }
     });
   }
 
@@ -53,6 +56,10 @@ export class AddPlanComponent implements OnInit {
 
   public clickCancel() {
     this.modals.close(null);
+  }
+
+  public continueDisabled() {
+    return !this.nameInput || !this.selectedServiceArea;
   }
 
   public clickContinue() {

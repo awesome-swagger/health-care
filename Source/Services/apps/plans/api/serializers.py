@@ -37,6 +37,7 @@ from apps.core.api.serializers import (
 from apps.core.models import EmployeeProfile, Facility
 from apps.patients.models import PatientProfile
 from apps.tasks.models import (
+    TeamTask,
     AssessmentTask,
     PatientTask,
     MedicationTask,
@@ -270,7 +271,8 @@ class PlanConsentSerializer(serializers.ModelSerializer):
         )
 
 
-class CareTeamMemberSerializer(RepresentationMixin, serializers.ModelSerializer):
+class CareTeamMemberSerializer(RepresentationMixin,
+                               serializers.ModelSerializer):
 
     class Meta:
         model = CareTeamMember
@@ -280,6 +282,7 @@ class CareTeamMemberSerializer(RepresentationMixin, serializers.ModelSerializer)
             'role',
             'plan',
             'next_checkin',
+            'time_spent_this_month',
             'is_manager',
         )
         nested_serializers = [
@@ -634,45 +637,129 @@ class CarePlanTemplateAverageSerializer(serializers.ModelSerializer):
         )
 
     def get_total_patients(self, obj):
-        return obj.care_plans.values_list(
+        facility = self.context.get('facility', None)
+        organization = self.context.get('organization', None)
+
+        kwargs = {
+            'patient__facility__is_affiliate': False,
+        }
+        if facility:
+            kwargs.update({
+                'patient__facility': facility
+            })
+
+        if organization:
+            kwargs.update({
+                'patient__facility__organization': organization
+            })
+
+        return obj.care_plans.filter(**kwargs).values_list(
             'patient', flat=True).distinct().count()
 
     def get_total_facilities(self, obj):
-        return obj.care_plans.values_list(
+        facility = self.context.get('facility', None)
+        organization = self.context.get('organization', None)
+
+        kwargs = {
+            'patient__facility__is_affiliate': False,
+        }
+        if facility:
+            kwargs.update({
+                'patient__facility': facility
+            })
+
+        if organization:
+            kwargs.update({
+                'patient__facility__organization': organization
+            })
+
+        return obj.care_plans.filter(**kwargs).values_list(
             'patient__facility', flat=True).distinct().count()
 
     def get_time_count(self, obj):
-        time_spent = BilledActivity.objects.filter(
-            plan__plan_template=obj).aggregate(total=Sum('time_spent'))
+        facility = self.context.get('facility', None)
+        organization = self.context.get('organization', None)
+
+        kwargs = {
+            'plan__patient__facility__is_affiliate': False,
+            'plan__plan_template': obj,
+        }
+        if facility:
+            kwargs.update({
+                'plan__patient__facility': facility
+            })
+
+        if organization:
+            kwargs.update({
+                'plan__patient__facility__organization': organization
+            })
+
+        time_spent = BilledActivity.objects.filter(**kwargs).aggregate(
+            total=Sum('time_spent'))
         total = time_spent['total'] or 0
         return str(datetime.timedelta(minutes=total))[:-3]
 
     def get_average_outcome(self, obj):
-        tasks = AssessmentTask.objects.filter(
-            plan__plan_template=obj,
-            assessment_task_template__tracks_outcome=True
-        ).aggregate(average=Avg('responses__rating'))
+        facility = self.context.get('facility', None)
+        organization = self.context.get('organization', None)
+
+        kwargs = {
+            'plan__plan_template': obj,
+            'assessment_task_template__tracks_outcome': True,
+            'plan__patient__facility__is_affiliate': False
+        }
+        if facility:
+            kwargs.update({
+                'plan__patient__facility': facility
+            })
+
+        if organization:
+            kwargs.update({
+                'plan__patient__facility__organization': organization
+            })
+
+        tasks = AssessmentTask.objects.filter(**kwargs).aggregate(
+            average=Avg('responses__rating'))
         average = tasks['average'] or 0
         avg = round((average / 5) * 100)
         return avg
 
     def get_average_engagement(self, obj):
+        facility = self.context.get('facility', None)
+        organization = self.context.get('organization', None)
         now = timezone.now()
-        patient_tasks = PatientTask.objects.filter(
-            plan__plan_template=obj,
-            due_datetime__lte=now)
-        medication_tasks = MedicationTask.objects.filter(
-            medication_task_template__plan__plan_template=obj,
-            due_datetime__lte=now)
-        symptom_tasks = SymptomTask.objects.filter(
-            plan__plan_template=obj,
-            due_datetime__lte=now)
-        assessment_tasks = AssessmentTask.objects.filter(
-            plan__plan_template=obj,
-            due_datetime__lte=now)
-        vital_tasks = VitalTask.objects.filter(
-            plan__plan_template=obj,
-            due_datetime__lte=now)
+
+        task_kwargs = {
+            'plan__plan_template': obj,
+            'plan__patient__facility__is_affiliate': False,
+            'due_datetime__lte': now
+        }
+        medication_kwargs = {
+            'medication_task_template__plan__plan_template': obj,
+            'medication_task_template__plan__patient__facility__is_affiliate': False,
+            'due_datetime__lte': now
+        }
+        if facility:
+            task_kwargs.update({
+                'plan__patient__facility': facility
+            })
+            medication_kwargs.update({
+                'medication_task_template__plan__patient__facility': facility
+            })
+
+        if organization:
+            task_kwargs.update({
+                'plan__patient__facility__organization': organization
+            })
+            medication_kwargs.update({
+                'medication_task_template__plan__patient__facility__organization': organization
+            })
+
+        patient_tasks = PatientTask.objects.filter(**task_kwargs)
+        medication_tasks = MedicationTask.objects.filter(**medication_kwargs)
+        symptom_tasks = SymptomTask.objects.filter(**task_kwargs)
+        assessment_tasks = AssessmentTask.objects.filter(**task_kwargs)
+        vital_tasks = VitalTask.objects.filter(**task_kwargs)
 
         total_patient_tasks = patient_tasks.count()
         total_medication_tasks = medication_tasks.count()
@@ -774,33 +861,24 @@ class CarePlanOverviewSerializer(serializers.ModelSerializer):
         end_date = datetime.datetime.combine(end,
                                              datetime.time.max,
                                              tzinfo=pytz.utc)
+        num_tasks = 0
+        request = self.context.get('request')
+        user = request.user
 
-        patient_tasks = PatientTask.objects.filter(
-            plan=obj,
-            due_datetime__range=(start_date, end_date))
-        medication_tasks = MedicationTask.objects.filter(
-            medication_task_template__plan=obj,
-            due_datetime__range=(start_date, end_date))
-        symptom_tasks = SymptomTask.objects.filter(
-            plan=obj,
-            due_datetime__range=(start_date, end_date))
-        assessment_tasks = AssessmentTask.objects.filter(
-            plan=obj,
-            due_datetime__range=(start_date, end_date))
-        vital_tasks = VitalTask.objects.filter(
-            plan=obj,
-            due_datetime__range=(start_date, end_date))
+        if user.is_employee:
+            member = obj.care_team_members.filter(
+                employee_profile=user.employee_profile) \
+                .first()
+            if member and member.role:
+                role = member.role
 
-        total_patient_tasks = patient_tasks.count()
-        total_medication_tasks = medication_tasks.count()
-        total_symptom_tasks = symptom_tasks.count()
-        total_assessment_tasks = assessment_tasks.count()
-        total_vital_tasks = vital_tasks.count()
-        return total_patient_tasks + \
-            total_medication_tasks + \
-            total_symptom_tasks + \
-            total_assessment_tasks + \
-            total_vital_tasks
+                team_tasks = TeamTask.objects.filter(
+                    plan=obj,
+                    team_task_template__role=role,
+                    due_datetime__range=(start_date, end_date))
+                num_tasks = team_tasks.count()
+
+        return num_tasks
 
     def get_average_outcome(self, obj):
         tasks = AssessmentTask.objects.filter(
@@ -888,7 +966,7 @@ class CarePlanByTemplateFacilitySerializer(CarePlanOverviewSerializer):
 
     def get_time_count(self, obj):
         time_spent = BilledActivity.objects.filter(
-            plan=obj, 
+            plan=obj,
             activity_date__gte=timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)) \
         .aggregate(total=Sum('time_spent'))
         total = time_spent['total'] or 0

@@ -20,7 +20,6 @@ export class PlanHeaderComponent implements OnInit, OnDestroy {
   public editName = false;
   public newPlanName = '';
   public carePlanAverage = null;
-  public addPlan;
 
   constructor(
     private route: ActivatedRoute,
@@ -103,7 +102,7 @@ export class PlanHeaderComponent implements OnInit, OnDestroy {
 
   public duplicatePlan() {
     this.modals.open(AddPlanComponent, {
-      closeDisabled: true,
+      closeDisabled: false,
       data: {
         duplicating: true,
       },

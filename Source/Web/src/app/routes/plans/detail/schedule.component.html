@@ -174,7 +174,7 @@
                 </div>
               </th>
               <th class="left">
-                <span>Roles</span>
+                <span>Role</span>
               </th>
               <th class="thSortable">
                 <span class="thSortable__text">Start Day</span>
@@ -198,7 +198,10 @@
           <tbody>
             <tr *ngFor="let task of teamMemberTemplates">
               <td class="left">{{task.name | titlecase}} </td>
-              <td class="left">{{task.is_manager_task ? 'CM':'CT'}}</td>
+              <td class="left">
+                <span *ngIf="task.role">{{task.role.name}}</span>
+                <span *ngIf="!task.role">Not Set</span>
+              </td>
               <td>{{task.start_on_day}}</td>
               <td class="left">{{task.frequency | frequencyTransform | titlecase}}</td>
               <td class="left"> {{task.repeat_amount != -1 ? task.repeat_amount :'Until Plan Ends'}}</td>
@@ -279,8 +282,8 @@
               <th class="noPad"></th>
             </tr>
           </thead>
-          <tbody *ngFor="let pTask of patientTaskTemplates">
-            <tr>
+          <tbody>
+            <tr *ngFor="let pTask of patientTaskTemplates">
               <td class="left">{{pTask.name | titlecase}}</td>
               <td>{{pTask.start_on_day}}</td>
               <td class="left">{{pTask.frequency | frequencyTransform | titlecase}}</td>

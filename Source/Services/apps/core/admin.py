@@ -8,7 +8,7 @@ class OrganizationAdmin(admin.ModelAdmin):
 
 
 class FacilityAdmin(admin.ModelAdmin):
-    list_display = ('name', 'organization', )
+    list_display = ('name', 'organization', 'is_affiliate', )
 
 
 class InsuranceAdmin(admin.ModelAdmin):
@@ -16,7 +16,9 @@ class InsuranceAdmin(admin.ModelAdmin):
 
 
 class EmployeeProfileAdmin(admin.ModelAdmin):
-    list_display = ('user', 'title', 'specialty', )
+    list_display = (
+        'user', 'title', 'specialty', 'billing_view', 'qualified_practitioner',
+    )
 
 
 class BillingCoordinatorAdmin(admin.ModelAdmin):

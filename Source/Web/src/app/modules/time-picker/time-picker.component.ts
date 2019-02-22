@@ -103,9 +103,9 @@ export class TimePickerComponent implements OnInit {
   public parse24Hour(time) {
     if (!time) return;
     let timeSplit = time.split(':').map((str) => parseInt(str, 10));
-    this.hourValue = ((timeSplit[0] + 11) % 12 + 1);
-    this.minuteValue = timeSplit[1];
-    this.periodValue = (timeSplit[0] >= 12 ? 'pm' : 'am');
+    this._hourValue = ((timeSplit[0] + 11) % 12 + 1);
+    this._minuteValue = timeSplit[1];
+    this._periodValue = (timeSplit[0] >= 12 ? 'pm' : 'am');
   }
 
   public updateTime() {

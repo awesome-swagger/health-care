@@ -116,7 +116,7 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
   public getBilledActivities() {
     let promise = new Promise((resolve, reject) => {
       let billedActivitiesSub = this.store.BilledActivity.readListPaged({
-        // TODO: Filters to get only billed activities for this care plan
+        plan: this.carePlan.id,
         activity_date: this.dateFilter.format('YYYY-MM-DD'),
       }).subscribe(
         (billedActivities) => {
@@ -158,6 +158,9 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
   }
 
   public setSelectedDay(e) {
+    if (e.isSame(this.dateFilter, 'day')) {
+      return;
+    }
     this.dateFilter = e;
     this.dateFilterOpen = false;
     // Get billed activities
@@ -298,9 +301,17 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
        okText: 'Continue',
       },
       width: '384px',
-    }).subscribe(() => {
-      let index = this.billedActivities.findIndex((obj) => obj.id === result.id);
-      this.billedActivities = this.billedActivities.splice(index, 1);
+    }).subscribe((modalResult) => {
+      if (modalResult.toLowerCase() === 'continue') {
+        this.store.BilledActivity.destroy(result.id).subscribe(
+          (success) => {
+            let index = this.billedActivities.findIndex((obj) => obj.id === result.id);
+            this.billedActivities = this.billedActivities.splice(index, 1);
+          },
+          (err) => {},
+          () => {},
+        );
+      }
     });
   }
 }

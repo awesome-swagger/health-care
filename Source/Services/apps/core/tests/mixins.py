@@ -5,6 +5,7 @@ from .factories import (
     MedicationFactory,
     ProviderRoleFactory,
     SymptomFactory,
+    InsuranceFactory,
 )
 from apps.accounts.tests.factories import RegularUserFactory
 
@@ -71,3 +72,16 @@ class CoreMixin(object):
             })
 
         return ProviderRoleFactory(**kwargs)
+
+    def create_insurance(self, **kwargs):
+        if 'name' not in kwargs:
+            kwargs.update({
+                'name': self.fake.name()
+            })
+
+        if 'organization' not in kwargs:
+            kwargs.update({
+                'organization': self.create_organization()
+            })
+
+        return InsuranceFactory(**kwargs)

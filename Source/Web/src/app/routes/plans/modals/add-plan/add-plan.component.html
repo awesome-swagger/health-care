@@ -3,29 +3,27 @@
   Care Plan
 </h1>
 <!--TODO: If copying a care plan, prepopulate the name field with the previous care plan name and a number (either 2 or increment the previous number by 1)-->
-<!-- <label>Name</label> -->
 <input type="text" class="input fullWidth marBottom32" placeholder="Care Plan Name" [(ngModel)]="nameInput" />
-<!-- <label class="marBottom8">Service Area</label> -->
 <div class="drop">
   <div class="drop__input" (click)="multiOpen = !multiOpen">
-    <label class="styledInput drop__label">
-      <span *ngIf="selectedServiceArea">{{selectedServiceArea.name}}</span>
-      <span *ngIf="!selectedServiceArea" class="placeholder">Service Area</span>
-    </label>
+    <span *ngIf="selectedServiceArea">{{selectedServiceArea.name}}</span>
+    <span *ngIf="!selectedServiceArea">Service Area</span>
   </div>
-  <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : multiOpen }">
-    <li *ngFor="let sa of serviceAreas" class="drop__option" (click)="selectedServiceArea = sa; multiOpen = !multiOpen">
-      <label class="styledInput drop__label">
-        {{sa.name}}
-      </label>
-    </li>
-  </ul>
+  <app-popover [visible]="multiOpen" (visibleChange)="multiOpen = $event;">
+    <ul class="drop__dropdown isOpen">
+      <li *ngFor="let sa of serviceAreas" class="drop__option" (click)="selectedServiceArea = sa; multiOpen = !multiOpen">
+        <label class="styledInput drop__label">
+          {{sa.name}}
+        </label>
+      </li>
+    </ul>
+  </app-popover>
 </div>
 <div class="modal__buttons padBottom32">
   <button class="button button--2nd" (click)="clickCancel()">
     Cancel
   </button>
-  <button class="button" (click)="clickContinue()">
+  <button class="button" [disabled]="continueDisabled()" (click)="clickContinue()">
     Continue
   </button>
 </div>

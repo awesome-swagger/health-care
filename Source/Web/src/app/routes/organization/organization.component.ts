@@ -5,7 +5,7 @@ import { AuthService, StoreService } from '../../services';
 import { EditFacilityComponent } from './modals/edit-facility.component';
 import { ToastService } from '../../modules/toast';
 import * as moment from 'moment';
-import { 
+import {
   filter as _filter,
   find as _find
 } from 'lodash';
@@ -85,7 +85,7 @@ export class OrganizationComponent implements OnDestroy, OnInit {
   public clickEditOrganization() {
     // NOTE: EditFacilityComponent is used for adding and editing facilities and organizations.
     this.modals.open(EditFacilityComponent, {
-      closeDisabled: true,
+      closeDisabled: false,
       data: {
         type: 'edit',
         isAffiliate: false,
@@ -99,7 +99,7 @@ export class OrganizationComponent implements OnDestroy, OnInit {
   public openAddFacility(isAffiliate: boolean) {
     // NOTE: EditFacilityComponent is used for adding and editing facilities and organizations.
     this.modals.open(EditFacilityComponent, {
-      closeDisabled: true,
+      closeDisabled: false,
       data: {
         type: 'add',
         isAffiliate: isAffiliate,
@@ -118,7 +118,7 @@ export class OrganizationComponent implements OnDestroy, OnInit {
 
   public openEditFacility(facility) {
     this.modals.open(EditFacilityComponent, {
-      closeDisabled: true,
+      closeDisabled: false,
       data: {
         type: 'edit',
         isAffiliate: facility.is_affiliate,

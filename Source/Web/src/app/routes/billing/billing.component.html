@@ -7,7 +7,7 @@
           <i class="ss-standard ss-navigateleft" (click)="decrementMonth()"></i>
         </button>
         <h2 class="monthpicker__text">{{selectedMonth.format('MMMM YYYY')}}</h2>
-        <button class="button button--icon" (click)="incrementMonth()">
+        <button class="button button--icon" [disabled]="incrementMonthDisabled()" (click)="incrementMonth()">
           <i class="ss-standard ss-navigateright"></i>
         </button>
       </div> <!--/.monthpicker-->

@@ -122,12 +122,19 @@ export class AuthService {
     this.storage.setObj('user', token);
   }
 
-  private getOrganizationId() {
+  public getOrganizationId() {
     return this.storage.getObj('organization');
   }
 
-  private setOrganizationId(id) {
-    return this.storage.setObj('organization', id);
+  public setOrganizationId(id) {
+    this.storage.setObj('organization', id)
+    let organizationSub = this.getOrganization().subscribe(
+      () => {},
+      () => {},
+      () => {
+        organizationSub.unsubscribe();
+      }
+    );
   }
 }
 

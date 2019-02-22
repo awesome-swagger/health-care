@@ -50,7 +50,12 @@ export class DeletePlanComponent implements OnInit {
   ]
   public accordianStatuses = [];
 
-  ngOnInit() {
+  public ngOnInit() {
+    // Get all patient's on the plan
+    // group patient's by facility
+    // wire up "reassign in bulk" for each facility
+    // for each facility, if reassign in bulk is clicked send one post request with all patients having the same data
+    // if reassign in bulk is not clicked, send a post request for each patient with different data.
     this.accordianStatuses = new Array(this.facilities.length).fill(false);
     this.data = {
       planType: "CCoM",
@@ -63,5 +68,3 @@ export class DeletePlanComponent implements OnInit {
   }
 
 }
-
-

@@ -6,7 +6,7 @@
       <!-- Shows if stats are available for plan -->
       <div class="accordion__right" *ngIf="facility.plans && facility.plans.length > 0">
         <div class="pill marRight16">
-          Time 0:00
+          Time {{totalTimeCount(facility.plans)}}
         </div>
         <div class="pill" [ngStyle]="{'background': utils.percentPillColor(totalFacilityRiskLevel(facility))}">
           {{utils.getRiskLevelText(totalFacilityRiskLevel(facility))}} {{totalFacilityRiskLevel(facility)}}%
@@ -99,18 +99,21 @@
                     </app-popover>
                   </a>
                 </td>
-                <td><div class="pill">:00</div>
+                <td><div class="pill">{{plan.time_count}}</div>
                 </td>
                 <td>
                   <!--TODO: This link should also open the care team tasks accordion on the plan instance overview page-->
                   <a (click)="routeToPatientOverview(plan.patient.id, plan.id)" class="justifyCenter">{{plan.tasks_this_week}}</a>
                 </td>
                 <td>
-                  <div class="progress">
-                    Week 0 of {{plan.plan_template.duration_weeks}}
+                  <div class="progress" *ngIf="plan.plan_template.duration_weeks >= 0">
+                    Week {{progressInWeeks(plan)}} of {{plan.plan_template.duration_weeks}}
                     <div class="progress__bg">
-                      <div class="progress__bar" [ngStyle]="{width: (1 / plan.plan_template.duration_weeks) * 100 + '%'}"></div>
+                      <div class="progress__bar" [ngStyle]="{width: (progressInWeeks(plan) / plan.plan_template.duration_weeks) * 100 + '%'}"></div>
                     </div>
+                  </div>
+                  <div *ngIf="plan.plan_template.duration_weeks < 0">
+                    Ongoing
                   </div>
                 </td>
                 <td>N/A</td>
@@ -138,7 +141,7 @@
                 <button class="button button--icon button--icon--dis">
                     <i class="ss-standard ss-directleft"></i>
                 </button>
-                <span>235 of 588</span>
+                <span>1 of 1</span>
                 <button class="button button--icon">
                     <i class="ss-standard ss-directright"></i>
                 </button>

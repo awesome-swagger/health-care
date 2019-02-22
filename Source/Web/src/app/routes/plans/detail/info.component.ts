@@ -1,6 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { sumBy as _sumBy } from 'lodash';
+import * as moment from 'moment';
 import { ModalService, ConfirmModalComponent } from '../../../modules/modals';
 import { AddPlanComponent } from '../modals/add-plan/add-plan.component';
 import {
@@ -50,7 +51,9 @@ export class PlanInfoComponent implements OnDestroy, OnInit {
         if (!facilities) {
           return;
         }
-        this.facilities = facilities;
+        this.facilities = facilities.filter((obj) => {
+          return !obj.is_affiliate;
+        });
         this.getPlanTemplate(params.id).then((planTemplate: any) => {
           this.planTemplateId = planTemplate.id;
           this.planTemplate = planTemplate;
@@ -59,7 +62,6 @@ export class PlanInfoComponent implements OnDestroy, OnInit {
             this.store.Facility.detailRoute('get', facility.id, 'care_plan_templates/' + this.planTemplateId + '/care_plans')
               .subscribe((plans: any) => {
                 facility.plans = plans.results;
-                console.log(facility.plans);
               });
           });
         }).catch(() => {
@@ -101,7 +103,8 @@ export class PlanInfoComponent implements OnDestroy, OnInit {
 
   public addPlan() {
     this.modals.open(AddPlanComponent, {
-      closeDisabled: true,
+      closeDisabled: false,
+      data: { },
       width: '480px',
     }).subscribe(() => {});
   }
@@ -120,11 +123,44 @@ export class PlanInfoComponent implements OnDestroy, OnInit {
     }).subscribe(() => {});
   }
 
+  public zeroPad(num) {
+    return num < 10 ? `0${num}` : `${num}`;
+  }
+
+  public totalTimeCount(plans) {
+    let hours = 0;
+    let minutes = 0;
+    plans.forEach((obj) => {
+      if (!obj.time_count) {
+        return;
+      }
+      let timeCountSplit = obj.time_count.split(":");
+      let splitHours = parseInt(timeCountSplit[0]);
+      let splitMinutes = parseInt(timeCountSplit[1]);
+      hours += splitHours;
+      minutes += splitMinutes;
+    });
+    hours += Math.floor((minutes / 60));
+    minutes = minutes % 60;
+    return `${hours}:${this.zeroPad(minutes)}`;
+  }
+
+  public progressInWeeks(plan) {
+    if (!plan || !plan.created) {
+      return 0;
+    }
+    return moment().diff(moment(plan.created), 'weeks');
+  }
+
   public totalFacilityRiskLevel(facility) {
     if (!facility.plans || facility.plans.length === 0) {
       return 0;
     }
-    return _sumBy(facility.plans, (plan) => plan.risk_level) / facility.plans.length;
+    let activePlans = facility.plans.filter((obj) => obj.risk_level > 0);
+    if (activePlans.length === 0) {
+      return 0;
+    }
+    return _sumBy(activePlans, (plan) => plan.risk_level) / activePlans.length;
   }
 
   public routeToPatientOverview(patient, plan) {

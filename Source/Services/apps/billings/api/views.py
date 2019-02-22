@@ -59,6 +59,7 @@ class BilledActivityViewSet(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend, )
     filterset_fields = (
         'activity_date',
+        'plan'
     )
 
     def get_queryset(self):

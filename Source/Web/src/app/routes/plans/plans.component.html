@@ -1,10 +1,5 @@
 <div class="ssContainer ssContents">
   <div class="right">
-    <!-- <label class="styledInput marRight48">
-      <input type="checkbox" class="styledInput__input" [(ngModel)]="showInactive" (ngModelChange)="fetchPlanTemplates()" />
-      <span class="styledInput__box"></span>
-      View Inactive Plans
-    </label> -->
     <button class="button button--iconText" (click)="addPlan()">
       <i class="ss-plus"></i>
       Add Care Plan
@@ -26,7 +21,7 @@
           </div>
         </app-popover>
       </div> <!--/.tool__anchor-->
-      <h1 class="noMargin marRight8">Care Plans ({{carePlanTemplates.length}})</h1>
+      <h1 class="noMargin marRight8">Care Plans ({{carePlanTemplates?.length}})</h1>
       <div class="tool__anchor">
         <button class="button button--icon button--icon--small"
         (click)="showCarePlanHelp=!showCarePlanHelp">
@@ -41,39 +36,7 @@
         </app-popover>
       </div> <!--/.tool__anchor-->
     </div> <!--/.flex (for page title and tooltip)-->
-    <div>
-      <label>Facilities</label>
-      <div class="drop marBottom48">
-        <div class="drop__input" (click)="facilitiesOpen=!facilitiesOpen">
-          All
-        </div>
-        <app-popover [options]="facilitiesDropOptions" [visible]="facilitiesOpen" (visibleChange)="facilitiesOpen = $event;">
-          <ul class="drop__dropdown isOpen">
-            <div class="drop__buttons">
-              <button class="button button--iconText" (click)="clickCheckAllFacilities()">
-                <i class="ss-check ss-standard"></i> Check All
-              </button>
-              <button class="button button--iconText" (click)="clickUncheckAllFacilities()">
-                <i class="ss-ban"></i> Uncheck All
-              </button>
-            </div>
-
-            <li class="drop__option">
-              <input class="input input--search drop__innerInput" type="text" placeholder="Search" />
-            </li>
-            <li class="drop__option" *ngFor="let facility of facilities">
-              <label class="drop__checkbox styledInput">
-                <input type="checkbox" class="styledInput__input" [(ngModel)]="facilitiesChecked[facility.id]" (ngModelChange)="applyFacilityFilter()" />
-                <span class="styledInput__box"></span>
-                {{facility.name}}
-              </label>
-            </li>
-          </ul>
-        </app-popover>
-      </div> <!--/.drop-->
-    </div>
   </div> <!--/.flexHeader-->
-
   <div class="flex alignCenter marBottom24">
     <h2 class="noMargin">Averages by Care Plan (Past 30 Days)</h2>
     <div class="tool__anchor">
@@ -89,6 +52,42 @@
         </div>
       </app-popover>
     </div> <!--/.tool__anchor-->
+  </div>
+  <div class="flex alignCenter justifySpaceBetween">
+    <div>
+      <label class="styledInput">
+        <input type="checkbox" class="styledInput__input" />
+        <span class="styledInput__box"></span>
+        Show Only Active Service Areas
+      </label>
+    </div>
+    <div>
+      <label>Facility</label>
+      <div class="drop marBottom24">
+        <div class="drop__input" (click)="facilitiesOpen=!facilitiesOpen">
+          <span *ngIf="!selectedFacility">All</span>
+          <span *ngIf="selectedFacility">{{selectedFacility.name}}</span>
+        </div>
+        <app-popover [options]="facilitiesDropOptions" [visible]="facilitiesOpen" (visibleChange)="facilitiesOpen = $event;">
+          <ul class="drop__dropdown isOpen">
+            <!-- <div class="drop__buttons">
+              <button class="button button--iconText" (click)="clickCheckAllFacilities()">
+                <i class="ss-check ss-standard"></i> Check All
+              </button>
+              <button class="button button--iconText" (click)="clickUncheckAllFacilities()">
+                <i class="ss-ban"></i> Uncheck All
+              </button>
+            </div> -->
+            <li class="drop__option">
+              <input class="input input--search drop__innerInput" type="text" placeholder="Search" />
+            </li>
+            <li class="drop__option" *ngFor="let facility of facilities">
+              <a class="drop__link" (click)="setSelectedFacility(facility)">{{facility.name}}</a>
+            </li>
+          </ul>
+        </app-popover>
+      </div> <!--/.drop-->
+    </div>
   </div>
   <div class="flex" *ngIf="averagesByCarePlan">
     <div class="info info--horiz">
@@ -106,33 +105,45 @@
       </div>
       <div class="info__cell">
         <label>Avg Outcomes</label>
-        <div class="pill" [ngStyle]="{'background': utils.percentPillColor(averagesByCarePlan.average_outcome)}">
+        <div class="pill" *ngIf="averagesByCarePlan.average_outcome" [ngStyle]="{'background': utils.percentPillColor(averagesByCarePlan.average_outcome)}">
           {{averagesByCarePlan.average_outcome}}%
+        </div>
+        <div class="pill" *ngIf="!averagesByCarePlan.average_outcome">
+          N/A
         </div>
       </div>
       <div class="info__cell">
         <label>Avg Engagement</label>
-        <div class="pill" [ngStyle]="{'background': utils.percentPillColor(averagesByCarePlan.average_engagement)}">
+        <div class="pill" *ngIf="averagesByCarePlan.average_engagement" [ngStyle]="{'background': utils.percentPillColor(averagesByCarePlan.average_engagement)}">
           {{averagesByCarePlan.average_engagement}}%
+        </div>
+        <div class="pill" *ngIf="!averagesByCarePlan.average_engagement">
+          N/A
         </div>
       </div>
       <div class="info__cell">
         <label>Risk Level</label>
-        <div class="pill" [ngStyle]="{'background': utils.percentPillColor(averagesByCarePlan.risk_level)}">
+        <div class="pill" *ngIf="averagesByCarePlan.risk_level" [ngStyle]="{'background': utils.percentPillColor(averagesByCarePlan.risk_level)}">
           {{utils.getRiskLevelText(averagesByCarePlan.risk_level)}} {{averagesByCarePlan.risk_level}}%
+        </div>
+        <div class="pill" *ngIf="!averagesByCarePlan.risk_level">
+          N/A
         </div>
       </div>
     </div> <!--/.info-->
   </div> <!--/.flex-->
-  <div class="accordion" [ngClass]="{ 'isOpen' : accordionsOpen[plan.serviceArea] }" *ngFor="let plan of planTemplatesGrouped; let i = index">
+  <div class="accordion" [ngClass]="{ 'isOpen' : accordionsOpen[plan.serviceArea] }" *ngFor="let plan of planTemplatesGrouped">
     <div class="accordion__head" (click)="accordionsOpen[plan.serviceArea]=!accordionsOpen[plan.serviceArea]">
       <span class="accordion__title">{{plan.serviceAreaObj.name}} ({{plan.templates.length}}) ({{plan.totalPatients}})</span>
       <div class="accordion__right">
         <div class="pill marRight16">
           Time {{totalTimeCount(plan.templates)}}
         </div>
-        <div class="pill" [ngStyle]="{'background': utils.percentPillColor(totalRiskLevel(plan.templates))}">
+        <div class="pill" *ngIf="totalRiskLevel(plan.templates)" [ngStyle]="{'background': utils.percentPillColor(totalRiskLevel(plan.templates))}">
           {{utils.getRiskLevelText(totalRiskLevel(plan.templates))}} {{totalRiskLevel(plan.templates)}}%
+        </div>
+        <div class="pill" *ngIf="!totalRiskLevel(plan.templates)">
+          N/A
         </div>
         <div class="accordion__arrow">
           <i class="ss-standard ss-navigateright"></i>
@@ -145,7 +156,7 @@
           <thead>
             <tr>
               <th class="thSortable">
-                <span class="thSortable__text thSortable__text--left">Pathways</span>
+                <span class="thSortable__text thSortable__text--left">Care Plans</span>
               </th>
               <th class="thSortable">
                 <span class="thSortable__text thSortable__text--left">Status</span>
@@ -172,11 +183,10 @@
               <th class="thSortable">
                 <span class="thSortable__text">Risk Level</span>
               </th>
-              <!-- <th></th> -->
             </tr>
           </thead>
-          <tbody *ngFor="let item of plan.templates">
-            <tr>
+          <tbody>
+            <tr *ngFor="let item of plan.templates">
               <td class="left">
                 <a [routerLink]="['/plan', item.id, 'info']">{{item.name}}</a>
               </td>
@@ -189,7 +199,10 @@
                   <span *ngIf="item.averages.time_count">{{item.averages.time_count}}</span>
                 </div>
               </td>
-              <td>{{item.duration_weeks}} weeks</td>
+              <td>
+                <span *ngIf="item.duration_weeks >= 0">{{item.duration_weeks}} weeks</span>
+                <span *ngIf="item.duration_weeks < 0">Ongoing</span>
+              </td>
               <td>
                 <div class="pill" *ngIf="item.averages.total_patients === 0">
                   N/A
@@ -223,6 +236,9 @@
             </tr>
           </tbody>
         </table>
+        <button class="button button--iconText" (click)="addPlan(plan.serviceArea)">
+          <i class="ss-plus"></i> Add Care Plan
+        </button>
       </div> <!--/.accordion__contents-->
     </div> <!--/.accordion__body-->
   </div> <!--/.accordion-->
