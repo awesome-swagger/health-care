@@ -185,6 +185,7 @@ class CarePlanTemplateViewSet(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend, )
     filterset_fields = (
         'care_plans__patient__facility__organization',
+        'care_plans__patient__facility',
     )
 
     def get_queryset(self):
@@ -203,6 +204,30 @@ class CarePlanTemplateViewSet(viewsets.ModelViewSet):
             )
 
         return queryset
+
+    def filter_queryset(self, queryset):
+        return super(CarePlanTemplateViewSet,
+                     self).filter_queryset(queryset).distinct()
+
+    def get_serializer_context(self):
+        context = super(CarePlanTemplateViewSet, self).get_serializer_context()
+
+        if 'care_plans__patient__facility__organization' in self.request.GET:
+            organization_id = self.request.GET[
+                'care_plans__patient__facility__organization']
+            organization = Organization.objects.get(id=organization_id)
+            context.update({
+                'organization': organization
+            })
+
+        if 'care_plans__patient__facility' in self.request.GET:
+            facility_id = self.request.GET['care_plans__patient__facility']
+            facility = Facility.objects.get(id=facility_id)
+            context.update({
+                'facility': facility
+            })
+
+        return context
 
     @action(methods=['get'],
             detail=True,
@@ -229,7 +254,7 @@ class CarePlanTemplateViewSet(viewsets.ModelViewSet):
         """
 
         queryset = self.get_queryset()
-        filtered_queryset = self.filter_queryset(queryset).distinct()
+        filtered_queryset = self.filter_queryset(queryset)
         template = filtered_queryset.get(pk=pk)
         serializer = CarePlanTemplateAverageSerializer(template)
         return Response(serializer.data)
@@ -976,6 +1001,23 @@ class CarePlanTemplateByType(ParentViewSetPermissionMixin,
         queryset = instance.care_plan_templates.all()
         return self.filter_queryset_by_parents_lookups(queryset).distinct()
 
+    def filter_queryset(self, queryset):
+        return super(CarePlanTemplateByType,
+                     self).filter_queryset(queryset).distinct()
+
+    def get_serializer_context(self):
+        context = super(CarePlanTemplateByType, self).get_serializer_context()
+
+        if 'care_plans__patient__facility__organization' in self.request.GET:
+            organization_id = self.request.GET[
+                'care_plans__patient__facility__organization']
+            organization = Organization.objects.get(id=organization_id)
+            context.update({
+                'organization': organization
+            })
+
+        return context
+
     def retrieve(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_care_plan_templates())
 
@@ -1049,6 +1091,25 @@ class CarePlanTemplateByServiceArea(
         instance = self.get_object()
         queryset = instance.care_plan_templates.all()
         return self.filter_queryset_by_parents_lookups(queryset).distinct()
+
+    def filter_queryset(self, queryset):
+        return super(CarePlanTemplateViewSet,
+                     self).filter_queryset(queryset).distinct()
+
+    def get_serializer_context(self):
+        context = super(CarePlanTemplateByServiceArea,
+                        self).get_serializer_context()
+
+        if 'care_plan_templates__care_plans__patient__facility' in \
+           self.request.GET:
+            facility_id = self.request.GET[
+                'care_plan_templates__care_plans__patient__facility']
+            facility = Facility.objects.get(id=facility_id)
+            context.update({
+                'facility': facility
+            })
+
+        return context
 
     def retrieve(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_care_plan_templates())
