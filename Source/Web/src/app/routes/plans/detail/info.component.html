@@ -106,11 +106,14 @@
                   <a (click)="routeToPatientOverview(plan.patient.id, plan.id)" class="justifyCenter">{{plan.tasks_this_week}}</a>
                 </td>
                 <td>
-                  <div class="progress">
-                    Week 0 of {{plan.plan_template.duration_weeks}}
+                  <div class="progress" *ngIf="plan.plan_template.duration_weeks >= 0">
+                    Week {{progressInWeeks(plan)}} of {{plan.plan_template.duration_weeks}}
                     <div class="progress__bg">
-                      <div class="progress__bar" [ngStyle]="{width: (1 / plan.plan_template.duration_weeks) * 100 + '%'}"></div>
+                      <div class="progress__bar" [ngStyle]="{width: (progressInWeeks(plan) / plan.plan_template.duration_weeks) * 100 + '%'}"></div>
                     </div>
+                  </div>
+                  <div *ngIf="plan.plan_template.duration_weeks < 0">
+                    Ongoing
                   </div>
                 </td>
                 <td>N/A</td>

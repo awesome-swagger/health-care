@@ -1,6 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { sumBy as _sumBy } from 'lodash';
+import * as moment from 'moment';
 import { ModalService, ConfirmModalComponent } from '../../../modules/modals';
 import { AddPlanComponent } from '../modals/add-plan/add-plan.component';
 import {
@@ -102,7 +103,8 @@ export class PlanInfoComponent implements OnDestroy, OnInit {
 
   public addPlan() {
     this.modals.open(AddPlanComponent, {
-      closeDisabled: true,
+      closeDisabled: false,
+      data: { },
       width: '480px',
     }).subscribe(() => {});
   }
@@ -141,6 +143,13 @@ export class PlanInfoComponent implements OnDestroy, OnInit {
     hours += Math.floor((minutes / 60));
     minutes = minutes % 60;
     return `${hours}:${this.zeroPad(minutes)}`;
+  }
+
+  public progressInWeeks(plan) {
+    if (!plan || !plan.created) {
+      return 0;
+    }
+    return moment().diff(moment(plan.created), 'weeks');
   }
 
   public totalFacilityRiskLevel(facility) {

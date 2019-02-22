@@ -223,6 +223,13 @@ export class PatientHeaderComponent implements OnInit, OnDestroy {
 
   }
 
+  public progressInWeeks(plan) {
+    if (!plan || !plan.created) {
+      return 0;
+    }
+    return moment().diff(moment(plan.created), 'weeks');
+  }
+
   public parseTime(time) {
     return time.format('HH:mm:00');
   }

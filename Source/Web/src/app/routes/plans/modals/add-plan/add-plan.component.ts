@@ -55,6 +55,10 @@ export class AddPlanComponent implements OnInit {
     this.modals.close(null);
   }
 
+  public continueDisabled() {
+    return !this.nameInput || !this.selectedServiceArea;
+  }
+
   public clickContinue() {
     let createSub = this.store.CarePlanTemplate.create({
       name: this.nameInput,

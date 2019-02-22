@@ -95,11 +95,14 @@
   </div> <!--/.info__cell (for care team)-->
   <div class="info__cell">
     <label>Progress</label>
-    <div class="progress marCenter">
-      Week 0 of {{selectedPlan?.plan_template?.duration_weeks}}
+    <div class="progress marCenter" *ngIf="selectedPlan?.plan_template?.duration_weeks >= 0">
+      Week {{progressInWeeks(selectedPlan)}} of {{selectedPlan?.plan_template?.duration_weeks}}
       <div class="progress__bg">
-        <div class="progress__bar" [ngStyle]="{width: (3 / selectedPlan?.totalWeeks) * 100 + '%'}"></div>
+        <div class="progress__bar" [ngStyle]="{width: (progressInWeeks(selectedPlan) / selectedPlan?.plan_template.duration_weeks) * 100 + '%'}"></div>
       </div>
+    </div>
+    <div class="progress marCenter" *ngIf="selectedPlan?.plan_template?.duration_weeks < 0">
+      Ongoing
     </div>
   </div>
   <div class="info__cell">

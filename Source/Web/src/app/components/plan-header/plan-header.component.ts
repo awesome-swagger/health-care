@@ -102,7 +102,7 @@ export class PlanHeaderComponent implements OnInit, OnDestroy {
 
   public duplicatePlan() {
     this.modals.open(AddPlanComponent, {
-      closeDisabled: true,
+      closeDisabled: false,
       data: {
         duplicating: true,
       },

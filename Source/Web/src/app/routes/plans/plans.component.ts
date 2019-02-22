@@ -207,7 +207,7 @@ export class PlansComponent implements OnDestroy, OnInit {
 
   public addPlan() {
     this.modals.open(AddPlanComponent, {
-      closeDisabled: true,
+      closeDisabled: false,
       data: {
         duplicating: false,
       },
@@ -217,7 +217,7 @@ export class PlansComponent implements OnDestroy, OnInit {
 
   public duplicatePlan() {
     this.modals.open(AddPlanComponent, {
-      closeDisabled: true,
+      closeDisabled: false,
       data: {
         duplicating: true,
       },
