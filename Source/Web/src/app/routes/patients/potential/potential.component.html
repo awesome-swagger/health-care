@@ -127,16 +127,26 @@
 
 
 
-  <div class="accordion" [ngClass]="{ 'isOpen' : accord1Open }" *ngIf="potentialPatients">
-    <div class="accordion__head" (click)="accord1Open=!accord1Open">
-      <span class="accordion__title">Canyon View({{potentialPatients.length}})</span>
+  <div class="accordion" *ngFor="let facility of facilities" [ngClass]="{ 'isOpen' : accordOpen[facility.id] }">
+    <div class="accordion__head" (click)="accordOpen[facility.id]=!accordOpen[facility.id]">
+      <span class="accordion__title">{{facility.name}} ({{facility.potentialPatients ? facility.potentialPatients.length : 0}})</span>
       <div class="accordion__right">
         <div class="accordion__arrow">
           <i class="ss-standard ss-navigateright"></i>
         </div>
       </div>
     </div> <!--/.accordion__head-->
-    <div class="accordion__body">
+    <div class="accordion__body" *ngIf="!facility.potentialPatients">
+      <div class="accordion__contents">
+        <h2 class="center">No potential patients have been added to this facility.</h2>
+        <button class="button button--center button--iconText"
+        (click)="addPatientToPlan(facility)">
+          <i class="ss-plus"></i> Add Patient
+        </button>
+      </div>
+    </div>
+
+    <div class="accordion__body" *ngIf="facility.potentialPatients">
       <div class="accordion__contents">
         <div class="tableWrap fullWidth">
           <table class="fullWidth">
@@ -178,7 +188,7 @@
               </tr>
             </thead>
             <tbody>
-              <ng-container *ngFor="let potentialPatient of potentialPatients">
+              <ng-container *ngFor="let potentialPatient of facility.potentialPatients">
                 <tr *ngIf="activeCarePlans[potentialPatient.care_plan]">
                   <td class="left">{{potentialPatient.first_name}} {{potentialPatient.last_name}}</td>
                   <td>
@@ -186,16 +196,7 @@
                       {{potentialPatient.care_plan}}
                     </div>
                   </td>
-                  <td>
-                    <a class="tool__anchor justifyCenter" (click)="tooltipPP2Open=!tooltipPP2Open">
-                      --
-                      <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltipPP2Open }">
-                        <div class="iconText iconText--white iconText--autoHeight marBottom8">
-                          Anxiety
-                        </div>
-                      </div>
-                    </a>
-                  </td>
+                  <td></td>
                   <td class="left">--</td>
                   <td class="left">{{formatTimeAdded(potentialPatient.created)}}</td>
                   <td class="left">{{potentialPatient.phone}}</td>
@@ -222,7 +223,7 @@
             </tbody>
           </table>
           <button class="button button--iconText"
-          (click)="addPatientToPlan()">
+          (click)="addPatientToPlan(facility)">
             <i class="ss-plus"></i> Add Patient
           </button>
         </div> <!--/.tableWrap-->

@@ -153,9 +153,6 @@ export class NavComponent implements OnDestroy, OnInit {
     this.getNotifications().then((notifications:any) => {
       this.notifications = notifications.results;
     });
-    this.getTasks().then((tasks:any) => {
-      this.tasks = tasks;
-    });
   }
 
   public ngOnDestroy() {
@@ -276,6 +273,9 @@ export class NavComponent implements OnDestroy, OnInit {
 
   private getTasks() {
     return new Promise((resolve, reject) => {
+      console.log('vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv');
+      console.log('employee', this.employee);
+      console.log('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^');
       let tasksSub = this.store.User.detailRoute('GET', this.employee.user.id, 'tasks').subscribe(
         tasks => {
           resolve(tasks);

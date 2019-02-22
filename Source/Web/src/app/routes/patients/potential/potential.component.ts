@@ -6,6 +6,7 @@ import { AuthService, StoreService } from '../../../services';
 import {
   uniq as _uniq,
   map as _map,
+  find as _find,
   flattenDeep as _flattenDeep,
   compact as _compact,
   uniqBy as _uniqBy
@@ -25,6 +26,7 @@ export class PotentialPatientsComponent implements OnDestroy, OnInit {
   public activeServiceAreas = {};
   public activePatients = [];
 
+  public accordOpen = {};
   public accord1Open;
   public tooltip2Open;
   public tooltipPP2Open;
@@ -49,12 +51,31 @@ export class PotentialPatientsComponent implements OnDestroy, OnInit {
         return;
       }
       this.facilities = facilities;
-      let potentialPatientsSub = this.store.PotentialPatient.readListPaged({
+      this.facilities.forEach(f => {
+        this.accordOpen[f.id] = false;
+      })
 
-      }).subscribe(
+      let potentialPatientsSub = this.store.PotentialPatient.readListPaged().subscribe(
         (potentialPatients) => {
           console.log(potentialPatients);
           this.potentialPatients = potentialPatients;
+          console.log('vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv');
+          console.log(this.facilities);
+          console.log('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^');
+
+          this.potentialPatients.forEach(p => {
+            p.facility && p.facility.forEach(f => {
+              const facility = _find(this.facilities, fac => fac.id === f);
+              if (facility) {
+                if (facility.potentialPatients && !_find(facility.potentialPatients, x => x.id === p.id)) {
+                  facility.potentialPatients.push(p);
+                } else {
+                  facility.potentialPatients = [p];
+                }
+              }
+            })
+          })
+
           this.carePlans.forEach((p) => {
             this.activeCarePlans[p] = true;
           })
@@ -83,24 +104,32 @@ export class PotentialPatientsComponent implements OnDestroy, OnInit {
     this.facilitiesSub.unsubscribe();
   }
 
-  public addPatientToPlan() {
+  public addPatientToPlan(facility = null) {
     this.modals.open(AddPatientToPlanComponent, {
       data: {
         action: 'add',
         patientKnown: false,
         patientInSystem: false,
         planKnown: false,
+        facility: facility,
       },
       width: '576px',
     }).subscribe((data) => {
-      this.potentialPatients.push(data)
+      const fac = _find(this.facilities, f => f.id === data.facility[0])
+      if (fac.potentialPatients) {
+        fac.potentialPatients.push(data);
+      } else {
+        fac.potentialPatients = [data];
+      }
     });
   }
 
   public enrollPotentialPatient(potentialPatient) {
     this.modals.open(EnrollmentComponent, {
-      closeDisabled: true,
       width: '608px',
+      data: {
+        patient: potentialPatient
+      }
     }).subscribe(() => {});
   }
 

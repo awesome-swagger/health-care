@@ -36,9 +36,9 @@
     <label>Started</label>
     <div class="datepicker">
       <div class="datepicker__date datepicker__date--fullWidth" (click)="showDate=!showDate">
-        Select Date
+        {{datePrescribedFormatted || 'Select Date'}}
       </div>
-      <app-date-picker class="datepicker__picker" [ngClass]="{ 'isOpen' : showDate }" [(selected)]="datePrescribed"></app-date-picker>
+      <app-date-picker class="datepicker__picker" [ngClass]="{ 'isOpen' : showDate }" (selectedChange)="datePrescribed = $event"></app-date-picker>
     </div>
   </div>
   <div class="modal__inputWrap140 marRight32">

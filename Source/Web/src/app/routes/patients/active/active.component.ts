@@ -14,7 +14,8 @@ import {
   flattenDeep as _flattenDeep,
   mean as _mean,
   sum as _sum,
-  compact as _compact
+  compact as _compact,
+  get as _get,
 } from 'lodash';
 import * as moment from 'moment';
 
@@ -65,7 +66,7 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
               return {
                 id: plan.id,
                 name: plan.plan_template.name,
-                service_area: plan.plan_template.service_area.name || "Undefined",
+                service_area: _get(plan, 'plan_template.service_area.name', "N/A"),
                 current_week: plan.current_week || 0,
                 total_weeks: plan.plan_template.duration_weeks || 0,
                 time_in_minutes: plan.time || 0,

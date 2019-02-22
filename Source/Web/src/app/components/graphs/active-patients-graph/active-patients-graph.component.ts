@@ -40,10 +40,10 @@ export class ActivePatientsGraphComponent implements OnInit {
       color: string;
     }
     var data = [
-      {name: "On Track", value: this.data.on_track, color: '#6DB744' },
-      {name: "Low Risk", value: this.data.low_risk, color: '#F1A949' },
-      {name: "Med Risk", value: this.data.med_risk, color: '#CA2C4E' },
-      {name: "High Risk", value: this.data.high_risk, color: '#880E4F' },
+      {name: "On Track", value: this.data.on_track, color: '#4caf50' },
+      {name: "Low Risk", value: this.data.low_risk, color: '#ff9800' },
+      {name: "Med Risk", value: this.data.med_risk, color: '#f44336' },
+      {name: "High Risk", value: this.data.high_risk, color: '#880e4f' },
     ];
 
     const total = _sum(_map(data, d => d.value));

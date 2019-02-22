@@ -34,6 +34,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   public billingOverview = null;
 
   public analyticsData = null;
+  public patientOverview = null;
 
   public patientsEnrolledData = [];
   public filteredPatientsEnrolledData = patientsEnrolledData;
@@ -126,6 +127,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.store.Organization.detailRoute('GET', org.id, 'dashboard_analytics').subscribe(
           res => {
             this.analyticsData = res;
+          }
+        )
+        this.store.PatientProfile.detailRoute('GET', null, 'overview').subscribe(
+          res => {
+            this.patientOverview = res;
+            console.log('vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv');
+            console.log(this.patientOverview);
+            console.log('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^');
           }
         )
       }
