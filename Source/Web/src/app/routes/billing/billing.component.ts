@@ -182,6 +182,10 @@ export class BillingComponent implements OnDestroy, OnInit {
     this.getBillingData();
   }
 
+  public incrementMonthDisabled() {
+    return this.selectedMonth.get('month') === moment().get('month');
+  }
+
   public incrementMonth() {
     this.selectedMonth.add(1, 'month');
     this.getBillingData();

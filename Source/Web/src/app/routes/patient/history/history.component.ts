@@ -158,6 +158,9 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
   }
 
   public setSelectedDay(e) {
+    if (e.isSame(this.dateFilter, 'day')) {
+      return;
+    }
     this.dateFilter = e;
     this.dateFilterOpen = false;
     // Get billed activities
@@ -298,9 +301,17 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
        okText: 'Continue',
       },
       width: '384px',
-    }).subscribe(() => {
-      let index = this.billedActivities.findIndex((obj) => obj.id === result.id);
-      this.billedActivities = this.billedActivities.splice(index, 1);
+    }).subscribe((modalResult) => {
+      if (modalResult.toLowerCase() === 'continue') {
+        this.store.BilledActivity.destroy(result.id).subscribe(
+          (success) => {
+            let index = this.billedActivities.findIndex((obj) => obj.id === result.id);
+            this.billedActivities = this.billedActivities.splice(index, 1);
+          },
+          (err) => {},
+          () => {},
+        );
+      }
     });
   }
 }

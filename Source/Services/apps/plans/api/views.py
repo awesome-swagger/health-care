@@ -185,7 +185,11 @@ class CarePlanTemplateViewSet(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend, )
     filterset_fields = (
         'care_plans__patient__facility__organization',
+        'care_plans__patient__facility',
     )
+
+    def filter_queryset(self, queryset):
+        return super(CarePlanTemplateViewSet, self).filter_queryset(queryset).distinct()
 
     def get_queryset(self):
         queryset = super(CarePlanTemplateViewSet, self).get_queryset()
@@ -229,7 +233,7 @@ class CarePlanTemplateViewSet(viewsets.ModelViewSet):
         """
 
         queryset = self.get_queryset()
-        filtered_queryset = self.filter_queryset(queryset).distinct()
+        filtered_queryset = self.filter_queryset(queryset)
         template = filtered_queryset.get(pk=pk)
         serializer = CarePlanTemplateAverageSerializer(template)
         return Response(serializer.data)
@@ -248,6 +252,7 @@ class CarePlanViewSet(viewsets.ModelViewSet):
     filterset_fields = (
         'patient',
         'patient__facility__organization',
+        'patient__facility',
         'plan_template',
         'billing_practitioner',
     )

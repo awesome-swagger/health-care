@@ -29,7 +29,7 @@ from apps.patients.models import (PatientDiagnosis, PatientMedication,
                                   ProblemArea, PatientVerificationCode,
                                   ReminderEmail, PotentialPatient,
                                   PatientStat)
-from apps.plans.api.serializers import (InfoMessageSerializer, 
+from apps.plans.api.serializers import (InfoMessageSerializer,
                                         CarePlanTemplateSerializer)
 from apps.plans.models import CarePlanTemplate
 from apps.tasks.models import AssessmentResponse, SymptomRating
@@ -115,7 +115,7 @@ class PatientProfileSerializer(RepresentationMixin,
         ]
 
 
-class AddPatientToPlanSerializer(ReferenceCheckMixin, 
+class AddPatientToPlanSerializer(ReferenceCheckMixin,
                                  serializers.ModelSerializer):
 
     user = serializers.UUIDField(required=False)
@@ -157,7 +157,7 @@ class AddPatientToPlanSerializer(ReferenceCheckMixin,
         super(AddPatientToPlanSerializer, self).validate(data)
         user = data.get('user')
         if not user and get_user_model().objects.filter(email=data.get('email')).exists():
-            raise serializers.ValidationError({ 
+            raise serializers.ValidationError({
                 "user": _('A user with the email already exists .')
             })
         return data
@@ -492,6 +492,7 @@ class FacilityInactivePatientSerializer(serializers.ModelSerializer):
     serializer to be used for inactive patients in a facility
     """
     full_name = serializers.SerializerMethodField()
+    email = serializers.SerializerMethodField()
     image_url = serializers.SerializerMethodField()
     care_plan = serializers.SerializerMethodField()
     care_manager = serializers.SerializerMethodField()
@@ -501,6 +502,7 @@ class FacilityInactivePatientSerializer(serializers.ModelSerializer):
         fields = (
             'id',
             'full_name',
+            'email',
             'image_url',
             'care_plan',
             'last_app_use',
@@ -509,6 +511,9 @@ class FacilityInactivePatientSerializer(serializers.ModelSerializer):
 
     def get_full_name(self, obj):
         return obj.user.get_full_name()
+
+    def get_email(self, obj):
+        return obj.user.email
 
     def get_image_url(self, obj):
         return obj.user.get_image_url()

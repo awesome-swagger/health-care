@@ -338,11 +338,13 @@ a {
     }
 
     &:disabled {
+        background-color: transparent;
         cursor: default;
 
         [class*="ss-"] { color: $greenLt; }
 
         &:hover, &:active {
+          background-color: transparent;
           [class*="ss-"] { color: $greenLt; }
         }
     }
