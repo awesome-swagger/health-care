@@ -40,3 +40,24 @@ class PatientSearchPermissions(permissions.BasePermission):
         # Must be an employee to hit the search endpoint.
         user = request.user
         return True if user.is_superuser or user.is_employee else False
+
+
+class EmployeeManagerOrParentPatientOwner(permissions.BasePermission):
+
+    def has_object_permission(self, request, view, obj):
+        if request.user.is_superuser:
+            return True
+
+        if request.user.is_employee:
+            employee = request.user.employee_profile
+
+            if obj.patient.facility in employee.facilities_managed.all():
+                return True
+
+        elif request.user.is_patient:
+            patient = request.user.patient_profile
+
+            if obj.patient == patient:
+                return True
+
+        return False

@@ -59,3 +59,13 @@ class ProviderRoleFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = 'core.ProviderRole'
         django_get_or_create = ('name', )
+
+
+class InsuranceFactory(factory.django.DjangoModelFactory):
+    """
+    Factory for :model:`core.Insurance`
+    """
+
+    class Meta:
+        model = 'core.Insurance'
+        django_get_or_create = ('name', 'organization')

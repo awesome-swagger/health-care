@@ -128,15 +128,12 @@ class TestPatientProfile(TasksMixin, APITestCase):
         first_task = self.create_symptom_task(**{
             'plan': self.care_plan
         })
-        second_task = self.create_symptom_task(**{
-            'plan': self.care_plan
-        })
 
         self.create_symptom_rating(first_task, **{
             'symptom': symptom,
             'rating': 5
         })
-        self.create_symptom_rating(second_task, **{
+        self.create_symptom_rating(first_task, **{
             'symptom': symptom,
             'rating': 3
         })
@@ -153,15 +150,12 @@ class TestPatientProfile(TasksMixin, APITestCase):
         first_task = self.create_symptom_task(**{
             'plan': self.care_plan
         })
-        second_task = self.create_symptom_task(**{
-            'plan': self.care_plan
-        })
 
         self.create_symptom_rating(first_task, **{
             'symptom': symptom,
             'rating': 1
         })
-        self.create_symptom_rating(second_task, **{
+        self.create_symptom_rating(first_task, **{
             'symptom': symptom,
             'rating': 3
         })
@@ -178,7 +172,9 @@ class TestPatientProfile(TasksMixin, APITestCase):
         first_task = self.create_symptom_task(**{
             'plan': self.care_plan
         })
-        second_task = self.create_symptom_task(**{
+
+        # Create another task for dummy
+        self.create_symptom_task(**{
             'plan': self.care_plan
         })
 
@@ -186,7 +182,7 @@ class TestPatientProfile(TasksMixin, APITestCase):
             'symptom': symptom,
             'rating': 3
         })
-        self.create_symptom_rating(second_task, **{
+        self.create_symptom_rating(first_task, **{
             'symptom': symptom,
             'rating': 3
         })
@@ -218,7 +214,6 @@ class TestPatientProfile(TasksMixin, APITestCase):
         self.assertNotEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
 
-
 class TestPatientProfileUsingEmployee(PatientsMixin, APITestCase):
     """
     Test cases for :model:`tasks.PatientProfile` using an employee
@@ -227,7 +222,10 @@ class TestPatientProfileUsingEmployee(PatientsMixin, APITestCase):
 
     def setUp(self):
         self.fake = Faker()
-        self.employee = self.create_employee()
+        self.facility = self.create_facility()
+        self.employee = self.create_employee(**{
+            'facilities_managed': [self.facility]
+        })
         self.user = self.employee.user
         self.client.force_authenticate(user=self.user)
 
@@ -265,6 +263,62 @@ class TestPatientProfileUsingEmployee(PatientsMixin, APITestCase):
         url = reverse('patient-verification')
         response = self.client.post(url, payload)
         self.assertTrue(response.data['is_active'])
+
+    def test_partial_update_mrn_for_patient_existing(self):
+        patient = self.create_patient(**{
+            'facility': self.facility
+        })
+        url = reverse('patient_profiles-detail', kwargs={'pk': patient.id})
+        mrn = '12345'
+        payload = {
+            'mrn': mrn
+        }
+        response = self.client.patch(url, payload)
+        self.assertEqual(response.data['mrn'], mrn)
+
+    def test_partial_update_mrn_for_patient(self):
+        patient = self.create_patient(**{
+            'facility': self.facility,
+            'mrn': '12345'
+        })
+        url = reverse('patient_profiles-detail', kwargs={'pk': patient.id})
+        new_mrn = '67890'
+        payload = {
+            'mrn': new_mrn
+        }
+        response = self.client.patch(url, payload)
+        self.assertEqual(response.data['mrn'], new_mrn)
+
+    def test_partial_update_mrn_for_patient_the_same(self):
+        patient = self.create_patient(**{
+            'facility': self.facility,
+            'mrn': '12345'
+        })
+        url = reverse('patient_profiles-detail', kwargs={'pk': patient.id})
+        mrn = '12345'
+        payload = {
+            'mrn': mrn
+        }
+        response = self.client.patch(url, payload)
+        self.assertEqual(response.data['mrn'], mrn)
+
+    def test_partial_update_mrn_for_patient_invalid(self):
+        mrn = '12345'
+        self.create_patient(**{
+            'facility': self.facility,
+            'mrn': mrn
+        })
+
+        patient = self.create_patient(**{
+            'facility': self.facility,
+        })
+        url = reverse('patient_profiles-detail', kwargs={'pk': patient.id})
+
+        payload = {
+            'mrn': mrn
+        }
+        response = self.client.patch(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 
 class TestPatientProfileSearchViewSet(PatientsMixin, APITestCase):
@@ -441,49 +495,49 @@ class TestPatientProfileDashboard(TasksMixin, APITestCase):
             self.assertEqual(len(response.data),1)
 
 
-class TestFacilityInactivePatient(PlansMixin, APITestCase):
-    """
-    Test cases for :view:`patients.FacilityPatientViewSet` using an
-    employee as the logged in user.
-    """
+# class TestFacilityInactivePatient(PlansMixin, APITestCase):
+#     """
+#     Test cases for :view:`patients.FacilityPatientViewSet` using an
+#     employee as the logged in user.
+#     """
 
-    def setUp(self):
-        self.fake = Faker()
-        self.facility = self.create_facility()
-        self.employee = self.create_employee(**{
-            'facilities': [self.facility]
-        })
-        self.patient_count = 3
+#     def setUp(self):
+#         self.fake = Faker()
+#         self.facility = self.create_facility()
+#         self.employee = self.create_employee(**{
+#             'facilities': [self.facility]
+#         })
+#         self.patient_count = 3
 
-        for i in range(self.patient_count):
-            patient = self.create_patient(**{
-                'facility': self.facility,
-                'is_active': False
-            })
+#         for i in range(self.patient_count):
+#             patient = self.create_patient(**{
+#                 'facility': self.facility,
+#                 'is_active': False
+#             })
 
-            for plan in range(5):
-                self.create_care_plan(patient)
+#             for plan in range(5):
+#                 self.create_care_plan(patient)
 
-        self.user = self.employee.user
+#         self.user = self.employee.user
 
-        self.url = reverse(
-            'facility-inactive-patients-list',
-            kwargs={'parent_lookup_facility': self.facility.id}
-        )
-        self.client.force_authenticate(user=self.user)
+#         self.url = reverse(
+#             'facility-patients-list',
+#             kwargs={'parent_lookup_facility': self.facility.id}
+#         )
+#         self.client.force_authenticate(user=self.user)
 
-    def create_multiple_goals(self, care_plan):
-        for i in range(5):
-            self.create_goal(**{'plan': self.care_plan})
+#     def create_multiple_goals(self, care_plan):
+#         for i in range(5):
+#             self.create_goal(**{'plan': self.care_plan})
 
-    def test_get_inactive_patients_list(self):
+#     def test_get_inactive_patients_list(self):
 
-        # Create patients from different facility
-        for i in range(5):
-            self.create_patient()
+#         # Create patients from different facility
+#         for i in range(5):
+#             self.create_patient()
 
-        response = self.client.get(self.url)
-        if 'count' in response.data:
-            self.assertEqual(response.data['count'], self.patient_count)
-        else:
-            self.assertEqual(len(response.data), self.patient_count)
+#         response = self.client.get(self.url)
+#         if 'count' in response.data:
+#             self.assertEqual(response.data['count'], self.patient_count)
+#         else:
+#             self.assertEqual(len(response.data), self.patient_count)

@@ -8,6 +8,7 @@ from .factories import (
     ProblemAreaFactory,
     PatientMedicationFactory,
     PotentialPatientFactory,
+    EmergencyContactFactory,
 )
 from apps.accounts.tests.factories import RegularUserFactory
 from apps.core.tests.mixins import CoreMixin
@@ -32,6 +33,22 @@ class PatientsMixin(CoreMixin):
         if 'is_active' not in kwargs:
             kwargs.update({
                 'is_active': True
+            })
+
+        if 'insurance' not in kwargs:
+            insurance = self.create_insurance(**{
+                'organization': kwargs.get('facility').organization
+            })
+            kwargs.update({
+                'insurance': insurance
+            })
+
+        if 'secondary_insurance' not in kwargs:
+            secondary_insurance = self.create_insurance(**{
+                'organization': kwargs.get('facility').organization
+            })
+            kwargs.update({
+                'secondary_insurance': secondary_insurance
             })
 
         return PatientProfileFactory(
@@ -111,3 +128,36 @@ class PatientsMixin(CoreMixin):
         patient = PotentialPatientFactory(**kwargs)
         patient.facility.add(*facility)
         return patient
+
+    def create_emergency_contact(self, **kwargs):
+        if 'patient' not in kwargs:
+            kwargs.update({
+                'patient': self.create_patient()
+            })
+
+        if 'first_name' not in kwargs:
+            kwargs.update({
+                'first_name': self.fake.first_name()
+            })
+
+        if 'last_name' not in kwargs:
+            kwargs.update({
+                'last_name': self.fake.last_name()
+            })
+
+        if 'relationship' not in kwargs:
+            kwargs.update({
+                'relationship': self.fake.name()
+            })
+
+        if 'phone' not in kwargs:
+            kwargs.update({
+                'phone': '123456789'
+            })
+
+        if 'email' not in kwargs:
+            kwargs.update({
+                'email': self.fake.email()
+            })
+
+        return EmergencyContactFactory(**kwargs)
