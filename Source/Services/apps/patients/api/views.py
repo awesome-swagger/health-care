@@ -277,6 +277,7 @@ class ProblemAreaViewSet(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend, )
     filterset_fields = (
         'patient__id',
+        'plan',
         'identified_by__id',
     )
 
