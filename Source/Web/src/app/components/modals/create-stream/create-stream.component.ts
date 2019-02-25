@@ -12,6 +12,8 @@ import { StoreService } from '../../../services';
 export class CreateStreamComponent implements OnInit {
 
   public data = null;
+  public editingTemplate = false;
+  public totalPatients = 0;
   public stream: any = {};
   public streamForm: FormGroup = null;
   public messageTooltipOpen = false;
@@ -32,6 +34,8 @@ export class CreateStreamComponent implements OnInit {
   public ngOnInit() {
     console.log(this.data);
     if (this.data) {
+      this.editingTemplate = this.data.editingTemplate;
+      this.totalPatients = this.data.totalPatients ? this.data.totalPatients : 0;
       this.stream = this.data.stream ? this.data.stream : {};
       this.initForm(this.stream);
     }

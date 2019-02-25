@@ -10,6 +10,7 @@ import { ModalService } from '../../../modules/modals';
 export class AddVitalComponent implements OnInit {
 
   public data = null;
+  public totalPatients = 0;
   public vitalTemplates: Array<any> = [];
   public searchInput = '';
   public vitalTemplatesShown = [];
@@ -39,6 +40,8 @@ export class AddVitalComponent implements OnInit {
   public ngOnInit() {
     console.log(this.data);
     if (this.data) {
+      this.editingTemplate = this.data.editingTemplate;
+      this.totalPatients = this.data.totalPatients ? this.data.totalPatients : 0;
       this.vitalTemplates = this.data.taskList;
       this.vitalTemplatesShown = this.vitalTemplates;
     }

@@ -6,17 +6,15 @@
 	Care Message
 </h1>
 
-<!--TODO: If on a care plan template, show the following-->
-<div class="marCenter marCenter--twoThirds">
+<div class="marCenter marCenter--twoThirds" *ngIf="editingTemplate">
 	<div class="iconText iconText--wrap iconText--autoHeight error marBottom32">
 		<i class="iconText__icon ss-alert"></i>
 		<span class="error__text">
-			Making changes here will affect X patients currently assigned to this care plan.
+			Making changes here will affect {{totalPatients}} patients currently assigned to this care plan.
 		</span>
 	</div>
 </div>
-<!--TODO: If on a care plan instance, show the following-->
-<h5 *ngIf="" class="center">NOTE: You are working on one patient's care plan. To do this for everyone, go to care plans.</h5>
+<h5 *ngIf="!editingTemplate" class="center">NOTE: You are working on one patient's care plan. To do this for everyone, go to care plans.</h5>
 
 <form [formGroup]="streamForm">
   <div class="flex justifySpaceBetween marBottom32">

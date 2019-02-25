@@ -13,6 +13,7 @@ import { StoreService } from '../../../services';
 export class EditTaskComponent implements OnInit {
 
   public data = null;
+  public totalPatients = 0;
   public frequencyOptions: Array<any> = [
     {displayName: 'Once', value: 'once'},
     {displayName: 'Daily', value: 'daily'},
@@ -77,6 +78,7 @@ export class EditTaskComponent implements OnInit {
 
   public ngOnInit() {
     this.data = this.data || {};
+    this.totalPatients = this.data.totalPatients ? this.data.totalPatients : 0;
     this.task = this.data && this.data.task ? this.data.task : {};
     this.initForm(this.task);
     if (this.getTaskType().type === 'team') {

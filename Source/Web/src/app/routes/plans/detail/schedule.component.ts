@@ -25,6 +25,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
 
   public planTemplateId = null;
   public planTemplate = null;
+  public totalPatients = 0;
   public organization = null;
   public planTemplateAverage = null;
   public goalTemplates = [];
@@ -75,6 +76,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
           }).subscribe(
             (average) => {
               this.planTemplateAverage = average;
+              this.totalPatients = this.planTemplateAverage ? this.planTemplateAverage.total_patients : 0;
             },
             (err) => {},
             () => {}
@@ -230,12 +232,11 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
     let goalIndex = this.goalTemplates.findIndex((obj) => {
       return obj.id === goal.id;
     });
-    let totalPatients = this.planTemplateAverage.total_patients;
     let modalSub = this.modals.open(ConfirmModalComponent, {
      closeDisabled: false,
      data: {
        title: 'Delete Goal?',
-       body: `Are you sure you want to delete this care plan goal? This will affect ${totalPatients} patients currently assigned to this care plan.`,
+       body: `Are you sure you want to delete this care plan goal? This will affect ${this.totalPatients} patients currently assigned to this care plan.`,
        cancelText: 'Cancel',
        okText: 'Confirm',
       },
@@ -269,6 +270,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       data: {
         type: 'manager',
         planTemplateId: this.planTemplateId,
+        totalPatients: this.totalPatients,
         taskList:this.teamManagerTemplates,
       },
     }).subscribe(
@@ -291,6 +293,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       width: '384px',
       data: {
         task: task,
+        totalPatients: this.totalPatients,
         type: 'manager',
       },
     }).subscribe(
@@ -309,6 +312,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       data: {
         type: 'team',
         planTemplateId: this.planTemplateId,
+        totalPatients: this.totalPatients,
         taskList:this.teamMemberTemplates,
       },
     }).subscribe(
@@ -330,6 +334,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       width: '384px',
       data: {
         task: task,
+        totalPatients: this.totalPatients,
         type: 'team',
       },
     }).subscribe(
@@ -355,12 +360,11 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
         return obj.id === task.id;
       });
     }
-    let totalPatients = this.planTemplateAverage.total_patients;
     let modalSub = this.modals.open(ConfirmModalComponent, {
      closeDisabled: false,
      data: {
        title: 'Delete Task?',
-       body: `Are you sure you want to remove this task? This will affect ${totalPatients} patients currently assigned to this care plan.`,
+       body: `Are you sure you want to remove this task? This will affect ${this.totalPatients} patients currently assigned to this care plan.`,
        cancelText: 'Cancel',
        okText: 'confirm',
       },
@@ -398,6 +402,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       data: {
         type: 'patient',
         planTemplateId: this.planTemplateId,
+        totalPatients: this.totalPatients,
         taskList: this.patientTaskTemplates,
       },
       width: '384px',
@@ -418,6 +423,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       closeDisabled: false,
       data: {
         task: task,
+        totalPatients: this.totalPatients,
         type: 'patient',
       },
       width: '384px',
@@ -434,12 +440,11 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
     let tasksIndex = this.patientTaskTemplates.findIndex((obj) => {
       return obj.id === task.id;
     });
-    let totalPatients = this.planTemplateAverage.total_patients;
     let modalSub = this.modals.open(ConfirmModalComponent, {
      closeDisabled: false,
      data: {
        title: 'Delete Task?',
-       body: `Are you sure you want to remove this task? This will affect ${totalPatients} patients currently assigned to this care plan.`,
+       body: `Are you sure you want to remove this task? This will affect ${this.totalPatients} patients currently assigned to this care plan.`,
        cancelText: 'Cancel',
        okText: 'confirm',
       },
@@ -471,6 +476,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       closeDisabled: false,
       data: {
         editingTemplate: true,
+        totalPatients: this.totalPatients,
         assessmentsList: this.assessmentTemplates,
         planTemplateId: this.planTemplateId,
       },
@@ -500,6 +506,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       closeDisabled: false,
       data: {
         assessment: assessment,
+        totalPatients: this.totalPatients,
         planTemplateId: this.planTemplateId,
       },
       width: '864px',
@@ -527,6 +534,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       closeDisabled: false,
       data: {
         task: assessment,
+        totalPatients: this.totalPatients,
         type: 'assessment',
       },
       width: '384px'
@@ -543,12 +551,11 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
     let tasksIndex = this.assessmentTemplates.findIndex((obj) => {
       return obj.id === assessment.id;
     });
-    let totalPatients = this.planTemplateAverage.total_patients;
     let modalSub = this.modals.open(ConfirmModalComponent, {
      closeDisabled: false,
      data: {
        title: 'Delete Assessment?',
-       body: `Are you sure you want to remove this assessment? This will affect ${totalPatients} patients currently assigned to this care plan.`,
+       body: `Are you sure you want to remove this assessment? This will affect ${this.totalPatients} patients currently assigned to this care plan.`,
        cancelText: 'Cancel',
        okText: 'Confirm',
       },
@@ -585,6 +592,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
           appear_time: '00:00:00',
           due_time: '00:00:00',
           plan_template: this.planTemplateId,
+          totalPatients: this.totalPatients,
           frequency: 'once',
         }
       },
@@ -600,6 +608,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       closeDisabled: false,
       data: {
         type: 'symptom',
+        totalPatients: this.totalPatients,
         task: symptom,
       },
       width: '384px',
@@ -610,12 +619,11 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
     let tasksIndex = this.symptomTemplates.findIndex((obj) => {
       return obj.id === symptom.id;
     });
-    let totalPatients = this.planTemplateAverage.total_patients;
     let modalSub = this.modals.open(ConfirmModalComponent, {
      closeDisabled: false,
      data: {
        title: 'Delete Symptom Report?',
-       body: `Are you sure you want to remove this symptom report? This will affect ${totalPatients} patients currently assigned to this care plan.`,
+       body: `Are you sure you want to remove this symptom report? This will affect ${this.totalPatients} patients currently assigned to this care plan.`,
        cancelText: 'Cancel',
        okText: 'Confirm',
       },
@@ -647,7 +655,9 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       closeDisabled: false,
       width: '768px',
       data: {
+        editingTemplate: true,
         taskList: vitalTemplates,
+        totalPatients: this.totalPatients,
         planTemplateId: this.planTemplateId,
       },
     }).subscribe((data) => {
@@ -679,6 +689,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       data: {
         vital: vital,
         planTemplateId: this.planTemplateId,
+        totalPatients: this.totalPatients,
       }
     }).subscribe((res) => {
       if (!res) return;
@@ -699,6 +710,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       data: {
         type: 'vital',
         task: vital,
+        totalPatients: this.totalPatients,
       },
       width: '384px',
     }).subscribe(
@@ -722,12 +734,11 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
     let tasksIndex = this.vitalTemplates.findIndex((obj) => {
       return obj.id === vital.id;
     });
-    let totalPatients = this.planTemplateAverage.total_patients;
     let modalSub = this.modals.open(ConfirmModalComponent, {
      closeDisabled: true,
      data: {
        title: 'Delete Vital?',
-       body: `Are you sure you want to remove this vital report? This will affect ${totalPatients} patients currently assigned to this care plan.`,
+       body: `Are you sure you want to remove this vital report? This will affect ${this.totalPatients} patients currently assigned to this care plan.`,
        cancelText: 'Cancel',
        okText: 'Confirm',
       },
@@ -758,8 +769,10 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
     this.modals.open(AddStreamComponent, {
       closeDisabled: false,
       data: {
-          taskList: this.messageQueues,
-          planTemplateId: this.planTemplateId,
+        editingTemplate: true,
+        taskList: this.messageQueues,
+        totalPatients: this.totalPatients,
+        planTemplateId: this.planTemplateId,
       },
       width: '768px',
     }).subscribe((data) => {
@@ -786,6 +799,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       closeDisabled: false,
       data: {
         stream: stream,
+        totalPatients: this.totalPatients,
         planTemplateId: this.planTemplateId,
       },
       width: '768px',
@@ -803,12 +817,11 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
   }
 
   public confirmDeleteStream() {
-    let totalPatients = this.planTemplateAverage.total_patients;
     this.modals.open(ConfirmModalComponent, {
      closeDisabled: false,
      data: {
        title: 'Delete Message Stream?',
-       body: `Are you sure you want to remove this message stream? This will affect ${totalPatients} patients currently assigned to this care plan.`,
+       body: `Are you sure you want to remove this message stream? This will affect ${this.totalPatients} patients currently assigned to this care plan.`,
        cancelText: 'Cancel',
        okText: 'confirm',
       },
