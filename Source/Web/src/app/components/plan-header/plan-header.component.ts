@@ -118,7 +118,20 @@ export class PlanHeaderComponent implements OnInit, OnDestroy {
         planTemplate: this.planTemplate,
       },
       minWidth: '976px',
-    }).subscribe(() => {});
+    }).subscribe((result) => {
+      if (!result) return;
+      if (result.toLowerCase() === 'success') {
+        let destroySub = this.store.CarePlanTemplate.destroy(this.planTemplate.id).subscribe(
+          (success) => {
+            this.router.navigate(['/plans']);
+          },
+          (err) => {},
+          () => {
+            destroySub.unsubscribe();
+          }
+        );
+      }
+    });
   }
 
   public getAverages(organization, planId) {

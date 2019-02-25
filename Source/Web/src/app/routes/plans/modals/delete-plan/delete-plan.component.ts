@@ -1,76 +1,85 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ModalService } from '../../../../modules/modals';
-import { StoreService } from '../../../../services';
+import { AuthService, StoreService } from '../../../../services';
 
 @Component({
   selector: 'app-delete-plan',
   templateUrl: './delete-plan.component.html',
   styleUrls: ['./delete-plan.component.scss']
 })
-export class DeletePlanComponent implements OnInit {
+export class DeletePlanComponent implements OnInit, OnDestroy {
 
   public data = null;
-  public facilities = [
-    {
-      name: 'Mountain View',
-      patients: [
-        {
-          name: 'Cori Soderman',
-        },
-        {
-          name: 'Theresa Beckstrom',
-        },
-        {
-          name: 'Giovanni Manuel',
-        },
-        {
-          name: 'Harold Taylor',
-        },
-      ]
-    },
-    {
-      name: 'South Ogden Family Medicine',
-      patients: [
-        {
-          name: 'Cori Soderman',
-        },
-        {
-          name: 'Theresa Beckstrom',
-        },
-      ]
-    }
-  ]
-  public accordianStatuses = [];
+  public facilities = [];
+  public planTemplates = [];
+  public practitioners = [];
+  public accordianStatuses = {};
+  public bulkReassign = {};
+  public bulkManager = {};
+  public bulkNewPlan = {};
+  public bulkInactive = {};
+
+  private facilitiesSub = null;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private modals: ModalService,
+    private auth: AuthService,
     private store: StoreService,
   ) {}
 
   public ngOnInit() {
-    // Get all patient's on the plan
-    // group patient's by facility
-    // wire up "reassign in bulk" for each facility
-    // for each facility, if reassign in bulk is clicked send one post request with all patients having the same data
-    // if reassign in bulk is not clicked, send a post request for each patient with different data.
     this.accordianStatuses = new Array(this.facilities.length).fill(false);
-    this.getPlansForTemplate(this.data.planTemplate.id).then((plans: any) => {
-      console.log(plans);
+    this.getQualifiedPractitioners().then((practitioners: any) => {
+      this.practitioners = practitioners;
+    });
+    this.getCarePlanTemplates().then((planTemplates: any) => {
+      this.planTemplates = planTemplates.filter((obj) => obj.id !== this.data.planTemplate.id);
+    });
+    this.facilitiesSub = this.auth.facilities$.subscribe((facilities) => {
+      if (!facilities) {
+        return;
+      }
+      this.facilities = facilities.filter((obj) => !obj.is_affiliate);
+      this.facilities.forEach((facility) => {
+        this.accordianStatuses[facility.id] = true;
+        this.getPlansForTemplate(facility.id, this.data.planTemplate.id).then((plans: any) => {
+          facility.plans = plans.results;
+        }).catch((err) => {
+          facility.plans = [];
+        });
+      });
     });
   }
 
-  public getPlansForTemplate(templateId) {
+  public ngOnDestroy() {
+    if (this.facilitiesSub) {
+      this.facilitiesSub.unsubscribe();
+    }
+  }
+
+  public getCarePlanTemplates() {
     let promise = new Promise((resolve, reject) => {
-      let planTemplatesSub = this.store.CarePlan.readListPaged({
-        plan_template: templateId
-      }).subscribe(
-        (res) => resolve(res),
+      let plansSub = this.store.CarePlanTemplate.readListPaged().subscribe(
+        (plans) => resolve(plans),
         (err) => reject(err),
         () => {
-          planTemplatesSub.unsubscribe();
+          plansSub.unsubscribe();
+        }
+      );
+    });
+    return promise;
+  }
+
+  public getPlansForTemplate(facilityId, templateId) {
+    let promise = new Promise((resolve, reject) => {
+      let plansSub = this.store.Facility.detailRoute('get', facilityId, 'care_plan_templates/' + templateId + '/care_plans').subscribe(
+        (plans) => resolve(plans),
+        (err) => reject(err),
+        () => {
+          plansSub.unsubscribe();
         }
       );
     });
@@ -92,14 +101,56 @@ export class DeletePlanComponent implements OnInit {
     return promise;
   }
 
-  public groupByFacility(plans) {
-    // return _groupBy(plans, (obj) => {
-    //   return obj.patient.facility.id;
-    // });
-  }
-
-  public close() {
+  public clickClose() {
     this.modals.close(null);
   }
 
+  public clickSave() {
+    this.facilities.forEach((facility) => {
+      if (!facility.plans || facility.plans.length < 1) {
+        return;
+      }
+      if (this.bulkReassign[facility.id]) {
+        let payload = facility.plans.map((obj) => {
+          return {
+            plan: obj.id,
+            plan_template: this.bulkNewPlan[facility.id],
+            care_manager: this.bulkManager[facility.id],
+            inactive: this.bulkInactive[facility.id],
+          }
+        });
+        let reassignSub = this.store.CarePlanTemplate.listRoute('post', 'bulk_reassign_plan', payload).subscribe(
+          (success) => {
+            this.modals.close('success');
+          },
+          (err) => {
+            this.modals.close('error');
+          },
+          () => {
+            reassignSub.unsubscribe();
+          }
+        );
+      } else {
+        let payload = facility.plans.map((obj) => {
+          return {
+            plan: obj.id,
+            plan_template: obj.selectedNewPlan,
+            care_manager: obj.selectedCM,
+            inactive: obj.selectedInactive,
+          }
+        });
+        let reassignSub = this.store.CarePlanTemplate.listRoute('post', 'bulk_reassign_plan', payload).subscribe(
+          (success) => {
+            this.modals.close('success');
+          },
+          (err) => {
+            this.modals.close('error');
+          },
+          () => {
+            reassignSub.unsubscribe();
+          }
+        );
+      }
+    });
+  }
 }
