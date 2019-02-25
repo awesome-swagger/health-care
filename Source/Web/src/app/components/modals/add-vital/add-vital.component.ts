@@ -10,6 +10,7 @@ import { ModalService } from '../../../modules/modals';
 export class AddVitalComponent implements OnInit {
 
   public data = null;
+  public editingTemplate = false;
   public totalPatients = 0;
   public vitalTemplates: Array<any> = [];
   public searchInput = '';
