@@ -2,6 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { StoreService } from '../../../services/store.service';
 import { ModalService } from '../../../modules/modals';
 import { Subscription } from 'rxjs/Subscription';
+import {
+  filter as _filter,
+  get as _get
+} from 'lodash';
 
 @Component({
   selector: 'app-add-patient-to-plan',
@@ -41,6 +45,13 @@ export class AddPatientToPlanComponent implements OnInit {
   public phoneNumber = '';
   public facilities = [];
   public selectedFacility = null;
+  public employees = [];
+  public billingSearchString = '';
+  public CMSearchString = '';
+  public selectedBilling = null;
+  public selectedCM = null;
+  public careManagerRole = null;
+  public billingPractitionerRole = null;
 
   public dropAPPM2Open;
 
@@ -83,6 +94,21 @@ export class AddPatientToPlanComponent implements OnInit {
         }
       });
     });
+
+    this.store.ProviderRole.readListPaged().subscribe(res => {
+      res.forEach(role => {
+        if (role.name === 'Care Manager' || role.name === 'Care Team Manager') {
+          this.careManagerRole = role;
+        }
+        if (role.name === 'Billing Practitioner') {
+          this.billingPractitionerRole = role;
+        }
+      })
+    })
+
+    this.store.EmployeeProfile.readListPaged().subscribe(res => {
+      this.employees = res;
+    })
   }
 
   public getPatients() {
@@ -164,6 +190,16 @@ export class AddPatientToPlanComponent implements OnInit {
     this.modals.close(null);
   }
 
+  public get saveDisabled() {
+    if (this.enrollPatientChecked && !this.payerReimburses) {
+      return !this.selectedPlan || !this.selectedPatient || !this.selectedCM;
+    } else if (this.enrollPatientChecked && this.payerReimburses) {
+      return !this.selectedPlan || !this.selectedPatient || !this.selectedCM || !this.selectedBilling;
+    } else if (!this.enrollPatientChecked) {
+      return !this.firstName || !this.lastName;
+    }
+  }
+
   public handleSubmit() {
     if (!this.enrollPatientChecked) {
       let potentialPatientSub = this.store.PotentialPatient.create({
@@ -191,9 +227,59 @@ export class AddPatientToPlanComponent implements OnInit {
       this.store.CarePlan.create({
         patient: this.selectedPatient.id,
         plan_template: this.selectedPlan.id,
-      }).subscribe(res => {
-        this.modals.close(res);
+      }).subscribe(carePlan => {
+        this.store.CareTeamMember.create({
+          employee_profile: this.selectedCM.id,
+          role: this.careManagerRole.id,
+          plan: carePlan.id,
+          is_manager: true,
+        }).subscribe(res => {
+          carePlan.careTeam = [res];
+          if (this.payerReimburses && this.billingPractitionerRole && this.selectedBilling) {
+            this.store.CareTeamMember.create({
+              employee_profile: this.selectedBilling.id,
+              role: this.billingPractitionerRole.id,
+              plan: carePlan.id,
+              is_manager: false,
+            }).subscribe(res => {
+              carePlan.careTeam.push(res);
+              this.modals.close(carePlan);
+            })
+          } else {
+            this.modals.close(carePlan);
+          }
+        })
       })
     }
+  }
+
+  get searchBillingEmployees() {
+    if (this.billingSearchString.length >= 3) {
+      return _filter(this.employees, employee => {
+        const name = `${_get(employee, 'user.first_name')} ${_get(employee, 'user.last_name')}`;
+        return name.indexOf(this.billingSearchString) > -1;
+      })
+    }
+    return [];
+  }
+
+  get searchCMEmployees() {
+    if (this.CMSearchString.length >= 3) {
+      return _filter(this.employees, employee => {
+        const name = `${_get(employee, 'user.first_name')} ${_get(employee, 'user.last_name')}`;
+        return name.indexOf(this.CMSearchString) > -1;
+      })
+    }
+    return [];
+  }
+
+  public setBillingPractitioner(employee) {
+    this.selectedBilling = employee;
+    this.billingSearchString = `${employee.user.first_name} ${employee.user.last_name}`;
+  }
+
+  public setCareManager(employee) {
+    this.selectedCM = employee;
+    this.CMSearchString = `${employee.user.first_name} ${employee.user.last_name}`;
   }
 }

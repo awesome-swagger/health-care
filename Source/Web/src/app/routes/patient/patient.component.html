@@ -39,7 +39,7 @@
           <i class="ss-pause"></i>
         </button> -->
         <button class="button button--icon"
-        (click)="confirmRemovePlan()">
+        (click)="confirmRemovePlan(plan.id)">
           <i class="ss-delete"></i>
         </button>
       </div>
@@ -56,8 +56,8 @@
               {{plan.careTeam ? plan.careTeam[0]?.employee_profile?.user?.first_name + ' ' + plan.careTeam[0]?.employee_profile?.user?.last_name : ''}}
             </div>
             <div class="tool__anchor">
-              <a class="flex alignCenter" (click)="teamListOpen === i ? teamListOpen = -1 : teamListOpen = i">
-                <span class="marRight8">+2</span>
+              <a *ngIf="plan?.careTeam?.length > 1" class="flex alignCenter" (click)="teamListOpen === i ? teamListOpen = -1 : teamListOpen = i">
+                <span class="marRight8">+{{plan?.careTeam?.length - 1}}</span>
                 <img src="../../../assets/img/arrow-down.svg" />
               </a>
               <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : teamListOpen === i }">
@@ -113,7 +113,7 @@
             'pill--purple': patient.risk_level < 50
           }"
         >
-          {{riskLevelText[i]}} {{patient.risk_level}}%
+          {{riskLevelText(patient?.risk_level)}} {{patient.risk_level}}%
         </div>
       </div>
     </div> <!--/.info (for care plan instance)-->
@@ -198,7 +198,7 @@
               <i class="ss-write"></i>
             </button>
             <button class="button button--icon button--icon--small"
-            (click)="deleteMedication()">
+            (click)="deleteMedication(medication?.id)">
               <i class="ss-delete"></i>
             </button>
           </div>

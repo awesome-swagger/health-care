@@ -19,6 +19,7 @@ import { NavbarService, StoreService } from '../../services';
 import patientData from './patientdata.js';
 import * as moment from 'moment';
 import {
+  filter as _filter,
   find as _find
 } from 'lodash';
 import { st } from '@angular/core/src/render3';
@@ -220,17 +221,23 @@ export class PatientComponent implements OnDestroy, OnInit {
     });
   }
 
-  public confirmRemovePlan() {
+  public confirmRemovePlan(planId) {
+    const cancelText = 'Cancel';
+    const okText = 'Continue';
     this.modals.open(ConfirmModalComponent, {
      data: {
        title: 'Delete Plan?',
        body: 'Are you sure you want to remove this plan? This will negate the patient\'s current progress. This cannot be undone.',
-       cancelText: 'Cancel',
-       okText: 'Continue',
+       cancelText,
+       okText,
       },
       width: '384px',
-    }).subscribe(() => {
-    // do something with result
+    }).subscribe((res) => {
+      if (res === okText) {
+        this.store.CarePlan.destroy(planId).subscribe(res => {
+          this.carePlans = _filter(this.carePlans, plan => plan.id !== planId);
+        })
+      }
     });
   }
 
@@ -250,9 +257,14 @@ export class PatientComponent implements OnDestroy, OnInit {
         patientKnown: true,
         patient: patient,
         planKnown: false,
+        facility: this.patient.facility,
       },
       width: '576px',
-    }).subscribe(() => {});
+    }).subscribe((plan) => {
+      if (plan) {
+        this.carePlans.push(plan);
+      }
+    });
   }
 
   public editPatientProfile() {
@@ -389,10 +401,12 @@ export class PatientComponent implements OnDestroy, OnInit {
     }).subscribe(() => {});
   }
 
-  public deleteMedication() {
+  public deleteMedication(id) {
     this.modals.open(DeleteMedicationComponent, {
       width: '348px',
-    }).subscribe(() => {});
+    }).subscribe((
+
+    ) => {});
   }
 
   public confirmMakePatientInactive() {
@@ -409,16 +423,16 @@ export class PatientComponent implements OnDestroy, OnInit {
     });
   }
 
-  get riskLevelText() {
-    return this.carePlans.map((plan) => {
-      if (plan.riskLevel >= 80) {
-        return 'High Risk';
-      } else if (plan.riskLevel >= 40) {
-        return 'Some Risk';
-      } else {
-        return 'Low Risk';
-      }
-    })
+  public riskLevelText(level) {
+    if (level >= 90) {
+      return 'On Track';
+    } else if (level >= 70) {
+      return 'Low Risk';
+    } else if (level >= 50) {
+      return 'Med Risk'
+    } else {
+      return 'High Risk';
+    }
   }
 
   get patientAge() {
