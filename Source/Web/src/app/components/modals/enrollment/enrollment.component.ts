@@ -19,4 +19,8 @@ export class EnrollmentComponent implements OnInit {
     console.log(this.data);
   }
 
+  public phoneNum(num) {
+    return `(${num.slice(0,3)})${num.slice(3,6)}-${num.slice(6,num.length)}`
+  }
+
 }

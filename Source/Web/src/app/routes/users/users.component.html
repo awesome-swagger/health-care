@@ -132,9 +132,14 @@
                   <td>{{orgEmployee.status|titlecase}}</td>
                   <td>
                     <a class="tool__anchor flex justifyCenter" (click)="tooltipsOpen[orgEmployee.id] = !tooltipsOpen[orgEmployee.id]">
-                      {{orgEmployee.facilities_count}}
+                      {{getAlso(facility?.id, organization?.id, orgEmployee?.id).orgs.length + getAlso(facility?.id, organization?.id, orgEmployee?.id).facilities.length}}
                         <div class="tool__tip tool__tip--bottom tool__tip--right" [ngClass]="{ 'isOpen': tooltipsOpen[orgEmployee.id] }">
-                          Facility: Canyon View
+                          <div class="iconText iconText--white iconText--autoHeight marBottom8" *ngFor="let also of getAlso(facility?.id, organization?.id, orgEmployee?.id).orgs">
+                            Organization: {{also}}
+                          </div>
+                          <div class="iconText iconText--white iconText--autoHeight marBottom8" *ngFor="let also of getAlso(facility?.id, organization?.id, orgEmployee?.id).facilities">
+                            Facility: {{also}}
+                          </div>
                         </div>
                     </a>
                   </td>
@@ -167,7 +172,7 @@
   <ng-container *ngFor="let facility of facilities; let i = index">
     <div class="accordion" [ngClass]="{ 'isOpen': facilityAccordionsOpen[facility.id] }" *ngIf="facilitiesChecked[facility.id]">
       <div class="accordion__head" (click)="facilityAccordionsOpen[facility.id] = !facilityAccordionsOpen[facility.id]">
-        <span class="accordion__title">Facility: {{facility.name}} <span *ngIf="facility.employees.length">({{nthFacilityUserCountText(i)}})</span></span>
+        <span class="accordion__title">Facility: {{facility.name}} <span *ngIf="facility.employees.length">({{facility?.employees?.length}})</span></span>
         <div class="accordion__right">
           <div class="accordion__arrow">
             <i class="ss-standard ss-navigateright"></i>
@@ -232,7 +237,20 @@
                     <td>{{facilityEmp.care_manager}}</td>
                     <td>{{facilityEmp.care_team}}</td>
                     <td><span *ngIf="facilityEmp.is_admin"><i class="ss-standard ss-check"></i></span></td>
-                    <td>{{facilityEmp.other_facilities}}</td>
+                    <td>
+                    <a class="tool__anchor flex justifyCenter" (click)="tooltipsOpen[facility.id + facilityEmp.id] = !tooltipsOpen[facility.id + facilityEmp.id]">
+                      {{getAlso(facility?.id, organization?.id, facilityEmp?.id).orgs.length + getAlso(facility?.id, organization?.id, facilityEmp?.id).facilities.length}}
+                        <div class="tool__tip tool__tip--bottom tool__tip--right" [ngClass]="{ 'isOpen': tooltipsOpen[facility.id + facilityEmp.id] }">
+                          <div class="iconText iconText--white iconText--autoHeight marBottom8" *ngFor="let also of getAlso(facility?.id, organization?.id, facilityEmp?.id).orgs">
+                            Organization: {{also}}
+                          </div>
+                          <div class="iconText iconText--white iconText--autoHeight marBottom8" *ngFor="let also of getAlso(facility?.id, organization?.id, facilityEmp?.id).facilities">
+                            Facility: {{also}}
+                          </div>
+                        </div>
+                    </a>
+                  </td>
+
                   </tr>
                 </ng-container>
                 <!-- <tr>

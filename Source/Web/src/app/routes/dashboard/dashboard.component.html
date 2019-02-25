@@ -6,18 +6,15 @@
       <div class="info info--dash info--dk info--horiz">
         <div class="info__cell">
           <label>Active Patients</label>
-          <a [routerLink]="['/patients/active']" class="link--big" *ngIf="patientsGrouped?.active">{{analyticsData?.active_patients}}</a>
-          <a [routerLink]="['/patients/active']" class="link--big" *ngIf="!patientsGrouped?.active">0</a>
+          <a [routerLink]="['/patients/active']" class="link--big">{{patientOverview?.active}}</a>
         </div>
         <div class="info__cell">
           <label>Invited Patients</label>
-          <a [routerLink]="['/patients/invited']" class="link--big link--red" *ngIf="patientsGrouped?.invited">{{analyticsData?.invited_patients}}</a>
-          <a [routerLink]="['/patients/invited']" class="link--big link--red" *ngIf="!patientsGrouped?.invited">0</a>
+          <a [routerLink]="['/patients/invited']" class="link--big link--red">{{patientOverview?.invited}}</a>
         </div>
         <div class="info__cell">
           <label>Potential Patients</label>
-          <a [routerLink]="['/patients/potential']" class="link--big" *ngIf="patientsGrouped?.potential">{{analyticsData?.potential_patients}}</a>
-          <a [routerLink]="['/patients/potential']" class="link--big" *ngIf="!patientsGrouped?.potential">0</a>
+          <a [routerLink]="['/patients/potential']" class="link--big">{{patientOverview?.potential}}</a>
         </div>
       </div>
       <div>

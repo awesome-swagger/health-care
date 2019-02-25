@@ -39,6 +39,14 @@
     <label>Source</label>
     <div class="styledSelect">
       <select class="styledSelect__select">
+        <option value="Analytics">Analytics</option>
+        <option value="MD Referral">MD Referral</option>
+        <option value="Office Staff">Office Staff</option>
+        <option value="Care Manager">Care Manager</option>
+        <option value="Discharge Planner">Discharge Planner</option>
+        <option value="Enrollment Coordinator">Enrollment Coordinator</option>
+        <option value="Patient Request">Patient Request</option>
+        <option value="Other">Other</option>
       </select>
     </div>
   </div>
@@ -63,6 +71,18 @@
     </div>
   </div>
 </div>
+
+<ng-container *ngIf="!data?.facility">
+  <div class="divider"></div>
+  <div class="modal__inputWrap">
+    <label>Facility</label>
+    <div class="styledSelect">
+      <select class="styledSelect__select" [(ngModel)]="selectedFacility">
+        <option *ngFor="let facility of facilities" [ngValue]="facility">{{facility.name}}</option>
+      </select>
+    </div>
+  </div>
+</ng-container>
 
 <div class="divider"></div>
 

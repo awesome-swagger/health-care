@@ -23,6 +23,7 @@ export class UsersComponent implements OnDestroy, OnInit {
   public facilityTotals = {};
   public currentPage:number = 1;
   public facilityPages = {};
+  public allEmployees = [];
 
   public showInactive = false;
   public searchOpen = false;
@@ -57,6 +58,15 @@ export class UsersComponent implements OnDestroy, OnInit {
         (employees: any) => {
           this.total = employees.count;
           this.organization.employees = employees.results;
+
+          this.store.EmployeeProfile.readListPaged().subscribe(
+            res => {
+              console.log('vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv');
+              console.log(res);
+              console.log('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^');
+              this.allEmployees = res;
+            }
+          )
         },
         (err) => {},
         () => {
@@ -241,5 +251,19 @@ export class UsersComponent implements OnDestroy, OnInit {
 
   public lastPage(total) {
     return Math.ceil(total/20);
+  }
+
+  public getAlso(facilityId, orgId, employeeId) {
+    if (this.allEmployees && this.allEmployees.length) {
+      const employee = _.find(this.allEmployees, e => e.id === employeeId);
+      const alsoOrgs = _.filter(employee.organizations, o => o.id !== orgId);
+      const alsoFacilities = _.filter(employee.facilities, f => f.id !== facilityId);
+
+      return {
+        facilities: _.map(alsoFacilities, f => f.name),
+        orgs: _.map(alsoOrgs, o => o.name),
+      }
+    }
+    return {facilities: [], orgs: []}
   }
 }
