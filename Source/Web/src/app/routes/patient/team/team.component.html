@@ -32,7 +32,7 @@
   <h2>Care Manager</h2>
   <div class="info info--team marBottom48" *ngIf="careManager">
     <div class="info__pill pill">
-      :00
+      {{careManager.time_spent_this_month}}
     </div>
     <button class="info__edit button button--icon button--icon--small"
     (click)="changeCM(careManager)">
@@ -80,7 +80,7 @@
   <div class="flex wrap">
     <div class="info info--team" *ngFor="let teamMember of careTeamMembers">
       <div class="info__pill pill">
-        :00
+        {{teamMember.time_spent_this_month}}
       </div>
       <button class="info__edit button button--icon button--icon--small"
       (click)="removeCTMember(teamMember)">

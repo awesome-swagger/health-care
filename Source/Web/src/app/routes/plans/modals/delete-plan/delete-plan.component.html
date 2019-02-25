@@ -1,86 +1,117 @@
-<h1 class="modal__title">Delete Plan <br> {{data.planType}} - {{data.planName}}</h1>
+<h1 class="modal__title">Delete Care Plan <br> {{data.planTemplate.service_area.name}}, {{data.planTemplate.name}}</h1>
 <!--TODO: When using this modal for editing (instead of adding) a user, hide the fields for first name, last name, and title-->
 <div class="justifySpaceBetween marBottom32">
-  <p>To remove this user as a billing practitioner their patients must be reassigned a new billing practitioner or made inactive.</p>
-  <div
-    *ngFor="let facility of facilities; let i = index"
-    class="accordion"
-    [ngClass]="{ 'isOpen': accordianStatuses[i] }"
-  >
-    <div class="accordion__head" (click)="accordianStatuses[i] = !accordianStatuses[i]">
-      <span class="accordion__title">{{facility.name}} ({{facility.patients.length}})</span>
-      <div class="accordion__right">
-        <div class="accordion__arrow">
-          <i class="ss-standard ss-navigateright"></i>
+  <p class="center">Before a care plan can be deleted, its patients must be reassigned, or made inactive (removed from all care plans).</p>
+  <ng-container *ngFor="let facility of facilities; let i = index">
+    <div *ngIf="facility.planInstances && facility.planInstances.length > 0" class="accordion" [ngClass]="{ 'isOpen': accordianStatuses[facility.id] }">
+      <div class="accordion__head" (click)="accordianStatuses[facility.id] = !accordianStatuses[facility.id]">
+        <span class="accordion__title">{{facility.name}} ({{facility.planInstances.length}})</span>
+        <div class="accordion__right">
+          <div class="accordion__arrow">
+            <i class="ss-standard ss-navigateright"></i>
+          </div>
         </div>
       </div>
-    </div>
-    <div class="accordion__body">
-      <div class="accordion__contents">
-        <label class="styledInput">
-          <input type="checkbox" class="styledInput__input" />
-          <span class="styledInput__box"></span>
-          Reassign in Bulk
-        </label>
-        <div class="tableWrap">
-          <table>
-            <thead>
-              <tr>
-                <th class="left thSortable thSortable--sortDown">
-                  <span class="left thSortable__text">Patient</span>
-                </th>
-                <th class="thSortable">
-                    <span class="thSortable__text">Also</span>
-                </th>
-                <th class="thSortable">
-                    <span class="thSortable__text">Care Plan</span>
-                </th>
-                <th class="thSortable">
-                    <span class="thSortable__text">Care Manager</span>
-                </th>
-                <th class="thSortable">
-                    <span class="thSortable__text">Remove from Plans</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let patient of facility.patients">
-                <td class="left hideOverflow">
-                  <a class="picName">
-                    <img class="picName__img" src="../../../assets/img/profile.svg" />
-                    {{patient.name}}
-                  </a>
-                </td>
-                <td></td>
-                <td>
-                  <div class="modal__inputWrap marRight32">
-                    <div class="styledSelect">
-                      <select class="styledSelect__select">
-                        <option>Anxiety</option>
-                        <option>Depression</option>
-                        <option>Heart Attack</option>
-                      </select>
+      <div class="accordion__body">
+        <div class="accordion__contents">
+          <label class="styledInput" *ngIf="facility.planInstances.length > 1">
+            <input type="checkbox" class="styledInput__input" [(ngModel)]="bulkReassign[facility.id]" />
+            <span class="styledInput__box"></span>
+            Reassign in Bulk
+          </label>
+          <div class="tableWrap fullWidth">
+            <table class="fullWidth">
+              <thead>
+                <tr>
+                  <th class="thSortable">
+                    <span class="thSortable__text thSortable__text--left">Patient</span>
+                  </th>
+                  <th class="thSortable" *ngIf="!bulkReassign[facility.id]">
+                    <span class="thSortable__text">Other Plans</span>
+                  </th>
+                  <th class="thSortable">
+                    <span class="thSortable__text thSortable__text--left">Care Plan</span>
+                  </th>
+                  <th class="thSortable">
+                    <span class="thSortable__text thSortable__text--left">Care Manager</span>
+                  </th>
+                  <th class="thSortable">
+                    <span class="thSortable__text thSortable__text--left">Remove from Plans</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody *ngIf="!bulkReassign[facility.id]">
+                <tr *ngFor="let plan of facility.planInstances">
+                  <td class="left hideOverflow">
+                    <a class="picName">
+                      <img class="picName__img" [src]="plan.patient.image_url" />
+                      {{plan.patient.full_name}}
+                    </a>
+                  </td>
+                  <td>{{plan.other_plans}}</td>
+                  <td class="left">
+                    <div class="modal__inputWrap marRight32">
+                      <div class="styledSelect">
+                        <select class="styledSelect__select" [(ngModel)]="plan.selectedNewPlan">
+                          <option *ngFor="let template of planTemplates" [ngValue]="template.id">{{template.name}}</option>
+                        </select>
+                      </div>
                     </div>
-                  </div>
-                </td>
-                <td><div class="model__input"><input type="text" class="input" /></div></td>
-                <td>
-                  <label class="styledInput">
-                    <input type="checkbox" class="styledInput__input" />
-                    <span class="styledInput__box"></span>
-                    Make Inactive
-                  </label>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div> <!--/.tableWrap-->
-      </div> <!--/.accordion__contents-->
-    </div> <!--/.accordion__body-->
-  </div> <!--/.accordion (for organization)-->
+                  </td>
+                  <td class="left">
+                    <div class="styledSelect">
+  										<select class="styledSelect__select" [(ngModel)]="plan.selectedCM">
+  											<option *ngFor="let practitioner of practitioners" [ngValue]="practitioner.id">{{practitioner.user.first_name}} {{practitioner.user.last_name}}</option>
+  										</select>
+  									</div>
+                  </td>
+                  <td class="left">
+                    <label class="styledInput">
+                      <input type="checkbox" class="styledInput__input" [(ngModel)]="plan.selectedInactive" />
+                      <span class="styledInput__box"></span>
+                      Make Inactive
+                    </label>
+                  </td>
+                </tr>
+              </tbody>
+              <tbody *ngIf="bulkReassign[facility.id]">
+                <tr>
+                  <td class="left hideOverflow">
+                    {{facility.planInstances.length}} Patients
+                  </td>
+                  <td class="left">
+                    <div class="modal__inputWrap marRight32">
+                      <div class="styledSelect">
+                        <select class="styledSelect__select" [(ngModel)]="bulkNewPlan[facility.id]">
+                          <option *ngFor="let template of planTemplates" [ngValue]="template.id">{{template.name}}</option>
+                        </select>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="left">
+                    <div class="styledSelect">
+  										<select class="styledSelect__select" [(ngModel)]="bulkManager[facility.id]">
+  											<option *ngFor="let practitioner of practitioners" [ngValue]="practitioner.id">{{practitioner.user.first_name}} {{practitioner.user.last_name}}</option>
+  										</select>
+  									</div>
+                  </td>
+                  <td class="left">
+                    <label class="styledInput">
+                      <input type="checkbox" class="styledInput__input" [(ngModel)]="bulkInactive[facility.id]" />
+                      <span class="styledInput__box"></span>
+                      Make Inactive
+                    </label>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div> <!--/.tableWrap-->
+        </div> <!--/.accordion__contents-->
+      </div> <!--/.accordion__body-->
+    </div> <!--/.accordion (for organization)-->
+  </ng-container>
   <div class="modal__buttons">
-    <button class="button button--2nd" type="button" (click)="close()">Cancel</button>
-    <button class="button" type="submit">Save</button>
+    <button class="button button--2nd" (click)="clickClose()">Cancel</button>
+    <button class="button" [disabled]="saveDisabled()" (click)="clickSave()">Save</button>
   </div>
 </div>
-

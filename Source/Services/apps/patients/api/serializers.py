@@ -31,7 +31,8 @@ from apps.patients.models import (PatientDiagnosis, PatientMedication,
                                   ReminderEmail, PotentialPatient,
                                   PatientStat, EmergencyContact)
 from apps.plans.api.serializers import (InfoMessageSerializer,
-                                        CarePlanTemplateSerializer)
+                                        CarePlanTemplateSerializer,
+                                        CarePlanSerializer)
 from apps.plans.models import CarePlanTemplate
 from apps.tasks.models import AssessmentResponse, SymptomRating
 
@@ -246,6 +247,7 @@ class ProblemAreaSerializer(RepresentationMixin, serializers.ModelSerializer):
             'description',
             'modified',
             'patient',
+            'plan'
         )
         read_only_fields = (
             'id',
@@ -260,6 +262,10 @@ class ProblemAreaSerializer(RepresentationMixin, serializers.ModelSerializer):
                 'field': 'patient',
                 'serializer_class': BasicPatientSerializer,
             },
+            # {
+            #     'field': 'plan',
+            #     'serializer_class': CarePlanSerializer,
+            # },
         ]
 
 
@@ -496,7 +502,7 @@ class ReminderEmailSerializer(serializers.ModelSerializer):
         ]
 
 
-class PotentialPatientSerializer(serializers.ModelSerializer):
+class PotentialPatientSerializer(RepresentationMixin, serializers.ModelSerializer):
 
     class Meta:
         model = PotentialPatient
@@ -506,6 +512,7 @@ class PotentialPatientSerializer(serializers.ModelSerializer):
             'last_name',
             'care_plan',
             'phone',
+            'source',
             'facility',
             'patient_profile',
             'created',
@@ -516,6 +523,12 @@ class PotentialPatientSerializer(serializers.ModelSerializer):
             'created',
             'modified',
         )
+        nested_serializers = [
+            {
+                'field': 'care_plan',
+                'serializer_class': CarePlanTemplateSerializer
+            }
+        ]
 
 
 class FacilityInactivePatientSerializer(serializers.ModelSerializer):
