@@ -3,9 +3,9 @@
 <div class="justifySpaceBetween marBottom32">
   <p class="center">Before a care plan can be deleted, its patients must be reassigned, or made inactive (removed from all care plans).</p>
   <ng-container *ngFor="let facility of facilities; let i = index">
-    <div *ngIf="facility.plans && facility.plans.length > 0" class="accordion" [ngClass]="{ 'isOpen': accordianStatuses[facility.id] }">
+    <div *ngIf="facility.planInstances && facility.planInstances.length > 0" class="accordion" [ngClass]="{ 'isOpen': accordianStatuses[facility.id] }">
       <div class="accordion__head" (click)="accordianStatuses[facility.id] = !accordianStatuses[facility.id]">
-        <span class="accordion__title">{{facility.name}} ({{facility.plans.length}})</span>
+        <span class="accordion__title">{{facility.name}} ({{facility.planInstances.length}})</span>
         <div class="accordion__right">
           <div class="accordion__arrow">
             <i class="ss-standard ss-navigateright"></i>
@@ -14,7 +14,7 @@
       </div>
       <div class="accordion__body">
         <div class="accordion__contents">
-          <label class="styledInput">
+          <label class="styledInput" *ngIf="facility.planInstances.length > 1">
             <input type="checkbox" class="styledInput__input" [(ngModel)]="bulkReassign[facility.id]" />
             <span class="styledInput__box"></span>
             Reassign in Bulk
@@ -27,7 +27,7 @@
                     <span class="thSortable__text thSortable__text--left">Patient</span>
                   </th>
                   <th class="thSortable" *ngIf="!bulkReassign[facility.id]">
-                    <span class="thSortable__text">Also</span>
+                    <span class="thSortable__text">Other Plans</span>
                   </th>
                   <th class="thSortable">
                     <span class="thSortable__text thSortable__text--left">Care Plan</span>
@@ -41,7 +41,7 @@
                 </tr>
               </thead>
               <tbody *ngIf="!bulkReassign[facility.id]">
-                <tr *ngFor="let plan of facility.plans">
+                <tr *ngFor="let plan of facility.planInstances">
                   <td class="left hideOverflow">
                     <a class="picName">
                       <img class="picName__img" [src]="plan.patient.image_url" />
@@ -77,7 +77,7 @@
               <tbody *ngIf="bulkReassign[facility.id]">
                 <tr>
                   <td class="left hideOverflow">
-                    {{facility.plans.length}} Patients
+                    {{facility.planInstances.length}} Patients
                   </td>
                   <td class="left">
                     <div class="modal__inputWrap marRight32">

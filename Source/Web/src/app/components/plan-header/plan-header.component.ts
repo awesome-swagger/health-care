@@ -90,9 +90,7 @@ export class PlanHeaderComponent implements OnInit, OnDestroy {
       },
       width: '384px',
     }).subscribe(
-      (data) => {
-        console.log(data);
-      },
+      (data) => {},
       (err) => {},
       () => {
         modalSub.unsubscribe();
@@ -107,7 +105,7 @@ export class PlanHeaderComponent implements OnInit, OnDestroy {
         duplicatePlan: this.planTemplate,
       },
       width: '480px',
-    });
+    }).subscribe();
   }
 
   public openReassignPatients() {

@@ -31,7 +31,7 @@ export class DeletePlanComponent implements OnInit, OnDestroy {
   ) {}
 
   public ngOnInit() {
-    this.accordianStatuses = new Array(this.facilities.length).fill(false);
+    console.log(this.data);
     this.getQualifiedPractitioners().then((practitioners: any) => {
       this.practitioners = practitioners;
     });
@@ -42,13 +42,19 @@ export class DeletePlanComponent implements OnInit, OnDestroy {
       if (!facilities) {
         return;
       }
-      this.facilities = facilities.filter((obj) => !obj.is_affiliate);
+      this.facilities = facilities.filter((obj) => {
+        return !obj.is_affiliate;
+      }).slice();
       this.facilities.forEach((facility) => {
         this.accordianStatuses[facility.id] = true;
         this.getPlansForTemplate(facility.id, this.data.planTemplate.id).then((plans: any) => {
-          facility.plans = plans.results;
+          if (this.data.plan) {
+            facility.planInstances = plans.results.filter((obj) => obj.id === this.data.plan.id);
+          } else {
+            facility.planInstances = plans.results;
+          }
         }).catch((err) => {
-          facility.plans = [];
+          facility.planInstances = [];
         });
       });
     });
@@ -107,11 +113,11 @@ export class DeletePlanComponent implements OnInit, OnDestroy {
 
   public clickSave() {
     this.facilities.forEach((facility) => {
-      if (!facility.plans || facility.plans.length < 1) {
+      if (!facility.planInstances || facility.planInstances.length < 1) {
         return;
       }
       if (this.bulkReassign[facility.id]) {
-        let payload = facility.plans.map((obj) => {
+        let payload = facility.planInstances.map((obj) => {
           return {
             plan: obj.id,
             plan_template: this.bulkNewPlan[facility.id],
@@ -131,7 +137,7 @@ export class DeletePlanComponent implements OnInit, OnDestroy {
           }
         );
       } else {
-        let payload = facility.plans.map((obj) => {
+        let payload = facility.planInstances.map((obj) => {
           return {
             plan: obj.id,
             plan_template: obj.selectedNewPlan,

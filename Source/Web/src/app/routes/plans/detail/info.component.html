@@ -122,7 +122,7 @@
                 <td><div class="pill" [ngStyle]="{'background': utils.percentPillColor(plan.risk_level)}">{{utils.getRiskLevelText(plan.risk_level)}} {{plan.risk_level}}%</div></td>
                 <td class="noPad">
                   <button class="button button--icon button--icon--small"
-                  (click)="openReassignPatients()">
+                  (click)="openReassignPatients(plan)">
                     <i class="ss-delete"></i>
                   </button>
                 </td>
