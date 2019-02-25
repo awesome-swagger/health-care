@@ -1,23 +1,15 @@
 <h1 class="modal__title">
-  <span>Add</span>
+  <span *ngIf="!data?.duplicatePlan">Add</span>
+  <span *ngIf="data?.duplicatePlan">Duplicate</span>
   Care Plan
 </h1>
 <!--TODO: If copying a care plan, prepopulate the name field with the previous care plan name and a number (either 2 or increment the previous number by 1)-->
 <input type="text" class="input fullWidth marBottom32" placeholder="Care Plan Name" [(ngModel)]="nameInput" />
-<div class="drop">
-  <div class="drop__input" (click)="multiOpen = !multiOpen">
-    <span *ngIf="selectedServiceArea">{{selectedServiceArea.name}}</span>
-    <span *ngIf="!selectedServiceArea">Service Area</span>
-  </div>
-  <app-popover [visible]="multiOpen" (visibleChange)="multiOpen = $event;">
-    <ul class="drop__dropdown isOpen">
-      <li *ngFor="let sa of serviceAreas" class="drop__option" (click)="selectedServiceArea = sa; multiOpen = !multiOpen">
-        <label class="styledInput drop__label">
-          {{sa.name}}
-        </label>
-      </li>
-    </ul>
-  </app-popover>
+<div class="styledSelect">
+  <select class="styledSelect__select" [(ngModel)]="selectedServiceArea">
+    <option disabled selected [ngValue]="null">Select Service Area</option>
+    <option *ngFor="let sa of serviceAreas" [ngValue]="sa">{{sa.name}}</option>
+  </select>
 </div>
 <div class="modal__buttons padBottom32">
   <button class="button button--2nd" (click)="clickCancel()">

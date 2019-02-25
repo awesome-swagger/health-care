@@ -1,12 +1,8 @@
-<h1 class="modal__title">Delete Plan <br> {{data.planType}} - {{data.planName}}</h1>
+<h1 class="modal__title">Delete Plan <br> {{data.planTemplate.service_area.name}}, {{data.planTemplate.name}}</h1>
 <!--TODO: When using this modal for editing (instead of adding) a user, hide the fields for first name, last name, and title-->
 <div class="justifySpaceBetween marBottom32">
-  <p>To remove this user as a billing practitioner their patients must be reassigned a new billing practitioner or made inactive.</p>
-  <div
-    *ngFor="let facility of facilities; let i = index"
-    class="accordion"
-    [ngClass]="{ 'isOpen': accordianStatuses[i] }"
-  >
+  <p class="center">Before a care plan can be deleted, its patients must be reassigned, or made inactive (removed from all care plans).</p>
+  <div *ngFor="let facility of facilities; let i = index" class="accordion" [ngClass]="{ 'isOpen': accordianStatuses[i] }">
     <div class="accordion__head" (click)="accordianStatuses[i] = !accordianStatuses[i]">
       <span class="accordion__title">{{facility.name}} ({{facility.patients.length}})</span>
       <div class="accordion__right">
@@ -83,4 +79,3 @@
     <button class="button" type="submit">Save</button>
   </div>
 </div>
-

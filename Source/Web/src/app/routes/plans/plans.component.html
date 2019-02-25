@@ -139,10 +139,10 @@
         <div class="pill marRight16">
           Time {{totalTimeCount(plan.templates)}}
         </div>
-        <div class="pill" *ngIf="totalRiskLevel(plan.templates)" [ngStyle]="{'background': utils.percentPillColor(totalRiskLevel(plan.templates))}">
+        <div class="pill" *ngIf="plan.totalPatients > 0" [ngStyle]="{'background': utils.percentPillColor(totalRiskLevel(plan.templates))}">
           {{utils.getRiskLevelText(totalRiskLevel(plan.templates))}} {{totalRiskLevel(plan.templates)}}%
         </div>
-        <div class="pill" *ngIf="!totalRiskLevel(plan.templates)">
+        <div class="pill" *ngIf="plan.totalPatients === 0">
           N/A
         </div>
         <div class="accordion__arrow">
@@ -229,7 +229,7 @@
               </td>
               <td>
                 <button class="button button--icon"
-                (click)="duplicatePlan()">
+                (click)="duplicatePlan(item)">
                   <i class="ss-files"></i>
                 </button>
               </td>

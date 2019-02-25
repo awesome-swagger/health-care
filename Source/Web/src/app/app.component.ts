@@ -41,7 +41,7 @@ export class AppComponent implements OnInit, OnDestroy {
         // Set navbar to visible
         this.nav.instance = this.navbar;
         this.nav.show();
-        if (this.router.url.split('/')[1] !== 'patient') {
+        if (this.router.url.split('/')[1] !== 'patient' && this.router.url.split('/')[1] !== 'plan') {
           this.nav.normalState();
         }
         if (this.nav.instance) {

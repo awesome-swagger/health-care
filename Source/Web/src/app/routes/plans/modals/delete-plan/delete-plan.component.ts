@@ -10,13 +10,6 @@ import { StoreService } from '../../../../services';
 })
 export class DeletePlanComponent implements OnInit {
 
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private modals: ModalService,
-    private store: StoreService,
-  ) {}
-
   public data = null;
   public facilities = [
     {
@@ -50,6 +43,13 @@ export class DeletePlanComponent implements OnInit {
   ]
   public accordianStatuses = [];
 
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private modals: ModalService,
+    private store: StoreService,
+  ) {}
+
   public ngOnInit() {
     // Get all patient's on the plan
     // group patient's by facility
@@ -57,10 +57,45 @@ export class DeletePlanComponent implements OnInit {
     // for each facility, if reassign in bulk is clicked send one post request with all patients having the same data
     // if reassign in bulk is not clicked, send a post request for each patient with different data.
     this.accordianStatuses = new Array(this.facilities.length).fill(false);
-    this.data = {
-      planType: "CCoM",
-      planName: "Depression",
-    };
+    this.getPlansForTemplate(this.data.planTemplate.id).then((plans: any) => {
+      console.log(plans);
+    });
+  }
+
+  public getPlansForTemplate(templateId) {
+    let promise = new Promise((resolve, reject) => {
+      let planTemplatesSub = this.store.CarePlan.readListPaged({
+        plan_template: templateId
+      }).subscribe(
+        (res) => resolve(res),
+        (err) => reject(err),
+        () => {
+          planTemplatesSub.unsubscribe();
+        }
+      );
+    });
+    return promise;
+  }
+
+  public getQualifiedPractitioners() {
+    let promise = new Promise((resolve, reject) => {
+      let employeeSub = this.store.EmployeeProfile.readListPaged({
+        // TODO: Get only qualified practitioners
+      }).subscribe(
+        (employees) => resolve(employees),
+        (err) => reject(err),
+        () => {
+          employeeSub.unsubscribe();
+        }
+      )
+    });
+    return promise;
+  }
+
+  public groupByFacility(plans) {
+    // return _groupBy(plans, (obj) => {
+    //   return obj.patient.facility.id;
+    // });
   }
 
   public close() {

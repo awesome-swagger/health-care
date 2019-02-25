@@ -71,8 +71,17 @@ export class PlansComponent implements OnDestroy, OnInit {
               serviceArea: key,
               serviceAreaObj: templatesGrouped[key][0].service_area,
               totalPatients: _sumBy(templatesGrouped[key], (o) => o.averages ? o.averages.total_patients : 0),
-              templates: templatesGrouped[key],
+              templates: templatesGrouped[key].sort((a, b) => {
+                if (a.name < b.name) { return -1; }
+                if (a.name > b.name) { return 1; }
+                return 0;
+              }),
             };
+          });
+          this.planTemplatesGrouped.sort((a, b) => {
+            if (a.serviceAreaObj.name < b.serviceAreaObj.name) { return -1; }
+            if (a.serviceAreaObj.name > b.serviceAreaObj.name) { return 1; }
+            return 0;
           });
         });
       });
@@ -135,7 +144,7 @@ export class PlansComponent implements OnDestroy, OnInit {
       if (facility) {
         params['care_plans__patient__facility'] = facility.id;
       }
-      let templatesSub = this.store.CarePlanTemplate.readListPaged(params).subscribe(
+      let templatesSub = this.store.CarePlanTemplate.readListPaged().subscribe(
         (carePlanTemplates) => {
           resolve(carePlanTemplates);
         },
@@ -220,30 +229,6 @@ export class PlansComponent implements OnDestroy, OnInit {
     return `${hours}:${this.zeroPad(minutes)}`;
   }
 
-  public addPlan(serviceAreaId = null) {
-    let modalData = {
-      duplicating: false,
-    };
-    if (serviceAreaId) {
-      modalData['serviceAreaId'] = serviceAreaId;
-    }
-    this.modals.open(AddPlanComponent, {
-      closeDisabled: false,
-      data: modalData,
-      width: '480px',
-    }).subscribe(() => {});
-  }
-
-  public duplicatePlan() {
-    this.modals.open(AddPlanComponent, {
-      closeDisabled: false,
-      data: {
-        duplicating: true,
-      },
-      width: '480px',
-    });
-  }
-
   public totalRiskLevel(templates) {
     if (!templates || templates.length === 0) {
       return 0;
@@ -255,6 +240,30 @@ export class PlansComponent implements OnDestroy, OnInit {
       return obj.averages.total_patients > 0;
     });
     return (_sumBy(activeTemplates, (template) => template.averages.risk_level) / activeTemplates.length) || 0;
+  }
+
+  public addPlan(serviceAreaId = null) {
+    let modalData = {
+      duplicatePlan: null,
+    };
+    if (serviceAreaId) {
+      modalData['serviceAreaId'] = serviceAreaId;
+    }
+    this.modals.open(AddPlanComponent, {
+      closeDisabled: false,
+      data: modalData,
+      width: '480px',
+    }).subscribe(() => {});
+  }
+
+  public duplicatePlan(plan) {
+    this.modals.open(AddPlanComponent, {
+      closeDisabled: false,
+      data: {
+        duplicatePlan: plan,
+      },
+      width: '480px',
+    });
   }
 
   public setSelectedFacility(facility) {
@@ -276,10 +285,18 @@ export class PlansComponent implements OnDestroy, OnInit {
             serviceArea: key,
             serviceAreaObj: templatesGrouped[key][0].service_area,
             totalPatients: _sumBy(templatesGrouped[key], (o) => o.averages ? o.averages.total_patients : 0),
-            templates: templatesGrouped[key],
+            templates: templatesGrouped[key].sort((a, b) => {
+              if (a.name < b.name) { return -1; }
+              if (a.name > b.name) { return 1; }
+              return 0;
+            }),
           };
         });
-        console.log(this.planTemplatesGrouped);
+        this.planTemplatesGrouped.sort((a, b) => {
+          if (a.serviceAreaObj.name < b.serviceAreaObj.name) { return -1; }
+          if (a.serviceAreaObj.name > b.serviceAreaObj.name) { return 1; }
+          return 0;
+        });
       });
     });
   }

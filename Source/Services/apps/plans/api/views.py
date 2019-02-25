@@ -324,9 +324,8 @@ class CarePlanTemplateViewSet(viewsets.ModelViewSet):
         duplicate_tasks(plan_template.assessment_tasks.all(), new_template)
         duplicate_tasks(plan_template.vital_templates.all(), new_template)
 
-        return Response(
-            {"detail": _("Successfully duplicated.")}
-        )
+        serializer = CarePlanTemplateSerializer(new_template)
+        return Response(serializer.data)
 
 
 class CarePlanViewSet(viewsets.ModelViewSet):

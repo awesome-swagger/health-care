@@ -250,7 +250,7 @@
   <div class="nav__bottom" *ngIf="patientDetailState">
     <div class="ssContainer nav__container">
       <div class="nav__links">
-        <a (click)="routeToPatients()" class="nav__link">
+        <a [routerLink]="['/patient', nav.patientDetailId]" class="nav__link">
           <i class="ss-standard ss-navigateleft"></i> To Patients
         </a>
         <a [routerLink]="['/patient', nav.patientDetailId, 'dashboard', nav.patientPlanId]" [routerLinkActive]="['nav__link--current']" class="nav__link">
