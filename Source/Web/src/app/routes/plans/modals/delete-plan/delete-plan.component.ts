@@ -111,6 +111,36 @@ export class DeletePlanComponent implements OnInit, OnDestroy {
     this.modals.close(null);
   }
 
+  public saveDisabled() {
+    if (!this.facilities) {
+      return true;
+    }
+    let disabled = false;
+    this.facilities.forEach((facility) => {
+      if (this.bulkReassign[facility.id]) {
+        if (this.bulkInactive[facility.id]) {
+          return;
+        }
+        if (!this.bulkNewPlan[facility.id] || !this.bulkManager[facility.id]) {
+          disabled = true;
+        }
+      } else {
+        if (!facility.planInstances || facility.planInstances.length < 1) {
+          return;
+        }
+        facility.planInstances.forEach((planInstance) => {
+          if (planInstance.selectedInactive) {
+            return;
+          }
+          if (!planInstance.selectedNewPlan || !planInstance.selectedCM) {
+            disabled = true;
+          }
+        });
+      }
+    });
+    return disabled;
+  }
+
   public clickSave() {
     this.facilities.forEach((facility) => {
       if (!facility.planInstances || facility.planInstances.length < 1) {

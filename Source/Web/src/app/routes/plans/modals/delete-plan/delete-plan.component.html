@@ -112,6 +112,6 @@
   </ng-container>
   <div class="modal__buttons">
     <button class="button button--2nd" (click)="clickClose()">Cancel</button>
-    <button class="button" (click)="clickSave()">Save</button>
+    <button class="button" [disabled]="saveDisabled()" (click)="clickSave()">Save</button>
   </div>
 </div>
