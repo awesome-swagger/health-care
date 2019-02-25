@@ -28,15 +28,15 @@
 <div *ngIf="!showEPStep2" class="flex justifySpaceBetween marBottom48">
   <div *ngIf="!showEPStep2" class="marRight16">
     <label>Patient</label>
-    Alexander Montgomery
+    {{data?.patient?.first_name}} {{data?.patient?.last_name}}
   </div>
   <div class="marRight16">
     <label>Phone</label>
-    <span class="noWrap">(435) 825-6734</span>
+    <span class="noWrap">{{phoneNum(data?.patient?.phone)}}</span>
   </div>
   <div>
     <label>Care Plan & Type</label>
-    Heart Disease: RPM
+    {{data?.patient?.care_plan}}: RPM
   </div>
 </div>
 

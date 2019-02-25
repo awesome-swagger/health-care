@@ -4,6 +4,7 @@ import { StoreService } from '../../../../services';
 import {
   filter as _filter
 } from 'lodash';
+import * as moment from 'moment';
 
 @Component({
   selector: 'app-medication',
@@ -50,7 +51,6 @@ export class MedicationComponent implements OnInit {
   ) {}
 
   public ngOnInit() {
-    console.log(this.data);
     this.fetchMedications().then((medications: any) => {
       this.medications = medications;
     });
@@ -67,15 +67,6 @@ export class MedicationComponent implements OnInit {
       this.plan = this.data.plan;
       this.patient = this.data.patient;
       // Get the assigned team members for this care plan
-      let teamMembersSub = this.store.CarePlan.detailRoute('get', this.plan.id, 'care_team_members').subscribe(
-        (teamMembers: any) => {
-          this.careTeamMembers = teamMembers;
-        },
-        (err) => {},
-        () => {
-          teamMembersSub.unsubscribe();
-        }
-      );
     }
   }
 
@@ -91,6 +82,18 @@ export class MedicationComponent implements OnInit {
 
   public clearEmployeeSelection() {
     this.selectedEmployee = null;
+  }
+
+  public get employeeFullName() {
+    if (this.selectedEmployee) {
+      return `${this.selectedEmployee.user.first_name} ${this.selectedEmployee.user.last_name}`;
+    }
+  }
+
+  public get datePrescribedFormatted() {
+    if (this.datePrescribed) {
+      return moment(this.datePrescribed).format('MMMM Do YYYY');
+    } 
   }
 
   public fetchMedications() {

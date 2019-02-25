@@ -34,6 +34,7 @@ export class PatientComponent implements OnDestroy, OnInit {
   public carePlans = [];
   public patientDiagnoses = [];
   public patientDiagnosesRaw = [];
+  public patientMedications = [];
   public problemAreas = [];
   public patientProcedures = [];
   public teamListOpen = -1;
@@ -62,9 +63,6 @@ export class PatientComponent implements OnDestroy, OnInit {
           this.carePlans = carePlans;
           this.carePlans.forEach(plan => {
             this.getCareTeam(plan).then(res => {
-              console.log('vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv');
-              console.log(res);
-              console.log('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^');
               plan.careTeam = res;
             });
           })
@@ -81,6 +79,8 @@ export class PatientComponent implements OnDestroy, OnInit {
         })
 
         this.getPatientDiagnoses(this.patient);
+
+        this.getPatientMedications(this.patient.id);
         
       }).catch(() => {
         this.patient = patientData.patient;
@@ -177,6 +177,17 @@ export class PatientComponent implements OnDestroy, OnInit {
         }
       )
     })
+  }
+
+  public getPatientMedications(patientId) {
+    this.store.PatientMedication.readListPaged({ patient: patientId }).subscribe(
+      res => {
+        console.log('vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv');
+        console.log(res);
+        console.log('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^');
+        this.patientMedications = res;
+      }
+    )
   }
 
   public openFinancialDetails() {
@@ -365,7 +376,11 @@ export class PatientComponent implements OnDestroy, OnInit {
       data: {
         patient: this.patient,
       },
-    }).subscribe(() => {});
+    }).subscribe((res) => {
+      if (res) {
+        this.patientMedications.push(res);
+      }
+    });
   }
 
   public editMedication() {

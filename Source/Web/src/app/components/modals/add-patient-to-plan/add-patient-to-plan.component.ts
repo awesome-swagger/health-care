@@ -39,6 +39,8 @@ export class AddPatientToPlanComponent implements OnInit {
   public firstName = '';
   public lastName = '';
   public phoneNumber = '';
+  public facilities = [];
+  public selectedFacility = null;
 
   public dropAPPM2Open;
 
@@ -55,6 +57,15 @@ export class AddPatientToPlanComponent implements OnInit {
       this.patientKnown = this.data.patientKnown;
       this.patientInSystem = this.data.patientInSystem;
       this.planKnown = this.data.planKnown;
+
+      if (!this.data.facility) {
+        this.store.Facility.readListPaged().subscribe(res => {
+          this.facilities = res;
+        })
+      } else {
+        this.selectedFacility = this.data.facility;
+      }
+
       if (this.patientKnown) {
         this.selectedPatient = this.data.patient;
       }
@@ -161,7 +172,7 @@ export class AddPatientToPlanComponent implements OnInit {
         care_plan: this.selectedPlan.name,
         phone: this.phoneNumber,
         facility: [
-  				"f96e8476-51bc-4cbc-b3b8-29ed0bf5c334"
+          this.selectedFacility.id,
 			  ],
       }).subscribe(
         (data) => {

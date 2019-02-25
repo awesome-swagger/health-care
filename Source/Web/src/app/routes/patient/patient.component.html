@@ -49,38 +49,41 @@
       <div class="info__cell">
         <label>Care Team</label>
         <div class="flex alignCenter justifyCenter">
-          <div class="picName marRight8">
-            <img class="picName__img" src="../../../assets/img/profile.svg" />
-            {{plan.careTeam ? plan.careTeam[0]?.employee_profile?.user?.first_name + ' ' + plan.careTeam[0]?.employee_profile?.user?.last_name : ''}}
-          </div>
-          <div class="tool__anchor">
-            <a class="flex alignCenter" (click)="teamListOpen === i ? teamListOpen = -1 : teamListOpen = i">
-              <span class="marRight8">+2</span>
-              <img src="../../../assets/img/arrow-down.svg" />
-            </a>
-            <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : teamListOpen === i }">
-              <div class="tool__text">
-                <div *ngFor="let practitioner of plan.careTeam?.slice(1)" class="picName marBottom16">
-                  <img class="picName__img" src="../../../assets/img/profile--2.svg" />
-                  {{practitioner?.employee_profile?.user?.first_name + ' ' + practitioner?.employee_profile?.user?.last_name}}
+          <div *ngIf="!plan?.careTeam?.length">N/A</div>
+          <ng-container *ngIf="plan.careTeam && plan.careTeam.length">
+            <div class="picName marRight8">
+              <img class="picName__img" src="../../../assets/img/profile.svg" />
+              {{plan.careTeam ? plan.careTeam[0]?.employee_profile?.user?.first_name + ' ' + plan.careTeam[0]?.employee_profile?.user?.last_name : ''}}
+            </div>
+            <div class="tool__anchor">
+              <a class="flex alignCenter" (click)="teamListOpen === i ? teamListOpen = -1 : teamListOpen = i">
+                <span class="marRight8">+2</span>
+                <img src="../../../assets/img/arrow-down.svg" />
+              </a>
+              <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : teamListOpen === i }">
+                <div class="tool__text">
+                  <div *ngFor="let practitioner of plan.careTeam?.slice(1)" class="picName marBottom16">
+                    <img class="picName__img" src="../../../assets/img/profile--2.svg" />
+                    {{practitioner?.employee_profile?.user?.first_name + ' ' + practitioner?.employee_profile?.user?.last_name}}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          </ng-container>
         </div>
       </div> <!--/.info__cell (for care team)-->
       <div class="info__cell">
         <label>Progress</label>
         <div class="progress marCenter">
-          Week {{plan.week}} of {{plan?.plan_template?.duration_weeks}}
+          Week {{plan.week || 0}} of {{plan?.plan_template?.duration_weeks}}
           <div class="progress__bg">
-            <div class="progress__bar" [ngStyle]="{width: (plan.week / plan.totalWeeks) * 100 + '%'}"></div>
+            <div class="progress__bar" [ngStyle]="{width: ((plan?.current_week || 0) / (plan?.plan_template?.duration_weeks)) * 100 + '%'}"></div>
           </div>
         </div>
       </div>
       <div class="info__cell">
         <label>Last&nbsp;Contact</label>
-        <a [routerLink]="['/patient/asdf/history']" class="justifyCenter">{{plan.daysSinceContact}} days ago</a>
+        <a [routerLink]="['/patient/asdf/history']" class="justifyCenter">{{plan.daysSinceContact || 0}} days ago</a>
       </div>
       <div class="info__cell">
         <label>Problems</label>
@@ -95,8 +98,8 @@
             </button>
           </div>
         </label>
-        <div class="pill pill--lime">
-          {{plan.time}}
+        <div class="pill pill--purple">
+          {{plan.time || '0:00'}}
         </div>
       </div> <!--/.info__cell (for time)-->
       <div class="info__cell">
@@ -104,12 +107,13 @@
         <div
           class="pill"
           [ngClass]="{
-            'pill--red': plan.riskLevel >= 80,
-            'pill--yellow': plan.riskLevel < 80 && plan.riskLevel >= 40,
-            'pill--lime': plan.riskLevel < 40
+            'pill--lime': patient.risk_level >= 90,
+            'pill--yellow': patient.risk_level >= 70 && patient.risk_level < 90,
+            'pill--red': patient.risk_level >= 50 && patient.risk_level < 70,
+            'pill--purple': patient.risk_level < 50
           }"
         >
-          {{riskLevelText[i]}} {{plan.riskLevel}}%
+          {{riskLevelText[i]}} {{patient.risk_level}}%
         </div>
       </div>
     </div> <!--/.info (for care plan instance)-->
@@ -119,73 +123,140 @@
     <i class="ss-plus"></i> Add Care Plan
   </button>
 
-  <div class="divider divider--bigMargin halfWidth marCenter"></div>
-<div class="background-radial">
-  <div class="flex alignCenter marBottom16">
-    <h2 class="noMargin">Patient Statistics (Past 12 Months)</h2>
-    <div class="tool__anchor">
-      <button class="button button--icon button--icon--small"
-      (click)="tooltipPSOpen=!tooltipPSOpen">
-        <i class="ss-help"></i>
-      </button>
-      <div class="tool__tip" [ngClass]="{'isOpen' : tooltipPSOpen }">
-        <div class="tool__text">
-          Patient Statistics are key indicators of patient risk.
+  <div class="background-radial marTop48">
+    <div class="flex alignCenter marBottom16">
+      <h2 class="noMargin">Patient Statistics (Past 12 Months)</h2>
+      <div class="tool__anchor">
+        <button class="button button--icon button--icon--small"
+        (click)="tooltipPSOpen=!tooltipPSOpen">
+          <i class="ss-help"></i>
+        </button>
+        <div class="tool__tip" [ngClass]="{'isOpen' : tooltipPSOpen }">
+          <div class="tool__text">
+            Patient Statistics are key indicators of patient risk.
+          </div>
         </div>
       </div>
-    </div>
-  </div> <!--/.flex (for patient statistics header and tooltip)-->
+    </div> <!--/.flex (for patient statistics header and tooltip)-->
 
-  <div class="info info--horiz">
-    <div class="info__cell">
-      <label>Readmits</label>
-      {{patientStats?.readmissions_count}}
-    </div>
-    <div class="info__cell">
-      <label>Readmit %</label>
-      {{patientStats?.readmissions_percent}}
-    </div>
-    <div class="info__cell">
-      <label>Cost of Readmits</label>
-      {{patientStats?.readmissions_cost}}
-    </div>
-    <div class="info__cell">
-      <label>ED Visits</label>
-      {{patientStats?.ed_visits}}
-    </div>
-    <div class="info__cell">
-      <label>Opioid Use</label>
-      {{patientStats?.opioid_use}}
-    </div>
-  </div> <!--/.info (first one for patient stats)-->
+    <div class="info info--horiz">
+      <div class="info__cell">
+        <label>Readmits</label>
+        {{patientStats?.readmissions_count}}
+      </div>
+      <div class="info__cell">
+        <label>Readmit %</label>
+        {{patientStats?.readmissions_percent}}
+      </div>
+      <div class="info__cell">
+        <label>Cost of Readmits</label>
+        {{patientStats?.readmissions_cost}}
+      </div>
+      <div class="info__cell">
+        <label>ED Visits</label>
+        {{patientStats?.ed_visits}}
+      </div>
+      <div class="info__cell">
+        <label>Opioid Use</label>
+        {{patientStats?.opioid_use}}
+      </div>
+    </div> <!--/.info (first one for patient stats)-->
 
-  <div class="info info--horiz">
-    <div class="info__cell">
-      <label>Admits</label>
-      {{patientStats?.admits}}
-    </div>
-    <div class="info__cell">
-      <label>Avg Stay</label>
-      {{patientStats?.avg_stay_length}}
-    </div>
-    <div class="info__cell">
-      <label>PCP Visits</label>
-      {{patientStats?.pcp_visits}}
-    </div>
-    <div class="info__cell">
-      <label>Specialist Visits</label>
-      {{patientStats?.specialist_visits}}
-    </div>
-    <div class="info__cell">
-      <label>Total Cost</label>
-      {{patientStats?.total_cost}}
-    </div>
-  </div> <!--/.info (second one for patient stats)-->
-</div>
+    <div class="info info--horiz">
+      <div class="info__cell">
+        <label>Admits</label>
+        {{patientStats?.admits}}
+      </div>
+      <div class="info__cell">
+        <label>Avg Stay</label>
+        {{patientStats?.avg_stay_length}}
+      </div>
+      <div class="info__cell">
+        <label>PCP Visits</label>
+        {{patientStats?.pcp_visits}}
+      </div>
+      <div class="info__cell">
+        <label>Specialist Visits</label>
+        {{patientStats?.specialist_visits}}
+      </div>
+      <div class="info__cell">
+        <label>Total Cost</label>
+        {{patientStats?.total_cost}}
+      </div>
+    </div> <!--/.info (second one for patient stats)-->
+  </div>
 
-  <div class="divider divider--bigMargin halfWidth marCenter"></div>
+  <div class="flex justifySpaceBetween marTop48">
+    <div class="info cols__colSmall marRight32">
+      <h3>Medications</h3>
+      <ul class="nameList nameList--dk marBottom16">
+        <li *ngFor="let medication of patientMedications" class="nameList__item">
+          <span>{{medication?.medication?.name}}</span>
+          <div class="flex">
+            <button class="button button--icon button--icon--small"
+            (click)="editMedication()">
+              <i class="ss-write"></i>
+            </button>
+            <button class="button button--icon button--icon--small"
+            (click)="deleteMedication()">
+              <i class="ss-delete"></i>
+            </button>
+          </div>
+        </li>
+      </ul>
+      <button class="button button--iconText"
+      (click)="addMedication()">
+        <i class="ss-plus"></i> Add Medication
+      </button>
+    </div> <!--/.info (for medications)-->
 
-  <h2>Patient Info</h2>
+    <div class="info cols__colSmall marRight32">
+      <h3>Diagnoses</h3>
+      <ul class="nameList nameList--dk marBottom16">
+        <li class="nameList__item" *ngFor="let diagnosis of patientDiagnoses">
+          <span>{{diagnosis.name}}</span>
+          <div class="flex">
+            <button class="button button--icon button--icon--small"
+            (click)="editDiagnosis()">
+              <i class="ss-write"></i>
+            </button>
+            <button class="button button--icon button--icon--small"
+            (click)="deleteDiagnosis(diagnosis)">
+              <i class="ss-delete"></i>
+            </button>
+          </div>
+        </li>
+      </ul>
+      <button class="button button--iconText"
+      (click)="addDiagnosis()">
+        <i class="ss-plus"></i> Add Diagnosis
+      </button>
+    </div> <!--/.info (for diagnoses)-->
+
+    <div class="info cols__colSmall">
+      <h3>Procedures</h3>
+      <ul class="nameList nameList--dk marBottom16">
+        <li class="nameList__item" *ngFor="let patientProcedure of patientProcedures">
+          <span>{{patientProcedure.procedure.name}}</span>
+          <div class="flex">
+            <button class="button button--icon button--icon--small"
+            (click)="editProcedure(patientProcedure)">
+              <i class="ss-write"></i>
+            </button>
+            <button class="button button--icon button--icon--small"
+            (click)="deleteProcedure(patientProcedure)">
+              <i class="ss-delete"></i>
+            </button>
+          </div>
+        </li>
+      </ul>
+      <button class="button button--iconText"
+      (click)="addProcedure()">
+        <i class="ss-plus"></i> Add Procedure
+      </button>
+    </div> <!--/.info (for diagnoses)-->
+
+  </div> <!--/.flex (for medications, diagnoses, procedures)-->
 
   <div class="cols">
     <div class="cols__colBig marRight32">
@@ -312,77 +383,6 @@
     </div> <!--/.cols__colSmall-->
   </div> <!--/.cols for profile, address, etc.-->
 
-  <div class="flex justifySpaceBetween">
-    <div class="info cols__colSmall marRight32">
-      <h3>Medications</h3>
-      <ul class="nameList nameList--dk marBottom16">
-        <li *ngFor="let medication of patient?.medications" class="nameList__item">
-          <span>{{medication}}</span>
-          <div class="flex">
-            <button class="button button--icon button--icon--small"
-            (click)="editMedication()">
-              <i class="ss-write"></i>
-            </button>
-            <button class="button button--icon button--icon--small"
-            (click)="deleteMedication()">
-              <i class="ss-delete"></i>
-            </button>
-          </div>
-        </li>
-      </ul>
-      <button class="button button--iconText"
-      (click)="addMedication()">
-        <i class="ss-plus"></i> Add Medication
-      </button>
-    </div> <!--/.info (for medications)-->
-
-    <div class="info cols__colSmall marRight32">
-      <h3>Diagnoses</h3>
-      <ul class="nameList nameList--dk marBottom16">
-        <li class="nameList__item" *ngFor="let diagnosis of patientDiagnoses">
-          <span>{{diagnosis.name}}</span>
-          <div class="flex">
-            <button class="button button--icon button--icon--small"
-            (click)="editDiagnosis()">
-              <i class="ss-write"></i>
-            </button>
-            <button class="button button--icon button--icon--small"
-            (click)="deleteDiagnosis(diagnosis)">
-              <i class="ss-delete"></i>
-            </button>
-          </div>
-        </li>
-      </ul>
-      <button class="button button--iconText"
-      (click)="addDiagnosis()">
-        <i class="ss-plus"></i> Add Diagnosis
-      </button>
-    </div> <!--/.info (for diagnoses)-->
-
-    <div class="info cols__colSmall">
-      <h3>Procedures</h3>
-      <ul class="nameList nameList--dk marBottom16">
-        <li class="nameList__item" *ngFor="let patientProcedure of patientProcedures">
-          <span>{{patientProcedure.procedure.name}}</span>
-          <div class="flex">
-            <button class="button button--icon button--icon--small"
-            (click)="editProcedure(patientProcedure)">
-              <i class="ss-write"></i>
-            </button>
-            <button class="button button--icon button--icon--small"
-            (click)="deleteProcedure(patientProcedure)">
-              <i class="ss-delete"></i>
-            </button>
-          </div>
-        </li>
-      </ul>
-      <button class="button button--iconText"
-      (click)="addProcedure()">
-        <i class="ss-plus"></i> Add Procedure
-      </button>
-    </div> <!--/.info (for diagnoses)-->
-
-  </div> <!--/.flex (for medications, diagnoses, procedures)-->
 
   <button class="button button--2nd"
   (click)="confirmMakePatientInactive()">
