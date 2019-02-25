@@ -15,10 +15,12 @@ from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken as OriginalObtain
 from rest_framework.exceptions import ValidationError
+from rest_auth.registration.views import RegisterView
 
 from .permissions import BaseUserPermission
 from .serializers import (
     UserSerializer,
+    EmailUserDetailSerializer,
     CreateUserSerializer,
     ChangeEmailSerializer,
     VerifyEmailSerializer,
@@ -293,3 +295,9 @@ class VerifyChangeEmail(GenericAPIView):
         return Response({
             'message': 'Email verification successful.'
         }, status=status.HTTP_200_OK)
+
+
+class CustomRegisterView(RegisterView):
+    def get_response_data(self, user):
+        serializer = EmailUserDetailSerializer(user)
+        return serializer.data

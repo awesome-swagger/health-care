@@ -9,7 +9,7 @@ from rest_framework_extensions.routers import ExtendedDefaultRouter
 from rest_framework_swagger.views import get_swagger_view
 
 from apps.landing.views import LandingView
-from apps.accounts.views import UserViewSet, VerifyChangeEmail
+from apps.accounts.views import UserViewSet, VerifyChangeEmail, CustomRegisterView
 from apps.billings.api.views import (
     BilledActivityViewSet,
     OrganizationBilledActivity,
@@ -440,7 +440,8 @@ urlpatterns = [
     url(r'^', include('django.contrib.auth.urls')),
 
     url(r'^rest-auth/', include('rest_auth.urls')),
-
+    url(r'^rest-auth/registration/', include('rest_auth.registration.urls')),
+    url(r'^rest-auth/add_user/', CustomRegisterView.as_view(), name='user_register'),
 
     url(r'^api/todays_tasks/', TodaysTasksAPIView.as_view(), name="todays_tasks"),
     url(r'^swagger/', schema_view),
