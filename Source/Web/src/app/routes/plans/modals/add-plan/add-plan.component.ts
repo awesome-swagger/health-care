@@ -11,6 +11,7 @@ import { StoreService } from '../../../../services';
 export class AddPlanComponent implements OnInit {
 
   public data = null;
+  public duplicatePlan = null;
 
   public serviceAreas = [];
   public selectedServiceArea = null;
@@ -28,8 +29,16 @@ export class AddPlanComponent implements OnInit {
 
   public ngOnInit() {
     console.log(this.data);
+    if (this.data.duplicatePlan) {
+      this.duplicatePlan = this.data.duplicatePlan;
+      this.nameInput = this.duplicatePlan.name + ' (copy)';
+    }
     this.getServiceAreas().then((serviceAreas: any) => {
       this.serviceAreas = serviceAreas;
+      if (this.data.duplicatePlan) {
+        let match = this.serviceAreas.find((obj) => obj.id === this.data.duplicatePlan.service_area.id);
+        this.selectedServiceArea = match;
+      }
       if (this.data && this.data.serviceAreaId) {
         let match = this.serviceAreas.find((obj) => obj.id === this.data.serviceAreaId);
         this.selectedServiceArea = match;
@@ -63,12 +72,20 @@ export class AddPlanComponent implements OnInit {
   }
 
   public clickContinue() {
+    if (!this.duplicatePlan) {
+      this.createPlanTemplate();
+    } else {
+      this.duplicatePlanTemplate();
+    }
+  }
+
+  public createPlanTemplate() {
     let createSub = this.store.CarePlanTemplate.create({
       name: this.nameInput,
       duration_weeks: this.durationInput,
       service_area: this.selectedServiceArea.id,
     }).subscribe(
-      (res) => {
+      (res: any) => {
         this.modals.close(null);
         this.router.navigate(['/plan', res.id, 'schedule']);
       },
@@ -76,6 +93,21 @@ export class AddPlanComponent implements OnInit {
       () => {
         createSub.unsubscribe();
       }
+    );
+  }
+
+  public duplicatePlanTemplate() {
+    let duplicateSub = this.store.CarePlanTemplate.detailRoute('post', this.duplicatePlan.id, 'duplicate', {
+      name: this.nameInput,
+    }, {}).subscribe(
+      (res: any) => {
+        this.modals.close(null);
+        this.router.navigate(['/plan', res.id, 'schedule']);
+      },
+      (err) => {},
+      () => {
+        duplicateSub.unsubscribe();
+      },
     );
   }
 }

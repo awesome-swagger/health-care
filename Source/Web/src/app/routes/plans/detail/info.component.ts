@@ -6,9 +6,9 @@ import { ModalService, ConfirmModalComponent } from '../../../modules/modals';
 import { AddPlanComponent } from '../modals/add-plan/add-plan.component';
 import {
   AddPatientToPlanComponent,
-  ReassignPatientsComponent,
   PlanDurationComponent
 } from '../../../components';
+import { DeletePlanComponent } from '../modals/delete-plan/delete-plan.component';
 import {
   AuthService,
   NavbarService,
@@ -35,6 +35,9 @@ export class PlanInfoComponent implements OnDestroy, OnInit {
   public tooltip2Open;
   public accord2Open;
 
+  private routeSub = null;
+  private facilitiesSub = null;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -46,23 +49,28 @@ export class PlanInfoComponent implements OnDestroy, OnInit {
   ) { }
 
   public ngOnInit() {
-    this.route.params.subscribe((params) => {
-      this.auth.facilities$.subscribe((facilities) => {
+    this.routeSub = this.route.params.subscribe((params) => {
+      this.facilitiesSub = this.auth.facilities$.subscribe((facilities) => {
         if (!facilities) {
           return;
         }
         this.facilities = facilities.filter((obj) => {
           return !obj.is_affiliate;
-        });
+        }).slice();
         this.getPlanTemplate(params.id).then((planTemplate: any) => {
           this.planTemplateId = planTemplate.id;
           this.planTemplate = planTemplate;
           this.nav.planDetailState(this.planTemplateId);
           this.facilities.forEach((facility) => {
-            this.store.Facility.detailRoute('get', facility.id, 'care_plan_templates/' + this.planTemplateId + '/care_plans')
-              .subscribe((plans: any) => {
+            let plansSub = this.store.Facility.detailRoute('get', facility.id, 'care_plan_templates/' + this.planTemplateId + '/care_plans').subscribe(
+              (plans: any) => {
                 facility.plans = plans.results;
-              });
+              },
+              (err) => {},
+              () => {
+                plansSub.unsubscribe();
+              }
+            );
           });
         }).catch(() => {
           this.router.navigate(['/error']);
@@ -71,7 +79,14 @@ export class PlanInfoComponent implements OnDestroy, OnInit {
     });
   }
 
-  public ngOnDestroy() { }
+  public ngOnDestroy() {
+    if (this.routeSub) {
+      this.routeSub.unsubscribe();
+    }
+    if (this.facilitiesSub) {
+      this.routeSub.unsubscribe();
+    }
+  }
 
   public getPlanTemplate(id) {
     let promise = new Promise((resolve, reject) => {
@@ -93,18 +108,31 @@ export class PlanInfoComponent implements OnDestroy, OnInit {
     }).subscribe(() => {});
   }
 
-  public openReassignPatients() {
-    this.modals.open(ReassignPatientsComponent, {
+  public openReassignPatients(plan) {
+    this.modals.open(DeletePlanComponent, {
       closeDisabled: true,
       width: 'calc(100vw - 48px)',
+      data: {
+        planTemplate: this.planTemplate,
+        plan: plan
+      },
       minWidth: '976px',
-    }).subscribe(() => {});
+    }).subscribe((result) => {
+      if (!result) return;
+      if (result.toLowerCase() === 'success') {
+        this.facilities.forEach((facility) => {
+          facility.plans = facility.plans.filter((obj) => plan.id !== obj.id);
+        });
+      }
+    });
   }
 
   public addPlan() {
     this.modals.open(AddPlanComponent, {
       closeDisabled: false,
-      data: { },
+      data: {
+        duplicatePlan: null,
+      },
       width: '480px',
     }).subscribe(() => {});
   }

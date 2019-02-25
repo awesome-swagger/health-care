@@ -4,7 +4,7 @@ import * as moment from 'moment';
 import { ModalService } from '../../modules/modals';
 import { AuthService, StoreService, UtilsService } from '../../services';
 import { PlanDurationComponent } from '../../components/modals/plan-duration/plan-duration.component';
-import { ReassignPatientsComponent, } from '../../components/modals/reassign-patients/reassign-patients.component';
+import { DeletePlanComponent } from '../../routes/plans/modals/delete-plan/delete-plan.component';
 import { AddPlanComponent } from '../../routes/plans/modals/add-plan/add-plan.component';
 
 @Component({
@@ -90,9 +90,7 @@ export class PlanHeaderComponent implements OnInit, OnDestroy {
       },
       width: '384px',
     }).subscribe(
-      (data) => {
-        console.log(data);
-      },
+      (data) => {},
       (err) => {},
       () => {
         modalSub.unsubscribe();
@@ -104,18 +102,34 @@ export class PlanHeaderComponent implements OnInit, OnDestroy {
     this.modals.open(AddPlanComponent, {
       closeDisabled: false,
       data: {
-        duplicating: true,
+        duplicatePlan: this.planTemplate,
       },
       width: '480px',
-    });
+    }).subscribe();
   }
 
   public openReassignPatients() {
-    this.modals.open(ReassignPatientsComponent, {
+    this.modals.open(DeletePlanComponent, {
       closeDisabled: true,
       width: 'calc(100vw - 48px)',
+      data: {
+        planTemplate: this.planTemplate,
+      },
       minWidth: '976px',
-    }).subscribe(() => {});
+    }).subscribe((result) => {
+      if (!result) return;
+      if (result.toLowerCase() === 'success') {
+        let destroySub = this.store.CarePlanTemplate.destroy(this.planTemplate.id).subscribe(
+          (success) => {
+            this.router.navigate(['/plans']);
+          },
+          (err) => {},
+          () => {
+            destroySub.unsubscribe();
+          }
+        );
+      }
+    });
   }
 
   public getAverages(organization, planId) {

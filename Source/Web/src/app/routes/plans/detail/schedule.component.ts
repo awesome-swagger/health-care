@@ -155,7 +155,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
 
   public openGoal() {
     let modalSub = this.modals.open(GoalComponent, {
-      closeDisabled: true,
+      closeDisabled: false,
       data: {
         creatingTemplate: true,
       },
@@ -193,7 +193,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       return obj.id === goal.id;
     });
     let modalSub = this.modals.open(GoalComponent, {
-      closeDisabled: true,
+      closeDisabled: false,
       data: {
         creatingTemplate: false,
         goalTemplate: goal,
@@ -232,7 +232,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
     });
     let totalPatients = this.planTemplateAverage.total_patients;
     let modalSub = this.modals.open(ConfirmModalComponent, {
-     closeDisabled: true,
+     closeDisabled: false,
      data: {
        title: 'Delete Goal?',
        body: `Are you sure you want to delete this care plan goal? This will affect ${totalPatients} patients currently assigned to this care plan.`,
@@ -242,6 +242,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       width: '384px',
     }).subscribe(
       (result) => {
+        if (!result) return;
         if (result.toLowerCase() === 'confirm') {
           let deleteSub = this.store.GoalTemplate.destroy(goal.id).subscribe(
             (data) => {
@@ -263,7 +264,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
 
   public addCMTask() {
     let modalSub = this.modals.open(AddCTTaskComponent, {
-      closeDisabled: true,
+      closeDisabled: false,
       width: '384px',
       data: {
         type: 'manager',
@@ -286,7 +287,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
 
   public editCMTask(task) {
     let modalSub = this.modals.open(EditTaskComponent, {
-      closeDisabled: true,
+      closeDisabled: false,
       width: '384px',
       data: {
         task: task,
@@ -303,7 +304,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
 
   public addCTTask() {
     let modalSub = this.modals.open(AddCTTaskComponent, {
-      closeDisabled: true,
+      closeDisabled: false,
       width: '384px',
       data: {
         type: 'team',
@@ -325,7 +326,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
 
   public editCTTask(task) {
     let modalSub = this.modals.open(EditTaskComponent, {
-      closeDisabled: true,
+      closeDisabled: false,
       width: '384px',
       data: {
         task: task,
@@ -356,7 +357,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
     }
     let totalPatients = this.planTemplateAverage.total_patients;
     let modalSub = this.modals.open(ConfirmModalComponent, {
-     closeDisabled: true,
+     closeDisabled: false,
      data: {
        title: 'Delete Task?',
        body: `Are you sure you want to remove this task? This will affect ${totalPatients} patients currently assigned to this care plan.`,
@@ -366,6 +367,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       width: '384px',
     }).subscribe(
       (data) => {
+        if (!data) return;
         if (data.toLowerCase() === 'confirm') {
           let destroySub = this.store.TeamTaskTemplate.destroy(task.id).subscribe(
             (resp) => {
@@ -392,7 +394,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
 
   public addTask() {
     let modalSub = this.modals.open(AddCTTaskComponent, {
-      closeDisabled: true,
+      closeDisabled: false,
       data: {
         type: 'patient',
         planTemplateId: this.planTemplateId,
@@ -401,9 +403,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       width: '384px',
     }).subscribe(
       (task) => {
-        if (!task) {
-          return;
-        }
+        if (!task) return;
         this.editTask(task);
       },
       (err) => {},
@@ -415,7 +415,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
 
   public editTask(task) {
     let modalSub = this.modals.open(EditTaskComponent, {
-      closeDisabled: true,
+      closeDisabled: false,
       data: {
         task: task,
         type: 'patient',
@@ -436,7 +436,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
     });
     let totalPatients = this.planTemplateAverage.total_patients;
     let modalSub = this.modals.open(ConfirmModalComponent, {
-     closeDisabled: true,
+     closeDisabled: false,
      data: {
        title: 'Delete Task?',
        body: `Are you sure you want to remove this task? This will affect ${totalPatients} patients currently assigned to this care plan.`,
@@ -446,6 +446,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       width: '384px',
     }).subscribe(
       (resp) => {
+        if (!resp) return;
         if (resp.toLowerCase() === 'confirm') {
           let deleteSub = this.store.PatientTaskTemplate.destroy(task.id).subscribe(
             (data) => {
@@ -467,7 +468,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
 
   public addAssessment() {
     let modalSub = this.modals.open(AddAssessmentComponent, {
-      closeDisabled: true,
+      closeDisabled: false,
       data: {
         editingTemplate: true,
         assessmentsList: this.assessmentTemplates,
@@ -476,9 +477,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       width: '768px',
     }).subscribe(
       (res) => {
-        if (!res) {
-          return;
-        }
+        if (!res) return;
         if (res === 'create-new') {
           setTimeout(() => {
             this.editAssessment(null);
@@ -498,7 +497,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
 
   public editAssessment(assessment) {
     let modalSub = this.modals.open(CreateAssessmentComponent, {
-      closeDisabled: true,
+      closeDisabled: false,
       data: {
         assessment: assessment,
         planTemplateId: this.planTemplateId,
@@ -506,9 +505,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       width: '864px',
     }).subscribe(
       (res) => {
-        if (!res) {
-          return;
-        }
+        if (!res) return;
         let index = this.assessmentTemplates.findIndex((obj) => {
           return obj.id === res.id;
         });
@@ -527,7 +524,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
 
   public editAssessmentTime(assessment) {
     let modalSub = this.modals.open(EditTaskComponent, {
-      closeDisabled: true,
+      closeDisabled: false,
       data: {
         task: assessment,
         type: 'assessment',
@@ -548,7 +545,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
     });
     let totalPatients = this.planTemplateAverage.total_patients;
     let modalSub = this.modals.open(ConfirmModalComponent, {
-     closeDisabled: true,
+     closeDisabled: false,
      data: {
        title: 'Delete Assessment?',
        body: `Are you sure you want to remove this assessment? This will affect ${totalPatients} patients currently assigned to this care plan.`,
@@ -558,6 +555,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       width: '384px',
     }).subscribe(
       (data) => {
+        if (!data) return;
         if (data.toLowerCase() === 'confirm') {
           let destroySub = this.store.AssessmentTaskTemplate.destroy(assessment.id).subscribe(
             (data) => {
@@ -579,7 +577,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
 
   public addSymptom() {
     this.modals.open(EditTaskComponent, {
-      closeDisabled: true,
+      closeDisabled: false,
       data: {
         type: 'symptom',
         task: {
@@ -592,16 +590,14 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       },
       width: '384px',
     }).subscribe((symptom) => {
-      if (!symptom) {
-        return;
-      }
+      if (!symptom) return;
       this.symptomTemplates.push(symptom);
     });
   }
 
   public editSymptom(symptom) {
     this.modals.open(EditTaskComponent, {
-      closeDisabled: true,
+      closeDisabled: false,
       data: {
         type: 'symptom',
         task: symptom,
@@ -616,7 +612,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
     });
     let totalPatients = this.planTemplateAverage.total_patients;
     let modalSub = this.modals.open(ConfirmModalComponent, {
-     closeDisabled: true,
+     closeDisabled: false,
      data: {
        title: 'Delete Symptom Report?',
        body: `Are you sure you want to remove this symptom report? This will affect ${totalPatients} patients currently assigned to this care plan.`,
@@ -626,6 +622,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       width: '384px',
     }).subscribe(
       (data) => {
+        if (!data) return;
         if (data.toLowerCase() === 'confirm') {
           let destroySub = this.store.SymptomTaskTemplate.destroy(symptom.id).subscribe(
             (data) => {
@@ -647,14 +644,13 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
 
   public addVital(vitalTemplates) {
     this.modals.open(AddVitalComponent, {
-      closeDisabled: true,
+      closeDisabled: false,
       width: '768px',
       data: {
         taskList: vitalTemplates,
         planTemplateId: this.planTemplateId,
       },
     }).subscribe((data) => {
-      console.log(data);
       if (!data || !data.nextAction) {
         return;
       }
@@ -678,16 +674,14 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
 
   public editVital(vital) {
     this.modals.open(CreateVitalComponent, {
-      closeDisabled: true,
+      closeDisabled: false,
       width: '800px',
       data: {
         vital: vital,
         planTemplateId: this.planTemplateId,
       }
     }).subscribe((res) => {
-      if (!res) {
-        return;
-      }
+      if (!res) return;
       let index = this.vitalTemplates.findIndex((obj) => {
         return obj.id === res.id;
       });
@@ -701,7 +695,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
 
   public editVitalTime(vital) {
     let modalSub = this.modals.open(EditTaskComponent, {
-      closeDisabled: true,
+      closeDisabled: false,
       data: {
         type: 'vital',
         task: vital,
@@ -718,7 +712,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
 
   public previewVital(vital) {
     this.modals.open(PreviewVitalComponent, {
-      closeDisabled: true,
+      closeDisabled: false,
       width: '500px',
       data: vital
     }).subscribe(() => {});
@@ -740,9 +734,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       width: '384px',
     }).subscribe(
       (data) => {
-        if (!data) {
-          return;
-        }
+        if (!data) return;
         if (data.toLowerCase() === 'confirm') {
           let destroySub = this.store.VitalsTaskTemplate.destroy(vital.id).subscribe(
             (data) => {
@@ -764,7 +756,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
 
   public addStream() {
     this.modals.open(AddStreamComponent, {
-      closeDisabled: true,
+      closeDisabled: false,
       data: {
           taskList: this.messageQueues,
           planTemplateId: this.planTemplateId,
@@ -791,16 +783,14 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
 
   public editStream(stream) {
     this.modals.open(CreateStreamComponent, {
-      closeDisabled: true,
+      closeDisabled: false,
       data: {
         stream: stream,
         planTemplateId: this.planTemplateId,
       },
       width: '768px',
     }).subscribe((updatedStream) => {
-      if (!updatedStream) {
-        return;
-      }
+      if (!updatedStream) return;
       let index = this.messageQueues.findIndex((obj) => {
         return obj.id === updatedStream.id;
       });
@@ -815,7 +805,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
   public confirmDeleteStream() {
     let totalPatients = this.planTemplateAverage.total_patients;
     this.modals.open(ConfirmModalComponent, {
-     closeDisabled: true,
+     closeDisabled: false,
      data: {
        title: 'Delete Message Stream?',
        body: `Are you sure you want to remove this message stream? This will affect ${totalPatients} patients currently assigned to this care plan.`,

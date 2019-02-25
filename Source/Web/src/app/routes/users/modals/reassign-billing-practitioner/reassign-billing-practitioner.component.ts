@@ -24,6 +24,8 @@ export class ReassignBillingPractitionerComponent implements OnInit {
 
   public accordianStatuses = [];
   public bulkReassign = [];
+  public bulkNewPlan = [];
+  public bulkManager = [];
   public bulkPractitioner = [];
 
   constructor(
