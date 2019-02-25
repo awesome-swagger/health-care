@@ -209,6 +209,9 @@ class PatientStat(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
 class ProblemArea(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
     patient = models.ForeignKey(
         PatientProfile, null=False, blank=False, on_delete=models.CASCADE)
+    plan = models.ForeignKey(
+        "plans.CarePlan", null=False, blank=False, related_name="problem_areas",
+        on_delete=models.CASCADE)
     identified_by = models.ForeignKey(
         EmployeeProfile, null=True, blank=True, on_delete=models.SET_NULL)
     date_identified = models.DateField(null=True, blank=True)

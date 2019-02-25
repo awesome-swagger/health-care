@@ -31,7 +31,8 @@ from apps.patients.models import (PatientDiagnosis, PatientMedication,
                                   ReminderEmail, PotentialPatient,
                                   PatientStat, EmergencyContact)
 from apps.plans.api.serializers import (InfoMessageSerializer,
-                                        CarePlanTemplateSerializer)
+                                        CarePlanTemplateSerializer,
+                                        CarePlanSerializer)
 from apps.plans.models import CarePlanTemplate
 from apps.tasks.models import AssessmentResponse, SymptomRating
 
@@ -246,6 +247,7 @@ class ProblemAreaSerializer(RepresentationMixin, serializers.ModelSerializer):
             'description',
             'modified',
             'patient',
+            'plan'
         )
         read_only_fields = (
             'id',
@@ -260,6 +262,10 @@ class ProblemAreaSerializer(RepresentationMixin, serializers.ModelSerializer):
                 'field': 'patient',
                 'serializer_class': BasicPatientSerializer,
             },
+            # {
+            #     'field': 'plan',
+            #     'serializer_class': CarePlanSerializer,
+            # },
         ]
 
 
