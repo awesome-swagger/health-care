@@ -337,8 +337,11 @@ class PotentialPatient(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
     """
     first_name = models.CharField(_('first name'), max_length=30)
     last_name = models.CharField(_('last name'), max_length=30)
-    care_plan = models.CharField(_('Care plan'), max_length=64)
+    care_plan = models.ForeignKey(
+        "plans.CarePlanTemplate", null=False, blank=False, related_name="potential_patients",
+        on_delete=models.CASCADE)
     phone = models.CharField(_('Phone number'), max_length=16)
+    source = models.CharField(_('Source'), max_length=256)
     facility = models.ManyToManyField('core.Facility', blank=True)
     patient_profile = models.OneToOneField(
         'patients.PatientProfile',
