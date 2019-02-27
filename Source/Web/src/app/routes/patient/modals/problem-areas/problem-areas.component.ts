@@ -12,9 +12,9 @@ export class ProblemAreasComponent implements OnDestroy, OnInit {
   public data = null;
   public moment = moment;
 
-  public addPA;
+  public addPA = false;
 
-  public user;
+  public user = null;
   public problemAreas = [];
 
   public editIndex = -1;
@@ -47,18 +47,34 @@ export class ProblemAreasComponent implements OnDestroy, OnInit {
     }
   }
 
+  public clickAddProblemArea() {
+    this.addPA = true;
+    this.currentAddName = '';
+    this.currentAddText = '';
+  }
+
+  public clickRevert() {
+    this.addPA = false;
+    this.currentAddName = '';
+    this.currentAddText = '';
+  }
+
   public addProblemArea() {
     if (!this.user) {
       return;
     }
     this.store.ProblemArea.create({
       patient: this.data.patient.id,
+      plan: this.data.plan.id,
       date_identified: moment().format('YYYY-MM-DD'),
       identified_by: this.user.id,
       name: this.currentAddName,
       description: this.currentAddText,
     }).subscribe((problemArea) => {
       this.problemAreas.push(problemArea);
+      this.addPA = false;
+      this.currentAddName = '';
+      this.currentAddText = '';
     });
   }
 
@@ -83,6 +99,7 @@ export class ProblemAreasComponent implements OnDestroy, OnInit {
   }
 
   public confirmDelete(index) {
+    this.deleteIndex = -1;
     this.store.ProblemArea.destroy(this.problemAreas[index].id).subscribe(
       () => {
         this.problemAreas.splice(index, 1);

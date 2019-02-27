@@ -32,6 +32,9 @@ export class ModalService {
     position: {
       top: '',
     },
+    overflowX: '',
+    overflowY: '',
+    overflow: '',
     data: null,
   };
 

@@ -87,7 +87,7 @@
       </div>
       <div class="info__cell">
         <label>Problems</label>
-        <a class="justifyCenter" (click)="openProblemAreas()">{{problemAreas.length}}</a>
+        <a class="justifyCenter" (click)="openProblemAreas(plan)">{{problemAreasFilteredByPlan(plan.id).length}}</a>
       </div>
       <div class="info__cell">
         <label class="tool info__tool justifyCenter">

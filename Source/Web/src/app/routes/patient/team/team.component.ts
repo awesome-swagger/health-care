@@ -19,18 +19,9 @@ export class PatientTeamComponent implements OnDestroy, OnInit {
   public availableRoles = [];
   public careManager = null;
   public billingPractitioner = null;
-  public showCMPhone = false;
 
-  public tooltipPCT0Open;
-  public tooltipPCT1Open;
-  public tooltipPCT2Open;
-  public tooltipPCT3Open;
-  public tooltipPCT4Open;
-  public tooltipPCT5Open;
-  public tooltipPCT6Open;
-  public tooltipPCT7Open;
-  public tooltipPCT8Open;
-  public tooltipPCT9Open;
+  public phoneTooltipOpen = {};
+  public emailTooltipOpen = {};
 
   private routeSub = null;
 
@@ -140,6 +131,7 @@ export class PatientTeamComponent implements OnDestroy, OnInit {
         is_manager: false,
         is_bp: false,
       },
+      overflow: 'visible',
       width: '416px',
     }).subscribe(
       (selectedEmployee) => {
@@ -188,6 +180,7 @@ export class PatientTeamComponent implements OnDestroy, OnInit {
         is_manager: true,
         is_bp: false,
       },
+      overflow: 'visible',
       width: '416px',
     }).subscribe(
       (selectedEmployee) => {
@@ -258,6 +251,7 @@ export class PatientTeamComponent implements OnDestroy, OnInit {
         is_manager: false,
         is_bp: true,
       },
+      overflow: 'visible',
       width: '416px',
     }).subscribe(
       (newBp) => {
@@ -293,6 +287,7 @@ export class PatientTeamComponent implements OnDestroy, OnInit {
         is_manager: true,
         is_bp: false,
       },
+      overflow: 'visible',
       width: '416px',
     }).subscribe(
       (selectedEmployee) => {
