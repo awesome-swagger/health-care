@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { StoreService } from '../../../../services';
+import { StoreService, AuthService } from '../../../../services';
 import { ModalService } from '../../../../modules/modals';
 
 @Component({
@@ -18,20 +18,32 @@ export class AddUserComponent implements OnInit {
   public lastNameInput = '';
   public titleInput = null;
   public emailInput = '';
-  public phoneInput = '';
-  public organizationInput = null;
+  public employedByInput = null;
+  public facilityInput = null;
   public specialtyInput = null;
   public npiInput = '';
+  public organization = null;
+  public facilities = [];
 
   public tooltipAUM0Open;
 
   constructor(
+    public auth: AuthService,
     public modals: ModalService,
     private store: StoreService,
   ) { }
 
   public ngOnInit() {
-    console.log(this.data);
+    if (this.data && this.data.user) {
+      this.firstNameInput = this.data.user.firstName;
+      this.lastNameInput = this.data.user.lastName;
+      this.titleInput = this.data.user.title;
+      this.emailInput = this.data.user.email;
+      this.specialtyInput = this.data.user.specialty;
+      this.employedByInput = this.data.user.employedBy;
+      this.facilityInput = this.data.user.facility;
+      this.npiInput = this.data.user.npi;
+    }
     this.getTitles().then((titles: any) => {
       this.titles = titles;
     });
@@ -41,6 +53,15 @@ export class AddUserComponent implements OnInit {
     this.getSpecialties().then((specialties: any) => {
       this.specialties = specialties;
     });
+
+    this.auth.organization$.subscribe(org => {
+      if (!org) return;
+
+      this.organization = org;
+      this.store.Organization.detailRoute('GET', org.id, 'facilities').subscribe((res:any) => {
+        this.facilities = res.results;
+      })
+    })
   }
 
   public getTitles() {
@@ -94,23 +115,26 @@ export class AddUserComponent implements OnInit {
     return promise;
   }
 
+  public filteredFacilities(is_affiliate) {
+    return this.facilities.filter(f => f.is_affiliate === is_affiliate);
+  }
+
   public submit() {
     console.log('vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv');
     console.log(this.titleInput);
     console.log(this.specialtyInput);
-    console.log(this.organizationInput);
+    console.log(this.employedByInput);
     console.log('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^');
     if (this.firstNameInput && this.lastNameInput && this.emailInput) {
       this.modals.close({
         firstName: this.firstNameInput,
         lastName: this.lastNameInput,
-        email: this.emailInput,
         title: this.titleInput,
+        email: this.emailInput,
+        employedBy: this.employedByInput,
+        facility: this.facilityInput,
         specialty: this.specialtyInput,
-        phone: this.phoneInput,
         npi: this.npiInput,
-        employedBy: this.organizationInput,
-        organization: this.organizationInput,
       })
     } else {
       this.modals.close('')

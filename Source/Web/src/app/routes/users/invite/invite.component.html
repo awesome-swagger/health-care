@@ -3,47 +3,47 @@
     <h1 class="noMargin">Invite Users</h1>
     <div class="tool">
       <label class="labelLeft">Current Users</label>
-      45 / 50
+      {{employees?.length}} / 50
       <div class="tool__anchor">
         <button class="button button--icon button--icon--small" (click)="tooltipsOpen['currentUsers']=!tooltipsOpen['currentUsers']"><i class="ss-help"></i></button>
         <div class="tool__tip" [ngClass]="{ 'isOpen' : tooltipsOpen['currentUsers'] }">
           <div class="tool__text">
-            Your plan only has 5 available user accounts left. To upgrade now, call 801-555-5555 or email sales@careadopt.com.
+            Your plan only has {{50 - employees?.length}} available user accounts left. To upgrade now, call 801-555-5555 or email sales@careadopt.com.
           </div>
         </div>
       </div>
     </div> <!--/.tool-->
   </div> <!--/.flexHeader (for title, etc.)-->
 
-  <table class="fullWidth" *ngIf="usersToInivite.length > 0">
+  <table class="fullWidth">
     <thead>
       <tr>
-        <th class="left thSortable thSortable--sortDown">
-          <span class="thSortable__text thSortable__text--left">User</span>
+        <th class="left">
+          <span>User</span>
         </th>
-        <th class="left thSortable">
-          <span class="thSortable__text thSortable__text--left">Title</span>
+        <th class="left">
+          <span>Title</span>
         </th>
-        <th class="left thSortable">
-          <span class="thSortable__text thSortable__text--left">Specialty</span>
+        <th class="left">
+          <span>Email</span>
         </th>
-        <th class="left thSortable">
-          <span class="thSortable__text thSortable__text--left">Email</span>
+        <th class="left">
+          <span>NPI</span>
         </th>
-        <th class="left thSortable">
-          <span class="thSortable__text thSortable__text--left">Phone (opt)</span>
+        <th class="left">
+          <span>Employed By</span>
         </th>
-        <th class="left thSortable">
-          <span class="thSortable__text thSortable__text--left">NPI (opt)</span>
+        <th class="left">
+          <span>Org/Facility</span>
         </th>
-        <th class="left thSortable">
-          <span class="thSortable__text thSortable__text--left">Employer</span>
+        <th class="left">
+          <span>Admin</span>
         </th>
         <th></th>
         <th></th>
       </tr>
     </thead>
-    <tbody>
+    <tbody *ngIf="usersToInivite.length > 0">
       <tr *ngFor="let user of usersToInivite">
         <td class="left">
           {{user.firstName}} {{user.lastName}}
@@ -52,21 +52,20 @@
           {{user.title?.abbreviation}}
         </td>
         <td class="left hideOverflow">
-          {{user.specialty?.name}}
-        </td>
-        <td class="left hideOverflow">
           {{user.email}}
         </td>
-        <td class="left noWrap">
-          {{user.phone}}
-        </td>
         <td class="left">
+          {{user.npi}}
         </td>
         <td class="left hideOverflow">
-          {{user.employedBy}}
+          {{user.employedBy?.name}}
         </td>
+        <td class="left hideOverflow">
+          {{user.facility?.name}}
+        </td>
+        <td></td>
         <td class="noPad">
-          <button class="button button--icon button--icon--small">
+          <button class="button button--icon button--icon--small" (click)="openEditUser(user)">
             <i class="ss-write"></i>
           </button>
         </td>
@@ -81,7 +80,7 @@
 
   <button class="button button--iconText marBottom64"
     (click)="openAddUser()">
-      <i class="ss-plus"></i> Add User to Invite
+      <i class="ss-plus"></i> Add User
   </button>
 
   <h2>Customize Message</h2>
