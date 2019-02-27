@@ -12,7 +12,7 @@ from apps.patients.models import PatientProfile
 from care_adopt_backend.mixins import CreatedModifiedMixin, UUIDPrimaryKeyMixin
 from care_adopt_backend.mailer import BaseMailer
 
-from .signals import (careplan_post_save, teammessage_post_save)
+from .signals import (careplan_post_save, careplan_pre_save, teammessage_post_save)
 
 
 class CarePlanTemplateType(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
@@ -375,32 +375,6 @@ class TeamMessage(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
         verbose_name = _('Team Message')
         verbose_name_plural = _('Team Messages')
         ordering = ('created', )
-
-
-def careplan_pre_save(sender, instance, update_fields=None, **kwargs):
-    """
-    Sends an email to the previous billing practitioner of the plan.
-    """
-    plan = CarePlan.objects.filter(id=instance.id).first()
-    # for only update
-    if plan:
-        old_practitioner = plan.billing_practitioner
-        new_practitioner = instance.billing_practitioner
-
-        if old_practitioner and old_practitioner != new_practitioner:
-            subject = 'Notification from CareAdopt'
-            context = {
-                "plan": instance,
-                "subject": subject,
-                "admin_email": settings.DEFAULT_FROM_EMAIL,
-            }
-            email_template = 'core/employeeprofile/email/billing_practitioner.html'
-            return BaseMailer().send_mail(
-                subject,
-                email_template,
-                old_practitioner.user.email,
-                context
-            )
 
 
 # Signals
