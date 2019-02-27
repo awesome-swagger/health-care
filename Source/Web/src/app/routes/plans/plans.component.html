@@ -1,10 +1,4 @@
 <div class="ssContainer ssContents">
-  <div class="right">
-    <button class="button button--iconText" (click)="addPlan()">
-      <i class="ss-plus"></i>
-      Add Care Plan
-    </button>
-  </div>
   <div class="flexHeader">
     <div class="flex alignCenter">
       <h1 class="noMargin marRight8">Service Areas ({{serviceAreas?.length}})</h1>
@@ -36,12 +30,17 @@
         </app-popover>
       </div> <!--/.tool__anchor-->
     </div> <!--/.flex (for page title and tooltip)-->
+    <div class="right">
+      <button class="button button--iconText" (click)="addPlan()">
+        <i class="ss-plus"></i>
+        Add Care Plan
+      </button>
+    </div>
   </div> <!--/.flexHeader-->
-  <div class="flex alignCenter marBottom24">
+  <div class="flex alignCenter">
     <h2 class="noMargin">Averages by Care Plan (Past 30 Days)</h2>
     <div class="tool__anchor">
-      <button class="button button--icon button--icon--small"
-        (click)="showAveragesHelp = !showAveragesHelp">
+      <button class="button button--icon button--icon--small" (click)="showAveragesHelp = !showAveragesHelp">
         <i class="ss-help"></i>
       </button>
       <app-popover [visible]="showAveragesHelp" (visibleChange)="showAveragesHelp = $event;">
@@ -53,7 +52,7 @@
       </app-popover>
     </div> <!--/.tool__anchor-->
   </div>
-  <div class="flex alignCenter justifySpaceBetween">
+  <div class="flex alignEnd justifySpaceBetween negativeMarTop24 marBottom24">
     <div>
       <label class="styledInput">
         <input type="checkbox" class="styledInput__input" />
@@ -63,7 +62,7 @@
     </div>
     <div>
       <label>Facility</label>
-      <div class="drop marBottom24">
+      <div class="drop">
         <div class="drop__input" (click)="facilitiesOpen=!facilitiesOpen">
           <span *ngIf="!selectedFacility">All</span>
           <span *ngIf="selectedFacility">{{selectedFacility.name}}</span>

@@ -3,7 +3,7 @@
 }
 
 .smallLabel {
-  font-size: 11px;
+  font-size: 10px;
 }
 
 .checkinText {
@@ -16,4 +16,8 @@
   position: inherit;
   top: auto;
   left: auto;
+}
+
+.drop__input--select {
+  max-width: initial;
 }

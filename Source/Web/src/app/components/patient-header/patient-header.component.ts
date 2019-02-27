@@ -7,6 +7,7 @@ import { ToastService } from '../../modules/toast';
 import { PopoverOptions } from '../../modules/popover';
 import { AuthService, LocalStorageService, StoreService, UtilsService } from '../../services';
 import { ProblemAreasComponent } from '../../routes/patient/modals/problem-areas/problem-areas.component';
+import { FinancialDetailsComponent } from '../../routes/patient/modals/financial-details/financial-details.component';
 
 @Component({
   selector: 'app-patient-header',
@@ -80,6 +81,9 @@ export class PatientHeaderComponent implements OnInit, OnDestroy {
     				this.patientPlansOverview = overview.results;
             this.selectedPlanOverview = this.getOverviewForPlanTemplate(this.selectedPlan.plan_template.id);
     			});
+    			this.getProblemAreas(params.patientId).then((problemAreas: any) => {
+    				this.problemAreas = problemAreas;
+    			});
         });
   			this.getCareTeamMembers(params.planId).then((teamMembers: any) => {
           this.allTeamMembers = teamMembers;
@@ -110,9 +114,6 @@ export class PatientHeaderComponent implements OnInit, OnDestroy {
           if (sortedCT.length > 0) {
             this.nextCheckinTeamMember = sortedCT[0];
           }
-  			});
-  			this.getProblemAreas(params.patientId).then((problemAreas: any) => {
-  				this.problemAreas = problemAreas;
   			});
   		});
   	});
@@ -184,7 +185,7 @@ export class PatientHeaderComponent implements OnInit, OnDestroy {
   public getProblemAreas(patient) {
     let promise = new Promise((resolve, reject) => {
       let problemAreasSub = this.store.ProblemArea.readListPaged({
-        patient: patient,
+        plan: this.selectedPlan.id,
       }).subscribe(
         (problemAreas) => resolve(problemAreas),
         (err) => reject(err),
@@ -210,9 +211,10 @@ export class PatientHeaderComponent implements OnInit, OnDestroy {
 
   public openProblemAreas() {
     this.modals.open(ProblemAreasComponent, {
-      closeDisabled: true,
+      closeDisabled: false,
       data: {
         patient: this.patient,
+        plan: this.selectedPlan,
         problemAreas: this.problemAreas,
       },
       width: '560px',
@@ -220,7 +222,13 @@ export class PatientHeaderComponent implements OnInit, OnDestroy {
   }
 
   public openFinancialDetails() {
+    this.modals.open(FinancialDetailsComponent, {
+      closeDisabled: false,
+      data: {
 
+      },
+      width: '384px',
+    }).subscribe(() => {});
   }
 
   public progressInWeeks(plan) {

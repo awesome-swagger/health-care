@@ -9,9 +9,9 @@
         'bottom': options.position?.bottom ? options.position?.bottom : 'auto',
         'left': options.position?.left ? options.position?.left : 'auto',
         'right': options.position?.right ? options.position?.right : 'auto',
-        'overflow': options?.overflow ? options?.overflow : 'auto',
         'overflowX': options?.overflowX ? options?.overflowX : 'auto',
-        'overflowY': options?.overflowY ? options?.overflowY : 'auto'
+        'overflowY': options?.overflowY ? options?.overflowY : 'auto',
+        'overflow': options?.overflow ? options?.overflow : 'auto'
       }" (click)="$event.stopPropagation()">
       <div class="modal__close" [hidden]="options?.closeDisabled">
         <button class="button button--icon" (click)="close()">

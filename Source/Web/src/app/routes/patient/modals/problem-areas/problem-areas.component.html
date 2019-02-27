@@ -54,8 +54,7 @@
     </div> <!--/.problem__confirm-->
   </li>
 </ul>
-<button *ngIf="!addPA" class="button button--iconText marBottom32"
-(click)="addPA=!addPA">
+<button *ngIf="!addPA" class="button button--iconText marBottom32" (click)="clickAddProblemArea()">
   <i class="ss-plus"></i> Add Problem Area
 </button>
 <div *ngIf="addPA" class="problem__edit marBottom32">
@@ -64,12 +63,10 @@
       <input type="text" class="input fullWidth" placeholder="Title" [(ngModel)]="currentAddName" />
     </div>
     <div class="modal__inputWrap0 flex">
-      <button class="button button--icon button--icon--small"
-      (click)="addPA=!addPA">
+      <button class="button button--icon button--icon--small" (click)="clickRevert()">
         <i class="ss-undo"></i>
       </button>
-      <button class="button button--icon button--icon--small"
-      (click)="addProblemArea(); addPA=!addPA">
+      <button class="button button--icon button--icon--small" (click)="addProblemArea()">
         <i class="ss-plus"></i>
       </button>
     </div>

@@ -49,22 +49,24 @@
     <p class="marBottom32">Ogden Clinic: Mountain View</p>
     <div class="info__contact">
       <div class="info__contactInner tool__anchor" *ngIf="careManager.employee_profile.user.phone">
-        <button class="button button--icon" (click)="showCMPhone =! showCMPhone">
+        <button class="button button--icon" (click)="phoneTooltipOpen[careManager.id] =! phoneTooltipOpen[careManager.id]">
           <i class="ss-standard ss-phone"></i>
         </button>
-        <div class="tool__tip tool__tip--left" [ngClass]="{ 'isOpen' : showCMPhone }">
-          <a href="tel:{{careManager.employee_profile.user.phone}}">{{careManager.employee_profile.user.phone}}</a>
-        </div>
+        <app-popover [visible]="phoneTooltipOpen[careManager.id]" (visibleChange)="phoneTooltipOpen[careManager.id] = $event;">
+          <div class="tool__tip tool__tip--left isOpen">
+            <a href="tel:{{careManager.employee_profile.user.phone}}">{{careManager.employee_profile.user.phone}}</a>
+          </div>
+        </app-popover>
       </div>
       <div class="info__contactInner tool__anchor">
-        <button class="button button--icon"
-        (click)="tooltipPCT1Open=!tooltipPCT1Open">
+        <button class="button button--icon" (click)="emailTooltipOpen[careManager.id]=!emailTooltipOpen[careManager.id]">
           <i class="ss-standard ss-mail"></i>
         </button>
-        <div class="tool__tip tool__tip--right"
-        [ngClass]="{ 'isOpen' : tooltipPCT1Open }">
-          <a href="mailto:{{careManager.employee_profile.user.email}}">{{careManager.employee_profile.user.email}}</a>
-        </div>
+        <app-popover [visible]="emailTooltipOpen[careManager.id]" (visibleChange)="emailTooltipOpen[careManager.id] = $event;">
+          <div class="tool__tip tool__tip--right isOpen">
+            <a href="mailto:{{careManager.employee_profile.user.email}}">{{careManager.employee_profile.user.email}}</a>
+          </div>
+        </app-popover>
       </div>
     </div> <!--/.info__contact-->
   </div> <!--/.info--team (for care manager)-->
@@ -82,8 +84,7 @@
       <div class="info__pill pill">
         {{teamMember.time_spent_this_month}}
       </div>
-      <button class="info__edit button button--icon button--icon--small"
-      (click)="removeCTMember(teamMember)">
+      <button class="info__edit button button--icon button--icon--small" (click)="removeCTMember(teamMember)">
         <i class="ss-delete"></i>
       </button>
       <img class="info__pic" [src]="teamMember.employee_profile.user.image_url" />
@@ -97,28 +98,27 @@
       <p class="marBottom32">Ogden Clinic: Mountain View</p>
       <div class="info__contact">
         <div class="info__contactInner tool__anchor" *ngIf="teamMember.employee_profile.user.phone">
-          <button class="button button--icon"
-          (click)="tooltipPCT2Open=!tooltipPCT2Open">
+          <button class="button button--icon" (click)="phoneTooltipOpen[teamMember.id]=!phoneTooltipOpen[teamMember.id]">
             <i class="ss-standard ss-phone"></i>
           </button>
-          <div class="tool__tip tool__tip--left"
-          [ngClass]="{ 'isOpen' : tooltipPCT2Open }">
-            <a href="tel:{{teamMember.employee_profile.user.phone}}">{{teamMember.employee_profile.user.phone}}</a>
-          </div>
+          <app-popover [visible]="phoneTooltipOpen[teamMember.id]" (visibleChange)="phoneTooltipOpen[teamMember.id] = $event;">
+            <div class="tool__tip tool__tip--left isOpen">
+              <a href="tel:{{teamMember.employee_profile.user.phone}}">{{teamMember.employee_profile.user.phone}}</a>
+            </div>
+          </app-popover>
         </div>
         <div class="info__contactInner tool__anchor">
           <button class="button button--icon"
-          (click)="tooltipPCT3Open=!tooltipPCT3Open">
+          (click)="emailTooltipOpen[teamMember.id]=!emailTooltipOpen[teamMember.id]">
             <i class="ss-standard ss-mail"></i>
           </button>
-          <div class="tool__tip tool__tip--right"
-          [ngClass]="{ 'isOpen' : tooltipPCT3Open }">
-            <a href="mailto:{{teamMember.employee_profile.user.email}}">{{teamMember.employee_profile.user.email}}</a>
-          </div>
+          <app-popover [visible]="emailTooltipOpen[teamMember.id]" (visibleChange)="emailTooltipOpen[teamMember.id] = $event;">
+            <div class="tool__tip tool__tip--right isOpen">
+              <a href="mailto:{{teamMember.employee_profile.user.email}}">{{teamMember.employee_profile.user.email}}</a>
+            </div>
+          </app-popover>
         </div>
       </div> <!--/.info__contact-->
     </div> <!--/.info--team-->
   </div> <!--/.flex wrap-->
-
-
 </div> <!--/.ssContainer-->
