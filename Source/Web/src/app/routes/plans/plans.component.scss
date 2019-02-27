@@ -3,7 +3,6 @@
   display: flex;
   flex-direction: row;
   justify-content: flex-end;
-  margin-bottom: 2rem;
 }
 
 .flexHeader {
@@ -21,4 +20,8 @@
   position: inherit;
   left: auto;
   top: auto;
+}
+
+.negativeMarTop24 {
+  margin-top: -24px;
 }

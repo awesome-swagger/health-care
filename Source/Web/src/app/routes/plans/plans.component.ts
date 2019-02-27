@@ -52,7 +52,7 @@ export class PlansComponent implements OnDestroy, OnInit {
       }
       this.organization = organization;
       this.getFacilities(this.organization).then((facilities: any) => {
-        this.facilities = facilities;
+        this.facilities = facilities.filter((obj) => !obj.is_affiliate);
       });
       this.getPlansAverage(this.organization).then((plansAverage: any) => {
         this.averagesByCarePlan = plansAverage;

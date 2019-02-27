@@ -113,7 +113,7 @@ export class MedicationComponent implements OnInit {
     return (
       !this.selectedMedication || !this.doseMg ||
       !this.datePrescribed || !this.durationDays ||
-      !this.selectedEmployee);
+      !this.selectedEmployee || !this.datePrescribed);
   }
 
   public clickCancel() {
