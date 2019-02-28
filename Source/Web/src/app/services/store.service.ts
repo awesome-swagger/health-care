@@ -9,6 +9,8 @@ export class StoreService {
 
   // Core
   public User = new Store(this.http, 'users');
+  public RestAuthUser = new Store(this.http, 'user');
+  public AddUser = new Store(this.http, 'add_user');
   public Organization = new Store(this.http, 'organizations');
   public Facility = new Store(this.http, 'facilities');
   public EmployeeProfile = new Store(this.http, 'employee_profiles');

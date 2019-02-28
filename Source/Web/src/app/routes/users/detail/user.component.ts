@@ -13,6 +13,7 @@ import {
   map as _map,
   uniqBy as _uniqBy
 } from 'lodash';
+import * as moment from 'moment';
 
 @Component({
   selector: 'app-user',
@@ -30,6 +31,14 @@ export class UserComponent implements OnDestroy, OnInit {
   public selectedRole = [];
   public billingPractitioners = [];
   public selectedBillingPractitioner = [];
+  public isCurrentUser = false;
+  public activeSince = '';
+  public first_name = '';
+  public last_name = '';
+  public title = null;
+  public titles = [];
+  public employedBy = null;
+  public employerIsAffiliate = false;
 
   public tooltip1Open;
   public tooltip2Open;
@@ -58,6 +67,26 @@ export class UserComponent implements OnDestroy, OnInit {
         (employee) => {
           this.employee = employee;
           console.log('employee', this.employee);
+
+          this.auth.user$.subscribe(res => {
+            if (!res) return;
+            if (res.id === this.employee.id) {
+              this.isCurrentUser = true;
+            }
+          })
+
+          this.activeSince = moment(this.employee.user.date_joined).format('MMM D, YYYY')
+          this.first_name = this.employee.user.first_name;
+          this.last_name = this.employee.user.last_name;
+          this.title = this.employee.title;
+
+          const affiliate = _find(this.employee.facilities, f => f.is_affiliate);
+          if (affiliate) {
+            this.employedBy = affiliate;
+            this.employerIsAffiliate = true;
+          } else {
+            this.employedBy = this.employee.organizations[0];
+          }
 
           this.store.BillingCoordinator.readListPaged().subscribe((res:any) => {
             res.forEach(bc => {
@@ -123,6 +152,10 @@ export class UserComponent implements OnDestroy, OnInit {
       this.billingPractitioners = _filter(res, employee => employee.billing_view)
     })
 
+    const titlesSub = this.store.ProviderTitle.readListPaged().subscribe(res => {
+      this.titles = res;
+    })
+
   }
 
   public ngOnDestroy() {
@@ -133,7 +166,6 @@ export class UserComponent implements OnDestroy, OnInit {
 
   public openReassignPatients() {
     this.modals.open(ReassignPatientsComponent, {
-      closeDisabled: true,
       width: 'calc(100vw - 48px)',
       minWidth: '976px',
     }).subscribe(() => {});
@@ -141,28 +173,42 @@ export class UserComponent implements OnDestroy, OnInit {
 
   public editUserDetails() {
     this.modals.open(EditUserDetailsComponent, {
-      closeDisabled: true,
       width: '427px',
-    }).subscribe(() => {});
+      data: {
+        employedBy: this.employedBy,
+        specialty: this.employee.specialty,
+        npi: this.employee.npi_code,
+        phone: this.employee.user.phone,
+        employee: this.employee,
+      }
+    }).subscribe((res) => {
+      if (res) {
+        this.employee = res;
+        const affiliate = _find(this.employee.facilities, f => f.is_affiliate);
+        if (affiliate) {
+          this.employedBy = affiliate;
+          this.employerIsAffiliate = true;
+        } else {
+          this.employedBy = this.employee.organizations[0];
+        }
+      }
+    });
   }
 
   public openChangeEmail() {
     this.modals.open(ChangeEmailComponent, {
-      closeDisabled: true,
       width: '427px',
     }).subscribe(() => {});
   }
 
   public openChangePassword() {
     this.modals.open(ChangePasswordComponent, {
-      closeDisabled: true,
       width: '384px',
     }).subscribe(() => {});
   }
 
   public confirmRevokeAccess() {
     this.modals.open(ConfirmModalComponent, {
-     'closeDisabled': true,
      data: {
        title: 'Revoke Access?',
        body: 'Are you sure you want revoke this person\'s access to this facility? This will affect X patients.',
@@ -179,7 +225,6 @@ export class UserComponent implements OnDestroy, OnInit {
     const cancelText = 'Cancel';
     const okText = 'Continue';
     this.modals.open(ConfirmModalComponent, {
-     'closeDisabled': true,
      data: {
        title: 'Remove BC?',
        body: 'Are you sure you want to remove this billing coordinator?',
@@ -202,7 +247,6 @@ export class UserComponent implements OnDestroy, OnInit {
 
   public confirmRemoveBP() {
     this.modals.open(ConfirmModalComponent, {
-     'closeDisabled': true,
      data: {
        title: 'Remove BP?',
        body: 'Are you sure you want to remove this billing practitioner?',
@@ -221,7 +265,6 @@ export class UserComponent implements OnDestroy, OnInit {
     const cancelText = 'Cancel';
     const okText = 'Continue';
     this.modals.open(ConfirmModalComponent, {
-      'closeDisabled': true,
       data: {
         title: 'Add Role?',
         body: `Do you want to give ${employeeName} the role of ${role.name}?`,
@@ -251,7 +294,6 @@ export class UserComponent implements OnDestroy, OnInit {
     const cancelText = 'Cancel';
     const okText = 'Continue';
     this.modals.open(ConfirmModalComponent, {
-      'closeDisabled': true,
       data: {
         title: 'Add Billing Coordinator?',
         body: `Do you want to make ${name} a billing coordinator`,
@@ -283,7 +325,6 @@ export class UserComponent implements OnDestroy, OnInit {
     const okText = 'Continue';
     const roles = _map(_filter(this.employee.roles, r => r.id !== role.id), r => r.id);
     this.modals.open(ConfirmModalComponent, {
-      'closeDisabled': true,
       data: {
         title: 'Remove Role?',
         body: `Do you want to remove the role of ${role.name} from ${employeeName}?`,
@@ -400,6 +441,32 @@ export class UserComponent implements OnDestroy, OnInit {
     }
   }
 
+  public confirmToggleActive() {
+    const currentStatus = this.employee.status;
+    let newStatus;
+    if (currentStatus === 'active') {
+      newStatus = 'inactive';
+    } else {
+      newStatus = 'active';
+    }
+    const cancelText = 'Cancel';
+    const okText = 'Continue';
+    const title = 'Make Employee Inactive';
+    const body = `Are you sure you want to make ${this.first_name} ${this.last_name} ${newStatus}?`;
+    this.modals.open(ConfirmModalComponent, {
+      width: '385px',
+      data: { cancelText, okText, title, body },
+    }).subscribe(res => {
+      if (res === okText) {
+        this.store.EmployeeProfile.update(this.employee.id, {
+          status: newStatus
+        }).subscribe(res => {
+          this.employee.status = newStatus;
+        })
+      }
+    })
+  }
+
   public isFacilityManager(facilityId) {
     return !!_find(this.employee.facilities_managed, f => f.id === facilityId);
   }
@@ -438,6 +505,39 @@ export class UserComponent implements OnDestroy, OnInit {
 
   public get billableCount() {
     return _filter(this.careTeam, c => c.is_billable).length;
+  }
+
+  public compareFn(c1, c2) {
+    return c1 && c2 ? c1.id === c2.id : c1 === c2;
+  }
+
+  public saveUserName() {
+    if (this.first_name !== this.employee.user.first_name || this.last_name !== this.employee.user.last_name) {
+      this.store.RestAuthUser.updateAlt(null, {
+        pk: this.employee.user.id,
+        first_name: this.first_name,
+        last_name: this.last_name,
+      }).subscribe(res => {
+        console.log('vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv');
+        console.log(res);
+        console.log('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^');
+      })
+    }
+
+    if (this.title.id !== this.employee.title.id) {
+      this.store.EmployeeProfile.update(this.employee.id, {
+        title: this.title.id
+      }).subscribe(res => {
+        this.employee.title = res.title;
+      })
+    }
+  }
+
+  public get facilitiesCount() {
+    if (this.employee) {
+      return this.employee.facilities.filter(f => !f.is_affiliate).length;
+    }
+    return '';
   }
 
 }

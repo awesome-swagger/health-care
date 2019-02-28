@@ -122,7 +122,7 @@ export class OrganizationComponent implements OnDestroy, OnInit {
       data: {
         type: 'edit',
         isAffiliate: facility.is_affiliate,
-        facility: facility,
+        facility,
         isOrganization: false,
       },
       width: '512px',
@@ -130,7 +130,7 @@ export class OrganizationComponent implements OnDestroy, OnInit {
   }
 
   public deleteFacility(facility) {
-    let patientsSub = this.store.Facility.detailRoute('get', facility.id, 'active_patients').subscribe(
+    let patientsSub = this.store.Facility.detailRoute('get', facility.id, 'patients', {}, { type: 'active' }).subscribe(
       (patients: any) => {
         let usersSub = this.store.EmployeeProfile.readListPaged().subscribe(
           users => {

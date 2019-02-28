@@ -6,33 +6,31 @@
           <img class="picName__img picName__img--big" *ngIf="!employee?.user.image_url" src="../../../assets/img/profile.svg" />
           <img class="picName__img picName__img--big" *ngIf="employee?.user.image_url" [src]="employee?.user.image_url" />
           <div *ngIf="!editName" class="flex alignCenter">
-            <h1 class="noMargin marRight8">{{employee?.user.first_name}} {{employee?.user.last_name}}<span *ngIf="employee?.title">, {{employee?.title.abbreviation}}</span></h1>
-            <button class="button button--icon" (click)="editName=!editName">
+            <h1 class="noMargin marRight8">{{first_name}} {{last_name}}<span *ngIf="employee?.title">, {{employee?.title.abbreviation}}</span></h1>
+            <button class="button button--icon" (click)="editName=!editName" *ngIf="isCurrentUser">
               <i class="ss-write"></i>
             </button>
           </div>
           <form *ngIf="editName" class="flexForm">
-            <input type="text" class="input flexForm__input" placeholder="First Name" />
-            <input type="text" class="input flexForm__input" placeholder="Last Name" />
+            <input type="text" class="input flexForm__input" placeholder="First Name" [(ngModel)]="first_name" name="first" />
+            <input type="text" class="input flexForm__input" placeholder="Last Name" [(ngModel)]="last_name" name="last" />
             <div class="styledSelect flexForm__title">
-              <select class="styledSelect__select">
+              <select class="styledSelect__select" [(ngModel)]="title" [compareWith]="compareFn" name="editTitle">
                 <option>Title</option>
-                <option>MD</option>
-                <option>CRNA</option>
+                <option *ngFor="let title of titles" [ngValue]="title">{{title.abbreviation}}</option>
               </select>
             </div>
             <button class="button button--icon button--flex" (click)="editName=!editName">
               <i class="ss-undo"></i>
             </button>
-            <button class="button button--icon button--flex" (click)="editName=!editName">
+            <button class="button button--icon button--flex" (click)="saveUserName(); editName=!editName">
               <i class="ss-floppydisk"></i>
             </button>
           </form>
         </div>
         <div>
           <label>Status</label>
-          {{employee?.status}}
-          <!-- <h5>(May 23, 2017)</h5> -->
+          {{employee?.status}} <span *ngIf="employee?.status === 'active'">({{activeSince}})</span>
         </div>
       </div>
       <div>
@@ -41,9 +39,8 @@
           <i class="ss-ban"></i> Make Inactive
         </button>-->
 
-        <button class="button button--iconText"
-        (click)="openChangePassword()">
-          <i class="ss-standard ss-ban"></i>Make Inactive
+        <button class="button button--iconText" (click)="confirmToggleActive()" *ngIf="employee">
+          <i class="ss-standard ss-ban"></i>Make {{employee?.status === 'active' ? 'Inactive' : 'Active'}}
         </button>
       </div>
   </div> <!--/.flexHeader-->
@@ -52,7 +49,7 @@
     <div class="info info--horiz marRight24 user__infoDetails">
       <div class="info__cell">
         <label>Employer</label>
-        {{organization?.name}}
+        {{employedBy?.name}}
       </div>
       <div class="info__cell">
         <label>Specialty</label>
@@ -85,11 +82,10 @@
         <i class="ss-write"></i>
       </button>
     </div> <!--/.info (for employer, specialty, phone, npi)-->
-    <div class="info">
+    <div class="info emailbox">
       <div class="info__cell info__cell--left">
         <!--TODO: Only show edit email button on user profile-->
-        <button class="button button--icon button--icon--small info__edit"
-        (click)="openChangeEmail()">
+        <button class="button button--icon button--icon--small info__edit" (click)="openChangeEmail()" *ngIf="isCurrentUser">
           <i class="ss-write"></i>
         </button>
         <label class="noMargin">Email</label>
@@ -102,9 +98,6 @@
   <div class="flex justifySpaceBetween">
     <h2 class="noMargin">Assignments (Current Month-to-Date)</h2>
     <!--TODO: When this link is clicked, filter active patients list by this provider-->
-    <a [routerLink]="['/patients/active', employee?.id]" class="button button--iconText">
-      <i class="ss-standard ss-view"></i> View Patients List
-    </a>
   </div>
   <div class="info info--horiz">
     <div class="info__cell">
@@ -143,7 +136,7 @@
   <div>
     <div class="accordion" [ngClass]="{ 'isOpen' : accord1Open }">
       <div class="accordion__head" (click)="accord1Open=!accord1Open">
-        <span class="accordion__title">Access ({{employee?.facilities?.length}})</span>
+        <span class="accordion__title">Access ({{facilitiesCount}})</span>
         <div class="accordion__right">
           <div class="accordion__arrow">
             <i class="ss-standard ss-navigateright"></i>
@@ -219,115 +212,120 @@
           <div class="divider"></div>
 
           <ng-container *ngFor="let facility of employee?.facilities; let i = index">
-            <div class="flex justifySpaceBetween alignCenter upperRow"><!-- start facility -->
-              <h3 class="noMargin">{{facility.name}}</h3>
-              <!--TODO: If role is not CM or BP, show a confirmation modal-->
-              <label class="styledInput" (click)="confirmToggleAdmin(!isFacilityManager(facility.id), facility.id)">
-                <input
-                  type="checkbox"
-                  class="styledInput__input"
-                  [checked]="isFacilityManager(facility.id)"
-                  disabled
-                />
-                <span class="styledInput__box"></span>
-                Facility Administrator
-              </label>
-              <button class="button button--iconText"
-              (click)="openChangePassword()">
-                <i class="ss-delete"></i>Revoke Access
-              </button>
-            </div>
+            <ng-container *ngIf="!facility.is_affiliate">
+              <div class="flex justifySpaceBetween alignCenter upperRow"><!-- start facility -->
+                <h3 class="noMargin">{{facility.name}}</h3>
+                <!--TODO: If role is not CM or BP, show a confirmation modal-->
+                <label class="styledInput" (click)="confirmToggleAdmin(!isFacilityManager(facility.id), facility.id)">
+                  <input
+                    type="checkbox"
+                    class="styledInput__input"
+                    [checked]="isFacilityManager(facility.id)"
+                    disabled
+                  />
+                  <span class="styledInput__box"></span>
+                  Facility Administrator
+                </label>
+                <button class="button button--iconText"
+                (click)="openChangePassword()">
+                  <i class="ss-delete"></i>Revoke Access
+                </button>
+              </div>
 
-            <div class="cols">
-              <div class="cols__colBig marRight96"> <!-- start left column-->
-                  <table class="fullWidth marBottom48">
-                    <thead>
-                      <tr>
-                        <th class="thSortable thSortable--sortDown">
-                          <span class="thSortable__text thSortable__text--left">Facility</span>
-                        </th>
-                        <th class="thSortable">
-                          <span class="thSortable__text">Patients</span>
-                        </th>
-                        <th class="thSortable">
-                          <span class="thSortable__text">Managing</span>
-                        </th>
-                        <th class="thSortable">
-                          <span class="thSortable__text">Care Team</span>
-                        </th>
-                        <th class="thSortable">
-                          <span class="thSortable__text">Billing</span>
-                        </th>
-                        <th></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr *ngFor="let role of employee?.roles">
-                        <td class="left">{{role.name}}</td>
-                        <td>{{roleStats(role.id, facility.di).patients}}</td>
-                        <td>{{roleStats(role.id, facility.di).managing}}</td>
-                        <td>{{roleStats(role.id, facility.di).careTeam}}</td>
-                        <td></td>
-                        <td>
-                          <button class="button button--icon button--icon--small" (click)="confirmRemoveRole(role)">
-                            <i class="ss-delete"></i>
-                          </button>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table> <!-- end facility -->
+              <div class="cols">
+                <div class="cols__colBig marRight96"> <!-- start left column-->
+                    <table class="fullWidth marBottom48">
+                      <thead>
+                        <tr>
+                          <th class="thSortable thSortable--sortDown">
+                            <span class="thSortable__text thSortable__text--left">Facility</span>
+                          </th>
+                          <th class="thSortable">
+                            <span class="thSortable__text">Patients</span>
+                          </th>
+                          <th class="thSortable">
+                            <span class="thSortable__text">Managing</span>
+                          </th>
+                          <th class="thSortable">
+                            <span class="thSortable__text">Care Team</span>
+                          </th>
+                          <th class="thSortable">
+                            <span class="thSortable__text">Billing</span>
+                          </th>
+                          <th></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr *ngFor="let role of employee?.roles">
+                          <td class="left">{{role.name}}</td>
+                          <td>{{roleStats(role.id, facility.di).patients}}</td>
+                          <td>{{roleStats(role.id, facility.di).managing}}</td>
+                          <td>{{roleStats(role.id, facility.di).careTeam}}</td>
+                          <td></td>
+                          <td>
+                            <button class="button button--icon button--icon--small" (click)="confirmRemoveRole(role)">
+                              <i class="ss-delete"></i>
+                            </button>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table> <!-- end facility -->
 
-                <label>Add Role</label>
-                <form class="flexForm">
-                  <div class="styledSelect">
-                    <select class="styledSelect__select" [(ngModel)]="selectedRole[i]" [ngModelOptions]="{standalone: true}">
-                      <option *ngFor="let role of roles" [ngValue]="role">
-                        {{role.name}}
-                      </option>
-                    </select>
+                  <label>Add Role</label>
+                  <form class="flexForm">
+                    <div class="styledSelect">
+                      <select class="styledSelect__select" [(ngModel)]="selectedRole[i]" [ngModelOptions]="{standalone: true}">
+                        <option *ngFor="let role of roles" [ngValue]="role">
+                          {{role.name}}
+                        </option>
+                      </select>
+                    </div>
+                    <button class="button button--icon button--flex" (click)="confirmAddRole(i)">
+                      <i class="ss-plus"></i>
+                    </button>
+                  </form>
+                </div> <!--/ left column-->
+
+                <div class="cols__colSmall"> <!-- start right column-->
+                  <div class="bc">
+                    <label>Billing Coordinators (BCs)</label>
+                    <ul class="nameList">
+                      <li class="nameList__item" *ngFor="let billingCoordinator of facility.billingCoordinators">
+                        <!--TODO: Link to user detail page-->
+                        <a class="picName fullWidth">
+                          <img class="picName__img" src="../../../assets/img/profile.svg"/>
+                          {{billingCoordinator?.coordinator?.user?.first_name}} {{billingCoordinator?.coordinator?.user?.last_name}}
+                        </a>
+                        <button class="button button--icon button--icon--small"
+                        (click)="confirmRemoveBC(billingCoordinator)">
+                          <i class="ss-delete"></i>
+                        </button>
+                      </li>
+                    </ul>
                   </div>
-                  <button class="button button--icon button--flex" (click)="confirmAddRole(i)">
-                    <i class="ss-plus"></i>
-                  </button>
-                </form>
-              </div> <!--/ left column-->
-
-              <div class="cols__colSmall"> <!-- start right column-->
-                <div class="bc">
-                  <label>Billing Coordinators (BCs)</label>
-                  <ul class="nameList">
-                    <li class="nameList__item" *ngFor="let billingCoordinator of facility.billingCoordinators">
-                      <!--TODO: Link to user detail page-->
-                      <a class="picName fullWidth">
-                        <img class="picName__img" src="../../../assets/img/profile.svg"/>
-                        {{billingCoordinator?.coordinator?.user?.first_name}} {{billingCoordinator?.coordinator?.user?.last_name}}
-                      </a>
-                      <button class="button button--icon button--icon--small"
-                      (click)="confirmRemoveBC(billingCoordinator)">
-                        <i class="ss-delete"></i>
-                      </button>
-                    </li>
-                  </ul>
-                </div>
-                <label>Add Billing Coordinator (BC)</label>
-                <form class="flexForm">
-                  <div class="styledSelect">
-                    <select class="styledSelect__select" [(ngModel)]="selectedBillingPractitioner[i]" [ngModelOptions]="{standalone: true}">
-                      <option *ngFor="let billingPractitioner of billingPractitioners" [ngValue]="billingPractitioner">
-                        {{billingPractitioner?.user?.first_name}} {{billingPractitioner?.user?.last_name}}
-                      </option>
-                    </select>
-                  </div>
-                  <button class="button button--icon button--flex" (click)="confirmAddBC(i)">
-                    <i class="ss-plus"></i>
-                  </button>
-                </form>
-              </div> <!--/ right column-->
-            </div> <!--/.cols-->
-            <div class="divider"></div>
+                  <label>Add Billing Coordinator (BC)</label>
+                  <form class="flexForm">
+                    <div class="styledSelect">
+                      <select class="styledSelect__select" [(ngModel)]="selectedBillingPractitioner[i]" [ngModelOptions]="{standalone: true}">
+                        <option *ngFor="let billingPractitioner of billingPractitioners" [ngValue]="billingPractitioner">
+                          {{billingPractitioner?.user?.first_name}} {{billingPractitioner?.user?.last_name}}
+                        </option>
+                      </select>
+                    </div>
+                    <button class="button button--icon button--flex" (click)="confirmAddBC(i)">
+                      <i class="ss-plus"></i>
+                    </button>
+                  </form>
+                </div> <!--/ right column-->
+              </div> <!--/.cols-->
+              <div class="divider"></div>
+            </ng-container>
           </ng-container>
         </div> <!--/.accordion__contents-->
       </div> <!--/.accordion__body-->
     </div> <!--/.accordion (for roles)-->
   </div> <!--/ BC section-->
+  <a *ngIf="employee" [routerLink]="['/patients/active', employee.id]" class="button button--iconText">
+    <i class="ss-standard ss-view"></i> View Patients List
+  </a>
 </div> <!--/.ssContainer-->

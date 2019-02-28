@@ -61,9 +61,6 @@ export class UsersComponent implements OnDestroy, OnInit {
 
           this.store.EmployeeProfile.readListPaged().subscribe(
             res => {
-              console.log('vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv');
-              console.log(res);
-              console.log('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^');
               this.allEmployees = res;
             }
           )
@@ -266,4 +263,11 @@ export class UsersComponent implements OnDestroy, OnInit {
     }
     return {facilities: [], orgs: []}
   }
+
+  public filteredFacilities(is_affiliate) { return this.facilities.filter(f => f.is_affiliate === is_affiliate); }
+
+  public facilityTypes = [
+    { pluralName: 'Facilities', name: 'Facility', is_affiliate: false},
+    { pluralName: 'Affiliates', name: 'Affiliate', is_affiliate: true}
+  ]
 }

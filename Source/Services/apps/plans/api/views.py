@@ -280,13 +280,12 @@ class CarePlanTemplateViewSet(viewsets.ModelViewSet):
         for ii in request.data:
             try:
                 plan = CarePlan.objects.get(pk=ii['plan'])
-                if ii.get('inactive'):
-                    plan.is_active = False
-                else:
+                plan.delete()
+                if not ii.get('inactive'):
                     plan.plan_template_id = ii['plan_template']
                     plan.care_team_members.filter(is_manager=True) \
                                           .update(employee_profile_id=ii['care_manager'])
-                plan.save()
+                    plan.save()
             except:
                 pass
 

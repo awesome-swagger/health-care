@@ -33,6 +33,13 @@ export class Store {
     });
   }
 
+  public createAlt(payload: any): Observable<any> {
+    let request = this.http.post(this.createRestAuthUrl(), payload);
+    return request.catch((error: any) => {
+      return throwError(error);
+    });
+  }
+
   public read(id: number | string): Observable<any> {
     let request = this.http.get(this.createUrl(id));
     return request;
@@ -87,6 +94,18 @@ export class Store {
     });
   }
 
+  public updateAlt(id: number | string, payload: any, patch = true): Observable<any> {
+    let request = null;
+    if (patch) {
+      request = this.http.patch(this.createRestAuthUrl(id), payload);
+    } else {
+      request = this.http.put(this.createRestAuthUrl(id), payload);
+    }
+    return request.catch((error: any) => {
+      return throwError(error);
+    });
+  }
+
   public destroy(id: number | string): Observable<any> {
     let request = this.http.delete(this.createUrl(id));
     return request.catch((error: any) => {
@@ -113,6 +132,14 @@ export class Store {
       return `${AppConfig.apiUrl}${this.endpoint}/${id}/`;
     } else {
       return `${AppConfig.apiUrl}${this.endpoint}/`;
+    }
+  }
+
+  private createRestAuthUrl(id: number | string = null):string {
+    if (id) {
+      return `${AppConfig.restAuthUrl}${this.endpoint}/${id}/`;
+    } else {
+      return `${AppConfig.restAuthUrl}${this.endpoint}/`;
     }
   }
 }

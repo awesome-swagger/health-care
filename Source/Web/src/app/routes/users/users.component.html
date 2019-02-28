@@ -64,24 +64,26 @@
               Organization: {{organization?.name}}
             </label>
           </li>
-          <ng-container *ngFor="let facility of facilities">
-            <li class="drop__option" *ngIf="facilitySearchMatch(facility)">
-              <label class="drop__checkbox styledInput">
-                <input type="checkbox" class="styledInput__input" [(ngModel)]="facilitiesChecked[facility.id]" />
-                <span class="styledInput__box"></span>
-                Facility: {{facility.name}}
-              </label>
-            </li>
+          <ng-container *ngFor="let facilityType of facilityTypes">
+            <ng-container *ngFor="let facility of filteredFacilities(facilityType.is_affiliate)">
+              <li class="drop__option" *ngIf="facilitySearchMatch(facility)">
+                <label class="drop__checkbox styledInput">
+                  <input type="checkbox" class="styledInput__input" [(ngModel)]="facilitiesChecked[facility.id]" />
+                  <span class="styledInput__box"></span>
+                  {{facilityType.name}}: {{facility.name}}
+                </label>
+              </li>
+            </ng-container>
           </ng-container>
         </ul>
       </div> <!--/.drop (for Multiselect)-->
     </div>
   </div> <!--/.flexHeader (for filters)-->
 
-
+  <h2>Organization</h2>
   <div class="accordion" [ngClass]="{ 'isOpen': organizationAccordionOpen }" *ngIf="organization && organizationChecked">
     <div class="accordion__head" (click)="organizationAccordionOpen = !organizationAccordionOpen">
-      <span class="accordion__title">Organization: {{organization.name}} (<span *ngIf="organization.employees">{{orgUserCountText}}</span>)</span>
+      <span class="accordion__title">{{organization.name}} (<span *ngIf="organization.employees">{{orgUserCountText}}</span>)</span>
       <div class="accordion__right">
         <div class="accordion__arrow">
           <i class="ss-standard ss-navigateright"></i>
@@ -94,18 +96,18 @@
           <table class="fullWidth">
             <thead>
               <tr>
-                <th class="left thSortable thSortable--sortDown">
-                  <span class="left thSortable__text">User</span>
+                <th class="left">
+                  <span>User</span>
                 </th>
-                <th class="thSortable">
-                    <span class="thSortable__text">Title</span>
+                <th class="left">
+                    <span>Title</span>
                 </th>
-                <th class="thSortable">
-                    <span class="thSortable__text">Status</span>
+                <th class="left">
+                    <span>Status</span>
                 </th>
-                <th class="thSortable">
-                  <span class="thSortable__text">Also</span>
-<!--                  <div class="tool__anchor">
+                <th class="tool justifyCenter">
+                  <span>Also</span>
+                  <div class="tool__anchor">
                     <button class="button button--icon button--icon--small" (click)="tooltipsOpen['alsoOrg'] = !tooltipsOpen['alsoOrg']">
                       <i class="ss-help"></i>
                     </button>
@@ -114,7 +116,7 @@
                         If a number shows in this column, it means this user has multiple assignments within this organization. Click on the number for details.
                       </div>
                     </div>
-                  </div> -->
+                  </div>
                 </th>
               </tr>
             </thead>
@@ -128,8 +130,8 @@
                       {{orgEmployee.full_name}}
                     </a>
                   </td>
-                  <td>{{orgEmployee.title}}</td>
-                  <td>{{orgEmployee.status|titlecase}}</td>
+                  <td class="left">{{orgEmployee.title}}</td>
+                  <td class="left">{{orgEmployee.status|titlecase}}</td>
                   <td>
                     <a class="tool__anchor flex justifyCenter" (click)="tooltipsOpen[orgEmployee.id] = !tooltipsOpen[orgEmployee.id]">
                       {{getAlso(facility?.id, organization?.id, orgEmployee?.id).orgs.length + getAlso(facility?.id, organization?.id, orgEmployee?.id).facilities.length}}
@@ -149,7 +151,7 @@
           </table>
         </div> <!--/.tableWrap-->
       </div> <!--/.accordion__contents-->
-      <div class="paginationWrap">
+      <div *ngIf="lastPage(total) > 1" class="paginationWrap">
         <div class="pagination">
             <button class="button button--icon button--icon--dis" (click)="switchPage(null, 1)">
                 <i class="ss-standard ss-skipback"></i>
@@ -169,149 +171,153 @@
 
     </div> <!--/.accordion__body-->
   </div> <!--/.accordion (for organization)-->
-  <ng-container *ngFor="let facility of facilities; let i = index">
-    <div class="accordion" [ngClass]="{ 'isOpen': facilityAccordionsOpen[facility.id] }" *ngIf="facilitiesChecked[facility.id]">
-      <div class="accordion__head" (click)="facilityAccordionsOpen[facility.id] = !facilityAccordionsOpen[facility.id]">
-        <span class="accordion__title">Facility: {{facility.name}} <span *ngIf="facility.employees.length">({{facility?.employees?.length}})</span></span>
-        <div class="accordion__right">
-          <div class="accordion__arrow">
-            <i class="ss-standard ss-navigateright"></i>
+
+  <ng-container *ngFor="let facilityType of facilityTypes">
+    <h2 class="marTop32">{{facilityType.pluralName}}</h2>
+    <ng-container *ngFor="let facility of filteredFacilities(facilityType.is_affiliate); let i = index">
+      <div class="accordion" [ngClass]="{ 'isOpen': facilityAccordionsOpen[facility.id] }" *ngIf="facilitiesChecked[facility.id]">
+        <div class="accordion__head" (click)="facilityAccordionsOpen[facility.id] = !facilityAccordionsOpen[facility.id]">
+          <span class="accordion__title">{{facility.name}} <span *ngIf="facility.employees.length">({{facility?.employees?.length}})</span></span>
+          <div class="accordion__right">
+            <div class="accordion__arrow">
+              <i class="ss-standard ss-navigateright"></i>
+            </div>
           </div>
         </div>
-      </div>
-      <div class="accordion__body">
-        <div class="accordion__contents">
-          <div class="tableWrap fullWidth">
-            <table class="fullWidth">
-              <thead>
-                <tr>
-                  <th class="left thSortable thSortable--sortDown">
-                    <span class="left thSortable__text">User</span>
-                  </th>
-                  <th class="thSortable left">
-                    <span class="thSortable__text">Title</span>
-                  </th>
-                  <th class="thSortable">
-                    <span class="thSortable__text">Status</span>
-                  </th>
-                  <th class="thSortable left">
-                    <span class="thSortable__text">Employer</span>
-                  </th>
-                  <th class="thSortable">
-                    <span class="thSortable__text">Managing</span>
-                  </th>
-                  <th class="thSortable">
-                    <span class="thSortable__text">Care Team</span>
-                  </th>
-                  <th class="thSortable">
-                    <span class="thSortable__text">Admin</span>
-                  </th>
-                  <th class="thSortable">
-                    <span class="thSortable__text">Also</span>
-  <!--                 <div class="tool__anchor">
-                      <button class="button button--icon button--icon--small" (click)="tooltipsOpen['alsoFacility' + facility.id]=!tooltipsOpen['alsoFacility' + facility.id]">
-                        <i class="ss-help"></i>
-                      </button>
-                      <div class="tool__tip tool__tip--bottom tool__tip--right" [ngClass]="{ 'isOpen' : tooltipsOpen['alsoFacility' + facility.id] }">
-                        <div class="tool__text">
-                          If a number shows in this column, it means this user has multiple assignments within this organization. Click on the number for details.
+        <div class="accordion__body">
+          <div class="accordion__contents">
+            <div class="tableWrap fullWidth">
+              <table class="fullWidth">
+                <thead>
+                  <tr>
+                    <th class="left">
+                      <span class="left">User</span>
+                    </th>
+                    <th class="left">
+                      <span>Title</span>
+                    </th>
+                    <th class="left">
+                      <span>Status</span>
+                    </th>
+                    <th class="left">
+                      <span>Employer</span>
+                    </th>
+                    <th class="left">
+                      <span>Managing</span>
+                    </th>
+                    <th class="left">
+                      <span>Care Team</span>
+                    </th>
+                    <th class="left">
+                      <span>Admin</span>
+                    </th>
+                    <th class="tool justifyCenter">
+                      <span>Also</span>
+                      <div class="tool__anchor">
+                        <button class="button button--icon button--icon--small" (click)="tooltipsOpen['alsoFacility' + facility.id]=!tooltipsOpen['alsoFacility' + facility.id]">
+                          <i class="ss-help"></i>
+                        </button>
+                        <div class="tool__tip tool__tip--bottom tool__tip--right" [ngClass]="{ 'isOpen' : tooltipsOpen['alsoFacility' + facility.id] }">
+                          <div class="tool__text">
+                            If a number shows in this column, it means this user has multiple assignments within this organization. Click on the number for details.
+                          </div>
                         </div>
                       </div>
-                    </div> -->
-                  </th>
-                </tr>
-              </thead>
-              <tbody *ngIf="facility.employees">
-                <ng-container *ngFor="let facilityEmp of facility.employees">
-                  <tr *ngIf="facilityEmp.status !== 'inactive' || showInactive">
-                    <td class="left hideOverflow">
-                      <a class="picName" (click)="routeToUserDetail(facilityEmp)">
-                        <img class="picName__img" src="../../../assets/img/profile.svg" *ngIf="!facilityEmp.image_url" />
-                        <img class="picName__img" [src]="facilityEmp.image_url" *ngIf="facilityEmp.image_url" />
-                        {{facilityEmp.full_name}}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody *ngIf="facility.employees">
+                  <ng-container *ngFor="let facilityEmp of facility.employees">
+                    <tr *ngIf="facilityEmp.status !== 'inactive' || showInactive">
+                      <td class="left hideOverflow">
+                        <a class="picName" (click)="routeToUserDetail(facilityEmp)">
+                          <img class="picName__img" src="../../../assets/img/profile.svg" *ngIf="!facilityEmp.image_url" />
+                          <img class="picName__img" [src]="facilityEmp.image_url" *ngIf="facilityEmp.image_url" />
+                          {{facilityEmp.full_name}}
+                        </a>
+                      </td>
+                      <td class="left">{{facilityEmp.title}}</td>
+                      <td class="left">{{facilityEmp.status|titlecase}}</td>
+                      <td class="left">--</td>
+                      <td class="left">{{facilityEmp.care_manager}}</td>
+                      <td class="left">{{facilityEmp.care_team}}</td>
+                      <td class="left"><span *ngIf="facilityEmp.is_admin"><i class="ss-standard ss-check"></i></span></td>
+                      <td>
+                      <a class="tool__anchor flex justifyCenter" (click)="tooltipsOpen[facility.id + facilityEmp.id] = !tooltipsOpen[facility.id + facilityEmp.id]">
+                        {{getAlso(facility?.id, organization?.id, facilityEmp?.id).orgs.length + getAlso(facility?.id, organization?.id, facilityEmp?.id).facilities.length}}
+                          <div class="tool__tip tool__tip--bottom tool__tip--right" [ngClass]="{ 'isOpen': tooltipsOpen[facility.id + facilityEmp.id] }">
+                            <div class="iconText iconText--white iconText--autoHeight marBottom8" *ngFor="let also of getAlso(facility?.id, organization?.id, facilityEmp?.id).orgs">
+                              Organization: {{also}}
+                            </div>
+                            <div class="iconText iconText--white iconText--autoHeight marBottom8" *ngFor="let also of getAlso(facility?.id, organization?.id, facilityEmp?.id).facilities">
+                              Facility: {{also}}
+                            </div>
+                          </div>
                       </a>
                     </td>
-                    <td class="left">{{facilityEmp.title}}</td>
-                    <td>{{facilityEmp.status|titlecase}}</td>
-                    <td class="left">--</td>
-                    <td>{{facilityEmp.care_manager}}</td>
-                    <td>{{facilityEmp.care_team}}</td>
-                    <td><span *ngIf="facilityEmp.is_admin"><i class="ss-standard ss-check"></i></span></td>
-                    <td>
-                    <a class="tool__anchor flex justifyCenter" (click)="tooltipsOpen[facility.id + facilityEmp.id] = !tooltipsOpen[facility.id + facilityEmp.id]">
-                      {{getAlso(facility?.id, organization?.id, facilityEmp?.id).orgs.length + getAlso(facility?.id, organization?.id, facilityEmp?.id).facilities.length}}
-                        <div class="tool__tip tool__tip--bottom tool__tip--right" [ngClass]="{ 'isOpen': tooltipsOpen[facility.id + facilityEmp.id] }">
-                          <div class="iconText iconText--white iconText--autoHeight marBottom8" *ngFor="let also of getAlso(facility?.id, organization?.id, facilityEmp?.id).orgs">
-                            Organization: {{also}}
-                          </div>
-                          <div class="iconText iconText--white iconText--autoHeight marBottom8" *ngFor="let also of getAlso(facility?.id, organization?.id, facilityEmp?.id).facilities">
-                            Facility: {{also}}
-                          </div>
-                        </div>
-                    </a>
-                  </td>
 
+                    </tr>
+                  </ng-container>
+                  <!-- <tr>
+                    <td class="left hideOverflow">
+                      <a href="" class="picName">
+                        <img class="picName__img" src="../../../assets/img/profile.svg" />
+                        Jennifer Herriod
+                      </a>
+                    </td>
+                    <td class="left">Care Coordinator</td>
+                    <td>Active</td>
+                    <td class="left">CareAdopt</td>
+                    <td>35</td>
+                    <td>12</td>
+                    <td></td>
+                    <td></td>
                   </tr>
-                </ng-container>
-                <!-- <tr>
-                  <td class="left hideOverflow">
-                    <a href="" class="picName">
-                      <img class="picName__img" src="../../../assets/img/profile.svg" />
-                      Jennifer Herriod
-                    </a>
-                  </td>
-                  <td class="left">Care Coordinator</td>
-                  <td>Active</td>
-                  <td class="left">CareAdopt</td>
-                  <td>35</td>
-                  <td>12</td>
-                  <td></td>
-                  <td></td>
-                </tr>
-                <tr>
-                  <td class="left hideOverflow">
-                    <a href="" class="picName">
-                      <img class="picName__img" src="../../../assets/img/profile.svg" />
-                      Kevin Porter
-                    </a>
-                  </td>
-                  <td class="left">MD</td>
-                  <td>Active</td>
-                  <td class="left">Ogden Clinic</td>
-                  <td>- -</td>
-                  <td>6</td>
-                  <td><i class="ss-standard ss-check iconSmall"></i></td>
-                  <td>
-                    <a class="tool__anchor flex justifyCenter" (click)="userTip5Open=!userTip5Open">
-                      1
-                        <div class="tool__tip tool__tip--bottom tool__tip--right" [ngClass]="{ 'isOpen' : userTip5Open }">
-                          Organization:&nbsp;Ogden&nbsp;Clinic
-                        </div>
-                    </a>
-                  </td>
-                </tr> -->
-              </tbody>
-            </table>
-          </div> <!--/.tableWrap-->
-        </div> <!--/.accordion__contents-->
-        <div class="paginationWrap">
-          <div class="pagination">
-              <button class="button button--icon button--icon--dis" (click)="switchNthFacilityPage(i, null, 1)">
-                  <i class="ss-standard ss-skipback"></i>
-              </button>
-              <button class="button button--icon button--icon--dis" (click)="switchNthFacilityPage(i, -1)">
-                  <i class="ss-standard ss-directleft"></i>
-              </button>
-              <span>{{facilityPages[facility.id]}} of {{lastPage(facilityTotals[facility.id])}}</span>
-              <button class="button button--icon" (click)="switchNthFacilityPage(i, 1)">
-                  <i class="ss-standard ss-directright"></i>
-              </button>
-              <button class="button button--icon" (click)="switchNthFacilityPage(i, null, lastPage(facilityTotals[facility.id]))">
-                  <i class="ss-standard ss-skipforward"></i>
-              </button>
-          </div> <!--/.pagination-->
-        </div> <!--/.paginationWrap-->
-      </div> <!--/.accordion__body-->
-    </div> <!--/.accordion (for facility)-->
+                  <tr>
+                    <td class="left hideOverflow">
+                      <a href="" class="picName">
+                        <img class="picName__img" src="../../../assets/img/profile.svg" />
+                        Kevin Porter
+                      </a>
+                    </td>
+                    <td class="left">MD</td>
+                    <td>Active</td>
+                    <td class="left">Ogden Clinic</td>
+                    <td>- -</td>
+                    <td>6</td>
+                    <td><i class="ss-standard ss-check iconSmall"></i></td>
+                    <td>
+                      <a class="tool__anchor flex justifyCenter" (click)="userTip5Open=!userTip5Open">
+                        1
+                          <div class="tool__tip tool__tip--bottom tool__tip--right" [ngClass]="{ 'isOpen' : userTip5Open }">
+                            Organization:&nbsp;Ogden&nbsp;Clinic
+                          </div>
+                      </a>
+                    </td>
+                  </tr> -->
+                </tbody>
+              </table>
+            </div> <!--/.tableWrap-->
+          </div> <!--/.accordion__contents-->
+          <div *ngIf="facilityPages[facility.id] > 1" class="paginationWrap">
+            <div class="pagination">
+                <button class="button button--icon button--icon--dis" (click)="switchNthFacilityPage(i, null, 1)">
+                    <i class="ss-standard ss-skipback"></i>
+                </button>
+                <button class="button button--icon button--icon--dis" (click)="switchNthFacilityPage(i, -1)">
+                    <i class="ss-standard ss-directleft"></i>
+                </button>
+                <span>{{facilityPages[facility.id]}} of {{lastPage(facilityTotals[facility.id])}}</span>
+                <button class="button button--icon" (click)="switchNthFacilityPage(i, 1)">
+                    <i class="ss-standard ss-directright"></i>
+                </button>
+                <button class="button button--icon" (click)="switchNthFacilityPage(i, null, lastPage(facilityTotals[facility.id]))">
+                    <i class="ss-standard ss-skipforward"></i>
+                </button>
+            </div> <!--/.pagination-->
+          </div> <!--/.paginationWrap-->
+        </div> <!--/.accordion__body-->
+      </div> <!--/.accordion (for facility)-->
+    </ng-container>
   </ng-container>
 </div> <!--/.ssContainer-->

@@ -1,22 +1,21 @@
 <h1 class="modal__title">Edit User Details</h1>
 <label>Employer</label>
 <div class="styledSelect marBottom32">
-  <select class="styledSelect__select">
-    <option>Ogden Clinic</option>
-    <option>CareAdopt</option>
+  <select class="styledSelect__select" [(ngModel)]="employedBy" [compareWith]="compareFn">
+    <option [ngValue]="org">{{org?.name}}</option>
+    <option *ngFor="let affiliate of affiliates" [ngValue]="affiliate">{{affiliate.name}}</option>
   </select>
 </div>
 <label>Specialty</label>
 <div class="styledSelect marBottom32">
-  <select class="styledSelect__select">
-    <option>Family Medicine</option>
-    <option>Something Else</option>
+  <select class="styledSelect__select" [(ngModel)]="specialty" [compareWith]="compareFn">
+    <option *ngFor="let specialty of specialties" [ngValue]="specialty">{{specialty.name}}</option>
   </select>
 </div>
 <div class="flex justifySpaceBetween">
   <div class="modal__inputWrap marRight32">
     <label class="height48 flex alignCenter noMargin">Phone</label>
-    <input type="text" class="input fullWidth" />
+    <input type="text" class="input fullWidth" [(ngModel)]="phone" />
   </div>
   <div class="modal__inputWrap">
     <div class="tool">
@@ -33,14 +32,14 @@
         </div>
       </div>
     </div>
-    <input type="text" class="input fullWidth" />
+    <input type="text" class="input fullWidth" [(ngModel)]="npi" />
   </div>
 </div>
 <div class="modal__buttons">
-  <button class="button button--2nd">
+  <button class="button button--2nd" (click)="close()">
     Cancel
   </button>
-  <button class="button">
+  <button class="button" (click)="save()">
     Save
   </button>
 </div>
