@@ -472,6 +472,7 @@ class VitalQuestionSerializer(serializers.ModelSerializer):
             'vital_task_template',
             'prompt',
             'answer_type',
+            'order'
         )
         read_only_fields = (
             'id',
