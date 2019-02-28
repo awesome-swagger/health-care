@@ -1,7 +1,7 @@
 <!--TODO: The "edit task" modal is triggered in several places, included the "add task" modals; need to wire that up-->
 <h1 class="modal__title">{{getTaskType().title}}</h1>
 <!--TODO: If editing a task on a care plan template, show the following-->
-<div class="iconText iconText--wrap iconText--autoHeight error marBottom32">
+<div *ngIf="totalPatients > 0" class="iconText iconText--wrap iconText--autoHeight error marBottom32">
 	<i class="iconText__icon ss-alert"></i>
 	<span class="error__text">
 		Making changes here will affect {{totalPatients}} patients currently assigned to this care plan.

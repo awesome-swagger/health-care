@@ -1,7 +1,7 @@
 <!--TODO: Use this modal for adding care team tasks, and patient tasks-->
 <h1 class="modal__title">{{getTaskType().title}}</h1>
 <!-- TODO: If adding a task to a care plan template, show the following -->
-<div class="iconText iconText--wrap iconText--autoHeight error marBottom32">
+<div class="iconText iconText--wrap iconText--autoHeight error marBottom32" *ngIf="totalPatients > 0">
 	<i class="iconText__icon ss-alert"></i>
 	<span class="error__text">
 		Making changes here will affect {{totalPatients}} patients currently assigned to this care plan.

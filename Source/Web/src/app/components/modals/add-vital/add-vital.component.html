@@ -1,6 +1,6 @@
 <h1 class="modal__title">Add Vital Report</h1>
 <!--TODO: If adding the vital to a care plan template, show the following.-->
-<div *ngIf="editingTemplate" class="marCenter marCenter--twoThirds">
+<div *ngIf="editingTemplate && totalPatients > 0" class="marCenter marCenter--twoThirds">
   <div class="iconText iconText--wrap iconText--autoHeight error marBottom32">
     <i class="iconText__icon ss-alert"></i>
     <span class="error__text">

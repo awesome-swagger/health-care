@@ -39,7 +39,7 @@
           {{goalsAverage()}}/5
         </div>
         <div class="pill" *ngIf="planGoals.length === 0">
-          N/A
+          ---
         </div>
         <div class="accordion__arrow">
           <i class="ss-standard ss-navigateright"></i>
@@ -129,7 +129,7 @@
           {{userTasksPercentage()}}%
         </div>
         <div class="pill" *ngIf="userTasks.length === 0">
-          N/A
+          ---
         </div>
         <div class="accordion__arrow">
           <i class="ss-standard ss-navigateright"></i>
@@ -210,7 +210,7 @@
           {{teamTasksPercentage()}}%
         </div>
         <div class="pill" *ngIf="teamTasks.length === 0">
-          N/A
+          ---
         </div>
         <div class="accordion__arrow">
           <i class="ss-standard ss-navigateright"></i>
@@ -289,7 +289,7 @@
           {{patientTasksPercentage()}}%
         </div>
         <div class="pill" *ngIf="patientTasks.length === 0">
-          N/A
+          ---
         </div>
         <div class="accordion__arrow">
           <i class="ss-standard ss-navigateright"></i>
@@ -398,7 +398,7 @@
                   {{floor(task.averageEngagement * 100)}}%
                 </div> -->
                 <div class="pill">
-                  N/A
+                  ---
                 </div>
               </td>
               <td>
@@ -428,7 +428,7 @@
         </ng-container>
         <ng-container *ngIf="totalOutcomeQuestions() === 0">
           <div class="pill marRight24">
-            N/A
+            ---
           </div>
         </ng-container>
         <span class="marRight8">{{totalSatisfactionQuestions()}} Satisfaction Questions</span>
@@ -439,7 +439,7 @@
         </ng-container>
         <ng-container *ngIf="totalSatisfactionQuestions() === 0">
           <div class="pill">
-            N/A
+            ---
           </div>
         </ng-container>
         <div class="accordion__arrow">
@@ -633,7 +633,7 @@
           {{averageSymptomRating()}}/5
         </div>
         <div class="pill" *ngIf="symptomResults.length === 0">
-          N/A
+          ---
         </div>
         <div class="accordion__arrow">
           <i class="ss-standard ss-navigateright"></i>

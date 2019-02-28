@@ -51,13 +51,13 @@
               <td class="left">{{goal.duration_weeks != -1 ? goal.duration_weeks + ' Weeks' : 'Entire Plan'}} </td>
               <td>{{formatStartOnDay(goal.start_on_day)}}</td>
               <td>{{formatEndOnDay(goal.start_on_day, goal.duration_weeks)}}</td>
-              <td class="noPad">
+              <td class="noPad" width="48px">
                 <button class="button button--icon button--icon--small"
                 (click)="editGoal(goal)">
                   <i class="ss-write"></i>
                 </button>
               </td>
-              <td class="noPad">
+              <td class="noPad" width="48px">
                 <button class="button button--icon button--icon--small"
                 (click)="confirmDeleteGoal(goal)">
                   <i class="ss-delete"></i>
@@ -133,13 +133,13 @@
               <td class="left"> {{task.repeat_amount != -1 ? task.repeat_amount + ' times' :'Until Plan Ends'}}</td>
               <td>{{task.appear_time | timeTransform | date: 'shortTime' }}</td>
               <td>{{task.due_time | timeTransform | date: 'shortTime'}}</td>
-              <td class="noPad">
+              <td class="noPad" width="48px">
                 <button class="button button--icon button--icon--small"
                 (click)="editCMTask(task)">
                   <i class="ss-write"></i>
                 </button>
               </td>
-              <td class="noPad">
+              <td class="noPad" width="48px">
                 <button class="button button--icon button--icon--small"
                 (click)="confirmDeleteCTTask(task, true)">
                   <i class="ss-delete"></i>
@@ -207,13 +207,13 @@
               <td class="left"> {{task.repeat_amount != -1 ? task.repeat_amount :'Until Plan Ends'}}</td>
               <td>{{task.appear_time | timeTransform | date: 'shortTime' }}</td>
               <td>{{task.due_time | timeTransform | date: 'shortTime'}}</td>
-              <td class="noPad">
+              <td class="noPad" width="48px">
                 <button class="button button--icon button--icon--small"
                 (click)="editCTTask(task)">
                   <i class="ss-write"></i>
                 </button>
               </td>
-              <td class="noPad">
+              <td class="noPad" width="48px">
                 <button class="button button--icon button--icon--small"
                 (click)="confirmDeleteCTTask(task, false)">
                   <i class="ss-delete"></i>
@@ -290,13 +290,13 @@
               <td class="left">{{pTask.repeat_amount != -1 ? pTask.repeat_amount :'Until Plan Ends'}}</td>
               <td>{{pTask.appear_time | timeTransform | date: 'shortTime'}}</td>
               <td>{{pTask.due_time | timeTransform | date: 'shortTime'}}</td>
-              <td class="noPad">
+              <td class="noPad" width="48px">
                 <button class="button button--icon button--icon--small"
                 (click)="editTask(pTask)">
                   <i class="ss-write"></i>
                 </button>
               </td>
-              <td class="noPad">
+              <td class="noPad" width="48px">
                 <button class="button button--icon button--icon--small"
                 (click)="confirmDeleteTask(pTask)">
                   <i class="ss-delete"></i>
@@ -394,13 +394,13 @@
               <td>{{asmt.due_time | timeTransform | date: 'shortTime'}}</td>
               <td><i *ngIf="asmt.tracks_outcome" class="ss-standard ss-check iconSmall"></i></td>
               <td><i *ngIf="asmt.tracks_satisfaction" class="ss-standard ss-check iconSmall"></i></td>
-              <td class="noPad">
+              <td class="noPad" width="48px">
                 <button class="button button--icon button--icon--small"
                 (click)="editAssessmentTime(asmt)">
                   <i class="ss-write"></i>
                 </button>
               </td>
-              <td class="noPad">
+              <td class="noPad" width="48px">
                 <button class="button button--icon button--icon--small"
                 (click)="confirmDeleteAssessment(asmt)">
                   <i class="ss-delete"></i>
@@ -459,13 +459,13 @@
               <td class="left">{{sympt.repeat_amount != -1 ? sympt.repeat_amount :'Until Plan Ends'}}</td>
               <td>{{sympt.appear_time | timeTransform | date: 'shortTime'}}</td>
               <td>{{sympt.due_time | timeTransform | date: 'shortTime'}}</td>
-              <td class="noPad">
+              <td class="noPad" width="48px">
                 <button class="button button--icon button--icon--small"
                 (click)="editSymptom(sympt)">
                   <i class="ss-write"></i>
                 </button>
               </td>
-              <td class="noPad">
+              <td class="noPad" width="48px">
                 <button class="button button--icon button--icon--small"
                 (click)="confirmDeleteSymptom(sympt)">
                   <i class="ss-delete"></i>
@@ -528,13 +528,13 @@
               <td class="left">{{vital.repeat_amount != -1 ? vital.repeat_amount :'Until Plan Ends'}}</td>
               <td>{{vital.appear_time | timeTransform | date: 'shortTime'}}</td>
               <td>{{vital.due_time | timeTransform | date: 'shortTime'}}</td>
-              <td class="noPad">
+              <td class="noPad" width="48px">
                 <button class="button button--icon button--icon--small"
                   (click)="editVitalTime(vital)">
                   <i class="ss-write"></i>
                 </button>
               </td>
-              <td class="noPad">
+              <td class="noPad" width="48px">
                 <button class="button button--icon button--icon--small"
                   (click)="confirmDeleteVital(vital)">
                   <i class="ss-delete"></i>
@@ -597,13 +597,13 @@
               <td class="left">{{msg.name }}</td>
               <td class="left">{{msg.type|titlecase}}</td>
               <td>{{msg.messages.length}}</td>
-              <td class="noPad">
+              <td class="noPad" width="48px">
                 <button class="button button--icon button--icon--small"
                 (click)="editStream(msg)">
                   <i class="ss-write"></i>
                 </button>
               </td>
-              <td class="noPad">
+              <td class="noPad" width="48px">
                 <button class="button button--icon button--icon--small"
                 (click)="confirmDeleteStream(msg)">
                   <i class="ss-delete"></i>
