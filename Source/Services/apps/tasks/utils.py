@@ -22,6 +22,7 @@ from .api.serializers import (
     VitalTaskTodaySerializer,
     TeamTaskTodaySerializer,
 )
+from apps.plans.models import CareTeamMember
 
 
 def calculate_task_percentage(patient):
@@ -161,6 +162,7 @@ def get_all_tasks_for_today(user, **kwargs):
                                           datetime.time.max,
                                           tzinfo=pytz.utc)
     exclude_done = kwargs.pop('exclude_done', True)
+    next_checkin = None
 
     if user.is_employee:
         employee = user.employee_profile
@@ -183,6 +185,8 @@ def get_all_tasks_for_today(user, **kwargs):
             )
             tasks += serializer.data
 
+        recent_checkin = employee.assigned_roles.all().order_by('next_checkin').first()
+        next_checkin = recent_checkin.next_checkin if recent_checkin else None
     elif user.is_patient:
         patient = user.patient_profile
         patient_tasks = PatientTask.objects.filter(
@@ -254,4 +258,9 @@ def get_all_tasks_for_today(user, **kwargs):
             )
             tasks += serializer.data
 
-    return tasks
+        recent_checkin = CareTeamMember.objects.filter(plan__patient__id=patient.id) \
+                                               .order_by('next_checkin') \
+                                               .first()
+        next_checkin = recent_checkin.next_checkin if recent_checkin else None
+
+    return { "tasks": tasks, "next_checkin": next_checkin }
