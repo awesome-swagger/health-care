@@ -35,6 +35,9 @@ export class AddUserComponent implements OnInit {
 
   public ngOnInit() {
     if (this.data && this.data.user) {
+      console.log('vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv');
+      console.log(this.data.user);
+      console.log('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^');
       this.firstNameInput = this.data.user.firstName;
       this.lastNameInput = this.data.user.lastName;
       this.titleInput = this.data.user.title;
@@ -119,12 +122,11 @@ export class AddUserComponent implements OnInit {
     return this.facilities.filter(f => f.is_affiliate === is_affiliate);
   }
 
+  public compareFn(c1, c2) {
+    return c1 && c2 ? c1.id === c2.id : c1 === c2;
+  }
+
   public submit() {
-    console.log('vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv');
-    console.log(this.titleInput);
-    console.log(this.specialtyInput);
-    console.log(this.employedByInput);
-    console.log('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^');
     if (this.firstNameInput && this.lastNameInput && this.emailInput) {
       this.modals.close({
         firstName: this.firstNameInput,

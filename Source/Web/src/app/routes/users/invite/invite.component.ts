@@ -16,6 +16,7 @@ export class InviteComponent implements OnDestroy, OnInit {
   public usersToInivite = [];
   public tooltipsOpen = [];
   public employees = [];
+  public emailBody = 'Join us on CareAdopt! CareAdopt empowers patients to adopt care after discharge and in between visits improving care coordination and engagement, decreasing costs, and providing better outcomes. Click the link below to create your profile.'
 
   constructor(
     private auth: AuthService,
@@ -72,6 +73,41 @@ export class InviteComponent implements OnDestroy, OnInit {
         user = Object.assign(user, data);
       }
     });
+  }
+
+  public get sendDisabled() {
+    return this.usersToInivite.length === 0;
+  }
+
+  public sendInvites() {
+    const cancelText = 'Cancel';
+    const okText = 'Continue';
+    const title = 'Send Invites?';
+    const body = `Do you wish to send this invite to ${this.usersToInivite.length} employee${this.usersToInivite.length > 1 ? 's' : ''}?`
+    this.modals.open(ConfirmModalComponent, {
+      width: '384px',
+      data: { cancelText, okText, title, body },
+    }).subscribe(res => {
+      if (res === okText) {
+        this.usersToInivite.forEach(user => {
+          this.store.AddUser.createAlt({
+            email: user.email,
+            password1: 'password',
+            password2: 'password',
+          }).subscribe(res => {
+            this.store.EmployeeProfile.detailRoute('POST', null, 'invite', {
+              employees: [ user.pk ],
+              email_content: this.emailBody
+            }, {}).subscribe(res => {
+              console.log('vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv');
+              console.log(res);
+              console.log('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^');
+            })
+          })
+        })
+      }
+    })
+
   }
 
 }

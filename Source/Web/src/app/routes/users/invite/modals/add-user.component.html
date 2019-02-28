@@ -14,7 +14,7 @@
   <div class="modal__inputWrap120 marRight16">
     <label>Title</label>
     <div class="styledSelect">
-      <select class="styledSelect__select" [(ngModel)]="titleInput">
+      <select class="styledSelect__select" [(ngModel)]="titleInput" [compareWith]="compareFn">
         <option>- - - -</option>
         <option *ngFor="let title of titles" [ngValue]="title">{{title.abbreviation}}</option>
       </select>
@@ -29,7 +29,7 @@
   <div class="modal__inputWrap marBottom16 marRight16">
     <label>Employed By</label>
     <div class="styledSelect">
-      <select class="styledSelect__select" [(ngModel)]="employedByInput">
+      <select class="styledSelect__select" [(ngModel)]="employedByInput" [compareWith]="compareFn">
         <option>- - - -</option>
         <option [ngValue]="organization">{{organization?.name}}</option>
         <option *ngFor="let affiliate of filteredFacilities(true)" [ngValue]="affiliate">{{affiliate.name}}</option>
@@ -39,7 +39,7 @@
   <div class="modal__inputWrap marBottom16 marRight32">
     <label>Org/Facility</label>
     <div class="styledSelect">
-      <select class="styledSelect__select" [(ngModel)]="facilityInput">
+      <select class="styledSelect__select" [(ngModel)]="facilityInput" [compareWith]="compareFn">
         <option>- - - -</option>
         <option *ngFor="let facility of filteredFacilities(false)" [ngValue]="facility">{{facility.name}}</option>
       </select>
@@ -50,7 +50,7 @@
   <div class="modal__inputWrap marRight16">
     <label>Specialty</label>
     <div class="styledSelect">
-      <select class="styledSelect__select" [(ngModel)]="specialtyInput">
+      <select class="styledSelect__select" [(ngModel)]="specialtyInput" [compareWith]="compareFn">
         <option>- - - -</option>
         <option *ngFor="let specialty of specialties" [ngValue]="specialty">{{specialty.name}}</option>
       </select>

@@ -84,8 +84,8 @@
   </button>
 
   <h2>Customize Message</h2>
-  <textarea class="input input--textarea marBottom32">Join us on CareAdopt! CareAdopt empowers patients to adopt care after discharge and in between visits improving care coordination and engagement, decreasing costs, and providing better outcomes. Click the link below to create your profile.</textarea>
-  <button class="button button--right">
+  <textarea class="input input--textarea marBottom32" [(ngModel)]="emailBody"></textarea>
+  <button class="button button--right" (click)="sendInvites()" [disabled]="sendDisabled">
     Send Invitations
   </button>
 </div> <!--/.ssContainer-->
