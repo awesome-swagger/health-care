@@ -18,6 +18,7 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
   public mockData = new HistoryMockData();
 
   public user = null;
+  public userRoles = [];
   public patient = null;
   public carePlan = null;
   public careTeamMembers = [];
@@ -80,18 +81,12 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
     			// Get care plan
     			this.getCarePlan(params.planId).then((carePlan: any) => {
     				this.carePlan = carePlan;
-    				// Get care team
-    				this.getCareTeamMembers(params.planId).then((teamMembers: any) => {
-    					this.careTeamMembers = teamMembers.filter((obj) => {
-    						return obj.employee_profile.user.id !== this.user.user.id;
-    					});
-    					this.selectedActions = this.actionChoices.concat();
-    					// Get billed activities
-    					this.getBilledActivities().then((billedActivities: any) => {
-    						this.billedActivities = billedActivities;
-    						this.selectedActivity = this.billedActivities[0];
-    					});
-    				});
+            this.selectedActions = this.actionChoices.concat();
+            // Get billed activities
+            this.getBilledActivities().then((billedActivities: any) => {
+              this.billedActivities = billedActivities;
+              this.selectedActivity = this.billedActivities[0];
+            });
     			});
     		});
     	});
@@ -126,19 +121,6 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
         () => {
           billedActivitiesSub.unsubscribe();
         }
-      );
-    });
-    return promise;
-  }
-
-  public getCareTeamMembers(planId) {
-    let promise = new Promise((resolve, reject) => {
-      let careTeamSub = this.store.CarePlan.detailRoute('get', planId, 'care_team_members', {}, {}).subscribe(
-        (teamMembers: any) => resolve(teamMembers),
-        (err) => reject(err),
-        () => {
-          careTeamSub.unsubscribe();
-        },
       );
     });
     return promise;
@@ -210,10 +192,8 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
       data: {
         patient: this.patient,
         carePlan: this.carePlan,
-        tasks: this.mockData.tasks, // TODO: Get tasks for user
         task: null,
         totalMinutes: null,
-        teamMembers: this.careTeamMembers,
         with: null,
         syncToEHR: false,
         notes: '',
@@ -223,6 +203,10 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
     }).subscribe((results) => {
       if (!results) {
         return;
+      }
+      let members = [this.user.id];
+      if (results.with) {
+        members.push(results.with);
       }
       // Create billed activity record
       let createSub = this.store.BilledActivity.create({

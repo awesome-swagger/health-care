@@ -10,7 +10,6 @@
 <!--TODO: If editing a task on a care plan instance, except for a medication task, show the following-->
 <h5 *ngIf="">NOTE: You are working on one patient's care plan. To do this for everyone, go to care plans.</h5>
 
-<!--TODO: Hide if medication or symptom-->
 <div *ngIf="getTaskType().type !== 'symptom' && getTaskType().type !== 'medication'">
 	<label class="noMargin">Task</label>
 	<div class="flex alignCenter marBottom32">
@@ -35,10 +34,6 @@
 				</button>
 			</div>
 		</form>
-		<!--TODO: Clicking "edit" triggers the corresponding "add task" modal-->
-		<!-- <button class="button button--icon button--icon--small">
-      <i class="ss-write"></i>
-    </button> -->
 	</div>
 </div>
 <div *ngIf="getTaskType().type === 'medication'">
