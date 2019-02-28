@@ -97,7 +97,7 @@ export class PlansComponent implements OnDestroy, OnInit {
   public getFacilities(organization) {
     let promise = new Promise((resolve, reject) => {
       let facilitiesSub = this.store.Facility.readListPaged({
-        organization: organization.id,
+        organization_id: organization.id,
       }).subscribe(
         (facilities) => {
           resolve(facilities);
