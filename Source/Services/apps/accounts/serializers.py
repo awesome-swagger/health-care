@@ -6,6 +6,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from rest_auth.models import TokenModel
 from rest_framework import serializers
+from rest_auth.registration.serializers import RegisterSerializer
 
 from .mailer import UserMailer
 from apps.core.models import EmployeeProfile
@@ -86,6 +87,20 @@ class EmailUserDetailSerializer(serializers.ModelSerializer):
         model = get_user_model()
         fields = ('pk', 'email', 'first_name', 'last_name')
         read_only_fields = ('email', )
+
+
+class CustomRegisterSerializer(RegisterSerializer):
+    first_name = serializers.CharField()
+    last_name = serializers.CharField()
+
+    def get_cleaned_data(self):
+        return {
+            'username': self.validated_data.get('username', ''),
+            'password1': self.validated_data.get('password1', ''),
+            'email': self.validated_data.get('email', ''),
+            'first_name': self.validated_data.get('first_name', ''),
+            'last_name': self.validated_data.get('last_name', '')
+        }
 
 
 class ChangeEmailSerializer(serializers.ModelSerializer):
