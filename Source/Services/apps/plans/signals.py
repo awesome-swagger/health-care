@@ -112,6 +112,7 @@ def teammessage_post_save(sender, instance, created, **kwargs):
         recipients = instance.recipients
         recipients.last_update = instance.created
         recipients.save()
+<<<<<<< HEAD
 
 
 def careplan_pre_save(sender, instance, update_fields=None, **kwargs):
@@ -138,3 +139,5 @@ def careplan_pre_save(sender, instance, update_fields=None, **kwargs):
                 old_practitioner.user.email,
                 context
             )
+=======
+>>>>>>> master

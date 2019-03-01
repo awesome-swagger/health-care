@@ -56,14 +56,33 @@ class PatientsMixin(CoreMixin):
             **kwargs
         )
 
-    def create_problem_area(self, patient, employee):
-        return ProblemAreaFactory(
-            patient=patient,
-            identified_by=employee,
-            date_identified=datetime.date.today(),
-            name='Severe Depression',
-            description='Unable to concentrate or keep a job or relationship.'
-        )
+    def create_problem_area(self, **kwargs):
+        if 'patient' not in kwargs:
+            kwargs.update({
+                'patient': self.create_patient()
+            })
+
+        if 'identified_by' not in kwargs:
+            kwargs.update({
+                'identified_by': self.create_employee()
+            })
+
+        if 'date_identified' not in kwargs:
+            kwargs.update({
+                'date_identified': datetime.date.today()
+            })
+
+        if 'name' not in kwargs:
+            kwargs.update({
+                'name': self.fake.name()
+            })
+
+        if 'description' not in kwargs:
+            kwargs.update({
+                'description': self.fake.sentence(nb_words=10)
+            })
+
+        return ProblemAreaFactory(**kwargs)
 
     def create_patient_medication(self, **kwargs):
         if 'patient' not in kwargs:

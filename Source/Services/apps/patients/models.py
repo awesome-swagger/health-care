@@ -217,6 +217,7 @@ class ProblemArea(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
     date_identified = models.DateField(null=True, blank=True)
     name = models.CharField(max_length=140, null=False, blank=False)
     description = models.CharField(max_length=512, null=True, blank=True)
+    is_active = models.BooleanField(default=True)
 
     class Meta:
         ordering = ('patient', 'name', )

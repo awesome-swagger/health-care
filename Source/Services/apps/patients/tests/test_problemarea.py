@@ -20,11 +20,17 @@ class TestProblemArea(PlansMixin, PatientsMixin, APITestCase):
         self.employee = self.create_employee()
 
         self.patient_plan = self.create_care_plan(self.patient)
-        self.patient_problem_area = self.create_problem_area(
-            self.patient, self.employee)
+        self.patient_problem_area = self.create_problem_area(**{
+            'patient': self.patient,
+            'identified_by': self.employee,
+            'plan': self.patient_plan
+        })
         self.other_patient_plan = self.create_care_plan(self.other_patient)
-        self.other_patient_problem_area = self.create_problem_area(
-            self.other_patient, self.employee)
+        self.other_patient_problem_area = self.create_problem_area(**{
+            'patient': self.patient,
+            'identified_by': self.employee,
+            'plan': self.patient_plan
+        })
 
         self.team_member = self.create_care_team_member(
             employee_profile=self.employee,
