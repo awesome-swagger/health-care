@@ -771,3 +771,74 @@ class VitalTaskSerializer(RepresentationMixin, serializers.ModelSerializer):
                 'serializer_class': VitalTaskTemplateSerializer,
             }
         ]
+
+
+class AssessmentResponseOverviewSerializer(serializers.ModelSerializer):
+    """
+    serializer to be used by :model:`tasks.AssessmentResponse`
+    to be used in `Assessment Results` section in  `patients__Details` page
+    """
+
+    question = serializers.SerializerMethodField()
+    occurrence = serializers.SerializerMethodField()
+
+    class Meta:
+        model = AssessmentResponse
+        fields = (
+            'id',
+            'question',
+            'rating',
+            'occurrence',
+            'behavior',
+        )
+
+    def get_question(self, obj):
+        return obj.assessment_question.prompt
+
+    def get_occurrence(self, obj):
+        task = obj.assessment_task
+        total_tasks = AssessmentTask.objects.filter(
+            plan=task.plan,
+            assessment_task_template=task.assessment_task_template)
+        obj_occurrence = total_tasks.filter(
+            due_datetime__lte=task.due_datetime).count()
+        return f'{obj_occurrence} of {total_tasks.count()}'
+
+
+class AssessmentResultOverviewSerializer(serializers.ModelSerializer):
+    """
+    serializer to be used by :model:`tasks.AssessmentTaskTemplate`
+    to be used in `Assessment Results` section in  `patients__Details` page
+    """
+
+    questions = serializers.SerializerMethodField()
+
+    class Meta:
+        model = AssessmentTaskTemplate
+        fields = (
+            'id',
+            'name',
+            'tracks_outcome',
+            'tracks_satisfaction',
+            'questions',
+        )
+
+    def get_questions(self, obj):
+        plan = self.context.get('plan')
+        created_month = self.context.get('created_month')
+        created_year = self.context.get('created_year')
+        created_day = self.context.get('created_day')
+        tasks = AssessmentTask.objects.filter(
+            plan=plan, assessment_task_template=obj)
+
+        kwargs = {
+            'assessment_task__in': tasks,
+            'created__month': created_month,
+            'created__year': created_year,
+            'created__day': created_day,
+        }
+
+        responses = AssessmentResponse.objects.filter(**kwargs)
+        serializer = AssessmentResponseOverviewSerializer(
+            responses, many=True)
+        return serializer.data
