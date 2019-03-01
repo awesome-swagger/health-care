@@ -239,7 +239,7 @@ export class PlansComponent implements OnDestroy, OnInit {
       }
       return obj.averages.total_patients > 0;
     });
-    return (_sumBy(activeTemplates, (template) => template.averages.risk_level) / activeTemplates.length) || 0;
+    return Math.round(_sumBy(activeTemplates, (template) => template.averages.risk_level) / activeTemplates.length) || 0;
   }
 
   public addPlan(serviceAreaId = null) {

@@ -141,7 +141,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
     if (day === 0) {
       return 'Plan Start';
     } else if (day >= 7) {
-      return `Week ${day/7}`;
+      return `Week ${Math.floor(day/7)}`;
     } else {
       return `Day ${day}`;
     }
