@@ -336,7 +336,8 @@ class AssessmentTask(AbstractTask):
         related_name='assessment_tasks',
         on_delete=models.CASCADE)
     assessment_task_template = models.ForeignKey(
-        AssessmentTaskTemplate, null=False, blank=False,
+        AssessmentTaskTemplate,
+        related_name='assessment_tasks',
         on_delete=models.CASCADE)
     comments = models.CharField(max_length=1024, null=True, blank=True)
     is_complete = models.BooleanField(
