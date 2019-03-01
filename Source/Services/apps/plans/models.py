@@ -5,14 +5,16 @@ from django.db import models
 from django.db.models import Sum
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
-from django.conf import settings
 
 from apps.core.models import EmployeeProfile, ProviderRole
 from apps.patients.models import PatientProfile
 from care_adopt_backend.mixins import CreatedModifiedMixin, UUIDPrimaryKeyMixin
-from care_adopt_backend.mailer import BaseMailer
 
-from .signals import (careplan_post_save, careplan_pre_save, teammessage_post_save)
+from .mailer import PlansMailer
+from .signals import (
+    careplan_post_save,
+    teammessage_post_save,
+)
 
 
 class CarePlanTemplateType(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
@@ -105,6 +107,21 @@ class CarePlan(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
             'Determines if all BilledActivity of this instance has been billed'
         ))
     is_active = models.BooleanField(default=True)
+    __original_billing_practitioner = None
+
+    def __init__(self, *args, **kwargs):
+        super(CarePlan, self).__init__(*args, **kwargs)
+        self.__original_billing_practitioner = self.billing_practitioner
+
+    def save(self, *args, **kwargs):
+        if self.id is not None and self.__original_billing_practitioner and \
+           self.__original_billing_practitioner != self.billing_practitioner:
+            mailer = PlansMailer()
+            mailer.notify_old_billing_practitioner(
+                self, self.__original_billing_practitioner)
+
+        super(CarePlan, self).save(*args, **kwargs)
+        self.__original_billing_practitioner = self.billing_practitioner
 
     def __str__(self):
         return '{} {}: {}'.format(
@@ -381,10 +398,6 @@ class TeamMessage(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
 models.signals.post_save.connect(
     careplan_post_save,
     sender=CarePlan,
-)
-models.signals.pre_save.connect(
-    careplan_pre_save,
-    sender=CarePlan
 )
 models.signals.post_save.connect(
     teammessage_post_save,
