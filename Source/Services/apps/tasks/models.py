@@ -318,6 +318,10 @@ class AssessmentQuestion(UUIDPrimaryKeyMixin):
     prompt = models.CharField(max_length=240, null=False, blank=False)
     worst_label = models.CharField(max_length=40, null=False, blank=False)
     best_label = models.CharField(max_length=40, null=False, blank=False)
+    order = models.IntegerField(default=0)
+
+    class Meta:
+        ordering = ('order',)
 
     def __str__(self):
         return '{}: {}'.format(
@@ -467,6 +471,10 @@ class VitalQuestion(UUIDPrimaryKeyMixin):
     )
     prompt = models.CharField(max_length=255)
     answer_type = models.CharField(max_length=128, choices=ANSWER_TYPE_CHOICES)
+    order = models.IntegerField(default=0)
+
+    class Meta:
+        ordering = ('order', )
 
     def __str__(self):
         return f'{self.vital_task_template.name}: {self.prompt}'

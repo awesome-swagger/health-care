@@ -282,12 +282,16 @@ class ProblemAreaViewSet(viewsets.ModelViewSet):
     )
 
     def get_queryset(self):
-        qs = self.queryset
+        qs = self.queryset.filter(is_active=True)
         employee_patient_ids = CareTeamMember.objects.filter(
             employee_profile__id=self.request.user.employee_profile.id).values_list(
                 'plan__patient__id', flat=True).distinct()
         qs = qs.filter(patient__id__in=employee_patient_ids)
         return qs
+
+    def perform_destroy(self, instance):
+        instance.is_active = False
+        instance.save()
 
 
 class PatientProcedureViewSet(viewsets.ModelViewSet):
