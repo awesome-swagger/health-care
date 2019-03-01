@@ -73,6 +73,7 @@ class PatientTaskTodaySerializer(serializers.ModelSerializer):
     """
     type = serializers.SerializerMethodField()
     name = serializers.SerializerMethodField()
+    occurrence = serializers.SerializerMethodField()
 
     class Meta:
         model = PatientTask
@@ -81,6 +82,7 @@ class PatientTaskTodaySerializer(serializers.ModelSerializer):
             'type',
             'name',
             'state',
+            'occurrence',
             'appear_datetime',
             'due_datetime',
         )
@@ -91,6 +93,14 @@ class PatientTaskTodaySerializer(serializers.ModelSerializer):
     def get_name(self, obj):
         return obj.patient_task_template.name
 
+    def get_occurrence(self, obj):
+        total_tasks = PatientTask.objects.filter(
+            plan=obj.plan,
+            patient_task_template=obj.patient_task_template)
+        obj_occurrence = total_tasks.filter(
+            due_datetime__lte=obj.due_datetime).count()
+        return f'{obj_occurrence} of {total_tasks.count()}'
+
 
 class TeamTaskTodaySerializer(serializers.ModelSerializer):
     """
@@ -100,6 +110,7 @@ class TeamTaskTodaySerializer(serializers.ModelSerializer):
     type = serializers.SerializerMethodField()
     name = serializers.SerializerMethodField()
     patient = serializers.SerializerMethodField()
+    occurrence = serializers.SerializerMethodField()
 
     class Meta:
         model = TeamTask
@@ -109,6 +120,7 @@ class TeamTaskTodaySerializer(serializers.ModelSerializer):
             'name',
             'state',
             'patient',
+            'occurrence',
             'appear_datetime',
             'due_datetime',
         )
@@ -123,6 +135,14 @@ class TeamTaskTodaySerializer(serializers.ModelSerializer):
         patient = obj.plan.patient
         serializer = BasicPatientSerializer(patient)
         return serializer.data
+
+    def get_occurrence(self, obj):
+        total_tasks = TeamTask.objects.filter(
+            plan=obj.plan,
+            team_task_template=obj.team_task_template)
+        obj_occurrence = total_tasks.filter(
+            due_datetime__lte=obj.due_datetime).count()
+        return f'{obj_occurrence} of {total_tasks.count()}'
 
 
 class TeamTaskTemplateSerializer(RepresentationMixin,
@@ -221,6 +241,7 @@ class MedicationTaskTodaySerializer(serializers.ModelSerializer):
     """
     type = serializers.SerializerMethodField()
     name = serializers.SerializerMethodField()
+    occurrence = serializers.SerializerMethodField()
 
     class Meta:
         model = MedicationTask
@@ -229,6 +250,7 @@ class MedicationTaskTodaySerializer(serializers.ModelSerializer):
             'type',
             'name',
             'state',
+            'occurrence',
             'appear_datetime',
             'due_datetime',
         )
@@ -239,6 +261,13 @@ class MedicationTaskTodaySerializer(serializers.ModelSerializer):
     def get_name(self, obj):
         medication = obj.medication_task_template.patient_medication
         return f'{medication.medication.name}, {medication.dose_mg}mg'
+
+    def get_occurrence(self, obj):
+        total_tasks = MedicationTask.objects.filter(
+            medication_task_template=obj.patient_task_template)
+        obj_occurrence = total_tasks.filter(
+            due_datetime__lte=obj.due_datetime).count()
+        return f'{obj_occurrence} of {total_tasks.count()}'
 
 
 class SymptomTaskTemplateSerializer(serializers.ModelSerializer):
@@ -301,6 +330,7 @@ class SymptomTaskTodaySerializer(serializers.ModelSerializer):
     """
     type = serializers.SerializerMethodField()
     name = serializers.SerializerMethodField()
+    occurrence = serializers.SerializerMethodField()
 
     class Meta:
         model = SymptomTask
@@ -309,6 +339,7 @@ class SymptomTaskTodaySerializer(serializers.ModelSerializer):
             'type',
             'name',
             'state',
+            'occurrence',
             'appear_datetime',
             'due_datetime',
         )
@@ -318,6 +349,14 @@ class SymptomTaskTodaySerializer(serializers.ModelSerializer):
 
     def get_name(self, obj):
         return 'Symptoms Report'
+
+    def get_occurrence(self, obj):
+        total_tasks = SymptomTask.objects.filter(
+            plan=obj.plan,
+            symptom_task_template=obj.symptom_task_template)
+        obj_occurrence = total_tasks.filter(
+            due_datetime__lte=obj.due_datetime).count()
+        return f'{obj_occurrence} of {total_tasks.count()}'
 
 
 class AssessmentQuestionSerializer(serializers.ModelSerializer):
@@ -429,6 +468,7 @@ class AssessmentTaskTodaySerializer(serializers.ModelSerializer):
     """
     type = serializers.SerializerMethodField()
     name = serializers.SerializerMethodField()
+    occurrence = serializers.SerializerMethodField()
 
     class Meta:
         model = AssessmentTask
@@ -437,6 +477,7 @@ class AssessmentTaskTodaySerializer(serializers.ModelSerializer):
             'type',
             'name',
             'state',
+            'occurrence',
             'appear_datetime',
             'due_datetime',
         )
@@ -446,6 +487,14 @@ class AssessmentTaskTodaySerializer(serializers.ModelSerializer):
 
     def get_name(self, obj):
         return obj.assessment_task_template.name
+
+    def get_occurrence(self, obj):
+        total_tasks = AssessmentTask.objects.filter(
+            plan=obj.plan,
+            assessment_task_template=obj.assessment_task_template)
+        obj_occurrence = total_tasks.filter(
+            due_datetime__lte=obj.due_datetime).count()
+        return f'{obj_occurrence} of {total_tasks.count()}'
 
 
 class BaseVitalTaskTemplateSerializer(serializers.ModelSerializer):
@@ -538,6 +587,7 @@ class VitalTaskTodaySerializer(serializers.ModelSerializer):
     """
     type = serializers.SerializerMethodField()
     name = serializers.SerializerMethodField()
+    occurrence = serializers.SerializerMethodField()
 
     class Meta:
         model = VitalTask
@@ -546,6 +596,7 @@ class VitalTaskTodaySerializer(serializers.ModelSerializer):
             'type',
             'name',
             'state',
+            'occurrence',
             'appear_datetime',
             'due_datetime',
         )
@@ -555,6 +606,14 @@ class VitalTaskTodaySerializer(serializers.ModelSerializer):
 
     def get_name(self, obj):
         return obj.vital_task_template.name
+
+    def get_occurrence(self, obj):
+        total_tasks = VitalTask.objects.filter(
+            plan=obj.plan,
+            vital_task_template=obj.vital_task_template)
+        obj_occurrence = total_tasks.filter(
+            due_datetime__lte=obj.due_datetime).count()
+        return f'{obj_occurrence} of {total_tasks.count()}'
 
 
 class VitalResponseSerializer(RepresentationMixin, serializers.ModelSerializer):
