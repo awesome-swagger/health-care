@@ -66,6 +66,8 @@ export class EditTaskComponent implements OnInit {
       dataModel: this.store.MedicationTaskTemplate,
     },
   ];
+  public appearTimeHelpOpen = false;
+  public dueTimeHelpOpen = false;
   public tooltipETM0Open;
   public tooltipETM1Open;
   public tooltipETM2Open;

@@ -33,7 +33,9 @@ export class AddCTMemberComponent implements OnInit {
     let promise = new Promise((resolve, reject) => {
       if (this.data.is_bp) {
       // TODO: If adding a billing practitioner only get qualitified practitioners
-        let fetchSub = this.store.EmployeeProfile.readListPaged().subscribe(
+        let fetchSub = this.store.EmployeeProfile.readListPaged({
+          qualified_practitioner: true,
+        }).subscribe(
           (bps) => resolve(bps),
           (err) => reject(err),
           () => {

@@ -49,6 +49,11 @@ export class GoalComponent implements OnInit {
     this.modals.close(null);
   }
 
+  public saveDisabled() {
+    let durationPass = this.durationChoice === 0 ? true : this.weeksInput > 0;
+    return (!this.nameInput || !this.descriptionInput || !this.focusInput || this.startDayInput < 0 || !durationPass);
+  }
+
   public clickSave() {
     let durationWeeks = 0;
     switch(this.durationChoice) {
