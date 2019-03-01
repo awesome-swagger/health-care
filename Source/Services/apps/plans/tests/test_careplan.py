@@ -771,7 +771,11 @@ class TestCarePlanUsingEmployee(BillingsMixin, APITestCase):
 
         problem_areas_count = 3
         for i in range(problem_areas_count):
-            self.create_problem_area(patient, self.employee)
+            self.create_problem_area(**{
+                'patient': patient,
+                'identified_by': self.employee,
+                'plan': plan
+            })
 
         url = reverse(
             'patient-care-plan-overview-list',
@@ -806,7 +810,11 @@ class TestCarePlanUsingEmployee(BillingsMixin, APITestCase):
 
         problem_areas_count = 3
         for i in range(problem_areas_count):
-            self.create_problem_area(patient, self.employee)
+            self.create_problem_area(**{
+                'patient': patient,
+                'identified_by': self.employee,
+                'plan': plan
+            })
 
         total_minutes = 0
         for i in range(5):

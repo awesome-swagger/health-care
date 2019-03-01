@@ -112,29 +112,3 @@ def teammessage_post_save(sender, instance, created, **kwargs):
         recipients = instance.recipients
         recipients.last_update = instance.created
         recipients.save()
-
-
-def careplan_pre_save(sender, instance, update_fields=None, **kwargs):
-    """
-    Sends an email to the previous billing practitioner of the plan.
-    """
-    plan = CarePlan.objects.filter(id=instance.id).first()
-    # for only update
-    if plan:
-        old_practitioner = plan.billing_practitioner
-        new_practitioner = instance.billing_practitioner
-
-        if old_practitioner and old_practitioner != new_practitioner:
-            subject = 'Notification from CareAdopt'
-            context = {
-                "plan": instance,
-                "subject": subject,
-                "admin_email": settings.DEFAULT_FROM_EMAIL,
-            }
-            email_template = 'core/employeeprofile/email/billing_practitioner.html'
-            return BaseMailer().send_mail(
-                subject,
-                email_template,
-                old_practitioner.user.email,
-                context
-            )
