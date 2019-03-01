@@ -89,7 +89,7 @@
   <button class="button button--2nd" (click)="clickClose()">
     Cancel
   </button>
-  <button class="button" (click)="clickSave()">
+  <button class="button" [disabled]="saveDisabled()" (click)="clickSave()">
     Save
   </button>
 </div>

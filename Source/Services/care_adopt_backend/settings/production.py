@@ -49,6 +49,7 @@ INSTALLED_APPS = (
     'haystack',
     'allauth',
     'allauth.account',
+    'allauth.socialaccount',
     'rest_auth',
 
     # Local

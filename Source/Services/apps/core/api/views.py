@@ -362,7 +362,7 @@ class FacilityViewSet(viewsets.ModelViewSet):
 
 
 class BillingCoordinatorViewSet(viewsets.ModelViewSet):
-  
+
     serializer_class = BillingCoordinatorSerializer
     permission_classes = (permissions.IsAuthenticated, )
 
@@ -533,6 +533,7 @@ class EmployeeProfileViewSet(viewsets.ModelViewSet):
         organization = self.request.query_params.get('organization_id')
         role = self.request.query_params.get('role_id')
         billing_view = self.request.query_params.get('billing_view')
+        qualified_practitioner = self.request.query_params.get('qualified_practitioner')
 
         if organization:
             qs = qs.filter(
@@ -545,6 +546,8 @@ class EmployeeProfileViewSet(viewsets.ModelViewSet):
             )
         if billing_view:
             qs = qs.filter(billing_view=billing_view=='true')
+        if qualified_practitioner:
+            qs = qs.filter(qualified_practitioner=qualified_practitioner=='true')
         if employee_profile is not None:
             # TODO: For employees, only return employees in the same facilities/organizations
             return qs.all()

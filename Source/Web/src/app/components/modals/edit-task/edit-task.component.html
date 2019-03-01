@@ -103,14 +103,16 @@
 			<div class="tool">
 				<label class="noMargin">Appear Time</label>
 				<div class="tool__anchor">
-					<button class="button button--icon button--icon--small" (click)="tooltipETM0Open=!tooltipETM0Open">
+					<button class="button button--icon button--icon--small" (click)="appearTimeHelpOpen=!appearTimeHelpOpen">
 						<i class="ss-help"></i>
 					</button>
-					<div class="tool__tip" [ngClass]="{ 'isOpen' : tooltipETM0Open }">
-						<div class="tool__text tool__text--small">
-							Appear time is when a task becomes available for the patient to complete.
+					<app-popover [visible]="appearTimeHelpOpen" (visibleChange)="appearTimeHelpOpen = $event;">
+						<div class="tool__tip tool__tip--bottom tool__tip--left isOpen">
+							<div class="tool__text">
+								Appear time is when a task becomes available for the patient to complete.
+							</div>
 						</div>
-					</div>
+					</app-popover>
 				</div>
 			</div>
 			<!--/.tool (for appear time)-->
@@ -120,14 +122,16 @@
 			<div class="tool">
 				<label class="noMargin">Due Time</label>
 				<div class="tool__anchor">
-					<button class="button button--icon button--icon--small" (click)="tooltipETM1Open=!tooltipETM1Open">
+					<button class="button button--icon button--icon--small" (click)="dueTimeHelpOpen=!dueTimeHelpOpen">
 						<i class="ss-help"></i>
 					</button>
-					<div class="tool__tip tool__tip--right" [ngClass]="{ 'isOpen' : tooltipETM1Open }">
-						<div class="tool__text">
-							When a task is due, the patient sees a notification asking if they've completed the task or not.
+					<app-popover [visible]="dueTimeHelpOpen" (visibleChange)="dueTimeHelpOpen = $event;">
+						<div class="tool__tip tool__tip--right isOpen">
+							<div class="tool__text">
+								When a task is due, the patient sees a notification asking if they've completed the task or not.
+							</div>
 						</div>
-					</div>
+					</app-popover>
 				</div>
 			</div>
 			<!--/.tool (for due time)-->

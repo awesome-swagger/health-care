@@ -24,6 +24,7 @@ from .serializers import (
     CreateUserSerializer,
     ChangeEmailSerializer,
     VerifyEmailSerializer,
+    CustomRegisterSerializer
 )
 from apps.tasks.utils import get_all_tasks_for_today
 from care_adopt_backend import utils
@@ -298,6 +299,8 @@ class VerifyChangeEmail(GenericAPIView):
 
 
 class CustomRegisterView(RegisterView):
+    serializer_class = CustomRegisterSerializer
+
     def get_response_data(self, user):
         serializer = EmailUserDetailSerializer(user)
         return serializer.data
