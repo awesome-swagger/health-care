@@ -266,13 +266,13 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
   public addCMTask() {
     let modalSub = this.modals.open(AddCTTaskComponent, {
       closeDisabled: false,
-      width: '384px',
       data: {
         type: 'manager',
         planTemplateId: this.planTemplateId,
         totalPatients: this.totalPatients,
         taskList:this.teamManagerTemplates,
       },
+      width: '384px',
     }).subscribe(
       (task) => {
         if (!task) {
@@ -290,12 +290,13 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
   public editCMTask(task) {
     let modalSub = this.modals.open(EditTaskComponent, {
       closeDisabled: false,
-      width: '384px',
       data: {
         task: task,
         totalPatients: this.totalPatients,
         type: 'manager',
       },
+      overflow: 'visible',
+      width: '384px',
     }).subscribe(
       (task) => {},
       (err) => {},
@@ -308,13 +309,14 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
   public addCTTask() {
     let modalSub = this.modals.open(AddCTTaskComponent, {
       closeDisabled: false,
-      width: '384px',
       data: {
         type: 'team',
         planTemplateId: this.planTemplateId,
         totalPatients: this.totalPatients,
         taskList:this.teamMemberTemplates,
       },
+      overflow: 'visible',
+      width: '384px',
     }).subscribe(
       (task) => {
         if (task !== null) {
@@ -331,12 +333,13 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
   public editCTTask(task) {
     let modalSub = this.modals.open(EditTaskComponent, {
       closeDisabled: false,
-      width: '384px',
       data: {
         task: task,
         totalPatients: this.totalPatients,
         type: 'team',
       },
+      overflow: 'visible',
+      width: '384px',
     }).subscribe(
       (task) => {},
       (err) => {},
@@ -426,6 +429,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
         totalPatients: this.totalPatients,
         type: 'patient',
       },
+      overflow: 'visible',
       width: '384px',
     }).subscribe(
       (task) => {},
@@ -537,6 +541,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
         totalPatients: this.totalPatients,
         type: 'assessment',
       },
+      overflow: 'visible',
       width: '384px'
     }).subscribe(
       () => {},
@@ -596,6 +601,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
           frequency: 'once',
         }
       },
+      overflow: 'visible',
       width: '384px',
     }).subscribe((symptom) => {
       if (!symptom) return;
@@ -611,6 +617,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
         totalPatients: this.totalPatients,
         task: symptom,
       },
+      overflow: 'visible',
       width: '384px',
     }).subscribe(() => {});
   }
@@ -712,6 +719,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
         task: vital,
         totalPatients: this.totalPatients,
       },
+      overflow: 'visible',
       width: '384px',
     }).subscribe(
       (data) => {},

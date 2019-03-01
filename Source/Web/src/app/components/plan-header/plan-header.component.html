@@ -21,16 +21,13 @@
   <div class="flex alignCenter">
       <h2 class="noMargin marRight8" *ngIf="planTemplate?.duration_weeks >= 0">{{planTemplate?.duration_weeks}} weeks</h2>
       <h2 class="noMargin marRight8" *ngIf="planTemplate?.duration_weeks < 0">Ongoing</h2>
-      <button class="button button--icon marRight24"
-        (click)="openPlanDuration()">
+      <button class="button button--icon marRight24" (click)="openPlanDuration()">
         <i class="ss-write"></i>
       </button>
-    <button class="button button--iconText marRight32"
-    (click)="duplicatePlan()">
+    <button class="button button--iconText marRight32" (click)="duplicatePlan()">
       <i class="ss-files"></i> Duplicate
     </button>
-    <button class="button button--iconText"
-    (click)="openReassignPatients()">
+    <button class="button button--iconText" (click)="openReassignPatients()">
       <i class="ss-ban"></i> Delete
     </button>
   </div>

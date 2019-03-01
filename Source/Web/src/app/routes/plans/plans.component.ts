@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { groupBy as _groupBy, sumBy as _sumBy, uniqBy as _uniqBy } from 'lodash';
+import { groupBy as _groupBy, sumBy as _sumBy, uniqBy as _uniqBy, flattenDeep as _flattenDeep } from 'lodash';
 import { ModalService, ConfirmModalComponent } from '../../modules/modals';
 import { PopoverOptions } from '../../modules/popover';
 import { AuthService, StoreService, UtilsService } from '../../services';
@@ -25,6 +25,7 @@ export class PlansComponent implements OnDestroy, OnInit {
   public carePlanTemplates = [];
   public serviceAreas = [];
   public planTemplatesGrouped = [];
+  public hideInactiveTemplates = false;
 
   public showServiceAreaHelp = false;
   public showCarePlanHelp = false;
@@ -33,10 +34,6 @@ export class PlansComponent implements OnDestroy, OnInit {
   public accordionsOpen = [];
 
   private organizationSub = null;
-
-  public toolCPOpen;
-
-  public fetchPlanTemplates;
 
   constructor(
     private modals: ModalService,
@@ -205,6 +202,39 @@ export class PlansComponent implements OnDestroy, OnInit {
       });
     });
     return promise;
+  }
+
+  public filteredTemplates(templates) {
+    if (this.hideInactiveTemplates) {
+      return templates.filter((template) => {
+        if (!template.averages) {
+          return false;
+        }
+        return template.averages.total_patients > 0;
+      });
+    }
+    return templates;
+  }
+
+  public totalCarePlans() {
+    if (this.hideInactiveTemplates) {
+      let templates = _flattenDeep(this.planTemplatesGrouped.map((obj) => obj.templates));
+      let filteredTemplates = templates.filter((obj) => {
+        if (!obj.averages) {
+          return false;
+        }
+        return obj.averages.total_patients > 0;
+      });
+      return filteredTemplates.length;
+    }
+    return this.carePlanTemplates.length;
+  }
+
+  public totalServiceAreas() {
+    if (this.hideInactiveTemplates) {
+      return this.planTemplatesGrouped.filter((obj) => obj.totalPatients > 0).length;
+    }
+    return this.serviceAreas.length;
   }
 
   public zeroPad(num) {
