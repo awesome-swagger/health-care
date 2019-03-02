@@ -113,7 +113,7 @@ export class RecordResultsComponent implements OnInit, OnDestroy {
           // If user has roles on this care plan, get task templates that are marked for their roles
           userRoles.forEach((teamMemberObj, index, array) => {
             if (teamMemberObj.role) {
-              let roleTasks = teamTasks.filter((obj) => obj.role.id === teamMemberObj.role.id);
+              let roleTasks = teamTasks.filter((obj) => obj.role && obj.role.id === teamMemberObj.role.id);
               userTaskTemplates = userTaskTemplates.concat(roleTasks);
             }
             if ((index + 1) === array.length) {

@@ -18,15 +18,16 @@
       <div class="tool">
         <label class="noMargin">Syncing</label>
         <div class="tool__anchor">
-          <button class="button button--icon button--icon--small"
-          (click)="tooltipCVM0Open=!tooltipCVM0Open">
+          <button class="button button--icon button--icon--small" (click)="syncTooltipOpen=!syncTooltipOpen">
             <i class="ss-help"></i>
           </button>
-          <div class="tool__tip tool__tip--right" [ngClass]="{ 'isOpen' : tooltipCVM0Open }">
-            <div class="tool__text">
-              Check this box to save this data to the EHR.
+          <app-popover [visible]="syncTooltipOpen" (visibleChange)="syncTooltipOpen = $event;">
+            <div class="tool__tip isOpen">
+              <div class="tool__text">
+                Check this box to save this data to the EHR.
+              </div>
             </div>
-          </div>
+          </app-popover>
         </div>
       </div>
       <label class="styledInput">
@@ -47,35 +48,33 @@
       <div class="tool">
         <label class="noMargin">Type</label>
         <div class="tool__anchor">
-          <button class="button button--icon button--icon--small"
-          (click)="tooltipCVM1Open=!tooltipCVM1Open">
+          <button class="button button--icon button--icon--small" (click)="typeTooltipOpen=!typeTooltipOpen">
             <i class="ss-help"></i>
           </button>
-          <div class="tool__tip" [ngClass]="{ 'isOpen' : tooltipCVM1Open }">
-            <div class="tool__text">
-              Question types include:
-              <ul class="disc">
-                <li>
-                  Number: Includes an optional field for units.
-                </li>
-                <li>
-                  Date
-                </li>
-                <li>
-                  Time: for example, 3:15 PM.
-                </li>
-                <li>
-                  Either/Or: Select one of two options.
-                </li>
-                <li>
-                  Scale: A rating from 1-5.
-                </li>
-                <li>
-                  Free Response
-                </li>
-              </ul>
+          <app-popover [visible]="typeTooltipOpen" (visibleChange)="typeTooltipOpen = $event;">
+            <div class="tool__tip isOpen">
+              <div class="tool__text">
+                Question types include:
+                <ul class="disc">
+                  <li>
+                    True/False
+                  </li>
+                  <li>
+                    Time: For example, 3:15 PM.
+                  </li>
+                  <li>
+                    Number: Includes an optional field for units.
+                  </li>
+                  <li>
+                    Scale: A rating from 1-5.
+                  </li>
+                  <li>
+                    Free Response
+                  </li>
+                </ul>
+              </div>
             </div>
-          </div>
+          </app-popover>
         </div> <!--/.tool__anchor-->
       </div> <!--/.tool-->
     </div>
@@ -84,13 +83,12 @@
     </div>
   </div> <!--/.vitalGrid (for "table" headers)-->
 
-  <div class="vitalGrid vitalGrid--row" *ngFor="let question of vital?.questions">
+  <div class="vitalGrid vitalGrid--row" *ngFor="let question of sortQuestions(vital?.questions); index as i;">
     <div class="vitalGrid__cell gridCell--11">
       <input type="text" class="input fullWidth" [(ngModel)]="question.prompt" />
     </div>
     <div class="vitalGrid__cell gridCell--21">
       <div class="flex">
-        <!--TODO: If selected option is number, add "vital__selectNumber" class to the "styledSelect" div; otherwise, add "fullWidth" class-->
         <div class="styledSelect" [ngClass]="{'vital__selectNumber': answerTypeIsNumber(question.answer_type), 'fullWidth': !answerTypeIsNumber(question.answer_type)}">
           <select class="styledSelect__select" [(ngModel)]="question.answer_type">
             <option [value]="'boolean'">True/False</option>
@@ -110,16 +108,16 @@
     </div>
     <div class="vitalGrid__cell vitalGrid__cell--noPadSide gridCell--31">
       <div class="flex">
-        <button class="button button--icon">
+        <button class="button button--icon" [disabled]="i === 0" (click)="moveUp(question)">
           <i class="ss-standard ss-navigateup"></i>
         </button>
-        <button class="button button--icon">
+        <button class="button button--icon" [disabled]="i === (vital.questions.length - 1)" (click)="moveDown(question)">
           <i class="ss-standard ss-navigatedown"></i>
         </button>
       </div>
     </div>
     <div class="vitalGrid__cell vitalGrid__cell--noPadSide gridCell--41">
-      <button class="button button--icon button--icon--small">
+      <button class="button button--icon button--icon--small" (click)="clickDeleteQuestion(question)">
         <i class="ss-delete"></i>
       </button>
     </div>
