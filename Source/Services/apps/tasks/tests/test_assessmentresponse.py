@@ -262,6 +262,74 @@ class TestAssessmentResponseUsingEmployee(TasksMixin, APITestCase):
         response = self.client.delete(url, {})
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
+    def test_assessment_results(self):
+        self.client.logout()
+
+        templates_count = 4
+        facility = self.create_facility()
+        patient = self.create_patient(facility=facility)
+        employee = self.create_employee(facilities_managed=[facility])
+
+        self.client.force_authenticate(user=employee.user)
+
+        plan = self.create_care_plan(patient)
+        self.create_care_team_member(
+            employee_profile=employee,
+            plan=plan
+        )
+
+        for i in range(templates_count):
+            task = self.create_assessment_task(plan=plan)
+            self.create_multiple_assessment_questions(
+                task.assessment_task_template)
+            self.create_responses_to_multiple_questions(
+                task.assessment_task_template,
+                task,
+                task.assessment_task_template.questions.all()
+            )
+
+        url = reverse(
+            'assessment_results-list',
+            kwargs={
+                'parent_lookup_assessment_tasks__plan': plan.id
+            })
+        response = self.client.get(url)
+        self.assertEqual(response.data['count'], templates_count)
+
+    def test_assessment_results_questions(self):
+        self.client.logout()
+
+        templates_count = 4
+        facility = self.create_facility()
+        patient = self.create_patient(facility=facility)
+        employee = self.create_employee(facilities_managed=[facility])
+
+        self.client.force_authenticate(user=employee.user)
+
+        plan = self.create_care_plan(patient)
+        self.create_care_team_member(
+            employee_profile=employee,
+            plan=plan
+        )
+
+        for i in range(templates_count):
+            task = self.create_assessment_task(plan=plan)
+            self.create_multiple_assessment_questions(
+                task.assessment_task_template)
+            self.create_responses_to_multiple_questions(
+                task.assessment_task_template,
+                task,
+                task.assessment_task_template.questions.all()
+            )
+
+        url = reverse(
+            'assessment_results-list',
+            kwargs={
+                'parent_lookup_assessment_tasks__plan': plan.id
+            })
+        response = self.client.get(url)
+        self.assertEqual(len(response.data['results'][0]['questions']), 5)
+
 
 class TestAssessmentResponseUsingPatient(TasksMixin, APITestCase):
     """
