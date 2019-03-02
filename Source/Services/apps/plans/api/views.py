@@ -1705,6 +1705,11 @@ class AssessmentResultViewSet(ParentViewSetPermissionMixin,
 
         GET /api/care_plans/<plan-ID>/assessment_results/?date=2019-05-09
 
+    USAGE
+    ---
+    This will be primarily used in `Assessment Results` section in
+    `patients_Details` page
+
     """
 
     serializer_class = AssessmentResultOverviewSerializer
