@@ -1,6 +1,9 @@
 import datetime
 import time
 
+import pytz
+
+from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
 from drf_haystack.serializers import HaystackSerializerMixin
@@ -826,17 +829,21 @@ class AssessmentResultOverviewSerializer(serializers.ModelSerializer):
     def get_questions(self, obj):
         plan = self.context.get('plan')
         request = self.context.get('request')
-        created_month = request.GET.get('month')
-        created_year = request.GET.get('year')
-        created_day = request.GET.get('day')
+        timestamp = request.GET.get('date', None)
         tasks = AssessmentTask.objects.filter(
             plan=plan, assessment_task_template=obj)
-
+        date_format = "%Y-%m-%d"
+        date_object = datetime.strptime(timestamp, date_format).date() \
+            if timestamp else timezone.now().date()
+        date_min = datetime.datetime.combine(date_object,
+                                             datetime.time.min,
+                                             tzinfo=pytz.utc)
+        date_max = datetime.datetime.combine(date_object,
+                                             datetime.time.max,
+                                             tzinfo=pytz.utc)
         kwargs = {
             'assessment_task__in': tasks,
-            'created__month': created_month,
-            'created__year': created_year,
-            'created__day': created_day,
+            'created__range': (date_min, date_max)
         }
 
         responses = AssessmentResponse.objects.filter(**kwargs)

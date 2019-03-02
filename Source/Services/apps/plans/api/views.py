@@ -1698,6 +1698,13 @@ class AssessmentResultViewSet(ParentViewSetPermissionMixin,
         Employees and patients will only have access to objects which
         they are a member of.
 
+    FILTERING
+    ---
+    You can filter the results by the date the assessment response has
+    been created. For example:
+
+        GET /api/care_plans/<plan-ID>/assessment_results/?date=2019-05-09
+
     """
 
     serializer_class = AssessmentResultOverviewSerializer
@@ -1705,7 +1712,7 @@ class AssessmentResultViewSet(ParentViewSetPermissionMixin,
         permissions.IsAuthenticated,
     )
     queryset = AssessmentTaskTemplate.objects.all()
-    parent_field = 'plan'
+    parent_field = 'assessment_tasks__plan'
     parent_lookup = [
         (
             'assessment_tasks__plan',
