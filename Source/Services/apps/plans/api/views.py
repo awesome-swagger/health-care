@@ -1723,8 +1723,22 @@ class AssessmentResultViewSet(ParentViewSetPermissionMixin,
 
     def filter_queryset(self, queryset):
         queryset = super(AssessmentResultViewSet,
-                         self).filter_queryset(queryset)
-        return queryset.distinct()
+                         self).filter_queryset(queryset).distinct()
+
+        timestamp = self.request.GET.get('date', None)
+        date_format = "%Y-%m-%d"
+        date_object = datetime.strptime(timestamp, date_format).date() \
+            if timestamp else timezone.now().date()
+        date_min = datetime.datetime.combine(date_object,
+                                             datetime.time.min,
+                                             tzinfo=pytz.utc)
+        date_max = datetime.datetime.combine(date_object,
+                                             datetime.time.max,
+                                             tzinfo=pytz.utc)
+
+        return queryset.filter(
+            assessment_tasks__responses__created__range=(date_min, date_max)
+        ).distinct()
 
     def get_serializer_context(self):
         context = super(AssessmentResultViewSet,

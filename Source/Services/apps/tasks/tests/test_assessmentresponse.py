@@ -288,6 +288,11 @@ class TestAssessmentResponseUsingEmployee(TasksMixin, APITestCase):
                 task.assessment_task_template.questions.all()
             )
 
+        # Create dummy template
+        dummy_task = self.create_assessment_task(plan=plan)
+        self.create_multiple_assessment_questions(
+            dummy_task.assessment_task_template)
+
         url = reverse(
             'assessment_results-list',
             kwargs={
