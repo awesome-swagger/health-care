@@ -31,6 +31,7 @@ from ..models import (
 from ..search_indexes import VitalTaskTemplateIndex
 from apps.core.api.mixins import RepresentationMixin
 from apps.core.api.serializers import SymptomSerializer, ProviderRoleSerializer
+from apps.core.models import Symptom
 from apps.patients.api.serializers import (
     PatientMedicationSerializer,
     BasicPatientSerializer,
@@ -811,7 +812,7 @@ class AssessmentResponseOverviewSerializer(serializers.ModelSerializer):
 class AssessmentResultOverviewSerializer(serializers.ModelSerializer):
     """
     serializer to be used by :model:`tasks.AssessmentTaskTemplate`
-    to be used in `Assessment Results` section in  `patients__Details` page
+    to be used in `Assessment Results` section in  `patients_Details` page
     """
 
     questions = serializers.SerializerMethodField()
@@ -850,3 +851,57 @@ class AssessmentResultOverviewSerializer(serializers.ModelSerializer):
         serializer = AssessmentResponseOverviewSerializer(
             responses, many=True)
         return serializer.data
+
+
+class SymptomByPlanSerializer(serializers.ModelSerializer):
+    """
+    serializer to be used by :model:`core.Symptom` to be used in
+    `Symptoms` section in `patients_Details` page
+    """
+
+    rating = serializers.SerializerMethodField()
+    occurrence = serializers.SerializerMethodField()
+    behavior = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Symptom
+        fields = (
+            'id',
+            'name',
+            'rating',
+            'occurrence',
+            'behavior',
+        )
+
+    def get_rating(self, obj):
+        plan = self.context.get('plan')
+
+        rating_obj = SymptomRating.objects.filter(
+            symptom_task__plan=plan,
+            symptom=obj
+        ).order_by('created').last()
+
+        return rating_obj.rating
+
+    def get_occurrence(self, obj):
+        plan = self.context.get('plan')
+        total_tasks = SymptomTask.objects.filter(plan=plan)
+
+        rating_obj = SymptomRating.objects.filter(
+            symptom_task__plan=plan,
+            symptom=obj
+        ).order_by('created').last()
+
+        obj_occurrence = total_tasks.filter(
+            due_datetime__lte=rating_obj.symptom_task.due_datetime).count()
+        return f'{obj_occurrence} of {total_tasks.count()}'
+
+    def get_behavior(self, obj):
+        plan = self.context.get('plan')
+
+        rating_obj = SymptomRating.objects.filter(
+            symptom_task__plan=plan,
+            symptom=obj
+        ).order_by('created').last()
+
+        return rating_obj.behavior

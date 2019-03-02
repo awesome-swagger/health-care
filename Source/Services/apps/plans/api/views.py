@@ -58,7 +58,7 @@ from .serializers import (
 )
 from apps.accounts.models import EmailUser
 from apps.core.api.mixins import ParentViewSetPermissionMixin
-from apps.core.models import Organization, Facility
+from apps.core.models import Organization, Facility, Symptom
 from apps.core.api.serializers import ProviderRoleSerializer
 from apps.core.api.views import OrganizationViewSet, FacilityViewSet
 from apps.core.models import ProviderRole
@@ -72,6 +72,7 @@ from apps.tasks.api.serializers import (
     TeamTaskTemplateSerializer,
     VitalTaskTemplateSerializer,
     AssessmentResultOverviewSerializer,
+    SymptomByPlanSerializer,
 )
 from apps.tasks.models import (
     AssessmentTask,
@@ -1747,6 +1748,77 @@ class AssessmentResultViewSet(ParentViewSetPermissionMixin,
 
     def get_serializer_context(self):
         context = super(AssessmentResultViewSet,
+                        self).get_serializer_context()
+
+        context.update({
+            'plan': self.parent_obj,
+        })
+        return context
+
+
+class SymptomByPlanViewSet(ParentViewSetPermissionMixin,
+                           NestedViewSetMixin,
+                           mixins.ListModelMixin,
+                           viewsets.GenericViewSet):
+    """
+    Viewset for :model:`core.Symptom`
+    ========
+
+    list:
+        Returns list of all :model:`core.Symptom` objects related to the
+        parent care plan.
+        Employees and patients will only have access to objects which
+        they are a member of.
+
+    FILTERING
+    ---
+    You can filter the results by the date the symptom rating has
+    been created. For example:
+
+        GET /api/care_plans/<plan-ID>/symptoms/?date=2019-05-09
+
+    USAGE
+    ---
+    This will be primarily used in `Symptoms` section in
+    `patients_Details` page
+
+    """
+
+    serializer_class = SymptomByPlanSerializer
+    permission_classes = (
+        permissions.IsAuthenticated,
+    )
+    queryset = Symptom.objects.all()
+    parent_field = 'ratings__symptom_task__plan'
+    parent_lookup = [
+        (
+            'ratings__symptom_task__plan',
+            CarePlan,
+            CarePlanViewSet
+        )
+    ]
+
+    def filter_queryset(self, queryset):
+        queryset = super(SymptomByPlanViewSet,
+                         self).filter_queryset(queryset).distinct()
+
+        timestamp = self.request.GET.get('date', None)
+        date_format = "%Y-%m-%d"
+        date_object = datetime.strptime(timestamp, date_format).date() \
+            if timestamp else timezone.now().date()
+        date_min = datetime.datetime.combine(date_object,
+                                             datetime.time.min,
+                                             tzinfo=pytz.utc)
+        date_max = datetime.datetime.combine(date_object,
+                                             datetime.time.max,
+                                             tzinfo=pytz.utc)
+
+        return queryset.filter(
+            ratings__created__range=(date_min, date_max)
+        ).distinct()
+
+    def get_serializer_context(self):
+        context = super(SymptomByPlanViewSet,
                         self).get_serializer_context()
 
         context.update({
