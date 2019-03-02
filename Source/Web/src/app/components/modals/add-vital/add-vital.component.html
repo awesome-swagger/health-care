@@ -1,15 +1,15 @@
 <h1 class="modal__title">Add Vital Report</h1>
 <!--TODO: If adding the vital to a care plan template, show the following.-->
-<div *ngIf="" class="marCenter marCenter--twoThirds">
+<div *ngIf="editingTemplate && totalPatients > 0" class="marCenter marCenter--twoThirds">
   <div class="iconText iconText--wrap iconText--autoHeight error marBottom32">
     <i class="iconText__icon ss-alert"></i>
     <span class="error__text">
-      Making changes here will affect X patients currently assigned to this care plan.
+      Making changes here will affect {{totalPatients}} patients currently assigned to this care plan.
     </span>
   </div>
 </div>
 <!--TODO: If adding the vital to a care plan instance, show the following-->
-<h5 class="center">NOTE: You are adding a vital to one patient's care plan. To add a vital for everyone, go to care plans.</h5>
+<h5 class="center" *ngIf="!editingTemplate">NOTE: You are adding a vital to one patient's care plan. To add a vital for everyone, go to care plans.</h5>
 
 <div class="grid2col">
   <div class="gridCell--11 marRight32">

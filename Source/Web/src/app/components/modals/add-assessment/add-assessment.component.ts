@@ -10,11 +10,12 @@ import { CreateAssessmentComponent } from '../create-assessment/create-assessmen
 export class AddAssessmentComponent implements OnInit {
 
   public data = null;
+  public totalPatients = 0;
   public assessmentsList = [];
   public searchInput = '';
   public assessmentsShown = [];
   public selectedAssessment = null;
-  public editingTemplate;
+  public editingTemplate = false;
 
   constructor(
     private modal: ModalService,
@@ -25,6 +26,8 @@ export class AddAssessmentComponent implements OnInit {
   public ngOnInit() {
     console.log(this.data);
     if (this.data) {
+      this.editingTemplate = this.data.editingTemplate;
+      this.totalPatients = this.data.totalPatients ? this.data.totalPatients : 0;
       this.assessmentsList = this.data.assessmentsList ? this.data.assessmentsList : [];
       this.assessmentsShown = this.assessmentsList;
     }
@@ -45,7 +48,7 @@ export class AddAssessmentComponent implements OnInit {
   }
 
   public deleteAssessment(assessment) {
-    
+
   }
 
   public clickNext() {

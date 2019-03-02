@@ -182,7 +182,7 @@
           <app-popover [options]="patientsDropOptions" [visible]="patientsDropOpen">
             <ul class="drop__dropdown isOpen">
               <li class="drop__option">
-                <a [routerLink]="['/patients/potential']" class="button button--iconText drop__button">
+                <a (click)="openEnrollPatient()" class="button button--iconText drop__button">
                   <i class="ss-plus"></i> Add Patient
                 </a>
               </li>

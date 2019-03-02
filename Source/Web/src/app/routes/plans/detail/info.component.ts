@@ -111,12 +111,11 @@ export class PlanInfoComponent implements OnDestroy, OnInit {
   public openReassignPatients(plan) {
     this.modals.open(DeletePlanComponent, {
       closeDisabled: true,
-      width: 'calc(100vw - 48px)',
       data: {
         planTemplate: this.planTemplate,
         plan: plan
       },
-      minWidth: '976px',
+      width: '900px',
     }).subscribe((result) => {
       if (!result) return;
       if (result.toLowerCase() === 'success') {

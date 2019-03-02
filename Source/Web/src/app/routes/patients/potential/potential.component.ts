@@ -25,6 +25,7 @@ export class PotentialPatientsComponent implements OnDestroy, OnInit {
   public users = null;
   public activeServiceAreas = {};
   public activePatients = [];
+  public employee = null;
 
   public accordOpen = {};
   public accord1Open;
@@ -52,7 +53,7 @@ export class PotentialPatientsComponent implements OnDestroy, OnInit {
       }
       this.facilities = facilities;
       this.facilities.forEach(f => {
-        this.accordOpen[f.id] = false;
+        this.accordOpen[f.id] = this.accordOpen[f.id] || false;
       })
 
       let potentialPatientsSub = this.store.PotentialPatient.readListPaged().subscribe(
@@ -98,6 +99,14 @@ export class PotentialPatientsComponent implements OnDestroy, OnInit {
         employeesSub.unsubscribe();
       }
     )
+
+    this.auth.user$.subscribe(user => {
+      if (!user) return;
+      this.employee = user;
+      if (this.employee.facilities.length === 1) {
+        this.accordOpen[this.employee.facilities[0].id]
+      }
+    })
   }
 
   public ngOnDestroy() {
@@ -115,6 +124,7 @@ export class PotentialPatientsComponent implements OnDestroy, OnInit {
       },
       width: '576px',
     }).subscribe((data) => {
+      if (!data) return;
       const fac = _find(this.facilities, f => f.id === data.facility[0])
       if (fac.potentialPatients) {
         fac.potentialPatients.push(data);
@@ -130,7 +140,11 @@ export class PotentialPatientsComponent implements OnDestroy, OnInit {
       data: {
         patient: potentialPatient
       }
-    }).subscribe(() => {});
+    }).subscribe((res) => {
+      if (!res) return;
+      const facility = this.facilities.find(f => f.id === res.facility);
+      facility.potentialPatients = facility.potentialPatients.filter(p => p.id !== res.patient);
+    });
   }
 
   public editPotentialPatient(potentialPatient) {
@@ -138,9 +152,8 @@ export class PotentialPatientsComponent implements OnDestroy, OnInit {
       closeDisabled: true,
       data: {
         action: 'edit',
-        patientKnown: true,
-        patientInSystem: true,
-        planKnown: potentialPatient.care_plan.length > 0 ? true : false,
+        planKnown: potentialPatient.care_plan ? true : false,
+        potentialPatient,
       },
       width: '576px',
     }).subscribe(() => {});
@@ -195,6 +208,5 @@ export class PotentialPatientsComponent implements OnDestroy, OnInit {
       this.activeServiceAreas[area] = status;
     })
   }
-
 
 }

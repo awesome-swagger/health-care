@@ -14,6 +14,7 @@ import {
 } from 'lodash';
 import tasksData from './tasksData';
 import * as moment from 'moment';
+import { AddPatientToPlanComponent } from '../modals/add-patient-to-plan/add-patient-to-plan.component';
 
 @Component({
   selector: 'app-nav',
@@ -308,5 +309,17 @@ export class NavComponent implements OnDestroy, OnInit {
     } else {
       return `${daysSince} day${daysSince !== 1 ? 's' : ''} ago`;
     }
+  }
+
+  public openEnrollPatient() {
+    this.modals.open(AddPatientToPlanComponent, {
+      data: {
+        action: 'add',
+        patientKnown: false,
+        patientInSystem: false,
+        planKnown: false,
+      },
+      width: '576px',
+    }).subscribe()
   }
 }

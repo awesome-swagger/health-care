@@ -9,6 +9,7 @@ import { ModalService } from '../../../modules/modals';
 export class AddStreamComponent implements OnInit {
 
   public data = null;
+  public totalPatients = 0;
   public careMessages = [];
   public searchInput = '';
   public careMessagesShown = [];
@@ -21,6 +22,7 @@ export class AddStreamComponent implements OnInit {
   public ngOnInit() {
     console.log(this.data);
     if (this.data) {
+      this.totalPatients = this.data.totalPatients ? this.data.totalPatients : 0;
       this.careMessages = this.data.taskList ? this.data.taskList : [];
       this.careMessagesShown = this.careMessages;
     }

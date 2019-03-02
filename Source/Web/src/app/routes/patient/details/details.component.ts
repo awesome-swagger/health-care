@@ -355,16 +355,18 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
       this.planGoals = goals;
     });
     this.getUserTasks(this.carePlan.plan_template.id, formattedDate).then((tasks: any) => {
-      this.userTasks = tasks;
+      console.log(tasks);
+      this.userTasks = tasks.tasks;
     });
     this.teamTasks = [];
-    this.getAllTeamMemberTasks(this.carePlan.plan_template.id, formattedDate).then((teamMemberTasks) => {
+    this.getAllTeamMemberTasks(this.carePlan.plan_template.id, formattedDate).then((teamMemberTasks: any) => {
       teamMemberTasks.forEach((tasks) => {
-        this.teamTasks = this.teamTasks.concat(tasks);
+        this.teamTasks = this.teamTasks.concat(tasks.tasks);
       });
     });
     this.getPatientTasks(this.patient.user.id, this.carePlan.plan_template.id, formattedDate).then((tasks: any) => {
-      this.patientTasks = tasks;
+      this.patientTasks = tasks.tasks;
+      console.log(tasks);
       if (!this.isUsingMobile) {
         this.updatingPatientTasks = this.patientTasks.filter((obj) => this.isPatientTaskUpdatable(obj));
       }

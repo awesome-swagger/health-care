@@ -24,11 +24,13 @@
                       (click)="tooltipsOpen['goalFieldHelp'] = !tooltipsOpen['goalFieldHelp']">
                         <i class="ss-help"></i>
                     </button>
-                    <div class="tool__tip tool__tip--bottom tool__tip--left" [ngClass]="{'isOpen': tooltipsOpen['goalFieldHelp'] }">
-                      <div class="tool__text">
-                        Goals provide direction and purpose for the patient and Care Team. Goals can be changed for individual patients on the Patient Care Plan view.
+                    <app-popover [visible]="tooltipsOpen['goalFieldHelp']" (visibleChange)="tooltipsOpen['goalFieldHelp'] = $event">
+                      <div class="tool__tip tool__tip--bottom tool__tip--left isOpen">
+                        <div class="tool__text">
+                          Goals provide direction and purpose for the patient and Care Team. Goals can be changed for individual patients on the Patient Care Plan view.
+                        </div>
                       </div>
-                    </div>
+                    </app-popover>
                   </div> <!--/.tool__anchor-->
                 </div> <!--/.tool-->
               </th>
@@ -51,23 +53,20 @@
               <td class="left">{{goal.duration_weeks != -1 ? goal.duration_weeks + ' Weeks' : 'Entire Plan'}} </td>
               <td>{{formatStartOnDay(goal.start_on_day)}}</td>
               <td>{{formatEndOnDay(goal.start_on_day, goal.duration_weeks)}}</td>
-              <td class="noPad">
-                <button class="button button--icon button--icon--small"
-                (click)="editGoal(goal)">
+              <td class="noPad" width="48px">
+                <button class="button button--icon button--icon--small" (click)="editGoal(goal)">
                   <i class="ss-write"></i>
                 </button>
               </td>
-              <td class="noPad">
-                <button class="button button--icon button--icon--small"
-                (click)="confirmDeleteGoal(goal)">
+              <td class="noPad" width="48px">
+                <button class="button button--icon button--icon--small" (click)="confirmDeleteGoal(goal)">
                   <i class="ss-delete"></i>
                 </button>
               </td>
             </tr>
           </tbody>
         </table>
-        <button class="button button--iconText"
-        (click)="openGoal()">
+        <button class="button button--iconText" (click)="openGoal()">
           <i class="ss-plus"></i> Add Goal
         </button>
       </div> <!--/.accordion__contents-->
@@ -90,19 +89,20 @@
         <table class="fullWidth">
           <thead>
             <tr>
-              <th class="thSortable thSortable--sortDown">
+              <th class="thSortable">
                 <div class="tool">
                   <span class="thSortable__text thSortable__text--left">CM Task</span>
                   <div class="tool__anchor">
-                    <button class="button button--icon button--icon--small"
-                    (click)="tooltipsOpen['managerTaskFieldHelp'] = !tooltipsOpen['managerTaskFieldHelp']">
+                    <button class="button button--icon button--icon--small" (click)="tooltipsOpen['managerTaskFieldHelp'] = !tooltipsOpen['managerTaskFieldHelp']">
                       <i class="ss-help"></i>
                     </button>
-                    <div class="tool__tip tool__tip--bottom tool__tip--left" [ngClass]="{'isOpen': tooltipsOpen['managerTaskFieldHelp'] }">
-                      <div class="tool__text">
-                        Care Manager tasks are tasks specifically assigned for the Care Manager to complete.
+                    <app-popover [visible]="tooltipsOpen['managerTaskFieldHelp']" (visibleChange)="tooltipsOpen['managerTaskFieldHelp'] = $event;">
+                      <div class="tool__tip tool__tip--bottom tool__tip--left isOpen">
+                        <div class="tool__text">
+                          Care Manager tasks are tasks specifically assigned for the Care Manager to complete.
+                        </div>
                       </div>
-                    </div>
+                    </app-popover>
                   </div> <!--/.tool__anchor-->
                 </div>
               </th>
@@ -133,24 +133,21 @@
               <td class="left"> {{task.repeat_amount != -1 ? task.repeat_amount + ' times' :'Until Plan Ends'}}</td>
               <td>{{task.appear_time | timeTransform | date: 'shortTime' }}</td>
               <td>{{task.due_time | timeTransform | date: 'shortTime'}}</td>
-              <td class="noPad">
-                <button class="button button--icon button--icon--small"
-                (click)="editCMTask(task)">
+              <td class="noPad" width="48px">
+                <button class="button button--icon button--icon--small" (click)="editCMTask(task)">
                   <i class="ss-write"></i>
                 </button>
               </td>
-              <td class="noPad">
-                <button class="button button--icon button--icon--small"
-                (click)="confirmDeleteCTTask(task, true)">
+              <td class="noPad" width="48px">
+                <button class="button button--icon button--icon--small" (click)="confirmDeleteCTTask(task, true)">
                   <i class="ss-delete"></i>
                 </button>
               </td>
             </tr>
           </tbody>
         </table>
-        <button class="button button--iconText marBottom64"
-          (click)="addCMTask()" >
-            <i class="ss-plus"></i> Add CM Task
+        <button class="button button--iconText marBottom64" (click)="addCMTask()" >
+          <i class="ss-plus"></i> Add CM Task
         </button>
         <h3 class="noMargin">Care Team Tasks (CT) ({{teamMemberTemplates.length}})</h3>
         <!-- TEAM TASKS -->
@@ -161,15 +158,16 @@
                 <div class="tool">
                   <span class="thSortable__text thSortable__text--left">Task</span>
                   <div class="tool__anchor">
-                    <button class="button button--icon button--icon--small"
-                    (click)="tooltipsOpen['teamTaskFieldHelp'] = !tooltipsOpen['teamTaskFieldHelp']">
+                    <button class="button button--icon button--icon--small" (click)="tooltipsOpen['teamTaskFieldHelp'] = !tooltipsOpen['teamTaskFieldHelp']">
                       <i class="ss-help"></i>
                     </button>
-                    <div class="tool__tip tool__tip--bottom tool__tip--left" [ngClass]="{'isOpen': tooltipsOpen['teamTaskFieldHelp'] }">
-                      <div class="tool__text">
-                        Care Team tasks can be assigned to one or more members of the Care Team.
+                    <app-popover [visible]="tooltipsOpen['teamTaskFieldHelp']" (visibleChange)="tooltipsOpen['teamTaskFieldHelp'] = $event;">
+                      <div class="tool__tip tool__tip--bottom tool__tip--left isOpen">
+                        <div class="tool__text">
+                          Care Team tasks can be assigned to one or more members of the Care Team.
+                        </div>
                       </div>
-                    </div>
+                    </app-popover>
                   </div> <!--/.tool__anchor-->
                 </div>
               </th>
@@ -207,23 +205,20 @@
               <td class="left"> {{task.repeat_amount != -1 ? task.repeat_amount :'Until Plan Ends'}}</td>
               <td>{{task.appear_time | timeTransform | date: 'shortTime' }}</td>
               <td>{{task.due_time | timeTransform | date: 'shortTime'}}</td>
-              <td class="noPad">
-                <button class="button button--icon button--icon--small"
-                (click)="editCTTask(task)">
+              <td class="noPad" width="48px">
+                <button class="button button--icon button--icon--small" (click)="editCTTask(task)">
                   <i class="ss-write"></i>
                 </button>
               </td>
-              <td class="noPad">
-                <button class="button button--icon button--icon--small"
-                (click)="confirmDeleteCTTask(task, false)">
+              <td class="noPad" width="48px">
+                <button class="button button--icon button--icon--small" (click)="confirmDeleteCTTask(task, false)">
                   <i class="ss-delete"></i>
                 </button>
               </td>
             </tr>
           </tbody>
         </table>
-        <button class="button button--iconText"
-        (click)="addCTTask()" >
+        <button class="button button--iconText" (click)="addCTTask()" >
           <i class="ss-plus"></i> Add CT Task
         </button>
       </div> <!--/.accordion__contents-->
@@ -241,22 +236,21 @@
     </div> <!--/.accordion__head-->
     <div class="accordion__body">
       <div class="accordion__contents">
-
         <div class="flex alignCenter">
           <h3 class="noMargin">Tasks ({{patientTaskTemplates.length}})</h3>
           <div class="tool__anchor">
-            <button class="button button--icon button--icon--small"
-            (click)="tooltipsOpen['patientTasksHelp'] = !tooltipsOpen['patientTasksHelp']">
+            <button class="button button--icon button--icon--small" (click)="tooltipsOpen['patientTasksHelp'] = !tooltipsOpen['patientTasksHelp']">
               <i class="ss-help"></i>
             </button>
-            <div class="tool__tip tool__tip--bottom tool__tip--left" [ngClass]="{'isOpen': tooltipsOpen['patientTasksHelp'] }">
-              <div class="tool__text">
-                Tasks include any task not specific to reporting vitals or symptoms.
+            <app-popover [visible]="tooltipsOpen['patientTasksHelp']" (visibleChange)="tooltipsOpen['patientTasksHelp'] = $event;">
+              <div class="tool__tip tool__tip--bottom tool__tip--left isOpen">
+                <div class="tool__text">
+                  Tasks include any task not specific to reporting vitals or symptoms.
+                </div>
               </div>
-            </div>
+            </app-popover>
           </div> <!--/.tool__anchor-->
         </div> <!--/.flex (for table title and tooltip)-->
-
         <table class="fullWidth">
           <thead>
             <tr>
@@ -290,23 +284,20 @@
               <td class="left">{{pTask.repeat_amount != -1 ? pTask.repeat_amount :'Until Plan Ends'}}</td>
               <td>{{pTask.appear_time | timeTransform | date: 'shortTime'}}</td>
               <td>{{pTask.due_time | timeTransform | date: 'shortTime'}}</td>
-              <td class="noPad">
-                <button class="button button--icon button--icon--small"
-                (click)="editTask(pTask)">
+              <td class="noPad" width="48px">
+                <button class="button button--icon button--icon--small" (click)="editTask(pTask)">
                   <i class="ss-write"></i>
                 </button>
               </td>
-              <td class="noPad">
-                <button class="button button--icon button--icon--small"
-                (click)="confirmDeleteTask(pTask)">
+              <td class="noPad" width="48px">
+                <button class="button button--icon button--icon--small" (click)="confirmDeleteTask(pTask)">
                   <i class="ss-delete"></i>
                 </button>
               </td>
             </tr>
           </tbody>
         </table>
-        <button class="button button--iconText marBottom48"
-        (click)="addTask()">
+        <button class="button button--iconText marBottom48" (click)="addTask()">
           <i class="ss-plus"></i> Add Task
         </button>
         <!--/ patient tasks: tasks section-->
@@ -314,15 +305,16 @@
         <div class="flex alignCenter">
           <h3 class="noMargin">Assessments ({{assessmentTemplates.length}})</h3>
           <div class="tool__anchor">
-            <button class="button button--icon button--icon--small"
-            (click)="toolPTAOpen=!toolPTAOpen">
+            <button class="button button--icon button--icon--small" (click)="tooltipsOpen['assessmentTasksHelp']=!tooltipsOpen['assessmentTasksHelp']">
               <i class="ss-help"></i>
             </button>
-            <div class="tool__tip tool__tip--bottom tool__tip--left" [ngClass]="{ 'isOpen' : toolPTAOpen }">
-              <div class="tool__text">
-                Assessments provide a 1-5 scale for patients to give feedback. 1 is the worst result; 5 is the best. The average score from a patient’s outcome assessments shows as their outcome %. The average score from a patient’s satisfaction assessments shows as their satisfaction %.
+            <app-popover [visible]="tooltipsOpen['assessmentTasksHelp']" (visibleChange)="tooltipsOpen['assessmentTasksHelp'] = $event;">
+              <div class="tool__tip tool__tip--bottom tool__tip--left isOpen">
+                <div class="tool__text">
+                  Assessments provide a 1-5 scale for patients to give feedback. 1 is the worst result; 5 is the best. The average score from a patient’s outcome assessments shows as their outcome %. The average score from a patient’s satisfaction assessments shows as their satisfaction %.
+                </div>
               </div>
-            </div>
+            </app-popover>
           </div> <!--/.tool__anchor-->
         </div> <!--/.flex (for table title and tooltip)-->
 
@@ -351,15 +343,16 @@
                 <div class="tool">
                   <span class="thSortable__text">Outcome</span>
                   <div class="tool__anchor">
-                    <button class="button button--icon button--icon--small"
-                    (click)="toolPTA2Open=!toolPTA2Open">
+                    <button class="button button--icon button--icon--small" (click)="tooltipsOpen['assessmentOutcomeHelp']=!tooltipsOpen['assessmentOutcomeHelp']">
                       <i class="ss-help"></i>
                     </button>
-                    <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : toolPTA2Open }">
-                      <div class="tool__text">
-                        The average score from a patient’s outcome assessments shows as their outcome %.
+                    <app-popover [visible]="tooltipsOpen['assessmentOutcomeHelp']" (visibleChange)="tooltipsOpen['assessmentOutcomeHelp'] = $event;">
+                      <div class="tool__tip tool__tip--bottom isOpen">
+                        <div class="tool__text">
+                          The average score from a patient’s outcome assessments shows as their outcome %.
+                        </div>
                       </div>
-                    </div>
+                    </app-popover>
                   </div> <!--/.tool__anchor-->
                 </div> <!--/.tool-->
               </th>
@@ -367,15 +360,16 @@
                 <div class="tool">
                   <span class="thSortable__text">Satisfaction</span>
                   <div class="tool__anchor">
-                    <button class="button button--icon button--icon--small"
-                    (click)="toolPTA3Open=!toolPTA3Open">
+                    <button class="button button--icon button--icon--small" (click)="tooltipsOpen['assessmentSatisfactionHelp']=!tooltipsOpen['assessmentSatisfactionHelp']">
                       <i class="ss-help"></i>
                     </button>
-                    <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : toolPTA3Open }">
-                      <div class="tool__text">
-                        The average score from a patient’s satisfaction assessments shows as their satisfaction %.
+                    <app-popover [visible]="tooltipsOpen['assessmentSatisfactionHelp']" (visibleChange)="tooltipsOpen['assessmentSatisfactionHelp'] = $event;">
+                      <div class="tool__tip tool__tip--bottom isOpen">
+                        <div class="tool__text">
+                          The average score from a patient’s satisfaction assessments shows as their satisfaction %.
+                        </div>
                       </div>
-                    </div>
+                    </app-popover>
                   </div> <!--/.tool__anchor-->
                 </div> <!--/.tool-->
               </th>
@@ -386,7 +380,6 @@
           <tbody>
             <tr *ngFor="let asmt of assessmentTemplates">
               <td class="left">{{asmt.name | titlecase}}</td>
-
               <td>{{asmt.start_on_day}}</td>
               <td class="left"><span *ngIf="asmt.frequency">{{asmt.frequency | frequencyTransform | titlecase}}</span></td>
               <td class="left">{{asmt.repeat_amount != -1 ? asmt.repeat_amount :'Until Plan Ends'}}</td>
@@ -394,23 +387,20 @@
               <td>{{asmt.due_time | timeTransform | date: 'shortTime'}}</td>
               <td><i *ngIf="asmt.tracks_outcome" class="ss-standard ss-check iconSmall"></i></td>
               <td><i *ngIf="asmt.tracks_satisfaction" class="ss-standard ss-check iconSmall"></i></td>
-              <td class="noPad">
-                <button class="button button--icon button--icon--small"
-                (click)="editAssessmentTime(asmt)">
+              <td class="noPad" width="48px">
+                <button class="button button--icon button--icon--small" (click)="editAssessmentTime(asmt)">
                   <i class="ss-write"></i>
                 </button>
               </td>
-              <td class="noPad">
-                <button class="button button--icon button--icon--small"
-                (click)="confirmDeleteAssessment(asmt)">
+              <td class="noPad" width="48px">
+                <button class="button button--icon button--icon--small" (click)="confirmDeleteAssessment(asmt)">
                   <i class="ss-delete"></i>
                 </button>
               </td>
             </tr>
           </tbody>
         </table>
-        <button class="button button--iconText marBottom48"
-        (click)="addAssessment()">
+        <button class="button button--iconText marBottom48" (click)="addAssessment()">
           <i class="ss-plus"></i> Add Assessment
         </button>
         <!--/ patient tasks: assessments section-->
@@ -418,15 +408,16 @@
         <div class="flex alignCenter">
           <h3 class="noMargin">Symptom Reports ({{symptomTemplates.length}})</h3>
           <div class="tool__anchor">
-            <button class="button button--icon button--icon--small"
-            (click)="toolPTSOpen=!toolPTSOpen">
+            <button class="button button--icon button--icon--small" (click)="tooltipsOpen['symptomHelp']=!tooltipsOpen['symptomHelp']">
               <i class="ss-help"></i>
             </button>
-            <div class="tool__tip tool__tip--bottom tool__tip--left" [ngClass]="{ 'isOpen' : toolPTSOpen }">
-              <div class="tool__text">
-                Symptom reports allow the patient to list any symptoms they are experiencing, along with the severity of those symptoms.
+            <app-popover [visible]="tooltipsOpen['symptomHelp']" (visibleChange)="tooltipsOpen['symptomHelp'] = $event;">
+              <div class="tool__tip tool__tip--bottom tool__tip--left isOpen">
+                <div class="tool__text">
+                  Symptom reports allow the patient to list any symptoms they are experiencing, along with the severity of those symptoms.
+                </div>
               </div>
-            </div>
+            </app-popover>
           </div> <!--/.tool__anchor-->
         </div> <!--/.flex (for table title and tooltip)-->
 
@@ -459,23 +450,20 @@
               <td class="left">{{sympt.repeat_amount != -1 ? sympt.repeat_amount :'Until Plan Ends'}}</td>
               <td>{{sympt.appear_time | timeTransform | date: 'shortTime'}}</td>
               <td>{{sympt.due_time | timeTransform | date: 'shortTime'}}</td>
-              <td class="noPad">
-                <button class="button button--icon button--icon--small"
-                (click)="editSymptom(sympt)">
+              <td class="noPad" width="48px">
+                <button class="button button--icon button--icon--small" (click)="editSymptom(sympt)">
                   <i class="ss-write"></i>
                 </button>
               </td>
-              <td class="noPad">
-                <button class="button button--icon button--icon--small"
-                (click)="confirmDeleteSymptom(sympt)">
+              <td class="noPad" width="48px">
+                <button class="button button--icon button--icon--small" (click)="confirmDeleteSymptom(sympt)">
                   <i class="ss-delete"></i>
                 </button>
               </td>
             </tr>
           </tbody>
         </table>
-        <button class="button button--iconText marBottom48"
-        (click)="addSymptom()">
+        <button class="button button--iconText marBottom48" (click)="addSymptom()">
           <i class="ss-plus"></i> Add Symptom Report
         </button>
         <!--/ patient tasks: symptoms section-->
@@ -483,15 +471,16 @@
         <div class="flex alignCenter">
           <h3 class="noMargin">Vitals ({{vitalTemplates.length}})</h3>
           <div class="tool__anchor">
-            <button class="button button--icon button--icon--small"
-            (click)="toolPTVOpen=!toolPTVOpen">
+            <button class="button button--icon button--icon--small" (click)="tooltipsOpen['vitalHelp']=!tooltipsOpen['vitalHelp']">
               <i class="ss-help"></i>
             </button>
-            <div class="tool__tip tool__tip--bottom tool__tip--left" [ngClass]="{ 'isOpen' : toolPTVOpen }">
-              <div class="tool__text">
-                Vitals are reports on specific, measurable aspects of a patient’s health, like blood pressure.
+            <app-popover [visible]="tooltipsOpen['vitalHelp']" (visibleChange)="tooltipsOpen['vitalHelp'] = $event;">
+              <div class="tool__tip tool__tip--bottom tool__tip--left isOpen">
+                <div class="tool__text">
+                  Vitals are reports on specific, measurable aspects of a patient’s health, like blood pressure.
+                </div>
               </div>
-            </div>
+            </app-popover>
           </div> <!--/.tool__anchor-->
         </div> <!--/.flex (for table title and tooltip)-->
 
@@ -528,15 +517,13 @@
               <td class="left">{{vital.repeat_amount != -1 ? vital.repeat_amount :'Until Plan Ends'}}</td>
               <td>{{vital.appear_time | timeTransform | date: 'shortTime'}}</td>
               <td>{{vital.due_time | timeTransform | date: 'shortTime'}}</td>
-              <td class="noPad">
-                <button class="button button--icon button--icon--small"
-                  (click)="editVitalTime(vital)">
+              <td class="noPad" width="48px">
+                <button class="button button--icon button--icon--small" (click)="editVitalTime(vital)">
                   <i class="ss-write"></i>
                 </button>
               </td>
-              <td class="noPad">
-                <button class="button button--icon button--icon--small"
-                  (click)="confirmDeleteVital(vital)">
+              <td class="noPad" width="48px">
+                <button class="button button--icon button--icon--small" (click)="confirmDeleteVital(vital)">
                   <i class="ss-delete"></i>
                 </button>
               </td>
@@ -564,15 +551,16 @@
         <div class="flex alignCenter">
           <h3 class="noMargin">Care Messages ({{messageQueues.length}})</h3>
           <div class="tool__anchor">
-            <button class="button button--icon button--icon--small"
-            (click)="toolPTMOpen=!toolPTMOpen">
+            <button class="button button--icon button--icon--small" (click)="tooltipsOpen['careMessagesHelp']=!tooltipsOpen['careMessagesHelp']">
               <i class="ss-help"></i>
             </button>
-            <div class="tool__tip tool__tip--bottom tool__tip--left" [ngClass]="{ 'isOpen' : toolPTMOpen }">
-              <div class="tool__text">
-                One message is deployed to the patient each day they complete all of their tasks.
+            <app-popover [visible]="tooltipsOpen['careMessagesHelp']" (visibleChange)="tooltipsOpen['careMessagesHelp'] = $event;">
+              <div class="tool__tip tool__tip--bottom tool__tip--left isOpen">
+                <div class="tool__text">
+                  One message is deployed to the patient each day they complete all of their tasks.
+                </div>
               </div>
-            </div>
+            </app-popover>
           </div> <!--/.tool__anchor-->
         </div> <!--/.flex (for table title and tooltip)-->
 
@@ -597,23 +585,20 @@
               <td class="left">{{msg.name }}</td>
               <td class="left">{{msg.type|titlecase}}</td>
               <td>{{msg.messages.length}}</td>
-              <td class="noPad">
-                <button class="button button--icon button--icon--small"
-                (click)="editStream(msg)">
+              <td class="noPad" width="48px">
+                <button class="button button--icon button--icon--small" (click)="editStream(msg)">
                   <i class="ss-write"></i>
                 </button>
               </td>
-              <td class="noPad">
-                <button class="button button--icon button--icon--small"
-                (click)="confirmDeleteStream(msg)">
+              <td class="noPad" width="48px">
+                <button class="button button--icon button--icon--small" (click)="confirmDeleteStream(msg)">
                   <i class="ss-delete"></i>
                 </button>
               </td>
             </tr>
           </tbody>
         </table>
-        <button class="button button--iconText"
-          (click)="addStream()">
+        <button class="button button--iconText" (click)="addStream()">
           <i class="ss-plus"></i> Add Care Message
         </button>
         <!--/ patient tasks: messages section-->

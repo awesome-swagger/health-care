@@ -10,6 +10,7 @@ import { StoreService } from '../../../services';
 export class AddCTTaskComponent implements OnInit {
 
   public data = null;
+  public totalPatients = 0;
   public tasks = [];
   public searchInput = '';
   public tasksShown = [];
@@ -42,6 +43,7 @@ export class AddCTTaskComponent implements OnInit {
   public ngOnInit() {
     console.log(this.data);
     if (this.data) {
+      this.totalPatients = this.data.totalPatients ? this.data.totalPatients : 0;
       this.tasks = this.data.taskList ? this.data.taskList : [];
       this.tasksShown = this.tasks;
     }

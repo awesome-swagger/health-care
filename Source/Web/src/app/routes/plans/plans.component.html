@@ -1,7 +1,7 @@
 <div class="ssContainer ssContents">
   <div class="flexHeader">
     <div class="flex alignCenter">
-      <h1 class="noMargin marRight8">Service Areas ({{serviceAreas?.length}})</h1>
+      <h1 class="noMargin marRight8">Service Areas ({{totalServiceAreas()}})</h1>
       <div class="tool__anchor">
         <button class="button button--icon button--icon--small"
         (click)="showServiceAreaHelp = !showServiceAreaHelp">
@@ -15,7 +15,7 @@
           </div>
         </app-popover>
       </div> <!--/.tool__anchor-->
-      <h1 class="noMargin marRight8">Care Plans ({{carePlanTemplates?.length}})</h1>
+      <h1 class="noMargin marRight8">Care Plans ({{totalCarePlans()}})</h1>
       <div class="tool__anchor">
         <button class="button button--icon button--icon--small"
         (click)="showCarePlanHelp=!showCarePlanHelp">
@@ -55,7 +55,7 @@
   <div class="flex alignEnd justifySpaceBetween negativeMarTop24 marBottom24">
     <div>
       <label class="styledInput">
-        <input type="checkbox" class="styledInput__input" />
+        <input type="checkbox" class="styledInput__input" [checked]="hideInactiveTemplates" (change)="hideInactiveTemplates = !hideInactiveTemplates" />
         <span class="styledInput__box"></span>
         Show Only Active Service Areas
       </label>
@@ -131,104 +131,105 @@
       </div>
     </div> <!--/.info-->
   </div> <!--/.flex-->
-  <div class="accordion" [ngClass]="{ 'isOpen' : accordionsOpen[plan.serviceArea] }" *ngFor="let plan of planTemplatesGrouped">
-    <div class="accordion__head" (click)="accordionsOpen[plan.serviceArea]=!accordionsOpen[plan.serviceArea]">
-      <span class="accordion__title">{{plan.serviceAreaObj.name}} ({{plan.templates.length}}) ({{plan.totalPatients}})</span>
-      <div class="accordion__right">
-        <div class="pill marRight16">
-          Time {{totalTimeCount(plan.templates)}}
+  <ng-container *ngFor="let plan of planTemplatesGrouped">
+    <div class="accordion" [ngClass]="{ 'isOpen' : accordionsOpen[plan.serviceArea] }" *ngIf="!hideInactiveTemplates || plan.totalPatients > 0">
+      <div class="accordion__head" (click)="accordionsOpen[plan.serviceArea]=!accordionsOpen[plan.serviceArea]">
+        <span class="accordion__title">{{plan.serviceAreaObj.name}} ({{filteredTemplates(plan.templates).length}}) ({{plan.totalPatients}})</span>
+        <div class="accordion__right">
+          <div class="pill marRight16">
+            Time {{totalTimeCount(filteredTemplates(plan.templates))}}
+          </div>
+          <div class="pill" *ngIf="plan.totalPatients > 0" [ngStyle]="{'background': utils.percentPillColor(totalRiskLevel(filteredTemplates(plan.templates)))}">
+            {{utils.getRiskLevelText(totalRiskLevel(filteredTemplates(plan.templates)))}} {{totalRiskLevel(filteredTemplates(plan.templates))}}%
+          </div>
+          <div class="pill" *ngIf="plan.totalPatients === 0">
+            N/A
+          </div>
+          <div class="accordion__arrow">
+            <i class="ss-standard ss-navigateright"></i>
+          </div>
         </div>
-        <div class="pill" *ngIf="plan.totalPatients > 0" [ngStyle]="{'background': utils.percentPillColor(totalRiskLevel(plan.templates))}">
-          {{utils.getRiskLevelText(totalRiskLevel(plan.templates))}} {{totalRiskLevel(plan.templates)}}%
-        </div>
-        <div class="pill" *ngIf="plan.totalPatients === 0">
-          N/A
-        </div>
-        <div class="accordion__arrow">
-          <i class="ss-standard ss-navigateright"></i>
-        </div>
-      </div>
-    </div> <!--/.accordion__head-->
-    <div class="accordion__body">
-      <div class="accordion__contents">
-        <table class="fullWidth">
-          <thead>
-            <tr>
-              <th class="thSortable">
-                <span class="thSortable__text thSortable__text--left">Care Plans</span>
-              </th>
-              <th class="thSortable">
-                <span class="thSortable__text thSortable__text--left">Status</span>
-              </th>
-              <th class="thSortable">
-                <span class="thSortable__text">Patients</span>
-              </th>
-              <th class="thSortable">
-                <span class="thSortable__text">Facilities</span>
-              </th>
-              <th class="thSortable">
-                <span class="thSortable__text">Monthly Time</span>
-              </th>
-              <th class="thSortable">
-                <span class="thSortable__text">Duration</span>
-              </th>
-              <th class="thSortable">
-                <span class="thSortable__text">Avg Engagement</span>
-              </th>
-              <th class="thSortable">
-                <span class="thSortable__text">Avg Outcome</span>
-              </th>
-              <!-- <th class="thSortable thSortable--sortDown thSortable--sortUp"> -->
-              <th class="thSortable">
-                <span class="thSortable__text">Risk Level</span>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let item of plan.templates">
-              <td class="left">
-                <a [routerLink]="['/plan', item.id, 'info']">{{item.name}}</a>
-              </td>
-              <td class="left">{{item.is_active ? 'Active':'Inactive'}} </td>
-              <td>{{item.averages.total_patients}}</td>
-              <td>{{item.averages.total_facilities}}</td>
-              <td>
-                <div class="pill">
-                  <span *ngIf="!item.averages.time_count">0:00</span>
-                  <span *ngIf="item.averages.time_count">{{item.averages.time_count}}</span>
-                </div>
-              </td>
-              <td>
-                <span *ngIf="item.duration_weeks >= 0">{{item.duration_weeks}} weeks</span>
-                <span *ngIf="item.duration_weeks < 0">Ongoing</span>
-              </td>
-              <td>
-                <div class="pill" *ngIf="item.averages.total_patients === 0">
-                  N/A
-                </div>
-                <div class="pill" *ngIf="item.averages.total_patients > 0" [ngStyle]="{'background': utils.percentPillColor(item.averages.average_engagement)}">
-                  {{item.averages.average_engagement}}%
-                </div>
-              </td>
-              <td>
-                <div class="pill" *ngIf="item.averages.total_patients === 0">
-                  N/A
-                </div>
-                <div class="pill" *ngIf="item.averages.total_patients > 0" [ngStyle]="{'background': utils.percentPillColor(item.averages.average_outcome)}">
-                  {{item.averages.average_outcome}}%
-                </div>
-              </td>
-              <td>
-                <div class="pill" *ngIf="item.averages.total_patients === 0">
-                  N/A
-                </div>
-                <div class="pill" *ngIf="item.averages.total_patients > 0" [ngStyle]="{'background': utils.percentPillColor(item.averages.risk_level)}">
-                  {{utils.getRiskLevelText(item.averages.risk_level)}} {{item.averages.risk_level}}%
-                </div>
-              </td>
-              <td>
-                <button class="button button--icon"
-                (click)="duplicatePlan(item)">
+      </div> <!--/.accordion__head-->
+      <div class="accordion__body">
+        <div class="accordion__contents">
+          <table class="fullWidth">
+            <thead>
+              <tr>
+                <th class="thSortable">
+                  <span class="thSortable__text thSortable__text--left">Care Plans</span>
+                </th>
+                <th class="thSortable">
+                  <span class="thSortable__text thSortable__text--left">Status</span>
+                </th>
+                <th class="thSortable">
+                  <span class="thSortable__text">Patients</span>
+                </th>
+                <th class="thSortable">
+                  <span class="thSortable__text">Facilities</span>
+                </th>
+                <th class="thSortable">
+                  <span class="thSortable__text">Monthly Time</span>
+                </th>
+                <th class="thSortable">
+                  <span class="thSortable__text">Duration</span>
+                </th>
+                <th class="thSortable">
+                  <span class="thSortable__text">Avg Engagement</span>
+                </th>
+                <th class="thSortable">
+                  <span class="thSortable__text">Avg Outcome</span>
+                </th>
+                <!-- <th class="thSortable thSortable--sortDown thSortable--sortUp"> -->
+                <th class="thSortable">
+                  <span class="thSortable__text">Risk Level</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of filteredTemplates(plan.templates)">
+                <td class="left">
+                  <a [routerLink]="['/plan', item.id, 'info']">{{item.name}}</a>
+                </td>
+                <td class="left">{{item.averages.total_patients > 0 ? 'Active':'Inactive'}} </td>
+                <td>{{item.averages.total_patients}}</td>
+                <td>{{item.averages.total_facilities}}</td>
+                <td>
+                  <div class="pill">
+                    <span *ngIf="!item.averages.time_count">0:00</span>
+                    <span *ngIf="item.averages.time_count">{{item.averages.time_count}}</span>
+                  </div>
+                </td>
+                <td>
+                  <span *ngIf="item.duration_weeks >= 0">{{item.duration_weeks}} weeks</span>
+                  <span *ngIf="item.duration_weeks < 0">Ongoing</span>
+                </td>
+                <td>
+                  <div class="pill" *ngIf="item.averages.total_patients === 0">
+                    N/A
+                  </div>
+                  <div class="pill" *ngIf="item.averages.total_patients > 0" [ngStyle]="{'background': utils.percentPillColor(item.averages.average_engagement)}">
+                    {{item.averages.average_engagement}}%
+                  </div>
+                </td>
+                <td>
+                  <div class="pill" *ngIf="item.averages.total_patients === 0">
+                    N/A
+                  </div>
+                  <div class="pill" *ngIf="item.averages.total_patients > 0" [ngStyle]="{'background': utils.percentPillColor(item.averages.average_outcome)}">
+                    {{item.averages.average_outcome}}%
+                  </div>
+                </td>
+                <td>
+                  <div class="pill" *ngIf="item.averages.total_patients === 0">
+                    N/A
+                  </div>
+                  <div class="pill" *ngIf="item.averages.total_patients > 0" [ngStyle]="{'background': utils.percentPillColor(item.averages.risk_level)}">
+                    {{utils.getRiskLevelText(item.averages.risk_level)}} {{item.averages.risk_level}}%
+                  </div>
+                </td>
+                <td>
+                  <button class="button button--icon"
+                  (click)="duplicatePlan(item)">
                   <i class="ss-files"></i>
                 </button>
               </td>
@@ -241,4 +242,5 @@
       </div> <!--/.accordion__contents-->
     </div> <!--/.accordion__body-->
   </div> <!--/.accordion-->
+  </ng-container>
 </div> <!--/.ssContainer-->
