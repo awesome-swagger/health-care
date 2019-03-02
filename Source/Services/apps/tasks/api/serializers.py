@@ -825,9 +825,10 @@ class AssessmentResultOverviewSerializer(serializers.ModelSerializer):
 
     def get_questions(self, obj):
         plan = self.context.get('plan')
-        created_month = self.context.get('created_month')
-        created_year = self.context.get('created_year')
-        created_day = self.context.get('created_day')
+        request = self.context.get('request')
+        created_month = request.GET.get('month')
+        created_year = request.GET.get('year')
+        created_day = request.GET.get('day')
         tasks = AssessmentTask.objects.filter(
             plan=plan, assessment_task_template=obj)
 

@@ -71,6 +71,7 @@ from apps.tasks.api.serializers import (
     SymptomTaskTemplateSerializer,
     TeamTaskTemplateSerializer,
     VitalTaskTemplateSerializer,
+    AssessmentResultOverviewSerializer,
 )
 from apps.tasks.models import (
     AssessmentTask,
@@ -1682,3 +1683,47 @@ class TeamMessageViewSet(ParentViewSetPermissionMixin,
 
         self.perform_destroy(instance)
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class AssessmentResultViewSet(ParentViewSetPermissionMixin,
+                              NestedViewSetMixin,
+                              mixins.ListModelMixin,
+                              viewsets.GenericViewSet):
+    """
+    Viewset for :model:`tasks.AssessmentTaskTemplate`
+    ========
+
+    list:
+        Returns list of all :model:`tasks.AssessmentTaskTemplate` objects.
+        Employees and patients will only have access to objects which
+        they are a member of.
+
+    """
+
+    serializer_class = AssessmentResultOverviewSerializer
+    permission_classes = (
+        permissions.IsAuthenticated,
+    )
+    queryset = AssessmentTaskTemplate.objects.all()
+    parent_field = 'plan'
+    parent_lookup = [
+        (
+            'assessment_tasks__plan',
+            CarePlan,
+            CarePlanViewSet
+        )
+    ]
+
+    def filter_queryset(self, queryset):
+        queryset = super(AssessmentResultViewSet,
+                         self).filter_queryset(queryset)
+        return queryset.distinct()
+
+    def get_serializer_context(self):
+        context = super(AssessmentResultViewSet,
+                        self).get_serializer_context()
+
+        context.update({
+            'plan': self.parent_obj,
+        })
+        return context
