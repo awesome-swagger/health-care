@@ -36,66 +36,48 @@
   </div>
   <div>
     <label>Care Plan & Type</label>
-    {{data?.patient?.care_plan}}: RPM
+    {{data?.patient?.care_plan.name}}{{ data?.patient?.care_plan.type ? ': ' + data.patient.care_plan.type : ''}}
   </div>
 </div>
 
-<!--TODO: Show if care plan consent-->
-<div *ngIf="" class="flex justifySpaceBetween marBottom48">
-  <div class="marRight16">
-    <label>Care Plan & Type</label>
-    Heart Disease: RPM
-  </div>
-  <div class="marRight16">
-    <label>Enrolled By</label>
-    Nathaniel Robinson, CRNA
-  </div>
-  <div>
-    <label>Enrolled On</label>
-    May 32, 2018
-  </div>
-</div>
-
-<!--TODO: Show if enroll patient step 1 or care plan consent-->
 <div *ngIf="!showEPStep2">
   <h5 class="marBottom32">Patients can be enrolled without meeting reimbursement requirements. However, they won’t be eligible to receive reimbursement until requirements have been meet. </h5>
   <label>Reimbursement Requirements (opt)</label>
   <label class="styledInput">
-    <input type="checkbox" class="styledInput__input" />
+    <input type="checkbox" class="styledInput__input" [(ngModel)]="verbal_consent" />
     <span class="styledInput__box"></span>
     Patient has verbally consented to begin care plan.
   </label>
   <label class="styledInput">
-    <input type="checkbox" class="styledInput__input" />
+    <input type="checkbox" class="styledInput__input" [(ngModel)]="seen_within_year" />
     <span class="styledInput__box"></span>
     Patient has been seen by the billing practitioner within the past year.
   </label>
   <label class="styledInput styledInput--marBottom32">
-    <input type="checkbox" class="styledInput__input" />
+    <input type="checkbox" class="styledInput__input" [(ngModel)]="discussed_co_pay" />
     <span class="styledInput__box"></span>
     Patient understands the potential co-pay.
   </label>
 
   <label>Patient Commitment (Opt)</label>
   <label class="styledInput">
-    <input type="checkbox" class="styledInput__input" />
+    <input type="checkbox" class="styledInput__input" [(ngModel)]="will_use_mobile_app" />
     <span class="styledInput__box"></span>
     Use the mobile app.
   </label>
-  <!--TODO: Show if care plan type is RPM.-->
-  <div class="iconText iconText--wrap iconText--autoHeight error marBottom8">
+  <div class="iconText iconText--wrap iconText--autoHeight error marBottom8" *ngIf="patient?.care_plan?.type?.acronym === 'RPM'">
     <i class="iconText__icon ss-alert"></i>
     <span class="error__text">
     For RPM plans, the patient must agree to use the mobile app.
     </span>
   </div>
   <label class="styledInput">
-    <input type="checkbox" class="styledInput__input" />
+    <input type="checkbox" class="styledInput__input" [(ngModel)]="will_interact_with_team" />
     <span class="styledInput__box"></span>
     Interact with their care team.
   </label>
   <label class="styledInput">
-    <input type="checkbox" class="styledInput__input" />
+    <input type="checkbox" class="styledInput__input" [(ngModel)]="will_complete_tasks" />
     <span class="styledInput__box"></span>
     Complete daily tasks.
   </label>
@@ -104,25 +86,25 @@
 <!--TODO: show if enroll patient step 2-->
 <div *ngIf="showEPStep2">
   <label>Email</label>
-  <input type="email" class="input fullWidth marBottom32" />
+  <input type="email" class="input fullWidth marBottom32" [(ngModel)]="email" />
   <div class="flex justifySpaceBetween marBottom32">
     <div class="modal__inputWrap marRight32">
       <label>Communication Preference</label>
       <div class="styledSelect fullWidth">
-        <select class="styledSelect__select">
-          <option>In-App Messaging</option>
-          <option>Email</option>
-          <option>Phone</option>
+        <select class="styledSelect__select" [(ngModel)]="communicationPreference">
+          <option value="In-App Messaging">In-App Messaging</option>
+          <option value="Email">Email</option>
+          <option value="Phone">Phone</option>
         </select>
       </div>
     </div>
     <div class="modal__inputWrap">
       <label>Gender</label>
       <div class="styledSelect fullWidth">
-        <select class="styledSelect__select">
-          <option>Female</option>
-          <option>Male</option>
-          <option>Other</option>
+        <select class="styledSelect__select" [(ngModel)]="gender">
+          <option value="Female">Female</option>
+          <option value="Male">Male</option>
+          <option value="Other">Other</option>
         </select>
       </div>
     </div>
@@ -152,7 +134,7 @@
 </div>
 
 <div class="modal__buttons">
-  <button class="button button--2nd">
+  <button class="button button--2nd" (click)="close()">
     Cancel
   </button>
   <!--TODO: Show if enroll patient step 1-->
@@ -162,11 +144,7 @@
     Next
   </button>
   <!--TODO: Show if enroll patient step 2-->
-  <button *ngIf="showEPStep2" class="button">
+  <button *ngIf="showEPStep2" class="button" (click)="save()">
     Enroll
-  </button>
-  <!--TODO: Show if care plan consent-->
-  <button *ngIf="" class="button">
-    Save
   </button>
 </div>

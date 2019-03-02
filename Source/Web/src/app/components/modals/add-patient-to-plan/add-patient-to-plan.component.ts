@@ -43,6 +43,7 @@ export class AddPatientToPlanComponent implements OnInit {
   public firstName = '';
   public lastName = '';
   public phoneNumber = '';
+  public email = '';
   public facilities = [];
   public selectedFacility = null;
   public employees = [];
@@ -52,6 +53,7 @@ export class AddPatientToPlanComponent implements OnInit {
   public selectedCM = null;
   public careManagerRole = null;
   public billingPractitionerRole = null;
+  public source = '';
 
   public dropAPPM2Open;
 
@@ -68,17 +70,29 @@ export class AddPatientToPlanComponent implements OnInit {
       this.patientKnown = this.data.patientKnown;
       this.patientInSystem = this.data.patientInSystem;
       this.planKnown = this.data.planKnown;
+      this.enrollPatientChecked = this.data.enrollPatientChecked;
+      this.store.Facility.readListPaged().subscribe(res => {
+        this.facilities = res;
+      })
 
-      if (!this.data.facility) {
-        this.store.Facility.readListPaged().subscribe(res => {
-          this.facilities = res;
-        })
-      } else {
+      if (this.data.facility) {
         this.selectedFacility = this.data.facility;
       }
 
-      if (this.patientKnown) {
+      if (this.data.patient) {
         this.selectedPatient = this.data.patient;
+        this.firstName = this.data.patient.user.first_name;
+        this.lastName = this.data.patient.user.last_name;
+        this.phoneNumber = this.data.patient.user.phone;
+        this.email = this.data.patient.user.email;
+        this.selectedFacility = this.data.patient.facility;
+      }
+
+      if (this.data.potentialPatient) {
+        this.firstName = this.data.potentialPatient.first_name;
+        this.lastName = this.data.potentialPatient.last_name;
+        this.phoneNumber = this.data.potentialPatient.phone;
+        this.source = this.data.potentialPatient.source;
       }
     }
     this.getPatients().then((patients: any) => {
@@ -88,9 +102,13 @@ export class AddPatientToPlanComponent implements OnInit {
       this.carePlans = plans;
       this.getServiceAreas().then((serviceAreas: any) => {
         this.serviceAreas = serviceAreas;
-        if (this.planKnown) {
+        if (this.planKnown && this.data.planTemplate) {
           this.selectedPlan = this.carePlans.find((obj) => obj.id === this.data.planTemplate.id);
           this.selectedServiceArea = this.serviceAreas.find((obj) => obj.id === this.data.planTemplate.service_area.id);
+        }
+        if (this.planKnown && this.data.potentialPatient) {
+          this.selectedPlan = this.data.potentialPatient.care_plan;
+          this.selectedServiceArea = this.data.potentialPatient.care_plan.service_area;
         }
       });
     });
@@ -173,6 +191,25 @@ export class AddPatientToPlanComponent implements OnInit {
     return `${this.selectedPatient.user.first_name} ${this.selectedPatient.user.last_name}`;
   }
 
+  public selectPatient(patient) {
+    this.selectedPatient = patient;
+    this.firstName = patient.user.first_name;
+    this.lastName = patient.user.last_name;
+    this.phoneNumber = patient.user.phoneNumber;
+    this.email = patient.user.email;
+    this.selectedFacility = patient.facility;
+  }
+
+  public unselectPatient() {
+    console.log('asdf');
+    this.selectedPatient = null;
+    this.firstName = '';
+    this.lastName = '';
+    this.phoneNumber = '';
+    this.email = '';
+    this.selectedFacility = null;
+  }
+
   public addDiagnosis() {
     this.createDiagnosis = !this.createDiagnosis
     this.diagnoses.push({
@@ -191,6 +228,11 @@ export class AddPatientToPlanComponent implements OnInit {
   }
 
   public get saveDisabled() {
+
+    if (this.firstName && this.lastName && this.email && this.selectedPlan && this.selectedCM && this.selectedFacility) {
+      return false;
+    }
+
     if (this.enrollPatientChecked && !this.payerReimburses) {
       return !this.selectedPlan || !this.selectedPatient || !this.selectedCM;
     } else if (this.enrollPatientChecked && this.payerReimburses) {
@@ -205,8 +247,9 @@ export class AddPatientToPlanComponent implements OnInit {
       let potentialPatientSub = this.store.PotentialPatient.create({
         first_name: this.firstName,
         last_name: this.lastName,
-        care_plan: this.selectedPlan.name,
+        care_plan: this.selectedPlan.id,
         phone: this.phoneNumber,
+        source: this.source,
         facility: [
           this.selectedFacility.id,
 			  ],
@@ -223,7 +266,7 @@ export class AddPatientToPlanComponent implements OnInit {
       )
     }
 
-    if (this.enrollPatientChecked) {
+    if (this.enrollPatientChecked && this.selectedPatient) {
       this.store.CarePlan.create({
         patient: this.selectedPatient.id,
         plan_template: this.selectedPlan.id,
@@ -251,6 +294,58 @@ export class AddPatientToPlanComponent implements OnInit {
         })
       })
     }
+
+    if (this.enrollPatientChecked && !this.selectedPatient && this.selectedFacility && this.selectedPlan && this.selectedCM) {
+      this.store.AddUser.createAlt({
+        email: this.email,
+        first_name: this.firstName,
+        last_name: this.lastName,
+        password1: 'password',
+        password2: 'password',
+      }).subscribe(user => {
+        this.store.PatientProfile.create({
+          user: user.pk,
+          facility: this.selectedFacility.id,
+          is_active: true,
+          is_invited: false,
+        }).subscribe(patient => {
+          this.store.CarePlan.create({
+            patient: patient.id,
+            plan_template: this.selectedPlan.id,
+            billing_practitioner: this.selectedBilling ? this.selectedBilling.id : '',
+          }).subscribe(plan => {
+            this.store.CareTeamMember.create({
+              employee_profile: this.selectedCM.id,
+              role: this.careManagerRole.id,
+              plan: plan.id,
+              is_manager: true,
+            }).subscribe(cm => {
+              plan.careTeam = [cm];
+              if (this.selectedBilling) {
+                this.store.CareTeamMember.create({
+                  employee_profile: this.selectedBilling.id,
+                  role: this.billingPractitionerRole.id,
+                  plan: plan.id,
+                  is_manager: false,
+                }).subscribe(bp => {
+                  plan.careTeam.push(bp)
+                  this.modals.close({ patient, plan });
+                })
+              } else {
+                this.modals.close({ patient, plan })
+              }
+            })
+          })
+        })
+      })
+    }
+  }
+
+  public handleClose(data) {
+    if (this.data.from) {
+
+    }
+    this.modals.close(null);
   }
 
   get searchBillingEmployees() {
@@ -281,5 +376,9 @@ export class AddPatientToPlanComponent implements OnInit {
   public setCareManager(employee) {
     this.selectedCM = employee;
     this.CMSearchString = `${employee.user.first_name} ${employee.user.last_name}`;
+  }
+
+  public compareFn(c1, c2) {
+    return c1 && c2 ? c1.id === c2.id : c1 === c2;
   }
 }

@@ -264,6 +264,15 @@ class ObtainAuthToken(OriginalObtain):
             )
             response.status_code = 401
             return response
+
+        if employee_profile and employee_profile.status == 'inactive' or \
+            patient_profile and not patient_profile.is_active:
+            response = GenericErrorResponse(
+                'User does not have an active associated employee or patient profile'
+            )
+            response.status_code = 401
+            return response
+
         token, created = Token.objects.get_or_create(user=user)
         response_data = {
             'token': token.key

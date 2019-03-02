@@ -198,27 +198,50 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
     this.modals.open(AddPatientToPlanComponent, {
       data: {
         action: 'add',
-        patientKnown: false,
+        enrollPatientChecked: true,
         patientInSystem: true,
         planKnown: false,
       },
       width: '576px',
     }).subscribe(res => {
-      const patient = _find(this.activePatients, p => p.id === res.patient.id);
-      this.activeCarePlans[res.plan_template.name] = true;
-      patient.care_plans.push({
-        id: res.id,
-        name: res.plan_template.name,
-        service_area: res.plan_template.service_area.name || "Undefined",
-        current_week: res.current_week || 0,
-        total_weeks: res.plan_template.duration_weeks || 0,
-        time_in_minutes: res.time || 0,
-        engagement: res.engagement || 0,
-        outcomes: res.outcomes || 0,
-        risk_level: patient.risk_level || 0,
-        next_check_in: res.next_check_in || 0,
-        tasks_this_week: res.tasks_this_week || 0,
-      })
+      if (!res) return;
+      if (res.hasOwnProperty('patient') && res.hasOwnProperty('plan')) {
+        console.log('vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv');
+        console.log(res);
+        console.log('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^');
+        res.patient.care_plans = [{
+          id: res.plan.id,
+          name: res.plan.plan_template.name,
+          service_area: res.plan.plan_template.service_area.name || "Undefined",
+          current_week: res.plan.current_week || 0,
+          total_weeks: res.plan.plan_template.duration_weeks || 0,
+          time_in_minutes: res.plan.time || 0,
+          engagement: res.plan.engagement || 0,
+          outcomes: res.plan.outcomes || 0,
+          risk_level: res.plan.risk_level || 0,
+          next_check_in: res.plan.next_check_in || 0,
+          tasks_this_week: res.plan.tasks_this_week || 0,
+        }]
+        this.activePatients.push(res.patient);
+        this.activeCarePlans[res.plan.plan_template.name] = true;
+        this.activePatientsGrouped = this.groupPatientsByFacility(this.activePatients);
+      } else {
+        const patient = _find(this.activePatients, p => p.id === res.patient.id);
+        this.activeCarePlans[res.plan_template.name] = true;
+        patient.care_plans.push({
+          id: res.id,
+          name: res.plan_template.name,
+          service_area: res.plan_template.service_area.name || "Undefined",
+          current_week: res.current_week || 0,
+          total_weeks: res.plan_template.duration_weeks || 0,
+          time_in_minutes: res.time || 0,
+          engagement: res.engagement || 0,
+          outcomes: res.outcomes || 0,
+          risk_level: patient.risk_level || 0,
+          next_check_in: res.next_check_in || 0,
+          tasks_this_week: res.tasks_this_week || 0,
+        })
+      }
     });
   }
 
