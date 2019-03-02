@@ -266,7 +266,9 @@ class SymptomRating(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
         related_name='ratings',
         on_delete=models.CASCADE)
     symptom = models.ForeignKey(
-        Symptom, null=False, blank=False, on_delete=models.CASCADE)
+        Symptom,
+        related_name='ratings',
+        on_delete=models.CASCADE)
     rating = models.IntegerField(null=False, blank=False, validators=[
         MaxValueValidator(5),
         MinValueValidator(1)
