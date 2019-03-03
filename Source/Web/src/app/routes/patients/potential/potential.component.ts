@@ -125,11 +125,11 @@ export class PotentialPatientsComponent implements OnDestroy, OnInit {
       width: '576px',
     }).subscribe((data) => {
       if (!data) return;
-      const fac = _find(this.facilities, f => f.id === data.facility[0])
-      if (fac.potentialPatients) {
-        fac.potentialPatients.push(data);
+      const facility = _find(this.facilities, f => f.id === data.facility[0])
+      if (facility.potentialPatients) {
+        facility.potentialPatients.push(data);
       } else {
-        fac.potentialPatients = [data];
+        facility.potentialPatients = [data];
       }
     });
   }

@@ -10,9 +10,10 @@ import {
 } from 'lodash';
 import * as moment from 'moment';
 import { ModalService, ConfirmModalComponent } from '../../../modules/modals';
-import { HttpService, StoreService } from '../../../services';
+import { HttpService, StoreService, AuthService } from '../../../services';
 import { AppConfig } from '../../../app.config';
 import { ReminderEmailComponent } from './modals/reminder-email/reminder-email.component';
+import { AddPatientToPlanComponent } from '../../../components';
 
 @Component({
   selector: 'app-invited',
@@ -38,8 +39,11 @@ export class InvitedPatientsComponent implements OnDestroy, OnInit {
   public facilityAccordOpen = {};
 
   public facilities = [];
+  public employees = [];
+  public employeeChecked = {};
 
   constructor(
+    private auth: AuthService,
     private router: Router,
     private modals: ModalService,
     private http: HttpService,
@@ -51,24 +55,44 @@ export class InvitedPatientsComponent implements OnDestroy, OnInit {
     this.invitedPatientsGrouped = [];
     this.store.Facility.readListPaged().subscribe((res:any) => {
 
-      this.facilities = res;
+      this.facilities = res.filter(f => !f.is_affiliate);
 
       this.facilities.forEach(f => {
         this.facilityAccordOpen[f.id] = false;
       })
 
+      this.auth.user$.subscribe(user => {
+        if (!user) return;
+
+        if (user.facilities.length === 1) {
+          this.facilityAccordOpen[user.facilities[0].id] = true;
+        }
+      })
+
       this.facilities.forEach(facility => {
         this.getPatients(facility).then((patients: any) => {
           facility.invitedPatients = patients.results;
+          facility.invitedPatients.forEach(patient => {
+            this.store.CarePlan.readListPaged({patient: patient.id}).subscribe(plans => {
+              patient.carePlans = plans;
+              patient.carePlans.forEach(plan => {
+                this.store.CareTeamMember.readListPaged({ plan: plan.id }).subscribe(careTeamMembers => {
+                  plan.careTeamMembers = careTeamMembers;
+                })
+              })
+            })
+          })
         });
       })
     })
 
-    setTimeout(() => {
-      console.log('vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv');
-      console.log(this.facilities);
-      console.log('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^');
-    }, 4000)
+    this.store.EmployeeProfile.readListPaged().subscribe((res:any) => {
+      this.employees = res;
+      this.employees.forEach(e => {
+        this.employeeChecked[e.id] = true;
+      })
+    })
+
   }
 
   public ngOnDestroy() { }
@@ -104,10 +128,10 @@ export class InvitedPatientsComponent implements OnDestroy, OnInit {
   }
 
   public getAlsoPlans(i, patient) {
-    if (patient && patient.care_plans) {
-      const plans = patient.care_plans.slice();
+    if (patient && patient.carePlans) {
+      const plans = patient.carePlans.slice();
       plans.splice(i, 1);
-      return _map(plans, p => p.name);
+      return _map(plans, p => p.plan_template.name);
     }
     return [];
   }
@@ -198,6 +222,18 @@ export class InvitedPatientsComponent implements OnDestroy, OnInit {
     );
   }
 
+  public addPatientToPlan() {
+    this.modals.open(AddPatientToPlanComponent, {
+      data: {
+        action: 'add',
+        enrollPatientChecked: true,
+        patientInSystem: true,
+        planKnown: false,
+      },
+      width: '576px',
+    }).subscribe()
+  }
+
   public confirmRemovePatient() {
     this.modals.open(ConfirmModalComponent, {
      closeDisabled: true,
@@ -211,5 +247,17 @@ export class InvitedPatientsComponent implements OnDestroy, OnInit {
     }).subscribe(() => {
     // do something with result
     });
+  }
+
+  public hasCheckedCareTeamMember(plan) {
+    let result = false;
+    if (plan.careTeamMembers) {
+      plan.careTeamMembers.forEach(teamMember => {
+        if (this.employeeChecked[teamMember.employee_profile.id] === true) {
+          result = true;
+        }
+      })
+    }
+    return result;
   }
 }

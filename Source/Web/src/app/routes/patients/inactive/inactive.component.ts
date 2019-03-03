@@ -22,9 +22,11 @@ import {
 export class InactivePatientsComponent implements OnDestroy, OnInit {
 
   public facilities = [];
-  public facilitiesOpen = [];
+  public facilitiesOpen = {};
   public activePatients = [];
   public activeServiceAreas = {};
+  public employees = [];
+  public employeeChecked = {};
 
   public toolXP1Open;
   public accord1Open;
@@ -54,17 +56,45 @@ export class InactivePatientsComponent implements OnDestroy, OnInit {
         if (!facilities) {
           return;
         }
-        this.facilities = facilities;
-        this.facilities.forEach((facility, i) => {
+        this.facilities = facilities.filter(f => !f.is_affiliate);
+        this.facilities.forEach(facility => {
+          this.facilitiesOpen[facility.id] = false;
           this.getInactivePatients(facility.id).then((inactivePatients:any) => {
             this.totalInactive += inactivePatients.count;
             this.facilityPages[facility.id] = 1;
             this.facilityTotals[facility.id] = inactivePatients.count;
             facility.inactivePatients = inactivePatients.results;
+
+            facility.inactivePatients.forEach(patient => {
+              this.store.CarePlan.readListPaged({ patient: patient.id }).subscribe(plans => {
+                patient.carePlans = plans;
+                patient.carePlans.forEach(plan => {
+                  this.store.CareTeamMember.readListPaged({ plan: plan.id }).subscribe(careTeamMembers => {
+                    plan.careTeamMembers = careTeamMembers;
+                  })
+                })
+              })
+            })
+
           })
         });
+        this.auth.user$.subscribe(user => {
+          if (!user) return;
+
+          if (user.facilities.length === 1) {
+            this.facilitiesOpen[user.facilities[0].id] = true;
+          }
+        })
       }
     )
+
+    this.store.EmployeeProfile.readListPaged().subscribe((res:any) => {
+      this.employees = res;
+      this.employees.forEach(e => {
+        this.employeeChecked[e.id] = true;
+      })
+    })
+
   }
 
   private getInactivePatients(facilityId) {
@@ -156,5 +186,16 @@ export class InactivePatientsComponent implements OnDestroy, OnInit {
     return Math.ceil(total/20);
   }
 
+  public hasCheckedCareTeamMember(plan) {
+    let result = false;
+    if (plan.careTeamMembers) {
+      plan.careTeamMembers.forEach(teamMember => {
+        if (this.employeeChecked[teamMember.employee_profile.id] === true) {
+          result = true;
+        }
+      })
+    }
+    return result;
+  }
 
 }
