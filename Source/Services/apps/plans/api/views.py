@@ -347,10 +347,24 @@ class CarePlanViewSet(viewsets.ModelViewSet):
     )
 
     def get_queryset(self):
-        qs = CarePlan.objects.filter(patient__facility__is_affiliate=False)
+        qs = CarePlan.objects.filter(patient__facility__is_affiliate=False).distinct()
         employee_profile = utils.employee_profile_or_none(self.request.user)
         patient_profile = utils.patient_profile_or_none(self.request.user)
         if employee_profile is not None:
+            if employee_profile.organizations_managed.count() > 0:
+                organizations_managed = employee_profile.organizations_managed.values_list('id', flat=True)
+                qs = qs.filter(
+                    patient__facility__organization__id__in=organizations_managed)
+            elif employee_profile.facilities_managed.count() > 0:
+                facilities_managed = employee_profile.facilities_managed.values_list('id', flat=True)
+                assigned_roles = employee_profile.assigned_roles.values_list('id', flat=True)
+                qs = qs.filter(
+                    Q(patient__facility__id__in=facilities_managed) |
+                    Q(care_team_members__id__in=assigned_roles)
+                )
+            else:
+                assigned_roles = employee_profile.assigned_roles.values_list('id', flat=True)
+                qs = qs.filter(care_team_members__id__in=assigned_roles)
             return qs.all()
         if patient_profile is not None:
             return patient_profile.care_plans.all()
@@ -1257,8 +1271,24 @@ class CarePlanByTemplateFacility(ParentViewSetPermissionMixin,
 
     def get_care_plans(self):
         instance = self.get_object()
-        queryset = instance.care_plans.all()
-        return self.filter_queryset_by_parents_lookups(queryset).distinct()
+        qs = instance.care_plans.all()
+        employee_profile = utils.employee_profile_or_none(self.request.user)
+        if employee_profile is not None:
+            if employee_profile.organizations_managed.count() > 0:
+                organizations_managed = employee_profile.organizations_managed.values_list('id', flat=True)
+                qs = qs.filter(
+                    patient__facility__organization__id__in=organizations_managed)
+            elif employee_profile.facilities_managed.count() > 0:
+                facilities_managed = employee_profile.facilities_managed.values_list('id', flat=True)
+                assigned_roles = employee_profile.assigned_roles.values_list('id', flat=True)
+                qs = qs.filter(
+                    Q(patient__facility__id__in=facilities_managed) |
+                    Q(care_team_members__id__in=assigned_roles)
+                )
+            else:
+                assigned_roles = employee_profile.assigned_roles.values_list('id', flat=True)
+                qs = qs.filter(care_team_members__id__in=assigned_roles)
+            return self.filter_queryset_by_parents_lookups(qs).distinct()
 
     def retrieve(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_care_plans())

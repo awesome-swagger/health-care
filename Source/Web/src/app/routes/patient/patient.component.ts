@@ -84,8 +84,9 @@ export class PatientComponent implements OnDestroy, OnInit {
         this.getPatientMedications(this.patient.id);
 
       }).catch(() => {
-        this.patient = patientData.patient;
-        this.carePlans = patientData.carePlans;
+        this.router.navigate(['/error']);
+        // this.patient = patientData.patient;
+        // this.carePlans = patientData.carePlans;
       });
     });
   }
