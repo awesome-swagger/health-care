@@ -25,7 +25,7 @@
         <input class="input input--search" type="text" placeholder="Search" [(ngModel)]="searchString" />
         <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : searchString.length > 2 }">
           <li class="drop__option" *ngFor="let employee of searchEmployees">
-            <a class="drop__link">
+            <a class="drop__link" (click)="routeToUserDetail(employee)">
               <div class="picName">
                 <img class="picName__img" src="../../../assets/img/profile.svg" />{{employee.full_name}}
               </div>
