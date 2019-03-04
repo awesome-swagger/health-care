@@ -15,10 +15,9 @@ export class CreateVitalComponent implements OnInit {
 
   public vital: any = {};
   public vitalForm: FormGroup;
-  public tooltipCVM0Open;
-  public tooltipCVM1Open;
 
-  public measures = [];
+  public syncTooltipOpen = false;
+  public typeTooltipOpen = false;
 
   constructor(
     private modal: ModalService,
@@ -39,6 +38,10 @@ export class CreateVitalComponent implements OnInit {
             obj.number_type = 'integer';
           }
         });
+        let sortedQuestions = this.sortQuestions(this.vital.questions);
+        sortedQuestions.forEach((obj, index) => {
+          obj.order = index;
+        });
       }
       this.initForm(this.vital);
     }
@@ -55,14 +58,42 @@ export class CreateVitalComponent implements OnInit {
   }
 
   public addMetricLine() {
-    if (!this.vital.questions) {
+    let maxOrder = -1;
+    if (!this.vital.questions || this.vital.questions.length < 1) {
       this.vital.questions = [];
+      maxOrder = -1;
+    } else {
+      maxOrder = Math.max(...this.vital.questions.map((obj) => obj.order).sort((a, b) => -(b - a)));
     }
     this.vital.questions.push({
       prompt: '',
       answer_type: 'boolean',
       number_type: 'integer',
+      order: maxOrder + 1,
     });
+  }
+
+  public moveUp(question) {
+    let questionsAtNewOrder = this.vital.questions.filter((obj) => obj.order === (question.order - 1));
+    questionsAtNewOrder.forEach((q) => {
+      q.order++;
+    });
+    question.order--;
+  }
+
+  public moveDown(question) {
+    let questionsAtNewOrder = this.vital.questions.filter((obj) => obj.order === (question.order + 1));
+    questionsAtNewOrder.forEach((q) => {
+      q.order--;
+    });
+    question.order++;
+  }
+
+  public sortQuestions(questions) {
+    if (!questions) {
+      return [];
+    }
+    return questions.sort((a, b) => -(b.order - a.order));
   }
 
   public createQuestion(question) {
@@ -80,7 +111,7 @@ export class CreateVitalComponent implements OnInit {
 
   public updateQuestion(question) {
     let promise = new Promise((resolve, reject) => {
-      let updateSub = this.store.VitalsQuestions.update(question.id, question, true).subscribe(
+      let updateSub = this.store.VitalsQuestions.update(question.id, _omit(question, 'id'), true).subscribe(
         (res) => resolve(res),
         (err) => reject(err),
         () => {
@@ -118,15 +149,9 @@ export class CreateVitalComponent implements OnInit {
       }
     });
     let promise = new Promise((resolve, reject) => {
-      this.vital = Object.assign({}, this.vital, {
-        plan_template: this.data.planTemplateId,
-        start_on_day: 0,
-        appear_time: '00:00:00',
-        due_time: '00:00:00',
-      });
-      let vitalWithoutQuestions = _omit(this.vital, 'questions');
       if (this.vital.id) {
-        let updateSub = this.store.VitalsTaskTemplate.update(vitalWithoutQuestions.id, vitalWithoutQuestions, true)
+        let vitalWithoutQuestions = _omit(this.vital, 'questions');
+        let updateSub = this.store.VitalsTaskTemplate.update(vitalWithoutQuestions.id, _omit(vitalWithoutQuestions, 'id'), true)
           .subscribe(
             (res) => resolve(res),
             (err) => reject(err),
@@ -135,6 +160,14 @@ export class CreateVitalComponent implements OnInit {
             }
           );
       } else {
+        this.vital = Object.assign({}, this.vital, {
+          plan_template: this.data.planTemplateId,
+          start_on_day: 0,
+          appear_time: '00:00:00',
+          due_time: '00:00:00',
+          frequency: 'once',
+        });
+        let vitalWithoutQuestions = _omit(this.vital, 'questions');
         let createSub = this.store.VitalsTaskTemplate.create(vitalWithoutQuestions)
           .subscribe(
             (res) => resolve(res),
@@ -146,6 +179,28 @@ export class CreateVitalComponent implements OnInit {
       }
     });
     return promise;
+  }
+
+  public clickDeleteQuestion(question) {
+    if (question.id) {
+      this.store.VitalsQuestions.destroy(question.id).subscribe(() => {
+        let index = this.vital.questions.findIndex((obj) => obj.id && obj.id === question.id);
+        this.vital.questions.splice(index, 1);
+        // Reset order on all questions
+        let sortedQuestions = this.sortQuestions(this.vital.questions);
+        sortedQuestions.forEach((obj, index) => {
+          obj.order = index;
+        });
+      });
+    } else {
+      let index = this.vital.questions.findIndex((obj) => obj.order && obj.order === question.order);
+      this.vital.questions.splice(index, 1);
+      // Reset order on all questions
+      let sortedQuestions = this.sortQuestions(this.vital.questions);
+      sortedQuestions.forEach((obj, index) => {
+        obj.order = index;
+      });
+    }
   }
 
   public clickSave() {

@@ -33,19 +33,53 @@ export class CreateAssessmentComponent implements OnInit {
         } else if (this.assessment.tracks_satisfaction) {
           this.assessmentTracking = 'satisfaction';
         }
+        if (this.assessment.questions) {
+          let sortedQuestions = this.sortQuestions(this.assessment.questions);
+          sortedQuestions.forEach((obj, index) => {
+            obj.order = index;
+          });
+        }
       }
     }
   }
 
   public addQuestionLine() {
+    let maxOrder = -1;
     if (!this.assessment.questions) {
       this.assessment.questions = [];
+      maxOrder = -1;
+    } else {
+      maxOrder = Math.max(...this.assessment.questions.map((obj) => obj.order).sort((a, b) => -(b - a)));
     }
     this.assessment.questions.push({
       prompt: '',
       worst_label: '',
       best_label: '',
+      order: maxOrder + 1,
     });
+  }
+
+  public moveUp(question) {
+    let questionsAtNewOrder = this.assessment.questions.filter((obj) => obj.order === (question.order - 1));
+    questionsAtNewOrder.forEach((q) => {
+      q.order++;
+    });
+    question.order--;
+  }
+
+  public moveDown(question) {
+    let questionsAtNewOrder = this.assessment.questions.filter((obj) => obj.order === (question.order + 1));
+    questionsAtNewOrder.forEach((q) => {
+      q.order--;
+    });
+    question.order++;
+  }
+
+  public sortQuestions(questions) {
+    if (!questions) {
+      return [];
+    }
+    return questions.sort((a, b) => -(b.order - a.order));
   }
 
   public createQuestion(question) {
@@ -63,7 +97,7 @@ export class CreateAssessmentComponent implements OnInit {
 
   public updateQuestion(question) {
     let promise = new Promise((resolve, reject) => {
-      let updateSub = this.store.AssessmentQuestion.update(question.id, question, true).subscribe(
+      let updateSub = this.store.AssessmentQuestion.update(question.id, _omit(question, 'id'), true).subscribe(
         (res) => resolve(res),
         (err) => reject(err),
         () => {
@@ -94,19 +128,14 @@ export class CreateAssessmentComponent implements OnInit {
     let promise = new Promise((resolve, reject) => {
       let tracksOutcome = this.assessmentTracking === 'outcome';
       let tracksSatisfaction = this.assessmentTracking === 'satisfaction';
-      this.assessment = Object.assign({}, this.assessment, {
-        name: this.nameInput,
-        plan_template: this.data.planTemplateId,
-        start_on_day: 0,
-        appear_time: '00:00:00',
-        due_time: '00:00:00',
-        frequency: 'once',
-        tracks_outcome: tracksOutcome,
-        tracks_satisfaction: tracksSatisfaction,
-      });
-      let assessmentWithoutQuestions = _omit(this.assessment, 'questions');
       if (this.assessment.id) {
-        let updateSub = this.store.AssessmentTaskTemplate.update(assessmentWithoutQuestions.id, assessmentWithoutQuestions, true)
+        this.assessment = Object.assign({}, this.assessment, {
+          name: this.nameInput,
+          tracks_outcome: tracksOutcome,
+          tracks_satisfaction: tracksSatisfaction,
+        });
+        let assessmentWithoutQuestions = _omit(this.assessment, 'questions');
+        let updateSub = this.store.AssessmentTaskTemplate.update(assessmentWithoutQuestions.id, _omit(assessmentWithoutQuestions, 'id'), true)
           .subscribe(
             (res) => resolve(res),
             (err) => reject(err),
@@ -115,6 +144,17 @@ export class CreateAssessmentComponent implements OnInit {
             }
           );
       } else {
+        this.assessment = Object.assign({}, this.assessment, {
+          name: this.nameInput,
+          plan_template: this.data.planTemplateId,
+          start_on_day: 0,
+          appear_time: '00:00:00',
+          due_time: '00:00:00',
+          frequency: 'once',
+          tracks_outcome: tracksOutcome,
+          tracks_satisfaction: tracksSatisfaction,
+        });
+        let assessmentWithoutQuestions = _omit(this.assessment, 'questions');
         let createSub = this.store.AssessmentTaskTemplate.create(assessmentWithoutQuestions)
           .subscribe(
             (res) => resolve(res),
@@ -126,6 +166,28 @@ export class CreateAssessmentComponent implements OnInit {
       }
     });
     return promise;
+  }
+
+  public clickDeleteQuestion(question) {
+    if (question.id) {
+      this.store.AssessmentQuestion.destroy(question.id).subscribe(() => {
+        let index = this.assessment.questions.findIndex((obj) => obj.id && obj.id === question.id);
+        this.assessment.questions.splice(index, 1);
+        // Reset order on all questions
+        let sortedQuestions = this.sortQuestions(this.assessment.questions);
+        sortedQuestions.forEach((obj, index) => {
+          obj.order = index;
+        });
+      });
+    } else {
+      let index = this.assessment.questions.findIndex((obj) => obj.order === question.order);
+      this.assessment.questions.splice(index, 1);
+      // Reset order on all questions
+      let sortedQuestions = this.sortQuestions(this.assessment.questions);
+      sortedQuestions.forEach((obj, index) => {
+        obj.order = index;
+      });
+    }
   }
 
   public clickSave() {

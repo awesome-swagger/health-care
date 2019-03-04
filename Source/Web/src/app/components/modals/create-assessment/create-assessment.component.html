@@ -40,7 +40,7 @@
     </tr>
   </thead>
   <tbody>
-    <tr *ngFor="let question of assessment.questions">
+    <tr *ngFor="let question of sortQuestions(assessment.questions); index as i;">
       <td>
         <input type="text" class="input assessment__name" [(ngModel)]="question.prompt" />
       </td>
@@ -52,16 +52,16 @@
       </td>
       <td class="noPad">
         <div class="flex">
-          <button class="button button--icon">
+          <button class="button button--icon" [disabled]="i === 0" (click)="moveUp(question)">
             <i class="ss-standard ss-navigateup"></i>
           </button>
-          <button class="button button--icon">
+          <button class="button button--icon" [disabled]="i === (assessment.questions.length - 1)" (click)="moveDown(question)">
             <i class="ss-standard ss-navigatedown"></i>
           </button>
         </div>
       </td>
       <td class="noPad">
-        <button class="button button--icon button--icon--small">
+        <button class="button button--icon button--icon--small" (click)="clickDeleteQuestion(question)">
           <i class="ss-delete"></i>
         </button>
       </td>

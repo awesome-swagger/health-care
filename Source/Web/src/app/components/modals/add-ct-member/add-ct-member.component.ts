@@ -32,7 +32,7 @@ export class AddCTMemberComponent implements OnInit {
   public fetchAvailableProviders() {
     let promise = new Promise((resolve, reject) => {
       if (this.data.is_bp) {
-      // TODO: If adding a billing practitioner only get qualitified practitioners
+      // If adding a billing practitioner only get qualitified practitioners
         let fetchSub = this.store.EmployeeProfile.readListPaged({
           qualified_practitioner: true,
         }).subscribe(
@@ -43,7 +43,7 @@ export class AddCTMemberComponent implements OnInit {
           },
         );
       }
-      // TODO: If adding a care manager fetch only care managers
+      // TODO: If adding a care manager fetch only employees who qualify as a care manager
       if (this.data.is_manager) {
         let fetchSub = this.store.EmployeeProfile.readListPaged().subscribe(
           (managers) => resolve(managers),

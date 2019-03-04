@@ -239,14 +239,13 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
         patient: this.patient,
         carePlan: this.carePlan,
         date: moment(result.activity_date),
-        tasks: this.mockData.tasks, // TODO: Get tasks for user
         task: null,
         totalMinutes: result.time_spent,
         teamMembers: this.careTeamMembers,
         with: null, // TODO: Autofill with field
         syncToEHR: result.sync_to_ehr,
         notes: result.notes,
-        patientEngagement: 0, // TODO: Autofill patient engagement.
+        patientEngagement: null,
       },
       width: '512px',
     }).subscribe((results) => {

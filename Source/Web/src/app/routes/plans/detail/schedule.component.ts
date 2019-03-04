@@ -525,6 +525,9 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
         } else {
           this.assessmentTemplates.push(res);
         }
+        setTimeout(() => {
+          this.editAssessmentTime(res);
+        }, 10);
       },
       (err) => {},
       () => {
@@ -692,12 +695,13 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
   public editVital(vital) {
     this.modals.open(CreateVitalComponent, {
       closeDisabled: false,
-      width: '800px',
       data: {
         vital: vital,
         planTemplateId: this.planTemplateId,
         totalPatients: this.totalPatients,
-      }
+      },
+      overflow: 'visible',
+      width: '800px',
     }).subscribe((res) => {
       if (!res) return;
       let index = this.vitalTemplates.findIndex((obj) => {
@@ -708,6 +712,9 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       } else {
         this.vitalTemplates.push(res);
       }
+      setTimeout(() => {
+        this.editVitalTime(res);
+      }, 10);
     });
   }
 
