@@ -188,7 +188,7 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
 
   public openRecordResults() {
     this.modals.open(RecordResultsComponent, {
-      closeDisabled: true,
+      closeDisabled: false,
       data: {
         patient: this.patient,
         carePlan: this.carePlan,

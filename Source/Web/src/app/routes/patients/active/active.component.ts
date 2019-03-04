@@ -43,6 +43,8 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
   public multi3Open;
   public multi4Open;
 
+  private authSub = null;
+
   constructor(
     private auth: AuthService,
     private router: Router,
@@ -55,89 +57,89 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
   public ngOnInit() {
     this.activePatients = [];
     this.activePatientsGrouped = [];
-    this.getPatients().then((patients: any) => {
-      // patients = patientsData.results; // TODO: remove
-      this.activePatients = _filter(patients, p => p.is_active);
-      this.activePatientsGrouped = this.groupPatientsByFacility(this.activePatients);
-      this.activePatients.forEach((patient, i) => {
-        let carePlanSub = this.store.CarePlan.readListPaged({patient: patient.id}).subscribe(
-          (plans: any) => {
-            this.activePatients[i].care_plans = plans.map((plan) => {
-              return {
-                id: plan.id,
-                name: plan.plan_template.name,
-                service_area: _get(plan, 'plan_template.service_area.name', "N/A"),
-                current_week: plan.current_week || 0,
-                total_weeks: plan.plan_template.duration_weeks || 0,
-                time_in_minutes: plan.time || 0,
-                engagement: plan.engagement || 0,
-                outcomes: plan.outcomes || 0,
-                risk_level: patient.risk_level || 0,
-                next_check_in: plan.next_check_in || 0,
-                tasks_this_week: plan.tasks_this_week || 0,
-              }
-            });
-            this.activePatients[i].care_plans.forEach(plan => {
-              this.store.CarePlan.detailRoute('GET', plan.id, 'care_team_members').subscribe((res:any) => {
-                plan.care_team_members = res;
-              })
-            })
-            this.allServiceAreas.forEach(serviceArea => {
-              this.activeServiceAreas[serviceArea] = true;
-            });
-            this.allCarePlans.forEach(carePlan => {
-              this.activeCarePlans[carePlan] = true;
-            });
-          },
-          err => {},
-          () => carePlanSub.unsubscribe()
-        )
-
-      })
-
-      console.log(this.uniqueFacilities());
-      console.log(this.activePatientsGrouped);
-    });
-
-    let employeesSub = this.store.EmployeeProfile.readListPaged().subscribe(
-      (employees) => {
-        this.users = employees;
-        this.users.forEach(user => {
-          this.activeUsers[user.id] = true;
-        })
-        this.route.params.subscribe((params) => {
-          if (!params || !params.userId) return;
-          Object.keys(this.activeUsers).forEach(id => {
-            if (id !== params.userId) {
-              this.activeUsers[id] = false;
-            }
-          })
-        })
-      },
-      (err) => {
-
-      },
-      () => {
-        employeesSub.unsubscribe();
-      }
-    )
-
-    this.auth.organization$.subscribe(org => {
+    this.authSub = this.auth.organization$.subscribe((org) => {
       if (org === null) return;
+      this.getPatients(org.id).then((patients: any) => {
+        // patients = patientsData.results; // TODO: remove
+        this.activePatients = _filter(patients, p => p.is_active);
+        this.activePatientsGrouped = this.groupPatientsByFacility(this.activePatients);
+        this.activePatients.forEach((patient, i) => {
+          let carePlanSub = this.store.CarePlan.readListPaged({patient: patient.id}).subscribe(
+            (plans: any) => {
+              this.activePatients[i].care_plans = plans.map((plan) => {
+                return {
+                  id: plan.id,
+                  name: plan.plan_template.name,
+                  service_area: _get(plan, 'plan_template.service_area.name', "N/A"),
+                  current_week: plan.current_week || 0,
+                  total_weeks: plan.plan_template.duration_weeks || 0,
+                  time_in_minutes: plan.time || 0,
+                  engagement: plan.engagement || 0,
+                  outcomes: plan.outcomes || 0,
+                  risk_level: patient.risk_level || 0,
+                  next_check_in: plan.next_check_in || 0,
+                  tasks_this_week: plan.tasks_this_week || 0,
+                }
+              });
+              this.activePatients[i].care_plans.forEach(plan => {
+                this.store.CarePlan.detailRoute('GET', plan.id, 'care_team_members').subscribe((res:any) => {
+                  plan.care_team_members = res;
+                })
+              })
+              this.allServiceAreas.forEach(serviceArea => {
+                this.activeServiceAreas[serviceArea] = true;
+              });
+              this.allCarePlans.forEach(carePlan => {
+                this.activeCarePlans[carePlan] = true;
+              });
+            },
+            (err) => {},
+            () => carePlanSub.unsubscribe()
+          );
+        });
+        console.log(this.uniqueFacilities());
+        console.log(this.activePatientsGrouped);
+      });
+      let employeesSub = this.store.EmployeeProfile.readListPaged().subscribe(
+        (employees) => {
+          this.users = employees;
+          this.users.forEach(user => {
+            this.activeUsers[user.id] = true;
+          })
+          this.route.params.subscribe((params) => {
+            if (!params || !params.userId) return;
+            Object.keys(this.activeUsers).forEach(id => {
+              if (id !== params.userId) {
+                this.activeUsers[id] = false;
+              }
+            })
+          })
+        },
+        (err) => { },
+        () => {
+          employeesSub.unsubscribe();
+        }
+      );
       let averageSub = this.store.CarePlan.detailRoute('GET', null, 'average', {}, {
         patient__facility__organization: org.id
       }).subscribe(res => {
         this.average = res;
-      })
-    })
-
+      });
+    });
   }
 
-  public ngOnDestroy() { }
+  public ngOnDestroy() {
+    if (this.authSub) {
+      this.authSub.unsubscribe();
+    }
+  }
 
-  public getPatients() {
+  public getPatients(organizationId) {
     let promise = new Promise((resolve, reject) => {
-      let patientsSub = this.store.PatientProfile.readListPaged({page: 1}).subscribe(
+      let patientsSub = this.store.PatientProfile.readListPaged({
+        'facility__organization__id': organizationId,
+        page: 1
+      }).subscribe(
         (patients) => {
           resolve(patients);
         },

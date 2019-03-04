@@ -101,6 +101,14 @@ export class NavComponent implements OnDestroy, OnInit {
           return;
         }
         this.organization = res;
+        this.patients = [];
+        this.getPatientsOverview(this.organization.id).then((patientOverview: any) => {
+          this.patients = patientOverview;
+          this.activePatientsCount = patientOverview.active;
+          this.inactivePatientsCount = patientOverview.inactive;
+          this.potentialPatientsCount = patientOverview.potential;
+          this.invitedPatientsCount = patientOverview.invited;
+        });
         this.store.Organization.readListPaged()
           .subscribe(
             (res) => {
@@ -141,15 +149,6 @@ export class NavComponent implements OnDestroy, OnInit {
           },
         );
       });
-
-    this.patients = [];
-    this.getPatientsOverview().then((patientOverview: any) => {
-      this.patients = patientOverview;
-      this.activePatientsCount = patientOverview.active;
-      this.inactivePatientsCount = patientOverview.inactive;
-      this.potentialPatientsCount = patientOverview.potential;
-      this.invitedPatientsCount = patientOverview.invited;
-    });
 
     this.getNotifications().then((notifications:any) => {
       this.notifications = notifications.results;
@@ -221,9 +220,11 @@ export class NavComponent implements OnDestroy, OnInit {
     this.router.navigate(['/patient', this.nav.patientDetailId, route, this.nav.patientPlanId]);
   }
 
-  public getPatientsOverview() {
+  public getPatientsOverview(organizationId) {
     let promise = new Promise((resolve, reject) => {
-      let patientsSub = this.store.PatientProfile.detailRoute('GET', '', 'overview').subscribe(
+      let patientsSub = this.store.PatientProfile.listRoute('GET', 'overview', {}, {
+        'facility__organization__id': organizationId,
+      }).subscribe(
         (patients) => {
           resolve(patients);
         },

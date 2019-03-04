@@ -116,7 +116,7 @@
         <app-popover [visible]="nextCheckinVisible" (visibleChange)="nextCheckinVisible = $event;">
           <div class="tool__tip tool__tip--bottom isOpen">
             <div class="tool__text">
-              <span>{{nextCheckinTeamMember.employee_profile.user.first_name}} {{nextCheckinTeamMember.employee_profile.user.last_name}}, {{nextCheckinTeamMember.employee_profile.title.abbreviation}}</span><br/>
+              <span>{{nextCheckinTeamMember.employee_profile.user.first_name}} {{nextCheckinTeamMember.employee_profile.user.last_name}}<span *ngIf="nextCheckinTeamMember.employee_profile.title">, {{nextCheckinTeamMember.employee_profile.title.abbreviation}}</span></span><br/>
               <span *ngIf="nextCheckinTeamMember.role">{{nextCheckinTeamMember.role.name}}</span>
               <span *ngIf="nextCheckinTeamMember.is_manager">Care Manager</span>
               <br />
