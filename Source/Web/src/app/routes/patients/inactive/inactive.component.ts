@@ -29,6 +29,7 @@ export class InactivePatientsComponent implements OnDestroy, OnInit {
   public employeeChecked = {};
 
   public toolXP1Open;
+  public toolIP1Open;
   public accord1Open;
   public tooltip2Open;
   public tooltipPP2Open;

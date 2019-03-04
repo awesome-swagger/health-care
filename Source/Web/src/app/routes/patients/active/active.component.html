@@ -18,35 +18,37 @@
       <div class="fullWidth"></div>
       <div class="flex fullWidth">
         <div [ngStyle]="{width: '100px', padding: '5px'}"><label>Filter By User</label></div>
-        <div class="drop">
-          <div class="drop__input" (click)="multi4Open = !multi4Open">
-            All
-          </div>
-          <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : multi4Open }">
-            <div class="drop__buttons">
-              <button class="button button--iconText" (click)="toggleAllUsers(true)">
-                <i class="ss-check ss-standard"></i> Check All
-              </button>
-              <button class="button button--iconText" (click)="toggleAllUsers(false)">
-                <i class="ss-ban"></i> Uncheck All
-              </button>
+          <div class="drop">
+            <div class="drop__input" (click)="multi4Open = !multi4Open">
+              All
             </div>
+            <app-popover [visible]="multi4Open" (visibleChange)="multi4Open = $event">
+            <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : multi4Open }">
+              <div class="drop__buttons">
+                <button class="button button--iconText" (click)="toggleAllUsers(true)">
+                  <i class="ss-check ss-standard"></i> Check All
+                </button>
+                <button class="button button--iconText" (click)="toggleAllUsers(false)">
+                  <i class="ss-ban"></i> Uncheck All
+                </button>
+              </div>
 
-            <li class="drop__option">
-              <input class="input input--search drop__innerInput" type="text" placeholder="Search" />
-            </li>
+              <li class="drop__option">
+                <input class="input input--search drop__innerInput" type="text" placeholder="Search" />
+              </li>
 
-            <li class="drop__option" *ngFor="let user of users">
-              <label
-                class="drop__checkbox styledInput"
-                title="Behavioral Health Initiative"
-              >
-                <input type="checkbox" class="styledInput__input" [(ngModel)]="activeUsers[user.id]" />
-                <span class="styledInput__box"></span>
-                {{user?.user?.first_name}} {{user?.user?.last_name}}
-              </label>
-            </li>
-          </ul>
+              <li class="drop__option" *ngFor="let user of employees">
+                <label
+                  class="drop__checkbox styledInput"
+                  title="Behavioral Health Initiative"
+                >
+                  <input type="checkbox" class="styledInput__input" [(ngModel)]="employeeChecked[user.id]" />
+                  <span class="styledInput__box"></span>
+                  {{user?.user?.first_name}} {{user?.user?.last_name}}
+                </label>
+              </li>
+            </ul>
+          </app-popover>
         </div>
       </div>
       <button class="button button--iconText"
@@ -100,12 +102,12 @@
       <div
         class="pill"
         [ngClass]="{
-          'pill--lime': avgRiskLevel >= 90,
-          'pill--yellow': avgRiskLevel < 90 && avgRiskLevel >= 70,
-          'pill--red': avgRiskLevel < 70 && avgRiskLevel >= 50,
-          'pill--purple': avgRiskLevel < 50
+          'pill--lime': average?.risk_level >= 90,
+          'pill--yellow': average?.risk_level < 90 && average?.risk_level >= 70,
+          'pill--red': average?.risk_level < 70 && average?.risk_level >= 50,
+          'pill--purple': average?.risk_level < 50
         }"
-      >{{riskLevelText(avgRiskLevel)}} {{avgRiskLevel || ''}}%</div>
+      >{{riskLevelText(average?.risk_level)}} {{average?.risk_level}}%</div>
     </div>
   </div> <!--/.info-->
 
@@ -117,29 +119,31 @@
           <div class="drop__input" (click)="multi2Open = !multi2Open">
             All
           </div>
-          <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : multi2Open }">
-            <div class="drop__buttons">
-              <button class="button button--iconText" (click)="toggleAllServiceAreas(true)">
-                <i class="ss-check ss-standard"></i> Check All
-              </button>
-              <button class="button button--iconText" (click)="toggleAllServiceAreas(false)">
-                <i class="ss-ban"></i> Uncheck All
-              </button>
-            </div>
+          <app-popover [visible]="multi2Open" (visibleChange)="multi2Open = $event">
+            <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : multi2Open }">
+              <div class="drop__buttons">
+                <button class="button button--iconText" (click)="toggleAllServiceAreas(true)">
+                  <i class="ss-check ss-standard"></i> Check All
+                </button>
+                <button class="button button--iconText" (click)="toggleAllServiceAreas(false)">
+                  <i class="ss-ban"></i> Uncheck All
+                </button>
+              </div>
 
-            <li class="drop__option">
-              <input class="input input--search drop__innerInput" type="text" placeholder="Search" />
-            </li>
+              <li class="drop__option">
+                <input class="input input--search drop__innerInput" type="text" placeholder="Search" />
+              </li>
 
-            <li class="drop__option" *ngFor="let serviceArea of allServiceAreas">
-              <label class="drop__checkbox styledInput"
-              title="Behavioral Health Initiative">
-                <input type="checkbox" class="styledInput__input" [(ngModel)]="activeServiceAreas[serviceArea]" />
-                <span class="styledInput__box"></span>
-                {{serviceArea}}
-              </label>
-            </li>
-          </ul>
+              <li class="drop__option" *ngFor="let serviceArea of serviceAreas">
+                <label class="drop__checkbox styledInput"
+                title="Behavioral Health Initiative">
+                  <input type="checkbox" class="styledInput__input" [(ngModel)]="serviceAreaChecked[serviceArea.id]" />
+                  <span class="styledInput__box"></span>
+                  {{serviceArea.name}}
+                </label>
+              </li>
+            </ul>
+          </app-popover>
         </div>
     </div> <!--/ container for care plan type filter-->
 
@@ -149,216 +153,220 @@
           <div class="drop__input" (click)="multi3Open = !multi3Open">
             All
           </div>
-          <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : multi3Open }">
-            <div class="drop__buttons">
-              <button class="button button--iconText" (click)="toggleAllCarePlans(true)">
-                <i class="ss-check ss-standard"></i> Check All
-              </button>
-              <button class="button button--iconText" (click)="toggleAllCarePlans(false)">
-                <i class="ss-ban"></i> Uncheck All
-              </button>
-            </div>
+          <app-popover [visible]="multi3Open" (visibleChange)="multi3Open = $event">
+            <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : multi3Open }">
+              <div class="drop__buttons">
+                <button class="button button--iconText" (click)="toggleAllCarePlans(true)">
+                  <i class="ss-check ss-standard"></i> Check All
+                </button>
+                <button class="button button--iconText" (click)="toggleAllCarePlans(false)">
+                  <i class="ss-ban"></i> Uncheck All
+                </button>
+              </div>
 
-            <li class="drop__option">
-              <input class="input input--search drop__innerInput" type="text" placeholder="Search" />
-            </li>
+              <li class="drop__option">
+                <input class="input input--search drop__innerInput" type="text" placeholder="Search" />
+              </li>
 
-            <li class="drop__option" *ngFor="let carePlan of allCarePlans">
-              <label
-                class="drop__checkbox styledInput"
-                title="Behavioral Health Initiative"
-              >
-                <input type="checkbox" class="styledInput__input" [(ngModel)]="activeCarePlans[carePlan]" />
-                <span class="styledInput__box"></span>
-                {{carePlan}}
-              </label>
-            </li>
-          </ul>
+              <li class="drop__option" *ngFor="let planTemplate of carePlanTemplates">
+                <label
+                  class="drop__checkbox styledInput"
+                  title="Behavioral Health Initiative"
+                >
+                  <input type="checkbox" class="styledInput__input" [(ngModel)]="carePlanTemplateChecked[planTemplate.id]" />
+                  <span class="styledInput__box"></span>
+                  {{planTemplate.name}}
+                </label>
+              </li>
+            </ul>
+          </app-popover>
         </div>
     </div> <!--/ container for care plan name filter-->
   </div> <!--/.flex (for filters)-->
 
 
-  <div class="accordion" [ngClass]="{ 'isOpen' : accordionsOpen[facility.name] }" *ngFor="let facility of uniqueFacilities()">
-    <div class="accordion__head" (click)="accordionsOpen[facility.name]=!accordionsOpen[facility.name]">
-      <span class="accordion__title">{{facility.name}} ({{getPatientsForFacility(facility).length}})</span>
-      <div class="accordion__right">
-        <div class="pill marRight32" [ngClass]="avgFacilityTimeColor(facility)">
-          {{formatTime(avgFacilityTimeInMinutes(facility)) || '0:00'}}
+  <ng-container *ngFor="let facility of facilities">
+    <div class="accordion" [ngClass]="{ 'isOpen' : accordionsOpen[facility.id] }" *ngIf="facility.patients?.length > 0">
+      <div class="accordion__head" (click)="accordionsOpen[facility.id]=!accordionsOpen[facility.id]">
+        <span class="accordion__title">{{facility.name}} ({{facility.patients?.length}})</span>
+        <div class="accordion__right">
+          <div class="pill pill--purple marRight32" [ngClass]="avgFacilityTimeColor(facility)">
+            {{facility.totalTime}}
+          </div>
+          <div
+            class="pill"
+            [ngClass]="{
+              'pill--lime': facility.avgRiskLevel >= 90,
+              'pill--yellow': facility.avgRiskLevel < 90 && facility.avgRiskLevel >= 70,
+              'pill--red': facility.avgRiskLevel < 70 && facility.avgRiskLevel >= 50,
+              'pill--purple': facility.avgRiskLevel < 50
+            }"
+          >{{facility.avgRiskLevel}}%</div>
+          <div class="accordion__arrow">
+            <i class="ss-standard ss-navigateright"></i>
+          </div>
         </div>
-        <div
-          class="pill"
-          [ngClass]="{
-            'pill--lime': avgFacilityRiskLevel(facility) >= 90,
-            'pill--yellow': avgFacilityRiskLevel(facility) < 90 && avgFacilityRiskLevel(facility) >= 70,
-            'pill--red': avgFacilityRiskLevel(facility) < 70 && avgFacilityRiskLevel(facility) >= 50,
-            'pill--purple': avgFacilityRiskLevel(facility) < 50
-          }"
-        >{{riskLevelText(avgFacilityRiskLevel(facility))}} {{avgFacilityRiskLevel(facility) || ''}}%</div>
-        <div class="accordion__arrow">
-          <i class="ss-standard ss-navigateright"></i>
-        </div>
-      </div>
-    </div> <!--/.accordion__head-->
-    <div class="accordion__body">
-      <div class="accordion__contents">
-        <div class="tableWrap fullWidth">
-          <table class="fullWidth">
-            <thead>
-              <tr>
-                <th class="thSortable">
-                  <span class="thSortable__text thSortable__text--left">Patient</span>
-                </th>
-                <th class="thSortable">
-                  <span class="thSortable__text thSortable__text--left">Care Plan</span>
-                </th>
-                <th class="thSortable">
-                  <div class="tool">
-                    <span class="thSortable__text">Also</span>
-                    <div class="tool__anchor">
-                      <button class="button button--icon button--icon--small" (click)="tooltip2Open=!tooltip2Open">
-                        <i class="ss-help"></i>
-                      </button>
-                      <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltip2Open }">
-                        <div class="tool__text">This is the number of additional care plans a patient has. Click the number for details.</div>
+      </div> <!--/.accordion__head-->
+      <div class="accordion__body">
+        <div class="accordion__contents">
+          <div class="tableWrap fullWidth">
+            <table class="fullWidth">
+              <thead>
+                <tr>
+                  <th class="thSortable">
+                    <span class="thSortable__text thSortable__text--left">Patient</span>
+                  </th>
+                  <th class="thSortable">
+                    <span class="thSortable__text thSortable__text--left">Care Plan</span>
+                  </th>
+                  <th class="thSortable">
+                    <div class="tool">
+                      <span class="thSortable__text">Also</span>
+                      <div class="tool__anchor">
+                        <button class="button button--icon button--icon--small" (click)="tooltip2Open=!tooltip2Open">
+                          <i class="ss-help"></i>
+                        </button>
+                        <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltip2Open }">
+                          <div class="tool__text">This is the number of additional care plans a patient has. Click the number for details.</div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </th>
-                <th class="thSortable">
-                  <span class="thSortable__text">Monthly Time</span>
-                </th>
-                <th class="thSortable">
-                  <span class="thSortable__text">My Tasks This Week</span>
-                </th>
-                <th class="thSortable">
-                  <span class="thSortable__text">Progress</span>
-                </th>
-                <th class="thSortable">
-                  <span class="thSortable__text">Engagement</span>
-                </th>
-                <th class="thSortable">
-                  <span class="thSortable__text">Outcomes</span>
-                </th>
-                <th class="thSortable thSortable--sortDown">
-                  <span class="thSortable__text">Risk Level</span>
-                </th>
-                <th class="noPad"></th>
-              </tr>
-            </thead>
-            <tbody>
-              <ng-container *ngFor="let patient of getPatientsForFacility(facility); let i = index">
-                <ng-container *ngFor="let plan of patient.care_plans; let j = index">
-                  <tr *ngIf="activeServiceAreas[plan.service_area] && activeCarePlans[plan.name] && hasActiveUser(plan)">
-                    <td class="left hideOverflow">
-                      <a class="picName" (click)="routeToPatient(patient)">
-                        <img class="picName__img" [src]="patient.user.image_url" *ngIf="patient.user.image_url" />
-                        <img class="picName__img" src="../../../assets/img/profile.svg" *ngIf="!patient.user.image_url" />
-                        {{patient.user.first_name}} {{patient.user.last_name}}
-                      </a>
-                    </td>
-                    <td>
-                      <div class="iconText">
-                        {{plan.name}}
-                      </div>
-                    </td>
-                    <td>
-                      <a
-                        class="tool__anchor justifyCenter"
-                        (click)="openAlsoTip[''+i+j] = !openAlsoTip[''+i+j]"
-                        *ngIf="getAlsoPlans(j, patient).length"
-                      >
-                        {{getAlsoPlans(j, patient).length}}
-                        <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : openAlsoTip[''+i+j] }">
-                          <div class="iconText iconText--white iconText--autoHeight marBottom8" *ngFor="let planName of getAlsoPlans(j, patient)">
-                            {{planName}}
+                  </th>
+                  <th class="thSortable">
+                    <span class="thSortable__text">Monthly Time</span>
+                  </th>
+                  <th class="thSortable">
+                    <span class="thSortable__text">My Tasks This Week</span>
+                  </th>
+                  <th class="thSortable">
+                    <span class="thSortable__text">Progress</span>
+                  </th>
+                  <th class="thSortable">
+                    <span class="thSortable__text">Engagement</span>
+                  </th>
+                  <th class="thSortable">
+                    <span class="thSortable__text">Outcomes</span>
+                  </th>
+                  <th class="thSortable thSortable--sortDown">
+                    <span class="thSortable__text">Risk Level</span>
+                  </th>
+                  <th class="noPad"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <ng-container *ngFor="let patient of facility.patients; let i = index">
+                  <ng-container *ngFor="let plan of patient.carePlans; let j = index">
+                    <tr *ngIf="serviceAreaChecked[plan.plan_template.service_area.id] && carePlanTemplateChecked[plan.plan_template.id] && hasCheckedCareTeamMember(plan)">
+                      <td class="left hideOverflow">
+                        <a class="picName" (click)="routeToPatient(patient)">
+                          <img class="picName__img" [src]="patient?.image_url" *ngIf="patient?.image_url" />
+                          <img class="picName__img" src="../../../assets/img/profile.svg" *ngIf="!patient?.image_url" />
+                          {{patient?.full_name}}
+                        </a>
+                      </td>
+                      <td>
+                        <div class="iconText">
+                          {{plan.plan_template.name}}
+                        </div>
+                      </td>
+                      <td>
+                        <a
+                          class="tool__anchor justifyCenter"
+                          (click)="openAlsoTip[''+i+j] = !openAlsoTip[''+i+j]"
+                          *ngIf="getAlsoPlans(j, patient).length"
+                        >
+                          {{getAlsoPlans(j, patient).length}}
+                          <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : openAlsoTip[''+i+j] }">
+                            <div class="iconText iconText--white iconText--autoHeight marBottom8" *ngFor="let planName of getAlsoPlans(j, patient)">
+                              {{planName}}
+                            </div>
+                          </div>
+                        </a>
+                      </td>
+                      <td><div class="pill" [ngClass]="timePillColor(plan)">{{formatTime(plan.time_in_minutes) || '0:00'}}</div>
+                      </td>
+                      <td>
+                        <!--TODO: Clicking this link should also open the My Tasks accordion on the patient details page-->
+                        <a [routerLink]="['/patient/asdf/details']" class="justifyCenter">{{plan.tasks_this_week}}</a>
+                      </td>
+                      <td>
+                        <div class="progress marCenter">
+                          Week {{plan.current_week}} of {{plan.plan_template.duration_weeks}}
+                          <div class="progress__bg">
+                            <div class="progress__bar" [ngStyle]="{width: (plan.current_week / plan.plan_template.duration_weeks) * 100 + '%'}"></div>
                           </div>
                         </div>
-                      </a>
-                    </td>
-                    <td><div class="pill" [ngClass]="timePillColor(plan)">{{formatTime(plan.time_in_minutes) || '0:00'}}</div>
-                    </td>
-                    <td>
-                      <!--TODO: Clicking this link should also open the My Tasks accordion on the patient details page-->
-                      <a [routerLink]="['/patient/asdf/details']" class="justifyCenter">{{plan.tasks_this_week}}</a>
-                    </td>
-                    <td>
-                      <div class="progress marCenter">
-                        Week {{plan.current_week}} of {{plan.total_weeks}}
-                        <div class="progress__bg">
-                          <div class="progress__bar" [ngStyle]="{width: (plan.current_week / plan.total_weeks) * 100 + '%'}"></div>
-                        </div>
-                      </div>
-                    </td>
-                    <td>
-                      <div
-                        class="pill"
-                        [ngClass]="{
-                          'pill--lime': plan.engagement >= 90,
-                          'pill--yellow': plan.engagement < 90 && plan.engagement >= 70,
-                          'pill--red': plan.engagement < 70 && plan.engagement >= 50,
-                          'pill--purple': plan.engagement < 50
-                        }"
-                      >{{plan.engagement}}%</div>
-                    </td>
-                    <td>
-                      <div
-                        class="pill"
-                        [ngClass]="{
-                          'pill--lime': plan.outcomes >= 90,
-                          'pill--yellow': plan.outcomes < 90 && plan.outcomes >= 70,
-                          'pill--red': plan.outcomes < 70 && plan.outcomes >= 50,
-                          'pill--purple': plan.outcomes < 50
-                        }"
-                      >{{plan.outcomes}}%</div>
-                    </td>
-                    <td>
-                      <div
-                        class="pill"
-                        [ngClass]="{
-                          'pill--lime': plan.risk_level >= 90,
-                          'pill--yellow': plan.risk_level < 90 && plan.risk_level >= 70,
-                          'pill--red': plan.risk_level < 70 && plan.risk_level >= 50,
-                          'pill--purple': plan.risk_level < 50
-                        }"
-                      >{{riskLevelText(plan.risk_level)}} {{plan.risk_level}}%</div>
-                    </td>
-                    <td class="noPad">
-                      <button class="button button--center button--icon button--icon--small"
-                      (click)="confirmRemovePatient(patient, plan)">
-                        <i class="ss-delete"></i>
-                      </button>
-                    </td>
-                  </tr>
+                      </td>
+                      <td>
+                        <div
+                          class="pill"
+                          [ngClass]="{
+                            'pill--lime': plan.engagement >= 90,
+                            'pill--yellow': plan.engagement < 90 && plan.engagement >= 70,
+                            'pill--red': plan.engagement < 70 && plan.engagement >= 50,
+                            'pill--purple': plan.engagement < 50
+                          }"
+                        >{{plan.engagement}}%</div>
+                      </td>
+                      <td>
+                        <div
+                          class="pill"
+                          [ngClass]="{
+                            'pill--lime': plan.outcomes >= 90,
+                            'pill--yellow': plan.outcomes < 90 && plan.outcomes >= 70,
+                            'pill--red': plan.outcomes < 70 && plan.outcomes >= 50,
+                            'pill--purple': plan.outcomes < 50
+                          }"
+                        >{{plan.outcomes}}%</div>
+                      </td>
+                      <td>
+                        <div
+                          class="pill"
+                          [ngClass]="{
+                            'pill--lime': plan.risk_level >= 90,
+                            'pill--yellow': plan.risk_level < 90 && plan.risk_level >= 70,
+                            'pill--red': plan.risk_level < 70 && plan.risk_level >= 50,
+                            'pill--purple': plan.risk_level < 50
+                          }"
+                        >{{riskLevelText(plan.risk_level)}} {{plan.risk_level}}%</div>
+                      </td>
+                      <td class="noPad">
+                        <button class="button button--center button--icon button--icon--small"
+                        (click)="confirmRemovePatient(facility, patient, plan)">
+                          <i class="ss-delete"></i>
+                        </button>
+                      </td>
+                    </tr>
+                  </ng-container>
                 </ng-container>
-              </ng-container>
-            </tbody>
-          </table>
-        </div> <!--/.tableWrap-->
-      </div> <!--/.accordion__contents-->
-      <div class="paginationWrap">
-        <button class="button button--iconText"
-        (click)="addPatientToPlan()">
-          <i class="ss-plus"></i> Add Patient
-        </button>
-        <div class="pagination">
-            <button class="button button--icon button--icon--dis">
-                <i class="ss-standard ss-skipback"></i>
-            </button>
-            <button class="button button--icon button--icon--dis">
-                <i class="ss-standard ss-directleft"></i>
-            </button>
-            <span>1 of 1</span>
-            <button class="button button--icon">
-                <i class="ss-standard ss-directright"></i>
-            </button>
-            <button class="button button--icon">
-                <i class="ss-standard ss-skipforward"></i>
-            </button>
-        </div> <!--/.pagination-->
-      </div> <!--/.paginationWrap-->
-    </div> <!--/.accordion__body-->
-  </div> <!--/.accordion-->
+              </tbody>
+            </table>
+          </div> <!--/.tableWrap-->
+        </div> <!--/.accordion__contents-->
+        <div class="paginationWrap" *ngIf="">
+          <button class="button button--iconText"
+          (click)="addPatientToPlan()">
+            <i class="ss-plus"></i> Add Patient
+          </button>
+          <div class="pagination">
+              <button class="button button--icon button--icon--dis">
+                  <i class="ss-standard ss-skipback"></i>
+              </button>
+              <button class="button button--icon button--icon--dis">
+                  <i class="ss-standard ss-directleft"></i>
+              </button>
+              <span>1 of 1</span>
+              <button class="button button--icon">
+                  <i class="ss-standard ss-directright"></i>
+              </button>
+              <button class="button button--icon">
+                  <i class="ss-standard ss-skipforward"></i>
+              </button>
+          </div> <!--/.pagination-->
+        </div> <!--/.paginationWrap-->
+      </div> <!--/.accordion__body-->
+    </div> <!--/.accordion-->
+  </ng-container>
 
   <!-- <div class="accordion" [ngClass]="{ 'isOpen' : accord2Open }">
       <div class="accordion__head" (click)="accord2Open=!accord2Open">
