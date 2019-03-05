@@ -678,7 +678,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       {
         case 'fullVitalPreview':
           setTimeout(() => {
-            this.previewVital(data.data);
+            this.previewVital('add-vital', data.data);
           }, 10);
           break;
         case 'editVital':
@@ -704,6 +704,12 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       width: '800px',
     }).subscribe((res) => {
       if (!res) return;
+      if (res.next && res.next === 'preview') {
+        setTimeout(() => {
+          this.previewVital('edit-vital', res.vital);
+        }, 10);
+        return;
+      }
       let index = this.vitalTemplates.findIndex((obj) => {
         return obj.id === res.id;
       });
@@ -737,12 +743,27 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
     );
   }
 
-  public previewVital(vital) {
+  public previewVital(from, vital) {
     this.modals.open(PreviewVitalComponent, {
       closeDisabled: false,
-      width: '500px',
-      data: vital
-    }).subscribe(() => {});
+      width: '384px',
+      data: {
+        from: from,
+        vital: vital,
+      }
+    }).subscribe((res) => {
+      if (!res) return;
+      if (res.next === 'add-vital') {
+        setTimeout(() => {
+          this.addVital(this.vitalTemplates);
+        }, 10);
+      }
+      if (res.next === 'edit-vital') {
+        setTimeout(() => {
+          this.editVital(res.vital);
+        }, 10);
+      }
+    });
   }
 
   public confirmDeleteVital(vital) {

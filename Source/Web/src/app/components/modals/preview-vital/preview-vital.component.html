@@ -1,4 +1,4 @@
-<button class="modal__back button button--icon" >
+<button class="modal__back button button--icon" (click)="navigateBack()">
   <i class="ss-standard ss-navigateleft"></i>
 </button>
 <h1 class="modal__title marBottom8">Preview Vital</h1>
@@ -9,16 +9,25 @@
   INSTRUCTION PLACEHOLDER
 </p>
 <ul>
-  <li *ngFor="let vital of data.vitals">
+  <li *ngFor="let question of data.vital.questions">
+    <div class="flex alignCenter justifySpaceBetween marBottom32" *ngIf="question.answer_type === 'boolean'">
+      <span>{{question.prompt}}</span>
+      <div class="styledSelect">
+        <select class="styledSelect__select" [disabled]="true">
+          <option>Yes</option>
+          <option>No</option>
+        </select>
+      </div>
+    </div>
     <!-- type: time -->
-    <div class="flex alignCenter justifySpaceBetween marBottom32" *ngIf="vital.answer_type === 'time'">
-      <span>{{vital.prompt}}</span>
+    <div class="flex alignCenter justifySpaceBetween marBottom32" *ngIf="question.answer_type === 'time'">
+      <span>{{question.prompt}}</span>
       <div class="modal__inputWrap70">
-            <app-time-picker [disabled]="true"></app-time-picker>
+        <app-time-picker [disabled]="true"></app-time-picker>
       </div>
     </div>
     <!-- type: date -->
-    <div  *ngIf="vital.answer_type === 'date'">
+    <!-- <div *ngIf="question.answer_type === 'date'">
       <p class="marRight8">When was your last appointment?</p>
       <div class="datepicker marBottom32">
         <div class="datepicker__date" (click)="showDatePVM1=!showDatePVM1">
@@ -26,82 +35,70 @@
         </div>
         <app-date-picker class="datepicker__picker" [ngClass]="{ 'isOpen' : showDatePVM1 }"></app-date-picker>
       </div>
-    </div>
-    <div *ngIf="vital.answer_type === 'float'" class="flex alignCenter justifySpaceBetween marBottom32">
-        <span class="marRight8">{{vital.prompt}}</span>
-        <div class="modal__inputWrap120 flex alignCenter">
-          <div class="modal__inputWrap70">
-            <input type="number" [disabled]="true" class="input fullWidth" style="text-align: center" value="0.0" min="0.0" />
-          </div>
+    </div> -->
+    <div *ngIf="question.answer_type === 'float' || question.number_type === 'float'" class="flex alignCenter justifySpaceBetween marBottom32">
+      <span class="marRight8">{{question.prompt}}</span>
+      <div class="flex">
+        <div>
+          <input type="number" [disabled]="true" class="input fullWidth" value="0.0" min="0.0" step="0.01" />
         </div>
       </div>
+    </div>
 <!-- integer -->
-    <div *ngIf="vital.answer_type === 'integer'" class="flex alignCenter justifySpaceBetween marBottom32">
-      <span class="marRight8">{{vital.prompt}}</span>
-      <div class="modal__inputWrap120 flex alignCenter">
-        <div class="modal__inputWrap70">
-          <input type="number" [disabled]="true" class="input fullWidth" style="text-align: center" value="0" min="0" />
+    <div *ngIf="question.answer_type === 'integer' || question.number_type === 'integer'" class="flex alignCenter justifySpaceBetween marBottom32">
+      <span class="marRight8">{{question.prompt}}</span>
+      <div class="flex">
+        <div>
+          <input type="number" [disabled]="true" class="input fullWidth" value="0" min="0" step="1" />
         </div>
       </div>
     </div>
     <!-- type scale -->
-    <div *ngIf="vital.answer_type === 'scale'">
-      <p>{{vital.prompt}}</p>
-      <div class="scale marBottom32">
-        <div class="scale__hints">
-          <h5 class="noMargin">1 (Poor)</h5>
-          <h5 class="noMargin">5 (Great)</h5>
-        </div>
-        <div class="scale__numbers">
-          <label class="scale__label">
-            <input type="radio" [disabled]="true" class="scale__input" name="scalePVM1" />
-            <div class="scale__number">
-              1
-            </div>
-          </label>
-          <label class="scale__label">
-            <input type="radio" [disabled]="true" class="scale__input" name="scalePVM1" />
-            <div class="scale__number scale__number--2">
-              2
-            </div>
-          </label>
-          <label class="scale__label">
-            <input type="radio" [disabled]="true" class="scale__input" name="scalePVM1" />
-            <div class="scale__number scale__number--3">
-              3
-            </div>
-          </label>
-          <label class="scale__label">
-            <input type="radio" [disabled]="true" class="scale__input" name="scalePVM1" />
-            <div class="scale__number scale__number--4">
-              4
-            </div>
-          </label>
-          <label class="scale__label">
-            <input type="radio" [disabled]="true" class="scale__input" name="scalePVM1" />
-            <div class="scale__number scale__number--5">
-              5
-            </div>
-          </label>
-        </div>
-      </div> <!--/.scale-->
-    </div>
-    <!-- type options -->
-    <div *ngIf="">
-      <p>Select one of the two options</p>
-      <div class="flex marBottom32">
-        <label class="styledInput marRight32">
-          <input type="radio" [disabled]="true" name="radioPVM1" class="styledInput__input" />
-          <span class="styledInput__radio"></span> Option 1
-        </label>
-        <label class="styledInput">
-          <input type="radio" [disabled]="true" name="radioPVM1" class="styledInput__input" />
-          <span class="styledInput__radio"></span> Option 2
-        </label>
+    <div *ngIf="question.answer_type === 'scale'">
+      <p>{{question.prompt}}</p>
+      <div class="flex justifyCenter">
+        <div class="scale marBottom32">
+          <div class="scale__hints">
+            <h5 class="noMargin">1 (Poor)</h5>
+            <h5 class="noMargin">5 (Great)</h5>
+          </div>
+          <div class="scale__numbers">
+            <label class="scale__label">
+              <input type="radio" [disabled]="true" class="scale__input" name="scalePVM1" />
+              <div class="scale__number">
+                1
+              </div>
+            </label>
+            <label class="scale__label">
+              <input type="radio" [disabled]="true" class="scale__input" name="scalePVM1" />
+              <div class="scale__number scale__number--2">
+                2
+              </div>
+            </label>
+            <label class="scale__label">
+              <input type="radio" [disabled]="true" class="scale__input" name="scalePVM1" />
+              <div class="scale__number scale__number--3">
+                3
+              </div>
+            </label>
+            <label class="scale__label">
+              <input type="radio" [disabled]="true" class="scale__input" name="scalePVM1" />
+              <div class="scale__number scale__number--4">
+                4
+              </div>
+            </label>
+            <label class="scale__label">
+              <input type="radio" [disabled]="true" class="scale__input" name="scalePVM1" />
+              <div class="scale__number scale__number--5">
+                5
+              </div>
+            </label>
+          </div>
+        </div> <!--/.scale-->
       </div>
     </div>
-    <div *ngIf="vital.answer_type === 'string'"> <!--/ either/or question-->
-      <p>{{vital.prompt}}</p>
+    <div *ngIf="question.answer_type === 'string'"> <!--/ Text response -->
+      <p>{{question.prompt}}</p>
       <textarea [disabled]="true" class="input input--textarea marBottom32"></textarea>
     </div>
   </li>

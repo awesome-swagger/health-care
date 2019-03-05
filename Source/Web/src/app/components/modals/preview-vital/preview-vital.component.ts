@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { ModalService } from '../../../modules/modals';
 
 @Component({
   selector: 'app-preview-vital',
@@ -9,11 +10,20 @@ export class PreviewVitalComponent implements OnInit {
 
   public data = null;
 
-  constructor() {
+  constructor(
+    private modals: ModalService,
+  ) {
 
   }
 
   public ngOnInit() {
     console.log(this.data);
+  }
+
+  public navigateBack() {
+    this.modals.close({
+      'next': this.data.from,
+      'vital': this.data.vital,
+    });
   }
 }
