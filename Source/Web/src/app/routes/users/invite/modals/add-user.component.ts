@@ -126,6 +126,10 @@ export class AddUserComponent implements OnInit {
     return c1 && c2 ? c1.id === c2.id : c1 === c2;
   }
 
+  public close() {
+    this.modals.close(null);
+  }
+
   public submit() {
     if (this.firstNameInput && this.lastNameInput && this.emailInput) {
       this.modals.close({

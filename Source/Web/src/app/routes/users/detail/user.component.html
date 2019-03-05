@@ -48,7 +48,7 @@
   <div class="flex">
     <div class="info info--horiz marRight24 user__infoDetails">
       <div class="info__cell">
-        <label>Employer</label>
+        <label>Employed By</label>
         {{employedBy?.name}}
       </div>
       <div class="info__cell">
@@ -96,7 +96,7 @@
   </div> <!--/.flex (for user details)-->
 
   <div class="flex justifySpaceBetween">
-    <h2 class="noMargin">Assignments (Current Month-to-Date)</h2>
+    <h2 class="marBottom24">Assignments (Current Month-to-Date)</h2>
     <!--TODO: When this link is clicked, filter active patients list by this provider-->
   </div>
   <div class="info info--horiz">
@@ -227,7 +227,7 @@
                   Facility Administrator
                 </label>
                 <button class="button button--iconText"
-                (click)="openChangePassword()">
+                (click)="confirmRevokeAccess(facility)">
                   <i class="ss-delete"></i>Revoke Access
                 </button>
               </div>

@@ -207,17 +207,21 @@ export class UserComponent implements OnDestroy, OnInit {
     }).subscribe(() => {});
   }
 
-  public confirmRevokeAccess() {
+  public confirmRevokeAccess(facility) {
+    const okText = 'Continue';
+    const cancelText = 'Cancel';
     this.modals.open(ConfirmModalComponent, {
      data: {
        title: 'Revoke Access?',
-       body: 'Are you sure you want revoke this person\'s access to this facility? This will affect X patients.',
+       body: `Are you sure you want revoke ${this.employee.user.first_name} ${this.employee.user.last_name}'s access to ${facility.name}?`,
        cancelText: 'Cancel',
        okText: 'Continue',
       },
       width: '384px',
-    }).subscribe(() => {
-    // do something with result
+    }).subscribe(res => {
+      if (res === okText) {
+        
+      }
     });
   }
 

@@ -5,6 +5,7 @@ import { AuthService, StoreService } from '../../../services';
 import {
   find as _find,
 } from 'lodash';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-invite',
@@ -22,6 +23,7 @@ export class InviteComponent implements OnDestroy, OnInit {
     private auth: AuthService,
     private store: StoreService,
     private modals: ModalService,
+    private router: Router,
   ) { }
 
   public ngOnInit() {
@@ -35,9 +37,8 @@ export class InviteComponent implements OnDestroy, OnInit {
 
   public ngOnDestroy() { }
 
-  public confirmDelete() {
+  public confirmDelete(id) {
     this.modals.open(ConfirmModalComponent, {
-      closeDisabled: true,
       data: {
         title: 'Remove User?',
         body: 'Are you sure you want to remove this person from the list?',
@@ -45,12 +46,15 @@ export class InviteComponent implements OnDestroy, OnInit {
         okText: 'Continue',
       },
       width: '384px',
-    }).subscribe(() => {});
+    }).subscribe((res) => {
+      if (res === 'Continue') {
+        this.usersToInivite = this.usersToInivite.filter(u => u.id !== id);
+      }
+    });
   }
 
   public openAddUser() {
     this.modals.open(AddUserComponent, {
-      closeDisabled: true,
       width: '512px',
     }).subscribe((data) => {
       if (data) {
@@ -62,7 +66,6 @@ export class InviteComponent implements OnDestroy, OnInit {
 
   public openEditUser(user) {
     this.modals.open(AddUserComponent, {
-      closeDisabled: true,
       width: '512px',
       data: {
         edit: true,
@@ -73,6 +76,21 @@ export class InviteComponent implements OnDestroy, OnInit {
         user = Object.assign(user, data);
       }
     });
+  }
+
+  public get activeUsersCount() {
+    if (this.employees && this.employees.length) {
+      return this.employees.filter(e => e.status === 'active').length;
+    }
+    return 0;
+  }
+
+  public isAdmin(user) {
+    if (user.facility && !user.facility.hasOwnProperty('parent_company')) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   public get sendDisabled() {
@@ -91,6 +109,8 @@ export class InviteComponent implements OnDestroy, OnInit {
       if (res === okText) {
         this.usersToInivite.forEach(user => {
           this.store.AddUser.createAlt({
+            first_name: user.firstName,
+            last_name: user.lastName,
             email: user.email,
             password1: 'password',
             password2: 'password',
@@ -98,11 +118,15 @@ export class InviteComponent implements OnDestroy, OnInit {
             this.store.EmployeeProfile.detailRoute('POST', null, 'invite', {
               employees: [ user.pk ],
               email_content: this.emailBody
-            }, {}).subscribe(res => {
-              console.log('vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv');
-              console.log(res);
-              console.log('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^');
-            })
+            }, {}).subscribe(
+              res => {
+                this.router.navigate(['/users']);
+              },
+              err => {
+
+                this.router.navigate(['/users']);
+              }
+            )
           })
         })
       }

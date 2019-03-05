@@ -45,6 +45,7 @@
         <div class="drop__input" (click)="facilitySelectOpen = !facilitySelectOpen">
           All
         </div>
+        <app-popover [visible]="facilitySelectOpen" (visibleChange)="facilitySelectOpen = $event">
         <ul class="drop__dropdown drop__dropdown--right" [ngClass]="{'isOpen': facilitySelectOpen }">
           <div class="drop__buttons">
             <button class="button button--iconText" (click)="checkAllFacilities()">
@@ -76,6 +77,7 @@
             </ng-container>
           </ng-container>
         </ul>
+        </app-popover>
       </div> <!--/.drop (for Multiselect)-->
     </div>
   </div> <!--/.flexHeader (for filters)-->
@@ -83,7 +85,7 @@
   <h2>Organization</h2>
   <div class="accordion" [ngClass]="{ 'isOpen': organizationAccordionOpen }" *ngIf="organization && organizationChecked">
     <div class="accordion__head" (click)="organizationAccordionOpen = !organizationAccordionOpen">
-      <span class="accordion__title">{{organization.name}} (<span *ngIf="organization.employees">{{orgUserCountText}}</span>)</span>
+      <span class="accordion__title">{{organization.name}} (<span>{{orgUserCountText}}</span>)</span>
       <div class="accordion__right">
         <div class="accordion__arrow">
           <i class="ss-standard ss-navigateright"></i>
@@ -177,7 +179,7 @@
     <ng-container *ngFor="let facility of filteredFacilities(facilityType.is_affiliate); let i = index">
       <div class="accordion" [ngClass]="{ 'isOpen': facilityAccordionsOpen[facility.id] }" *ngIf="facilitiesChecked[facility.id]">
         <div class="accordion__head" (click)="facilityAccordionsOpen[facility.id] = !facilityAccordionsOpen[facility.id]">
-          <span class="accordion__title">{{facility.name}} <span *ngIf="facility.employees.length">({{facility?.employees?.length}})</span></span>
+          <span class="accordion__title">{{facility.name}} <span>({{facility?.employees?.length || 0}})</span></span>
           <div class="accordion__right">
             <div class="accordion__arrow">
               <i class="ss-standard ss-navigateright"></i>

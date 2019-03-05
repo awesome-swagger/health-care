@@ -5,6 +5,7 @@ import { AuthService, StoreService } from '../../services';
 import { uniqBy as _uniqBy, groupBy as _groupBy } from 'lodash';
 import * as _ from 'lodash';
 import { collectExternalReferences } from '@angular/compiler';
+import { PopoverComponent } from '../../modules/popover';
 
 @Component({
   selector: 'app-users',
@@ -233,6 +234,7 @@ export class UsersComponent implements OnDestroy, OnInit {
       const pageMax = 20*(this.currentPage - 1) + 20;
       return `${pageMin} - ${pageMax < this.total ? pageMax : this.total} of ${this.total}`
     }
+    return 0;
   }
 
   public nthFacilityUserCountText(n) {

@@ -41,6 +41,7 @@
     <div class="styledSelect">
       <select class="styledSelect__select" [(ngModel)]="facilityInput" [compareWith]="compareFn">
         <option>- - - -</option>
+        <option [ngValue]="organization">{{organization?.name}}</option>
         <option *ngFor="let facility of filteredFacilities(false)" [ngValue]="facility">{{facility.name}}</option>
       </select>
     </div>
@@ -63,7 +64,7 @@
 </div> <!--/.flex (for email, phone)-->
 
 <div class="modal__buttons">
-  <button class="button button--2nd">
+  <button class="button button--2nd" (click)="close()">
     Cancel
   </button>
   <button class="button" (click)="submit()">

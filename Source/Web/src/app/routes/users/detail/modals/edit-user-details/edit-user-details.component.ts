@@ -81,8 +81,18 @@ export class EditUserDetailsComponent implements OnInit {
       specialty: this.specialty.id,
       npi_code: this.npi,
     }).subscribe(res => {
-      this.modals.close(res);
+      if (this.phone !== this.data.phone) {
+        this.store.User.update(this.data.employee.user.id, {
+          phone: this.phone
+        }).subscribe(() => {
+          res.user.phone = this.phone;
+          this.modals.close(res);
+        })
+      } else {
+        this.modals.close(res);
+      }
     })
+
   }
 
 }

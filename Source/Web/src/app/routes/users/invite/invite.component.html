@@ -3,7 +3,7 @@
     <h1 class="noMargin">Invite Users</h1>
     <div class="tool">
       <label class="labelLeft">Current Users</label>
-      {{employees?.length}} / 50
+      {{activeUsersCount}} / 50
       <div class="tool__anchor">
         <button class="button button--icon button--icon--small" (click)="tooltipsOpen['currentUsers']=!tooltipsOpen['currentUsers']"><i class="ss-help"></i></button>
         <div class="tool__tip" [ngClass]="{ 'isOpen' : tooltipsOpen['currentUsers'] }">
@@ -63,14 +63,16 @@
         <td class="left hideOverflow">
           {{user.facility?.name}}
         </td>
-        <td></td>
+        <td class="left hideOverflow">
+          <i *ngIf="isAdmin(user)" class="ss-standard ss-check"></i>
+        </td>
         <td class="noPad">
           <button class="button button--icon button--icon--small" (click)="openEditUser(user)">
             <i class="ss-write"></i>
           </button>
         </td>
         <td class="noPad">
-          <button class="button button--icon button--icon--small">
+          <button class="button button--icon button--icon--small" (click)="confirmDelete(user?.id)">
             <i class="ss-delete"></i>
           </button>
         </td>
