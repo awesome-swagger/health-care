@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { groupBy as _groupBy, sumBy as _sumBy, uniqBy as _uniqBy, flattenDeep as _flattenDeep } from 'lodash';
 import { ModalService, ConfirmModalComponent } from '../../modules/modals';
 import { PopoverOptions } from '../../modules/popover';
-import { AuthService, StoreService, UtilsService } from '../../services';
+import { AuthService, LocalStorageService, StoreService, UtilsService } from '../../services';
 import { AddPlanComponent } from './modals/add-plan/add-plan.component';
 
 @Component({
@@ -38,6 +38,7 @@ export class PlansComponent implements OnDestroy, OnInit {
   constructor(
     private modals: ModalService,
     private auth: AuthService,
+    private local: LocalStorageService,
     private store: StoreService,
     public utils: UtilsService,
   ) { }
@@ -48,6 +49,9 @@ export class PlansComponent implements OnDestroy, OnInit {
         return;
       }
       this.organization = organization;
+      if (this.local.getObj('hide_inactive_plan_templates')) {
+        this.hideInactiveTemplates = this.local.getObj('hide_inactive_plan_templates');
+      }
       this.getFacilities(this.organization).then((facilities: any) => {
         this.facilities = facilities.filter((obj) => !obj.is_affiliate);
       });
@@ -202,6 +206,11 @@ export class PlansComponent implements OnDestroy, OnInit {
       });
     });
     return promise;
+  }
+
+  public toggleInactiveTemplates() {
+    this.hideInactiveTemplates = !this.hideInactiveTemplates;
+    this.local.setObj('hide_inactive_plan_templates', this.hideInactiveTemplates);
   }
 
   public filteredTemplates(templates) {
