@@ -227,6 +227,7 @@ export class UsersComponent implements OnDestroy, OnInit {
   }
 
   public get orgUserCountText() {
+    if (!this.total) return 0;
     if (this.total <= 20) {
       return this.total;
     } else {
@@ -234,7 +235,6 @@ export class UsersComponent implements OnDestroy, OnInit {
       const pageMax = 20*(this.currentPage - 1) + 20;
       return `${pageMin} - ${pageMax < this.total ? pageMax : this.total} of ${this.total}`
     }
-    return 0;
   }
 
   public nthFacilityUserCountText(n) {

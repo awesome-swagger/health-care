@@ -55,6 +55,8 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
   public multi3Open;
   public multi4Open;
 
+  private authSub = null;
+
   constructor(
     private auth: AuthService,
     private router: Router,
@@ -66,38 +68,48 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
 
   public ngOnInit() {
 
-
-    this.store.Facility.readListPaged().subscribe((facilities:any) => {
-      this.facilities = facilities.filter(f => !f.is_affiliate);
-      this.facilities.forEach(facility => {
-        facility.avgRiskLevel = 0;
-        facility.totalTime = '0:00';
-        this.accordionsOpen[facility.id] = false;
-        this.store.Facility.detailRoute('GET', facility.id, 'patients', {}, { type: 'active' }).subscribe((patients:any) => {
-          facility.patients = patients.results;
-          facility.patients.forEach(patient => {
-            this.store.CarePlan.readListPaged({ patient: patient.id }).subscribe(plans => {
-              patient.carePlans = plans;
-              patient.carePlans.forEach(plan => {
-                plan.engagement = plan.engagement || 0;
-                plan.outcomes = plan.outcomes || 0;
-                plan.current_week = plan.current_week || 0;
-                plan.risk_level = plan.risk_level || 0;
-                plan.tasks_this_week = plan.tasks_this_week || 0;
-                this.store.CareTeamMember.readListPaged({ plan: plan.id }).subscribe(careTeamMembers => {
-                  plan.careTeamMembers = careTeamMembers;
+    this.authSub = this.auth.organization$.subscribe((org) => {
+      if (org === null) return;
+      this.store.Organization.detailRoute('GET', org.id, 'facilities').subscribe((facilities:any) => {
+        this.facilities = facilities.results.filter(f => !f.is_affiliate);
+        this.facilities.forEach(facility => {
+          facility.avgRiskLevel = 0;
+          facility.totalTime = '0:00';
+          this.accordionsOpen[facility.id] = false;
+          this.store.Facility.detailRoute('GET', facility.id, 'patients', {}, { type: 'active' }).subscribe((patients:any) => {
+            facility.patients = patients.results;
+            facility.patients.forEach(patient => {
+              this.store.CarePlan.readListPaged({ patient: patient.id }).subscribe(plans => {
+                patient.carePlans = plans;
+                patient.carePlans.forEach(plan => {
+                  plan.engagement = plan.engagement || 0;
+                  plan.outcomes = plan.outcomes || 0;
+                  plan.current_week = plan.current_week || 0;
+                  plan.risk_level = plan.risk_level || 0;
+                  plan.tasks_this_week = plan.tasks_this_week || 0;
+                  this.store.CareTeamMember.readListPaged({ plan: plan.id }).subscribe(careTeamMembers => {
+                    plan.careTeamMembers = careTeamMembers;
+                  })
                 })
               })
             })
           })
-        })
-        this.auth.user$.subscribe(user => {
-          if (!user) return;
-          if (user.facilities.length === 1) {
-            this.accordionsOpen[user.facilities[0].id] = true;
-          }
+          this.auth.user$.subscribe(user => {
+            if (!user) return;
+            if (user.facilities.length === 1) {
+              this.accordionsOpen[user.facilities[0].id] = true;
+            }
+          })
         })
       })
+
+      this.store.EmployeeProfile.readListPaged().subscribe(users => {
+        this.employees = users;
+        users.forEach(user => {
+          this.employeeChecked[user.id] = true;
+        })
+      })
+
     })
 
     this.store.ServiceArea.readListPaged().subscribe(serviceAreas => {
@@ -111,13 +123,6 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
       this.carePlanTemplates = templates
       templates.forEach(template => {
         this.carePlanTemplateChecked[template.id] = true;
-      })
-    })
-
-    this.store.EmployeeProfile.readListPaged().subscribe(users => {
-      this.employees = users;
-      users.forEach(user => {
-        this.employeeChecked[user.id] = true;
       })
     })
 
