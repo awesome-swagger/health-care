@@ -110,7 +110,8 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
         })
       })
 
-    })
+    },
+    )
 
     this.store.ServiceArea.readListPaged().subscribe(serviceAreas => {
       this.serviceAreas = serviceAreas;
@@ -137,7 +138,11 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
 
   }
 
-  public ngOnDestroy() { }
+  public ngOnDestroy() {
+    if (this.authSub) {
+      this.authSub.unsubscribe();
+    }
+  }
 
   public getPatients() {
     let promise = new Promise((resolve, reject) => {
