@@ -297,10 +297,23 @@ class ProblemAreaViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         qs = self.queryset.filter(is_active=True)
-        employee_patient_ids = CareTeamMember.objects.filter(
-            employee_profile__id=self.request.user.employee_profile.id).values_list(
-                'plan__patient__id', flat=True).distinct()
-        qs = qs.filter(patient__id__in=employee_patient_ids)
+        employee = self.request.user.employee_profile
+        organizations_managed = employee.organizations_managed.values_list('id', flat=True)
+        facilities_managed = employee.facilities_managed.values_list('id', flat=True)
+        assigned_plans = employee.assigned_roles.values_list('plan__id', flat=True)
+        if employee.organizations_managed.count() > 0:
+            qs = qs.filter(
+                Q(plan__patient__facility__organization__id__in=organizations_managed) |
+                Q(plan__patient__facility__id__in=facilities_managed) |
+                Q(plan__patient__care_plans__id__in=assigned_plans)
+            )
+        elif employee.facilities_managed.count() > 0:
+            qs = qs.filter(
+                Q(plan__patient__facility__id__in=facilities_managed) |
+                Q(plan__patient__care_plans__id__in=assigned_plans)
+            )
+        else:
+            qs = qs.filter(plan__patient__care_plans__id__in=assigned_plans)
         return qs
 
     def perform_destroy(self, instance):
