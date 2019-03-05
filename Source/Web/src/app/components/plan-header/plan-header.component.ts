@@ -110,7 +110,7 @@ export class PlanHeaderComponent implements OnInit, OnDestroy {
 
   public openReassignPatients() {
     this.modals.open(DeletePlanComponent, {
-      closeDisabled: true,
+      closeDisabled: false,
       data: {
         planTemplate: this.planTemplate,
       },
