@@ -174,7 +174,7 @@
         <a [routerLink]="['/dashboard']" [routerLinkActive]="['nav__link--current']" class="nav__link">
           Dashboard
         </a>
-        <a [routerLink]="['/billing']" [routerLinkActive]="['nav__link--current']" class="nav__link">
+        <a [routerLink]="['/billing']" [routerLinkActive]="['nav__link--current']" class="nav__link" *ngIf="employee?.billing_view">
           Billing
         </a>
         <a class="nav__link drop drop__arrowWhite" [ngClass]="{'nav__link--current': patientsDropOpen}" (click)="patientsDropOpen=!patientsDropOpen">

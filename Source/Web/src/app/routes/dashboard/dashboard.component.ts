@@ -59,24 +59,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private organizationSub:Subscription = null;
 
   public ngOnInit() {
-    this.store.PatientProfile.readListPaged().subscribe((res) => {
-      this.patients = res;
-      let patientGroupDefaults = {
-        'pre-potential': null,
-        'potential': null,
-        'invited': null,
-        'delinquent': null,
-        'inactive': null,
-        'active': null,
-      };
-      let groupedByStatus = _groupBy(res, obj => {
-        return obj.status;
-      });
-      this.patientsGrouped = Object.assign({}, patientGroupDefaults, groupedByStatus);
-    });
 
     this.organizationSub = this.auth.organization$.subscribe(
-      org => {
+      (org) => {
 
         if (!org) return;
         this.org = org;
@@ -129,7 +114,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
             this.analyticsData = res;
           }
         )
-        this.store.PatientProfile.detailRoute('GET', null, 'overview').subscribe(
+        this.store.PatientProfile.detailRoute('GET', null, 'overview', {}, {
+          'facility__organization__id': this.org.id,
+        }).subscribe(
           res => {
             this.patientOverview = res;
             console.log('vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv');
@@ -159,9 +146,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   public refreshRiskLevels() {
     if (this.org) {
-      this.store.Organization.detailRoute('GET', this.org.id, 'patient_risk_levels', {}, {
-        employees: _filter(Object.keys(this.employeeChecked), id => this.employeeChecked[id]).join(','),
-      }).subscribe((res:any) => {
+      let params = {};
+      let employeesChecked = _filter(Object.keys(this.employeeChecked), id => this.employeeChecked[id]).join(',')
+      if (employeesChecked.length > 0) {
+        params['employees'] = employeesChecked;
+      }
+      this.store.Organization.detailRoute('GET', this.org.id, 'patient_risk_levels', {}, params).subscribe((res:any) => {
         this.riskLevelBreakdown = res;
       });
     }

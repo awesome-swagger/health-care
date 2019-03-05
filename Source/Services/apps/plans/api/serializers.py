@@ -636,9 +636,28 @@ class CarePlanTemplateAverageSerializer(serializers.ModelSerializer):
             'risk_level',
         )
 
+    def care_plans_for_employee(self, obj, employee):
+        qs = obj.care_plans.filter(patient__facility__is_affiliate=False).distinct()
+        if employee.organizations_managed.count() > 0:
+            organizations_managed = employee.organizations_managed.values_list('id', flat=True)
+            qs = qs.filter(
+                patient__facility__organization__id__in=organizations_managed)
+        elif employee.facilities_managed.count() > 0:
+            facilities_managed = employee.facilities_managed.values_list('id', flat=True)
+            assigned_roles = employee.assigned_roles.values_list('id', flat=True)
+            qs = qs.filter(
+                Q(patient__facility__id__in=facilities_managed) |
+                Q(care_team_members__id__in=assigned_roles)
+            )
+        else:
+            assigned_roles = employee.assigned_roles.values_list('id', flat=True)
+            qs = qs.filter(care_team_members__id__in=assigned_roles)
+        return qs.all()
+
     def get_total_patients(self, obj):
         facility = self.context.get('facility', None)
         organization = self.context.get('organization', None)
+        employee = self.context['request'].user.employee_profile
 
         kwargs = {
             'patient__facility__is_affiliate': False,
@@ -652,13 +671,13 @@ class CarePlanTemplateAverageSerializer(serializers.ModelSerializer):
             kwargs.update({
                 'patient__facility__organization': organization
             })
-
-        return obj.care_plans.filter(**kwargs).values_list(
+        return self.care_plans_for_employee(obj, employee).filter(**kwargs).values_list(
             'patient', flat=True).distinct().count()
 
     def get_total_facilities(self, obj):
         facility = self.context.get('facility', None)
         organization = self.context.get('organization', None)
+        employee = self.context['request'].user.employee_profile
 
         kwargs = {
             'patient__facility__is_affiliate': False,
@@ -673,14 +692,17 @@ class CarePlanTemplateAverageSerializer(serializers.ModelSerializer):
                 'patient__facility__organization': organization
             })
 
-        return obj.care_plans.filter(**kwargs).values_list(
+        return self.care_plans_for_employee(obj, employee).filter(**kwargs).values_list(
             'patient__facility', flat=True).distinct().count()
 
     def get_time_count(self, obj):
         facility = self.context.get('facility', None)
         organization = self.context.get('organization', None)
+        employee = self.context['request'].user.employee_profile
+        employee_care_plans = self.care_plans_for_employee(obj, employee)
 
         kwargs = {
+            'plan__id__in': employee_care_plans.values_list('id', flat=True),
             'plan__patient__facility__is_affiliate': False,
             'plan__plan_template': obj,
         }
@@ -702,8 +724,11 @@ class CarePlanTemplateAverageSerializer(serializers.ModelSerializer):
     def get_average_outcome(self, obj):
         facility = self.context.get('facility', None)
         organization = self.context.get('organization', None)
+        employee = self.context['request'].user.employee_profile
+        employee_care_plans = self.care_plans_for_employee(obj, employee)
 
         kwargs = {
+            'plan__id__in': employee_care_plans.values_list('id', flat=True),
             'plan__plan_template': obj,
             'assessment_task_template__tracks_outcome': True,
             'plan__patient__facility__is_affiliate': False
@@ -728,13 +753,17 @@ class CarePlanTemplateAverageSerializer(serializers.ModelSerializer):
         facility = self.context.get('facility', None)
         organization = self.context.get('organization', None)
         now = timezone.now()
+        employee = self.context['request'].user.employee_profile
+        employee_care_plans = self.care_plans_for_employee(obj, employee)
 
         task_kwargs = {
+            'plan__id__in': employee_care_plans.values_list('id', flat=True),
             'plan__plan_template': obj,
             'plan__patient__facility__is_affiliate': False,
             'due_datetime__lte': now
         }
         medication_kwargs = {
+            'medication_task_template__plan__id__in': employee_care_plans.values_list('id', flat=True),
             'medication_task_template__plan__plan_template': obj,
             'medication_task_template__plan__patient__facility__is_affiliate': False,
             'due_datetime__lte': now

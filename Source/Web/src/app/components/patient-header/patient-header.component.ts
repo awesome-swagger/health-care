@@ -218,6 +218,10 @@ export class PatientHeaderComponent implements OnInit, OnDestroy {
         problemAreas: this.problemAreas,
       },
       width: '560px',
+    }).subscribe((res) => {
+      this.getProblemAreas(this.patient.id).then((problemAreas: any) => {
+        this.problemAreas = problemAreas;
+      });
     });
   }
 

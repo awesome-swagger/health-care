@@ -84,8 +84,9 @@ export class PatientComponent implements OnDestroy, OnInit {
         this.getPatientMedications(this.patient.id);
 
       }).catch(() => {
-        this.patient = patientData.patient;
-        this.carePlans = patientData.carePlans;
+        this.router.navigate(['/error']);
+        // this.patient = patientData.patient;
+        // this.carePlans = patientData.carePlans;
       });
     });
   }
@@ -206,12 +207,17 @@ export class PatientComponent implements OnDestroy, OnInit {
 
   public openProblemAreas(plan) {
     this.modals.open(ProblemAreasComponent, {
+      closeDisabled: false,
       data: {
         patient: this.patient,
         plan: plan,
-        problemAreas: this.problemAreas.filter((obj) => obj.plan === plan.id),
+        problemAreas: this.problemAreasFilteredByPlan(plan.id),
       },
       width: '560px',
+    }).subscribe((res) => {
+      this.getProblemAreas(this.patient.id).then((problemAreas: any) => {
+        this.problemAreas = problemAreas;
+      });
     });
   }
 

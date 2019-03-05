@@ -218,7 +218,7 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
         exclude_done: false,
       }).subscribe(
         (res: any) => {
-          res.map((obj) => {
+          res.tasks.map((obj) => {
             obj['responsible_person'] = teamMember;
           });
           resolve(res);
@@ -355,18 +355,16 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
       this.planGoals = goals;
     });
     this.getUserTasks(this.carePlan.plan_template.id, formattedDate).then((tasks: any) => {
-      console.log(tasks);
-      this.userTasks = tasks.tasks;
+      this.userTasks = tasks.tasks.filter((obj) => obj.patient && obj.patient.id === this.patient.id);
     });
     this.teamTasks = [];
     this.getAllTeamMemberTasks(this.carePlan.plan_template.id, formattedDate).then((teamMemberTasks: any) => {
       teamMemberTasks.forEach((tasks) => {
-        this.teamTasks = this.teamTasks.concat(tasks.tasks);
+        this.teamTasks = this.teamTasks.concat(tasks.tasks.filter((obj) => obj.patient && obj.patient.id === this.patient.id));
       });
     });
     this.getPatientTasks(this.patient.user.id, this.carePlan.plan_template.id, formattedDate).then((tasks: any) => {
       this.patientTasks = tasks.tasks;
-      console.log(tasks);
       if (!this.isUsingMobile) {
         this.updatingPatientTasks = this.patientTasks.filter((obj) => this.isPatientTaskUpdatable(obj));
       }

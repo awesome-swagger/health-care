@@ -417,3 +417,4 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
   }
 
 }
+

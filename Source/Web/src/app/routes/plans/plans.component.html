@@ -55,7 +55,7 @@
   <div class="flex alignEnd justifySpaceBetween negativeMarTop24 marBottom24">
     <div>
       <label class="styledInput">
-        <input type="checkbox" class="styledInput__input" [checked]="hideInactiveTemplates" (change)="hideInactiveTemplates = !hideInactiveTemplates" />
+        <input type="checkbox" class="styledInput__input" [checked]="hideInactiveTemplates" (change)="toggleInactiveTemplates()" />
         <span class="styledInput__box"></span>
         Show Only Active Service Areas
       </label>

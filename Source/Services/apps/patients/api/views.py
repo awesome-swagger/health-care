@@ -101,6 +101,7 @@ class PatientProfileViewSet(viewsets.ModelViewSet):
     filterset_fields = (
         'is_active',
         'is_invited',
+        'facility__organization__id',
     )
 
     def get_queryset(self):
@@ -110,10 +111,22 @@ class PatientProfileViewSet(viewsets.ModelViewSet):
         # If user is a employee, get all organizations that they belong to
         if user.is_employee:
             employee = user.employee_profile
-            queryset = queryset.filter(
-                Q(facility__in=employee.facilities.all()) |
-                Q(facility__in=employee.facilities_managed.all())
-            )
+            organizations_managed = employee.organizations_managed.values_list('id', flat=True)
+            facilities_managed = employee.facilities_managed.values_list('id', flat=True)
+            assigned_plans = employee.assigned_roles.values_list('plan__id', flat=True)
+            if employee.organizations_managed.count() > 0:
+                queryset = queryset.filter(
+                    Q(facility__organization__id__in=organizations_managed) |
+                    Q(facility__id__in=facilities_managed) |
+                    Q(care_plans__id__in=assigned_plans)
+                )
+            elif employee.facilities_managed.count() > 0:
+                queryset = queryset.filter(
+                    Q(facility__id__in=facilities_managed) |
+                    Q(care_plans__id__in=assigned_plans)
+                )
+            else:
+                queryset = queryset.filter(care_plans__id__in=assigned_plans)
         # If user is a patient, only return the organization their facility
         # belongs to
         elif user.is_patient:
@@ -124,17 +137,18 @@ class PatientProfileViewSet(viewsets.ModelViewSet):
     @action(methods=['get'], detail=False)
     def overview(self, request, *args, **kwargs):
         """
-        This endpoints will return overview of patients. It returns number of active patients, 
+        This endpoints will return overview of patients. It returns number of active patients,
         number of inactive patients, number of invited patients, number of potential patients
         """
         queryset = self.get_queryset()
+        filtered_queryset = self.filter_queryset(queryset)
         ppv = PotentialPatientViewSet()
         ppv.request = self.request
 
         res = {
-            "active": queryset.filter(is_active=True).count(),
-            "inactive": queryset.filter(is_active=False).count(),
-            "invited": queryset.filter(is_invited=True).count(),
+            "active": filtered_queryset.filter(is_active=True).count(),
+            "inactive": filtered_queryset.filter(is_active=False).count(),
+            "invited": filtered_queryset.filter(is_invited=True).count(),
             "potential": ppv.get_queryset().count()
         }
 
@@ -185,7 +199,7 @@ class PatientProfileViewSet(viewsets.ModelViewSet):
             context={'request': request}
         )
         serializer.is_valid(raise_exception=True)
-        
+
         user = serializer.data.get('user')
         if user:
             patient = PatientProfile.objects.filter(user_id=user).first()
@@ -283,10 +297,23 @@ class ProblemAreaViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         qs = self.queryset.filter(is_active=True)
-        employee_patient_ids = CareTeamMember.objects.filter(
-            employee_profile__id=self.request.user.employee_profile.id).values_list(
-                'plan__patient__id', flat=True).distinct()
-        qs = qs.filter(patient__id__in=employee_patient_ids)
+        employee = self.request.user.employee_profile
+        organizations_managed = employee.organizations_managed.values_list('id', flat=True)
+        facilities_managed = employee.facilities_managed.values_list('id', flat=True)
+        assigned_plans = employee.assigned_roles.values_list('plan__id', flat=True)
+        if employee.organizations_managed.count() > 0:
+            qs = qs.filter(
+                Q(plan__patient__facility__organization__id__in=organizations_managed) |
+                Q(plan__patient__facility__id__in=facilities_managed) |
+                Q(plan__patient__care_plans__id__in=assigned_plans)
+            )
+        elif employee.facilities_managed.count() > 0:
+            qs = qs.filter(
+                Q(plan__patient__facility__id__in=facilities_managed) |
+                Q(plan__patient__care_plans__id__in=assigned_plans)
+            )
+        else:
+            qs = qs.filter(plan__patient__care_plans__id__in=assigned_plans)
         return qs
 
     def perform_destroy(self, instance):
@@ -671,10 +698,22 @@ class PatientProfileCarePlan(ListAPIView):
         # If user is a employee, get all organizations that they belong to
         if user.is_employee:
             employee = user.employee_profile
-            queryset = queryset.filter(
-                Q(facility__in=employee.facilities.all()) |
-                Q(facility__in=employee.facilities_managed.all())
-            )
+            organizations_managed = employee.organizations_managed.values_list('id', flat=True)
+            facilities_managed = employee.facilities_managed.values_list('id', flat=True)
+            assigned_plans = employee.assigned_roles.values_list('plan__id', flat=True)
+            if employee.organizations_managed.count() > 0:
+                queryset = queryset.filter(
+                    Q(facility__organization__id__in=organizations_managed) |
+                    Q(facility__id__in=facilities_managed) |
+                    Q(care_plans__id__in=assigned_plans)
+                )
+            elif employee.facilities_managed.count() > 0:
+                queryset = queryset.filter(
+                    Q(facility__id__in=facilities_managed) |
+                    Q(care_plans__id__in=assigned_plans)
+                )
+            else:
+                queryset = queryset.filter(care_plans__id__in=assigned_plans)
         # If user is a patient, only return the organization their facility
         # belongs to
         elif user.is_patient:
