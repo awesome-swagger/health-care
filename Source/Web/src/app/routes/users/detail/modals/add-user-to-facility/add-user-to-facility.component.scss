@@ -1,0 +1,22 @@
+@import '~app/modules/modals/modal-outlet.component';
+@import '~scss/variables';
+
+label {
+  border: none;
+}
+
+li {
+  border: none;
+
+  &:hover {
+    background: $grayLtest;
+  }
+}
+
+.iconText {
+}
+
+.drop__input {
+  max-width: none;
+}
+

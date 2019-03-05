@@ -14,6 +14,7 @@ import {
   uniqBy as _uniqBy
 } from 'lodash';
 import * as moment from 'moment';
+import { AddUserToFacilityComponent } from './modals/add-user-to-facility/add-user-to-facility.component';
 
 @Component({
   selector: 'app-user',
@@ -475,12 +476,20 @@ export class UserComponent implements OnDestroy, OnInit {
     })
   }
 
-  public openAddFacility() {
-
-  }
-
   public isBilling(role) {
     return role.name.toLowerCase().indexOf('billing') > -1;
+  }
+
+  public openAddFacility() {
+    this.modals.open(AddUserToFacilityComponent, {
+      width: '384px',
+    }).subscribe(res => {
+      if (!res) return;
+      this.employee.facilities.push(res);
+      this.store.EmployeeProfile.update(this.employee.id, {
+        facilities: this.employee.facilities.map(f => f.id),
+      }).subscribe()
+    })
   }
 
   public isFacilityManager(facilityId) {

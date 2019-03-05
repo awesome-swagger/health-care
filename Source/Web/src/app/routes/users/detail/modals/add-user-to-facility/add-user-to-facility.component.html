@@ -1,0 +1,18 @@
+<h1 class="modal__title">
+  Add Facility
+</h1>
+<div class="styledSelect">
+  <select class="styledSelect__select" [(ngModel)]="selectedFacility">
+    <option disabled selected [ngValue]="null">Select Facility</option>
+    <option *ngFor="let facility of facilities" [ngValue]="facility">{{facility.name}}</option>
+  </select>
+</div>
+<div class="modal__buttons padBottom32">
+  <button class="button button--2nd" (click)="close()">
+    Cancel
+  </button>
+  <button class="button" [disabled]="submitDisabled" (click)="submit()">
+    Continue
+  </button>
+</div>
+

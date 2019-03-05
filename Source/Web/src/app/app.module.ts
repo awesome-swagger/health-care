@@ -131,6 +131,7 @@ import { ResultsGraphComponent } from './components/graphs/results-graph/results
 import { ActivePatientsGraphComponent } from './components/graphs/active-patients-graph/active-patients-graph.component';
 import { PatientsEnrolledGraphComponent } from './components/graphs/patients-enrolled-graph/patients-enrolled-graph.component';
 import { AddConversationComponent } from './routes/patient/messaging/add-conversation/add-conversation.component';
+import { AddUserToFacilityComponent } from './routes/users/detail/modals/add-user-to-facility/add-user-to-facility.component';
 
 @NgModule({
   imports: [
@@ -238,6 +239,7 @@ import { AddConversationComponent } from './routes/patient/messaging/add-convers
     ActivePatientsGraphComponent,
     PatientsEnrolledGraphComponent,
     AddConversationComponent,
+    AddUserToFacilityComponent,
   ],
   providers: [
     {provide: APP_BASE_HREF, useValue: '/'},
@@ -307,6 +309,7 @@ import { AddConversationComponent } from './routes/patient/messaging/add-convers
     EditBillingPractitionerComponent,
     EditCcmComponent,
     AddConversationComponent,
+    AddUserToFacilityComponent,
   ],
 })
 export class AppModule { }
