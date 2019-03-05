@@ -261,7 +261,7 @@
                           <td>{{roleStats(role.id, facility.di).patients}}</td>
                           <td>{{roleStats(role.id, facility.di).managing}}</td>
                           <td>{{roleStats(role.id, facility.di).careTeam}}</td>
-                          <td></td>
+                          <td><i *ngIf="isBilling(role)" class="ss-standard ss-check"></i></td>
                           <td>
                             <button class="button button--icon button--icon--small" (click)="confirmRemoveRole(role)">
                               <i class="ss-delete"></i>
@@ -321,11 +321,14 @@
               <div class="divider"></div>
             </ng-container>
           </ng-container>
+          <a class="button button--iconText marTop48">
+            <i class="ss-standard ss-plus"></i> Add Facility
+          </a>
         </div> <!--/.accordion__contents-->
       </div> <!--/.accordion__body-->
     </div> <!--/.accordion (for roles)-->
   </div> <!--/ BC section-->
-  <a *ngIf="employee" [routerLink]="['/patients/active', employee.id]" class="button button--iconText">
+  <a *ngIf="employee" [routerLink]="['/patients/active', employee.id]" class="button button--iconText marTop48">
     <i class="ss-standard ss-view"></i> View Patients List
   </a>
 </div> <!--/.ssContainer-->

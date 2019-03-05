@@ -220,7 +220,11 @@ export class UserComponent implements OnDestroy, OnInit {
       width: '384px',
     }).subscribe(res => {
       if (res === okText) {
-        
+        this.store.EmployeeProfile.update(this.employee.id, {
+          facilities: this.employee.facilities.filter(f => f.id !== facility.id).map(f => f.id),
+        }).subscribe(res => {
+          this.employee.facilities = this.employee.facilities.filter(f => f.id !== facility.id);
+        })
       }
     });
   }
@@ -469,6 +473,14 @@ export class UserComponent implements OnDestroy, OnInit {
         })
       }
     })
+  }
+
+  public openAddFacility() {
+
+  }
+
+  public isBilling(role) {
+    return role.name.toLowerCase().indexOf('billing') > -1;
   }
 
   public isFacilityManager(facilityId) {
