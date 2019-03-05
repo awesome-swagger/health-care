@@ -1,1 +1,16 @@
 @import "../../../modules/modals/modal-outlet.component.scss";
+
+
+.ellipsis {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 168px;
+}
+
+.ellipsisHeader {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 250px;
+}

@@ -1,1 +1,19 @@
 @import '../../../modules/modals/modal-outlet.component.scss';
+
+.input {
+  max-width: 120px;
+  min-width: 120px;
+  width: 120px;
+
+  &--textarea {
+    max-width: 100%;
+    min-width: 100%;
+    width: 100%;
+  }
+}
+
+.styledSelect {
+  max-width: 120px;
+  min-width: 120px;
+  width: 120px;
+}

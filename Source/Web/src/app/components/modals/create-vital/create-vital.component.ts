@@ -53,6 +53,13 @@ export class CreateVitalComponent implements OnInit {
     });
   }
 
+  public clickPreview() {
+    this.modal.close({
+      'next': 'preview',
+      'vital': this.vital,
+    });
+  }
+
   public answerTypeIsNumber(answerType) {
     return answerType === 'number' || answerType === 'float' || answerType === 'integer';
   }
