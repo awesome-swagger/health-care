@@ -109,7 +109,6 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
         plan_template__id: this.planTemplateId,
       }).subscribe((vitals) => {
         this.vitalTemplates = vitals;
-        this.previewVital('add-vital', this.vitalTemplates[0]);
       });
       this.store.PatientTaskTemplate.readListPaged({
         plan_template__id: this.planTemplateId,
