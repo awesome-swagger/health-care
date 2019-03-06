@@ -11,6 +11,7 @@ import { StoreService } from '../../../services';
 export class CreateAssessmentComponent implements OnInit {
 
   public data = null;
+  public isEditing = false;
   public assessment = null;
   public assessmentTracking = null;
   public nameInput = '';
@@ -26,6 +27,7 @@ export class CreateAssessmentComponent implements OnInit {
     console.log(this.data);
     if (this.data) {
       this.assessment = this.data.assessment ? this.data.assessment : {};
+      this.isEditing = this.data.isEditing ? this.data.isEditing : false;
       if (this.assessment) {
         this.nameInput = this.assessment.name;
         if (this.assessment.tracks_outcome) {
@@ -85,7 +87,10 @@ export class CreateAssessmentComponent implements OnInit {
   public createQuestion(question) {
     let promise = new Promise((resolve, reject) => {
       let createSub = this.store.AssessmentQuestion.create(question).subscribe(
-        (res) => resolve(res),
+        (res) => {
+          question.id = res.id;
+          resolve(res);
+        },
         (err) => reject(err),
         () => {
           createSub.unsubscribe();
@@ -157,7 +162,10 @@ export class CreateAssessmentComponent implements OnInit {
         let assessmentWithoutQuestions = _omit(this.assessment, 'questions');
         let createSub = this.store.AssessmentTaskTemplate.create(assessmentWithoutQuestions)
           .subscribe(
-            (res) => resolve(res),
+            (res) => {
+              this.assessment.id = res.id;
+              resolve(res)
+            },
             (err) => reject(err),
             () => {
               createSub.unsubscribe();

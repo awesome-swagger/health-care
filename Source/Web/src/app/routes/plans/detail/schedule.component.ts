@@ -74,8 +74,8 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
           this.getPlanTemplateAverage(this.planTemplate.id, this.organization.id).then((average: any) => {
             this.planTemplateAverage = average;
             this.totalPatients = this.planTemplateAverage ? this.planTemplateAverage.total_patients : 0;
-            this.getPlanTemplateSchedule(this.planTemplate.id);
           });
+          this.getPlanTemplateSchedule(this.planTemplate.id);
         });
       });
     });
@@ -528,11 +528,11 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
         if (!res) return;
         if (res === 'create-new') {
           setTimeout(() => {
-            this.editAssessment(null);
+            this.editAssessment(null, false);
           }, 10);
         } else {
           setTimeout(() => {
-            this.editAssessment(res);
+            this.editAssessment(res, true);
           }, 10);
         }
       },
@@ -543,11 +543,12 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
     );
   }
 
-  public editAssessment(assessment) {
+  public editAssessment(assessment, isEditing) {
     let modalSub = this.modals.open(CreateAssessmentComponent, {
       closeDisabled: false,
       data: {
         assessment: assessment,
+        isEditing: isEditing,
         totalPatients: this.totalPatients,
         planTemplateId: this.planTemplateId,
       },
@@ -721,20 +722,25 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
           break;
         case 'editVital':
           setTimeout(() => {
-            this.editVital(data.data);
+            this.editVital(data.data, true);
           }, 10);
           break;
+        case 'createVital':
+          setTimeout(() => {
+            this.editVital(data.data, false);
+          }, 10);
         default:
            break;
       }
     });
   }
 
-  public editVital(vital) {
+  public editVital(vital, isEditing) {
     this.modals.open(CreateVitalComponent, {
       closeDisabled: false,
       data: {
         vital: vital,
+        isEditing: isEditing,
         planTemplateId: this.planTemplateId,
         totalPatients: this.totalPatients,
       },
@@ -798,7 +804,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       }
       if (res.next === 'edit-vital') {
         setTimeout(() => {
-          this.editVital(res.vital);
+          this.editVital(res.vital, true);
         }, 10);
       }
     });

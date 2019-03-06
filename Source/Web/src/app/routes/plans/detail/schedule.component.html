@@ -388,7 +388,7 @@
               <td><i *ngIf="asmt.tracks_outcome" class="ss-standard ss-check iconSmall"></i></td>
               <td><i *ngIf="asmt.tracks_satisfaction" class="ss-standard ss-check iconSmall"></i></td>
               <td class="noPad" width="48px">
-                <button class="button button--icon button--icon--small" (click)="editAssessment(asmt)">
+                <button class="button button--icon button--icon--small" (click)="editAssessment(asmt, true)">
                   <i class="ss-write"></i>
                 </button>
               </td>
@@ -518,7 +518,7 @@
               <td>{{vital.appear_time | timeTransform | date: 'shortTime'}}</td>
               <td>{{vital.due_time | timeTransform | date: 'shortTime'}}</td>
               <td class="noPad" width="48px">
-                <button class="button button--icon button--icon--small" (click)="editVital(vital)">
+                <button class="button button--icon button--icon--small" (click)="editVital(vital, true)">
                   <i class="ss-write"></i>
                 </button>
               </td>

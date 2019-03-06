@@ -63,7 +63,7 @@ export class AddVitalComponent implements OnInit {
       name: this.newVitalName,
     }).subscribe(
       (vitalTemplate) => {
-        this.modalRespData.nextAction = 'editVital';
+        this.modalRespData.nextAction = 'createVital';
         this.modalRespData.data = vitalTemplate;
         this.modal.close(this.modalRespData);
       },
@@ -86,17 +86,6 @@ export class AddVitalComponent implements OnInit {
     this.modalRespData.nextAction = 'editVital';
     this.modalRespData.data = vital;
     this.modal.close(this.modalRespData);
-  }
-
-  public deleteVitalTemplate(e, vital) {
-    e.stopPropagation();
-    this.store.VitalsTaskTemplate.destroy(vital.id).subscribe(
-      (data) => {
-
-      },
-      (err) => {},
-      () => {}
-    );
   }
 
   public openFullPreview(vital) {
