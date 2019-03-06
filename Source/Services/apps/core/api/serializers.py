@@ -558,6 +558,7 @@ class EmployeeIDSerializer(serializers.ModelSerializer):
 # from the database.
 class FacilitySerializer(RepresentationMixin, serializers.ModelSerializer):
     is_manager = serializers.SerializerMethodField()
+    active_users = serializers.SerializerMethodField()
 
     def get_is_manager(self, obj):
         request = self.context.get('request')
@@ -567,6 +568,9 @@ class FacilitySerializer(RepresentationMixin, serializers.ModelSerializer):
         if not employee_profile:
             return False
         return obj in request.user.employee_profile.facilities_managed.all()
+
+    def get_active_users(self, obj):
+        return obj.employees.filter(status="active").count()
 
     def create(self, validated_data):
         instance = super(FacilitySerializer, self).create(validated_data)
@@ -590,12 +594,14 @@ class FacilitySerializer(RepresentationMixin, serializers.ModelSerializer):
             'addr_zip',
             'created',
             'modified',
+            'active_users',
         )
         read_only_fields = (
             'id',
             'is_manager',
             'created',
             'modified',
+            'active_users'
         )
         nested_serializers = [
             {
