@@ -497,6 +497,7 @@ class VitalTaskTemplateSerializer(serializers.ModelSerializer):
             'id',
             'plan_template',
             'name',
+            'instructions',
             'start_on_day',
             'frequency',
             'repeat_amount',

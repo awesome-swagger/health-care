@@ -405,7 +405,8 @@ class VitalTaskTemplate(AbstractTaskTemplate):
         related_name='vital_templates',
         on_delete=models.CASCADE
     )
-    name = models.CharField(max_length=254)
+    name = models.CharField(max_length=100)
+    instructions = models.CharField(max_length=240, null=True, blank=True)
 
     class Meta:
         verbose_name = _('Vital Task Template')
