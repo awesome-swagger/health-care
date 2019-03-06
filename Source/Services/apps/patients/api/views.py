@@ -127,12 +127,10 @@ class PatientProfileViewSet(viewsets.ModelViewSet):
                 )
             else:
                 queryset = queryset.filter(care_plans__id__in=assigned_plans)
-        # If user is a patient, only return the organization their facility
-        # belongs to
         elif user.is_patient:
             queryset = queryset.filter(user=user)
 
-        return queryset
+        return queryset.distinct()
 
     @action(methods=['get'], detail=False)
     def overview(self, request, *args, **kwargs):
@@ -314,7 +312,7 @@ class ProblemAreaViewSet(viewsets.ModelViewSet):
             )
         else:
             qs = qs.filter(plan__patient__care_plans__id__in=assigned_plans)
-        return qs
+        return qs.distinct()
 
     def perform_destroy(self, instance):
         instance.is_active = False

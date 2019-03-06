@@ -365,9 +365,9 @@ class CarePlanViewSet(viewsets.ModelViewSet):
             else:
                 assigned_roles = employee_profile.assigned_roles.values_list('id', flat=True)
                 qs = qs.filter(care_team_members__id__in=assigned_roles)
-            return qs.all()
+            return qs.distinct()
         if patient_profile is not None:
-            return patient_profile.care_plans.all()
+            return patient_profile.care_plans.distinct()
         return CarePlan.objects.none()
 
     @action(methods=['get'], detail=True)

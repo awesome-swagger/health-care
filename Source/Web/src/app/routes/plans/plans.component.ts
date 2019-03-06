@@ -25,7 +25,7 @@ export class PlansComponent implements OnDestroy, OnInit {
   public carePlanTemplates = [];
   public serviceAreas = [];
   public planTemplatesGrouped = [];
-  public hideInactiveTemplates = false;
+  public hideInactiveTemplates = true;
 
   public showServiceAreaHelp = false;
   public showCarePlanHelp = false;

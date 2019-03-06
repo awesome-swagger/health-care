@@ -137,7 +137,8 @@ export class EditTaskComponent implements OnInit {
       this.taskForm.addControl('category', new FormControl(task.category));
     }
     if (this.getTaskType().type === 'team') {
-      this.taskForm.addControl('role', new FormControl(task.role.id));
+      let roleValue = task.role ? task.role.id : null;
+      this.taskForm.addControl('role', new FormControl(roleValue));
     }
   }
 

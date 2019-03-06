@@ -127,7 +127,7 @@
           </thead>
           <tbody>
             <tr *ngFor="let task of teamManagerTemplates">
-              <td class="left">{{task.name | titlecase}} </td>
+              <td class="taskName left">{{task.name | titlecase}} </td>
               <td>{{task.start_on_day}}</td>
               <td class="left">{{task.frequency | frequencyTransform | titlecase}}</td>
               <td class="left"> {{task.repeat_amount != -1 ? task.repeat_amount + ' times' :'Until Plan Ends'}}</td>
@@ -147,7 +147,7 @@
           </tbody>
         </table>
         <button class="button button--iconText marBottom64" (click)="addCMTask()" >
-          <i class="ss-plus"></i> Add CM Task
+          <i class="ss-plus"></i> Add Task
         </button>
         <h3 class="noMargin">Care Team Tasks (CT) ({{teamMemberTemplates.length}})</h3>
         <!-- TEAM TASKS -->
@@ -195,7 +195,7 @@
           </thead>
           <tbody>
             <tr *ngFor="let task of teamMemberTemplates">
-              <td class="left">{{task.name | titlecase}} </td>
+              <td class="taskName left">{{task.name | titlecase}} </td>
               <td class="left">
                 <span *ngIf="task.role">{{task.role.name}}</span>
                 <span *ngIf="!task.role">Not Set</span>
@@ -219,7 +219,7 @@
           </tbody>
         </table>
         <button class="button button--iconText" (click)="addCTTask()" >
-          <i class="ss-plus"></i> Add CT Task
+          <i class="ss-plus"></i> Add Task
         </button>
       </div> <!--/.accordion__contents-->
     </div> <!--/.accordion__body-->
@@ -278,7 +278,7 @@
           </thead>
           <tbody>
             <tr *ngFor="let pTask of patientTaskTemplates">
-              <td class="left">{{pTask.name | titlecase}}</td>
+              <td class="taskName left">{{pTask.name | titlecase}}</td>
               <td>{{pTask.start_on_day}}</td>
               <td class="left">{{pTask.frequency | frequencyTransform | titlecase}}</td>
               <td class="left">{{pTask.repeat_amount != -1 ? pTask.repeat_amount :'Until Plan Ends'}}</td>
@@ -339,7 +339,7 @@
               <th class="thSortable">
                 <span class="thSortable__text">Due</span>
               </th>
-              <th class="thSortable">
+              <th class="thSortable tooltipAnchorFix">
                 <div class="tool">
                   <span class="thSortable__text">Outcome</span>
                   <div class="tool__anchor">
@@ -356,7 +356,7 @@
                   </div> <!--/.tool__anchor-->
                 </div> <!--/.tool-->
               </th>
-              <th class="thSortable">
+              <th class="thSortable tooltipAnchorFix">
                 <div class="tool">
                   <span class="thSortable__text">Satisfaction</span>
                   <div class="tool__anchor">
@@ -379,7 +379,7 @@
           </thead>
           <tbody>
             <tr *ngFor="let asmt of assessmentTemplates">
-              <td class="left">{{asmt.name | titlecase}}</td>
+              <td class="taskName left">{{asmt.name | titlecase}}</td>
               <td>{{asmt.start_on_day}}</td>
               <td class="left"><span *ngIf="asmt.frequency">{{asmt.frequency | frequencyTransform | titlecase}}</span></td>
               <td class="left">{{asmt.repeat_amount != -1 ? asmt.repeat_amount :'Until Plan Ends'}}</td>
@@ -511,7 +511,7 @@
           </thead>
           <tbody>
             <tr *ngFor="let vital of vitalTemplates">
-              <td class="left">{{vital.name}}</td>
+              <td class="taskName left">{{vital.name}}</td>
               <td>{{vital.start_on_day}}</td>
               <td class="left">{{vital.frequency | frequencyTransform | titlecase}}</td>
               <td class="left">{{vital.repeat_amount != -1 ? vital.repeat_amount :'Until Plan Ends'}}</td>
@@ -582,7 +582,7 @@
           </thead>
           <tbody>
             <tr *ngFor="let msg of messageQueues">
-              <td class="left">{{msg.name }}</td>
+              <td class="taskName left">{{msg.name}}</td>
               <td class="left">{{msg.type|titlecase}}</td>
               <td>{{msg.messages.length}}</td>
               <td class="noPad" width="48px">
