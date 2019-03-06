@@ -44,6 +44,8 @@ from .mixins import RepresentationMixin
 
 class OrganizationSerializer(serializers.ModelSerializer):
     is_manager = serializers.SerializerMethodField()
+    renewal_date = serializers.SerializerMethodField()
+    available_users = serializers.SerializerMethodField()
 
     def get_is_manager(self, obj):
         request = self.context.get('request')
@@ -53,6 +55,14 @@ class OrganizationSerializer(serializers.ModelSerializer):
         if employee_profile is None:
             return False
         return obj in employee_profile.organizations_managed.all()
+
+    def get_renewal_date(self, obj):
+        is_manager = self.get_is_manager(obj)
+        return obj.renewal_date if is_manager else None
+
+    def get_available_users(self, obj):
+        is_manager = self.get_is_manager(obj)
+        return obj.available_users if is_manager else None
 
     class Meta:
         model = Organization
@@ -67,11 +77,15 @@ class OrganizationSerializer(serializers.ModelSerializer):
             'addr_zip',
             'created',
             'modified',
+            'renewal_date',
+            'available_users'
         )
         read_only_fields = (
             'id',
             'created',
             'modified',
+            'renewal_date',
+            'available_users'
         )
 
 
