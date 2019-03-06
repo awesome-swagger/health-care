@@ -88,6 +88,17 @@ export class AddVitalComponent implements OnInit {
     this.modal.close(this.modalRespData);
   }
 
+  public deleteVitalTemplate(e, vital) {
+    e.stopPropagation();
+    this.store.VitalsTaskTemplate.destroy(vital.id).subscribe(
+      (data) => {
+
+      },
+      (err) => {},
+      () => {}
+    );
+  }
+
   public openFullPreview(vital) {
     this.modalRespData.nextAction = 'fullVitalPreview';
     this.modalRespData.data = this.vitalTemplatePreview.vital;

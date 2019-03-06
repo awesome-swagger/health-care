@@ -26,7 +26,7 @@
               <button class="button button--icon button--icon--small" (click)="editVitalTemplate($event, vital)">
                 <i class="ss-write"></i>
               </button>
-              <button class="button button--icon button--icon--small">
+              <button class="button button--icon button--icon--small" (click)="deleteVitalTemplate($event, vital)">
                 <i class="ss-delete"></i>
               </button>
             </div>
@@ -56,7 +56,6 @@
       <button class="button button--2nd" (click)="close()">
         Cancel
       </button>
-      <!--TODO: Clicking "next" triggers the edit-task modal, for scheduling the vital within the care plan-->
       <button class="button" [disabled]="!vitalTemplatePreview.vital" (click)="editVitalTemplate($event, vitalTemplatePreview.vital)">
         Next
       </button>

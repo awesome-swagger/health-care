@@ -105,7 +105,7 @@ export class CreateStreamComponent implements OnInit {
     this.stream.messages.forEach((message, i) => {
       message.queue = this.stream.id;
       if (!message.id) {
-        promises.push(this.createMessage(message));
+        promises.push(this.createMessage(message).then((res: any) => message.id = res.id));
       } else {
         promises.push(this.updateMessage(message));
       }
@@ -154,13 +154,21 @@ export class CreateStreamComponent implements OnInit {
   }
 
   public clickDeleteMessage(message) {
-    let messageIndex = this.stream.messages.findIndex((obj) => {
-      return obj.id === message.id;
-    });
-    this.deleteMessage(message).then(() => {
+    if (!message.id) {
+      let messageIndex = this.stream.messages.findIndex((obj) => {
+        return obj === message;
+      });
       this.closeDeleteMessages();
       this.stream.messages.splice(messageIndex, 1);
-    });
+    } else {
+      let messageIndex = this.stream.messages.findIndex((obj) => {
+        return obj.id === message.id;
+      });
+      this.deleteMessage(message).then(() => {
+        this.closeDeleteMessages();
+        this.stream.messages.splice(messageIndex, 1);
+      });
+    }
   }
 
   public clickSave() {
