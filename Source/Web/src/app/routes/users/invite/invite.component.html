@@ -36,7 +36,7 @@
         <th class="left">
           <span>Org/Facility</span>
         </th>
-        <th class="left">
+        <th>
           <span>Admin</span>
         </th>
         <th></th>
@@ -63,7 +63,7 @@
         <td class="left hideOverflow">
           {{user.facility?.name}}
         </td>
-        <td class="left hideOverflow">
+        <td class="hideOverflow">
           <i *ngIf="isAdmin(user)" class="ss-standard ss-check"></i>
         </td>
         <td class="noPad">

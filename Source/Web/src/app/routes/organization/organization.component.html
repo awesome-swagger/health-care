@@ -28,7 +28,7 @@
         </div>
         <div *ngIf="organization?.addr_street">
           <label>Address</label>
-          {{organization?.addr_street}} {{organization?.addr_suite}}<br />
+          {{organization?.addr_street}}{{organization?.addr_suite ? ',' : ''}} {{organization?.addr_suite}}<br />
           {{organization?.addr_city}}, {{organization?.addr_state}} {{organization?.addr_zip}}
         </div>
       </div>
@@ -53,7 +53,7 @@
               {{facility.name}}
             </td>
             <td class="left">
-              {{facility.addr_street}} {{facility.addr_suite}}<br />
+              {{facility.addr_street}}{{facility?.addr_suite ? ',' : ''}} {{facility.addr_suite}}<br />
               {{facility.addr_city}}{{(facility.addr_city && facility.addr_state) ? ',' : ''}} {{facility.addr_state}} {{facility.addr_zip}}
             </td>
             <td class="noPad">
@@ -93,7 +93,7 @@
               {{facility.name}}
             </td>
             <td class="left">
-              {{facility.addr_street}}<br />
+              {{facility.addr_street}}{{facility?.addr_suite ? ',' : ''}} {{facility?.addr_suite}}<br />
               {{facility.addr_city}}, {{facility.addr_state}} {{facility.addr_zip}}
             </td>
             <td class="noPad">

@@ -169,11 +169,12 @@ export class PatientComponent implements OnDestroy, OnInit {
   public getPatientDiagnoses(patient) {
     patient.diagnosis.forEach(d => {
       this.store.PatientDiagnosis.read(d).subscribe(
-        (res:any) => {
-          this.patientDiagnosesRaw.push(res);
-          this.store.Diagnosis.read(res.diagnosis).subscribe(
+        (diagnosis:any) => {
+          this.patientDiagnosesRaw.push(diagnosis);
+          this.store.Diagnosis.read(diagnosis.diagnosis).subscribe(
             (res:any) => {
-              this.patientDiagnoses.push(res)
+              res.patient_diagnosis = diagnosis;
+              this.patientDiagnoses.push(res);
             }
           );
         }
@@ -184,9 +185,6 @@ export class PatientComponent implements OnDestroy, OnInit {
   public getPatientMedications(patientId) {
     this.store.PatientMedication.readListPaged({ patient: patientId }).subscribe(
       res => {
-        console.log('vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv');
-        console.log(res);
-        console.log('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^');
         this.patientMedications = res;
       }
     )
@@ -309,24 +307,31 @@ export class PatientComponent implements OnDestroy, OnInit {
     this.modals.open(AddDiagnosisComponent, {
       width: '512px',
       data: {
+        type: 'add',
         patient: this.patient,
       }
     }).subscribe((res) => {
-        this.store.Diagnosis.read(res.diagnosis).subscribe(
-          (res:any) => {
-            this.patientDiagnoses.push(res)
-          }
-        );
+      if (!res) return;
+      this.store.Diagnosis.read(res.diagnosis).subscribe(
+        (res:any) => {
+          this.patientDiagnoses.push(res)
+        }
+      );
     });
   }
 
-  public editDiagnosis() {
-    this.modals.open(EditDiagnosisComponent, {
+  public editDiagnosis(diagnosis) {
+    this.modals.open(AddDiagnosisComponent, {
+      data: {
+        type: 'edit',
+        patient: this.patient,
+        diagnosis: diagnosis,
+      },
       width: '576px',
     }).subscribe(() => {});
   }
 
-  public deleteDiagnosis(diagnosis) {
+  public deleteDiagnosis(diagnosis, index) {
     const cancelText = 'Cancel';
     const okText = 'Continue';
     this.modals.open(ConfirmModalComponent, {
@@ -339,7 +344,10 @@ export class PatientComponent implements OnDestroy, OnInit {
       }
     }).subscribe(res => {
       if (res === okText) {
-        this.store.PatientDiagnosis.destroy(_find(this.patientDiagnosesRaw, d => d.diagnosis = diagnosis).id).subscribe(() => {})
+        this.store.PatientDiagnosis.destroy(_find(this.patientDiagnosesRaw, d => d.diagnosis = diagnosis).id).subscribe(() => {
+          this.patientDiagnoses = this.patientDiagnoses.filter((d, i) => i !== index)
+          
+        })
       }
     })
   }
@@ -400,6 +408,7 @@ export class PatientComponent implements OnDestroy, OnInit {
     this.modals.open(MedicationComponent, {
       width: '576px',
       data: {
+        type: 'add',
         patient: this.patient,
       },
     }).subscribe((res) => {
@@ -409,18 +418,33 @@ export class PatientComponent implements OnDestroy, OnInit {
     });
   }
 
-  public editMedication() {
+  public editMedication(medication) {
     this.modals.open(MedicationComponent, {
       width: '576px',
-    }).subscribe(() => {});
+      data: {
+        type: 'edit',
+        patient: this.patient,
+        medication,
+      }
+    }).subscribe((res) => {
+      if (res === 'delete') {
+        this.patientMedications = this.patientMedications.filter(m => m.id !== medication.id);
+      }
+    });
   }
 
   public deleteMedication(id) {
     this.modals.open(DeleteMedicationComponent, {
+      data: {
+        medicationId: id,
+      },
       width: '348px',
-    }).subscribe((
-
-    ) => {});
+    }).subscribe((res) => {
+      if (res) {
+        if (!res) return;
+        this.patientMedications = this.patientMedications.filter(m => m.id !== id);
+      }
+    });
   }
 
   public confirmMakePatientInactive() {

@@ -108,6 +108,16 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
         users.forEach(user => {
           this.employeeChecked[user.id] = true;
         })
+
+        this.route.params.subscribe(params => {
+          if (!params) return;
+          if (params.userId) {
+            users.forEach(user => {
+              this.employeeChecked[user.id] = false;
+            })
+            this.employeeChecked[params.userId] = true;
+          }
+        })
       })
 
     },

@@ -5,6 +5,7 @@ import {
   filter as _filter
 } from 'lodash';
 import * as moment from 'moment';
+import { P } from '@angular/core/src/render3';
 
 @Component({
   selector: 'app-medication',
@@ -68,6 +69,18 @@ export class MedicationComponent implements OnInit {
       this.patient = this.data.patient;
       // Get the assigned team members for this care plan
     }
+
+    if (this.data && this.data.medication) {
+      console.log('vvvvvvvvvvvvvvvvvvvvvvvvvvvvv')
+      console.log(this.data.medication)
+      console.log('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
+      this.selectedMedication = this.data.medication.medication;
+      this.datePrescribed = moment(this.data.medication.date_prescribed);
+      this.doseMg = this.data.medication.dose_mg;
+      this.durationDays = this.data.medication.duration_days;
+      this.selectedEmployee = this.data.medication.prescribing_practitioner;
+      this.employeeSearchString = this.employeeFullName;
+    }
   }
 
   public get searchEmployees() {
@@ -116,20 +129,50 @@ export class MedicationComponent implements OnInit {
       !this.selectedEmployee || !this.datePrescribed);
   }
 
+  public clickDelete() {
+    if (this.data.type === 'edit') {
+      this.store.PatientMedication.destroy(this.data.medication.id).subscribe(res => {
+        this.modal.close('delete');
+      })
+    }
+  }
+
   public clickCancel() {
     this.modal.close(null);
   }
 
   public clickSave() {
-    this.store.PatientMedication.create({
-      patient: this.patient.id,
-      medication: this.selectedMedication,
-      dose_mg: this.doseMg,
-      date_prescribed: this.datePrescribed.format('YYYY-MM-DD'),
-      duration_days: this.durationDays,
-      prescribing_practitioner: this.selectedEmployee.id,
-    }).subscribe(res => {
-      this.modal.close(res);
-    })
+    if (this.data.type === 'add') {
+      console.log('vvvvvvvvvvvvvvvvvvvvvvvvvvvvv')
+      console.log(this.selectedMedication)
+      console.log('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
+      this.store.PatientMedication.create({
+        patient: this.patient.id,
+        medication: this.selectedMedication.id,
+        dose_mg: this.doseMg,
+        date_prescribed: this.datePrescribed.format('YYYY-MM-DD'),
+        duration_days: this.durationDays,
+        prescribing_practitioner: this.selectedEmployee.id,
+      }).subscribe(res => {
+        this.modal.close(res);
+      })
+    }
+    if (this.data.type === 'add') {
+      this.store.PatientMedication.update(this.data.medication.id, {
+        patient: this.patient.id,
+        medication: this.selectedMedication.id,
+        dose_mg: this.doseMg,
+        date_prescribed: this.datePrescribed.format('YYYY-MM-DD'),
+        duration_days: this.durationDays,
+        prescribing_practitioner: this.selectedEmployee.id,
+      }).subscribe(res => {
+        this.modal.close(res);
+      })
+    }
   }
+
+  public compareFn(c1, c2) {
+    return c1 && c2 ? c1.id === c2.id : c1 === c2;
+  }
+
 }

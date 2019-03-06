@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { StoreService } from '../../../../services';
+import { StoreService, AuthService } from '../../../../services';
 import { ModalService } from '../../../../modules/modals';
 import {
   filter as _filter
@@ -14,15 +14,22 @@ import * as moment from 'moment';
 export class AddDiagnosisComponent implements OnInit {
 
   public searchString: string = '';
+  public dxSearchString:string = '';
   public employeeSearchString:string = '';
   public diagnoses = [];
   public employees = [];
+  public facilities = [];
   public selectedDiagnosis = null;
   public selectedEmployee = null;
+  public selectedDate = null;
+  public selectedFacility = null;
 
   public data = null;
 
+  public showDatePicker;
+
   constructor(
+    private auth: AuthService,
     private store: StoreService,
     private modals: ModalService,
   ) { }
@@ -30,6 +37,16 @@ export class AddDiagnosisComponent implements OnInit {
   public close;
 
   ngOnInit() {
+    if (this.data && this.data.patient) {
+      this.selectedFacility = this.data.patient.facility;
+    }
+    if (this.data && this.data.diagnosis) {
+      console.log(this.data.diagnosis)
+      this.selectedDiagnosis = this.data.diagnosis;
+      this.searchString = this.data.diagnosis.name;
+      this.dxSearchString = this.data.diagnosis.dx_code;
+      this.selectedDate = moment(this.data.diagnosis.patient_diagnosis.date_identified);
+    }
     let diagnosisSub = this.store.Diagnosis.readListPaged().subscribe(
       diagnoses => {
         this.diagnoses = diagnoses;
@@ -41,17 +58,38 @@ export class AddDiagnosisComponent implements OnInit {
     let employeeSub = this.store.EmployeeProfile.readListPaged().subscribe(
       users => {
         this.employees = users;
+        if (this.data && this.data.diagnosis) {
+          const name = this.data.diagnosis.patient_diagnosis.diagnosing_practitioner.split(' ');
+          this.selectedEmployee = this.employees.find(e => {
+            return e.user.first_name === name[0] && e.user.last_name === name[1];
+          })
+          this.employeeSearchString = this.employeeFullName; 
+        }
       },
       err => {},
       () => employeeSub.unsubscribe()
     )
+
+    let authSub = this.auth.organization$.subscribe(org => {
+      if (!org) return;
+      this.store.Organization.detailRoute('GET', org.id, 'facilities').subscribe((res:any) => {
+        this.facilities = res.results;
+      })
+    })
   }
 
   public get searchDiagnoses() {
     if (this.diagnoses) {
       return _filter(this.diagnoses, d => d.name && d.name.toLowerCase().indexOf(this.searchString.toLowerCase()) > -1)
     }
-    return null;
+    return [];
+  }
+
+  public get searchDx() {
+    if (this.diagnoses) {
+      return _filter(this.diagnoses, d => d.dx_code && d.dx_code.toLowerCase().indexOf(this.dxSearchString.toLowerCase()) > -1)
+    }
+    return [];
   }
 
   public get searchEmployees() {
@@ -79,13 +117,17 @@ export class AddDiagnosisComponent implements OnInit {
     return '';
   }
 
+  public setSelectedDay(e) {
+    this.selectedDate = e;
+  }
+
   public submit() {
-    if (this.selectedDiagnosis) {
+    if (this.selectedDiagnosis && this.data.type === 'add') {
       this.store.PatientDiagnosis.create({
             type: "N/A",
-            date_identified: moment().format('YYYY-MM-DD'),
+            date_identified: this.selectedDate.format('YYYY-MM-DD'),
             diagnosing_practitioner: this.employeeFullName,
-            facility: null,
+            facility: this.selectedFacility ? this.selectedFacility.id : '',
             patient: this.data.patient.id,
             diagnosis: this.selectedDiagnosis.id
       }).subscribe((res) => {
@@ -97,6 +139,19 @@ export class AddDiagnosisComponent implements OnInit {
         this.modals.close(res);
       })
     }
+    if (this.selectedDiagnosis && this.data.type === 'edit') {
+      this.store.PatientDiagnosis.update(this.data.diagnosis.patient_diagnosis.id, {
+        date_identified: this.selectedDate.format('YYYY-MM-DD'),
+        diagnosing_practitioner: this.employeeFullName,
+        facility: this.selectedFacility ? this.selectedFacility.id : '',
+        diagnosis: this.selectedDiagnosis.id
+      }).subscribe((res) => {
+        this.modals.close(res);
+      })
+    }
   }
 
+  public compareFn(c1, c2) {
+    return c1 && c2 ? c1.id === c2.id : c1 === c2;
+  }
 }

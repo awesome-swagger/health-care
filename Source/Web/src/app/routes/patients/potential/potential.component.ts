@@ -38,6 +38,7 @@ export class PotentialPatientsComponent implements OnDestroy, OnInit {
   public multi3Open;
   public multi4Open;
 
+  private orgSub = null;
   private facilitiesSub = null;
 
   constructor(
@@ -47,46 +48,50 @@ export class PotentialPatientsComponent implements OnDestroy, OnInit {
   ) { }
 
   public ngOnInit() {
-    this.facilitiesSub = this.auth.facilities$.subscribe((facilities) => {
-      if (facilities === null) {
-        return;
-      }
-      this.facilities = facilities;
-      this.facilities.forEach(f => {
-        this.accordOpen[f.id] = this.accordOpen[f.id] || false;
-      })
+    this.orgSub = this.auth.organization$.subscribe(org => {
+      if (!org) return;
 
-      let potentialPatientsSub = this.store.PotentialPatient.readListPaged().subscribe(
-        (potentialPatients) => {
-          console.log(potentialPatients);
-          this.potentialPatients = potentialPatients;
-          console.log('vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv');
-          console.log(this.facilities);
-          console.log('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^');
-
-          this.potentialPatients.forEach(p => {
-            p.facility && p.facility.forEach(f => {
-              const facility = _find(this.facilities, fac => fac.id === f);
-              if (facility) {
-                if (facility.potentialPatients && !_find(facility.potentialPatients, x => x.id === p.id)) {
-                  facility.potentialPatients.push(p);
-                } else {
-                  facility.potentialPatients = [p];
-                }
-              }
-            })
-          })
-
-          this.carePlans.forEach((p) => {
-            this.activeCarePlans[p] = true;
-          })
-        },
-        (err) => {},
-        () => {
-          potentialPatientsSub.unsubscribe();
+      this.facilitiesSub = this.store.Organization.detailRoute('GET', org.id, 'facilities').subscribe((facilities:any) => {
+        if (facilities === null) {
+          return;
         }
-      );
-    });
+        this.facilities = facilities.results;
+        this.facilities.forEach(f => {
+          this.accordOpen[f.id] = this.accordOpen[f.id] || false;
+        })
+
+        let potentialPatientsSub = this.store.PotentialPatient.readListPaged().subscribe(
+          (potentialPatients) => {
+            console.log(potentialPatients);
+            this.potentialPatients = potentialPatients;
+            console.log('vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv');
+            console.log(this.facilities);
+            console.log('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^');
+
+            this.potentialPatients.forEach(p => {
+              p.facility && p.facility.forEach(f => {
+                const facility = _find(this.facilities, fac => fac.id === f);
+                if (facility) {
+                  if (facility.potentialPatients && !_find(facility.potentialPatients, x => x.id === p.id)) {
+                    facility.potentialPatients.push(p);
+                  } else {
+                    facility.potentialPatients = [p];
+                  }
+                }
+              })
+            })
+
+            this.carePlans.forEach((p) => {
+              this.activeCarePlans[p] = true;
+            })
+          },
+          (err) => {},
+          () => {
+            potentialPatientsSub.unsubscribe();
+          }
+        );
+      });
+    })
 
     let employeesSub = this.store.EmployeeProfile.readListPaged().subscribe(
       (employees) => {

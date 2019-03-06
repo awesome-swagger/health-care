@@ -20,7 +20,7 @@
                 <option *ngFor="let title of titles" [ngValue]="title">{{title.abbreviation}}</option>
               </select>
             </div>
-            <button class="button button--icon button--flex" (click)="editName=!editName">
+            <button class="button button--icon button--flex" (click)="editName=!editName; first_name = employee.user.first_name; last_name = employee.user.last_name">
               <i class="ss-undo"></i>
             </button>
             <button class="button button--icon button--flex" (click)="saveUserName(); editName=!editName">

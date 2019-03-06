@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { ModalService } from '../../../../modules/modals';
+import { StoreService } from '../../../../services';
 
 @Component({
   selector: 'app-delete-medication',
@@ -9,12 +11,23 @@ export class DeleteMedicationComponent implements OnInit {
 
   public data = null;
 
-  constructor() {
-
-  }
+  constructor(
+    private modals: ModalService,
+    private store: StoreService,
+  ) { }
 
   public ngOnInit() {
     console.log(this.data);
+  }
+
+  clickCancel() {
+    this.modals.close(null);
+  }
+
+  clickSave() {
+    this.store.PatientMedication.destroy(this.data.medicationId).subscribe(res => {
+      this.modals.close(true);
+    })
   }
 
 }

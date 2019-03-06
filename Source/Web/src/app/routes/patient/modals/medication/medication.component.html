@@ -2,22 +2,15 @@
   <!--TODO: Show the following span if adding a medication-->
   <!--<span>Add</span>-->
   <!--TODO: Show the following span if editing a medication-->
-  <span>Edit</span>
+  <span>{{data?.type === 'add' ? 'Add' : 'Edit'}}</span>
   Medication
 </h1>
-<!--TODO: Show the following if editing a medication tied to a medication task-->
-<div class="iconText iconText--wrap iconText--autoHeight error marBottom32">
-  <i class="iconText__icon ss-alert"></i>
-  <span class="error__text">
-    This medication is linked to a medication task. Changing it may affect this patient's care&nbsp;plan.
-  </span>
-</div>
 <div class="flex justifySpaceBetween marBottom32">
   <div class="modal__inputWrap marRight32">
     <label>Medication Name</label>
     <div class="styledSelect marBottom32">
-      <select class="styledSelect__select" [(ngModel)]="selectedMedication">
-        <option *ngFor="let medication of medications" [value]="medication.id">{{medication.name}}</option>
+      <select class="styledSelect__select" [(ngModel)]="selectedMedication" [compareWith]="compareFn">
+        <option *ngFor="let medication of medications" [ngValue]="medication">{{medication.name}}</option>
       </select>
     </div>
   </div>
@@ -118,7 +111,10 @@
 </div>
 
 <div class="modal__buttons modal__buttons--marBottom48">
-  <button class="button button--2nd" (click)="clickCancel()">
+  <button *ngIf="data?.type === 'edit'" class="button button--2nd" (click)="clickDelete()">
+    Delete
+  </button>
+  <button class="button button--2nd marRight32" (click)="clickCancel()">
     Cancel
   </button>
   <button class="button" [disabled]="saveDisabled()" (click)="clickSave()">

@@ -72,11 +72,11 @@ export class UsersComponent implements OnDestroy, OnInit {
         },
       )
       // Get the facilities for this organization from the auth service.
-      this.facilitesSub = this.auth.facilities$.subscribe((facilities) => {
+      this.facilitesSub = this.store.Organization.detailRoute('GET', organization.id, 'facilities').subscribe((facilities:any) => {
         if (facilities === null) {
           return;
         }
-        this.facilities = facilities;
+        this.facilities = facilities.results;
         this.facilities.forEach((facility, i) => {
           let employeesSub = this.store.Facility.detailRoute('get', facility.id, 'employee_profiles').subscribe(
             (employees: any) => {
@@ -256,7 +256,7 @@ export class UsersComponent implements OnDestroy, OnInit {
     if (this.allEmployees && this.allEmployees.length) {
       const employee = _.find(this.allEmployees, e => e.id === employeeId);
       const alsoOrgs = _.filter(employee.organizations, o => o.id !== orgId);
-      const alsoFacilities = _.filter(employee.facilities, f => f.id !== facilityId);
+      const alsoFacilities = _.filter(employee.facilities, f => f.id !== facilityId && !f.is_affiliate);
 
       return {
         facilities: _.map(alsoFacilities, f => f.name),
