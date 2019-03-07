@@ -1,11 +1,11 @@
 <h1 class="modal__title noMargin">Billing Details</h1>
 <div class="divider"></div>
-<label class="styledInput styledInput--marBottom32">
-  <input type="checkbox" class="styledInput__input" />
+<label class="styledInput styledInput--marBottom32" *ngIf="patient">
+  <input type="checkbox" class="styledInput__input" [checked]="patient.payer_reimbursement" (change)="patient.payer_reimbursement = !patient.payer_reimbursement" />
   <span class="styledInput__box"></span>
   Tracking Reimbursements
 </label>
-<div class="modal__inputWrap marRight32 marBottom32">
+<div class="modal__inputWrap marBottom32">
   <label>Billing Type</label>
   <div class="styledSelect">
     <select class="styledSelect__select" [(ngModel)]="selectedPlanType">
@@ -13,7 +13,6 @@
     </select>
   </div>
 </div>
-
 <label class="marBottom24">Reimbursement CPT Codes and Details</label>
 <div>
   <ng-container *ngFor="let cpt of billingTypeByAbr(selectedPlanType).cpt">
@@ -23,12 +22,11 @@
     </p>
   </ng-container>
 </div>
-
 <div class="modal__buttons">
-  <button class="button button--2nd">
+  <button class="button button--2nd" (click)="clickCancel()">
     Cancel
   </button>
-  <button class="button">
+  <button class="button" (click)="clickSave()">
     Save
   </button>
 </div>

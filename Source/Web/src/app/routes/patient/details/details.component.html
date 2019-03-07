@@ -2,7 +2,6 @@
   <div class="flex alignCenter marBottom32">
     <app-patient-header [currentPage]="'details'"></app-patient-header>
   </div> <!--/.flex-->
-
   <div class="flex alignCenter justifySpaceBetween marBottom32">
     <div>
       <label class="styledInput">
@@ -29,7 +28,6 @@
       </div> <!--/.datepicker-->
     </div>
   </div>
-
   <div class="accordion" [ngClass]="{ 'isOpen' : goalAccordionOpen }">
     <div class="accordion__head" (click)="goalAccordionOpen=!goalAccordionOpen">
       <span class="accordion__title">Care Plan Goals - {{tableHeaderDate()}} ({{planGoals.length}})</span>
@@ -96,8 +94,7 @@
               </td>
               <td>{{moment(goal.modified).format('MMM D, YYYY')}}</td>
               <td>
-                <a class="button button--icon button--icon--small button--center relative"
-                  (click)="openGoalComments(goal)">
+                <a class="button button--icon button--icon--small button--center relative" (click)="openGoalComments(goal)">
                   <i class="ss-chats"></i>
                   <div class="badge" *ngIf="goal.comments.length > 0">
                     {{goal.comments.length}}
@@ -112,14 +109,12 @@
             </tr>
           </tbody>
         </table>
-        <button class="button button--iconText"
-        (click)="addGoal()">
+        <button class="button button--iconText" (click)="addGoal()">
           <i class="ss-plus"></i> Add Goal
         </button>
       </div> <!--/.accordion__contents-->
     </div> <!--/.accordion__body-->
   </div> <!--/.accordion (for care plan goals)-->
-
   <div class="accordion" [ngClass]="{ 'isOpen' : userTasksOpen }">
     <div class="accordion__head" (click)="userTasksOpen=!userTasksOpen">
       <span class="accordion__title">My Tasks - {{tableHeaderDate()}} ({{userTasks.length}})</span>
@@ -199,7 +194,6 @@
       </div> <!--/.accordion__contents-->
     </div> <!--/.accordion__body-->
   </div> <!--/.accordion (for my tasks)-->
-
   <div class="accordion" [ngClass]="{ 'isOpen' : teamTasksOpen }">
     <div class="accordion__head" (click)="teamTasksOpen=!teamTasksOpen">
       <span class="accordion__title">Care Team Tasks - {{tableHeaderDate()}} ({{teamTasks.length}})</span>
@@ -237,8 +231,7 @@
                 <div class="tool justifyCenter">
                   <span class="thSortable__text">Occur</span>
                   <div class="tool__anchor">
-                    <button class="button button--icon button--icon--small"
-                    (click)="teamTaskOccurTTOpen=!teamTaskOccurTTOpen">
+                    <button class="button button--icon button--icon--small" (click)="teamTaskOccurTTOpen=!teamTaskOccurTTOpen">
                       <i class="ss-help"></i>
                     </button>
                     <app-popover [visible]="teamTaskOccurTTOpen" (visibleChange)="teamTaskOccurTTOpen = $event;">
@@ -278,7 +271,6 @@
       </div> <!--/.accordion__contents-->
     </div> <!--/.accordion__body-->
   </div> <!--/.accordion (for care team tasks)-->
-
   <div class="accordion" [ngClass]="{ 'isOpen' : patientTasksOpen }">
     <div class="accordion__head" (click)="patientTasksOpen=!patientTasksOpen">
       <span class="accordion__title">Patient Tasks - {{tableHeaderDate()}} ({{patientTasks.length}})</span>
@@ -337,8 +329,7 @@
                 <div class="tool justifyCenter">
                   <span class="thSortable__text">Avg Eng</span>
                   <div class="tool__anchor">
-                    <button class="button button--icon button--icon--small"
-                    (click)="patientTaskAvgEngTTOpen=!patientTaskAvgEngTTOpen">
+                    <button class="button button--icon button--icon--small" (click)="patientTaskAvgEngTTOpen=!patientTaskAvgEngTTOpen">
                       <i class="ss-help"></i>
                     </button>
                     <app-popover [visible]="patientTaskAvgEngTTOpen" (visibleChange)="patientTaskAvgEngTTOpen = $event;">
@@ -355,8 +346,7 @@
                 <div class="tool justifyCenter">
                   <span class="thSortable__text">Update</span>
                   <div class="tool__anchor">
-                    <button class="button button--icon button--icon--small"
-                    (click)="patientTaskUpdateTTOpen=!patientTaskUpdateTTOpen">
+                    <button class="button button--icon button--icon--small" (click)="patientTaskUpdateTTOpen=!patientTaskUpdateTTOpen">
                       <i class="ss-help"></i>
                     </button>
                     <app-popover [visible]="patientTaskUpdateTTOpen" (visibleChange)="patientTaskUpdateTTOpen = $event;">
@@ -414,7 +404,6 @@
       </div> <!--/.accordion__contents-->
     </div> <!--/.accordion__body-->
   </div> <!--/.accordion (for patient tasks)-->
-
   <div class="accordion" [ngClass]="{ 'isOpen' : assessmentResultsOpen }">
     <div class="accordion__head" (click)="assessmentResultsOpen=!assessmentResultsOpen">
       <span class="accordion__title">Assessment Results - {{tableHeaderDate()}} ({{objectKeys(assessmentResults).length}})</span>
@@ -451,8 +440,8 @@
         <ng-container *ngFor="let assessment of objectKeys(assessmentResults)">
           <div class="flex alignCenter">
             <h3 class="noMargin marRight24">{{assessment}}</h3>
-            <h4 class="noMargin" *ngIf="assessment.tracksOutcome">Tracks Outcome</h4>
-            <div class="tool__anchor" *ngIf="assessment.tracksOutcome">
+            <h4 class="noMargin" *ngIf="assessmentResults[assessment][0].tracks_outcome">Tracks Outcome</h4>
+            <div class="tool__anchor" *ngIf="assessmentResults[assessment][0].tracks_outcome">
             	<button class="button button--icon button--icon--small" (click)="assmntOutcomeTTOpen[assessment.id]=!assmntOutcomeTTOpen[assessment.id]">
             		<i class="ss-help"></i>
             	</button>
@@ -464,10 +453,9 @@
                 </div>
               </app-popover>
             </div>
-            <h4 class="noMargin" *ngIf="assessment.tracksSatisfaction">Tracks Satisfaction</h4>
-            <div class="tool__anchor" *ngIf="assessment.tracksSatisfaction">
-              <button class="button button--icon button--icon--small"
-              (click)="assmntSatisfactionTTOpen[assessment.id]=!assmntSatisfactionTTOpen[assessment.id]">
+            <h4 class="noMargin" *ngIf="assessmentResults[assessment][0].tracks_satisfaction">Tracks Satisfaction</h4>
+            <div class="tool__anchor" *ngIf="assessmentResults[assessment][0].tracks_satisfaction">
+              <button class="button button--icon button--icon--small" (click)="assmntSatisfactionTTOpen[assessment.id]=!assmntSatisfactionTTOpen[assessment.id]">
                 <i class="ss-help"></i>
               </button>
               <app-popover [visible]="assmntSatisfactionTTOpen[assessment.id]" (visibleChange)="assmntSatisfactionTTOpen[assessment.id] = $event;">
@@ -492,8 +480,7 @@
                   <div class="tool justifyCenter">
                     <span class="thSortable__text">Occur</span>
                     <div class="tool__anchor">
-                      <button class="button button--icon button--icon--small"
-                      (click)="assmntOccurTTOpen[assessment.id]=!assmntOccurTTOpen[assessment.id]">
+                      <button class="button button--icon button--icon--small" (click)="assmntOccurTTOpen[assessment.id]=!assmntOccurTTOpen[assessment.id]">
                         <i class="ss-help"></i>
                       </button>
                       <app-popover [visible]="assmntOccurTTOpen[assessment.id]" (visibleChange)="assmntOccurTTOpen[assessment.id] = $event;">
@@ -510,8 +497,7 @@
                   <div class="tool justifyCenter">
                     <span class="thSortable__text">Vs Prev</span>
                     <div class="tool__anchor">
-                      <button class="button button--icon button--icon--small"
-                      (click)="assmntVsPrevTTOpen[assessment.id]=!assmntVsPrevTTOpen[assessment.id]">
+                      <button class="button button--icon button--icon--small" (click)="assmntVsPrevTTOpen[assessment.id]=!assmntVsPrevTTOpen[assessment.id]">
                         <i class="ss-help"></i>
                       </button>
                       <app-popover [visible]="assmntVsPrevTTOpen[assessment.id]" (visibleChange)="assmntVsPrevTTOpen[assessment.id] = $event;">
@@ -528,8 +514,7 @@
                   <div class="tool justifyCenter">
                     <span class="thSortable__text">Vs Next</span>
                     <div class="tool__anchor">
-                      <button class="button button--icon button--icon--small"
-                      (click)="assmntVsNextTTOpen[assessment.id]=!assmntVsNextTTOpen[assessment.id]">
+                      <button class="button button--icon button--icon--small" (click)="assmntVsNextTTOpen[assessment.id]=!assmntVsNextTTOpen[assessment.id]">
                         <i class="ss-help"></i>
                       </button>
                       <app-popover [visible]="assmntVsNextTTOpen[assessment.id]" (visibleChange)="assmntVsNextTTOpen[assessment.id] = $event;">
@@ -546,8 +531,7 @@
                   <div class="tool justifyCenter">
                     <span class="thSortable__text">Vs Care Plan</span>
                     <div class="tool__anchor">
-                      <button class="button button--icon button--icon--small"
-                      (click)="assmntVsPlanTTOpen[assessment.id]=!assmntVsPlanTTOpen[assessment.id]">
+                      <button class="button button--icon button--icon--small" (click)="assmntVsPlanTTOpen[assessment.id]=!assmntVsPlanTTOpen[assessment.id]">
                         <i class="ss-help"></i>
                       </button>
                       <app-popover [visible]="assmntVsPlanTTOpen[assessment.id]" (visibleChange)="assmntVsPlanTTOpen[assessment.id] = $event;">
@@ -564,8 +548,7 @@
                   <div class="tool justifyCenter">
                     <span class="thSortable__text">Update</span>
                     <div class="tool__anchor">
-                      <button class="button button--icon button--icon--small"
-                      (click)="assmntUpdateTTOpen[assessment.id]=!assmntUpdateTTOpen[assessment.id]">
+                      <button class="button button--icon button--icon--small" (click)="assmntUpdateTTOpen[assessment.id]=!assmntUpdateTTOpen[assessment.id]">
                         <i class="ss-help"></i>
                       </button>
                       <app-popover [visible]="assmntUpdateTTOpen[assessment.id]" (visibleChange)="assmntUpdateTTOpen[assessment.id] = $event;">
@@ -622,7 +605,6 @@
       </div> <!--/.accordion__contents-->
     </div> <!--/.accordion__body-->
   </div> <!--/.accordion (for assessments)-->
-
   <div class="accordion" [ngClass]="{ 'isOpen' : symptomResultsOpen }">
     <div class="accordion__head" (click)="symptomResultsOpen=!symptomResultsOpen">
       <span class="accordion__title">Symptoms - {{tableHeaderDate()}} ({{symptomResults.length}})</span>
@@ -672,8 +654,7 @@
                 <div class="tool justifyCenter">
                   <span class="thSortable__text">Vs Prev</span>
                   <div class="tool__anchor">
-                    <button class="button button--icon button--icon--small"
-                    (click)="symptomVsPrevTTOpen=!symptomVsPrevTTOpen">
+                    <button class="button button--icon button--icon--small" (click)="symptomVsPrevTTOpen=!symptomVsPrevTTOpen">
                       <i class="ss-help"></i>
                     </button>
                     <app-popover [visible]="symptomVsPrevTTOpen" (visibleChange)="symptomVsPrevTTOpen = $event;">
@@ -690,8 +671,7 @@
                 <div class="tool justifyCenter">
                   <span class="thSortable__text">Vs Next</span>
                   <div class="tool__anchor">
-                    <button class="button button--icon button--icon--small"
-                    (click)="symptomVsNextTTOpen=!symptomVsNextTTOpen">
+                    <button class="button button--icon button--icon--small" (click)="symptomVsNextTTOpen=!symptomVsNextTTOpen">
                       <i class="ss-help"></i>
                     </button>
                     <app-popover [visible]="symptomVsNextTTOpen" (visibleChange)="symptomVsNextTTOpen = $event;">
@@ -708,8 +688,7 @@
                 <div class="tool justifyCenter">
                   <span class="thSortable__text">Vs Care Plan</span>
                   <div class="tool__anchor">
-                    <button class="button button--icon button--icon--small"
-                    (click)="symptomVsPlanTTOpen=!symptomVsPlanTTOpen">
+                    <button class="button button--icon button--icon--small" (click)="symptomVsPlanTTOpen=!symptomVsPlanTTOpen">
                       <i class="ss-help"></i>
                     </button>
                     <app-popover [visible]="symptomVsPlanTTOpen" (visibleChange)="symptomVsPlanTTOpen = $event;">
@@ -726,8 +705,7 @@
                 <div class="tool justifyCenter">
                   <span class="thSortable__text">Update</span>
                   <div class="tool__anchor">
-                    <button class="button button--icon button--icon--small"
-                    (click)="symptomUpdateTTOpen=!symptomUpdateTTOpen">
+                    <button class="button button--icon button--icon--small" (click)="symptomUpdateTTOpen=!symptomUpdateTTOpen">
                       <i class="ss-help"></i>
                     </button>
                     <app-popover [visible]="symptomUpdateTTOpen" (visibleChange)="symptomUpdateTTOpen = $event;">
@@ -780,7 +758,6 @@
             </tr>
           </tbody>
         </table>
-
         <label>Comment</label>
         <p>
           "I think this new medication makes my head hurt more."
@@ -788,11 +765,9 @@
         <a (click)="routeToMessaging()" class="button button--iconText">
           <i class="ss-chat"></i> Reply
         </a>
-
       </div> <!--/.accordion__contents-->
     </div> <!--/.accordion__body-->
   </div> <!--/.accordion (for symptoms)-->
-
   <div class="accordion" [ngClass]="{ 'isOpen' : vitalsResultsOpen }">
     <div class="accordion__head" (click)="vitalsResultsOpen=!vitalsResultsOpen">
       <span class="accordion__title">Vitals - {{tableHeaderDate()}} ({{objectKeys(vitalResults).length}})</span>
@@ -891,8 +866,7 @@
                   <div class="tool justifyCenter">
                     <span class="thSortable__text">Update</span>
                     <div class="tool__anchor">
-                      <button class="button button--icon button--icon--small"
-                      (click)="vitalUpdateTTOpen[vital.id]=!vitalUpdateTTOpen[vital.id]">
+                      <button class="button button--icon button--icon--small" (click)="vitalUpdateTTOpen[vital.id]=!vitalUpdateTTOpen[vital.id]">
                         <i class="ss-help"></i>
                       </button>
                       <app-popover [visible]="vitalUpdateTTOpen[vital.id]" (visibleChange)="vitalUpdateTTOpen[vital.id] = $event;">
@@ -967,7 +941,6 @@
       </div> <!--/.accordion__contents-->
     </div> <!--/.accordion__body-->
   </div> <!--/.accordion (for vitals)-->
-
   <div class="accordion" [ngClass]="{ 'isOpen' : messagesOpen }">
     <div class="accordion__head" (click)="messagesOpen=!messagesOpen">
       <span class="accordion__title">Messages - {{tableHeaderDate()}} (1)</span>
@@ -977,7 +950,6 @@
         </div>
       </div>
     </div> <!--/.accordion__head-->
-
     <!-- Patient Care Messages -->
     <div class="accordion__body">
       <div class="accordion__contents">
@@ -993,8 +965,7 @@
                     <div class="tool left">
                       <span>Helpful</span>
                       <div class="tool__anchor">
-                        <button class="button button--icon button--icon--small"
-                        (click)="helpfulTTOpen=!helpfulTTOpen">
+                        <button class="button button--icon button--icon--small" (click)="helpfulTTOpen=!helpfulTTOpen">
                           <i class="ss-help"></i>
                         </button>
                         <div class="tool__tip tool__tip--bottom tool__tip--right" [ngClass]="{ 'isOpen' : helpfulTTOpen }">
@@ -1042,5 +1013,4 @@
       </div> <!--/.accordion__contents-->
     </div> <!--/.accordion__body-->
   </div> <!--/.accordion (for messages)-->
-
 </div> <!--/.ssContainer-->

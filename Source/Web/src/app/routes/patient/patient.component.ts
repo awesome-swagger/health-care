@@ -201,6 +201,10 @@ export class PatientComponent implements OnDestroy, OnInit {
 
   public openFinancialDetails() {
     this.modals.open(FinancialDetailsComponent, {
+      closeDisabled: false,
+      data: {
+        patient: this.patient,
+      },
       width: '384px',
     }).subscribe(() => {});
   }

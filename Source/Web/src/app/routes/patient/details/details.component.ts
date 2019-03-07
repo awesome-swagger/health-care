@@ -180,7 +180,7 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
     let promise = new Promise((resolve, reject) => {
       let goalsSub = this.store.Goal.readListPaged({
         plan__patient: patient,
-        // goal_template__plan_template: planTemplate,
+        goal_template__plan_template: planTemplate,
         start_on_datetime__lte: end,
       }).subscribe(
         (res) => resolve(res),
@@ -197,6 +197,7 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
     let promise = new Promise((resolve, reject) => {
       let tasksSub = this.store.User.detailRoute('get', this.user.user.id, 'tasks', {}, {
         plan_template: planTemplate,
+        plan: this.carePlan.id,
         date: date,
         exclude_done: false,
       }).subscribe(
@@ -214,6 +215,7 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
     let promise = new Promise((resolve, reject) => {
       let tasksSub = this.store.User.detailRoute('get', teamMember.employee_profile.user.id, 'tasks', {}, {
         plan_template: planTemplate,
+        plan: this.carePlan.id,
         date: date,
         exclude_done: false,
       }).subscribe(
@@ -259,8 +261,8 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
       let assessmentsSub = this.store.AssessmentResponse.readListPaged({
         assessment_task__plan__patient: patient,
         assessment_task__assessment_task_template__plan_template: planTemplate,
-        modified__lte: end,
-        modified__gte: start,
+        assessment_task__due_datetime__lte: end,
+        assessment_task__due_datetime__gte: start,
       }).subscribe(
         (res) => resolve(res),
         (err) => reject(err),
@@ -277,8 +279,8 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
       let symptomSub = this.store.SymptomRating.readListPaged({
         symptom_task__plan__patient: patient,
         symptom_task__symptom_task_template__plan_template: planTemplate,
-        modified__lte: end,
-        modified__gte: start,
+        symptom_task__due_datetime__lte: end,
+        symptom_task__due_datetime__gte: start,
       }).subscribe(
         (res) => resolve(res),
         (err) => reject(err),
@@ -295,8 +297,8 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
       let vitalSub = this.store.VitalResponse.readListPaged({
         vital_task__plan__patient: patient,
         vital_task__vital_task_template__plan_template: planTemplate,
-        modified__lte: end,
-        modified__gte: start,
+        vital_task__due_datetime__lte: end,
+        vital_task__due_datetime__gte: start,
       }).subscribe(
         (res) => resolve(res),
         (err) => reject(err),
@@ -348,8 +350,8 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
     if (!this.patient || !this.carePlan) {
       return;
     }
-    let startOfDay = dateAsMoment.startOf('day').toISOString();
-    let endOfDay = dateAsMoment.endOf('day').toISOString();
+    let startOfDay = dateAsMoment.startOf('day').utc().toISOString();
+    let endOfDay = dateAsMoment.endOf('day').utc().toISOString();
     let formattedDate = dateAsMoment.format('YYYY-MM-DD');
     this.getGoals(this.patient.id, this.carePlan.plan_template.id, startOfDay, endOfDay).then((goals: any) => {
       this.planGoals = goals;
@@ -485,31 +487,42 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
     return Math.round((this.completedPatientTasks() / this.patientTasks.length) * 100);
   }
 
-  public outcomeAsssessments() {
-    return [];
-    // return this.assessmentResults.filter((obj) => obj.tracksOutcome);
-  }
-
-  public satisfactionAssessments() {
-    return [];
-    // return this.assessmentResults.filter((obj) => obj.tracksSatisfaction);
-  }
-
   public totalOutcomeQuestions() {
-    return _sumBy(this.outcomeAsssessments(), (obj) => obj.questions.length);
+    let keys = Object.keys(this.assessmentResults);
+    let count = 0;
+    keys.forEach((key) => {
+      this.assessmentResults[key].forEach((result) => {
+        if (result.tracks_outcome) {
+          count++;
+        }
+      });
+    });
+    return count;
   }
 
   public totalSatisfactionQuestions() {
-    return _sumBy(this.satisfactionAssessments(), (obj) => obj.questions.length);
+    let keys = Object.keys(this.assessmentResults);
+    let count = 0;
+    keys.forEach((key) => {
+      this.assessmentResults[key].forEach((result) => {
+        if (result.tracks_satisfaction) {
+          count++;
+        }
+      });
+    });
+    return count;
   }
 
   public averageOutcomeScore() {
-    // let totalSum = _sumBy(this.outcomeAsssessments(), (obj) => {
-    //   return _sumBy(obj.questions, (question) => question.rating);
-    // });
-    // let average = (totalSum / this.totalOutcomeQuestions()) + .0;
-    // return Math.round(average * 10) / 10;
-    return 0;
+    let keys = Object.keys(this.assessmentResults);
+    let totalSum = 0;
+    keys.forEach((key) => {
+      let outcomeQuestions = this.assessmentResults[key].filter((obj) => obj.tracks_outcome === true);
+      let sum = _sumBy(outcomeQuestions, (obj) => obj.rating);
+      totalSum += sum;
+    });
+    let average = (totalSum / this.totalOutcomeQuestions()) + .0;
+    return Math.round(average * 10) / 10;
   }
 
   public averageOutcomePercentage() {
@@ -517,12 +530,15 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
   }
 
   public averageSatisfactionScore() {
-    // let totalSum = _sumBy(this.satisfactionAssessments(), (obj) => {
-    //   return _sumBy(obj.questions, (question) => question.rating);
-    // });
-    // let average = (totalSum / this.totalSatisfactionQuestions()) + .0;
-    // return Math.round(average * 10) / 10;
-    return 0;
+    let keys = Object.keys(this.assessmentResults);
+    let totalSum = 0;
+    keys.forEach((key) => {
+      let satisfactionQuestions = this.assessmentResults[key].filter((obj) => obj.tracks_satisfaction === true);
+      let sum = _sumBy(satisfactionQuestions, (obj) => obj.rating);
+      totalSum += sum;
+    });
+    let average = (totalSum / this.totalSatisfactionQuestions()) + .0;
+    return Math.round(average * 10) / 10;
   }
 
   public averageSatisfactionPercentage() {

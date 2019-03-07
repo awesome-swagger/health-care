@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { find as _find } from 'lodash';
+import { ModalService } from '../../../../modules/modals';
+import { StoreService } from '../../../../services';
 
 @Component({
   selector: 'app-financial-details',
@@ -9,8 +11,8 @@ import { find as _find } from 'lodash';
 export class FinancialDetailsComponent implements OnInit {
 
   public data = null;
-
-  public selectedPlanType = 'CoCM';
+  public patient = null;
+  public selectedPlanType = 'BHI';
   public billingTypes = [
     {
       name: 'Psychiatric Collaborative Care Management',
@@ -86,32 +88,40 @@ export class FinancialDetailsComponent implements OnInit {
     }
   ]
 
-  constructor() {
+  constructor(
+    private modals: ModalService,
+    private store: StoreService,
+  ) {
 
   }
 
   public ngOnInit() {
     console.log(this.data);
-  }
-
-  get carePlanFull() {
-
-    const fullPlanNames = {
-      CoCM: 'Psychiatric Collaborative Care Management',
-      RPM: 'Remote Patient Management',
-      BHI: 'Behavioral Health Initiative',
-      CCM: 'Chronic Care Management',
-      CCCM: 'Complex Chronic Care Management',
-      TCM: 'Transitional Care Management',
+    if (this.data.patient) {
+      this.patient = this.data.patient;
     }
-
-    if (this.data && this.data.carePlan) {
-      return fullPlanNames[this.data.carePlan] || '';
-    }
+    this.billingTypes = this.billingTypes.sort((a: any, b: any) => ('' + a.name).localeCompare(b.name));
   }
 
   public billingTypeByAbr(abr) {
     return _find(this.billingTypes, t => t.abr === abr);
   }
 
+  public clickCancel() {
+    this.modals.close(null);
+  }
+
+  public clickSave() {
+    let updatePatientSub = this.store.PatientProfile.update(this.patient.id, {
+      payer_reimbursement: this.patient.payer_reimbursement,
+    }).subscribe(
+      (success) => {
+        this.modals.close('dur');
+      },
+      (err) => {},
+      () => {
+        updatePatientSub.unsubscribe();
+      }
+    );
+  }
 }

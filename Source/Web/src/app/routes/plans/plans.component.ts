@@ -49,7 +49,10 @@ export class PlansComponent implements OnDestroy, OnInit {
         return;
       }
       this.organization = organization;
-      if (this.local.getObj('hide_inactive_plan_templates')) {
+      console.log(this.local.getObj('hide_inactive_plan_templates'))
+      if (this.local.getObj('hide_inactive_plan_templates') === null) {
+        this.hideInactiveTemplates = true;
+      } else {
         this.hideInactiveTemplates = this.local.getObj('hide_inactive_plan_templates');
       }
       this.getFacilities(this.organization).then((facilities: any) => {
