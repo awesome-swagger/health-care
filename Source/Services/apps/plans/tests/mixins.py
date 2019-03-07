@@ -4,7 +4,6 @@ from django.utils import timezone
 
 from .factories import (
     CarePlanFactory,
-    # BillingTypeFactory,
     ServiceAreaFactory,
     CarePlanTemplateFactory,
     CareTeamMemberFactory,
