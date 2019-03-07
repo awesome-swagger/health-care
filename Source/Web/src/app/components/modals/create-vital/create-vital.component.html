@@ -2,10 +2,8 @@
   <i class="ss-standard ss-view"></i>
 </button>
 <h1 class="modal__title">
-  <!--TODO: If creating a vital, show the following-->
-  <span>Create</span>
-  <!--TODO: If editing a vital, show the following-->
-  <!--<span>Edit</span>-->
+  <span *ngIf="!isEditing">Create</span>
+  <span *ngIf="isEditing">Edit</span>
   Vital
 </h1>
 <form [formGroup]="vitalForm">
@@ -37,7 +35,7 @@
     </div>
   </div>
   <label>Instructions (opt)</label>
-  <textarea class="input input--textarea marBottom16"></textarea>
+  <textarea class="input input--textarea marBottom16" formControlName="instructions"></textarea>
 </form>
 <div class="vitalGridWrap">
   <div class="vitalGrid">

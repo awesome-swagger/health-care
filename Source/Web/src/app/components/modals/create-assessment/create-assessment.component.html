@@ -1,4 +1,8 @@
-<h1 class="modal__title">Create Assessment</h1>
+<h1 class="modal__title">
+  <span *ngIf="!isEditing">Create</span>
+  <span *ngIf="isEditing">Edit</span>
+  Assessment
+</h1>
 <div class="flex justifySpaceBetween marBottom32">
   <div class="modal__inputWrap marRight32">
     <label class="label48">Assessment Name</label>

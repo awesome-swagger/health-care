@@ -12,6 +12,8 @@ from .signals import invited_email_template_post_save
 
 class Organization(AddressMixin, CreatedModifiedMixin, UUIDPrimaryKeyMixin):
     name = models.CharField(max_length=120, null=False, blank=False)
+    renewal_date = models.DateField(null=True, blank=True)
+    available_users = models.IntegerField(default=50)
 
     class Meta:
         ordering = ('name', )

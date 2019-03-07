@@ -16,7 +16,6 @@ from django.shortcuts import get_object_or_404
 from django.utils.translation import ugettext_lazy as _
 
 from ..models import (
-    CarePlanTemplateType,
     ServiceArea,
     CarePlanTemplate,
     CarePlan,
@@ -38,7 +37,6 @@ from ..permissions import (
 )
 from ..utils import duplicate_tasks
 from .serializers import (
-    CarePlanTemplateTypeSerializer,
     ServiceAreaSerializer,
     CarePlanTemplateSerializer,
     CarePlanSerializer,
@@ -93,43 +91,6 @@ from care_adopt_backend.permissions import (
     IsAdminOrEmployee,
 )
 from django.utils import timezone
-
-
-class CarePlanTemplateTypeViewSet(viewsets.ModelViewSet):
-    """
-    Viewset for :model:`plans.CarePlanTemplateType`
-    ========
-
-    create:
-        Creates :model:`plans.CarePlanTemplateType` object.
-        Only admins and employees are allowed to perform this action.
-
-    update:
-        Updates :model:`plans.CarePlanTemplateType` object.
-        Only admins and employees are allowed to perform this action.
-
-    partial_update:
-        Updates one or more fields of an existing plan template type object.
-        Only admins and employees are allowed to perform this action.
-
-    retrieve:
-        Retrieves a :model:`plans.CarePlanTemplateType` instance.
-        All users will have access to all template type objects.
-
-    list:
-        Returns list of all :model:`plans.CarePlanTemplateType` objects.
-        All users will have access to all template type objects.
-
-    delete:
-        Deletes a :model:`plans.CarePlanTemplateType` instance.
-        Only admins and employees are allowed to perform this action.
-    """
-    serializer_class = CarePlanTemplateTypeSerializer
-    permission_classes = (
-        permissions.IsAuthenticated,
-        IsEmployeeOrPatientReadOnly,
-    )
-    queryset = CarePlanTemplateType.objects.all()
 
 
 class ServiceAreaViewSet(viewsets.ModelViewSet):
@@ -209,10 +170,6 @@ class CarePlanTemplateViewSet(viewsets.ModelViewSet):
 
         return queryset
 
-    def filter_queryset(self, queryset):
-        return super(CarePlanTemplateViewSet,
-                     self).filter_queryset(queryset).distinct()
-
     def get_serializer_context(self):
         context = super(CarePlanTemplateViewSet, self).get_serializer_context()
 
@@ -259,10 +216,13 @@ class CarePlanTemplateViewSet(viewsets.ModelViewSet):
 
         queryset = self.get_queryset()
         filtered_queryset = self.filter_queryset(queryset)
-        template = filtered_queryset.get(pk=pk)
-        serializer = CarePlanTemplateAverageSerializer(
-            template, context=self.get_serializer_context())
-        return Response(serializer.data)
+        try:
+            template = filtered_queryset.get(pk=pk)
+            serializer = CarePlanTemplateAverageSerializer(
+                template, context=self.get_serializer_context())
+            return Response(serializer.data)
+        except CarePlanTemplate.DoesNotExist:
+            return Response(None)
 
     @action(methods=['post'], detail=False,
             permission_classes=(permissions.IsAuthenticated, ))
@@ -321,8 +281,8 @@ class CarePlanTemplateViewSet(viewsets.ModelViewSet):
         duplicate_tasks(plan_template.patient_tasks.all(), new_template)
         duplicate_tasks(plan_template.team_tasks.all(), new_template)
         duplicate_tasks(plan_template.symptom_tasks.all(), new_template)
-        duplicate_tasks(plan_template.assessment_tasks.all(), new_template)
-        duplicate_tasks(plan_template.vital_templates.all(), new_template)
+        duplicate_tasks(plan_template.assessment_tasks.all(), new_template, "assessment_task_template")
+        duplicate_tasks(plan_template.vital_templates.all(), new_template, "vital_task_template")
 
         serializer = CarePlanTemplateSerializer(new_template)
         return Response(serializer.data)
@@ -483,19 +443,21 @@ class CarePlanViewSet(viewsets.ModelViewSet):
 
         IMPORTANT NOTE:
         ---
-        - Make sure to pass the {organization ID} when sending requests to this
-        endpoint to filter care plans for a specific organization. Otherwise,
-        this endpoint will return all care plans in all organizations.
-        - The URL parameter to be used is **patient__facility__organization**
+        - Make sure to pass the {organization ID} or {facility ID} when sending requests 
+        to this endpoint to filter care plans for a specific organization or facility. 
+        Otherwise, this endpoint will return all care plans in all organizations.
+        - The URL parameter to be used is **patient__facility__organization** or 
+        **patient__facility**
 
         SAMPLE REQUEST:
         ---
         ```
         GET /api/care_plans/average/?patient__facility__organization=<uuid>
+        GET /api/care_plans/average/?patient__facility=<uuid>
         ```
         """
         now = timezone.now()
-        last_30 = now - relativedelta(days=30)
+        last_30 = now - relativedelta(days=230)
 
         base_queryset = self.get_queryset().filter(created__gte=last_30)
         queryset = self.filter_queryset(base_queryset)
@@ -1042,67 +1004,6 @@ class GoalTemplatesByPlanTemplate(RetrieveAPIView):
 
     def retrieve(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_goal_templates())
-
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
-
-
-class CarePlanTemplateByType(ParentViewSetPermissionMixin,
-                             NestedViewSetMixin,
-                             RetrieveAPIView):
-    """
-    Returns list of :model:`plans.CarePlanTemplate` related to the given type.
-    This will also be based on the parent organization.
-    """
-    serializer_class = CarePlanTemplateAverageSerializer
-    permission_classes = (
-        permissions.IsAuthenticated,
-        IsAdminOrEmployee,
-    )
-    parent_lookup = [
-        (
-            'care_plans__patient__facility__organization',
-            Organization,
-            OrganizationViewSet
-        )
-    ]
-
-    def get_queryset(self):
-        """
-        Override `get_queryset` so it will not filter for the parent object.
-        Return all CarePlanTemplateType objects.
-        """
-        return CarePlanTemplateType.objects.all()
-
-    def get_care_plan_templates(self):
-        instance = self.get_object()
-        queryset = instance.care_plan_templates.all()
-        return self.filter_queryset_by_parents_lookups(queryset).distinct()
-
-    def filter_queryset(self, queryset):
-        return super(CarePlanTemplateByType,
-                     self).filter_queryset(queryset).distinct()
-
-    def get_serializer_context(self):
-        context = super(CarePlanTemplateByType, self).get_serializer_context()
-
-        if 'care_plans__patient__facility__organization' in self.request.GET:
-            organization_id = self.request.GET[
-                'care_plans__patient__facility__organization']
-            organization = Organization.objects.get(id=organization_id)
-            context.update({
-                'organization': organization
-            })
-
-        return context
-
-    def retrieve(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_care_plan_templates())
 
         page = self.paginate_queryset(queryset)
         if page is not None:

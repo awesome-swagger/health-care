@@ -155,6 +155,7 @@ class UserViewSet(
         user = self.get_object()
         timestamp = request.GET.get('date', None)
         plan_template = request.GET.get('plan_template', None)
+        plan = request.GET.get('plan', None)
         exclude_done = request.GET.get('exclude_done', False)
         if exclude_done == 'false':
             exclude_done = False
@@ -167,6 +168,7 @@ class UserViewSet(
             user,
             date_object=date_object,
             plan_template=plan_template,
+            plan=plan,
             exclude_done=exclude_done,
         )
         return Response(data=tasks)

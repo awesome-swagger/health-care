@@ -11,7 +11,6 @@ from dateutil.relativedelta import relativedelta
 from rest_framework import serializers
 
 from ..models import (
-    CarePlanTemplateType,
     ServiceArea,
     CarePlanTemplate,
     CarePlan,
@@ -27,7 +26,7 @@ from ..models import (
     TeamMessage,
 )
 from apps.accounts.models import EmailUser
-from apps.billings.models import BilledActivity
+from apps.billings.models import BilledActivity, BillingType
 from apps.core.api.mixins import RepresentationMixin
 from apps.core.api.serializers import (
     ProviderRoleSerializer,
@@ -86,6 +85,20 @@ class BasicFacilityPlanSerializer(serializers.ModelSerializer):
         )
 
 
+class BasicBillingTypeSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = BillingType
+        fields = (
+            'id',
+            'name',
+            'acronym',
+        )
+        read_only_fields = (
+            'id',
+        )
+
+
 class BasicPatientPlanSerializer(RepresentationMixin,
                                  serializers.ModelSerializer):
     """
@@ -130,24 +143,6 @@ class BasicPatientPlanSerializer(RepresentationMixin,
         return obj.facility.name
 
 
-class CarePlanTemplateTypeSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = CarePlanTemplateType
-        fields = (
-            'id',
-            'name',
-            'acronym',
-            'created',
-            'modified',
-        )
-        read_only_fields = (
-            'id',
-            'created',
-            'modified',
-        )
-
-
 class ServiceAreaSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -174,7 +169,6 @@ class CarePlanTemplateSerializer(RepresentationMixin, serializers.ModelSerialize
         fields = (
             'id',
             'name',
-            'type',
             'service_area',
             'duration_weeks',
             'is_active',
@@ -191,10 +185,6 @@ class CarePlanTemplateSerializer(RepresentationMixin, serializers.ModelSerialize
             {
                 'field': 'service_area',
                 'serializer_class': ServiceAreaSerializer,
-            },
-            {
-                'field': 'type',
-                'serializer_class': CarePlanTemplateTypeSerializer,
             }
         ]
 
@@ -211,6 +201,7 @@ class CarePlanSerializer(RepresentationMixin, serializers.ModelSerializer):
             'plan_template',
             'billing_practitioner',
             'is_billed',
+            'billing_type',
         )
         read_only_fields = (
             'id',
@@ -230,6 +221,10 @@ class CarePlanSerializer(RepresentationMixin, serializers.ModelSerializer):
             {
                 'field': 'billing_practitioner',
                 'serializer_class': EmployeeProfileSerializer,
+            },
+            {
+                'field': 'billing_type',
+                'serializer_class': BasicBillingTypeSerializer,
             },
         ]
 

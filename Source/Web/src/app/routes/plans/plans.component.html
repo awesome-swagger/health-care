@@ -3,8 +3,7 @@
     <div class="flex alignCenter">
       <h1 class="noMargin marRight8">Service Areas ({{totalServiceAreas()}})</h1>
       <div class="tool__anchor">
-        <button class="button button--icon button--icon--small"
-        (click)="showServiceAreaHelp = !showServiceAreaHelp">
+        <button class="button button--icon button--icon--small" (click)="showServiceAreaHelp = !showServiceAreaHelp">
           <i class="ss-help"></i>
         </button>
         <app-popover [visible]="showServiceAreaHelp" (visibleChange)="showServiceAreaHelp = $event;">
@@ -17,8 +16,7 @@
       </div> <!--/.tool__anchor-->
       <h1 class="noMargin marRight8">Care Plans ({{totalCarePlans()}})</h1>
       <div class="tool__anchor">
-        <button class="button button--icon button--icon--small"
-        (click)="showCarePlanHelp=!showCarePlanHelp">
+        <button class="button button--icon button--icon--small" (click)="showCarePlanHelp=!showCarePlanHelp">
           <i class="ss-help"></i>
         </button>
         <app-popover [visible]="showCarePlanHelp" (visibleChange)="showCarePlanHelp = $event;">
@@ -108,7 +106,7 @@
           {{averagesByCarePlan.average_outcome}}%
         </div>
         <div class="pill" *ngIf="!averagesByCarePlan.average_outcome">
-          N/A
+          ---
         </div>
       </div>
       <div class="info__cell">
@@ -117,7 +115,7 @@
           {{averagesByCarePlan.average_engagement}}%
         </div>
         <div class="pill" *ngIf="!averagesByCarePlan.average_engagement">
-          N/A
+          ---
         </div>
       </div>
       <div class="info__cell">
@@ -126,7 +124,7 @@
           {{utils.getRiskLevelText(averagesByCarePlan.risk_level)}} {{averagesByCarePlan.risk_level}}%
         </div>
         <div class="pill" *ngIf="!averagesByCarePlan.risk_level">
-          N/A
+          ---
         </div>
       </div>
     </div> <!--/.info-->
@@ -143,7 +141,7 @@
             {{utils.getRiskLevelText(totalRiskLevel(filteredTemplates(plan.templates)))}} {{totalRiskLevel(filteredTemplates(plan.templates))}}%
           </div>
           <div class="pill" *ngIf="plan.totalPatients === 0">
-            N/A
+            ---
           </div>
           <div class="accordion__arrow">
             <i class="ss-standard ss-navigateright"></i>
@@ -205,7 +203,7 @@
                 </td>
                 <td>
                   <div class="pill" *ngIf="item.averages.total_patients === 0">
-                    N/A
+                    ---
                   </div>
                   <div class="pill" *ngIf="item.averages.total_patients > 0" [ngStyle]="{'background': utils.percentPillColor(item.averages.average_engagement)}">
                     {{item.averages.average_engagement}}%
@@ -213,7 +211,7 @@
                 </td>
                 <td>
                   <div class="pill" *ngIf="item.averages.total_patients === 0">
-                    N/A
+                    ---
                   </div>
                   <div class="pill" *ngIf="item.averages.total_patients > 0" [ngStyle]="{'background': utils.percentPillColor(item.averages.average_outcome)}">
                     {{item.averages.average_outcome}}%
@@ -221,15 +219,14 @@
                 </td>
                 <td>
                   <div class="pill" *ngIf="item.averages.total_patients === 0">
-                    N/A
+                    ---
                   </div>
                   <div class="pill" *ngIf="item.averages.total_patients > 0" [ngStyle]="{'background': utils.percentPillColor(item.averages.risk_level)}">
                     {{utils.getRiskLevelText(item.averages.risk_level)}} {{item.averages.risk_level}}%
                   </div>
                 </td>
                 <td>
-                  <button class="button button--icon"
-                  (click)="duplicatePlan(item)">
+                  <button class="button button--icon" (click)="duplicatePlan(item)">
                   <i class="ss-files"></i>
                 </button>
               </td>

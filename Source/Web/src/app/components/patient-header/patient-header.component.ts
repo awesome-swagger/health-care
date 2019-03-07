@@ -229,7 +229,7 @@ export class PatientHeaderComponent implements OnInit, OnDestroy {
     this.modals.open(FinancialDetailsComponent, {
       closeDisabled: false,
       data: {
-
+        patient: this.patient,
       },
       width: '384px',
     }).subscribe(() => {});

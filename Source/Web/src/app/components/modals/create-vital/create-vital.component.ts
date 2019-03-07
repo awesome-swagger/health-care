@@ -13,6 +13,7 @@ export class CreateVitalComponent implements OnInit {
 
   public data = null;
 
+  public isEditing = false;
   public vital: any = {};
   public vitalForm: FormGroup;
 
@@ -28,6 +29,7 @@ export class CreateVitalComponent implements OnInit {
     console.log(this.data);
     if (this.data) {
       this.vital = this.data.vital ? this.data.vital : {};
+      this.isEditing = this.data.isEditing ? this.data.isEditing : false;
       if (this.vital.questions) {
         this.vital.questions.forEach((obj) => {
           if (obj.answer_type === 'float') {
@@ -50,6 +52,7 @@ export class CreateVitalComponent implements OnInit {
   public initForm(vital) {
     this.vitalForm = new FormGroup({
       name: new FormControl(vital.name),
+      instructions: new FormControl(vital.instructions),
     });
   }
 
@@ -106,7 +109,10 @@ export class CreateVitalComponent implements OnInit {
   public createQuestion(question) {
     let promise = new Promise((resolve, reject) => {
       let createSub = this.store.VitalsQuestions.create(question).subscribe(
-        (res) => resolve(res),
+        (res) => {
+          question.id = res.id;
+          resolve(res);
+        },
         (err) => reject(err),
         () => {
           createSub.unsubscribe();
@@ -177,7 +183,10 @@ export class CreateVitalComponent implements OnInit {
         let vitalWithoutQuestions = _omit(this.vital, 'questions');
         let createSub = this.store.VitalsTaskTemplate.create(vitalWithoutQuestions)
           .subscribe(
-            (res) => resolve(res),
+            (res) => {
+              this.vital.id = res.id;
+              resolve(res);
+            },
             (err) => reject(err),
             () => {
               createSub.unsubscribe();

@@ -6,7 +6,7 @@
 <div class="divider"></div>
 <h2>{{data.vital.name}}</h2>
 <p class="marBottom24">
-  INSTRUCTION PLACEHOLDER
+  <span *ngIf="data.vital.instructions">{{data.vital.instructions}}</span>
 </p>
 <ul>
   <li *ngFor="let question of data.vital.questions">
@@ -36,7 +36,7 @@
         <app-date-picker class="datepicker__picker" [ngClass]="{ 'isOpen' : showDatePVM1 }"></app-date-picker>
       </div>
     </div> -->
-    <div *ngIf="question.answer_type === 'float' || question.number_type === 'float'" class="flex alignCenter justifySpaceBetween marBottom32">
+    <div *ngIf="question.answer_type === 'float' || (question.answer_type === 'number' && question.number_type === 'float')" class="flex alignCenter justifySpaceBetween marBottom32">
       <span class="marRight8">{{question.prompt}}</span>
       <div class="flex">
         <div>
@@ -45,7 +45,7 @@
       </div>
     </div>
 <!-- integer -->
-    <div *ngIf="question.answer_type === 'integer' || question.number_type === 'integer'" class="flex alignCenter justifySpaceBetween marBottom32">
+    <div *ngIf="question.answer_type === 'integer' || (question.answer_type === 'number' && question.number_type === 'integer')" class="flex alignCenter justifySpaceBetween marBottom32">
       <span class="marRight8">{{question.prompt}}</span>
       <div class="flex">
         <div>

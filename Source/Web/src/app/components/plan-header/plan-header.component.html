@@ -38,8 +38,12 @@
 <div class="flex" *ngIf="carePlanAverage">
   <div class="info info--horiz">
     <div class="info__cell">
-      <label>Patients</label>
+      <label>Total Patients</label>
       {{carePlanAverage.total_patients}}
+    </div>
+    <div class="info__cell">
+      <label>Total Facilities</label>
+      {{carePlanAverage.total_facilities}}
     </div>
     <div class="info__cell">
       <label>Time Count</label>
@@ -53,7 +57,7 @@
         {{carePlanAverage.average_engagement}}%
       </div>
       <div class="pill" *ngIf="!carePlanAverage.average_engagement">
-        N/A
+        ---
       </div>
     </div>
     <div class="info__cell">
@@ -62,7 +66,7 @@
         {{carePlanAverage.average_outcome}}%
       </div>
       <div class="pill" *ngIf="!carePlanAverage.average_outcome">
-        N/A
+        ---
       </div>
     </div>
     <div class="info__cell">
@@ -71,7 +75,7 @@
         {{utils.getRiskLevelText(carePlanAverage.risk_level)}} {{carePlanAverage.risk_level}}%
       </div>
       <div class="pill" *ngIf="!carePlanAverage.risk_level">
-        N/A
+        ---
       </div>
     </div>
   </div> <!--/.info-->
