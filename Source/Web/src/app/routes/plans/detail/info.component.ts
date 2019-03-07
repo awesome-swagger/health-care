@@ -187,7 +187,7 @@ export class PlanInfoComponent implements OnDestroy, OnInit {
     if (activePlans.length === 0) {
       return 0;
     }
-    return _sumBy(activePlans, (plan) => plan.risk_level) / activePlans.length;
+    return Math.floor(_sumBy(activePlans, (plan) => plan.risk_level) / activePlans.length);
   }
 
   public routeToPatientOverview(patient, plan) {

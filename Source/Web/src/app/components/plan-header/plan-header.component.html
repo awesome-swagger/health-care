@@ -57,7 +57,7 @@
         {{carePlanAverage.average_engagement}}%
       </div>
       <div class="pill" *ngIf="!carePlanAverage.average_engagement">
-        N/A
+        ---
       </div>
     </div>
     <div class="info__cell">
@@ -66,7 +66,7 @@
         {{carePlanAverage.average_outcome}}%
       </div>
       <div class="pill" *ngIf="!carePlanAverage.average_outcome">
-        N/A
+        ---
       </div>
     </div>
     <div class="info__cell">
@@ -75,7 +75,7 @@
         {{utils.getRiskLevelText(carePlanAverage.risk_level)}} {{carePlanAverage.risk_level}}%
       </div>
       <div class="pill" *ngIf="!carePlanAverage.risk_level">
-        N/A
+        ---
       </div>
     </div>
   </div> <!--/.info-->

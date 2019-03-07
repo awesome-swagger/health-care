@@ -1,7 +1,6 @@
 <div class="ssContainer ssContents">
   <app-plan-header [planTemplate]="planTemplate"></app-plan-header>
   <h5 class="marBottom32">Note: Certain aspects of a care plan: billing type, check-in dates, individual goals, medications, problem areas, diagnosis, and appointment tasks will be added on their individual care plan as needed.</h5>
-
   <div class="accordion" [ngClass]="{'isOpen': accordionsOpen['goals']}">
     <div class="accordion__head" (click)="accordionsOpen['goals'] = !accordionsOpen['goals']">
       <span class="accordion__title">Care Plan Goals ({{goalTemplates.length}})</span>
@@ -20,9 +19,8 @@
                 <div class="tool">
                   <span class="thSortable__text thSortable__text--left">Goal Name</span>
                   <div class="tool__anchor">
-                    <button class="button button--icon button--icon--small"
-                      (click)="tooltipsOpen['goalFieldHelp'] = !tooltipsOpen['goalFieldHelp']">
-                        <i class="ss-help"></i>
+                    <button class="button button--icon button--icon--small" (click)="tooltipsOpen['goalFieldHelp'] = !tooltipsOpen['goalFieldHelp']">
+                      <i class="ss-help"></i>
                     </button>
                     <app-popover [visible]="tooltipsOpen['goalFieldHelp']" (visibleChange)="tooltipsOpen['goalFieldHelp'] = $event">
                       <div class="tool__tip tool__tip--bottom tool__tip--left isOpen">
@@ -72,7 +70,6 @@
       </div> <!--/.accordion__contents-->
     </div> <!--/.accordion__body-->
   </div> <!--/.accordion (for care plan goals)-->
-
   <div class="accordion" [ngClass]="{ 'isOpen' : accordionsOpen['teamTasks'] }">
     <div class="accordion__head" (click)="accordionsOpen['teamTasks']=!accordionsOpen['teamTasks']">
       <span class="accordion__title">Care Manager and Care Team Tasks ({{teamTaskTemplates.length}})</span>
@@ -224,7 +221,6 @@
       </div> <!--/.accordion__contents-->
     </div> <!--/.accordion__body-->
   </div> <!--/.accordion (for CT tasks)-->
-
   <div class="accordion" [ngClass]="{'isOpen': accordionsOpen['patientTasks'] }">
     <div class="accordion__head" (click)="accordionsOpen['patientTasks'] = !accordionsOpen['patientTasks']">
       <span class="accordion__title">Patient Tasks ({{patientTasksCount()}})</span>
@@ -301,7 +297,6 @@
           <i class="ss-plus"></i> Add Task
         </button>
         <!--/ patient tasks: tasks section-->
-
         <div class="flex alignCenter">
           <h3 class="noMargin">Assessments ({{assessmentTemplates.length}})</h3>
           <div class="tool__anchor">
@@ -317,7 +312,6 @@
             </app-popover>
           </div> <!--/.tool__anchor-->
         </div> <!--/.flex (for table title and tooltip)-->
-
         <table class="fullWidth">
           <thead>
             <tr>
@@ -404,7 +398,6 @@
           <i class="ss-plus"></i> Add Assessment
         </button>
         <!--/ patient tasks: assessments section-->
-
         <div class="flex alignCenter">
           <h3 class="noMargin">Symptom Reports ({{symptomTemplates.length}})</h3>
           <div class="tool__anchor">
@@ -420,7 +413,6 @@
             </app-popover>
           </div> <!--/.tool__anchor-->
         </div> <!--/.flex (for table title and tooltip)-->
-
         <table class="fullWidth">
           <thead>
             <tr>
@@ -467,7 +459,6 @@
           <i class="ss-plus"></i> Add Symptom Report
         </button>
         <!--/ patient tasks: symptoms section-->
-
         <div class="flex alignCenter">
           <h3 class="noMargin">Vitals ({{vitalTemplates.length}})</h3>
           <div class="tool__anchor">
@@ -483,7 +474,6 @@
             </app-popover>
           </div> <!--/.tool__anchor-->
         </div> <!--/.flex (for table title and tooltip)-->
-
         <table class="fullWidth">
           <thead>
             <tr>
@@ -563,7 +553,6 @@
             </app-popover>
           </div> <!--/.tool__anchor-->
         </div> <!--/.flex (for table title and tooltip)-->
-
         <table class="fullWidth">
           <thead>
             <tr>
@@ -605,5 +594,4 @@
       </div> <!--/.accordion__contents-->
     </div> <!--/.accordion__body-->
   </div> <!--/.accordion (for patient tasks)-->
-
 </div> <!--/.ssContainer-->

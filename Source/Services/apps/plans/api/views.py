@@ -259,10 +259,13 @@ class CarePlanTemplateViewSet(viewsets.ModelViewSet):
 
         queryset = self.get_queryset()
         filtered_queryset = self.filter_queryset(queryset)
-        template = filtered_queryset.get(pk=pk)
-        serializer = CarePlanTemplateAverageSerializer(
-            template, context=self.get_serializer_context())
-        return Response(serializer.data)
+        try:
+            template = filtered_queryset.get(pk=pk)
+            serializer = CarePlanTemplateAverageSerializer(
+                template, context=self.get_serializer_context())
+            return Response(serializer.data)
+        except CarePlanTemplate.DoesNotExist:
+            return Response(None)
 
     @action(methods=['post'], detail=False,
             permission_classes=(permissions.IsAuthenticated, ))

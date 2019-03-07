@@ -49,7 +49,6 @@ export class PlansComponent implements OnDestroy, OnInit {
         return;
       }
       this.organization = organization;
-      console.log(this.local.getObj('hide_inactive_plan_templates'))
       if (this.local.getObj('hide_inactive_plan_templates') === null) {
         this.hideInactiveTemplates = true;
       } else {
@@ -171,7 +170,17 @@ export class PlansComponent implements OnDestroy, OnInit {
       }
       let averagesSub = this.store.CarePlanTemplate.detailRoute('get', template.id, 'average', {}, params).subscribe(
         (carePlanTemplateAverages) => {
-          resolve(carePlanTemplateAverages);
+          if (!carePlanTemplateAverages) {
+            resolve({
+              average_engagement: 0,
+              average_outcome: 0,
+              risk_level: 0,
+              total_facilities: 0,
+              total_patients: 0,
+            });
+          } else {
+            resolve(carePlanTemplateAverages);
+          }
         },
         (err) => {
           resolve({

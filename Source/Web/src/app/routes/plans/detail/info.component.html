@@ -21,7 +21,7 @@
           Time 0:00
         </div>
         <div class="pill">
-          N/A
+          ---
         </div>
         <div class="accordion__arrow">
           <i class="ss-standard ss-navigateright"></i>
@@ -116,13 +116,12 @@
                     Ongoing
                   </div>
                 </td>
-                <td>N/A</td>
+                <td>---</td>
                 <td><div class="pill" [ngStyle]="{'background': utils.percentPillColor(plan.average_engagement)}">{{plan.average_engagement}}%</div></td>
                 <td><div class="pill" [ngStyle]="{'background': utils.percentPillColor(plan.average_outcome)}">{{plan.average_outcome}}%</div></td>
                 <td><div class="pill" [ngStyle]="{'background': utils.percentPillColor(plan.risk_level)}">{{utils.getRiskLevelText(plan.risk_level)}} {{plan.risk_level}}%</div></td>
                 <td class="noPad">
-                  <button class="button button--icon button--icon--small"
-                  (click)="openReassignPatients(plan)">
+                  <button class="button button--icon button--icon--small" (click)="openReassignPatients(plan)">
                     <i class="ss-delete"></i>
                   </button>
                 </td>
@@ -130,8 +129,7 @@
             </tbody>
           </table>
           <div class="paginationWrap">
-            <button class="button button--iconText"
-            (click)="addPatientToPlan()">
+            <button class="button button--iconText" (click)="addPatientToPlan()">
               <i class="ss-plus"></i> Add Patient
             </button>
             <!-- <div class="pagination">
@@ -156,8 +154,7 @@
     <div class="accordion__body" *ngIf="!facility.plans || facility.plans.length === 0">
       <div class="accordion__contents">
         <h2 class="center">No patients have been added to this care plan.</h2>
-        <button class="button button--center button--iconText"
-        (click)="addPatientToPlan()">
+        <button class="button button--center button--iconText" (click)="addPatientToPlan()">
           <i class="ss-plus"></i> Add Patient
         </button>
       </div>
