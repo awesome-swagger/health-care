@@ -46,7 +46,8 @@
     </div> <!--/.accordion__head-->
     <div class="accordion__body">
       <div class="accordion__contents">
-        <table class="fullWidth">
+        <h2 *ngIf="planGoals.length < 1">No goals on selected date</h2>
+        <table class="fullWidth" *ngIf="planGoals.length > 0">
           <thead>
             <tr>
               <th class="thSortable thSortable--sortDown">
@@ -65,8 +66,7 @@
                 <div class="tool justifyCenter">
                   <span>Update</span>
                   <div class="tool__anchor">
-                    <button class="button button--icon button--icon--small"
-                    (click)="goalUpdateTTOpen=!goalUpdateTTOpen">
+                    <button class="button button--icon button--icon--small" (click)="goalUpdateTTOpen=!goalUpdateTTOpen">
                       <i class="ss-help"></i>
                     </button>
                     <app-popover [visible]="goalUpdateTTOpen" (visibleChange)="goalUpdateTTOpen = $event;">
@@ -133,7 +133,8 @@
     </div> <!--/.accordion__head-->
     <div class="accordion__body">
       <div class="accordion__contents">
-        <table class="fullWidth">
+        <h2 *ngIf="userTasks.length < 1">No tasks on selected date</h2>
+        <table class="fullWidth" *ngIf="userTasks.length > 0">
           <thead>
             <tr>
               <th class="thSortable">
@@ -187,8 +188,7 @@
             </tr>
           </tbody>
         </table>
-        <button class="button button--iconText"
-        (click)="addCTTask()">
+        <button class="button button--iconText" (click)="addCTTask()">
           <i class="ss-plus"></i> Add Task
         </button>
       </div> <!--/.accordion__contents-->
@@ -212,7 +212,8 @@
     </div> <!--/.accordion__head-->
     <div class="accordion__body">
       <div class="accordion__contents">
-        <table class="fullWidth">
+        <h2 *ngIf="teamTasks.length < 1">No tasks on selected date</h2>
+        <table class="fullWidth" *ngIf="teamTasks.length > 0">
           <thead>
             <tr>
               <th class="thSortable">
@@ -264,8 +265,7 @@
             </tr>
           </tbody>
         </table>
-        <button class="button button--iconText"
-        (click)="addCTTask()">
+        <button class="button button--iconText" (click)="addCTTask()">
           <i class="ss-plus"></i> Add Task
         </button>
       </div> <!--/.accordion__contents-->
@@ -289,7 +289,8 @@
     </div> <!--/.accordion__head-->
     <div class="accordion__body">
       <div class="accordion__contents">
-        <table class="fullWidth">
+        <h2 *ngIf="patientTasks.length < 1">No tasks on selected date</h2>
+        <table class="fullWidth" *ngIf="patientTasks.length > 0">
           <thead>
             <tr>
               <th class="thSortable">
@@ -311,8 +312,7 @@
                 <div class="tool justifyCenter">
                   <span class="thSortable__text">Occur</span>
                   <div class="tool__anchor">
-                    <button class="button button--icon button--icon--small"
-                    (click)="patientTaskOccurTTOpen=!patientTaskOccurTTOpen">
+                    <button class="button button--icon button--icon--small" (click)="patientTaskOccurTTOpen=!patientTaskOccurTTOpen">
                       <i class="ss-help"></i>
                     </button>
                     <app-popover [visible]="patientTaskOccurTTOpen" (visibleChange)="patientTaskOccurTTOpen = $event;">
@@ -437,6 +437,7 @@
     </div> <!--/.accordion__head-->
     <div class="accordion__body">
       <div class="accordion__contents">
+        <h2 *ngIf="objectKeys(assessmentResults).length < 1">No assessment results on selected date</h2>
         <ng-container *ngFor="let assessment of objectKeys(assessmentResults)">
           <div class="flex alignCenter">
             <h3 class="noMargin marRight24">{{assessment}}</h3>
@@ -623,7 +624,8 @@
     </div> <!--/.accordion__head-->
     <div class="accordion__body">
       <div class="accordion__contents">
-        <table class="fullWidth">
+        <h2 *ngIf="symptomResults.length < 1">No symptoms reported on selected date</h2>
+        <table class="fullWidth" *ngIf="symptomResults.length > 0">
           <thead>
             <tr>
               <th class="thSortable">
@@ -636,8 +638,7 @@
                 <div class="tool justifyCenter">
                   <span class="thSortable__text">Reported</span>
                   <div class="tool__anchor">
-                    <button class="button button--icon button--icon--small"
-                    (click)="symptomReportedTTOpen=!symptomReportedTTOpen">
+                    <button class="button button--icon button--icon--small" (click)="symptomReportedTTOpen=!symptomReportedTTOpen">
                       <i class="ss-help"></i>
                     </button>
                     <app-popover [visible]="symptomReportedTTOpen" (visibleChange)="symptomReportedTTOpen = $event;">
@@ -780,6 +781,7 @@
     </div> <!--/.accordion__head-->
     <div class="accordion__body">
       <div class="accordion__contents">
+        <h2 *ngIf="objectKeys(vitalResults).length < 1">No vital results on selected date</h2>
         <ng-container *ngFor="let vital of objectKeys(vitalResults)">
           <h3 class="noMargin">{{vital}}</h3>
           <table class="fullWidth">
