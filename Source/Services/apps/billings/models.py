@@ -78,6 +78,23 @@ class BilledActivity(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
         return f'{self.added_by}: {self.readable_time_spent}'
 
 
+
+class BillingType(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
+    """
+    Stores information about types of Billing
+    """
+    name = models.CharField(max_length=128)
+    acronym = models.CharField(max_length=16)
+
+    class Meta:
+        ordering = ('-created', )
+        verbose_name = _('Billing Type')
+        verbose_name_plural = _('Billing Types')
+
+    def __str__(self):
+        return f'{self.acronym}: {self.name}'
+
+
 # SIGNALS
 models.signals.post_save.connect(
     billedactivity_post_save,

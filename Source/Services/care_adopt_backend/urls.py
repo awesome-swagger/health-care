@@ -11,6 +11,7 @@ from rest_framework_swagger.views import get_swagger_view
 from apps.landing.views import LandingView
 from apps.accounts.views import UserViewSet, VerifyChangeEmail, CustomRegisterView
 from apps.billings.api.views import (
+    BillingTypeViewSet,
     BilledActivityViewSet,
     OrganizationBilledActivity,
 )
@@ -36,7 +37,6 @@ from apps.patients.api.views import (
     EmergencyContactViewSet,
 )
 from apps.plans.api.views import (
-    CarePlanTemplateTypeViewSet,
     ServiceAreaViewSet,
     CarePlanTemplateViewSet,
     CarePlanViewSet,
@@ -247,9 +247,9 @@ router.register(
     r'patient_medications', PatientMedicationViewSet, base_name='patient_medications')
 # Plans
 router.register(
-    r'care_plan_template_types',
-    CarePlanTemplateTypeViewSet,
-    base_name='care_plan_template_types')
+    r'billing_types',
+    BillingTypeViewSet,
+    base_name='billing_types')
 router.register(
     r'service_areas',
     ServiceAreaViewSet,

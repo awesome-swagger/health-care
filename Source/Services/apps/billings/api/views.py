@@ -10,13 +10,14 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework_extensions.mixins import NestedViewSetMixin
 
-from ..models import BilledActivity
+from ..models import BilledActivity, BillingType
 from ..permissions import IsAdminOrEmployeeActivityOwner
-from .serializers import BilledActivitySerializer
+from .serializers import BilledActivitySerializer, BillingTypeSerializer
 from apps.core.api.mixins import ParentViewSetPermissionMixin
 from apps.core.api.views import OrganizationViewSet
 from apps.core.models import Organization
 from apps.patients.models import PatientProfile
+from apps.tasks.permissions import IsEmployeeOrPatientReadOnly
 
 
 class BilledActivityViewSet(viewsets.ModelViewSet):
@@ -259,3 +260,40 @@ class OrganizationBilledActivity(ParentViewSetPermissionMixin,
             'total_billable': total_billable
         }
         return Response(data=data)
+
+
+class BillingTypeViewSet(viewsets.ModelViewSet):
+    """
+    Viewset for :model:`billings.BillingType`
+    ========
+
+    create:
+        Creates :model:`billings.BillingType` object.
+        Only admins and employees are allowed to perform this action.
+
+    update:
+        Updates :model:`billings.BillingType` object.
+        Only admins and employees are allowed to perform this action.
+
+    partial_update:
+        Updates one or more fields of an existing plan template type object.
+        Only admins and employees are allowed to perform this action.
+
+    retrieve:
+        Retrieves a :model:`billings.BillingType` instance.
+        All users will have access to all template type objects.
+
+    list:
+        Returns list of all :model:`billings.BillingType` objects.
+        All users will have access to all template type objects.
+
+    delete:
+        Deletes a :model:`billings.BillingType` instance.
+        Only admins and employees are allowed to perform this action.
+    """
+    serializer_class = BillingTypeSerializer
+    permission_classes = (
+        permissions.IsAuthenticated,
+        IsEmployeeOrPatientReadOnly,
+    )
+    queryset = BillingType.objects.all()

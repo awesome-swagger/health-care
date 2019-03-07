@@ -1,16 +1,6 @@
 import factory
 
 
-class CarePlanTemplateTypeFactory(factory.django.DjangoModelFactory):
-    """
-    Factory for :model:`plans.CarePlanTemplateType`
-    """
-
-    class Meta:
-        model = 'plans.CarePlanTemplateType'
-        django_get_or_create = ('name', )
-
-
 class CarePlanTemplateFactory(factory.django.DjangoModelFactory):
     """
     Factory for :model:`plans.CarePlanTemplate`
