@@ -16,7 +16,7 @@
   <button
     class="button button--icon searchClear"
     (click)="unselectPatient()"
-    *ngIf="selectedPatient"
+    *ngIf="selectedPatient && !data.disableRemovePatient"
   >
     <i class="ss-delete"></i>
   </button>

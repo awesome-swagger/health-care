@@ -143,9 +143,6 @@ export class MedicationComponent implements OnInit {
 
   public clickSave() {
     if (this.data.type === 'add') {
-      console.log('vvvvvvvvvvvvvvvvvvvvvvvvvvvvv')
-      console.log(this.selectedMedication)
-      console.log('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
       this.store.PatientMedication.create({
         patient: this.patient.id,
         medication: this.selectedMedication.id,

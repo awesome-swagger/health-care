@@ -2,9 +2,9 @@
   <!--TODO: Show the following span if adding a medication-->
   <!--<span>Add</span>-->
   <!--TODO: Show the following span if editing a medication-->
-  <span>{{data?.type === 'add' ? 'Add' : 'Edit'}}</span>
-  Medication
+  Medication Task
 </h1>
+<div class="divider"></div>
 <div class="flex justifySpaceBetween marBottom32">
   <div class="modal__inputWrap marRight32">
     <label>Medication Name</label>
@@ -27,11 +27,13 @@
 <div class="flex justifySpaceBetween marBottom32">
   <div class="modal__inputWrap marRight32">
     <label>Started</label>
-    <div class="datepicker">
+    <div>
       <div class="datepicker__date datepicker__date--fullWidth" (click)="showDate=!showDate">
         {{datePrescribedFormatted || 'Select Date'}}
       </div>
-      <app-date-picker class="datepicker__picker" [ngClass]="{ 'isOpen' : showDate }" (selectedChange)="datePrescribed = $event"></app-date-picker>
+      <app-popover [visible]="showDate" (visibleChange)="showDate = $event">
+        <app-date-picker class="datepicker__picker isOpen" (selectedChange)="datePrescribed = $event"></app-date-picker>
+      </app-popover>
     </div>
   </div>
   <div class="modal__inputWrap140 marRight32">

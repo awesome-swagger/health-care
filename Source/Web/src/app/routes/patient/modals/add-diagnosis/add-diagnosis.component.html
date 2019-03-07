@@ -34,17 +34,20 @@
   </div>
 </div>
 
-<div class="modal__inputWrap0 marBottom32 fullWidth">
-  <label>Date Identified</label>
-  <div>
-    <div class="datepicker__date" (click)="showDatePicker=!showDatePicker">
-      <span *ngIf="!selectedDate">Select Date</span>
-      <span *ngIf="selectedDate">{{selectedDate.format('MMM D, YYYY')}}</span>
+<div class="modal__inputWrap marBottom32 fullWidth flex">
+  <div class="flex1 marRight24">
+    <label>Date Identified</label>
+    <div class="fullWidth">
+      <div class="datepicker__date fullWidth" (click)="showDatePicker=!showDatePicker">
+        <span *ngIf="!selectedDate">Select Date</span>
+        <span *ngIf="selectedDate">{{selectedDate.format('MMM D, YYYY')}}</span>
+      </div>
+      <app-popover [visible]="showDatePicker" (visibleChange)="showDatePicker = $event;">
+        <app-date-picker class="datepicker__picker datepicker__picker--left isOpen" [selected]="selectedDate" (selectedChange)="setSelectedDay($event)"></app-date-picker>
+      </app-popover>
     </div>
-    <app-popover [visible]="showDatePicker" (visibleChange)="showDatePicker = $event;">
-      <app-date-picker class="datepicker__picker datepicker__picker--left isOpen" [selected]="selectedDate" (selectedChange)="setSelectedDay($event)"></app-date-picker>
-    </app-popover>
   </div>
+  <div class="flex1"></div>
 </div>
 <div class="flex justifySpaceBetween marBottom32">
   <div class="modal__inputWrap marRight16 fullWidth">

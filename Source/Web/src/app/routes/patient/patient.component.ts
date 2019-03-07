@@ -59,6 +59,9 @@ export class PatientComponent implements OnDestroy, OnInit {
     this.routeSub = this.route.params.subscribe((params) => {
       this.getPatient(params.patientId).then((patient:any) => {
         this.patient = patient;
+        console.log('vvvvvvvvvvvvvvvvvvvvvvvvvvvvv')
+        console.log(this.patient)
+        console.log('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
         this.nav.addRecentPatient(this.patient);
         this.getCarePlans(this.patient.id).then((carePlans: any) => {
           this.carePlans = carePlans;
@@ -270,6 +273,8 @@ export class PatientComponent implements OnDestroy, OnInit {
         patient: patient,
         planKnown: false,
         facility: this.patient.facility,
+        enrollPatientChecked: true,
+        disableRemovePatient: true,
       },
       width: '576px',
     }).subscribe((plan) => {
@@ -281,8 +286,14 @@ export class PatientComponent implements OnDestroy, OnInit {
 
   public editPatientProfile() {
     this.modals.open(PatientProfileComponent, {
-      width: '576px',
-    }).subscribe(() => {});
+      width: '741px',
+      data: {
+        patient: this.patient,
+      }
+    }).subscribe((res) => {
+      if (!res) return;
+      this.patient = res;
+    });
   }
 
   public editPatientCommunication() {
@@ -406,7 +417,7 @@ export class PatientComponent implements OnDestroy, OnInit {
 
   public addMedication() {
     this.modals.open(MedicationComponent, {
-      width: '576px',
+      width: '512px',
       data: {
         type: 'add',
         patient: this.patient,
@@ -420,7 +431,7 @@ export class PatientComponent implements OnDestroy, OnInit {
 
   public editMedication(medication) {
     this.modals.open(MedicationComponent, {
-      width: '576px',
+      width: '512px',
       data: {
         type: 'edit',
         patient: this.patient,

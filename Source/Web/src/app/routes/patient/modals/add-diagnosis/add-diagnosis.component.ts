@@ -34,8 +34,6 @@ export class AddDiagnosisComponent implements OnInit {
     private modals: ModalService,
   ) { }
 
-  public close;
-
   ngOnInit() {
     if (this.data && this.data.patient) {
       this.selectedFacility = this.data.patient.facility;
@@ -119,6 +117,10 @@ export class AddDiagnosisComponent implements OnInit {
 
   public setSelectedDay(e) {
     this.selectedDate = e;
+  }
+
+  public close() {
+    this.modals.close(null);
   }
 
   public submit() {

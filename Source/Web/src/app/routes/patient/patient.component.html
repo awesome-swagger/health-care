@@ -274,25 +274,25 @@
             <label class="info__label2">Age</label>
             <p class="info__p">{{patientAge}}</p>
             <label class="info__label2">Insurance</label>
-            <p class="info__p">{{patient?.profile?.insurance}}</p>
+            <p class="info__p">{{patient?.insurance?.name}}</p>
             <label class="info__label2">Height</label>
-            <p class="info__p info__p--noMargin">{{patient?.profile?.height}}</p>
+            <p class="info__p info__p--noMargin">{{patient?.height_feet}}' {{patient?.height_inches}}"</p>
           </div>
           <div>
             <label class="info__label2">Date of Birth</label>
             <p class="info__p">{{patient?.user?.birthdate}}</p>
             <label class="info__label2">Secondary Ins.</label>
-            <p class="info__p">{{patient?.profile?.secondaryIns}}</p>
+            <p class="info__p">{{patient?.secondary_insurance?.name}}</p>
             <label class="info__label2">Ethnicity</label>
-            <p class="info__p info__p--noMargin">{{patient?.profile?.ethnicity}}</p>
+            <p class="info__p info__p--noMargin">{{patient?.ethnicity}}</p>
           </div>
           <div>
             <label class="info__label2">Gender</label>
             <p class="info__p">{{patient?.user?.gender ? patient?.user?.gender.toUpperCase() : ''}}</p>
             <label class="info__label2">MRN</label>
-            <p class="info__p">{{patient?.profile?.MRN}}</p>
+            <p class="info__p">{{patient?.mrn}}</p>
             <label class="info__label2">Cognitive Ability</label>
-            <p class="info__p info__p--noMargin">{{patient?.profile?.cognitiveAbility}}</p>
+            <p class="info__p info__p--noMargin">{{patient?.cognitive_ability}}</p>
           </div>
         </div>
       </div> <!--/.info (for profile)-->
@@ -348,7 +348,11 @@
           </div>
           <div>
             <label class="info__label2">Comm. Preference</label>
-            <p class="info__p info__p--noMargin">{{patient?.communication?.commPreference}}</p>
+            <p class="info__p info__p--noMargin">
+              {{patient?.communication_preference === 'in_app_messaging' ? 'In-App Messaging' : ''}}
+              {{patient?.communication_preference === 'text_message' ? 'Text Message' : '' }}
+              {{patient?.communication_preference === 'phone' ? 'Phone' : '' }}
+            </p>
           </div>
         </div>
       </div> <!--/.info (for communication)-->

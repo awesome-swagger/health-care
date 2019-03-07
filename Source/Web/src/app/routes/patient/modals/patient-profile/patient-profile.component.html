@@ -1,176 +1,166 @@
 <h1 class="modal__title">Edit Patient Profile</h1>
-<form>
-  <div class="flex justifySpaceBetween marBottom32">
-    <div class="modal__inputWrap80 marRight32">
-      <label>Age</label>
-      <input type="number" class="input fullWidth" min="0" />
-    </div>
-    <div class="modal__inputWrap marRight32">
-      <!--NOTE: Our datepicker is not ideal for picking a birth date. So I came up with another option.-->
-      <label>Date of Birth</label>
-      <div class="flex">
-        <div class="styledSelect marRight8">
-          <select class="styledSelect__select">
-            <option>Jan</option>
-            <option>Feb</option>
-            <option>Mar</option>
-            <option>Apr</option>
-            <option>May</option>
-            <option>Jun</option>
-            <option>Jul</option>
-            <option>Aug</option>
-            <option>Sep</option>
-            <option>Oct</option>
-            <option>Nov</option>
-            <option>Dec</option>
-          </select>
-        </div>
-        <div class="styledSelect marRight8">
-          <select class="styledSelect__select">
-            <option>1</option>
-            <option>2</option>
-            <option>3</option>
-            <option>4</option>
-            <option>5</option>
-            <option>6</option>
-            <option>7</option>
-            <option>8</option>
-            <option>9</option>
-            <option>10</option>
-            <option>11</option>
-            <option>12</option>
-            <option>13</option>
-            <option>14</option>
-            <option>15</option>
-            <option>16</option>
-            <option>17</option>
-            <option>18</option>
-            <option>19</option>
-            <option>20</option>
-            <option>21</option>
-            <option>22</option>
-            <option>23</option>
-            <option>24</option>
-            <option>25</option>
-            <option>26</option>
-            <option>27</option>
-            <option>28</option>
-            <option>29</option>
-            <option>30</option>
-            <option>31</option>
-          </select>
-        </div>
-        <div class="modal__inputWrap100">
-          <input type="number" class="input fullWidth" placeholder="YYYY" min="1900"/>
-        </div>
-      </div>
-    </div>
-    <div class="modal__inputWrap">
-      <label>Gender</label>
-      <div class="styledSelect">
-        <select class="styledSelect__select">
-          <option>F</option>
-          <option>M</option>
-          <option>Other</option>
+<div class="flex justifySpaceBetween marBottom32">
+  <div class="modal__inputWrap marRight32">
+    <!--NOTE: Our datepicker is not ideal for picking a birth date. So I came up with another option.-->
+    <label>Date of Birth</label>
+    <div class="flex">
+      <div class="styledSelect marRight8">
+        <select class="styledSelect__select" [(ngModel)]="birthMonth">
+          <option value="01">Jan</option>
+          <option value="02">Feb</option>
+          <option value="03">Mar</option>
+          <option value="04">Apr</option>
+          <option value="05">May</option>
+          <option value="06">Jun</option>
+          <option value="07">Jul</option>
+          <option value="08">Aug</option>
+          <option value="09">Sep</option>
+          <option value="10">Oct</option>
+          <option value="11">Nov</option>
+          <option value="12">Dec</option>
         </select>
       </div>
-    </div>
-  </div> <!--/.flex (for age, date of birth, gender)-->
-  <div class="flex justifySpaceBetween marBottom32">
-    <div class="modal__inputWrap160 marRight32">
-      <label>Insurance</label>
-      <div class="styledSelect">
-        <select class="styledSelect__select">
-          <option>Humana</option>
-          <option>Medicaid</option>
-          <option>Medicare</option>
+      <div class="styledSelect marRight8">
+        <select class="styledSelect__select" [(ngModel)]="birthDay">
+          <option value="01">1</option>
+          <option value="02">2</option>
+          <option value="03">3</option>
+          <option value="04">4</option>
+          <option value="05">5</option>
+          <option value="06">6</option>
+          <option value="07">7</option>
+          <option value="08">8</option>
+          <option value="09">9</option>
+          <option value="10">10</option>
+          <option value="11">11</option>
+          <option value="12">12</option>
+          <option value="13">13</option>
+          <option value="14">14</option>
+          <option value="15">15</option>
+          <option value="16">16</option>
+          <option value="17">17</option>
+          <option value="18">18</option>
+          <option value="19">19</option>
+          <option value="20">20</option>
+          <option value="21">21</option>
+          <option value="22">22</option>
+          <option value="23">23</option>
+          <option value="24">24</option>
+          <option value="25">25</option>
+          <option value="26">26</option>
+          <option value="27">27</option>
+          <option value="28">28</option>
+          <option value="29">29</option>
+          <option value="30">30</option>
+          <option value="31">31</option>
         </select>
       </div>
-    </div>
-    <div class="modal__inputWrap160 marRight32">
-      <label>Secondary Ins. (opt)</label>
-      <div class="styledSelect">
-        <select class="styledSelect__select">
-          <option>Humana</option>
-          <option>Medicaid</option>
-          <option>Medicare</option>
-        </select>
+      <div class="modal__inputWrap100">
+        <input type="number" class="input fullWidth" placeholder="YYYY" min="1900" [(ngModel)]="birthYear" />
       </div>
     </div>
-    <div class="modal__inputWrap">
-      <label>MRN (opt)</label>
-      <input type="number" class="input fullWidth" min="0" />
-    </div>
-  </div> <!--/.flex (for insurance, 2nd ins., and MRN)-->
-  <div class="flex justifySpaceBetween">
-    <div class="modal__inputWrap marRight32">
-      <label>Height (opt)</label>
-      <div class="flex">
-        <div class="styledSelect marRight8">
-          <select class="styledSelect__select">
-            <option>- -</option>
-            <option>7'</option>
-            <option>6'</option>
-            <option>5'</option>
-            <option>4'</option>
-            <option>3'</option>
-            <option>2'</option>
-            <option>1'</option>
-            <option>0'</option>
-          </select>
-        </div>
-        <div class="styledSelect">
-          <select class="styledSelect__select">
-            <option>- -</option>
-            <option>11"</option>
-            <option>10"</option>
-            <option>9"</option>
-            <option>8"</option>
-            <option>7"</option>
-            <option>6"</option>
-            <option>5"</option>
-            <option>4"</option>
-            <option>3"</option>
-            <option>2"</option>
-            <option>1"</option>
-            <option>0"</option>
-          </select>
-        </div>
-      </div>
-    </div>
-    <div class="modal__inputWrap marRight32">
-      <label>Ethnicity (opt)</label>
-      <div class="styledSelect">
-        <select class="styledSelect__select">
-          <option>- - - - - - - -</option>
-          <option>Asian</option>
-          <option>Black</option>
-          <option>Hispanic</option>
-          <option>Middle Eastern</option>
-          <option>Native American</option>
-          <option>White</option>
-          <option>Multiracial</option>
-        </select>
-      </div>
-    </div>
-    <div class="modal__inputWrap140">
-      <label>Cog. Ability (opt)</label>
-      <div class="styledSelect">
-        <select class="styledSelect__select">
-          <option>- - - - - - - -</option>
-          <option>Low</option>
-          <option>Medium</option>
-          <option>High</option>
-        </select>
-      </div>
-    </div>
-  </div> <!--/.flex (for height, ethnicity, and cognitive ability)-->
-  <div class="modal__buttons">
-    <button class="button button--2nd">
-      Cancel
-    </button>
-    <button class="button">
-      Save
-    </button>
   </div>
-</form>
+  <div class="modal__inputWrap">
+    <label>Gender</label>
+    <div class="styledSelect">
+      <select class="styledSelect__select" [(ngModel)]="gender">
+        <option value="f">Female</option>
+        <option value="m">Male</option>
+        <option>Other</option>
+      </select>
+    </div>
+  </div>
+</div> <!--/.flex (for age, date of birth, gender)-->
+<div class="flex justifySpaceBetween marBottom32">
+  <div class="modal__inputWrap160 marRight32">
+    <label>Insurance</label>
+    <div class="styledSelect">
+      <select class="styledSelect__select" [(ngModel)]="selectedInsurance" [compareWith]="compareFn">
+        <option *ngFor="let insurance of insurances" [ngValue]="insurance">{{insurance.name}}</option>
+      </select>
+    </div>
+  </div>
+  <div class="modal__inputWrap160 marRight32">
+    <label>Secondary Ins. (opt)</label>
+    <div class="styledSelect">
+      <select class="styledSelect__select" [(ngModel)]="selectedSecondaryInsurance" [compareWith]="compareFn">
+        <option *ngFor="let insurance of insurances" [ngValue]="insurance">{{insurance.name}}</option>
+      </select>
+    </div>
+  </div>
+  <div class="modal__inputWrap">
+    <label>MRN (opt)</label>
+    <input type="number" class="input fullWidth" min="0" [(ngModel)]="mrn" />
+  </div>
+</div> <!--/.flex (for insurance, 2nd ins., and MRN)-->
+<div class="flex justifySpaceBetween">
+  <div class="modal__inputWrap marRight32">
+    <label>Height (opt)</label>
+    <div class="flex">
+      <div class="styledSelect marRight8">
+        <select class="styledSelect__select" [(ngModel)]="heightFeet">
+          <option>- -</option>
+          <option value="7">7'</option>
+          <option value="6">6'</option>
+          <option value="5">5'</option>
+          <option value="4">4'</option>
+          <option value="3">3'</option>
+          <option value="2">2'</option>
+          <option value="1">1'</option>
+          <option value="0">0'</option>
+        </select>
+      </div>
+      <div class="styledSelect">
+        <select class="styledSelect__select" [(ngModel)]="heightInches" >
+          <option>- -</option>
+          <option value="11">11"</option>
+          <option value="10">10"</option>
+          <option value="9">9"</option>
+          <option value="8">8"</option>
+          <option value="7">7"</option>
+          <option value="6">6"</option>
+          <option value="5">5"</option>
+          <option value="4">4"</option>
+          <option value="3">3"</option>
+          <option value="2">2"</option>
+          <option value="1">1"</option>
+          <option value="0">0"</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  <div class="modal__inputWrap marRight32">
+    <label>Ethnicity (opt)</label>
+    <div class="styledSelect">
+      <select class="styledSelect__select" [(ngModel)]="ethnicity">
+        <option>- - - - - - - -</option>
+        <option value="asian">Asian</option>
+        <option value="black">Black</option>
+        <option value="hispanic">Hispanic</option>
+        <option value="middle eastern">Middle Eastern</option>
+        <option value="native american">Native American</option>
+        <option value="white">White</option>
+        <option value="multiracial">Multiracial</option>
+      </select>
+    </div>
+  </div>
+  <div class="modal__inputWrap140">
+    <label>Cog. Ability (opt)</label>
+    <div class="styledSelect">
+      <select class="styledSelect__select" [(ngModel)]="cognitiveAbility">
+        <option>- - - - - - - -</option>
+        <option value="low">Low</option>
+        <option value="medium">Medium</option>
+        <option value="high">High</option>
+      </select>
+    </div>
+  </div>
+</div> <!--/.flex (for height, ethnicity, and cognitive ability)-->
+<div class="modal__buttons">
+  <button class="button button--2nd" (click)="close()">
+    Cancel
+  </button>
+  <button class="button" (click)="save()">
+    Save
+  </button>
+</div>
