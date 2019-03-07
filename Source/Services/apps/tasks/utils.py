@@ -155,6 +155,7 @@ def get_all_tasks_for_today(user, **kwargs):
     tasks = []
     date_object = kwargs.pop('date_object', timezone.now().date())
     plan_template = kwargs.pop('plan_template', None)
+    plan = kwargs.pop('plan', None)
     today_min = datetime.datetime.combine(date_object,
                                           datetime.time.min,
                                           tzinfo=pytz.utc)
@@ -166,9 +167,12 @@ def get_all_tasks_for_today(user, **kwargs):
 
     if user.is_employee:
         employee = user.employee_profile
+        assigned_roles = employee.assigned_roles
+        if plan:
+            assigned_roles = assigned_roles.filter(plan=plan)
         team_tasks = TeamTask.objects.filter(
-            plan__care_team_members__employee_profile__id__in=[employee.id],
-            team_task_template__role__in=employee.assigned_roles.all().values_list('role', flat=True),
+            plan__care_team_members__id__in=assigned_roles.values_list('id', flat=True),
+            team_task_template__role__in=assigned_roles.values_list('role', flat=True),
             due_datetime__range=(today_min, today_max)
         )
         if exclude_done:
@@ -178,9 +182,12 @@ def get_all_tasks_for_today(user, **kwargs):
             team_tasks = team_tasks.filter(
                 team_task_template__plan_template=plan_template)
 
+        if plan:
+            team_tasks = team_tasks.filter(plan=plan)
+
         if team_tasks.exists():
             serializer = TeamTaskTodaySerializer(
-                team_tasks.all(),
+                team_tasks.distinct(),
                 many=True
             )
             tasks += serializer.data

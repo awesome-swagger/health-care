@@ -109,17 +109,29 @@ class PatientTaskViewSet(viewsets.ModelViewSet):
     }
 
     def get_queryset(self):
-        queryset = super(PatientTaskViewSet, self).get_queryset()
+        qs = super(PatientTaskViewSet, self).get_queryset()
         user = self.request.user
 
         if user.is_employee:
-            queryset = queryset.filter(
-                plan__care_team_members__employee_profile=user.employee_profile
-            )
+            employee_profile = user.employee_profile
+            if employee_profile.organizations_managed.count() > 0:
+                organizations_managed = employee_profile.organizations_managed.values_list('id', flat=True)
+                qs = qs.filter(
+                    plan__patient__facility__organization__id__in=organizations_managed)
+            elif employee_profile.facilities_managed.count() > 0:
+                facilities_managed = employee_profile.facilities_managed.values_list('id', flat=True)
+                assigned_roles = employee_profile.assigned_roles.values_list('id', flat=True)
+                qs = qs.filter(
+                    Q(plan__patient__facility__id__in=facilities_managed) |
+                    Q(plan__care_team_members__id__in=assigned_roles)
+                )
+            else:
+                assigned_roles = employee_profile.assigned_roles.values_list('id', flat=True)
+                qs = qs.filter(plan__care_team_members__id__in=assigned_roles)
         elif user.is_patient:
-            queryset = queryset.filter(plan__patient=user.patient_profile)
+            qs = qs.filter(plan__patient=user.patient_profile)
 
-        return queryset
+        return qs.distinct()
 
     def filter_queryset(self, queryset):
         queryset = super(PatientTaskViewSet, self).filter_queryset(queryset)
@@ -158,6 +170,31 @@ class TeamTaskViewSet(viewsets.ModelViewSet):
     permission_classes = (permissions.IsAuthenticated, EmployeeOrReadOnly, )
     queryset = TeamTask.objects.all()
 
+    def get_queryset(self):
+        qs = super(TeamTaskViewSet, self).get_queryset()
+        user = self.request.user
+
+        if user.is_employee:
+            employee_profile = user.employee_profile
+            if employee_profile.organizations_managed.count() > 0:
+                organizations_managed = employee_profile.organizations_managed.values_list('id', flat=True)
+                qs = qs.filter(
+                    plan__patient__facility__organization__id__in=organizations_managed)
+            elif employee_profile.facilities_managed.count() > 0:
+                facilities_managed = employee_profile.facilities_managed.values_list('id', flat=True)
+                assigned_roles = employee_profile.assigned_roles.values_list('id', flat=True)
+                qs = qs.filter(
+                    Q(plan__patient__facility__id__in=facilities_managed) |
+                    Q(plan__care_team_members__id__in=assigned_roles)
+                )
+            else:
+                assigned_roles = employee_profile.assigned_roles.values_list('id', flat=True)
+                qs = qs.filter(plan__care_team_members__id__in=assigned_roles)
+        elif user.is_patient:
+            qs = qs.none()
+
+        return qs.distinct()
+
 
 class MedicationTaskTemplateViewSet(viewsets.ModelViewSet):
     serializer_class = MedicationTaskTemplateSerializer
@@ -188,17 +225,29 @@ class MedicationTaskViewSet(viewsets.ModelViewSet):
     )
 
     def get_queryset(self):
-        queryset = super(MedicationTaskViewSet, self).get_queryset()
+        qs = super(MedicationTaskViewSet, self).get_queryset()
         user = self.request.user
 
         if user.is_employee:
-            queryset = queryset.filter(
-                medication_task_template__plan__care_team_members__employee_profile=user.employee_profile
-            )
+            employee_profile = user.employee_profile
+            if employee_profile.organizations_managed.count() > 0:
+                organizations_managed = employee_profile.organizations_managed.values_list('id', flat=True)
+                qs = qs.filter(
+                    medication_task_template__plan__patient__facility__organization__id__in=organizations_managed)
+            elif employee_profile.facilities_managed.count() > 0:
+                facilities_managed = employee_profile.facilities_managed.values_list('id', flat=True)
+                assigned_roles = employee_profile.assigned_roles.values_list('id', flat=True)
+                qs = qs.filter(
+                    Q(medication_task_template__plan__patient__facility__id__in=facilities_managed) |
+                    Q(medication_task_template__plan__care_team_members__id__in=assigned_roles)
+                )
+            else:
+                assigned_roles = employee_profile.assigned_roles.values_list('id', flat=True)
+                qs = qs.filter(medication_task_template__plan__care_team_members__id__in=assigned_roles)
         elif user.is_patient:
-            queryset = queryset.filter(medication_task_template__plan__patient=user.patient_profile)
+            qs = qs.filter(medication_task_template__plan__patient=user.patient_profile)
 
-        return queryset
+        return qs.distinct()
 
 
 class SymptomTaskTemplateViewSet(viewsets.ModelViewSet):
@@ -227,17 +276,29 @@ class SymptomTaskViewSet(viewsets.ModelViewSet):
     )
 
     def get_queryset(self):
-        queryset = super(SymptomTaskViewSet, self).get_queryset()
+        qs = super(SymptomTaskViewSet, self).get_queryset()
         user = self.request.user
 
         if user.is_employee:
-            queryset = queryset.filter(
-                plan__care_team_members__employee_profile=user.employee_profile
-            )
+            employee_profile = user.employee_profile
+            if employee_profile.organizations_managed.count() > 0:
+                organizations_managed = employee_profile.organizations_managed.values_list('id', flat=True)
+                qs = qs.filter(
+                    plan__patient__facility__organization__id__in=organizations_managed)
+            elif employee_profile.facilities_managed.count() > 0:
+                facilities_managed = employee_profile.facilities_managed.values_list('id', flat=True)
+                assigned_roles = employee_profile.assigned_roles.values_list('id', flat=True)
+                qs = qs.filter(
+                    Q(plan__patient__facility__id__in=facilities_managed) |
+                    Q(plan__care_team_members__id__in=assigned_roles)
+                )
+            else:
+                assigned_roles = employee_profile.assigned_roles.values_list('id', flat=True)
+                qs = qs.filter(plan__care_team_members__id__in=assigned_roles)
         elif user.is_patient:
-            queryset = queryset.filter(plan__patient=user.patient_profile)
+            qs = qs.filter(plan__patient=user.patient_profile)
 
-        return queryset
+        return qs.distinct()
 
 
 class SymptomRatingViewSet(viewsets.ModelViewSet):
@@ -251,23 +312,33 @@ class SymptomRatingViewSet(viewsets.ModelViewSet):
     filterset_fields = {
         'symptom_task__plan__patient': ['exact'],
         'symptom_task__symptom_task_template__plan_template': ['exact'],
-        'modified': ['lte', 'gte']
+        'symptom_task__due_datetime': ['lte', 'gte']
     }
 
     def get_queryset(self):
-        queryset = super(SymptomRatingViewSet, self).get_queryset()
+        qs = super(SymptomRatingViewSet, self).get_queryset()
         user = self.request.user
 
         if user.is_employee:
-            queryset = queryset.filter(
-                symptom_task__plan__care_team_members__employee_profile=user.employee_profile
-            )
+            employee_profile = user.employee_profile
+            if employee_profile.organizations_managed.count() > 0:
+                organizations_managed = employee_profile.organizations_managed.values_list('id', flat=True)
+                qs = qs.filter(
+                    symptom_task__plan__patient__facility__organization__id__in=organizations_managed)
+            elif employee_profile.facilities_managed.count() > 0:
+                facilities_managed = employee_profile.facilities_managed.values_list('id', flat=True)
+                assigned_roles = employee_profile.assigned_roles.values_list('id', flat=True)
+                qs = qs.filter(
+                    Q(symptom_task__plan__patient__facility__id__in=facilities_managed) |
+                    Q(symptom_task__plan__care_team_members__id__in=assigned_roles)
+                )
+            else:
+                assigned_roles = employee_profile.assigned_roles.values_list('id', flat=True)
+                qs = qs.filter(symptom_task__plan__care_team_members__id__in=assigned_roles)
         elif user.is_patient:
-            queryset = queryset.filter(
-                symptom_task__plan__patient=user.patient_profile
-            )
+            qs = qs.filter(symptom_task__plan__patient=user.patient_profile)
 
-        return queryset
+        return qs.distinct()
 
     def filter_queryset(self, queryset):
         queryset = super(SymptomRatingViewSet, self).filter_queryset(queryset)
@@ -275,8 +346,8 @@ class SymptomRatingViewSet(viewsets.ModelViewSet):
         query_parameters = self.request.query_params.keys()
         if 'symptom_task__plan__patient' in query_parameters and \
            'symptom_task__symptom_task_template__plan_template' in query_parameters and \
-           'modified__gte' not in query_parameters and \
-           'modified__lte' not in query_parameters:
+           'symptom_task__due_datetime__gte' not in query_parameters and \
+           'symptom_task__due_datetime__lte' not in query_parameters:
             today = timezone.now().date()
             today_min = datetime.datetime.combine(today,
                                                   datetime.time.min,
@@ -285,7 +356,7 @@ class SymptomRatingViewSet(viewsets.ModelViewSet):
                                                   datetime.time.max,
                                                   tzinfo=pytz.utc)
             queryset = queryset.filter(
-                modified__range=(today_min, today_max)
+                symptom_task__due_datetime__range=(today_min, today_max)
             )
 
         return queryset
@@ -322,17 +393,29 @@ class AssessmentTaskViewSet(viewsets.ModelViewSet):
     )
 
     def get_queryset(self):
-        queryset = super(AssessmentTaskViewSet, self).get_queryset()
+        qs = super(AssessmentTaskViewSet, self).get_queryset()
         user = self.request.user
-
         if user.is_employee:
-            queryset = queryset.filter(
-                plan__care_team_members__employee_profile=user.employee_profile
-            )
+            employee_profile = user.employee_profile
+            if employee_profile.organizations_managed.count() > 0:
+                organizations_managed = employee_profile.organizations_managed.values_list('id', flat=True)
+                qs = qs.filter(
+                    plan__patient__facility__organization__id__in=organizations_managed)
+            elif employee_profile.facilities_managed.count() > 0:
+                facilities_managed = employee_profile.facilities_managed.values_list('id', flat=True)
+                assigned_roles = employee_profile.assigned_roles.values_list('id', flat=True)
+                qs = qs.filter(
+                    Q(plan__patient__facility__id__in=facilities_managed) |
+                    Q(plan__care_team_members__id__in=assigned_roles)
+                )
+            else:
+                assigned_roles = employee_profile.assigned_roles.values_list('id', flat=True)
+                qs = qs.filter(plan__care_team_members__id__in=assigned_roles)
         elif user.is_patient:
-            queryset = queryset.filter(plan__patient=user.patient_profile)
-
-        return queryset
+            qs = qs.filter(
+                plan__patient=user.patient_profile
+            )
+        return qs.distinct()
 
 
 class AssessmentResponseViewSet(viewsets.ModelViewSet):
@@ -348,23 +431,34 @@ class AssessmentResponseViewSet(viewsets.ModelViewSet):
         'assessment_question': ['exact'],
         'assessment_task__plan__patient': ['exact'],
         'assessment_task__assessment_task_template__plan_template': ['exact'],
-        'modified': ['lte', 'gte']
+        'modified': ['lte', 'gte'],
+        'assessment_task__due_datetime': ['lte', 'gte'],
     }
 
     def get_queryset(self):
-        queryset = super(AssessmentResponseViewSet, self).get_queryset()
+        qs = super(AssessmentResponseViewSet, self).get_queryset()
         user = self.request.user
-
         if user.is_employee:
-            queryset = queryset.filter(
-                assessment_task__plan__care_team_members__employee_profile=user.employee_profile
-            )
+            employee_profile = user.employee_profile
+            if employee_profile.organizations_managed.count() > 0:
+                organizations_managed = employee_profile.organizations_managed.values_list('id', flat=True)
+                qs = qs.filter(
+                    assessment_task__plan__patient__facility__organization__id__in=organizations_managed)
+            elif employee_profile.facilities_managed.count() > 0:
+                facilities_managed = employee_profile.facilities_managed.values_list('id', flat=True)
+                assigned_roles = employee_profile.assigned_roles.values_list('id', flat=True)
+                qs = qs.filter(
+                    Q(assessment_task__plan__patient__facility__id__in=facilities_managed) |
+                    Q(assessment_task__plan__care_team_members__id__in=assigned_roles)
+                )
+            else:
+                assigned_roles = employee_profile.assigned_roles.values_list('id', flat=True)
+                qs = qs.filter(assessment_task__plan__care_team_members__id__in=assigned_roles)
         elif user.is_patient:
-            queryset = queryset.filter(
+            qs = qs.filter(
                 assessment_task__plan__patient=user.patient_profile
             )
-
-        return queryset
+        return qs.distinct()
 
     def get_serializer(self, *args, **kwargs):
         if self.request.method == 'POST' and isinstance(
@@ -380,8 +474,8 @@ class AssessmentResponseViewSet(viewsets.ModelViewSet):
         query_parameters = self.request.query_params.keys()
         if 'assessment_task__plan__patient' in query_parameters and \
            'assessment_task__assessment_task_template__plan_template' in query_parameters and \
-           'modified__gte' not in query_parameters and \
-           'modified__lte' not in query_parameters:
+           'assessment_task__due_datetime__gte' not in query_parameters and \
+           'assessment_task__due_datetime__lte' not in query_parameters:
             today = timezone.now().date()
             today_min = datetime.datetime.combine(today,
                                                   datetime.time.min,
@@ -390,7 +484,7 @@ class AssessmentResponseViewSet(viewsets.ModelViewSet):
                                                   datetime.time.max,
                                                   tzinfo=pytz.utc)
             queryset = queryset.filter(
-                modified__range=(today_min, today_max)
+                assessment_task__due_datetime__range=(today_min, today_max)
             )
 
         return queryset
@@ -509,17 +603,29 @@ class VitalTaskViewSet(viewsets.ModelViewSet):
     queryset = VitalTask.objects.all()
 
     def get_queryset(self):
-        queryset = super(VitalTaskViewSet, self).get_queryset()
+        qs = super(VitalTaskViewSet, self).get_queryset()
         user = self.request.user
 
         if user.is_employee:
-            queryset = queryset.filter(
-                plan__care_team_members__employee_profile=user.employee_profile
-            )
+            employee_profile = user.employee_profile
+            if employee_profile.organizations_managed.count() > 0:
+                organizations_managed = employee_profile.organizations_managed.values_list('id', flat=True)
+                qs = qs.filter(
+                    plan__patient__facility__organization__id__in=organizations_managed)
+            elif employee_profile.facilities_managed.count() > 0:
+                facilities_managed = employee_profile.facilities_managed.values_list('id', flat=True)
+                assigned_roles = employee_profile.assigned_roles.values_list('id', flat=True)
+                qs = qs.filter(
+                    Q(plan__patient__facility__id__in=facilities_managed) |
+                    Q(plan__care_team_members__id__in=assigned_roles)
+                )
+            else:
+                assigned_roles = employee_profile.assigned_roles.values_list('id', flat=True)
+                qs = qs.filter(plan__care_team_members__id__in=assigned_roles)
         elif user.is_patient:
-            queryset = queryset.filter(plan__patient=user.patient_profile)
+            qs = qs.filter(plan__patient=user.patient_profile)
 
-        return queryset
+        return qs.distinct()
 
 
 class VitalQuestionViewSet(viewsets.ModelViewSet):
@@ -608,23 +714,34 @@ class VitalResponseViewSet(viewsets.ModelViewSet):
     filterset_fields = {
         'vital_task__plan__patient': ['exact'],
         'vital_task__vital_task_template__plan_template': ['exact'],
-        'modified': ['lte', 'gte']
+        'vital_task__due_datetime': ['lte', 'gte']
     }
 
     def get_queryset(self):
-        queryset = super(VitalResponseViewSet, self).get_queryset()
+        qs = super(VitalResponseViewSet, self).get_queryset()
         user = self.request.user
 
         if user.is_employee:
-            queryset = queryset.filter(
-                vital_task__plan__care_team_members__employee_profile=user.employee_profile
-            )
+            employee_profile = user.employee_profile
+            if employee_profile.organizations_managed.count() > 0:
+                organizations_managed = employee_profile.organizations_managed.values_list('id', flat=True)
+                qs = qs.filter(
+                    vital_task__plan__patient__facility__organization__id__in=organizations_managed)
+            elif employee_profile.facilities_managed.count() > 0:
+                facilities_managed = employee_profile.facilities_managed.values_list('id', flat=True)
+                assigned_roles = employee_profile.assigned_roles.values_list('id', flat=True)
+                qs = qs.filter(
+                    Q(vital_task__plan__patient__facility__id__in=facilities_managed) |
+                    Q(vital_task__plan__care_team_members__id__in=assigned_roles)
+                )
+            else:
+                assigned_roles = employee_profile.assigned_roles.values_list('id', flat=True)
+                qs = qs.filter(vital_task__plan__care_team_members__id__in=assigned_roles)
         elif user.is_patient:
-            queryset = queryset.filter(
+            qs = qs.filter(
                 vital_task__plan__patient=user.patient_profile
             )
-
-        return queryset
+        return qs.distinct()
 
     def get_serializer(self, *args, **kwargs):
         if self.request.method == 'POST' and \
@@ -640,8 +757,8 @@ class VitalResponseViewSet(viewsets.ModelViewSet):
         query_parameters = self.request.query_params.keys()
         if 'vital_task__plan__patient' in query_parameters and \
            'vital_task__vital_task_template__plan_template' in query_parameters and \
-           'modified__gte' not in query_parameters and \
-           'modified__lte' not in query_parameters:
+           'vital_task__due_datetime__gte' not in query_parameters and \
+           'vital_task__due_datetime__lte' not in query_parameters:
             today = timezone.now().date()
             today_min = datetime.datetime.combine(today,
                                                   datetime.time.min,
@@ -650,7 +767,7 @@ class VitalResponseViewSet(viewsets.ModelViewSet):
                                                   datetime.time.max,
                                                   tzinfo=pytz.utc)
             queryset = queryset.filter(
-                modified__range=(today_min, today_max)
+                vital_task__due_datetime__range=(today_min, today_max)
             )
 
         return queryset

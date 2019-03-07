@@ -354,6 +354,8 @@ class AssessmentTaskTemplateSerializer(serializers.ModelSerializer):
 class AssessmentResponseSerializer(RepresentationMixin,
                                    serializers.ModelSerializer):
     assessment_task_name = serializers.SerializerMethodField()
+    tracks_outcome = serializers.SerializerMethodField()
+    tracks_satisfaction = serializers.SerializerMethodField()
 
     class Meta:
         model = AssessmentResponse
@@ -362,6 +364,8 @@ class AssessmentResponseSerializer(RepresentationMixin,
             'assessment_task',
             'assessment_task_name',
             'assessment_question',
+            'tracks_outcome',
+            'tracks_satisfaction',
             'rating',
             'behavior',
             'created',
@@ -381,6 +385,12 @@ class AssessmentResponseSerializer(RepresentationMixin,
 
     def get_assessment_task_name(self, obj):
         return obj.assessment_question.assessment_task_template.name
+
+    def get_tracks_outcome(self, obj):
+        return obj.assessment_question.assessment_task_template.tracks_outcome
+
+    def get_tracks_satisfaction(self, obj):
+        return obj.assessment_question.assessment_task_template.tracks_satisfaction
 
 
 class AssessmentTaskSerializer(RepresentationMixin,
