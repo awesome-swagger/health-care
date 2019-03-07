@@ -171,8 +171,8 @@
           <tbody>
             <tr *ngFor="let task of userTasks">
               <td class="left">{{task.name}}</td>
-              <td>{{moment(task.appear_datetime).format('h:mm A')}}</td>
-              <td>{{moment(task.due_datetime).format('h:mm A')}}</td>
+              <td>{{moment(task.appear_datetime).utc().format('h:mm A')}}</td>
+              <td>{{moment(task.due_datetime).utc().format('h:mm A')}}</td>
               <td>
                 <div class="pill pill--status" [ngStyle]="{'background': utils.pillColorStatus(task.state)}">
                   {{task.state}}
@@ -250,8 +250,8 @@
           <tbody>
             <tr *ngFor="let task of teamTasks">
               <td class="left">{{task.name}}</td>
-              <td>{{moment(task.appear_datetime).format('h:mm A')}}</td>
-              <td>{{moment(task.due_datetime).format('h:mm A')}}</td>
+              <td>{{moment(task.appear_datetime).utc().format('h:mm A')}}</td>
+              <td>{{moment(task.due_datetime).utc().format('h:mm A')}}</td>
               <td>
                 <div class="pill pill--status" [ngStyle]="{'background': utils.pillColorStatus(task.state)}">
                   {{task.state}}
@@ -365,8 +365,8 @@
             <tr *ngFor="let task of patientTasks">
               <td class="left">{{formatTaskType(task.type) | titlecase}}</td>
               <td class="left">{{task.name}}</td>
-              <td>{{moment(task.appear_datetime).format('h:mm A')}}</td>
-              <td>{{moment(task.due_datetime).format('h:mm A')}}</td>
+              <td>{{moment(task.appear_datetime).utc().format('h:mm A')}}</td>
+              <td>{{moment(task.due_datetime).utc().format('h:mm A')}}</td>
               <td>
                 <ng-container *ngIf="isUpdatingPatientTask(task)">
                   <div class="styledSelect">
