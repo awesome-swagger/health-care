@@ -16,7 +16,6 @@ from django.shortcuts import get_object_or_404
 from django.utils.translation import ugettext_lazy as _
 
 from ..models import (
-    CarePlanTemplateType,
     ServiceArea,
     CarePlanTemplate,
     CarePlan,
@@ -38,7 +37,6 @@ from ..permissions import (
 )
 from ..utils import duplicate_tasks
 from .serializers import (
-    CarePlanTemplateTypeSerializer,
     ServiceAreaSerializer,
     CarePlanTemplateSerializer,
     CarePlanSerializer,
@@ -93,43 +91,6 @@ from care_adopt_backend.permissions import (
     IsAdminOrEmployee,
 )
 from django.utils import timezone
-
-
-class CarePlanTemplateTypeViewSet(viewsets.ModelViewSet):
-    """
-    Viewset for :model:`plans.CarePlanTemplateType`
-    ========
-
-    create:
-        Creates :model:`plans.CarePlanTemplateType` object.
-        Only admins and employees are allowed to perform this action.
-
-    update:
-        Updates :model:`plans.CarePlanTemplateType` object.
-        Only admins and employees are allowed to perform this action.
-
-    partial_update:
-        Updates one or more fields of an existing plan template type object.
-        Only admins and employees are allowed to perform this action.
-
-    retrieve:
-        Retrieves a :model:`plans.CarePlanTemplateType` instance.
-        All users will have access to all template type objects.
-
-    list:
-        Returns list of all :model:`plans.CarePlanTemplateType` objects.
-        All users will have access to all template type objects.
-
-    delete:
-        Deletes a :model:`plans.CarePlanTemplateType` instance.
-        Only admins and employees are allowed to perform this action.
-    """
-    serializer_class = CarePlanTemplateTypeSerializer
-    permission_classes = (
-        permissions.IsAuthenticated,
-        IsEmployeeOrPatientReadOnly,
-    )
-    queryset = CarePlanTemplateType.objects.all()
 
 
 class ServiceAreaViewSet(viewsets.ModelViewSet):
