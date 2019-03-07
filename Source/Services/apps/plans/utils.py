@@ -213,8 +213,17 @@ def create_tasks_from_template(template,
                 **template_config)
 
 
-def duplicate_tasks(queryset, new_plan_template):
+def duplicate_tasks(queryset, new_plan_template, question_field=None):
     for ii in queryset:
+        if question_field:
+            qs = ii.questions.all()
+
         ii.pk = None
         ii.plan_template = new_plan_template
         ii.save()
+
+        if question_field:
+            for question in qs:
+                question.pk = None
+                setattr(question, question_field, ii)
+                question.save()

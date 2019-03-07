@@ -321,8 +321,8 @@ class CarePlanTemplateViewSet(viewsets.ModelViewSet):
         duplicate_tasks(plan_template.patient_tasks.all(), new_template)
         duplicate_tasks(plan_template.team_tasks.all(), new_template)
         duplicate_tasks(plan_template.symptom_tasks.all(), new_template)
-        duplicate_tasks(plan_template.assessment_tasks.all(), new_template)
-        duplicate_tasks(plan_template.vital_templates.all(), new_template)
+        duplicate_tasks(plan_template.assessment_tasks.all(), new_template, "assessment_task_template")
+        duplicate_tasks(plan_template.vital_templates.all(), new_template, "vital_task_template")
 
         serializer = CarePlanTemplateSerializer(new_template)
         return Response(serializer.data)
