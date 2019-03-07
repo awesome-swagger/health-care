@@ -619,7 +619,6 @@ class CarePlanTemplateAverageSerializer(serializers.ModelSerializer):
         fields = (
             'id',
             'name',
-            'type',
             'service_area',
             'is_active',
             'duration_weeks',
