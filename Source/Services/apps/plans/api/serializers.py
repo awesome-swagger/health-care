@@ -26,7 +26,7 @@ from ..models import (
     TeamMessage,
 )
 from apps.accounts.models import EmailUser
-from apps.billings.models import BilledActivity
+from apps.billings.models import BilledActivity, BillingType
 from apps.core.api.mixins import RepresentationMixin
 from apps.core.api.serializers import (
     ProviderRoleSerializer,
@@ -82,6 +82,20 @@ class BasicFacilityPlanSerializer(serializers.ModelSerializer):
         fields = (
             'id',
             'name',
+        )
+
+
+class BasicBillingTypeSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = BillingType
+        fields = (
+            'id',
+            'name',
+            'acronym',
+        )
+        read_only_fields = (
+            'id',
         )
 
 
@@ -187,6 +201,7 @@ class CarePlanSerializer(RepresentationMixin, serializers.ModelSerializer):
             'plan_template',
             'billing_practitioner',
             'is_billed',
+            'billing_type',
         )
         read_only_fields = (
             'id',
@@ -206,6 +221,10 @@ class CarePlanSerializer(RepresentationMixin, serializers.ModelSerializer):
             {
                 'field': 'billing_practitioner',
                 'serializer_class': EmployeeProfileSerializer,
+            },
+            {
+                'field': 'billing_type',
+                'serializer_class': BasicBillingTypeSerializer,
             },
         ]
 
