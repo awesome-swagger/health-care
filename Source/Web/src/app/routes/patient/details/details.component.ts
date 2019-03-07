@@ -116,11 +116,11 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
           this.nav.addRecentPatient(this.patient);
           this.getCarePlan(params.planId).then((carePlan: any) => {
         		this.carePlan = carePlan;
-        		this.refetchAllTasks(this.selectedDate);
             this.getCareTeam(params.planId).then((teamMembers: any) => {
               this.careTeamMembers = teamMembers.filter((obj) => {
                 return obj.employee_profile.user.id !== this.user.user.id;
               });
+          		this.refetchAllTasks(this.selectedDate);
             });
         		let messageSub = this.store.InfoMessageQueue.readListPaged().subscribe(
         			(messageQueues) => {
