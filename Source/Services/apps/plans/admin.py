@@ -1,7 +1,6 @@
 from django.contrib import admin
 from .forms import CarePlanTemplateForm
 from .models import (
-    CarePlanTemplateType,
     ServiceArea,
     CarePlanTemplate,
     CarePlan,
@@ -16,16 +15,12 @@ from .models import (
 )
 
 
-class CarePlanTemplateTypeAdmin(admin.ModelAdmin):
-    list_display = ('acronym', 'name', )
-
-
 class ServiceAreaAdmin(admin.ModelAdmin):
     list_display = ('name', )
 
 
 class CarePlanTemplateAdmin(admin.ModelAdmin):
-    list_display = ('name', 'type', 'service_area', )
+    list_display = ('name', 'service_area', )
     form = CarePlanTemplateForm
 
 
@@ -73,7 +68,6 @@ class InfoMessageQueueAdmin(admin.ModelAdmin):
     list_display = ('name', 'type', )
 
 
-admin.site.register(CarePlanTemplateType, CarePlanTemplateTypeAdmin)
 admin.site.register(ServiceArea, ServiceAreaAdmin)
 admin.site.register(CarePlanTemplate, CarePlanTemplateAdmin)
 admin.site.register(CarePlan, CarePlanAdmin)

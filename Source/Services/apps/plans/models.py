@@ -17,22 +17,6 @@ from .signals import (
 )
 
 
-class CarePlanTemplateType(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
-    """
-    Stores information about types of CarePlanTemplate
-    """
-    name = models.CharField(max_length=128)
-    acronym = models.CharField(max_length=16)
-
-    class Meta:
-        ordering = ('-created', )
-        verbose_name = _('Care Plan Template Type')
-        verbose_name_plural = _('Care Plan Template Types')
-
-    def __str__(self):
-        return f'{self.acronym}: {self.name}'
-
-
 class ServiceArea(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
     name = models.CharField(max_length=128)
 
@@ -54,13 +38,6 @@ class ServiceArea(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
 
 class CarePlanTemplate(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
     name = models.CharField(max_length=120)
-    type = models.ForeignKey(
-        'plans.CarePlanTemplateType',
-        related_name='care_plan_templates',
-        on_delete=models.CASCADE,
-        blank=True,
-        null=True
-    )
     service_area = models.ForeignKey(
         ServiceArea,
         related_name='care_plan_templates',
@@ -87,6 +64,14 @@ class CarePlan(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
         CarePlanTemplate,
         related_name="care_plans",
         on_delete=models.CASCADE)
+
+    billing_type = models.ForeignKey(
+        'billings.BillingType',
+        related_name='care_plans',
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True
+    )
 
     billing_practitioner = models.ForeignKey(
         EmployeeProfile,

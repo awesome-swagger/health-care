@@ -2,12 +2,30 @@ from django.utils.translation import ugettext_lazy as _
 
 from rest_framework import serializers
 
-from ..models import BilledActivity
+from ..models import BilledActivity, BillingType
 from apps.core.api.mixins import RepresentationMixin
 from apps.core.api.serializers import BasicEmployeeProfileSerializer
 from apps.plans.api.serializers import CarePlanSerializer
 from apps.tasks.api.serializers import TeamTaskTemplateSerializer
 from apps.tasks.models import TeamTask
+
+
+class BillingTypeSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = BillingType
+        fields = (
+            'id',
+            'name',
+            'acronym',
+            'created',
+            'modified',
+        )
+        read_only_fields = (
+            'id',
+            'created',
+            'modified',
+        )
 
 
 class ActivityTeamTaskSerializer(RepresentationMixin,

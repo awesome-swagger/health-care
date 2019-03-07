@@ -44,6 +44,8 @@ from .mixins import RepresentationMixin
 
 class OrganizationSerializer(serializers.ModelSerializer):
     is_manager = serializers.SerializerMethodField()
+    renewal_date = serializers.SerializerMethodField()
+    available_users = serializers.SerializerMethodField()
 
     def get_is_manager(self, obj):
         request = self.context.get('request')
@@ -53,6 +55,14 @@ class OrganizationSerializer(serializers.ModelSerializer):
         if employee_profile is None:
             return False
         return obj in employee_profile.organizations_managed.all()
+
+    def get_renewal_date(self, obj):
+        is_manager = self.get_is_manager(obj)
+        return obj.renewal_date if is_manager else None
+
+    def get_available_users(self, obj):
+        is_manager = self.get_is_manager(obj)
+        return obj.available_users if is_manager else None
 
     class Meta:
         model = Organization
@@ -67,11 +77,15 @@ class OrganizationSerializer(serializers.ModelSerializer):
             'addr_zip',
             'created',
             'modified',
+            'renewal_date',
+            'available_users'
         )
         read_only_fields = (
             'id',
             'created',
             'modified',
+            'renewal_date',
+            'available_users'
         )
 
 
@@ -558,6 +572,7 @@ class EmployeeIDSerializer(serializers.ModelSerializer):
 # from the database.
 class FacilitySerializer(RepresentationMixin, serializers.ModelSerializer):
     is_manager = serializers.SerializerMethodField()
+    active_users = serializers.SerializerMethodField()
 
     def get_is_manager(self, obj):
         request = self.context.get('request')
@@ -567,6 +582,9 @@ class FacilitySerializer(RepresentationMixin, serializers.ModelSerializer):
         if not employee_profile:
             return False
         return obj in request.user.employee_profile.facilities_managed.all()
+
+    def get_active_users(self, obj):
+        return obj.employees.filter(status="active").count()
 
     def create(self, validated_data):
         instance = super(FacilitySerializer, self).create(validated_data)
@@ -590,12 +608,14 @@ class FacilitySerializer(RepresentationMixin, serializers.ModelSerializer):
             'addr_zip',
             'created',
             'modified',
+            'active_users',
         )
         read_only_fields = (
             'id',
             'is_manager',
             'created',
             'modified',
+            'active_users'
         )
         nested_serializers = [
             {
