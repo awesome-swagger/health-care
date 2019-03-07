@@ -209,10 +209,6 @@ class CarePlanTemplateViewSet(viewsets.ModelViewSet):
 
         return queryset
 
-    def filter_queryset(self, queryset):
-        return super(CarePlanTemplateViewSet,
-                     self).filter_queryset(queryset).distinct()
-
     def get_serializer_context(self):
         context = super(CarePlanTemplateViewSet, self).get_serializer_context()
 
@@ -483,19 +479,21 @@ class CarePlanViewSet(viewsets.ModelViewSet):
 
         IMPORTANT NOTE:
         ---
-        - Make sure to pass the {organization ID} when sending requests to this
-        endpoint to filter care plans for a specific organization. Otherwise,
-        this endpoint will return all care plans in all organizations.
-        - The URL parameter to be used is **patient__facility__organization**
+        - Make sure to pass the {organization ID} or {facility ID} when sending requests 
+        to this endpoint to filter care plans for a specific organization or facility. 
+        Otherwise, this endpoint will return all care plans in all organizations.
+        - The URL parameter to be used is **patient__facility__organization** or 
+        **patient__facility**
 
         SAMPLE REQUEST:
         ---
         ```
         GET /api/care_plans/average/?patient__facility__organization=<uuid>
+        GET /api/care_plans/average/?patient__facility=<uuid>
         ```
         """
         now = timezone.now()
-        last_30 = now - relativedelta(days=30)
+        last_30 = now - relativedelta(days=230)
 
         base_queryset = self.get_queryset().filter(created__gte=last_30)
         queryset = self.filter_queryset(base_queryset)
