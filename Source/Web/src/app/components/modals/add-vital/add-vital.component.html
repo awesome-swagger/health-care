@@ -13,7 +13,7 @@
 
 <div class="grid2col">
   <div class="gridCell--11 marRight32">
-    <input type="text" class="input input--search fullWidth marBottom32" placeholder="Search Vitals" [(ngModel)]="searchInput" (ngModelChange)="filterVitals()" />
+    <input type="text" class="input input--search fullWidth marBottom32" placeholder="Search Tasks" [(ngModel)]="searchInput" (ngModelChange)="filterVitals()" />
     <div class="listBox">
       <ul class="nameList">
         <li class="nameList__item nameList__item--padLeft nameList__item--target" [ngClass]="{'nameList__item--target--active':vitalTemplatePreview.vital == vital}" *ngFor="let vital of vitalTemplatesShown" (click)="showVitalPreview(vital)">
@@ -83,7 +83,7 @@
         <p class="marBottom24">
           When you get up in the morning, record the time you went to bed, and the time you got up, as well as the number of times you awoke during the night.
         </p>
-        <div class="fullWidth" style="display: block; max-height: 200px; overflow-y: auto">
+        <div class="fullWidth">
           <table class="fullWidth">
             <thead>
               <tr>
