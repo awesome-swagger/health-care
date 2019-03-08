@@ -33,7 +33,7 @@
       <span class="accordion__title">Care Plan Goals - {{tableHeaderDate()}} ({{planGoals.length}})</span>
       <div class="accordion__right">
         <span class="marRight8">{{planGoals.length}} Goals</span>
-        <div class="pill" [ngStyle]="{'background': utils.percentPillColor(goalsPercentage())}" *ngIf="planGoals.length > 0">
+        <div class="pill" [ngClass]="utils.percentPillClass(goalsPercentage())" *ngIf="planGoals.length > 0">
           {{goalsAverage()}}/5
         </div>
         <div class="pill" *ngIf="planGoals.length === 0">
@@ -85,10 +85,10 @@
             <tr *ngFor="let goal of planGoals">
               <td class="left">{{goal.goal_template.name}}</td>
               <td>
-                <div class="pill" *ngIf="goal.latest_progress" [ngStyle]="{'background': utils.percentPillColor(goalPercentage(goal.latest_progress.rating))}">
+                <div class="pill" *ngIf="goal.latest_progress" [ngClass]="utils.percentPillClass(goalPercentage(goal.latest_progress.rating))">
                   {{goal.latest_progress.rating}}/5
                 </div>
-                <div class="pill" *ngIf="!goal.latest_progress" [ngStyle]="{'background': utils.percentPillColor(goalPercentage(0))}">
+                <div class="pill" *ngIf="!goal.latest_progress" [ngClass]="utils.percentPillClass(goalPercentage(0))">
                   0/5
                 </div>
               </td>
@@ -120,7 +120,7 @@
       <span class="accordion__title">My Tasks - {{tableHeaderDate()}} ({{userTasks.length}})</span>
       <div class="accordion__right">
         <span class="marRight8">{{completedUserTasks()}}/{{userTasks.length}} Completed</span>
-        <div class="pill" [ngStyle]="{'background': utils.percentPillColor(userTasksPercentage())}" *ngIf="userTasks.length > 0">
+        <div class="pill" [ngClass]="utils.percentPillClass(userTasksPercentage())" *ngIf="userTasks.length > 0">
           {{userTasksPercentage()}}%
         </div>
         <div class="pill" *ngIf="userTasks.length === 0">
@@ -175,7 +175,7 @@
               <td>{{moment(task.appear_datetime).utc().format('h:mm A')}}</td>
               <td>{{moment(task.due_datetime).utc().format('h:mm A')}}</td>
               <td>
-                <div class="pill pill--status" [ngStyle]="{'background': utils.pillColorStatus(task.state)}">
+                <div class="pill pill--status" [ngClass]="utils.pillStatusClass(task.state)">
                   {{task.state}}
                 </div>
               </td>
@@ -199,7 +199,7 @@
       <span class="accordion__title">Care Team Tasks - {{tableHeaderDate()}} ({{teamTasks.length}})</span>
       <div class="accordion__right">
         <span class="marRight8">{{completedTeamTasks()}}/{{teamTasks.length}} Completed</span>
-        <div class="pill" [ngStyle]="{'background': utils.percentPillColor(teamTasksPercentage())}" *ngIf="teamTasks.length > 0">
+        <div class="pill" [ngClass]="utils.percentPillClass(teamTasksPercentage())" *ngIf="teamTasks.length > 0">
           {{teamTasksPercentage()}}%
         </div>
         <div class="pill" *ngIf="teamTasks.length === 0">
@@ -254,7 +254,7 @@
               <td>{{moment(task.appear_datetime).utc().format('h:mm A')}}</td>
               <td>{{moment(task.due_datetime).utc().format('h:mm A')}}</td>
               <td>
-                <div class="pill pill--status" [ngStyle]="{'background': utils.pillColorStatus(task.state)}">
+                <div class="pill pill--status" [ngClass]="utils.pillStatusClass(task.state)">
                   {{task.state}}
                 </div>
               </td>
@@ -276,7 +276,7 @@
       <span class="accordion__title">Patient Tasks - {{tableHeaderDate()}} ({{patientTasks.length}})</span>
       <div class="accordion__right">
         <span class="marRight8">{{completedPatientTasks()}}/{{patientTasks.length}} Completed</span>
-        <div class="pill" [ngStyle]="{'background': utils.percentPillColor(patientTasksPercentage())}" *ngIf="patientTasks.length > 0">
+        <div class="pill" [ngClass]="utils.percentPillClass(patientTasksPercentage())" *ngIf="patientTasks.length > 0">
           {{patientTasksPercentage()}}%
         </div>
         <div class="pill" *ngIf="patientTasks.length === 0">
@@ -376,14 +376,14 @@
                   </div>
                 </ng-container>
                 <ng-container *ngIf="!isUpdatingPatientTask(task)">
-                  <div class="pill pill--status" [ngStyle]="{'background': utils.pillColorStatus(task.state)}">
+                  <div class="pill pill--status"  [ngClass]="utils.pillStatusClass(task.state)">
                     {{task.state}}
                   </div>
                 </ng-container>
               </td>
               <td>N/A of N/A</td>
               <td>
-                <!-- <div class="pill" [ngStyle]="{'background': utils.percentPillColor(task.averageEngagement * 100)}">
+                <!-- <div class="pill" [ngStyle]="utils.percentPillClass(task.averageEngagement * 100)">
                   {{floor(task.averageEngagement * 100)}}%
                 </div> -->
                 <div class="pill">
@@ -410,7 +410,7 @@
       <div class="accordion__right">
         <span class="marRight8">{{totalOutcomeQuestions()}} Outcome Questions</span>
         <ng-container *ngIf="totalOutcomeQuestions() > 0">
-          <div class="pill marRight24" [ngStyle]="{'background': utils.percentPillColor(averageOutcomePercentage())}">
+          <div class="pill marRight24" [ngClass]="utils.percentPillClass(averageOutcomePercentage())">
             {{averageOutcomeScore()}}/5
           </div>
         </ng-container>
@@ -421,7 +421,7 @@
         </ng-container>
         <span class="marRight8">{{totalSatisfactionQuestions()}} Satisfaction Questions</span>
         <ng-container *ngIf="totalSatisfactionQuestions() > 0">
-          <div class="pill" [ngStyle]="{'background': utils.percentPillColor(averageSatisfactionPercentage())}">
+          <div class="pill" [ngClass]="utils.percentPillClass(averageSatisfactionPercentage())">
             {{averageSatisfactionScore()}}/5
           </div>
         </ng-container>
@@ -569,7 +569,7 @@
                 <td class="left">{{question.assessment_question.prompt}}</td>
                 <td>
                   <ng-container *ngIf="!isUpdatingAssessmentResult(question)">
-                    <div class="pill" [ngStyle]="{'background': utils.percentPillColor(outcomePercentage(question.rating))}">
+                    <div class="pill" [ngClass]="utils.percentPillClass(outcomePercentage(question.rating))">
                       {{question.rating}}/5
                     </div>
                   </ng-container>
@@ -611,7 +611,7 @@
       <span class="accordion__title">Symptoms - {{tableHeaderDate()}} ({{symptomResults.length}})</span>
       <div class="accordion__right">
         <span class="marRight8">{{symptomResults.length}} Symptoms</span>
-        <div class="pill" [ngStyle]="{'background': utils.percentPillColor(averageSymptomPercent())}" *ngIf="symptomResults.length > 0">
+        <div class="pill" [ngClass]="utils.percentPillClass(averageSymptomPercent())" *ngIf="symptomResults.length > 0">
           {{averageSymptomRating()}}/5
         </div>
         <div class="pill" *ngIf="symptomResults.length === 0">
@@ -726,7 +726,7 @@
               <td class="left">{{symptom.symptom.name}}</td>
               <td>
                 <ng-container *ngIf="!isUpdatingSymptomResult(symptom)">
-                  <div class="pill" [ngStyle]="{'background': utils.percentPillColor(ratingPercentage(symptom.rating))}">
+                  <div class="pill" [ngClass]="utils.percentPillClass(ratingPercentage(symptom.rating))">
                     {{symptom.rating}}/5
                   </div>
                 </ng-container>

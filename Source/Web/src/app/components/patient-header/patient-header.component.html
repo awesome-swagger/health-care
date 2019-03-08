@@ -144,13 +144,16 @@
         </button>
       </div>
     </label>
-    <div class="pill">
+    <div class="pill" *ngIf="!patient?.payer_reimbursement">
+      {{selectedPlanOverview?.time_spent_this_month}}
+    </div>
+    <div class="pill" [ngClass]="utils.timePillColor(totalMinutes(selectedPlanOverview?.time_spent_this_month), 30)" *ngIf="patient?.payer_reimbursement">
       {{selectedPlanOverview?.time_spent_this_month}}
     </div>
   </div> <!--/.info__cell (for time)-->
   <div class="info__cell">
     <label>Risk Level</label>
-    <div class="pill" [ngStyle]="{'background': utils.percentPillColor(patient?.risk_level)}">
+    <div class="pill" [ngClass]="utils.percentPillClass(patient?.risk_level)">
       {{utils.getRiskLevelText(patient?.risk_level)}} {{patient?.risk_level}}%
     </div>
   </div>

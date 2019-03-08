@@ -29,27 +29,27 @@ export class UtilsService {
     }
   }
 
-  public percentPillColor(percentage) {
+  public percentPillClass(percentage) {
     if (percentage >= 90) {
-      return '#4caf50';
+      return 'pill--lime';
     } else if (percentage <= 89 && percentage >= 70) {
-      return '#ff9800';
+      return 'pill--yellow';
     } else if (percentage <= 69 && percentage >= 50) {
-       return '#ca2c4e';
+       return 'pill--red';
     } else {
-      return '#880e4f';
+      return 'pill--purple';
     }
   }
 
-  public pillColorStatus(status) {
+  public pillStatusClass(status) {
     if (status === 'done') {
-      return '#4caf50';
+      return 'pill--lime';
     } else if (status === 'late') {
-       return '#ca2c4e';
+       return 'pill--red';
     } else if (status === 'missed') {
-      return '#880e4f';
+      return 'pill--purple';
     } else if (status === 'open') {
-      return '#2180a0';
+      return 'pill--blue';
     }
   }
 
