@@ -24,8 +24,11 @@ export class AddUserComponent implements OnInit {
   public npiInput = '';
   public organization = null;
   public facilities = [];
+  public orgChecked = false;
+  public facilityChecked = {};
 
   public tooltipAUM0Open;
+  public multi2Open;
 
   constructor(
     public auth: AuthService,
@@ -63,6 +66,11 @@ export class AddUserComponent implements OnInit {
       this.organization = org;
       this.store.Organization.detailRoute('GET', org.id, 'facilities').subscribe((res:any) => {
         this.facilities = res.results;
+        this.facilities.forEach(f => {
+          if (!f.is_affiliate) {
+            this.facilityChecked[f.id] = false;
+          }
+        })
       })
     })
   }
@@ -126,11 +134,39 @@ export class AddUserComponent implements OnInit {
     return c1 && c2 ? c1.id === c2.id : c1 === c2;
   }
 
+  public get checkedFacilitiesText() {
+    const orgFacility = [];
+    if (this.orgChecked) {
+      orgFacility.push(this.organization);
+    }
+    this.filteredFacilities(false).forEach(f => {
+      if (this.facilityChecked[f.id]) {
+        orgFacility.push(f);
+      }
+    })
+    if (orgFacility.length === 1) {
+      return orgFacility[0].name;
+    }
+    if (orgFacility.length > 1) {
+      return orgFacility[0].name + `(+${orgFacility.length - 1})`
+    }
+    return 'Select Facilities'
+  }
+
   public close() {
     this.modals.close(null);
   }
 
   public submit() {
+    const orgFacility = [];
+    if (this.orgChecked) {
+      orgFacility.push(this.organization);
+    }
+    this.filteredFacilities(false).forEach(f => {
+      if (this.facilityChecked[f.id]) {
+        orgFacility.push(f);
+      }
+    })
     if (this.firstNameInput && this.lastNameInput && this.emailInput) {
       this.modals.close({
         firstName: this.firstNameInput,
@@ -138,7 +174,7 @@ export class AddUserComponent implements OnInit {
         title: this.titleInput,
         email: this.emailInput,
         employedBy: this.employedByInput,
-        facility: this.facilityInput,
+        facility: orgFacility,
         specialty: this.specialtyInput,
         npi: this.npiInput,
       })

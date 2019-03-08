@@ -61,7 +61,7 @@
           {{user.employedBy?.name}}
         </td>
         <td class="left hideOverflow">
-          {{user.facility?.name}}
+          <span *ngIf="user.facility">{{user.facility.length ? user.facility[0].name : ''}}</span>
         </td>
         <td class="hideOverflow">
           <i *ngIf="isAdmin(user)" class="ss-standard ss-check"></i>

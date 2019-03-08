@@ -57,7 +57,7 @@ export class UsersComponent implements OnDestroy, OnInit {
       }
       let employeesSub = this.store.Organization.detailRoute('get', organization.id, 'employee_profiles').subscribe(
         (employees: any) => {
-          this.total = employees.count;
+          this.total = employees.results.filter(e => e.status === 'active').length;
           this.organization.employees = employees.results;
 
           this.store.EmployeeProfile.readListPaged().subscribe(

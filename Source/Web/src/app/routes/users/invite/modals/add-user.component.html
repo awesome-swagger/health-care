@@ -37,14 +37,31 @@
     </div>
   </div>
   <div class="modal__inputWrap marBottom16 marRight32">
+
     <label>Org/Facility</label>
-    <div class="styledSelect">
-      <select class="styledSelect__select" [(ngModel)]="facilityInput" [compareWith]="compareFn">
-        <option>- - - -</option>
-        <option [ngValue]="organization">{{organization?.name}}</option>
-        <option *ngFor="let facility of filteredFacilities(false)" [ngValue]="facility">{{facility.name}}</option>
-      </select>
-    </div>
+    <div class="drop">
+      <div class="drop__input" (click)="multi2Open = !multi2Open">
+        {{checkedFacilitiesText}}
+      </div>
+      <app-popover [visible]="multi2Open" (visibleChange)="multi2Open = $event">
+        <ul class="drop__dropdown isOpen" [ngClass]="{ 'isOpen' : multi2Open }">
+          <li class="drop__option">
+            <label class="drop__checkbox styledInput">
+              <input type="checkbox" class="styledInput__input" [(ngModel)]="orgChecked" />
+              <span class="styledInput__box"></span>
+              {{organization.name}}
+            </label>
+          </li>
+          <li class="drop__option" *ngFor="let facility of filteredFacilities(false)">
+            <label class="drop__checkbox styledInput">
+              <input type="checkbox" class="styledInput__input" [(ngModel)]="facilityChecked[facility.id]" />
+              <span class="styledInput__box"></span>
+              {{facility.name}}
+            </label>
+          </li>
+        </ul>
+      </app-popover>
+    </div> <!--/.drop-->
   </div>
 </div>
 <div class="flex justifySpaceBetween marBottom32">
