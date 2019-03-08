@@ -64,24 +64,35 @@ class BilledActivityViewSet(viewsets.ModelViewSet):
     )
 
     def get_queryset(self):
-        queryset = super(BilledActivityViewSet, self).get_queryset()
+        qs = super(BilledActivityViewSet, self).get_queryset()
         user = self.request.user
 
         if user.is_superuser:
             pass
 
-        elif user.is_employee:
+        if user.is_employee:
             employee = user.employee_profile
-            queryset = queryset.filter(
-                plan__care_team_members__employee_profile=employee
-            )
+            if employee.organizations_managed.count() > 0:
+                organizations_managed = employee.organizations_managed.values_list('id', flat=True)
+                qs = qs.filter(
+                    plan__patient__facility__organization__id__in=organizations_managed)
+            elif employee.facilities_managed.count() > 0:
+                facilities_managed = employee.facilities_managed.values_list('id', flat=True)
+                assigned_roles = employee.assigned_roles.values_list('id', flat=True)
+                qs = qs.filter(
+                    Q(plan__patient__facility__id__in=facilities_managed) |
+                    Q(plan__care_team_members__id__in=assigned_roles)
+                )
+            else:
+                assigned_roles = employee.assigned_roles.values_list('id', flat=True)
+                qs = qs.filter(plan__care_team_members__id__in=assigned_roles)
 
         elif user.is_patient:
-            queryset = queryset.filter(
+            qs = qs.filter(
                 plan__patient=user.patient_profile
             )
 
-        return queryset
+        return qs.distinct()
 
     @action(methods=['post'], detail=False,
             permission_classes=(permissions.IsAuthenticated, ))
@@ -172,16 +183,27 @@ class OrganizationBilledActivity(ParentViewSetPermissionMixin,
 
         elif user.is_employee:
             employee = user.employee_profile
-            queryset = queryset.filter(
-                plan__care_team_members__employee_profile=employee
-            )
+            if employee.organizations_managed.count() > 0:
+                organizations_managed = employee.organizations_managed.values_list('id', flat=True)
+                qs = qs.filter(
+                    plan__patient__facility__organization__id__in=organizations_managed)
+            elif employee.facilities_managed.count() > 0:
+                facilities_managed = employee.facilities_managed.values_list('id', flat=True)
+                assigned_roles = employee.assigned_roles.values_list('id', flat=True)
+                qs = qs.filter(
+                    Q(plan__patient__facility__id__in=facilities_managed) |
+                    Q(plan__care_team_members__id__in=assigned_roles)
+                )
+            else:
+                assigned_roles = employee.assigned_roles.values_list('id', flat=True)
+                qs = qs.filter(plan__care_team_members__id__in=assigned_roles)
 
         elif user.is_patient:
             queryset = queryset.filter(
                 plan__patient=user.patient_profile
             )
 
-        return queryset
+        return queryset.distinct()
 
     def _get_billable_patients(self, queryset):
         parents_query_dict = self.get_parents_query_dict()

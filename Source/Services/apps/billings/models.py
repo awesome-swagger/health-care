@@ -85,9 +85,12 @@ class BillingType(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
     """
     name = models.CharField(max_length=128)
     acronym = models.CharField(max_length=16)
+    billable_minutes = models.PositiveIntegerField(default=30, help_text=_(
+        'The amount of minutes per month that can be billed for care plans under ' +
+        'this type'))
 
     class Meta:
-        ordering = ('-created', )
+        ordering = ('name', )
         verbose_name = _('Billing Type')
         verbose_name_plural = _('Billing Types')
 
