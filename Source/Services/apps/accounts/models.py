@@ -228,7 +228,12 @@ class EmailUser(AbstractBaseUser, PermissionsMixin):
                 return get_gravatar_url(self.email, size=256)
             return get_placeholder_url(request=request)
         else:
-            url = self.image.url
+            url = '{schema}://{domain}{path}'.format(
+            schema=getattr(settings, 'SITE_SCHEMA', 'http'),
+            domain=settings.SITE_DOMAIN,
+            path=self.image.url,
+        )
+
         if request:
             return '{}://{}{}'.format(request.scheme, request.get_host(), url)
         return url
