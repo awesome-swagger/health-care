@@ -23,7 +23,7 @@ from apps.core.api.views import (
     OrganizationFacilityViewSet, DiagnosisSearchViewSet, OrganizationInsuranceViewSet,
     ProviderTitleSearchViewSet, ProviderRoleSearchViewSet, NotificationViewSet,
     OrganizationAffiliatesViewSet, BillingCoordinatorViewSet,
-    OrganizationBillingPractitionerViewSet,)
+    OrganizationBillingPractitionerViewSet, EmployeeRoleViewSet,)
 from apps.patients.api.views import (
     PatientProfileViewSet,
     PatientDiagnosisViewSet,
@@ -102,6 +102,7 @@ user_routes.register(
     parents_query_lookups=['user']
 )
 router.register(r'users', UserViewSet, base_name='users')
+router.register(r'employee_roles', EmployeeRoleViewSet, base_name='employee_roles')
 
 # Billings
 router.register(

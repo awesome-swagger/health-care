@@ -156,6 +156,20 @@ class ProviderRole(UUIDPrimaryKeyMixin):
         return self.name
 
 
+class EmployeeRole(UUIDPrimaryKeyMixin):
+    employee = models.ForeignKey(
+        EmployeeProfile, 
+        related_name='facility_roles', 
+        on_delete=models.CASCADE)
+    facility = models.ForeignKey(
+        Facility, 
+        on_delete=models.CASCADE)
+    role = models.ForeignKey(ProviderRole, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return '{}: {} - {}'.format(self.employee, self.facility, self.role)
+
+
 class ProviderSpecialty(UUIDPrimaryKeyMixin):
     name = models.CharField(max_length=35, null=False, blank=False)
     physician_specialty = models.BooleanField(default=False)
