@@ -39,15 +39,27 @@
     </div>
   </div>
 </div>
+
 <div class="flex marBottom32 alignEnd">
   <!--TODO: Only show the following div if the modal is triggered from the patient details page-->
   <div class="flex1 marRight24">
     <label>With</label>
-    <div class="styledSelect">
-      <select class="styledSelect__select" [(ngModel)]="with">
-        <option *ngFor="let employee of teamMembers" [ngValue]="employee.id">{{employee.employee_profile.user.first_name}} {{employee.employee_profile.user.last_name}}<span *ngIf="employee.employee_profile.title">, {{employee.employee_profile.title.abbreviation}}</span></option>
-      </select>
-    </div>
+    <div class="drop">
+      <div class="drop__input" (click)="withOpen = !withOpen"></div>
+      <app-popover [visible]="withOpen" (visibleChange)="withOpen = $event">
+      <ul class="drop__dropdown" [ngClass]="{'isOpen': withOpen }">
+        <ng-container *ngFor="let teamMember of teamMembers">
+          <li class="drop__option">
+            <label class="drop__checkbox styledInput">
+              <input type="checkbox" class="styledInput__input" [checked]="isSelectedMember(teamMember)" (change)="toggleSelectedMember(teamMember)" />
+              <span class="styledInput__box"></span>
+              {{teamMember.employee_profile.user.first_name}} {{teamMember.employee_profile.user.last_name}}<span *ngIf="teamMember.employee_profile.title">{{teamMember.employee_profile.title.abbreviation}}</span>
+            </label>
+          </li>
+        </ng-container>
+      </ul>
+      </app-popover>
+    </div> <!--/.drop (for Multiselect)-->
   </div>
   <div class="flex1">
     <label class="styledInput">

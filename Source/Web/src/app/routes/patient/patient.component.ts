@@ -227,14 +227,18 @@ export class PatientComponent implements OnDestroy, OnInit {
     return this.problemAreas.filter((obj) => obj.plan === planId);
   }
 
-  public openFinancialDetails() {
+  public openFinancialDetails(plan) {
     this.modals.open(FinancialDetailsComponent, {
       closeDisabled: false,
       data: {
         patient: this.patient,
+        plan: plan,
       },
       width: '384px',
-    }).subscribe(() => {});
+    }).subscribe((data) => {
+      if (!data) return;
+      this.patient.payer_reimbursement = data.patient.payer_reimbursement;
+    });
   }
 
   public openProblemAreas(plan) {
