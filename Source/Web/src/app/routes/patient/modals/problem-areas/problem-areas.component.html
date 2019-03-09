@@ -5,12 +5,10 @@
       <div class="flex alignCenter justifySpaceBetween">
         <label class="problem__label">Identified <span *ngIf="problemArea.date_identified">{{moment(problemArea.date_identified).format('MMM D, YYYY')}}</span><span *ngIf="problemArea?.identified_by"> by {{problemArea.identified_by.user.first_name}} {{problemArea.identified_by.user.last_name}}<span *ngIf="problemArea.identified_by.title">, {{problemArea.identified_by.title.abbreviation}}</span></span></label>
         <div class="flex">
-          <button class="button button--icon button--icon--small"
-          (click)="clickEditProblem(i, problemArea)">
+          <button class="button button--icon button--icon--small" (click)="clickEditProblem(i, problemArea)">
             <i class="ss-write"></i>
           </button>
-          <button class="button button--icon button--icon--small"
-          (click)="clickDeleteProblem(i)">
+          <button class="button button--icon button--icon--small" (click)="clickDeleteProblem(i)">
             <i class="ss-delete"></i>
           </button>
         </div>
@@ -54,22 +52,24 @@
     </div> <!--/.problem__confirm-->
   </li>
 </ul>
-<button *ngIf="!addPA" class="button button--iconText marBottom32" (click)="clickAddProblemArea()">
-  <i class="ss-plus"></i> Add Problem Area
-</button>
-<div *ngIf="addPA" class="problem__edit marBottom32">
-  <div class="flex alignCenter justifySpaceBetween marBottom16">
-    <div class="modal__inputWrap">
-      <input type="text" class="input fullWidth" placeholder="Title" [(ngModel)]="currentAddName" />
-    </div>
-    <div class="modal__inputWrap0 flex">
-      <button class="button button--icon button--icon--small" (click)="clickRevert()">
-        <i class="ss-undo"></i>
-      </button>
-      <button class="button button--icon button--icon--small" (click)="addProblemArea()">
-        <i class="ss-plus"></i>
-      </button>
-    </div>
-  </div> <!--/.flex (for title and buttons)-->
-  <textarea class="input input--textarea fullWidth" placeholder="Description" [(ngModel)]="currentAddText"></textarea>
-</div> <!--/ edit problem area-->
+<div class="addButtonContainer">
+  <button *ngIf="!addPA" class="button button--iconText" (click)="clickAddProblemArea()">
+    <i class="ss-plus"></i> Add Problem Area
+  </button>
+  <div *ngIf="addPA" class="problem__edit">
+    <div class="flex alignCenter justifySpaceBetween marBottom16">
+      <div class="modal__inputWrap">
+        <input type="text" class="input fullWidth" placeholder="Title" [(ngModel)]="currentAddName" />
+      </div>
+      <div class="modal__inputWrap0 flex">
+        <button class="button button--icon button--icon--small" (click)="clickRevert()">
+          <i class="ss-undo"></i>
+        </button>
+        <button class="button button--icon button--icon--small" (click)="addProblemArea()">
+          <i class="ss-plus"></i>
+        </button>
+      </div>
+    </div> <!--/.flex (for title and buttons)-->
+    <textarea class="input input--textarea fullWidth" placeholder="Description" [(ngModel)]="currentAddText"></textarea>
+  </div> <!--/ edit problem area-->
+</div>

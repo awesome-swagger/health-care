@@ -93,6 +93,7 @@ class BasicBillingTypeSerializer(serializers.ModelSerializer):
             'id',
             'name',
             'acronym',
+            'billable_minutes'
         )
         read_only_fields = (
             'id',

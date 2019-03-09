@@ -102,7 +102,7 @@
       </div>
       <div class="info__cell">
         <label>Avg Outcomes</label>
-        <div class="pill" *ngIf="averagesByCarePlan.average_outcome" [ngStyle]="{'background': utils.percentPillColor(averagesByCarePlan.average_outcome)}">
+        <div class="pill" *ngIf="averagesByCarePlan.average_outcome" [ngClass]="utils.percentPillClass(averagesByCarePlan.average_outcome)">
           {{averagesByCarePlan.average_outcome}}%
         </div>
         <div class="pill" *ngIf="!averagesByCarePlan.average_outcome">
@@ -111,7 +111,7 @@
       </div>
       <div class="info__cell">
         <label>Avg Engagement</label>
-        <div class="pill" *ngIf="averagesByCarePlan.average_engagement" [ngStyle]="{'background': utils.percentPillColor(averagesByCarePlan.average_engagement)}">
+        <div class="pill" *ngIf="averagesByCarePlan.average_engagement" [ngClass]="utils.percentPillClass(averagesByCarePlan.average_engagement)">
           {{averagesByCarePlan.average_engagement}}%
         </div>
         <div class="pill" *ngIf="!averagesByCarePlan.average_engagement">
@@ -120,7 +120,7 @@
       </div>
       <div class="info__cell">
         <label>Risk Level</label>
-        <div class="pill" *ngIf="averagesByCarePlan.risk_level" [ngStyle]="{'background': utils.percentPillColor(averagesByCarePlan.risk_level)}">
+        <div class="pill" *ngIf="averagesByCarePlan.risk_level" [ngClass]="utils.percentPillClass(averagesByCarePlan.risk_level)">
           {{utils.getRiskLevelText(averagesByCarePlan.risk_level)}} {{averagesByCarePlan.risk_level}}%
         </div>
         <div class="pill" *ngIf="!averagesByCarePlan.risk_level">
@@ -137,7 +137,7 @@
           <div class="pill marRight16">
             Time {{totalTimeCount(filteredTemplates(plan.templates))}}
           </div>
-          <div class="pill" *ngIf="plan.totalPatients > 0" [ngStyle]="{'background': utils.percentPillColor(totalRiskLevel(filteredTemplates(plan.templates)))}">
+          <div class="pill" *ngIf="plan.totalPatients > 0" [ngClass]="utils.percentPillClass(totalRiskLevel(filteredTemplates(plan.templates)))">
             {{utils.getRiskLevelText(totalRiskLevel(filteredTemplates(plan.templates)))}} {{totalRiskLevel(filteredTemplates(plan.templates))}}%
           </div>
           <div class="pill" *ngIf="plan.totalPatients === 0">
@@ -205,7 +205,7 @@
                   <div class="pill" *ngIf="item.averages.total_patients === 0">
                     ---
                   </div>
-                  <div class="pill" *ngIf="item.averages.total_patients > 0" [ngStyle]="{'background': utils.percentPillColor(item.averages.average_engagement)}">
+                  <div class="pill" *ngIf="item.averages.total_patients > 0" [ngClass]="utils.percentPillClass(item.averages.average_engagement)">
                     {{item.averages.average_engagement}}%
                   </div>
                 </td>
@@ -213,7 +213,7 @@
                   <div class="pill" *ngIf="item.averages.total_patients === 0">
                     ---
                   </div>
-                  <div class="pill" *ngIf="item.averages.total_patients > 0" [ngStyle]="{'background': utils.percentPillColor(item.averages.average_outcome)}">
+                  <div class="pill" *ngIf="item.averages.total_patients > 0" [ngClass]="utils.percentPillClass(item.averages.average_outcome)">
                     {{item.averages.average_outcome}}%
                   </div>
                 </td>
@@ -221,7 +221,7 @@
                   <div class="pill" *ngIf="item.averages.total_patients === 0">
                     ---
                   </div>
-                  <div class="pill" *ngIf="item.averages.total_patients > 0" [ngStyle]="{'background': utils.percentPillColor(item.averages.risk_level)}">
+                  <div class="pill" *ngIf="item.averages.total_patients > 0" [ngClass]="utils.percentPillClass(item.averages.risk_level)">
                     {{utils.getRiskLevelText(item.averages.risk_level)}} {{item.averages.risk_level}}%
                   </div>
                 </td>

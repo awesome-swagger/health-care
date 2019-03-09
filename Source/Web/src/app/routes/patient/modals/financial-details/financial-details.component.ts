@@ -12,6 +12,8 @@ export class FinancialDetailsComponent implements OnInit {
 
   public data = null;
   public patient = null;
+  public plan = null;
+  public trackingReimbursement = false;
   public selectedPlanType = 'BHI';
   public billingTypes = [
     {
@@ -99,12 +101,63 @@ export class FinancialDetailsComponent implements OnInit {
     console.log(this.data);
     if (this.data.patient) {
       this.patient = this.data.patient;
+      this.trackingReimbursement = this.patient.payer_reimbursement;
+    } else {
+      console.log('"patient" should be passed in the data field');
+    }
+    if (this.data.plan) {
+      this.plan = this.data.plan;
+    } else {
+      console.log('"plan" should be passed in the data field');
     }
     this.billingTypes = this.billingTypes.sort((a: any, b: any) => ('' + a.name).localeCompare(b.name));
   }
 
+  public getBillingTypes() {
+    let promise = new Promise((resolve, reject) => {
+      let billingTypesSub = this.store.BillingType.readListPaged().subscribe(
+        (billingTypes) => resolve(billingTypes),
+        (err) => reject(err),
+        () => {
+          billingTypesSub.unsubscribe();
+        }
+      );
+    });
+    return promise;
+  }
+
   public billingTypeByAbr(abr) {
     return _find(this.billingTypes, t => t.abr === abr);
+  }
+
+  public updateReimbursement(value) {
+    let promise = new Promise((resolve, reject) => {
+      let updatePatientSub = this.store.PatientProfile.update(this.patient.id, {
+        payer_reimbursement: value,
+      }, true).subscribe(
+        (updatedPatient) => resolve(updatedPatient),
+        (err) => reject(err),
+        () => {
+          updatePatientSub.unsubscribe();
+        }
+      );
+    });
+    return promise;
+  }
+
+  public updateBillingType(value) {
+    let promise = new Promise((resolve, reject) => {
+      let updatePlanSub = this.store.CarePlan.update(this.plan.id, {
+        billing_type: value,
+      }, true).subscribe(
+        (updatedPlan) => resolve(updatedPlan),
+        (err) => reject(err),
+        () => {
+          updatePlanSub.unsubscribe();
+        }
+      )
+    });
+    return promise;
   }
 
   public clickCancel() {
@@ -112,16 +165,13 @@ export class FinancialDetailsComponent implements OnInit {
   }
 
   public clickSave() {
-    let updatePatientSub = this.store.PatientProfile.update(this.patient.id, {
-      payer_reimbursement: this.patient.payer_reimbursement,
-    }).subscribe(
-      (success) => {
-        this.modals.close('dur');
-      },
-      (err) => {},
-      () => {
-        updatePatientSub.unsubscribe();
-      }
-    );
+    this.updateReimbursement(this.trackingReimbursement).then((updatedPatient) => {
+      this.updateBillingType('ac81727d-57ea-40e3-8e30-d0cf61fad246').then((updatedPlan) => {
+        this.modals.close({
+          patient: updatedPatient,
+          plan: updatedPlan,
+        });
+      });
+    });
   }
 }

@@ -246,6 +246,21 @@ export class PatientHeaderComponent implements OnInit, OnDestroy {
     return time.format('HH:mm:00');
   }
 
+  public totalMinutes(timeSpentStr) {
+    if (!timeSpentStr) {
+      return 0;
+    }
+    let hours = 0;
+    let minutes = 0;
+    let timeCountSplit = timeSpentStr.split(":");
+    let splitHours = parseInt(timeCountSplit[0]);
+    let splitMinutes = parseInt(timeCountSplit[1]);
+    hours = splitHours;
+    minutes = splitMinutes;
+    minutes = minutes + (hours * 60);
+    return minutes;
+  }
+
   public isBefore3DaysAgo(dateAsMoment) {
     let threeDaysAgo = moment().subtract(3, 'days').startOf('day');
     if (dateAsMoment.isBefore(threeDaysAgo)) {

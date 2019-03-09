@@ -180,7 +180,7 @@
       <div class="accordion__head" (click)="practitionerDropdownOpen[bp.id]=!practitionerDropdownOpen[bp.id]">
         <span class="accordion__title">Billing Practitioner: {{bp.first_name}} {{bp.last_name}}<span *ngIf="bp.title">, {{bp.title}}</span> ({{getPractitionerPlansAtFacility(bp.id, facility.id).length}})</span>
         <div class="accordion__right">
-          <div class="pill" [ngStyle]="{'background': utils.percentPillColor(getBilledPercent(bp.id, facility.id)) }">
+          <div class="pill" [ngClass]="utils.percentPillClass(getBilledPercent(bp.id, facility.id))">
             Billed {{plansBilledCount(getPractitionerPlansAtFacility(bp.id, facility.id))}} / {{getPractitionerPlansAtFacility(bp.id, facility.id).length}}
           </div>
           <div class="accordion__arrow">

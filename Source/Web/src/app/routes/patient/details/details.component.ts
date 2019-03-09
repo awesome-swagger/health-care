@@ -613,7 +613,6 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
      data: {
        patient: this.patient,
        carePlan: this.carePlan,
-       tasks: this.userTasks,
        task: task.id,
        totalMinutes: null,
        teamMembers: this.careTeamMembers,
@@ -627,25 +626,26 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
      if (!results) {
        return;
      }
-     // Set team task status to done.
-     this.store.TeamTask.update(task.id, {
-       status: 'done',
-     }, true).subscribe((res) => {
-       task.state = 'done';
-     });
-     // Create billed activity record
      this.store.BilledActivity.create({
        plan: this.carePlan.id,
+       team_task: task.id,
        activity_type: 'care_plan_review',
        members: [
          this.user.id,
-       ],
+       ].concat(results.with),
        sync_to_ehr: results.syncToEHR,
        added_by: this.user.id,
        notes: results.notes,
        time_spent: results.totalMinutes,
      }).subscribe((res) => {
        console.log(res);
+       // Set team task status to done.
+       // this.store.TeamTask.update(task.id, {
+       //   status: 'done',
+       // }, true).subscribe((res) => {
+       //   task.state = 'done';
+       // });
+       // Create billed activity record
      });
    });
   }
