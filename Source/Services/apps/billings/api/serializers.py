@@ -18,6 +18,7 @@ class BillingTypeSerializer(serializers.ModelSerializer):
             'id',
             'name',
             'acronym',
+            'billable_minutes',
             'created',
             'modified',
         )

@@ -24,6 +24,7 @@ export class StoreService {
   // Billing
   public BilledActivity = new Store(this.http, 'billed_activities');
   public BillingCoordinator = new Store(this.http, 'billing_coordinators');
+  public BillingType = new Store(this.http, 'billing_types');
   // Patients
   public PatientProfile = new Store(this.http, 'patient_profiles');
   public ProblemArea = new Store(this.http, 'problem_areas');
@@ -34,7 +35,6 @@ export class StoreService {
   public PatientStat = new Store(this.http, 'patient_stats');
   // Plans
   public CarePlanTemplate = new Store(this.http, 'care_plan_templates');
-  public CarePlanTemplateType = new Store(this.http, 'care_plan_template_types');
   public CareTeamMember = new Store(this.http, 'care_team_members');
   public ServiceArea = new Store(this.http, 'service_areas');
   public CarePlan = new Store(this.http, 'care_plans');

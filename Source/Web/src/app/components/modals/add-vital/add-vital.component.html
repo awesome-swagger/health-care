@@ -13,7 +13,7 @@
 
 <div class="grid2col">
   <div class="gridCell--11 marRight32">
-    <input type="text" class="input input--search fullWidth marBottom32" placeholder="Search Tasks" [(ngModel)]="searchInput" (ngModelChange)="filterVitals()" />
+    <input type="text" class="input input--search fullWidth marBottom32" placeholder="Search Vitals" [(ngModel)]="searchInput" (ngModelChange)="filterVitals()" />
     <div class="listBox">
       <ul class="nameList">
         <li class="nameList__item nameList__item--padLeft nameList__item--target" [ngClass]="{'nameList__item--target--active':vitalTemplatePreview.vital == vital}" *ngFor="let vital of vitalTemplatesShown" (click)="showVitalPreview(vital)">

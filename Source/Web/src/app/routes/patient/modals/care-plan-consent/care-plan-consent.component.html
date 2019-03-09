@@ -2,7 +2,7 @@
 <hr />
 <h2 class="modal__title">{{patient?.user.first_name}} {{patient?.user.last_name}}</h2>
 <h4 class="modal__title"><span *ngIf="carePlan?.plan_template.service_area">{{carePlan?.plan_template.service_area.name}}, </span>{{carePlan?.plan_template.name}}</h4>
-<h4 class="modal__title" *ngIf="carePlan?.plan_template.type">{{carePlan?.plan_template.type.name}} ({{carePlan?.plan_template.acronym}})</h4>
+<h4 class="modal__title" *ngIf="carePlan?.billing_type">{{carePlan?.billing_type.name}} ({{carePlan?.billing_type.acronym}})</h4>
 <div>
   <label class="styledInput listHead">REIMBURSEMENT REQUIREMENTS (OPT)</label>
   <label class="styledInput">

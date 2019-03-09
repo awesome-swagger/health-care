@@ -21,6 +21,7 @@ export class RecordResultsComponent implements OnInit, OnDestroy {
   public task = null;
   public totalMinutes = null;
   public teamMembers = [];
+  public withSelected = [];
   public with = null;
   public syncToEHR = false;
   public notes = '';
@@ -57,7 +58,6 @@ export class RecordResultsComponent implements OnInit, OnDestroy {
       this.carePlan = this.data.carePlan;
       this.task = this.data.task;
       this.totalMinutes = this.data.totalMinutes;
-      this.teamMembers = this.data.teamMembers;
       this.with = this.data.with;
       this.syncToEHR = this.data.syncToEHR;
       this.notes = this.data.notes;
@@ -106,7 +106,7 @@ export class RecordResultsComponent implements OnInit, OnDestroy {
           let userTaskTemplates = [];
           // If user has the manager role on the care plan, get task templates that are marked is_manager
           let hasManagerRole = userRoles.filter((obj) => obj.is_manager);
-          if (hasManagerRole) {
+          if (hasManagerRole.length > 0) {
             let managerTasks = teamTasks.filter((obj) => obj.is_manager_task);
             userTaskTemplates = userTaskTemplates.concat(managerTasks);
           }
@@ -138,6 +138,19 @@ export class RecordResultsComponent implements OnInit, OnDestroy {
     this.patientEngagement = num;
   }
 
+  public isSelectedMember(teamMember) {
+    return this.withSelected.findIndex((obj) => obj.id === teamMember.id) > -1;
+  }
+
+  public toggleSelectedMember(teamMember) {
+    let index = this.withSelected.findIndex((obj) => obj.id === teamMember.id);
+    if (index > -1) {
+      this.withSelected.splice(index, 1);
+    } else {
+      this.withSelected.push(teamMember);
+    }
+  }
+
   public clickClose() {
     this.modal.close(null);
   }
@@ -152,7 +165,7 @@ export class RecordResultsComponent implements OnInit, OnDestroy {
       carePlan: this.carePlan,
       task: this.task,
       totalMinutes: this.totalMinutes,
-      with: this.with,
+      with: this.withSelected.map((obj) => obj.employee_profile.id),
       notes: this.notes,
       syncToEHR: this.syncToEHR,
       patientEngagement: this.patientEngagement,

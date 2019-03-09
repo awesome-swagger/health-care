@@ -15,7 +15,7 @@ import { PatientAddressComponent } from './modals/patient-address/patient-addres
 import { PatientEmergencyContactComponent } from './modals/patient-emergency-contact/patient-emergency-contact.component';
 import { DeleteMedicationComponent } from './modals/delete-medication/delete-medication.component';
 import { DeleteDiagnosisComponent } from './modals/delete-diagnosis/delete-diagnosis.component';
-import { NavbarService, StoreService } from '../../services';
+import { NavbarService, StoreService, UtilsService } from '../../services';
 import patientData from './patientdata.js';
 import * as moment from 'moment';
 import {
@@ -38,7 +38,7 @@ export class PatientComponent implements OnDestroy, OnInit {
   public patientMedications = [];
   public problemAreas = [];
   public patientProcedures = [];
-  public teamListOpen = -1;
+  public teamListOpen = {};
   public patientStats = null;
 
   public editName;
@@ -52,6 +52,7 @@ export class PatientComponent implements OnDestroy, OnInit {
     private modals: ModalService,
     private nav: NavbarService,
     private store: StoreService,
+    public utils: UtilsService,
   ) { }
 
   public ngOnInit() {
@@ -65,11 +66,24 @@ export class PatientComponent implements OnDestroy, OnInit {
         this.nav.addRecentPatient(this.patient);
         this.getCarePlans(this.patient.id).then((carePlans: any) => {
           this.carePlans = carePlans;
-          this.carePlans.forEach(plan => {
-            this.getCareTeam(plan).then(res => {
-              plan.careTeam = res;
+    			this.getCarePlanOverview(this.patient.id).then((overview: any) => {
+            let overviewStats = overview.results;
+            this.carePlans.forEach((carePlan) => {
+              carePlan.overview = overviewStats.find((overviewObj) => overviewObj.plan_template.id === carePlan.plan_template.id);
             });
-          })
+    			});
+          this.carePlans.forEach((carePlan) => {
+            this.getCareTeam(carePlan).then((teamMembers: any) => {
+              // Get care manager
+      				carePlan.care_manager = teamMembers.filter((obj) => {
+      					return obj.is_manager;
+      				})[0];
+              // Get regular team members
+      				carePlan.team_members = teamMembers.filter((obj) => {
+      					return !obj.is_manager;
+      				});
+            });
+          });
         });
         this.getProblemAreas(this.patient.id).then((problemAreas: any) => {
           this.problemAreas = problemAreas;
@@ -146,6 +160,19 @@ export class PatientComponent implements OnDestroy, OnInit {
     });
   }
 
+  public getCarePlanOverview(patientId) {
+    let promise = new Promise((resolve, reject) => {
+      let overviewSub = this.store.PatientProfile.detailRoute('get', patientId, 'care_plan_overview').subscribe(
+        (overview) => resolve(overview),
+        (err) => reject(err),
+        () => {
+          overviewSub.unsubscribe();
+        }
+      );
+    });
+    return promise;
+  }
+
   public getCareTeam(plan) {
     return new Promise((resolve, reject) => {
         this.store.CarePlan.detailRoute('GET', plan.id, 'care_team_members').subscribe((res:any) => {
@@ -200,14 +227,18 @@ export class PatientComponent implements OnDestroy, OnInit {
     return this.problemAreas.filter((obj) => obj.plan === planId);
   }
 
-  public openFinancialDetails() {
+  public openFinancialDetails(plan) {
     this.modals.open(FinancialDetailsComponent, {
       closeDisabled: false,
       data: {
         patient: this.patient,
+        plan: plan,
       },
       width: '384px',
-    }).subscribe(() => {});
+    }).subscribe((data) => {
+      if (!data) return;
+      this.patient.payer_reimbursement = data.patient.payer_reimbursement;
+    });
   }
 
   public openProblemAreas(plan) {
@@ -361,7 +392,7 @@ export class PatientComponent implements OnDestroy, OnInit {
       if (res === okText) {
         this.store.PatientDiagnosis.destroy(_find(this.patientDiagnosesRaw, d => d.diagnosis = diagnosis).id).subscribe(() => {
           this.patientDiagnoses = this.patientDiagnoses.filter((d, i) => i !== index)
-          
+
         })
       }
     })
@@ -476,16 +507,19 @@ export class PatientComponent implements OnDestroy, OnInit {
     });
   }
 
-  public riskLevelText(level) {
-    if (level >= 90) {
-      return 'On Track';
-    } else if (level >= 70) {
-      return 'Low Risk';
-    } else if (level >= 50) {
-      return 'Med Risk'
-    } else {
-      return 'High Risk';
+  public totalMinutes(timeSpentStr) {
+    if (!timeSpentStr) {
+      return 0;
     }
+    let hours = 0;
+    let minutes = 0;
+    let timeCountSplit = timeSpentStr.split(":");
+    let splitHours = parseInt(timeCountSplit[0]);
+    let splitMinutes = parseInt(timeCountSplit[1]);
+    hours = splitHours;
+    minutes = splitMinutes;
+    minutes = minutes + (hours * 60);
+    return minutes;
   }
 
   get patientAge() {

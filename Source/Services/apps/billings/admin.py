@@ -4,7 +4,7 @@ from . import models
 
 
 class BillingTypeAdmin(admin.ModelAdmin):
-    list_display = ('acronym', 'name', )
+    list_display = ('acronym', 'name', 'billable_minutes', )
 
 
 class BilledActivityAdmin(admin.ModelAdmin):

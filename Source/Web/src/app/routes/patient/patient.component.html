@@ -21,12 +21,10 @@
       </form>
     </div>
   </div> <!--/.flex (for title area)-->
-
   <ng-container *ngFor="let plan of carePlans; let i = index">
     <div class="flex alignCenter justifySpaceBetween">
       <div class="flex alignCenter">
-        <h2 class="noMargin marRight32">{{plan.plan_template.service_area.name}}, {{plan.plan_template.name}}<span *ngIf="plan.plan_template.type">, {{plan.plan_template.type.abbreviation}}</span></h2>
-
+        <h2 class="noMargin marRight32">{{plan.plan_template.service_area.name}}, {{plan.plan_template.name}}<span *ngIf="plan.billing_type">, {{plan.billing_type.acronym}}</span></h2>
         <a class="button button--iconText" (click)="openConsentForm(plan.id)">
           <i class="ss-standard ss-info"></i>
         </a>
@@ -35,42 +33,38 @@
         </a>
       </div>
       <div class="flex alignCenter">
-        <!-- <button class="button button--icon"
-        (click)="confirmPause()">
+        <!-- <button class="button button--icon" (click)="confirmPause()">
           <i class="ss-pause"></i>
         </button> -->
-        <button class="button button--icon"
-        (click)="confirmRemovePlan(plan.id)">
+        <button class="button button--icon" (click)="confirmRemovePlan(plan.id)">
           <i class="ss-delete"></i>
         </button>
       </div>
     </div>
-
     <div class="info info--horiz">
       <div class="info__cell">
         <label>Care Team</label>
         <div class="flex alignCenter justifyCenter">
-          <div *ngIf="!plan?.careTeam?.length">N/A</div>
-          <ng-container *ngIf="plan.careTeam && plan.careTeam.length">
-            <div class="picName marRight8">
-              <img class="picName__img" src="../../../assets/img/profile.svg" />
-              {{plan.careTeam ? plan.careTeam[0]?.employee_profile?.user?.first_name + ' ' + plan.careTeam[0]?.employee_profile?.user?.last_name : ''}}
-            </div>
-            <div class="tool__anchor">
-              <a *ngIf="plan?.careTeam?.length > 1" class="flex alignCenter" (click)="teamListOpen === i ? teamListOpen = -1 : teamListOpen = i">
-                <span class="marRight8">+{{plan?.careTeam?.length - 1}}</span>
-                <img src="../../../assets/img/arrow-down.svg" />
-              </a>
-              <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : teamListOpen === i }">
+          <div class="picName" *ngIf="plan.care_manager" [ngClass]="{'marRight8': plan.team_members.length > 0}">
+            <img class="picName__img" [src]="plan.care_manager.employee_profile.user.image_url" />
+            {{plan.care_manager.employee_profile.user.first_name}} {{plan.care_manager.employee_profile.user.last_name}}<span *ngIf="plan.care_manager.employee_profile.title">, {{plan.care_manager.employee_profile.title.abbreviation}}</span>
+          </div>
+          <div class="tool__anchor" *ngIf="plan.team_members?.length > 0">
+            <a class="flex alignCenter" (click)="teamListOpen[plan.id]=!teamListOpen[plan.id]">
+              <span class="marRight8">+{{plan.team_members.length}}</span>
+              <img src="../../../assets/img/arrow-down.svg" />
+            </a>
+            <app-popover [visible]="teamListOpen[plan.id]" (visibleChange)="teamListOpen[plan.id] = $event;">
+              <div class="tool__tip tool__tip--bottom isOpen">
                 <div class="tool__text">
-                  <div *ngFor="let practitioner of plan.careTeam?.slice(1)" class="picName marBottom16">
-                    <img class="picName__img" src="../../../assets/img/profile--2.svg" />
-                    {{practitioner?.employee_profile?.user?.first_name + ' ' + practitioner?.employee_profile?.user?.last_name}}
+                  <div class="picName" [ngClass]="{'marBottom16': (i + 1) !== plan.team_members.length}" *ngFor="let teamMember of plan.team_members; index as i">
+                    <img class="picName__img" [src]="teamMember.employee_profile.user.image_url" />
+                    {{teamMember.employee_profile.user.first_name}} {{teamMember.employee_profile.user.last_name}}<span *ngIf="teamMember.employee_profile.title">, {{teamMember.employee_profile.title.abbreviation}}</span>
                   </div>
                 </div>
               </div>
-            </div>
-          </ng-container>
+            </app-popover>
+          </div>
         </div>
       </div> <!--/.info__cell (for care team)-->
       <div class="info__cell">
@@ -94,42 +88,34 @@
         <label class="tool info__tool justifyCenter">
           Time
           <div class="tool__anchor">
-            <button class="button button--icon button--icon--small" (click)="openFinancialDetails()">
+            <button class="button button--icon button--icon--small" (click)="openFinancialDetails(plan)">
               <i class="ss-info"></i>
             </button>
           </div>
         </label>
-        <div class="pill pill--purple">
-          {{plan.time || '0:00'}}
+        <div class="pill" *ngIf="!patient?.payer_reimbursement">
+          {{plan.overview?.time_spent_this_month}}
+        </div>
+        <div class="pill" [ngClass]="utils.timePillColor(totalMinutes(plan.overview?.time_spent_this_month), 30)" *ngIf="patient?.payer_reimbursement">
+          {{plan.overview?.time_spent_this_month}}
         </div>
       </div> <!--/.info__cell (for time)-->
       <div class="info__cell">
         <label>Risk Level</label>
-        <div
-          class="pill"
-          [ngClass]="{
-            'pill--lime': patient.risk_level >= 90,
-            'pill--yellow': patient.risk_level >= 70 && patient.risk_level < 90,
-            'pill--red': patient.risk_level >= 50 && patient.risk_level < 70,
-            'pill--purple': patient.risk_level < 50
-          }"
-        >
-          {{riskLevelText(patient?.risk_level)}} {{patient.risk_level}}%
+        <div class="pill" [ngClass]="utils.percentPillClass(patient?.risk_level)">
+          {{utils.getRiskLevelText(patient?.risk_level)}} {{patient.risk_level}}%
         </div>
       </div>
     </div> <!--/.info (for care plan instance)-->
   </ng-container>
-  <button class="button button--iconText"
-  (click)="addPatientToPlan(patient)">
+  <button class="button button--iconText" (click)="addPatientToPlan(patient)">
     <i class="ss-plus"></i> Add Care Plan
   </button>
-
   <div class="background-radial marTop48">
     <div class="flex alignCenter marBottom16">
       <h2 class="noMargin">Patient Statistics (Past 12 Months)</h2>
       <div class="tool__anchor">
-        <button class="button button--icon button--icon--small"
-        (click)="tooltipPSOpen=!tooltipPSOpen">
+        <button class="button button--icon button--icon--small" (click)="tooltipPSOpen=!tooltipPSOpen">
           <i class="ss-help"></i>
         </button>
         <div class="tool__tip" [ngClass]="{'isOpen' : tooltipPSOpen }">
@@ -139,7 +125,6 @@
         </div>
       </div>
     </div> <!--/.flex (for patient statistics header and tooltip)-->
-
     <div class="info info--horiz">
       <div class="info__cell">
         <label>Readmits</label>
@@ -162,7 +147,6 @@
         {{patientStats?.opioid_use}}
       </div>
     </div> <!--/.info (first one for patient stats)-->
-
     <div class="info info--horiz">
       <div class="info__cell">
         <label>Admits</label>
@@ -186,7 +170,6 @@
       </div>
     </div> <!--/.info (second one for patient stats)-->
   </div>
-
   <div class="flex justifySpaceBetween marTop48">
     <div class="info cols__colSmall marRight32">
       <h3>Medications</h3>
@@ -194,71 +177,58 @@
         <li *ngFor="let medication of patientMedications" class="nameList__item">
           <span>{{medication?.medication?.name}}</span>
           <div class="flex">
-            <button class="button button--icon button--icon--small"
-            (click)="editMedication(medication)">
+            <button class="button button--icon button--icon--small" (click)="editMedication(medication)">
               <i class="ss-write"></i>
             </button>
-            <button class="button button--icon button--icon--small"
-            (click)="deleteMedication(medication?.id)">
+            <button class="button button--icon button--icon--small" (click)="deleteMedication(medication?.id)">
               <i class="ss-delete"></i>
             </button>
           </div>
         </li>
       </ul>
-      <button class="button button--iconText"
-      (click)="addMedication()">
+      <button class="button button--iconText" (click)="addMedication()">
         <i class="ss-plus"></i> Add Medication
       </button>
     </div> <!--/.info (for medications)-->
-
     <div class="info cols__colSmall marRight32">
       <h3>Diagnoses</h3>
       <ul class="nameList nameList--dk marBottom16">
         <li class="nameList__item" *ngFor="let diagnosis of patientDiagnoses; let i = index">
           <span>{{diagnosis.name}}</span>
           <div class="flex">
-            <button class="button button--icon button--icon--small"
-            (click)="editDiagnosis(diagnosis)">
+            <button class="button button--icon button--icon--small" (click)="editDiagnosis(diagnosis)">
               <i class="ss-write"></i>
             </button>
-            <button class="button button--icon button--icon--small"
-            (click)="deleteDiagnosis(diagnosis, i)">
+            <button class="button button--icon button--icon--small" (click)="deleteDiagnosis(diagnosis, i)">
               <i class="ss-delete"></i>
             </button>
           </div>
         </li>
       </ul>
-      <button class="button button--iconText"
-      (click)="addDiagnosis()">
+      <button class="button button--iconText" (click)="addDiagnosis()">
         <i class="ss-plus"></i> Add Diagnosis
       </button>
     </div> <!--/.info (for diagnoses)-->
-
     <div class="info cols__colSmall">
       <h3>Procedures</h3>
       <ul class="nameList nameList--dk marBottom16">
         <li class="nameList__item" *ngFor="let patientProcedure of patientProcedures">
           <span>{{patientProcedure.procedure.name}}</span>
           <div class="flex">
-            <button class="button button--icon button--icon--small"
-            (click)="editProcedure(patientProcedure)">
+            <button class="button button--icon button--icon--small" (click)="editProcedure(patientProcedure)">
               <i class="ss-write"></i>
             </button>
-            <button class="button button--icon button--icon--small"
-            (click)="deleteProcedure(patientProcedure)">
+            <button class="button button--icon button--icon--small" (click)="deleteProcedure(patientProcedure)">
               <i class="ss-delete"></i>
             </button>
           </div>
         </li>
       </ul>
-      <button class="button button--iconText"
-      (click)="addProcedure()">
+      <button class="button button--iconText" (click)="addProcedure()">
         <i class="ss-plus"></i> Add Procedure
       </button>
     </div> <!--/.info (for diagnoses)-->
-
   </div> <!--/.flex (for medications, diagnoses, procedures)-->
-
   <div class="cols">
     <div class="cols__colBig marRight32">
       <div class="info">
@@ -296,12 +266,10 @@
           </div>
         </div>
       </div> <!--/.info (for profile)-->
-
       <div class="info">
         <div class="info__header">
           <h3 class="noMargin">Address</h3>
-          <button class="button button--icon button--icon--small"
-          (click)="editPatientAddress()">
+          <button class="button button--icon button--icon--small" (click)="editPatientAddress()">
             <i class="ss-write"></i>
           </button>
         </div>
@@ -325,13 +293,11 @@
         </div>
       </div> <!--/.info (for address)-->
     </div> <!--/.cols__colBig-->
-
     <div class="cols__colSmall">
       <div class="info">
         <div class="info__header">
           <h3 class="noMargin">Communication</h3>
-          <button class="button button--icon button--icon--small"
-          (click)="editPatientCommunication()">
+          <button class="button button--icon button--icon--small" (click)="editPatientCommunication()">
             <i class="ss-write"></i>
           </button>
         </div>
@@ -356,7 +322,6 @@
           </div>
         </div>
       </div> <!--/.info (for communication)-->
-
       <div class="info">
         <div class="info__header">
           <h3 class="noMargin">Emergency Contact</h3>
@@ -384,14 +349,9 @@
           <a href="mailto:">{{patient?.emergencyContact?.email}}</a>
         </p>
       </div> <!--/.info (for emergency contact)-->
-
     </div> <!--/.cols__colSmall-->
   </div> <!--/.cols for profile, address, etc.-->
-
-
-  <button class="button button--2nd"
-  (click)="confirmMakePatientInactive()">
+  <button class="button button--2nd" (click)="confirmMakePatientInactive()">
     Make Inactive
   </button>
-
 </div> <!--/.ssContainer-->

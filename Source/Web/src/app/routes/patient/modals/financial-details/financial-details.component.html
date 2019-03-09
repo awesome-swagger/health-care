@@ -1,7 +1,7 @@
 <h1 class="modal__title noMargin">Billing Details</h1>
 <div class="divider"></div>
 <label class="styledInput styledInput--marBottom32" *ngIf="patient">
-  <input type="checkbox" class="styledInput__input" [checked]="patient.payer_reimbursement" (change)="patient.payer_reimbursement = !patient.payer_reimbursement" />
+  <input type="checkbox" class="styledInput__input" [checked]="trackingReimbursement" (change)="trackingReimbursement = !trackingReimbursement" />
   <span class="styledInput__box"></span>
   Tracking Reimbursements
 </label>
