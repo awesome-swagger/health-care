@@ -153,6 +153,15 @@ export class NavComponent implements OnDestroy, OnInit {
     this.getNotifications().then((notifications:any) => {
       this.notifications = notifications.results;
     });
+
+    document.addEventListener('refreshPatientOverview', e => {
+      this.getPatientsOverview(this.organization.id).then((patientOverview:any) => {
+        this.activePatientsCount = patientOverview.active;
+        this.inactivePatientsCount = patientOverview.inactive;
+        this.potentialPatientsCount = patientOverview.potential;
+        this.invitedPatientsCount = patientOverview.invited;
+      })
+    })
   }
 
   public ngOnDestroy() {

@@ -38,6 +38,7 @@ export class RecordResultsComponent implements OnInit, OnDestroy {
   public tooltipRRM2Open;
   public showDate;
   public taskEditable;
+  public withOpen
 
   constructor(
     private modal: ModalService,

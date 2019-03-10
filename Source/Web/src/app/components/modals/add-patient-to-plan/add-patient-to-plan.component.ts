@@ -4,7 +4,8 @@ import { ModalService } from '../../../modules/modals';
 import { Subscription } from 'rxjs/Subscription';
 import {
   filter as _filter,
-  get as _get
+  get as _get,
+  uniqWith as _uniqWith,
 } from 'lodash';
 
 @Component({
@@ -21,6 +22,7 @@ export class AddPatientToPlanComponent implements OnInit {
   public createDiagnosis = false;
   public planKnown = false;
   public patients = [];
+  public potentialPatients = [];
   public selectedPatient = null;
   public payerReimburses = false;
   public enrollPatientChecked = false;
@@ -73,6 +75,9 @@ export class AddPatientToPlanComponent implements OnInit {
       this.enrollPatientChecked = this.data.enrollPatientChecked;
       this.store.Facility.readListPaged().subscribe(res => {
         this.facilities = res;
+        if (this.data.potentialPatient) {
+          this.selectedFacility = this.facilities.find(f => f.id === this.data.potentialPatient.facility[0]);
+        }
       })
 
       if (this.data.facility) {
@@ -96,8 +101,20 @@ export class AddPatientToPlanComponent implements OnInit {
       }
     }
     this.getPatients().then((patients: any) => {
-      this.patients = patients;
+      if (this.selectedFacility) {
+        this.patients = patients.filter(p => p.facility.id === this.selectedFacility.id);
+      } else {
+        this.patients = patients;
+      }
     });
+    this.store.PotentialPatient.readListPaged().subscribe(res => {
+      if (this.selectedFacility) {
+        this.potentialPatients = _uniqWith(res, (a, b) => a.first_name === b.first_name && a.last_name === b.last_name)
+          .filter(p => p.facility[0] === this.selectedFacility.id);
+      }
+      this.potentialPatients = _uniqWith(res, (a, b) => a.first_name === b.first_name && a.last_name === b.last_name);
+    })
+
     this.getCarePlanTemplates().then((plans: any) => {
       this.carePlans = plans;
       this.getServiceAreas().then((serviceAreas: any) => {
@@ -195,13 +212,17 @@ export class AddPatientToPlanComponent implements OnInit {
     this.selectedPatient = patient;
     this.firstName = patient.user.first_name;
     this.lastName = patient.user.last_name;
-    this.phoneNumber = patient.user.phoneNumber;
+    this.phoneNumber = patient.user.phone;
     this.email = patient.user.email;
-    this.selectedFacility = patient.facility;
+
+    if (patient.facility[0] && typeof patient.facility[0] === 'string') {
+      this.selectedFacility = this.facilities.find(f => f.id === patient.facility[0])
+    } else {
+      this.selectedFacility = patient.facility;
+    }
   }
 
   public unselectPatient() {
-    console.log('asdf');
     this.selectedPatient = null;
     this.firstName = '';
     this.lastName = '';
@@ -243,7 +264,47 @@ export class AddPatientToPlanComponent implements OnInit {
   }
 
   public handleSubmit() {
-    if (!this.enrollPatientChecked) {
+
+    if (this.selectedPatient && !this.selectedPatient.user.hasOwnProperty('patient_profile')) {
+      let infoChanged = false;
+      if (this.firstName !== this.selectedPatient.user.first_name) infoChanged = true;
+      if (this.lastName !== this.selectedPatient.user.last_name) infoChanged = true;
+      if (this.phoneNumber !== this.selectedPatient.user.phone) infoChanged = true;
+      if (this.email !== this.selectedPatient.user.email) infoChanged = true;
+      if (infoChanged) {
+        this.store.User.update(this.selectedPatient.user.id, {
+          phone: this.phoneNumber,
+        }).subscribe(res => {
+          console.log('vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv');
+          console.log(res);
+          console.log('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^');
+        })
+
+      }
+    }
+
+    if (!this.enrollPatientChecked && this.data && this.data.potentialPatient && this.data.action === 'edit') {
+       let potentialPatientSub = this.store.PotentialPatient.update(this.data.potentialPatient.id, {
+        first_name: this.firstName,
+        last_name: this.lastName,
+        care_plan: this.selectedPlan.id,
+        phone: this.phoneNumber,
+        source: this.source,
+        facility: [
+          this.selectedFacility.id,
+			  ],
+      }).subscribe(
+        (data) => {
+          this.modals.close(data);
+        },
+        (err) => {
+
+        },
+        () => {
+          potentialPatientSub.unsubscribe();
+        }
+      )
+    } else if (!this.enrollPatientChecked) {
       let potentialPatientSub = this.store.PotentialPatient.create({
         first_name: this.firstName,
         last_name: this.lastName,
@@ -378,7 +439,27 @@ export class AddPatientToPlanComponent implements OnInit {
     this.CMSearchString = `${employee.user.first_name} ${employee.user.last_name}`;
   }
 
+  public get filteredFacilities() {
+    return this.facilities.filter(f => !f.is_affiliate);
+  }
+
   public compareFn(c1, c2) {
     return c1 && c2 ? c1.id === c2.id : c1 === c2;
+  }
+
+  public get allPatients() {
+    const arr = [
+      ...this.patients,
+      ...this.potentialPatients.map(p => {
+        return {
+          user: p
+        }
+      })
+    ].sort((a, b) => {
+      var textA = a.user.first_name.toUpperCase();
+      var textB = b.user.first_name.toUpperCase();
+      return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
+    });
+    return arr
   }
 }

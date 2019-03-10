@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ModalService } from '../../../../../modules/modals';
+import { ModalService, ModalsModule } from '../../../../../modules/modals';
 import { AuthService, StoreService } from '../../../../../services';
 
 @Component({
@@ -15,7 +15,7 @@ export class ChangeEmailComponent implements OnInit {
   public user = null;
 
   constructor(
-    public modals: ModalService,
+    private modals: ModalService,
     private store: StoreService,
     private auth: AuthService,
   ) {
@@ -31,19 +31,25 @@ export class ChangeEmailComponent implements OnInit {
     )
   }
 
+  close() {
+    this.modals.close(null);
+  }
+
+  public get submitDisabled() {
+    return !this.newEmail;
+  }
+
   public submit() {
     if (this.newEmail && this.user) {
-      this.store.EmployeeProfile.update(this.user.id, {
+      this.store.User.detailRoute('PATCH', this.user.id, 'change_email', {
         email: this.newEmail,
       }).subscribe(
         res => {
-          console.log(res);
+          this.modals.close(true);
         },
         err => {
-          console.log('error', err);
         },
         () => {
-          console.log('done');
         }
       )
     }

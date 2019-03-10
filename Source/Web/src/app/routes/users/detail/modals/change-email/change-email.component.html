@@ -5,10 +5,10 @@
 </div>
 <input class="input fullWidth" type="email" placeholder="New email address" [(ngModel)]="newEmail" />
 <div class="modal__buttons">
-  <button class="button button--2nd" (click)="modals.close('cancel')">
+  <button class="button button--2nd" (click)="close()">
     Cancel
   </button>
-  <button class="button" (click)="submit()">
+  <button class="button" (click)="submit()" [disabled]="submitDisabled">
     Continue
   </button>
 </div>

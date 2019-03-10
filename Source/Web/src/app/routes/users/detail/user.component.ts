@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs/Subscription';
 import { ModalService, ConfirmModalComponent } from '../../../modules/modals';
@@ -7,6 +7,8 @@ import { ReassignPatientsComponent } from '../../../components';
 import { ChangeEmailComponent } from './modals/change-email/change-email.component';
 import { ChangePasswordComponent } from './modals/change-password/change-password.component';
 import { EditUserDetailsComponent } from './modals/edit-user-details/edit-user-details.component';
+import { HttpClient, HttpHeaders, HttpParams, HttpResponse } from '@angular/common/http';
+import { AppConfig } from '../../../app.config';
 import {
   filter as _filter,
   find as _find,
@@ -16,12 +18,22 @@ import {
 import * as moment from 'moment';
 import { AddUserToFacilityComponent } from './modals/add-user-to-facility/add-user-to-facility.component';
 
+
+class ImageSnippet {
+  constructor(public src: string, public file: File) {}
+}
+
 @Component({
   selector: 'app-user',
   templateUrl: './user.component.html',
   styleUrls: ['./user.component.scss'],
 })
 export class UserComponent implements OnDestroy, OnInit {
+
+  @ViewChild('imageUpload') private imageUpload: ElementRef;
+
+
+  public selectedImage: ImageSnippet;
 
   public employee: any = null;
   private paramsSub: Subscription = null;
@@ -56,6 +68,7 @@ export class UserComponent implements OnDestroy, OnInit {
     private auth: AuthService,
     private modals: ModalService,
     private store: StoreService,
+    private http: HttpClient,
   ) { }
 
   public ngOnInit() {
@@ -199,7 +212,35 @@ export class UserComponent implements OnDestroy, OnInit {
   public openChangeEmail() {
     this.modals.open(ChangeEmailComponent, {
       width: '427px',
-    }).subscribe(() => {});
+    }).subscribe((res) => {
+      if (!res) return;
+      this.auth.logout();
+    });
+  }
+
+  public clickImageUpload() {
+    const event = new MouseEvent('click');
+    this.imageUpload.nativeElement.dispatchEvent(event);
+  }
+
+  public processUpload() {
+    const file : File = this.imageUpload.nativeElement.files[0];
+    const reader = new FileReader;
+
+    reader.addEventListener('load', (event:any) => {
+      const formData = new FormData();
+      const selectedFile = new ImageSnippet(event.target.result, file);
+      formData.append('image', selectedFile.file);
+      this.http.request('POST', `${AppConfig.apiUrl}users/${this.employee.user.id}/upload_image/`, {
+        body: formData,
+        headers: new HttpHeaders().set('Accept', 'application/json'),
+      }).subscribe(res => {
+        console.log('image uploaded')
+      })
+    })
+
+    reader.readAsDataURL(file);
+
   }
 
   public openChangePassword() {
@@ -543,13 +584,14 @@ export class UserComponent implements OnDestroy, OnInit {
         first_name: this.first_name,
         last_name: this.last_name,
       }).subscribe(res => {
-        console.log('vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv');
-        console.log(res);
-        console.log('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^');
+
       })
     }
 
-    if (this.title.id !== this.employee.title.id) {
+    let titleChanged = false;
+    if (this.title && !this.employee.title) titleChanged = true;
+    if ((this.title && this.employee.title) && this.title.id !== this.employee.title.id) titleChanged = true;
+    if (titleChanged) {
       this.store.EmployeeProfile.update(this.employee.id, {
         title: this.title.id
       }).subscribe(res => {

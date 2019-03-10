@@ -3,8 +3,13 @@
       <div class="flex alignCenter">
         <div class="picName marRight32">
           <!--TODO: Clicking pic should trigger file upload-->
-          <img class="picName__img picName__img--big" *ngIf="!employee?.user.image_url" src="../../../assets/img/profile.svg" />
-          <img class="picName__img picName__img--big" *ngIf="employee?.user.image_url" [src]="employee?.user.image_url" />
+          <img
+            class="picName__img picName__img--big"
+            *ngIf="employee?.user.image_url"
+            [src]="employee?.user.image_url ? employee?.user.image_url : '../../../assets/img/profile.svg'"
+            (click)="clickImageUpload()"
+          />
+          <input #imageUpload type="file" class="hiddenInput" (change)="processUpload()" accept="image/*" />
           <div *ngIf="!editName" class="flex alignCenter">
             <h1 class="noMargin marRight8">{{first_name}} {{last_name}}<span *ngIf="employee?.title">, {{employee?.title.abbreviation}}</span></h1>
             <button class="button button--icon" (click)="editName=!editName" *ngIf="isCurrentUser">

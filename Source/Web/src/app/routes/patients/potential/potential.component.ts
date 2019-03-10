@@ -130,6 +130,8 @@ export class PotentialPatientsComponent implements OnDestroy, OnInit {
       width: '576px',
     }).subscribe((data) => {
       if (!data) return;
+      document.dispatchEvent(new Event('refreshPatientOverview'));
+      this.potentialPatients.push(data);
       const facility = _find(this.facilities, f => f.id === data.facility[0])
       if (facility.potentialPatients) {
         facility.potentialPatients.push(data);
@@ -154,28 +156,40 @@ export class PotentialPatientsComponent implements OnDestroy, OnInit {
 
   public editPotentialPatient(potentialPatient) {
     this.modals.open(AddPatientToPlanComponent, {
-      closeDisabled: true,
       data: {
         action: 'edit',
         planKnown: potentialPatient.care_plan ? true : false,
         potentialPatient,
       },
       width: '576px',
-    }).subscribe(() => {});
+    }).subscribe((res) => {
+      if (!res) return;
+      let patient = this.potentialPatients.find(p => p.id === res.id);
+      patient = Object.assign(patient, res);
+    });
   }
 
   public removePotentialPatient(potentialPatient) {
+    const cancelText = 'Cancel';
+    const okText = 'Continue';
     this.modals.open(ConfirmModalComponent, {
-     'closeDisabled': true,
      data: {
        title: 'Remove Patient?',
        body: 'Are you sure you want remove this patient from the list? This cannot be undone.',
-       cancelText: 'Cancel',
-       okText: 'Continue',
+       cancelText,
+       okText,
       },
       width: '384px',
-    }).subscribe(() => {
-
+    }).subscribe((res) => {
+      if (res === okText) {
+        this.store.PotentialPatient.destroy(potentialPatient.id).subscribe(res => {
+          this.potentialPatients = this.potentialPatients.filter(p => p.id !== potentialPatient.id);
+          potentialPatient.facility.forEach(f => {
+            const facility = this.facilities.find(fac => fac.id === f);
+            facility.potentialPatients = facility.potentialPatients.filter(p => p.id !== potentialPatient.id);
+          })
+        })
+      }
     });
   }
 
@@ -212,6 +226,10 @@ export class PotentialPatientsComponent implements OnDestroy, OnInit {
     Object.keys(this.activeServiceAreas).forEach(area => {
       this.activeServiceAreas[area] = status;
     })
+  }
+
+  public userInFacility(facility) {
+    return !!this.employee.facilities.find(f => f.id === facility.id);
   }
 
 }

@@ -22,10 +22,10 @@
   </button>
 
   <ul class="drop__dropdown fullWidth" [ngClass]="{ 'isOpen' : dropAPPM0Open }" (click)="dropAPPM0Open=!dropAPPM0Open">
-    <li class="drop__option" *ngFor="let patient of patients" (click)="selectPatient(patient)">
+    <li class="drop__option" *ngFor="let patient of allPatients" (click)="selectPatient(patient)">
       <a class="drop__link">
         <div class="picName">
-          <img class="picName__img" src="../../../assets/img/profile.svg" />{{patient.user.first_name}} {{patient.user.last_name}}
+          <img class="picName__img" src="../../../assets/img/profile.svg" />{{patient?.user?.first_name}} {{patient?.user?.last_name}}
         </div>
       </a>
     </li>
@@ -48,11 +48,11 @@
 <div class="flex justifySpaceBetween">
   <div class="modal__inputWrap marRight16 fullWidth">
     <label>Mobile Phone</label>
-    <input class="input fullWidth" [(ngModel)]="phoneNumber" [disabled]="selectedPatient" />
+    <input class="input fullWidth" [(ngModel)]="phoneNumber" [disabled]="selectedPatient && phoneNumber" />
   </div>
   <div class="modal__inputWrap fullWidth">
     <label>Email</label>
-    <input class="input fullWidth" [(ngModel)]="email" [disabled]="selectedPatient" />
+    <input class="input fullWidth" [(ngModel)]="email" [disabled]="selectedPatient && email" />
   </div>
 </div>
 
@@ -64,7 +64,7 @@
     <label>Facility</label>
     <div class="styledSelect">
       <select class="styledSelect__select" [(ngModel)]="selectedFacility"  [compareWith]="compareFn" [disabled]="selectedPatient">
-        <option *ngFor="let facility of facilities" [ngValue]="facility">{{facility.name}}</option>
+        <option *ngFor="let facility of filteredFacilities" [ngValue]="facility">{{facility.name}}</option>
       </select>
     </div>
   </div>

@@ -191,6 +191,24 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
     return groupedByFacility;
   }
 
+  public get userFilterListText() {
+    const checkedList = [];
+    this.employees.forEach(e => {
+      if (this.employeeChecked[e.id]) {
+        checkedList.push(e);
+      }
+    })
+    if (checkedList.length === 0) {
+      return 'None';
+    } else if (checkedList.length === this.employees.length) {
+      return 'All';
+    } else if (checkedList.length === 1) {
+      return `${checkedList[0].user.first_name} ${checkedList[0].user.last_name}`
+    } else {
+      return `${checkedList[0].user.first_name} ${checkedList[0].user.last_name} (+${checkedList.length - 1})`
+    }
+  }
+
   public confirmRemovePatient(facility, patient, plan) {
     const cancelText = 'Cancel';
     const okText = 'Continue';

@@ -20,7 +20,7 @@
         <div [ngStyle]="{width: '100px', padding: '5px'}"><label>Filter By User</label></div>
           <div class="drop">
             <div class="drop__input" (click)="multi4Open = !multi4Open">
-              All
+              {{userFilterListText}}
             </div>
             <app-popover [visible]="multi4Open" (visibleChange)="multi4Open = $event">
             <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : multi4Open }">
