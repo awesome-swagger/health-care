@@ -203,6 +203,38 @@ class TestSymptomRatingUsingEmployee(TasksMixin, APITestCase):
         response = self.client.get(filter_url)
         self.assertEqual(response.data['count'], 5)
 
+    def test_get_symptoms_by_plan(self):
+        self.client.logout()
+
+        symptoms_count = 4
+        facility = self.create_facility()
+        patient = self.create_patient(facility=facility)
+        employee = self.create_employee(facilities_managed=[facility])
+
+        self.client.force_authenticate(user=employee.user)
+
+        plan = self.create_care_plan(patient)
+        self.create_care_team_member(
+            employee_profile=employee,
+            plan=plan
+        )
+
+        for i in range(symptoms_count):
+            symptom = self.create_symptom()
+            task = self.create_symptom_task(plan=plan)
+
+            for s in range(3):
+                self.create_symptom_rating(symptom_task=task, symptom=symptom)
+
+        url = reverse(
+            'plan_symptoms-list',
+            kwargs={
+                'parent_lookup_ratings__symptom_task__plan': plan.id
+            }
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.data['count'], symptoms_count)
+
 
 class TestSymptomTaskUsingPatient(TasksMixin, APITestCase):
     """
