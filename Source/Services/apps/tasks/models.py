@@ -515,6 +515,23 @@ class VitalResponse(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
         answer_type = self.question.answer_type
         return getattr(self, f"answer_{answer_type}", "")
 
+    @property
+    def behavior(self):
+        value = 'n/a'
+        excluded_types = ['string', 'boolean']
+        if self.question.answer_type not in excluded_types:
+            value = "increasing"
+            second_response = VitalResponse.objects.filter(
+                vital_task=self.vital_task,
+                question=self.question).exclude(
+                id=self.id).order_by('created').last()
+            if second_response:
+                if self.rating < second_response.rating:
+                    value = "decreasing"
+                elif self.rating == second_response.rating:
+                    value = "equal"
+        return value
+
 
 # SIGNALS
 models.signals.post_save.connect(

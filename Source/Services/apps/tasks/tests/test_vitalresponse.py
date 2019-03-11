@@ -234,6 +234,77 @@ class TestVitalResponseUsingEmployee(TasksMixin, APITestCase):
         response = self.client.delete(url, {})
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
+    def test_vitals(self):
+        self.client.logout()
+
+        templates_count = 4
+        facility = self.create_facility()
+        patient = self.create_patient(facility=facility)
+        employee = self.create_employee(facilities_managed=[facility])
+
+        self.client.force_authenticate(user=employee.user)
+
+        plan = self.create_care_plan(patient)
+        self.create_care_team_member(
+            employee_profile=employee,
+            plan=plan
+        )
+
+        for i in range(templates_count):
+            task = self.create_vital_task(plan=plan)
+            self.create_multiple_vital_questions(
+                task.vital_task_template)
+            self.create_responses_to_multiple_vital_questions(
+                task.vital_task_template,
+                task
+            )
+
+        # Create dummy template
+        dummy_task = self.create_vital_task(plan=plan)
+        self.create_multiple_vital_questions(
+            dummy_task.vital_task_template)
+
+        url = reverse(
+            'vitals-list',
+            kwargs={
+                'parent_lookup_vital_tasks__plan': plan.id
+            })
+        response = self.client.get(url)
+        self.assertEqual(response.data['count'], templates_count)
+
+    def test_vitals_questions(self):
+        self.client.logout()
+
+        templates_count = 4
+        facility = self.create_facility()
+        patient = self.create_patient(facility=facility)
+        employee = self.create_employee(facilities_managed=[facility])
+
+        self.client.force_authenticate(user=employee.user)
+
+        plan = self.create_care_plan(patient)
+        self.create_care_team_member(
+            employee_profile=employee,
+            plan=plan
+        )
+
+        for i in range(templates_count):
+            task = self.create_vital_task(plan=plan)
+            self.create_multiple_vital_questions(
+                task.vital_task_template)
+            self.create_responses_to_multiple_vital_questions(
+                task.vital_task_template,
+                task
+            )
+
+        url = reverse(
+            'vitals-list',
+            kwargs={
+                'parent_lookup_vital_tasks__plan': plan.id
+            })
+        response = self.client.get(url)
+        self.assertEqual(len(response.data['results'][0]['questions']), 5)
+
 
 class TestVitalResponseUsingPatient(TasksMixin, APITestCase):
     """
