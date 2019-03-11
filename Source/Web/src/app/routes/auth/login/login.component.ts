@@ -40,6 +40,10 @@ export class LoginComponent implements OnDestroy, OnInit {
       this.user = user;
       let orgSub = this.store.Organization.readListPaged().subscribe(
         (organizations) => {
+          if (organizations.length === 1) {
+            this.selectedOrganization = organizations[0];
+            this.selectOrganization();
+          }
           this.selectOrgState = true;
           this.organizations = organizations;
         },

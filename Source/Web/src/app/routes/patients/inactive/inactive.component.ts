@@ -112,7 +112,6 @@ export class InactivePatientsComponent implements OnDestroy, OnInit {
 
   public confirmArchive() {
     this.modals.open(ConfirmModalComponent, {
-     'closeDisabled': true,
      data: {
        title: 'Archive Patient?',
        body: 'Are you sure you want to archive this patient? This will revoke their access to CareAdopt. They would need to be sent a new invitation in order to use the app again.',
@@ -197,6 +196,21 @@ export class InactivePatientsComponent implements OnDestroy, OnInit {
       })
     }
     return result;
+  }
+
+  public toggleAllUsers(status) {
+    Object.keys(this.employeeChecked).forEach(id => {
+      this.employeeChecked[id] = status;
+    })
+  }
+
+  public getAlsoPlans(i, patient) {
+    if (patient && patient.carePlans) {
+      const plans = patient.carePlans.slice();
+      plans.splice(i, 1);
+      return _map(plans, p => p.plan_template.name);
+    }
+    return [];
   }
 
 }

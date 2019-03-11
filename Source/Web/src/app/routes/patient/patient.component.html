@@ -1,8 +1,8 @@
 <div class="ssContainer ssContents">
   <div class="flex alignCenter marBottom32">
     <div class="picName marRight8">
-      <img class="picName__img picName__img--big" *ngIf="patient?.user.image_url" [src]="patient?.user.image_url" />
-      <img class="picName__img picName__img--big" *ngIf="!patient?.user.image_url" src="../../../assets/img/profile.svg" />
+      <img class="picName__img picName__img--big" *ngIf="patient?.user.image" [src]="patient?.user.image" />
+      <img class="picName__img picName__img--big" *ngIf="!patient?.user.image" src="../../../assets/img/profile.svg" />
       <div *ngIf="!editName" class="flex alignCenter">
         <h1 class="noMargin marRight8">{{patient?.user.first_name}} {{patient?.user.last_name}}</h1>
         <button class="button button--icon" (click)="editName=!editName">
@@ -254,7 +254,7 @@
             <label class="info__label2">Secondary Ins.</label>
             <p class="info__p">{{patient?.secondary_insurance?.name}}</p>
             <label class="info__label2">Ethnicity</label>
-            <p class="info__p info__p--noMargin">{{patient?.ethnicity}}</p>
+            <p class="info__p info__p--noMargin">{{patient?.ethnicity | titlecase }}</p>
           </div>
           <div>
             <label class="info__label2">Gender</label>
@@ -262,7 +262,7 @@
             <label class="info__label2">MRN</label>
             <p class="info__p">{{patient?.mrn}}</p>
             <label class="info__label2">Cognitive Ability</label>
-            <p class="info__p info__p--noMargin">{{patient?.cognitive_ability}}</p>
+            <p class="info__p info__p--noMargin">{{patient?.cognitive_ability | titlecase}}</p>
           </div>
         </div>
       </div> <!--/.info (for profile)-->

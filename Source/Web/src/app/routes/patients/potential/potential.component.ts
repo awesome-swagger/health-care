@@ -26,7 +26,12 @@ export class PotentialPatientsComponent implements OnDestroy, OnInit {
   public activeServiceAreas = {};
   public activePatients = [];
   public employee = null;
+  public serviceAreas;
+  public carePlanTemplates;
+  public carePlanSearch:string = '';
+  public serviceAreaSearch:string = '';
 
+  public facilitySortDirection = {};
   public accordOpen = {};
   public accord1Open;
   public tooltip2Open;
@@ -58,6 +63,7 @@ export class PotentialPatientsComponent implements OnDestroy, OnInit {
         this.facilities = facilities.results;
         this.facilities.forEach(f => {
           this.accordOpen[f.id] = this.accordOpen[f.id] || false;
+          this.facilitySortDirection[f.id] = true;
         })
 
         let potentialPatientsSub = this.store.PotentialPatient.readListPaged().subscribe(
@@ -111,6 +117,15 @@ export class PotentialPatientsComponent implements OnDestroy, OnInit {
       if (this.employee.facilities.length === 1) {
         this.accordOpen[this.employee.facilities[0].id]
       }
+    })
+
+    this.store.ServiceArea.readListPaged().subscribe(res => {
+      this.serviceAreas = res;
+      this.serviceAreas.forEach(s => this.activeServiceAreas[s.id] = true)
+    })
+    this.store.CarePlanTemplate.readListPaged().subscribe(res => {
+      this.carePlanTemplates = res;
+      this.carePlanTemplates.forEach(c => this.activeCarePlans[c.id] = true)
     })
   }
 
@@ -223,13 +238,28 @@ export class PotentialPatientsComponent implements OnDestroy, OnInit {
   }
 
   public toggleAllCarePlans(status) {
-    Object.keys(this.activeServiceAreas).forEach(area => {
-      this.activeServiceAreas[area] = status;
+    Object.keys(this.activeCarePlans).forEach(area => {
+      this.activeCarePlans[area] = status;
     })
   }
 
+
   public userInFacility(facility) {
     return !!this.employee.facilities.find(f => f.id === facility.id);
+  }
+
+  public toggleFacilitySort(id) {
+    const facility = this.facilities.find(f => f.id === id);
+    facility.potentialPatients = facility.potentialPatients.reverse();
+    this.facilitySortDirection[id] = !this.facilitySortDirection[id];
+  }
+
+  public saSearchMatch(sa) {
+    return sa.name.indexOf(this.serviceAreaSearch) > -1;
+  }
+
+  public cpSearchMatch(cp) {
+    return cp.name.indexOf(this.carePlanSearch) > -1;
   }
 
 }

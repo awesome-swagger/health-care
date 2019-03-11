@@ -55,6 +55,9 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
   public multi3Open;
   public multi4Open;
 
+  public serviceAreaSearch:string = '';
+  public carePlanSearch:string = '';
+
   private authSub = null;
 
   constructor(
@@ -94,13 +97,14 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
               })
             })
           })
-          this.auth.user$.subscribe(user => {
-            if (!user) return;
-            if (user.facilities.length === 1) {
-              this.accordionsOpen[user.facilities[0].id] = true;
-            }
-          })
         })
+        this.auth.user$.subscribe(user => {
+          if (!user) return;
+          if (user.facilities.length === 1) {
+            this.accordionsOpen[user.facilities[0].id] = true;
+          }
+        })
+
       })
 
       this.store.EmployeeProfile.readListPaged().subscribe(users => {
@@ -384,14 +388,14 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
   }
 
   public toggleAllServiceAreas(status) {
-    Object.keys(this.activeServiceAreas).forEach(area => {
-      this.activeServiceAreas[area] = status;
+    Object.keys(this.serviceAreaChecked).forEach(area => {
+      this.serviceAreaChecked[area] = status;
     })
   }
 
   public toggleAllCarePlans(status) {
-    Object.keys(this.activeCarePlans).forEach(area => {
-      this.activeCarePlans[area] = status;
+    Object.keys(this.carePlanTemplateChecked).forEach(area => {
+      this.carePlanTemplateChecked[area] = status;
     })
   }
 
@@ -447,6 +451,14 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
       })
     }
     return result;
+  }
+
+  public saSearchMatch(sa) {
+    return sa.name.toLowerCase().indexOf(this.serviceAreaSearch.toLowerCase()) > -1;
+  }
+
+  public cpSearchMatch(cp) {
+    return cp.name.toLowerCase().indexOf(this.carePlanSearch.toLowerCase()) > -1;
   }
 
 }

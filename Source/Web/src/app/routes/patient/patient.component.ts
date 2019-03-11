@@ -1,5 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { TitleCasePipe } from '@angular/common'
 import { ModalService, ConfirmModalComponent } from '../../modules/modals';
 import { FinancialDetailsComponent } from './modals/financial-details/financial-details.component';
 import { CarePlanConsentComponent } from './modals/care-plan-consent/care-plan-consent.component';
@@ -404,6 +405,8 @@ export class PatientComponent implements OnDestroy, OnInit {
     }).subscribe((procedureData) => {
       if (procedureData) {
         procedureData['patient'] = this.patient.id;
+        procedureData.attending_practitioner = procedureData.attending_practitioner.id;
+        procedureData.facility = procedureData.facility.id;
         this.store.PatientProcedure.create(procedureData).subscribe((newPatientProcedure) => {
           this.patientProcedures.push(newPatientProcedure);
         });

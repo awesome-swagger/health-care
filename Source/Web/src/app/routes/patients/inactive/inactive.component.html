@@ -22,31 +22,33 @@
           <div class="drop__input" (click)="multi4Open = !multi4Open">
             All
           </div>
-          <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : multi4Open }">
-            <div class="drop__buttons">
-              <button class="button button--iconText" (click)="toggleAllCarePlans(true)">
-                <i class="ss-check ss-standard"></i> Check All
-              </button>
-              <button class="button button--iconText" (click)="toggleAllCarePlans(false)">
-                <i class="ss-ban"></i> Uncheck All
-              </button>
-            </div>
+          <app-popover [visible]="multi4Open" (visibleChange)="multi4Open = $event">
+            <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : multi4Open }">
+              <div class="drop__buttons">
+                <button class="button button--iconText" (click)="toggleAllUsers(true)">
+                  <i class="ss-check ss-standard"></i> Check All
+                </button>
+                <button class="button button--iconText" (click)="toggleAllUsers(false)">
+                  <i class="ss-ban"></i> Uncheck All
+                </button>
+              </div>
 
-            <li class="drop__option">
-              <input class="input input--search drop__innerInput" type="text" placeholder="Search" />
-            </li>
+              <li class="drop__option">
+                <input class="input input--search drop__innerInput" type="text" placeholder="Search" />
+              </li>
 
-            <li class="drop__option" *ngFor="let employee of employees">
-              <label
-                class="drop__checkbox styledInput"
-                title="Behavioral Health Initiative"
-              >
-                <input type="checkbox" class="styledInput__input" [(ngModel)]="employeeChecked[employee.id]" />
-                <span class="styledInput__box"></span>
-                {{employee?.user?.first_name}} {{employee?.user?.last_name}}
-              </label>
-            </li>
-          </ul>
+              <li class="drop__option" *ngFor="let employee of employees">
+                <label
+                  class="drop__checkbox styledInput"
+                  title="Behavioral Health Initiative"
+                >
+                  <input type="checkbox" class="styledInput__input" [(ngModel)]="employeeChecked[employee.id]" />
+                  <span class="styledInput__box"></span>
+                  {{employee?.user?.first_name}} {{employee?.user?.last_name}}
+                </label>
+              </li>
+            </ul>
+          </app-popover>
         </div>
       </div>
     </div>
@@ -184,11 +186,15 @@
                       </div>
                     </td>
                     <td>
-                      <a class="tool__anchor justifyCenter" (click)="tooltipPP2Open=!tooltipPP2Open">
-                        --
-                        <div class="tool__tip" [ngClass]="{ 'isOpen' : tooltipPP2Open }">
-                          <div class="iconText iconText--white iconText--autoHeight marBottom8">
-                            Anxiety
+                      <a
+                        class="tool__anchor justifyCenter"
+                        (click)="openAlsoTip[''+i+j] = !openAlsoTip[''+i+j]"
+                        *ngIf="getAlsoPlans(j, patient).length"
+                      >
+                        {{getAlsoPlans(j, patient).length}}
+                        <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : openAlsoTip[''+i+j] }">
+                          <div class="iconText iconText--white iconText--autoHeight marBottom8" *ngFor="let planName of getAlsoPlans(j, patient)">
+                            {{planName}}
                           </div>
                         </div>
                       </a>

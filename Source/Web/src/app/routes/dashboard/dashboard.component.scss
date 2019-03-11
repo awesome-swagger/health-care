@@ -17,7 +17,7 @@
 }
 
 .dashRight {
-  flex: 1 1 rem-calc(256);
+  flex: 1 1 rem-calc(350);
   padding-left: rem-calc(72);
 }
 
@@ -26,7 +26,7 @@
 
   &__chart {
     flex: 3 0 320px;
-    margin-right: rem-calc(32);
+    margin-right: rem-calc(10);
   }
 
   &__key {

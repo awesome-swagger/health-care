@@ -43,8 +43,19 @@
 
 <div class="flex justifySpaceBetween marBottom32">
   <div class="modal__inputWrap marRight32">
+    <div class="drop">
     <label>Attending Practitioner</label>
-    <input type="text" class="input fullWidth" placeholder="Practitioner Name" [(ngModel)]="practitionerInput" />
+    <input class="input input--search fullWidth" type="text" placeholder="Search" [(ngModel)]="employeeSearchString" (keypress)="clearEmployeeSelection()" />
+    <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : employeeSearchString.length > 2 && !selectedEmployee }">
+      <li class="drop__option" *ngFor="let employee of searchEmployees" (click)="selectedEmployee = employee; employeeSearchString = employeeFullName">
+        <a class="drop__link">
+          <div class="picName">
+            {{employee?.user?.first_name}} {{employee?.user?.last_name}}
+          </div>
+        </a>
+      </li>
+    </ul>
+    </div>
   </div>
   <div class="modal__inputWrap0">
     <label>Date</label>
@@ -59,8 +70,21 @@
     </div>
   </div>
 </div>
-<label>Facility</label>
-<input type="text" class="input fullWidth" placeholder="Facility Name" [(ngModel)]="facilityInput" />
+<div class="modal__inputWrap marRight32">
+  <div class="drop">
+  <label>Facility</label>
+  <input class="input input--search fullWidth" type="text" placeholder="Search" [(ngModel)]="facilitySearchString" (keypress)="clearFacilitySelection()" />
+  <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : facilitySearchString.length > 2 && !selectedFacility }">
+    <li class="drop__option" *ngFor="let facility of searchFacilities" (click)="selectedFacility = facility; facilitySearchString = facility.name">
+      <a class="drop__link">
+        <div class="picName">
+          {{facility.name}}
+        </div>
+      </a>
+    </li>
+  </ul>
+  </div>
+</div>
 
 <div class="modal__buttons">
   <button class="button button--2nd" (click)="clickCancel()">

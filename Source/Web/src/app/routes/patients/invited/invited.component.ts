@@ -41,6 +41,7 @@ export class InvitedPatientsComponent implements OnDestroy, OnInit {
   public facilities = [];
   public employees = [];
   public employeeChecked = {};
+  public userSearch:string = '';
 
   constructor(
     private auth: AuthService,
@@ -66,6 +67,18 @@ export class InvitedPatientsComponent implements OnDestroy, OnInit {
 
         if (user.facilities.length === 1) {
           this.facilityAccordOpen[user.facilities[0].id] = true;
+          let employeeSub = this.auth.user$.subscribe(
+            user => {
+              if (!user) return;
+              if (user.facilities.length === 1) {
+                this.facilityAccordOpen[user.facilities[0].id] = true;
+              }
+            },
+            () => {},
+            () => {
+              employeeSub.unsubscribe();
+            }
+          )
         }
       })
 
@@ -188,7 +201,6 @@ export class InvitedPatientsComponent implements OnDestroy, OnInit {
 
   public reminderEmail(patient) {
     let modalSub = this.modals.open(ReminderEmailComponent, {
-      closeDisabled: true,
       data: {
         patient: patient,
       },
@@ -234,18 +246,26 @@ export class InvitedPatientsComponent implements OnDestroy, OnInit {
     }).subscribe()
   }
 
-  public confirmRemovePatient() {
+  public confirmRemovePatient(facility, patient, plan) {
+    const cancelText = 'Cancel';
+    const okText = 'Continue';
     this.modals.open(ConfirmModalComponent, {
      closeDisabled: true,
      data: {
        title: 'Remove Patient?',
        body: 'Are you sure you want to revoke this patient’s invitation? This cannot be undone.',
-       cancelText: 'Cancel',
-       okText: 'Continue',
+       cancelText,
+       okText,
       },
       width: '384px',
-    }).subscribe(() => {
-    // do something with result
+    }).subscribe((res) => {
+      if (res === okText) {
+        this.store.CarePlan.destroy(plan.id).subscribe(res => {
+          const facility = this.facilities.find(f => f.id === facility.id);
+          const patient = facility.invitedPatients.find(p => p.id === patient.id);
+          patient.carePlans = patient.carePlans.filter(p => p.id !== plan.id);
+        })
+      }
     });
   }
 
@@ -259,5 +279,15 @@ export class InvitedPatientsComponent implements OnDestroy, OnInit {
       })
     }
     return result;
+  }
+
+  public userSearchMatch(user) {
+    return `${user.user.first_name} ${user.user.last_name}`.toLowerCase().indexOf(this.userSearch) > -1;
+  }
+
+  public toggleAllUsers(status) {
+    Object.keys(this.employeeChecked).forEach(id => {
+      this.employeeChecked[id] = status;
+    })
   }
 }

@@ -105,7 +105,7 @@ export class MedicationComponent implements OnInit {
 
   public get datePrescribedFormatted() {
     if (this.datePrescribed) {
-      return moment(this.datePrescribed).format('MMMM Do YYYY');
+      return moment(this.datePrescribed).format('MMMM D, YYYY');
     } 
   }
 

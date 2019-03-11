@@ -2,7 +2,7 @@
   <!--TODO: Show the following span if adding a medication-->
   <!--<span>Add</span>-->
   <!--TODO: Show the following span if editing a medication-->
-  Medication Task
+  {{data.type === 'edit' ? 'Edit' : 'Add'}} Medication
 </h1>
 <div class="divider"></div>
 <div class="flex justifySpaceBetween marBottom32">
@@ -113,9 +113,6 @@
 </div>
 
 <div class="modal__buttons modal__buttons--marBottom48">
-  <button *ngIf="data?.type === 'edit'" class="button button--2nd" (click)="clickDelete()">
-    Delete
-  </button>
   <button class="button button--2nd marRight32" (click)="clickCancel()">
     Cancel
   </button>

@@ -98,6 +98,7 @@ export class AddPatientToPlanComponent implements OnInit {
         this.lastName = this.data.potentialPatient.last_name;
         this.phoneNumber = this.data.potentialPatient.phone;
         this.source = this.data.potentialPatient.source;
+        this.selectedPlan = this.data.potentialPatient.care_plan;
       }
     }
     this.getPatients().then((patients: any) => {
@@ -279,7 +280,6 @@ export class AddPatientToPlanComponent implements OnInit {
           console.log(res);
           console.log('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^');
         })
-
       }
     }
 

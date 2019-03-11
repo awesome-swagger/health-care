@@ -131,17 +131,19 @@
               </div>
 
               <li class="drop__option">
-                <input class="input input--search drop__innerInput" type="text" placeholder="Search" />
+                <input class="input input--search drop__innerInput" type="text" placeholder="Search" [(ngModel)]="serviceAreaSearch" />
               </li>
 
-              <li class="drop__option" *ngFor="let serviceArea of serviceAreas">
-                <label class="drop__checkbox styledInput"
-                title="Behavioral Health Initiative">
-                  <input type="checkbox" class="styledInput__input" [(ngModel)]="serviceAreaChecked[serviceArea.id]" />
-                  <span class="styledInput__box"></span>
-                  {{serviceArea.name}}
-                </label>
-              </li>
+              <ng-container *ngFor="let serviceArea of serviceAreas">
+                <li class="drop__option" *ngIf="saSearchMatch(serviceArea)">
+                  <label class="drop__checkbox styledInput"
+                  title="Behavioral Health Initiative">
+                    <input type="checkbox" class="styledInput__input" [(ngModel)]="serviceAreaChecked[serviceArea.id]" />
+                    <span class="styledInput__box"></span>
+                    {{serviceArea.name}}
+                  </label>
+                </li>
+              </ng-container>
             </ul>
           </app-popover>
         </div>
@@ -165,19 +167,21 @@
               </div>
 
               <li class="drop__option">
-                <input class="input input--search drop__innerInput" type="text" placeholder="Search" />
+                <input class="input input--search drop__innerInput" type="text" placeholder="Search" [(ngModel)]="carePlanSearch" />
               </li>
 
-              <li class="drop__option" *ngFor="let planTemplate of carePlanTemplates">
-                <label
-                  class="drop__checkbox styledInput"
-                  title="Behavioral Health Initiative"
-                >
-                  <input type="checkbox" class="styledInput__input" [(ngModel)]="carePlanTemplateChecked[planTemplate.id]" />
-                  <span class="styledInput__box"></span>
-                  {{planTemplate.name}}
-                </label>
-              </li>
+              <ng-container *ngFor="let planTemplate of carePlanTemplates">
+                <li class="drop__option" *ngIf="cpSearchMatch(planTemplate)">
+                  <label
+                    class="drop__checkbox styledInput"
+                    title="Behavioral Health Initiative"
+                  >
+                    <input type="checkbox" class="styledInput__input" [(ngModel)]="carePlanTemplateChecked[planTemplate.id]" />
+                    <span class="styledInput__box"></span>
+                    {{planTemplate.name}}
+                  </label>
+                </li>
+              </ng-container>
             </ul>
           </app-popover>
         </div>
