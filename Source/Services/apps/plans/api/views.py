@@ -58,7 +58,7 @@ from .serializers import (
 )
 from apps.accounts.models import EmailUser
 from apps.core.api.mixins import ParentViewSetPermissionMixin
-from apps.core.models import Organization, Facility
+from apps.core.models import Organization, Facility, Symptom
 from apps.core.api.serializers import ProviderRoleSerializer
 from apps.core.api.views import OrganizationViewSet, FacilityViewSet
 from apps.core.models import ProviderRole
@@ -71,6 +71,9 @@ from apps.tasks.api.serializers import (
     SymptomTaskTemplateSerializer,
     TeamTaskTemplateSerializer,
     VitalTaskTemplateSerializer,
+    AssessmentResultOverviewSerializer,
+    SymptomByPlanSerializer,
+    VitalByPlanSerializer,
 )
 from apps.tasks.models import (
     AssessmentTask,
@@ -1682,3 +1685,214 @@ class TeamMessageViewSet(ParentViewSetPermissionMixin,
 
         self.perform_destroy(instance)
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class AssessmentResultViewSet(ParentViewSetPermissionMixin,
+                              NestedViewSetMixin,
+                              mixins.ListModelMixin,
+                              viewsets.GenericViewSet):
+    """
+    Viewset for :model:`tasks.AssessmentTaskTemplate`
+    ========
+
+    list:
+        Returns list of all :model:`tasks.AssessmentTaskTemplate` objects.
+        Employees and patients will only have access to objects which
+        they are a member of.
+
+    FILTERING
+    ---
+    You can filter the results by the date the assessment response has
+    been created. For example:
+
+        GET /api/care_plans/<plan-ID>/assessment_results/?date=2019-05-09
+
+    USAGE
+    ---
+    This will be primarily used in `Assessment Results` section in
+    `patients_Details` page
+
+    """
+
+    serializer_class = AssessmentResultOverviewSerializer
+    permission_classes = (
+        permissions.IsAuthenticated,
+    )
+    queryset = AssessmentTaskTemplate.objects.all()
+    parent_field = 'assessment_tasks__plan'
+    parent_lookup = [
+        (
+            'assessment_tasks__plan',
+            CarePlan,
+            CarePlanViewSet
+        )
+    ]
+
+    def filter_queryset(self, queryset):
+        queryset = super(AssessmentResultViewSet,
+                         self).filter_queryset(queryset).distinct()
+
+        timestamp = self.request.GET.get('date', None)
+        date_format = "%Y-%m-%d"
+        date_object = datetime.strptime(timestamp, date_format).date() \
+            if timestamp else timezone.now().date()
+        date_min = datetime.datetime.combine(date_object,
+                                             datetime.time.min,
+                                             tzinfo=pytz.utc)
+        date_max = datetime.datetime.combine(date_object,
+                                             datetime.time.max,
+                                             tzinfo=pytz.utc)
+
+        return queryset.filter(
+            assessment_tasks__responses__created__range=(date_min, date_max)
+        ).distinct()
+
+    def get_serializer_context(self):
+        context = super(AssessmentResultViewSet,
+                        self).get_serializer_context()
+
+        context.update({
+            'plan': self.parent_obj,
+        })
+        return context
+
+
+class SymptomByPlanViewSet(ParentViewSetPermissionMixin,
+                           NestedViewSetMixin,
+                           mixins.ListModelMixin,
+                           viewsets.GenericViewSet):
+    """
+    Viewset for :model:`core.Symptom`
+    ========
+
+    list:
+        Returns list of all :model:`core.Symptom` objects related to the
+        parent care plan.
+        Employees and patients will only have access to objects which
+        they are a member of.
+
+    FILTERING
+    ---
+    You can filter the results by the date the symptom rating has
+    been created. For example:
+
+        GET /api/care_plans/<plan-ID>/symptoms/?date=2019-05-09
+
+    USAGE
+    ---
+    This will be primarily used in `Symptoms` section in
+    `patients_Details` page
+
+    """
+
+    serializer_class = SymptomByPlanSerializer
+    permission_classes = (
+        permissions.IsAuthenticated,
+    )
+    queryset = Symptom.objects.all()
+    parent_field = 'ratings__symptom_task__plan'
+    parent_lookup = [
+        (
+            'ratings__symptom_task__plan',
+            CarePlan,
+            CarePlanViewSet
+        )
+    ]
+
+    def filter_queryset(self, queryset):
+        queryset = super(SymptomByPlanViewSet,
+                         self).filter_queryset(queryset).distinct()
+
+        timestamp = self.request.GET.get('date', None)
+        date_format = "%Y-%m-%d"
+        date_object = datetime.strptime(timestamp, date_format).date() \
+            if timestamp else timezone.now().date()
+        date_min = datetime.datetime.combine(date_object,
+                                             datetime.time.min,
+                                             tzinfo=pytz.utc)
+        date_max = datetime.datetime.combine(date_object,
+                                             datetime.time.max,
+                                             tzinfo=pytz.utc)
+
+        return queryset.filter(
+            ratings__created__range=(date_min, date_max)
+        ).distinct()
+
+    def get_serializer_context(self):
+        context = super(SymptomByPlanViewSet,
+                        self).get_serializer_context()
+
+        context.update({
+            'plan': self.parent_obj,
+        })
+        return context
+
+
+class VitalByPlanViewSet(ParentViewSetPermissionMixin,
+                         NestedViewSetMixin,
+                         mixins.ListModelMixin,
+                         viewsets.GenericViewSet):
+    """
+    Viewset for :model:`tasks.VitalTaskTemplate`
+    ========
+
+    list:
+        Returns list of all :model:`tasks.VitalTaskTemplate` objects.
+        Employees and patients will only have access to objects which
+        they are a member of.
+
+    FILTERING
+    ---
+    You can filter the results by the date the vital response has
+    been created. For example:
+
+        GET /api/care_plans/<plan-ID>/vitals/?date=2019-05-09
+
+    USAGE
+    ---
+    This will be primarily used in `Vitals` section in
+    `patients_Details` page
+
+    """
+
+    serializer_class = VitalByPlanSerializer
+    permission_classes = (
+        permissions.IsAuthenticated,
+    )
+    queryset = VitalTaskTemplate.objects.all()
+    parent_field = 'vital_tasks__plan'
+    parent_lookup = [
+        (
+            'vital_tasks__plan',
+            CarePlan,
+            CarePlanViewSet
+        )
+    ]
+
+    def filter_queryset(self, queryset):
+        queryset = super(VitalByPlanViewSet,
+                         self).filter_queryset(queryset).distinct()
+
+        timestamp = self.request.GET.get('date', None)
+        date_format = "%Y-%m-%d"
+        date_object = datetime.strptime(timestamp, date_format).date() \
+            if timestamp else timezone.now().date()
+        date_min = datetime.datetime.combine(date_object,
+                                             datetime.time.min,
+                                             tzinfo=pytz.utc)
+        date_max = datetime.datetime.combine(date_object,
+                                             datetime.time.max,
+                                             tzinfo=pytz.utc)
+
+        return queryset.filter(
+            vital_tasks__responses__created__range=(date_min, date_max)
+        ).distinct()
+
+    def get_serializer_context(self):
+        context = super(VitalByPlanViewSet,
+                        self).get_serializer_context()
+
+        context.update({
+            'plan': self.parent_obj,
+        })
+        return context
