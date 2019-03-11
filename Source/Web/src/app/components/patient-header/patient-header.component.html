@@ -153,8 +153,8 @@
   </div> <!--/.info__cell (for time)-->
   <div class="info__cell">
     <label>Risk Level</label>
-    <div class="pill" [ngClass]="utils.percentPillClass(patient?.risk_level)">
-      {{utils.getRiskLevelText(patient?.risk_level)}} {{patient?.risk_level}}%
+    <div class="pill" [ngClass]="utils.percentPillClass(selectedPlanOverview?.risk_level)">
+      {{utils.getRiskLevelText(selectedPlanOverview?.risk_level)}} {{selectedPlanOverview?.risk_level}}%
     </div>
   </div>
 </div> <!--/.info (for care plan instance)-->
