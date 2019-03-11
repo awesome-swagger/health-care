@@ -256,61 +256,52 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
     return promise;
   }
 
-  public getAssessmentResults(patient, planTemplate, start, end) {
+  public getAssessmentResults(plan, date) {
     let promise = new Promise((resolve, reject) => {
-      let assessmentsSub = this.store.AssessmentResponse.readListPaged({
-        assessment_task__plan__patient: patient,
-        assessment_task__assessment_task_template__plan_template: planTemplate,
-        assessment_task__due_datetime__lte: end,
-        assessment_task__due_datetime__gte: start,
+      let resultsSub = this.store.CarePlan.detailRoute('get', plan.id, 'assessment_results', {}, {
+        date: date
       }).subscribe(
-        (res) => resolve(res),
+        (assessmentResults) => resolve(assessmentResults),
         (err) => reject(err),
         () => {
-          assessmentsSub.unsubscribe();
+          resultsSub.unsubscribe();
         }
       );
     });
     return promise;
   }
 
-  public getSymptomResults(patient, planTemplate, start, end) {
+  public getSymptomResults(plan, date) {
     let promise = new Promise((resolve, reject) => {
-      let symptomSub = this.store.SymptomRating.readListPaged({
-        symptom_task__plan__patient: patient,
-        symptom_task__symptom_task_template__plan_template: planTemplate,
-        symptom_task__due_datetime__lte: end,
-        symptom_task__due_datetime__gte: start,
+      let symptomsSub = this.store.CarePlan.detailRoute('get', plan.id, 'symptoms', {}, {
+        date: date
       }).subscribe(
-        (res) => resolve(res),
+        (symptoms) => resolve(symptoms),
         (err) => reject(err),
         () => {
-          symptomSub.unsubscribe();
+          symptomsSub.unsubscribe();
         }
       );
     });
     return promise;
   }
 
-  public getVitalResults(patient, planTemplate, start, end) {
+  public getVitalResults(plan, date) {
     let promise = new Promise((resolve, reject) => {
-      let vitalSub = this.store.VitalResponse.readListPaged({
-        vital_task__plan__patient: patient,
-        vital_task__vital_task_template__plan_template: planTemplate,
-        vital_task__due_datetime__lte: end,
-        vital_task__due_datetime__gte: start,
+      let vitalsSub = this.store.CarePlan.detailRoute('get', plan.id, 'vitals', {}, {
+        date: date
       }).subscribe(
-        (res) => resolve(res),
+        (vitals) => resolve(vitals),
         (err) => reject(err),
         () => {
-          vitalSub.unsubscribe();
+          vitalsSub.unsubscribe();
         }
       );
     });
     return promise;
   }
 
-  public getCareMessagesReal(planTemplate, start, end) {
+  public getCareMessages(planTemplate, start, end) {
     let promise = new Promise((resolve, reject) => {
       let messagesSub = this.store.InfoMessage.readListPaged({
         queue__plan_template: planTemplate,
@@ -329,14 +320,12 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
 
   public setAllUpdatable() {
     this.updatingPatientTasks = this.patientTasks.filter((obj) => this.isPatientTaskUpdatable(obj));
-    let assessmentKeys = Object.keys(this.assessmentResults);
-    assessmentKeys.forEach((key) => {
-      this.updatingAssessmentResults = this.updatingAssessmentResults.concat(this.assessmentResults[key]);
+    this.assessmentResults.forEach((assessment) => {
+      this.updatingAssessmentResults = this.updatingAssessmentResults.concat(assessment.questions);
     });
     this.updatingSymptomResults = this.symptomResults.concat();
-    let vitalKeys = Object.keys(this.vitalResults);
-    vitalKeys.forEach((key) => {
-      this.updatingVitalResults = this.updatingVitalResults.concat(this.vitalResults[key]);
+    this.vitalResults.forEach((vital) => {
+      this.updatingVitalResults = this.updatingVitalResults.concat(vital.questions);
     });
   }
 
@@ -352,7 +341,7 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
     }
     let startOfDay = dateAsMoment.startOf('day').utc().toISOString();
     let endOfDay = dateAsMoment.endOf('day').utc().toISOString();
-    let formattedDate = dateAsMoment.format('YYYY-MM-DD');
+    let formattedDate = dateAsMoment.utc().format('YYYY-MM-DD');
     this.getGoals(this.patient.id, this.carePlan.plan_template.id, startOfDay, endOfDay).then((goals: any) => {
       this.planGoals = goals;
     });
@@ -372,27 +361,25 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
       }
     });
     this.updatingAssessmentResults = [];
-    this.getAssessmentResults(this.patient.id, this.carePlan.plan_template.id, startOfDay, endOfDay).then((assessments: any) => {
-      this.assessmentResults = _groupBy(assessments, (obj) => obj.assessment_task_name);
+    this.getAssessmentResults(this.carePlan, formattedDate).then((assessments: any) => {
+      this.assessmentResults = assessments.results;
       if (!this.isUsingMobile) {
-        let keys = Object.keys(this.assessmentResults);
-        keys.forEach((key) => {
-          this.updatingAssessmentResults = this.updatingAssessmentResults.concat(this.assessmentResults[key]);
+        this.assessmentResults.forEach((assessment) => {
+          this.updatingAssessmentResults = this.updatingAssessmentResults.concat(assessment.questions);
         });
       }
     });
-    this.getSymptomResults(this.patient.id, this.carePlan.plan_template.id, startOfDay, endOfDay).then((symptoms: any) => {
-      this.symptomResults = symptoms;
+    this.getSymptomResults(this.carePlan, formattedDate).then((symptoms: any) => {
+      this.symptomResults = symptoms.results;
       if (!this.isUsingMobile) {
         this.updatingSymptomResults = this.symptomResults.concat();
       }
     });
-    this.getVitalResults(this.patient.id, this.carePlan.plan_template.id, startOfDay, endOfDay).then((vitals: any) => {
-      this.vitalResults = _groupBy(vitals, (obj) => obj.vital_task_name);
+    this.getVitalResults(this.carePlan, formattedDate).then((vitals: any) => {
+      this.vitalResults = vitals.results;
       if (!this.isUsingMobile) {
-        let keys = Object.keys(this.vitalResults);
-        keys.forEach((key) => {
-          this.updatingVitalResults = this.updatingVitalResults.concat(this.vitalResults[key]);
+        this.vitalResults.forEach((vital) => {
+          this.updatingVitalResults = this.updatingVitalResults.concat(vital.questions);
         });
       }
     });
@@ -488,38 +475,23 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
   }
 
   public totalOutcomeQuestions() {
-    let keys = Object.keys(this.assessmentResults);
-    let count = 0;
-    keys.forEach((key) => {
-      this.assessmentResults[key].forEach((result) => {
-        if (result.tracks_outcome) {
-          count++;
-        }
-      });
-    });
-    return count;
+    let outcomeAssessments = this.assessmentResults.filter((assessment) => assessment.tracks_outcome);
+    let questionsCount = _sumBy(outcomeAssessments, (assessment) => assessment.questions.length);
+    return questionsCount;
   }
 
   public totalSatisfactionQuestions() {
-    let keys = Object.keys(this.assessmentResults);
-    let count = 0;
-    keys.forEach((key) => {
-      this.assessmentResults[key].forEach((result) => {
-        if (result.tracks_satisfaction) {
-          count++;
-        }
-      });
-    });
-    return count;
+    let satisfactionAssessments = this.assessmentResults.filter((assessment) => assessment.tracks_satisfaction);
+    let questionsCount = _sumBy(satisfactionAssessments, (assessment) => assessment.questions.length);
+    return questionsCount;
   }
 
   public averageOutcomeScore() {
-    let keys = Object.keys(this.assessmentResults);
-    let totalSum = 0;
-    keys.forEach((key) => {
-      let outcomeQuestions = this.assessmentResults[key].filter((obj) => obj.tracks_outcome === true);
-      let sum = _sumBy(outcomeQuestions, (obj) => obj.rating);
-      totalSum += sum;
+    let outcomeAssessments = this.assessmentResults.filter((assessment) => assessment.tracks_outcome);
+    let totalSum = _sumBy(outcomeAssessments, (assessment) => {
+      return _sumBy(assessment.questions, (question) => {
+        return question.rating;
+      });
     });
     let average = (totalSum / this.totalOutcomeQuestions()) + .0;
     return Math.round(average * 10) / 10;
@@ -530,12 +502,11 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
   }
 
   public averageSatisfactionScore() {
-    let keys = Object.keys(this.assessmentResults);
-    let totalSum = 0;
-    keys.forEach((key) => {
-      let satisfactionQuestions = this.assessmentResults[key].filter((obj) => obj.tracks_satisfaction === true);
-      let sum = _sumBy(satisfactionQuestions, (obj) => obj.rating);
-      totalSum += sum;
+    let satisfactionAssessments = this.assessmentResults.filter((assessment) => assessment.tracks_satisfaction);
+    let totalSum = _sumBy(satisfactionAssessments, (assessment) => {
+      return _sumBy(assessment.questions, (question) => {
+        return question.rating;
+      });
     });
     let average = (totalSum / this.totalSatisfactionQuestions()) + .0;
     return Math.round(average * 10) / 10;
@@ -550,7 +521,7 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
   }
 
   public averageSymptomRating() {
-    let totalSum = _sumBy(this.symptomResults, (obj) => obj.rating);
+    let totalSum = _sumBy(this.symptomResults, (obj) => obj.rating.rating);
     let average = (totalSum / this.symptomResults.length) + .0;
     return Math.round(average * 10) / 10;
   }
@@ -725,8 +696,8 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
   }
 
   public clickSaveSymptomResult(result) {
-    let updateSub = this.store.SymptomRating.update(result.id, {
-      rating: result.rating,
+    let updateSub = this.store.SymptomRating.update(result.rating.id, {
+      rating: result.rating.rating,
     }, true).subscribe(
       (res) => {
         let resultsListIndex = this.updatingSymptomResults.findIndex((obj) => obj.id === result.id);
