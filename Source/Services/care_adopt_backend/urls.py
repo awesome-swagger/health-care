@@ -61,6 +61,9 @@ from apps.plans.api.views import (
     PatientCarePlanOverview,
     MessageRecipientViewSet,
     TeamMessageViewSet,
+    AssessmentResultViewSet,
+    SymptomByPlanViewSet,
+    VitalByPlanViewSet,
 )
 from apps.tasks.api.views import (
     PatientTaskTemplateViewSet,
@@ -317,6 +320,21 @@ care_plan_template_routes.register(
 )
 care_plan_routes = router.register(
     r'care_plans', CarePlanViewSet, base_name='care_plans')
+care_plan_routes.register(
+    r'assessment_results',
+    AssessmentResultViewSet,
+    base_name='assessment_results',
+    parents_query_lookups=['assessment_tasks__plan'])
+care_plan_routes.register(
+    r'symptoms',
+    SymptomByPlanViewSet,
+    base_name='plan_symptoms',
+    parents_query_lookups=['ratings__symptom_task__plan'])
+care_plan_routes.register(
+    r'vitals',
+    VitalByPlanViewSet,
+    base_name='vitals',
+    parents_query_lookups=['vital_tasks__plan'])
 message_recipient_routes = care_plan_routes.register(
     r'message_recipients',
     MessageRecipientViewSet,
