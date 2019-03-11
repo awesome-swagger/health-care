@@ -905,3 +905,77 @@ class SymptomByPlanSerializer(serializers.ModelSerializer):
         ).order_by('created').last()
 
         return rating_obj.behavior
+
+
+class VitalResponseOverviewSerializer(serializers.ModelSerializer):
+    """
+    serializer to be used by :model:`tasks.VitalResponse`
+    to be used in `Vital Results` section in  `patients__Details` page
+    """
+
+    question = serializers.SerializerMethodField()
+    occurrence = serializers.SerializerMethodField()
+
+    class Meta:
+        model = VitalResponse
+        fields = (
+            'id',
+            'question',
+            'answer',
+            'occurrence',
+            'behavior',
+        )
+
+    def get_question(self, obj):
+        return obj.question.prompt
+
+    def get_occurrence(self, obj):
+        task = obj.vital_task
+        total_tasks = VitalTask.objects.filter(
+            plan=task.plan,
+            vital_task_template=task.vital_task_template)
+        obj_occurrence = total_tasks.filter(
+            due_datetime__lte=task.due_datetime).count()
+        return f'{obj_occurrence} of {total_tasks.count()}'
+
+
+class VitalByPlanSerializer(serializers.ModelSerializer):
+    """
+    serializer to be used by :model:`tasks.VitalTaskTemplate` to be used in
+    `Vitals` section in `patients_Details` page
+    """
+
+    questions = serializers.SerializerMethodField()
+
+    class Meta:
+        model = VitalTaskTemplate
+        fields = (
+            'id',
+            'name',
+            'questions',
+        )
+
+    def get_questions(self, obj):
+        plan = self.context.get('plan')
+        request = self.context.get('request')
+        timestamp = request.GET.get('date', None)
+        tasks = VitalTask.objects.filter(
+            plan=plan, vital_task_template=obj)
+        date_format = "%Y-%m-%d"
+        date_object = datetime.strptime(timestamp, date_format).date() \
+            if timestamp else timezone.now().date()
+        date_min = datetime.datetime.combine(date_object,
+                                             datetime.time.min,
+                                             tzinfo=pytz.utc)
+        date_max = datetime.datetime.combine(date_object,
+                                             datetime.time.max,
+                                             tzinfo=pytz.utc)
+        kwargs = {
+            'vital_task__in': tasks,
+            'created__range': (date_min, date_max)
+        }
+
+        responses = VitalResponse.objects.filter(**kwargs)
+        serializer = VitalResponseOverviewSerializer(
+            responses, many=True)
+        return serializer.data

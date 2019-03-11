@@ -73,6 +73,7 @@ from apps.tasks.api.serializers import (
     VitalTaskTemplateSerializer,
     AssessmentResultOverviewSerializer,
     SymptomByPlanSerializer,
+    VitalByPlanSerializer,
 )
 from apps.tasks.models import (
     AssessmentTask,
@@ -1819,6 +1820,76 @@ class SymptomByPlanViewSet(ParentViewSetPermissionMixin,
 
     def get_serializer_context(self):
         context = super(SymptomByPlanViewSet,
+                        self).get_serializer_context()
+
+        context.update({
+            'plan': self.parent_obj,
+        })
+        return context
+
+
+class VitalByPlanViewSet(ParentViewSetPermissionMixin,
+                         NestedViewSetMixin,
+                         mixins.ListModelMixin,
+                         viewsets.GenericViewSet):
+    """
+    Viewset for :model:`tasks.VitalTaskTemplate`
+    ========
+
+    list:
+        Returns list of all :model:`tasks.VitalTaskTemplate` objects.
+        Employees and patients will only have access to objects which
+        they are a member of.
+
+    FILTERING
+    ---
+    You can filter the results by the date the vital response has
+    been created. For example:
+
+        GET /api/care_plans/<plan-ID>/vitals/?date=2019-05-09
+
+    USAGE
+    ---
+    This will be primarily used in `Vitals` section in
+    `patients_Details` page
+
+    """
+
+    serializer_class = VitalByPlanSerializer
+    permission_classes = (
+        permissions.IsAuthenticated,
+    )
+    queryset = VitalTaskTemplate.objects.all()
+    parent_field = 'vital_tasks__plan'
+    parent_lookup = [
+        (
+            'vital_tasks__plan',
+            CarePlan,
+            CarePlanViewSet
+        )
+    ]
+
+    def filter_queryset(self, queryset):
+        queryset = super(VitalByPlanViewSet,
+                         self).filter_queryset(queryset).distinct()
+
+        timestamp = self.request.GET.get('date', None)
+        date_format = "%Y-%m-%d"
+        date_object = datetime.strptime(timestamp, date_format).date() \
+            if timestamp else timezone.now().date()
+        date_min = datetime.datetime.combine(date_object,
+                                             datetime.time.min,
+                                             tzinfo=pytz.utc)
+        date_max = datetime.datetime.combine(date_object,
+                                             datetime.time.max,
+                                             tzinfo=pytz.utc)
+
+        return queryset.filter(
+            vital_tasks__responses__created__range=(date_min, date_max)
+        ).distinct()
+
+    def get_serializer_context(self):
+        context = super(VitalByPlanViewSet,
                         self).get_serializer_context()
 
         context.update({
