@@ -834,7 +834,7 @@ class AssessmentResultOverviewSerializer(serializers.ModelSerializer):
         tasks = AssessmentTask.objects.filter(
             plan=plan, assessment_task_template=obj)
         date_format = "%Y-%m-%d"
-        date_object = datetime.strptime(timestamp, date_format).date() \
+        date_object = datetime.datetime.strptime(timestamp, date_format).date() \
             if timestamp else timezone.now().date()
         date_min = datetime.datetime.combine(date_object,
                                              datetime.time.min,
@@ -844,7 +844,7 @@ class AssessmentResultOverviewSerializer(serializers.ModelSerializer):
                                              tzinfo=pytz.utc)
         kwargs = {
             'assessment_task__in': tasks,
-            'created__range': (date_min, date_max)
+            'assessment_task__due_datetime__range': (date_min, date_max)
         }
 
         responses = AssessmentResponse.objects.filter(**kwargs)
@@ -861,7 +861,6 @@ class SymptomByPlanSerializer(serializers.ModelSerializer):
 
     rating = serializers.SerializerMethodField()
     occurrence = serializers.SerializerMethodField()
-    behavior = serializers.SerializerMethodField()
 
     class Meta:
         model = Symptom
@@ -870,7 +869,6 @@ class SymptomByPlanSerializer(serializers.ModelSerializer):
             'name',
             'rating',
             'occurrence',
-            'behavior',
         )
 
     def get_rating(self, obj):
@@ -880,8 +878,9 @@ class SymptomByPlanSerializer(serializers.ModelSerializer):
             symptom_task__plan=plan,
             symptom=obj
         ).order_by('created').last()
+        serializer = SymptomRatingSerializer(rating_obj, many=False)
 
-        return rating_obj.rating
+        return serializer.data
 
     def get_occurrence(self, obj):
         plan = self.context.get('plan')
@@ -896,16 +895,6 @@ class SymptomByPlanSerializer(serializers.ModelSerializer):
             due_datetime__lte=rating_obj.symptom_task.due_datetime).count()
         return f'{obj_occurrence} of {total_tasks.count()}'
 
-    def get_behavior(self, obj):
-        plan = self.context.get('plan')
-
-        rating_obj = SymptomRating.objects.filter(
-            symptom_task__plan=plan,
-            symptom=obj
-        ).order_by('created').last()
-
-        return rating_obj.behavior
-
 
 class VitalResponseOverviewSerializer(serializers.ModelSerializer):
     """
@@ -914,6 +903,7 @@ class VitalResponseOverviewSerializer(serializers.ModelSerializer):
     """
 
     question = serializers.SerializerMethodField()
+    answer_type = serializers.SerializerMethodField()
     occurrence = serializers.SerializerMethodField()
 
     class Meta:
@@ -922,12 +912,16 @@ class VitalResponseOverviewSerializer(serializers.ModelSerializer):
             'id',
             'question',
             'answer',
+            'answer_type',
             'occurrence',
             'behavior',
         )
 
     def get_question(self, obj):
         return obj.question.prompt
+
+    def get_answer_type(self, obj):
+        return obj.question.answer_type
 
     def get_occurrence(self, obj):
         task = obj.vital_task
@@ -962,7 +956,7 @@ class VitalByPlanSerializer(serializers.ModelSerializer):
         tasks = VitalTask.objects.filter(
             plan=plan, vital_task_template=obj)
         date_format = "%Y-%m-%d"
-        date_object = datetime.strptime(timestamp, date_format).date() \
+        date_object = datetime.datetime.strptime(timestamp, date_format).date() \
             if timestamp else timezone.now().date()
         date_min = datetime.datetime.combine(date_object,
                                              datetime.time.min,
@@ -972,10 +966,10 @@ class VitalByPlanSerializer(serializers.ModelSerializer):
                                              tzinfo=pytz.utc)
         kwargs = {
             'vital_task__in': tasks,
-            'created__range': (date_min, date_max)
+            'vital_task__due_datetime__range': (date_min, date_max)
         }
 
         responses = VitalResponse.objects.filter(**kwargs)
         serializer = VitalResponseOverviewSerializer(
-            responses, many=True)
+            responses.order_by('question__order'), many=True)
         return serializer.data

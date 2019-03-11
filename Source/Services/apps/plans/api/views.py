@@ -446,10 +446,10 @@ class CarePlanViewSet(viewsets.ModelViewSet):
 
         IMPORTANT NOTE:
         ---
-        - Make sure to pass the {organization ID} or {facility ID} when sending requests 
-        to this endpoint to filter care plans for a specific organization or facility. 
+        - Make sure to pass the {organization ID} or {facility ID} when sending requests
+        to this endpoint to filter care plans for a specific organization or facility.
         Otherwise, this endpoint will return all care plans in all organizations.
-        - The URL parameter to be used is **patient__facility__organization** or 
+        - The URL parameter to be used is **patient__facility__organization** or
         **patient__facility**
 
         SAMPLE REQUEST:
@@ -1734,7 +1734,7 @@ class AssessmentResultViewSet(ParentViewSetPermissionMixin,
 
         timestamp = self.request.GET.get('date', None)
         date_format = "%Y-%m-%d"
-        date_object = datetime.strptime(timestamp, date_format).date() \
+        date_object = datetime.datetime.strptime(timestamp, date_format).date() \
             if timestamp else timezone.now().date()
         date_min = datetime.datetime.combine(date_object,
                                              datetime.time.min,
@@ -1744,7 +1744,8 @@ class AssessmentResultViewSet(ParentViewSetPermissionMixin,
                                              tzinfo=pytz.utc)
 
         return queryset.filter(
-            assessment_tasks__responses__created__range=(date_min, date_max)
+            assessment_tasks__due_datetime__range=(date_min, date_max),
+            assessment_tasks__is_complete=True,
         ).distinct()
 
     def get_serializer_context(self):
@@ -1805,7 +1806,7 @@ class SymptomByPlanViewSet(ParentViewSetPermissionMixin,
 
         timestamp = self.request.GET.get('date', None)
         date_format = "%Y-%m-%d"
-        date_object = datetime.strptime(timestamp, date_format).date() \
+        date_object = datetime.datetime.strptime(timestamp, date_format).date() \
             if timestamp else timezone.now().date()
         date_min = datetime.datetime.combine(date_object,
                                              datetime.time.min,
@@ -1815,7 +1816,8 @@ class SymptomByPlanViewSet(ParentViewSetPermissionMixin,
                                              tzinfo=pytz.utc)
 
         return queryset.filter(
-            ratings__created__range=(date_min, date_max)
+            ratings__symptom_task__due_datetime__range=(date_min, date_max),
+            ratings__symptom_task__is_complete=True,
         ).distinct()
 
     def get_serializer_context(self):
@@ -1875,7 +1877,7 @@ class VitalByPlanViewSet(ParentViewSetPermissionMixin,
 
         timestamp = self.request.GET.get('date', None)
         date_format = "%Y-%m-%d"
-        date_object = datetime.strptime(timestamp, date_format).date() \
+        date_object = datetime.datetime.strptime(timestamp, date_format).date() \
             if timestamp else timezone.now().date()
         date_min = datetime.datetime.combine(date_object,
                                              datetime.time.min,
@@ -1885,7 +1887,8 @@ class VitalByPlanViewSet(ParentViewSetPermissionMixin,
                                              tzinfo=pytz.utc)
 
         return queryset.filter(
-            vital_tasks__responses__created__range=(date_min, date_max)
+            vital_tasks__due_datetime__range=(date_min, date_max),
+            vital_tasks__is_complete=True,
         ).distinct()
 
     def get_serializer_context(self):
