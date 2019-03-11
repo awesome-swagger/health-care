@@ -33,9 +33,14 @@
             </button>
           </form>
         </div>
-        <div>
-          <label>Status</label>
-          {{employee?.status}} <span *ngIf="employee?.status === 'active'">({{activeSince}})</span>
+        <div class="fullWidth flex">
+          <div>
+            <label>Status</label>
+            {{employee?.status}} <span *ngIf="employee?.status === 'active'">({{activeSince}})</span>
+          </div>
+          <button class="button button--iconText" (click)="confirmToggleActive()" *ngIf="employee">
+            <i class="ss-standard ss-ban"></i>Make {{employee?.status === 'active' ? 'Inactive' : 'Active'}}
+          </button>
         </div>
       </div>
       <div>
@@ -43,10 +48,6 @@
         <!--<button class="button button--iconText">
           <i class="ss-ban"></i> Make Inactive
         </button>-->
-
-        <button class="button button--iconText" (click)="confirmToggleActive()" *ngIf="employee">
-          <i class="ss-standard ss-ban"></i>Make {{employee?.status === 'active' ? 'Inactive' : 'Active'}}
-        </button>
       </div>
   </div> <!--/.flexHeader-->
 
