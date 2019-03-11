@@ -266,7 +266,9 @@ class SymptomRating(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
         related_name='ratings',
         on_delete=models.CASCADE)
     symptom = models.ForeignKey(
-        Symptom, null=False, blank=False, on_delete=models.CASCADE)
+        Symptom,
+        related_name='ratings',
+        on_delete=models.CASCADE)
     rating = models.IntegerField(null=False, blank=False, validators=[
         MaxValueValidator(5),
         MinValueValidator(1)
@@ -336,7 +338,8 @@ class AssessmentTask(AbstractTask):
         related_name='assessment_tasks',
         on_delete=models.CASCADE)
     assessment_task_template = models.ForeignKey(
-        AssessmentTaskTemplate, null=False, blank=False,
+        AssessmentTaskTemplate,
+        related_name='assessment_tasks',
         on_delete=models.CASCADE)
     comments = models.CharField(max_length=1024, null=True, blank=True)
     is_complete = models.BooleanField(
@@ -511,6 +514,23 @@ class VitalResponse(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
     def answer(self):
         answer_type = self.question.answer_type
         return getattr(self, f"answer_{answer_type}", "")
+
+    @property
+    def behavior(self):
+        value = 'n/a'
+        excluded_types = ['string', 'boolean']
+        if self.question.answer_type not in excluded_types:
+            value = "increasing"
+            second_response = VitalResponse.objects.filter(
+                vital_task=self.vital_task,
+                question=self.question).exclude(
+                id=self.id).order_by('created').last()
+            if second_response:
+                if self.rating < second_response.rating:
+                    value = "decreasing"
+                elif self.rating == second_response.rating:
+                    value = "equal"
+        return value
 
 
 # SIGNALS
