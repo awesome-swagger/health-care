@@ -24,8 +24,8 @@
 <div class="flex marBottom32">
   <div class="flex1 marRight24">
     <label>Task</label>
-    <p *ngIf="taskEditable">Task One</p>
-    <div class="styledSelect">
+    <div class="center ssSpinner ssSpinner--small" *ngIf="!tasksLoaded"></div>
+    <div class="styledSelect" *ngIf="tasksLoaded">
       <select class="styledSelect__select" [(ngModel)]="task">
         <option *ngFor="let task of tasks" [ngValue]="task.id">{{task.name}}</option>
       </select>
@@ -44,7 +44,8 @@
   <!--TODO: Only show the following div if the modal is triggered from the patient details page-->
   <div class="flex1 marRight24">
     <label>With</label>
-    <div class="drop">
+    <div class="center ssSpinner ssSpinner--small" *ngIf="!teamMembersLoaded"></div>
+    <div class="drop" *ngIf="teamMembersLoaded">
       <div class="drop__input" (click)="withOpen = !withOpen"></div>
       <app-popover [visible]="withOpen" (visibleChange)="withOpen = $event">
       <ul class="drop__dropdown" [ngClass]="{'isOpen': withOpen }">

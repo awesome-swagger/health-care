@@ -23,6 +23,8 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
   public moment = moment;
   public objectKeys = Object.keys;
 
+  public detailsLoaded = false;
+
   public user = null;
   public patient = null;
   public carePlan = null;
@@ -88,6 +90,10 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
   public vitalVsPlanTTOpen: any = {};
   public vitalUpdateTTOpen: any = {};
 
+  private queryParamsSub = null;
+  private routeParamsSub = null;
+  private authUserSub = null;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -99,14 +105,14 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
   ) { }
 
   public ngOnInit() {
-    this.route.queryParams.subscribe((params) => {
+    this.queryParamsSub = this.route.queryParams.subscribe((params) => {
       if (params.show_my_tasks) {
         this.userTasksOpen = true;
       }
     });
-    this.route.params.subscribe((params) => {
+    this.routeParamsSub = this.route.params.subscribe((params) => {
       this.nav.patientDetailState(params.patientId, params.planId);
-      this.auth.user$.subscribe((user) => {
+      this.authUserSub = this.auth.user$.subscribe((user) => {
         if (!user) {
           return;
         }
@@ -120,7 +126,9 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
               this.careTeamMembers = teamMembers.filter((obj) => {
                 return obj.employee_profile.user.id !== this.user.user.id;
               });
-          		this.refetchAllTasks(this.selectedDate);
+          		this.refetchAllTasks(this.selectedDate).then(() => {
+                this.detailsLoaded = true;
+              });
             });
         		let messageSub = this.store.InfoMessageQueue.readListPaged().subscribe(
         			(messageQueues) => {
@@ -135,7 +143,17 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
     });
   }
 
-  public ngOnDestroy() { }
+  public ngOnDestroy() {
+    if (this.queryParamsSub) {
+      this.queryParamsSub.unsubscribe();
+    }
+    if (this.routeParamsSub) {
+      this.routeParamsSub.unsubscribe();
+    }
+    if(this.authUserSub) {
+      this.authUserSub.unsubscribe();
+    }
+  }
 
   public getPatientProfile(patientId) {
     let promise = new Promise((resolve, reject) => {
@@ -339,29 +357,30 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
     if (!this.patient || !this.carePlan) {
       return;
     }
+    this.detailsLoaded = false;
     let startOfDay = dateAsMoment.startOf('day').utc().toISOString();
     let endOfDay = dateAsMoment.endOf('day').utc().toISOString();
     let formattedDate = dateAsMoment.utc().format('YYYY-MM-DD');
-    this.getGoals(this.patient.id, this.carePlan.plan_template.id, startOfDay, endOfDay).then((goals: any) => {
+    let goalsPromise = this.getGoals(this.patient.id, this.carePlan.plan_template.id, startOfDay, endOfDay).then((goals: any) => {
       this.planGoals = goals;
     });
-    this.getUserTasks(this.carePlan.plan_template.id, formattedDate).then((tasks: any) => {
+    let userTasksPromise = this.getUserTasks(this.carePlan.plan_template.id, formattedDate).then((tasks: any) => {
       this.userTasks = tasks.tasks.filter((obj) => obj.patient && obj.patient.id === this.patient.id);
     });
     this.teamTasks = [];
-    this.getAllTeamMemberTasks(this.carePlan.plan_template.id, formattedDate).then((teamMemberTasks: any) => {
+    let teamTasksPromise = this.getAllTeamMemberTasks(this.carePlan.plan_template.id, formattedDate).then((teamMemberTasks: any) => {
       teamMemberTasks.forEach((tasks) => {
         this.teamTasks = this.teamTasks.concat(tasks.tasks.filter((obj) => obj.patient && obj.patient.id === this.patient.id));
       });
     });
-    this.getPatientTasks(this.patient.user.id, this.carePlan.plan_template.id, formattedDate).then((tasks: any) => {
+    let patientTasksPromise = this.getPatientTasks(this.patient.user.id, this.carePlan.plan_template.id, formattedDate).then((tasks: any) => {
       this.patientTasks = tasks.tasks;
       if (!this.isUsingMobile) {
         this.updatingPatientTasks = this.patientTasks.filter((obj) => this.isPatientTaskUpdatable(obj));
       }
     });
     this.updatingAssessmentResults = [];
-    this.getAssessmentResults(this.carePlan, formattedDate).then((assessments: any) => {
+    let assessmentsPromise = this.getAssessmentResults(this.carePlan, formattedDate).then((assessments: any) => {
       this.assessmentResults = assessments.results;
       if (!this.isUsingMobile) {
         this.assessmentResults.forEach((assessment) => {
@@ -369,13 +388,13 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
         });
       }
     });
-    this.getSymptomResults(this.carePlan, formattedDate).then((symptoms: any) => {
+    let symptomsPromise = this.getSymptomResults(this.carePlan, formattedDate).then((symptoms: any) => {
       this.symptomResults = symptoms.results;
       if (!this.isUsingMobile) {
         this.updatingSymptomResults = this.symptomResults.concat();
       }
     });
-    this.getVitalResults(this.carePlan, formattedDate).then((vitals: any) => {
+    let vitalResultsPromise = this.getVitalResults(this.carePlan, formattedDate).then((vitals: any) => {
       this.vitalResults = vitals.results;
       if (!this.isUsingMobile) {
         this.vitalResults.forEach((vital) => {
@@ -383,14 +402,17 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
         });
       }
     });
+    return Promise.all([goalsPromise, userTasksPromise, teamTasksPromise, patientTasksPromise, assessmentsPromise, symptomsPromise, vitalResultsPromise]);
   }
 
   public setSelectedDay(dateAsMoment) {
-    if (!dateAsMoment) {
+    if (!dateAsMoment || !this.patient || !this.carePlan) {
       return;
     }
     this.selectedDate = dateAsMoment;
-    this.refetchAllTasks(dateAsMoment);
+    this.refetchAllTasks(dateAsMoment).then(() => {
+      this.detailsLoaded = true;
+    });
   }
 
   public nextDate() {
@@ -559,7 +581,9 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
         goal: goal.id,
         rating: updatedGoal.progress,
       }).subscribe((newProgress) => {
-        this.refetchAllTasks(this.selectedDate);
+        this.refetchAllTasks(this.selectedDate).then(() => {
+          this.detailsLoaded = true;
+        });
       });
     });
   }
@@ -586,7 +610,6 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
        carePlan: this.carePlan,
        task: task.id,
        totalMinutes: null,
-       teamMembers: this.careTeamMembers,
        with: null,
        syncToEHR: false,
        notes: '',

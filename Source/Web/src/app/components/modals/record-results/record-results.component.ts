@@ -17,9 +17,11 @@ export class RecordResultsComponent implements OnInit, OnDestroy {
   public patient = null;
   public date = null;
   public carePlan = null;
+  public tasksLoaded = false;
   public tasks = [];
   public task = null;
   public totalMinutes = null;
+  public teamMembersLoaded = false;
   public teamMembers = [];
   public withSelected = [];
   public with = null;
@@ -37,7 +39,6 @@ export class RecordResultsComponent implements OnInit, OnDestroy {
   public tooltipRRM1Open;
   public tooltipRRM2Open;
   public showDate;
-  public taskEditable;
 
   constructor(
     private modal: ModalService,
@@ -64,6 +65,7 @@ export class RecordResultsComponent implements OnInit, OnDestroy {
       this.patientEngagement = this.data.patientEngagement;
       // Get care team
       this.getCareTeamMembers(this.carePlan.id).then((teamMembers: any) => {
+        this.teamMembersLoaded = true;
       	this.userRoles = teamMembers.filter((obj) => {
       		return obj.employee_profile.user.id === this.user.user.id;
       	});
@@ -71,6 +73,7 @@ export class RecordResultsComponent implements OnInit, OnDestroy {
       		return obj.employee_profile.user.id !== this.user.user.id;
       	});
       	this.getUserTaskTemplates(this.carePlan, this.userRoles).then((userTaskTemplates: any) => {
+          this.tasksLoaded = true;
       		this.tasks = userTaskTemplates;
       	});
       });
@@ -104,22 +107,29 @@ export class RecordResultsComponent implements OnInit, OnDestroy {
       }).subscribe(
         (teamTasks) => {
           let userTaskTemplates = [];
-          // If user has the manager role on the care plan, get task templates that are marked is_manager
-          let hasManagerRole = userRoles.filter((obj) => obj.is_manager);
-          if (hasManagerRole.length > 0) {
-            let managerTasks = teamTasks.filter((obj) => obj.is_manager_task);
-            userTaskTemplates = userTaskTemplates.concat(managerTasks);
+          // If user is not on this care plan, the only way they should be viewing this modal is if
+          // they are an organization or facility manager, so they should have access to all tasks
+          if (this.userRoles.length < 1) {
+            userTaskTemplates = teamTasks;
+            resolve(userTaskTemplates);
+          } else {
+            // If user has a manager role on the care plan, get task templates that are marked is_manager
+            let hasManagerRole = userRoles.filter((obj) => obj.is_manager);
+            if (hasManagerRole.length > 0) {
+              let managerTasks = teamTasks.filter((obj) => obj.is_manager_task);
+              userTaskTemplates = userTaskTemplates.concat(managerTasks);
+            }
+            // If user has roles on this care plan, get task templates that are marked for their roles
+            userRoles.forEach((teamMemberObj, index, array) => {
+              if (teamMemberObj.role) {
+                let roleTasks = teamTasks.filter((obj) => obj.role && obj.role.id === teamMemberObj.role.id);
+                userTaskTemplates = userTaskTemplates.concat(roleTasks);
+              }
+              if ((index + 1) === array.length) {
+                resolve(userTaskTemplates);
+              }
+            });
           }
-          // If user has roles on this care plan, get task templates that are marked for their roles
-          userRoles.forEach((teamMemberObj, index, array) => {
-            if (teamMemberObj.role) {
-              let roleTasks = teamTasks.filter((obj) => obj.role && obj.role.id === teamMemberObj.role.id);
-              userTaskTemplates = userTaskTemplates.concat(roleTasks);
-            }
-            if ((index + 1) === array.length) {
-              resolve(userTaskTemplates);
-            }
-          });
         },
         (err) => reject(err),
         () => {

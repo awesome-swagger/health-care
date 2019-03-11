@@ -204,17 +204,13 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
       if (!results) {
         return;
       }
-      let members = [this.user.id];
-      if (results.with) {
-        members.push(results.with);
-      }
       // Create billed activity record
       let createSub = this.store.BilledActivity.create({
         plan: this.carePlan.id,
         activity_type: 'care_plan_review', // TODO: activity type
         members: [
-          this.user.id, // TODO: user selected in "with" field.
-        ],
+          this.user.id,
+        ].concat(results.with),
         sync_to_ehr: results.syncToEHR,
         added_by: this.user.id,
         notes: results.notes,
@@ -256,7 +252,7 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
         activity_type: 'care_plan_review', // TODO: activity type
         members: [
           this.user.id, // TODO: user selected in "with" field.
-        ],
+        ].concat(results.with),
         sync_to_ehr: results.syncToEHR,
         notes: results.notes,
         time_spent: results.totalMinutes,

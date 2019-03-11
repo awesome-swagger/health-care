@@ -69,16 +69,31 @@ a, [ui-sref], [ng-click] {
 }
 
 /* STARTSTUDIO SPINNER */
-.ssSpinner:before {
-  content: '';
-  display: inline-block;
-  width: 36px;
-  height: 36px;
-  border: 6px solid $green;
-  border-radius: 50%;
-  border-top-color: $greenDk;
-  border-bottom-color: $greenDk;
-  animation: ssSpin 2s linear infinite;
+.ssSpinner {
+  &:before {
+    content: '';
+    display: inline-block;
+    width: 36px;
+    height: 36px;
+    border: 6px solid $green;
+    border-radius: 50%;
+    border-top-color: $greenDk;
+    border-bottom-color: $greenDk;
+    animation: ssSpin 2s linear infinite;
+  }
+  &--small {
+    &:before {
+      content: '';
+      display: inline-block;
+      width: 24px;
+      height: 24px;
+      border: 4px solid $green;
+      border-radius: 50%;
+      border-top-color: $greenDk;
+      border-bottom-color: $greenDk;
+      animation: ssSpin 2s linear infinite;
+    }
+  }
 }
 @keyframes ssSpin {
   0% { transform: rotate(0deg); }
