@@ -238,16 +238,14 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
         task: null,
         totalMinutes: result.time_spent,
         teamMembers: this.careTeamMembers,
-        with: null, // TODO: Autofill with field
+        with: result.members.map((member) => member.id),
         syncToEHR: result.sync_to_ehr,
         notes: result.notes,
         patientEngagement: null,
       },
       width: '512px',
     }).subscribe((results) => {
-      if (!results) {
-        return;
-      }
+      if (!results) return;
       let updateSub = this.store.BilledActivity.update(result.id, {
         activity_type: 'care_plan_review', // TODO: activity type
         members: [
@@ -281,6 +279,7 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
       },
       width: '384px',
     }).subscribe((modalResult) => {
+      if (!modalResult) return;
       if (modalResult.toLowerCase() === 'continue') {
         this.store.BilledActivity.destroy(result.id).subscribe(
           (success) => {

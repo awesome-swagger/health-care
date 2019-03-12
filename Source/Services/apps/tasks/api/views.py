@@ -158,7 +158,7 @@ class PatientTaskViewSet(viewsets.ModelViewSet):
 class TeamTaskTemplateViewSet(viewsets.ModelViewSet):
     serializer_class = TeamTaskTemplateSerializer
     permission_classes = (permissions.IsAuthenticated, EmployeeOrReadOnly, )
-    queryset = TeamTaskTemplate.objects.all()
+    queryset = TeamTaskTemplate.objects.order_by('name')
     filter_backends = (DjangoFilterBackend, )
     filterset_fields = (
         'plan_template__id',

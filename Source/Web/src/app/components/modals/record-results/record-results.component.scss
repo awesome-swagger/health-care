@@ -15,6 +15,10 @@
 .drop__input {
   min-width: inherit;
   max-width: inherit;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 212px;
 }
 
 .datepicker__date {
