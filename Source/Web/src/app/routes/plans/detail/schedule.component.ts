@@ -316,7 +316,9 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
         if (!task) {
           return;
         }
-        this.editCMTask(task);
+        setTimeout(() => {
+          this.editCMTask(task);
+        }, 10);
       },
       () => {},
       () => {
@@ -336,7 +338,8 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       overflow: 'visible',
       width: '384px',
     }).subscribe(
-      (task) => {},
+      (task) => {
+      },
       (err) => {},
       () => {
         modalSub.unsubscribe();
@@ -358,7 +361,9 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
     }).subscribe(
       (task) => {
         if (task !== null) {
-          this.editCTTask(task);
+          setTimeout(() => {
+            this.editCTTask(task);
+          }, 10);
         }
       },
       (err) => {},
@@ -369,6 +374,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
   }
 
   public editCTTask(task) {
+    let taskIndex = this.teamMemberTemplates.findIndex((obj) => obj.id === task.id);
     let modalSub = this.modals.open(EditTaskComponent, {
       closeDisabled: false,
       data: {
@@ -379,7 +385,10 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       overflow: 'visible',
       width: '384px',
     }).subscribe(
-      (task) => {},
+      (updatedTask) => {
+        this.teamMemberTemplates[taskIndex] = updatedTask;
+        console.log(this.teamMemberTemplates);
+      },
       (err) => {},
       () => {
         modalSub.unsubscribe();
