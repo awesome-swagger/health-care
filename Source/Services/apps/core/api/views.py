@@ -385,9 +385,7 @@ class EmployeeRoleViewSet(viewsets.ModelViewSet):
     permission_classes = (permissions.IsAuthenticated, )
     queryset = EmployeeRole.objects.all()
     filter_backends = (DjangoFilterBackend, )
-    filterset_fields = {
-        'employee': ['exact'],
-    }
+    filterset_fields = ('employee',)
 
 
 class ProviderTitleViewSet(
