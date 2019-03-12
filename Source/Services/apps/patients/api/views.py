@@ -96,7 +96,7 @@ class PatientProfileViewSet(viewsets.ModelViewSet):
         permissions.IsAuthenticated,
         PatientProfilePermissions,
     )
-    queryset = PatientProfile.objects.all()
+    queryset = PatientProfile.objects.filter(is_archived=False)
     filter_backends = (DjangoFilterBackend, )
     filterset_fields = (
         'is_active',
@@ -661,11 +661,13 @@ class FacilityPatientViewSet(ParentViewSetPermissionMixin,
         qs = super(FacilityPatientViewSet, self).get_queryset()
         _type = self.request.query_params.get('type', '').lower()
         if _type == 'active':
-            qs = qs.filter(is_active=True)
+            qs = qs.filter(is_active=True).exclude(is_archived=True)
         elif _type == 'inactive':
-            qs = qs.filter(is_active=False)
+            qs = qs.filter(is_active=False).exclude(is_archived=True)
         elif _type == 'invited':
-            qs = qs.filter(is_invited=True)
+            qs = qs.filter(is_invited=True).exclude(is_archived=True)
+        elif _type == 'archived':
+            qs = qs.filter(is_archived=True)
         else:
             qs = qs.none()
         return qs.order_by('last_app_use')

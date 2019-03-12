@@ -76,6 +76,7 @@ class PatientProfile(AddressMixin, CreatedModifiedMixin, UUIDPrimaryKeyMixin):
     )
     is_invited = models.BooleanField(default=False)
     is_active = models.BooleanField(default=False)
+    is_archived = models.BooleanField(default=False)
     payer_reimbursement = models.BooleanField(
         default=False,
         help_text=_('Used to determine whether a patient is billable or not.'))
@@ -299,6 +300,7 @@ class PatientVerificationCode(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
 
     def __str__(self):
         return f'{self.patient.user.get_full_name()}: {self.code}'
+
 
 class ReminderEmail(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
     patient = models.ForeignKey(
