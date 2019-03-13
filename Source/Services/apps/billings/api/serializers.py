@@ -99,9 +99,3 @@ class BilledActivitySerializer(RepresentationMixin,
                 'serializer_class': ActivityTeamTaskSerializer
             },
         ]
-
-    def validate_plan(self, value):
-        if not value.patient.payer_reimbursement:
-            raise serializers.ValidationError(
-                _('Patient for this plan is not billable.'))
-        return value
