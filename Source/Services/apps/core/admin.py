@@ -49,6 +49,10 @@ class ProcedureAdmin(admin.ModelAdmin):
     list_display = ('name', 'px_code', )
 
 
+class EmployeeRoleAdmin(admin.ModelAdmin):
+    list_display = ('employee', 'facility', 'role')
+
+
 class SymptomAdmin(admin.ModelAdmin):
     list_display = ('name', )
 
@@ -75,3 +79,4 @@ admin.site.register(models.Symptom, SymptomAdmin)
 admin.site.register(models.InvitedEmailTemplate, InvitedEmailTemplateAdmin)
 admin.site.register(models.Notification, NotificationAdmin)
 admin.site.register(models.BillingCoordinator, BillingCoordinatorAdmin)
+admin.site.register(models.EmployeeRole, EmployeeRoleAdmin)

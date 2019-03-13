@@ -268,7 +268,7 @@ class ObtainAuthToken(OriginalObtain):
             return response
 
         if employee_profile and employee_profile.status == 'inactive' or \
-            patient_profile and not patient_profile.is_active:
+            patient_profile and (not patient_profile.is_active or patient_profile.is_archived):
             response = GenericErrorResponse(
                 'User does not have an active associated employee or patient profile'
             )

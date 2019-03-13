@@ -48,7 +48,7 @@ class PatientVerificationCodeAdmin(admin.ModelAdmin):
 
 
 class PotentialPatientAdmin(admin.ModelAdmin):
-    list_display = ('first_name', 'last_name', 'phone', 'patient_profile')
+    list_display = ('first_name', 'last_name', 'email', 'phone', 'patient_profile')
 
 
 admin.site.register(PatientProfile, PatientProfileAdmin)
