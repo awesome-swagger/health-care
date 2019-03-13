@@ -6,7 +6,7 @@ from django.apps import apps
 from django.utils import timezone
 
 from .utils import create_tasks_from_template
-
+from apps.core.models import EmployeeRole
 
 def replace_time(datetime_obj, time_obj):
     return datetime_obj.replace(
@@ -112,3 +112,18 @@ def teammessage_post_save(sender, instance, created, **kwargs):
         recipients = instance.recipients
         recipients.last_update = instance.created
         recipients.save()
+
+
+def careteammember_post_save(sender, instance, created, **kwargs):
+    """
+    Function to be used as signal (post_save) when saving
+    :model:`plans.CareTeamMember`
+    """
+    if created:
+        EmployeeRole.objects.get_or_create(employee=instance.employee_profile,
+                                           role=instance.role,
+                                           facility=instance.plan.patient.facility)
+    else:
+        EmployeeRole.objects.update_or_create(employee=instance.employee_profile,
+                                              facility=instance.plan.patient.facility,
+                                              defaults={ 'role': instance.role })

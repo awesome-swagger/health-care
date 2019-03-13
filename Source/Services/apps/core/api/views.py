@@ -12,7 +12,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from apps.core.models import (Diagnosis, EmployeeProfile, Insurance, Notification,
                               InvitedEmailTemplate, Medication, Organization,
-                              Procedure, ProviderRole, ProviderSpecialty,
+                              Procedure, ProviderRole, ProviderSpecialty, EmployeeRole,
                               ProviderTitle, Symptom, Facility, BillingCoordinator)
 
 from rest_framework_extensions.mixins import NestedViewSetMixin
@@ -40,7 +40,7 @@ from .serializers import (DiagnosisSerializer, EmployeeProfileSerializer,
                           InvitedEmailTemplateSerializer, InsuranceSerializer,
                           OrganizationEmployeeSerializer, NotificationSerializer,
                           SymptomSearchSerializer, FacilityEmployeeSerializer,
-                          DiagnosisSearchSerializer,
+                          DiagnosisSearchSerializer, EmployeeRoleSerializer,
                           ProviderTitleSearchSerializer,
                           ProviderRoleSearchSerializer,
                           EmployeeAssignmentSerializer,
@@ -377,6 +377,15 @@ class BillingCoordinatorViewSet(viewsets.ModelViewSet):
             qs = qs.filter(facility_id=facility)
 
         return qs
+
+
+class EmployeeRoleViewSet(viewsets.ModelViewSet):
+
+    serializer_class = EmployeeRoleSerializer
+    permission_classes = (permissions.IsAuthenticated, )
+    queryset = EmployeeRole.objects.all()
+    filter_backends = (DjangoFilterBackend, )
+    filterset_fields = ('employee',)
 
 
 class ProviderTitleViewSet(

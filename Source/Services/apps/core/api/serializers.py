@@ -16,7 +16,7 @@ from apps.core.models import (Diagnosis, EmployeeProfile, Facility,
                               InvitedEmailTemplate, Medication, Organization,
                               Procedure, ProviderRole, ProviderSpecialty,
                               ProviderTitle, Symptom, Notification,
-                              BillingCoordinator)
+                              BillingCoordinator, EmployeeRole)
 
 from apps.patients.models import PatientProfile, PotentialPatient
 from apps.plans.models import CarePlan
@@ -733,6 +733,12 @@ class ProviderRoleSearchSerializer(HaystackSerializerMixin,
 class ProviderSpecialtySerializer(serializers.ModelSerializer):
     class Meta:
         model = ProviderSpecialty
+        fields = '__all__'
+
+
+class EmployeeRoleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EmployeeRole
         fields = '__all__'
 
 

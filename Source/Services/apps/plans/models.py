@@ -14,6 +14,7 @@ from .mailer import PlansMailer
 from .signals import (
     careplan_post_save,
     teammessage_post_save,
+    careteammember_post_save,
 )
 
 
@@ -387,4 +388,8 @@ models.signals.post_save.connect(
 models.signals.post_save.connect(
     teammessage_post_save,
     sender=TeamMessage,
+)
+models.signals.post_save.connect(
+    careteammember_post_save,
+    sender=CareTeamMember
 )
