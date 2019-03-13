@@ -230,9 +230,14 @@ export class PatientHeaderComponent implements OnInit, OnDestroy {
       closeDisabled: false,
       data: {
         patient: this.patient,
+        plan: this.selectedPlan,
       },
-      width: '384px',
-    }).subscribe(() => {});
+      width: '532px',
+    }).subscribe((res) => {
+      if (!res) return;
+      this.patient.payer_reimbursement = res.patient.payer_reimbursement;
+      this.selectedPlan.billing_type = res.plan.billing_type;
+    });
   }
 
   public progressInWeeks(plan) {

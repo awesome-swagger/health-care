@@ -229,16 +229,18 @@ export class PatientComponent implements OnDestroy, OnInit {
   }
 
   public openFinancialDetails(plan) {
+    let planIndex = this.carePlans.findIndex((planObj) => planObj.id === plan.id);
     this.modals.open(FinancialDetailsComponent, {
       closeDisabled: false,
       data: {
         patient: this.patient,
         plan: plan,
       },
-      width: '384px',
+      width: '532px',
     }).subscribe((data) => {
       if (!data) return;
       this.patient.payer_reimbursement = data.patient.payer_reimbursement;
+      this.carePlans[planIndex].billing_type = data.plan.billing_type;
     });
   }
 
