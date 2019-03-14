@@ -112,7 +112,6 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
     let promise = new Promise((resolve, reject) => {
       let billedActivitiesSub = this.store.BilledActivity.readListPaged({
         plan: this.carePlan.id,
-        activity_date: this.dateFilter.format('YYYY-MM-DD'),
       }).subscribe(
         (billedActivities) => {
           resolve(billedActivities);
@@ -207,6 +206,7 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
       // Create billed activity record
       let createSub = this.store.BilledActivity.create({
         plan: this.carePlan.id,
+        activity_date: results.date.format('YYYY-MM-DD'),
         activity_type: 'care_plan_review', // TODO: activity type
         members: [
           this.user.id,
@@ -217,6 +217,7 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
         time_spent: results.totalMinutes,
       }).subscribe(
         (newResult) => {
+          // check if date is current date, if it is push it to the list, if not, switch to the new date
           this.billedActivities.push(newResult);
           this.selectedActivity = newResult;
         },
@@ -247,6 +248,7 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
     }).subscribe((results) => {
       if (!results) return;
       let updateSub = this.store.BilledActivity.update(result.id, {
+        activity_date: results.date.format('YYYY-MM-DD'),
         activity_type: 'care_plan_review', // TODO: activity type
         members: [
           this.user.id, // TODO: user selected in "with" field.
@@ -284,7 +286,7 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
         this.store.BilledActivity.destroy(result.id).subscribe(
           (success) => {
             let index = this.billedActivities.findIndex((obj) => obj.id === result.id);
-            this.billedActivities = this.billedActivities.splice(index, 1);
+            this.billedActivities.splice(index, 1);
           },
           (err) => {},
           () => {},

@@ -1,6 +1,7 @@
 <h1 class="modal__title">Record Results</h1>
 <div class="divider modal__divider"></div>
-<h2 class="center marBottom32">{{patient?.user.first_name}} {{patient?.user.last_name}}</h2>
+<h2 class="center marBottom8">{{patient?.user.first_name}} {{patient?.user.last_name}}</h2>
+<h5 class="center marBottom32">{{carePlan.plan_template.service_area.name}}, {{carePlan.plan_template.name}}<span *ngIf="carePlan.billing_type">, {{carePlan.billing_type.acronym}}</span></h5>
 <div class="flex">
   <div class="flex1 marRight24">
     <label>Date</label>

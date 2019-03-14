@@ -765,8 +765,11 @@ class BasicEmployeeProfileSerializer(RepresentationMixin,
         model = EmployeeProfile
         fields = (
             'id',
-            'user',
+            'qualified_practitioner',
             'status',
+            'specialty',
+            'title',
+            'user',
         )
         read_only_fields = (
             'id',
@@ -775,6 +778,14 @@ class BasicEmployeeProfileSerializer(RepresentationMixin,
             {
                 'field': 'user',
                 'serializer_class': EmployeeUserInfo,
+            },
+            {
+                'field': 'specialty',
+                'serializer_class': ProviderSpecialtySerializer,
+            },
+            {
+                'field': 'title',
+                'serializer_class': ProviderTitleSerializer,
             },
         ]
 

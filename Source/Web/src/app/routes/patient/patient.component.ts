@@ -71,20 +71,17 @@ export class PatientComponent implements OnDestroy, OnInit {
             let overviewStats = overview.results;
             this.carePlans.forEach((carePlan) => {
               carePlan.overview = overviewStats.find((overviewObj) => overviewObj.plan_template.id === carePlan.plan_template.id);
-            });
-    			});
-          this.carePlans.forEach((carePlan) => {
-            this.getCareTeam(carePlan).then((teamMembers: any) => {
+              let allTeamMembers = carePlan.overview.care_team;
               // Get care manager
-      				carePlan.care_manager = teamMembers.filter((obj) => {
+      				carePlan.care_manager = allTeamMembers.filter((obj) => {
       					return obj.is_manager;
       				})[0];
               // Get regular team members
-      				carePlan.team_members = teamMembers.filter((obj) => {
+      				carePlan.team_members = allTeamMembers.filter((obj) => {
       					return !obj.is_manager;
       				});
             });
-          });
+    			});
         });
         this.getProblemAreas(this.patient.id).then((problemAreas: any) => {
           this.problemAreas = problemAreas;

@@ -80,41 +80,39 @@ export class PatientHeaderComponent implements OnInit, OnDestroy {
     			this.getCarePlanOverview(params.patientId).then((overview: any) => {
     				this.patientPlansOverview = overview.results;
             this.selectedPlanOverview = this.getOverviewForPlanTemplate(this.selectedPlan.plan_template.id);
+            this.allTeamMembers = this.selectedPlanOverview.care_team;
+            // Get care manager
+            this.careManager = this.allTeamMembers.filter((obj) => {
+              return obj.is_manager;
+            })[0];
+            // Get regular team members
+            this.careTeamMembers = this.allTeamMembers.filter((obj) => {
+              return !obj.is_manager;
+            });
+            let employeeCTRoles = this.allTeamMembers.filter((obj) => {
+              return obj.employee_profile.id === this.employee.id;
+            });
+            this.isCareTeamMember = !!employeeCTRoles[0];
+            this.employeeCTRoles = employeeCTRoles;
+            // Set next checkin date and time
+            if (this.isCareTeamMember && this.employeeCTRoles) {
+              if (this.employeeCTRoles[0].next_checkin) {
+                if (this.isBefore3DaysAgo(moment(this.employeeCTRoles[0].next_checkin))) {
+                  return;
+                }
+                this.myCheckinDate = moment(this.employeeCTRoles[0].next_checkin);
+              }
+            }
+            // Get team member with closest check in date
+            let sortedCT = this.sortTeamMembersByCheckin(this.allTeamMembers);
+            if (sortedCT.length > 0) {
+              this.nextCheckinTeamMember = sortedCT[0];
+            }
     			});
     			this.getProblemAreas(params.patientId).then((problemAreas: any) => {
     				this.problemAreas = problemAreas;
     			});
         });
-  			this.getCareTeamMembers(params.planId).then((teamMembers: any) => {
-          this.allTeamMembers = teamMembers;
-          // Get care manager
-  				this.careManager = teamMembers.filter((obj) => {
-  					return obj.is_manager;
-  				})[0];
-          // Get regular team members
-  				this.careTeamMembers = teamMembers.filter((obj) => {
-  					return !obj.is_manager;
-  				});
-          let employeeCTRoles = teamMembers.filter((obj) => {
-  					return obj.employee_profile.id === this.employee.id;
-  				});
-          this.isCareTeamMember = !!employeeCTRoles[0];
-          this.employeeCTRoles = employeeCTRoles;
-          // Set next checkin date and time
-  				if (this.isCareTeamMember && this.employeeCTRoles) {
-            if (this.employeeCTRoles[0].next_checkin) {
-              if (this.isBefore3DaysAgo(moment(this.employeeCTRoles[0].next_checkin))) {
-                return;
-              }
-              this.myCheckinDate = moment(this.employeeCTRoles[0].next_checkin);
-            }
-  				}
-          // Get team member with closest check in date
-          let sortedCT = this.sortTeamMembersByCheckin(this.allTeamMembers);
-          if (sortedCT.length > 0) {
-            this.nextCheckinTeamMember = sortedCT[0];
-          }
-  			});
   		});
   	});
   }
@@ -164,19 +162,6 @@ export class PatientHeaderComponent implements OnInit, OnDestroy {
         () => {
           overviewSub.unsubscribe();
         }
-      );
-    });
-    return promise;
-  }
-
-  public getCareTeamMembers(planId) {
-    let promise = new Promise((resolve, reject) => {
-      let teamMembersSub = this.store.CarePlan.detailRoute('get', planId, 'care_team_members').subscribe(
-        (teamMembers) => resolve(teamMembers),
-        (err) => reject(err),
-        () => {
-          teamMembersSub.unsubscribe();
-        },
       );
     });
     return promise;

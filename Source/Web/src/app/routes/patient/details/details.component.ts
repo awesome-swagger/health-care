@@ -621,6 +621,7 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
        return;
      }
      this.store.BilledActivity.create({
+       activity_date: results.date.format('YYYY-MM-DD'),
        plan: this.carePlan.id,
        team_task: task.id,
        activity_type: 'care_plan_review',
