@@ -23,6 +23,7 @@ export class RecordResultsComponent implements OnInit, OnDestroy {
   public teamMembersLoaded = false;
   public teamMembers = [];
   public withSelected = [];
+  public patientIncluded = false;
   public syncToEHR = false;
   public notes = '';
   public patientEngagement = 0;
@@ -35,10 +36,8 @@ export class RecordResultsComponent implements OnInit, OnDestroy {
 
   public withOpen = false;
   public tasksOpen = false;
-  public tooltipRRM0Open;
-  public tooltipRRM1Open;
-  public tooltipRRM2Open;
-  public showDate;
+  public syncHelpOpen = false;
+  public showDate = false;
 
   constructor(
     private modal: ModalService,

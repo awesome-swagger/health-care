@@ -76,23 +76,32 @@
   </div>
   <div class="flex1">
     <label class="styledInput">
-      <div class="tool">
-        <div class="tool__anchor">
-          <div class="tool__tip tool__tip--right" [ngClass]="{ 'isOpen' : tooltipRRM1Open }">
+      <input type="checkbox" class="styledInput__input" [(ngModel)]="patientIncluded" />
+      <span class="styledInput__box"></span> Patient Was Included
+    </label>
+  </div>
+</div> <!--/.flex for task/action, time spent, and sync to EHR-->
+<div class="divider"></div>
+<div class="marBottom24">
+  <label class="styledInput">
+    <div class="tool">
+      <div class="tool__anchor">
+        <app-popover [visible]="syncHelpOpen" (visibleChange)="syncHelpOpen = $event;">
+          <div class="tool__tip tool__tip--left isOpen">
             <div class="tool__text">
               If this box is checked, this information will be added to the EHR system.
             </div>
           </div>
-        </div>
+        </app-popover>
       </div>
-      <input type="checkbox" class="styledInput__input" [(ngModel)]="syncToEHR" />
-      <span class="styledInput__box"></span> Sync to EHR
-        <button class="button button--icon button--icon--small" (click)="tooltipRRM1Open=!tooltipRRM1Open">
-          <i class="ss-help"></i>
-        </button>
-    </label>
-  </div>
-</div> <!--/.flex for task/action, time spent, and sync to EHR-->
+    </div>
+    <input type="checkbox" class="styledInput__input" [(ngModel)]="syncToEHR" />
+    <span class="styledInput__box"></span> Sync to EHR
+      <button class="button button--icon button--icon--small" (click)="syncHelpOpen=!syncHelpOpen">
+        <i class="ss-help"></i>
+      </button>
+  </label>
+</div>
 
 <!--TODO: Show the following div if the modal was triggered from the patient history page-->
 <div class="divider" *ngIf=""></div>
@@ -110,7 +119,7 @@
 <label>Notes (opt)</label>
 <textarea class="input input--textarea" rows="6" [(ngModel)]="notes"></textarea>
 
-<ng-container *ngIf="">
+<ng-container *ngIf="patientIncluded">
   <div class="divider"></div>
   <label>Patient Engagement</label>
   <div class="center">
