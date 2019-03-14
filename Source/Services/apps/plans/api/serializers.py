@@ -1015,6 +1015,10 @@ class BasicCareTeamMemberSerializer(RepresentationMixin,
                 'field': 'employee_profile',
                 'serializer_class': BasicEmployeeProfileSerializer,
             },
+            {
+                'field': 'role',
+                'serializer_class': ProviderRoleSerializer,
+            }
         ]
 
 

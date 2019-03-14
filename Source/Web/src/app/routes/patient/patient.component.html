@@ -77,6 +77,28 @@
         </div>
       </div>
       <div class="info__cell">
+        <label>Next&nbsp;Check-In</label>
+        <div class="flex alignCenter justifyCenter">
+          <a class="justifyCenter" *ngIf="!nextCheckinTeamMember">Not Scheduled</a>
+          <div class="tool__anchor" *ngIf="nextCheckinTeamMember">
+            <a class="flex alignCenter" (click)="nextCheckinVisible=!nextCheckinVisible">
+              <span>{{moment(nextCheckinTeamMember.next_checkin).fromNow()}}</span>
+            </a>
+            <app-popover [visible]="nextCheckinVisible" (visibleChange)="nextCheckinVisible = $event;">
+              <div class="tool__tip tool__tip--bottom isOpen">
+                <div class="tool__text">
+                  <span>{{nextCheckinTeamMember.employee_profile.user.first_name}} {{nextCheckinTeamMember.employee_profile.user.last_name}}<span *ngIf="nextCheckinTeamMember.employee_profile.title">, {{nextCheckinTeamMember.employee_profile.title.abbreviation}}</span></span><br/>
+                  <span *ngIf="nextCheckinTeamMember.role">{{nextCheckinTeamMember.role.name}}</span>
+                  <span *ngIf="nextCheckinTeamMember.is_manager">Care Manager</span>
+                  <br />
+                  <span>{{moment(nextCheckinTeamMember.next_checkin).format('MMMM D, YYYY')}}</span>
+                </div>
+              </div>
+            </app-popover>
+          </div>
+        </div>
+      </div>
+      <div class="info__cell">
         <label>Last&nbsp;Contact</label>
         <a [routerLink]="['/patient/asdf/history']" class="justifyCenter">{{plan.daysSinceContact || 0}} days ago</a>
       </div>

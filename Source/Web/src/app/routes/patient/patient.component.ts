@@ -32,11 +32,14 @@ import { st } from '@angular/core/src/render3';
 })
 export class PatientComponent implements OnDestroy, OnInit {
 
+  public moment = moment;
+
   public patient = null;
   public carePlans = [];
   public patientDiagnoses = [];
   public patientDiagnosesRaw = [];
   public patientMedications = [];
+  public nextCheckinTeamMember = null;
   public problemAreas = [];
   public patientProcedures = [];
   public teamListOpen = {};
@@ -44,6 +47,7 @@ export class PatientComponent implements OnDestroy, OnInit {
 
   public editName;
   public tooltipPSOpen;
+  public nextCheckinVisible = false;
 
   private routeSub = null;
 
@@ -80,6 +84,11 @@ export class PatientComponent implements OnDestroy, OnInit {
       				carePlan.team_members = allTeamMembers.filter((obj) => {
       					return !obj.is_manager;
       				});
+              // Get team member with closest check in date
+              let sortedCT = this.sortTeamMembersByCheckin(allTeamMembers);
+              if (sortedCT.length > 0) {
+                this.nextCheckinTeamMember = sortedCT[0];
+              }
             });
     			});
         });
@@ -216,6 +225,25 @@ export class PatientComponent implements OnDestroy, OnInit {
         this.patientMedications = res;
       }
     )
+  }
+
+  public isBefore3DaysAgo(dateAsMoment) {
+    let threeDaysAgo = moment().subtract(3, 'days').startOf('day');
+    if (dateAsMoment.isBefore(threeDaysAgo)) {
+      return true;
+    }
+    return false;
+  }
+
+  public sortTeamMembersByCheckin(teamMembers) {
+    // removes members without a checkin date set
+    return teamMembers.filter((obj) => {
+      return obj.next_checkin && !this.isBefore3DaysAgo(moment(obj.next_checkin));
+    }).sort((left: any, right: any) => {
+      left = moment(left.next_checkin).format();
+      right = moment(right.next_checkin).format();
+      return left - right;
+    });
   }
 
   public problemAreasFilteredByPlan(planId) {

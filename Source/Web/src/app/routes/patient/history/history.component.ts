@@ -4,7 +4,6 @@ import * as moment from 'moment';
 import { ModalService, ConfirmModalComponent } from '../../../modules/modals';
 import { RecordResultsComponent } from '../../../components';
 import { AuthService, NavbarService, StoreService } from '../../../services';
-import { HistoryMockData } from './historyData';
 
 @Component({
   selector: 'app-patient-history',
@@ -14,8 +13,6 @@ import { HistoryMockData } from './historyData';
 export class PatientHistoryComponent implements OnDestroy, OnInit {
 
   public moment = moment;
-
-  public mockData = new HistoryMockData();
 
   public user = null;
   public userRoles = [];
@@ -251,7 +248,7 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
         activity_date: results.date.format('YYYY-MM-DD'),
         activity_type: 'care_plan_review', // TODO: activity type
         members: [
-          this.user.id, // TODO: user selected in "with" field.
+          this.user.id,
         ].concat(results.with),
         sync_to_ehr: results.syncToEHR,
         notes: results.notes,
