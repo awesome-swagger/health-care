@@ -17,9 +17,7 @@ class UserMailer(BaseMailer):
 
     def _generate_uidb64_token(self, user):
         uidb64 = urlsafe_base64_encode(force_bytes(user.pk)).decode()
-        token = TokenModel()
-        token.user = user
-        token.save()
+        token, _ = TokenModel.objects.get_or_create(user=user)
         return (uidb64, token.key)
 
     def send_change_email_verification(self, user):

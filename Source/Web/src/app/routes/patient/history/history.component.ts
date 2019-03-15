@@ -4,7 +4,6 @@ import * as moment from 'moment';
 import { ModalService, ConfirmModalComponent } from '../../../modules/modals';
 import { RecordResultsComponent } from '../../../components';
 import { AuthService, NavbarService, StoreService } from '../../../services';
-import { HistoryMockData } from './historyData';
 
 @Component({
   selector: 'app-patient-history',
@@ -14,8 +13,6 @@ import { HistoryMockData } from './historyData';
 export class PatientHistoryComponent implements OnDestroy, OnInit {
 
   public moment = moment;
-
-  public mockData = new HistoryMockData();
 
   public user = null;
   public userRoles = [];
@@ -112,7 +109,6 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
     let promise = new Promise((resolve, reject) => {
       let billedActivitiesSub = this.store.BilledActivity.readListPaged({
         plan: this.carePlan.id,
-        activity_date: this.dateFilter.format('YYYY-MM-DD'),
       }).subscribe(
         (billedActivities) => {
           resolve(billedActivities);
@@ -207,16 +203,19 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
       // Create billed activity record
       let createSub = this.store.BilledActivity.create({
         plan: this.carePlan.id,
+        activity_date: results.date.format('YYYY-MM-DD'),
         activity_type: 'care_plan_review', // TODO: activity type
         members: [
           this.user.id,
         ].concat(results.with),
+        patient_included: results.patient_included,
         sync_to_ehr: results.syncToEHR,
         added_by: this.user.id,
         notes: results.notes,
         time_spent: results.totalMinutes,
       }).subscribe(
         (newResult) => {
+          // check if date is current date, if it is push it to the list, if not, switch to the new date
           this.billedActivities.push(newResult);
           this.selectedActivity = newResult;
         },
@@ -238,21 +237,21 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
         task: null,
         totalMinutes: result.time_spent,
         teamMembers: this.careTeamMembers,
-        with: null, // TODO: Autofill with field
+        with: result.members.map((member) => member.id),
         syncToEHR: result.sync_to_ehr,
         notes: result.notes,
         patientEngagement: null,
       },
       width: '512px',
     }).subscribe((results) => {
-      if (!results) {
-        return;
-      }
+      if (!results) return;
       let updateSub = this.store.BilledActivity.update(result.id, {
+        activity_date: results.date.format('YYYY-MM-DD'),
         activity_type: 'care_plan_review', // TODO: activity type
         members: [
-          this.user.id, // TODO: user selected in "with" field.
+          this.user.id,
         ].concat(results.with),
+        patient_included: results.patient_included,
         sync_to_ehr: results.syncToEHR,
         notes: results.notes,
         time_spent: results.totalMinutes,
@@ -281,11 +280,12 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
       },
       width: '384px',
     }).subscribe((modalResult) => {
+      if (!modalResult) return;
       if (modalResult.toLowerCase() === 'continue') {
         this.store.BilledActivity.destroy(result.id).subscribe(
           (success) => {
             let index = this.billedActivities.findIndex((obj) => obj.id === result.id);
-            this.billedActivities = this.billedActivities.splice(index, 1);
+            this.billedActivities.splice(index, 1);
           },
           (err) => {},
           () => {},

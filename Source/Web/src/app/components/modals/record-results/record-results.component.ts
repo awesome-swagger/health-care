@@ -13,7 +13,6 @@ export class RecordResultsComponent implements OnInit, OnDestroy {
   public data = null;
 
   public user = null;
-  public userRoles = [];
   public patient = null;
   public date = null;
   public carePlan = null;
@@ -24,7 +23,7 @@ export class RecordResultsComponent implements OnInit, OnDestroy {
   public teamMembersLoaded = false;
   public teamMembers = [];
   public withSelected = [];
-  public with = null;
+  public patientIncluded = false;
   public syncToEHR = false;
   public notes = '';
   public patientEngagement = 0;
@@ -35,10 +34,10 @@ export class RecordResultsComponent implements OnInit, OnDestroy {
 
   private authSub = null;
 
-  public tooltipRRM0Open;
-  public tooltipRRM1Open;
-  public tooltipRRM2Open;
-  public showDate;
+  public withOpen = false;
+  public tasksOpen = false;
+  public syncHelpOpen = false;
+  public showDate = false;
 
   constructor(
     private modal: ModalService,
@@ -57,25 +56,26 @@ export class RecordResultsComponent implements OnInit, OnDestroy {
       this.patient = this.data.patient;
       this.date = this.data.date ? this.data.date : moment();
       this.carePlan = this.data.carePlan;
-      this.task = this.data.task;
       this.totalMinutes = this.data.totalMinutes;
-      this.with = this.data.with;
       this.syncToEHR = this.data.syncToEHR;
       this.notes = this.data.notes;
       this.patientEngagement = this.data.patientEngagement;
       // Get care team
       this.getCareTeamMembers(this.carePlan.id).then((teamMembers: any) => {
         this.teamMembersLoaded = true;
-      	this.userRoles = teamMembers.filter((obj) => {
-      		return obj.employee_profile.user.id === this.user.user.id;
-      	});
       	this.teamMembers = teamMembers.filter((obj) => {
       		return obj.employee_profile.user.id !== this.user.user.id;
       	});
-      	this.getUserTaskTemplates(this.carePlan, this.userRoles).then((userTaskTemplates: any) => {
-          this.tasksLoaded = true;
-      		this.tasks = userTaskTemplates;
-      	});
+        if (this.data.with) {
+          this.withSelected = this.teamMembers.filter((obj) => {
+            return this.data.with.includes(obj.employee_profile.id);
+          });
+        }
+      });
+      // Get Task Templates
+      this.getTaskTemplates().then((taskTemplates: any) => {
+        this.tasksLoaded = true;
+        this.tasks = taskTemplates;
       });
     });
   }
@@ -99,38 +99,11 @@ export class RecordResultsComponent implements OnInit, OnDestroy {
     return promise;
   }
 
-  public getUserTaskTemplates(plan, userRoles) {
+  public getTaskTemplates() {
     let promise = new Promise((resolve, reject) => {
       // Get team task templates for this care plan template type
-      let teamTasksSub = this.store.TeamTaskTemplate.readListPaged({
-        plan_template__id: plan.plan_template.id
-      }).subscribe(
-        (teamTasks) => {
-          let userTaskTemplates = [];
-          // If user is not on this care plan, the only way they should be viewing this modal is if
-          // they are an organization or facility manager, so they should have access to all tasks
-          if (this.userRoles.length < 1) {
-            userTaskTemplates = teamTasks;
-            resolve(userTaskTemplates);
-          } else {
-            // If user has a manager role on the care plan, get task templates that are marked is_manager
-            let hasManagerRole = userRoles.filter((obj) => obj.is_manager);
-            if (hasManagerRole.length > 0) {
-              let managerTasks = teamTasks.filter((obj) => obj.is_manager_task);
-              userTaskTemplates = userTaskTemplates.concat(managerTasks);
-            }
-            // If user has roles on this care plan, get task templates that are marked for their roles
-            userRoles.forEach((teamMemberObj, index, array) => {
-              if (teamMemberObj.role) {
-                let roleTasks = teamTasks.filter((obj) => obj.role && obj.role.id === teamMemberObj.role.id);
-                userTaskTemplates = userTaskTemplates.concat(roleTasks);
-              }
-              if ((index + 1) === array.length) {
-                resolve(userTaskTemplates);
-              }
-            });
-          }
-        },
+      let teamTasksSub = this.store.TeamTaskTemplate.readListPaged().subscribe(
+        (teamTasks) => resolve(teamTasks),
         (err) => reject(err),
         () => {
           teamTasksSub.unsubscribe();
@@ -161,6 +134,18 @@ export class RecordResultsComponent implements OnInit, OnDestroy {
     }
   }
 
+  public formatSelectedMembers() {
+    if (!this.withSelected || this.withSelected.length < 1) {
+      return '';
+    }
+    let username = `${this.withSelected[0].employee_profile.user.first_name} ${this.withSelected[0].employee_profile.user.last_name}`;
+    if (this.withSelected.length > 1) {
+      return `${username}, +${this.withSelected.length - 1}`
+    } else {
+      return username;
+    }
+  }
+
   public clickClose() {
     this.modal.close(null);
   }
@@ -173,9 +158,10 @@ export class RecordResultsComponent implements OnInit, OnDestroy {
     this.modal.close({
       date: this.date,
       carePlan: this.carePlan,
-      task: this.task,
+      task: this.task.id,
       totalMinutes: this.totalMinutes,
       with: this.withSelected.map((obj) => obj.employee_profile.id),
+      patient_included: this.patientIncluded,
       notes: this.notes,
       syncToEHR: this.syncToEHR,
       patientEngagement: this.patientEngagement,

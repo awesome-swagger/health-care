@@ -194,7 +194,7 @@
             <tr *ngFor="let task of teamMemberTemplates">
               <td class="taskName left">{{task.name | titlecase}} </td>
               <td class="left">
-                <span *ngIf="task.role">{{task.role.name}}</span>
+                <span *ngIf="task.role && task.role.id">{{task.role.name}}</span>
                 <span *ngIf="!task.role">Not Set</span>
               </td>
               <td>{{task.start_on_day}}</td>

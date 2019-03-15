@@ -621,12 +621,14 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
        return;
      }
      this.store.BilledActivity.create({
+       activity_date: results.date.format('YYYY-MM-DD'),
        plan: this.carePlan.id,
        team_task: task.id,
        activity_type: 'care_plan_review',
        members: [
          this.user.id,
        ].concat(results.with),
+       patient_included: results.patient_included,
        sync_to_ehr: results.syncToEHR,
        added_by: this.user.id,
        notes: results.notes,

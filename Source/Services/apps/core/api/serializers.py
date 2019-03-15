@@ -16,7 +16,7 @@ from apps.core.models import (Diagnosis, EmployeeProfile, Facility,
                               InvitedEmailTemplate, Medication, Organization,
                               Procedure, ProviderRole, ProviderSpecialty,
                               ProviderTitle, Symptom, Notification,
-                              BillingCoordinator)
+                              BillingCoordinator, EmployeeRole)
 
 from apps.patients.models import PatientProfile, PotentialPatient
 from apps.plans.models import CarePlan
@@ -736,6 +736,12 @@ class ProviderSpecialtySerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class EmployeeRoleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EmployeeRole
+        fields = '__all__'
+
+
 class EmployeeUserInfo(SettingsUserForSerializers, serializers.ModelSerializer):
     image_url = serializers.SerializerMethodField()
 
@@ -759,8 +765,11 @@ class BasicEmployeeProfileSerializer(RepresentationMixin,
         model = EmployeeProfile
         fields = (
             'id',
-            'user',
+            'qualified_practitioner',
             'status',
+            'specialty',
+            'title',
+            'user',
         )
         read_only_fields = (
             'id',
@@ -769,6 +778,14 @@ class BasicEmployeeProfileSerializer(RepresentationMixin,
             {
                 'field': 'user',
                 'serializer_class': EmployeeUserInfo,
+            },
+            {
+                'field': 'specialty',
+                'serializer_class': ProviderSpecialtySerializer,
+            },
+            {
+                'field': 'title',
+                'serializer_class': ProviderTitleSerializer,
             },
         ]
 

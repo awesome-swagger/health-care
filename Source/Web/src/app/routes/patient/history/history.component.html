@@ -45,8 +45,7 @@
              </div>
            </div>
          </div> <!--/.flex (for filters)-->
-         <button class="button button--iconText"
-         (click)="openRecordResults()">
+         <button class="button button--iconText" (click)="openRecordResults()">
            <i class="ss-plus"></i> Record Result
          </button>
        </div> <!--/.flexHeader-->
@@ -92,13 +91,11 @@
           <div class="chat__innerContents">
             <div class="historyItem">
               <div class="historyItem__buttons">
-                <button class="button button--icon button--icon--small"
-                (click)="editResults(selectedActivity)">
+                <button class="button button--icon button--icon--small" (click)="editResults(selectedActivity)">
                   <i class="ss-write"></i>
                 </button>
                 <!--TODO: Hide the delete button if the item is a care plan task-->
-                <button class="button button--icon button--icon--small"
-                (click)="confirmDelete(selectedActivity)">
+                <button class="button button--icon button--icon--small" (click)="confirmDelete(selectedActivity)">
                   <i class="ss-delete"></i>
                 </button>
               </div>
@@ -112,12 +109,10 @@
               <h5>Added by {{selectedActivity.added_by.user.first_name}} {{selectedActivity.added_by.user.last_name}}&emsp;{{moment(selectedActivity.activity_date).format('MMM DD, YYYY')}}&ensp;|&ensp;{{moment(selectedActivity.activity_date).format('h:mm A')}}</h5>
               <!-- <h5 class="noMargin" *ngIf="selectedActivity.lastEditedBy">Last edited by {{getEmployee(selectedActivity.lastEditedBy).first_name}} {{getEmployee(selectedActivity.lastEditedBy).last_name}}, {{getEmployee(selectedActivity.lastEditedBy).title}}&emsp;{{selectedActivity.lastEdited.format('MMM DD, YYYY')}}&ensp;|&ensp;{{selectedActivity.lastEdited.format('h:mm A')}}</h5> -->
               <div class="divider divider--smallTop"></div>
-
               <label>Total Time</label>
               <div class="pill marBottom32">
                 {{selectedActivity.readable_time_spent}}
               </div>
-
               <!--TODO: Hide the participants section if not a care plan task-->
               <div class="marBottom32">
                 <label>Participants</label>
@@ -130,9 +125,9 @@
                   </li>
                 </ul>
               </div> <!--/with section-->
-
               <label>Notes</label>
-              <p class="marBottom32">
+              <p class="marBottom32 noNotes">No notes</p>
+              <p class="marBottom32" *ngIf="selectedActivity.notes">
                 {{selectedActivity.notes}}
               </p>
               <label class="noMargin">Syncing</label>

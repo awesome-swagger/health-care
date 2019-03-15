@@ -9,13 +9,14 @@
   <label>Billing Type</label>
   <div class="styledSelect">
     <select class="styledSelect__select" [(ngModel)]="selectedPlanType">
-      <option *ngFor="let billingType of billingTypes" [ngValue]="billingType.abr">{{billingType.name}} ({{billingType.abr}})</option>
+      <option [ngValue]="null">Select Billing Type</option>
+      <option *ngFor="let billingType of billingTypes" [ngValue]="billingType">{{billingType.name}} ({{billingType.acronym}})</option>
     </select>
   </div>
 </div>
-<label class="marBottom24">Reimbursement CPT Codes and Details</label>
-<div>
-  <ng-container *ngFor="let cpt of billingTypeByAbr(selectedPlanType).cpt">
+<div *ngIf="selectedPlanType">
+  <label class="marBottom24">Reimbursement CPT Codes and Details</label>
+  <ng-container *ngFor="let cpt of billingTypeByAbr(selectedPlanType.acronym).cpt">
     <h4>{{cpt.code}}</h4>
     <p class="marBottom32">
       {{cpt.text}}
@@ -26,7 +27,7 @@
   <button class="button button--2nd" (click)="clickCancel()">
     Cancel
   </button>
-  <button class="button" (click)="clickSave()">
+  <button class="button" [disabled]="saveDisabled()" (click)="clickSave()">
     Save
   </button>
 </div>

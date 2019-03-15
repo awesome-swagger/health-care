@@ -144,12 +144,14 @@
         </button>
       </div>
     </label>
-    <div class="pill" *ngIf="!patient?.payer_reimbursement">
-      {{selectedPlanOverview?.time_spent_this_month}}
-    </div>
-    <div class="pill" [ngClass]="utils.timePillColor(totalMinutes(selectedPlanOverview?.time_spent_this_month), 30)" *ngIf="patient?.payer_reimbursement">
-      {{selectedPlanOverview?.time_spent_this_month}}
-    </div>
+    <ng-container *ngIf="patient && selectedPlan && selectedPlanOverview">
+      <div class="pill" *ngIf="!patient.payer_reimbursement">
+        {{selectedPlanOverview.time_spent_this_month}}
+      </div>
+      <div class="pill" *ngIf="patient.payer_reimbursement" [ngClass]="utils.timePillColor(totalMinutes(selectedPlanOverview.time_spent_this_month), selectedPlan.billing_type.billable_minutes)">
+        {{selectedPlanOverview.time_spent_this_month}}
+      </div>
+    </ng-container>
   </div> <!--/.info__cell (for time)-->
   <div class="info__cell">
     <label>Risk Level</label>

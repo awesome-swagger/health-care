@@ -45,6 +45,9 @@ class BilledActivity(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
         blank=True,
         related_name='activities',
         )
+    patient_included = models.BooleanField(
+        default=False,
+        help_text=_('Determines if the activity included the patient.'))
     sync_to_ehr = models.BooleanField(
         default=False
         )
@@ -66,7 +69,7 @@ class BilledActivity(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
         help_text=_('Determines if the instance has been billed externally.'))
 
     class Meta:
-        ordering = ('-created', )
+        ordering = ('-activity_date', )
         verbose_name = _('Billed Activity')
         verbose_name_plural = _('Billed Activities')
 

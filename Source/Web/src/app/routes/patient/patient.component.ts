@@ -32,11 +32,14 @@ import { st } from '@angular/core/src/render3';
 })
 export class PatientComponent implements OnDestroy, OnInit {
 
+  public moment = moment;
+
   public patient = null;
   public carePlans = [];
   public patientDiagnoses = [];
   public patientDiagnosesRaw = [];
   public patientMedications = [];
+  public nextCheckinTeamMember = null;
   public problemAreas = [];
   public patientProcedures = [];
   public teamListOpen = {};
@@ -44,6 +47,7 @@ export class PatientComponent implements OnDestroy, OnInit {
 
   public editName;
   public tooltipPSOpen;
+  public nextCheckinVisible = false;
 
   private routeSub = null;
 
@@ -71,20 +75,22 @@ export class PatientComponent implements OnDestroy, OnInit {
             let overviewStats = overview.results;
             this.carePlans.forEach((carePlan) => {
               carePlan.overview = overviewStats.find((overviewObj) => overviewObj.plan_template.id === carePlan.plan_template.id);
-            });
-    			});
-          this.carePlans.forEach((carePlan) => {
-            this.getCareTeam(carePlan).then((teamMembers: any) => {
+              let allTeamMembers = carePlan.overview.care_team;
               // Get care manager
-      				carePlan.care_manager = teamMembers.filter((obj) => {
+      				carePlan.care_manager = allTeamMembers.filter((obj) => {
       					return obj.is_manager;
       				})[0];
               // Get regular team members
-      				carePlan.team_members = teamMembers.filter((obj) => {
+      				carePlan.team_members = allTeamMembers.filter((obj) => {
       					return !obj.is_manager;
       				});
+              // Get team member with closest check in date
+              let sortedCT = this.sortTeamMembersByCheckin(allTeamMembers);
+              if (sortedCT.length > 0) {
+                this.nextCheckinTeamMember = sortedCT[0];
+              }
             });
-          });
+    			});
         });
         this.getProblemAreas(this.patient.id).then((problemAreas: any) => {
           this.problemAreas = problemAreas;
@@ -221,6 +227,25 @@ export class PatientComponent implements OnDestroy, OnInit {
     )
   }
 
+  public isBefore3DaysAgo(dateAsMoment) {
+    let threeDaysAgo = moment().subtract(3, 'days').startOf('day');
+    if (dateAsMoment.isBefore(threeDaysAgo)) {
+      return true;
+    }
+    return false;
+  }
+
+  public sortTeamMembersByCheckin(teamMembers) {
+    // removes members without a checkin date set
+    return teamMembers.filter((obj) => {
+      return obj.next_checkin && !this.isBefore3DaysAgo(moment(obj.next_checkin));
+    }).sort((left: any, right: any) => {
+      left = moment(left.next_checkin).format();
+      right = moment(right.next_checkin).format();
+      return left - right;
+    });
+  }
+
   public problemAreasFilteredByPlan(planId) {
     if (!this.problemAreas) {
       return [];
@@ -229,16 +254,18 @@ export class PatientComponent implements OnDestroy, OnInit {
   }
 
   public openFinancialDetails(plan) {
+    let planIndex = this.carePlans.findIndex((planObj) => planObj.id === plan.id);
     this.modals.open(FinancialDetailsComponent, {
       closeDisabled: false,
       data: {
         patient: this.patient,
         plan: plan,
       },
-      width: '384px',
+      width: '532px',
     }).subscribe((data) => {
       if (!data) return;
       this.patient.payer_reimbursement = data.patient.payer_reimbursement;
+      this.carePlans[planIndex].billing_type = data.plan.billing_type;
     });
   }
 

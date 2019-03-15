@@ -68,10 +68,8 @@ export class EditTaskComponent implements OnInit {
   ];
   public appearTimeHelpOpen = false;
   public dueTimeHelpOpen = false;
-  public tooltipETM0Open;
-  public tooltipETM1Open;
-  public tooltipETM2Open;
-  public tooltipETM3Open;
+  public categoryHelpOpen = false;
+  public roleHelpOpen = false;
 
   constructor(
     private modal: ModalService,
@@ -79,14 +77,10 @@ export class EditTaskComponent implements OnInit {
   ) { }
 
   public ngOnInit() {
-    this.data = this.data || {};
-    this.totalPatients = this.data.totalPatients ? this.data.totalPatients : 0;
-    this.task = this.data && this.data.task ? this.data.task : {};
-    this.initForm(this.task);
-    if (this.getTaskType().type === 'team') {
-      this.fetchRoles().then((roles: any) => {
-        this.rolesChoices = roles;
-      });
+    if (this.data) {
+      this.totalPatients = this.data.totalPatients ? this.data.totalPatients : 0;
+      this.task = this.data && this.data.task ? this.data.task : {};
+      this.initForm(this.task);
     }
   }
 
@@ -110,7 +104,7 @@ export class EditTaskComponent implements OnInit {
     });
     let updateSub = this.getTaskType().dataModel.update(this.task.id, {
       name: this.task.name,
-    }).subscribe(
+    }, true).subscribe(
       (task) => {
         this.editName = false;
       },
@@ -139,6 +133,9 @@ export class EditTaskComponent implements OnInit {
     if (this.getTaskType().type === 'team') {
       let roleValue = task.role ? task.role.id : null;
       this.taskForm.addControl('role', new FormControl(roleValue));
+      this.fetchRoles().then((roles: any) => {
+        this.rolesChoices = roles;
+      });
     }
   }
 
@@ -181,10 +178,11 @@ export class EditTaskComponent implements OnInit {
   }
 
   public updateTask() {
-    let postData = this.task;
+    let postData = Object.assign({}, this.task);
     if (this.getTaskType().type === 'medication') {
       postData = _omit(postData, 'patient_medication');
     }
+    postData = _omit(postData, 'id');
     let updateSub = this.getTaskType().dataModel.update(this.task.id, postData, true).subscribe(
       (task) => {
         this.modal.close(task);

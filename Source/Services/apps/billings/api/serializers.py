@@ -65,6 +65,7 @@ class BilledActivitySerializer(RepresentationMixin,
             'activity_type',
             'team_task',
             'members',
+            'patient_included',
             'sync_to_ehr',
             'added_by',
             'activity_date',
@@ -99,9 +100,3 @@ class BilledActivitySerializer(RepresentationMixin,
                 'serializer_class': ActivityTeamTaskSerializer
             },
         ]
-
-    def validate_plan(self, value):
-        if not value.patient.payer_reimbursement:
-            raise serializers.ValidationError(
-                _('Patient for this plan is not billable.'))
-        return value

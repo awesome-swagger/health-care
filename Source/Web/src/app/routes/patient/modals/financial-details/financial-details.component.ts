@@ -14,10 +14,37 @@ export class FinancialDetailsComponent implements OnInit {
   public patient = null;
   public plan = null;
   public trackingReimbursement = false;
-  public selectedPlanType = 'BHI';
-  public billingTypes = [
+  public billingTypes = null;
+  public selectedPlanType = null;
+  public billingTypeExtras = [
     {
-      name: 'Psychiatric Collaborative Care Management',
+      abr: 'BHI',
+      cpt: [
+        {
+          code: 99484,
+          text: 'At least 20 minutes per month of behavioral health care by the care provider',
+        },
+      ],
+    },
+    {
+      abr: 'CCM',
+      cpt: [
+        {
+          code: 99490,
+          text: '20 minutes of clinical staff time per month directed by the physician or qualified staff',
+        }
+      ],
+    },
+    {
+      abr: 'CCCM',
+      cpt: [
+        {
+          code: 99487,
+          text: '60 minutes of clinical staff time per month directed by physician or qualified staff',
+        }
+      ]
+    },
+    {
       abr: 'CoCM',
       cpt: [
         {
@@ -35,7 +62,6 @@ export class FinancialDetailsComponent implements OnInit {
       ],
     },
     {
-      name: 'Remote Patient Management',
       abr: 'RPM',
       cpt: [
         {
@@ -45,37 +71,6 @@ export class FinancialDetailsComponent implements OnInit {
       ],
     },
     {
-      name: 'Behavioral Health Integration',
-      abr: 'BHI',
-      cpt: [
-        {
-          code: 99484,
-          text: 'At least 20 minutes per month of behavioral health care by the care provider',
-        },
-      ],
-    },
-    {
-      name: 'Chronic Care Management',
-      abr: 'CCM',
-      cpt: [
-        {
-          code: 99490,
-          text: '20 minutes of clinical staff time per month directed by the physician or qualified staff',
-        }
-      ],
-    },
-    {
-      name: 'Complex Chronic Care Management',
-      abr: 'CCCM',
-      cpt: [
-        {
-          code: 99487,
-          text: '60 minutes of clinical staff time per month directed by physician or qualified staff',
-        }
-      ]
-    },
-    {
-      name: 'Transitional Care Management',
       abr: 'TCM',
       cpt: [
         {
@@ -107,10 +102,15 @@ export class FinancialDetailsComponent implements OnInit {
     }
     if (this.data.plan) {
       this.plan = this.data.plan;
+      this.getBillingTypes().then((billingTypes) => {
+        this.billingTypes = billingTypes;
+        if (this.plan.billing_type) {
+          this.selectedPlanType = this.billingTypes.find((obj) => obj.id === this.plan.billing_type.id);
+        }
+      });
     } else {
       console.log('"plan" should be passed in the data field');
     }
-    this.billingTypes = this.billingTypes.sort((a: any, b: any) => ('' + a.name).localeCompare(b.name));
   }
 
   public getBillingTypes() {
@@ -127,7 +127,9 @@ export class FinancialDetailsComponent implements OnInit {
   }
 
   public billingTypeByAbr(abr) {
-    return _find(this.billingTypes, t => t.abr === abr);
+    return _find(this.billingTypeExtras, t => {
+      return t.abr.toLowerCase() === abr.toLowerCase();
+    });
   }
 
   public updateReimbursement(value) {
@@ -164,14 +166,29 @@ export class FinancialDetailsComponent implements OnInit {
     this.modals.close(null);
   }
 
+  public saveDisabled() {
+    if (this.trackingReimbursement) {
+      return !this.selectedPlanType;
+    }
+  }
+
   public clickSave() {
     this.updateReimbursement(this.trackingReimbursement).then((updatedPatient) => {
-      this.updateBillingType('ac81727d-57ea-40e3-8e30-d0cf61fad246').then((updatedPlan) => {
-        this.modals.close({
-          patient: updatedPatient,
-          plan: updatedPlan,
+      if (this.selectedPlanType) {
+        this.updateBillingType(this.selectedPlanType.id).then((updatedPlan) => {
+          this.modals.close({
+            patient: updatedPatient,
+            plan: updatedPlan,
+          });
         });
-      });
+      } else {
+        this.updateBillingType(null).then((updatedPlan) => {
+          this.modals.close({
+            patient: updatedPatient,
+            plan: updatedPlan,
+          });
+        });
+      }
     });
   }
 }

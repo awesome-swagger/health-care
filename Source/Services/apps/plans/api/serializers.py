@@ -997,6 +997,30 @@ class CarePlanByTemplateFacilitySerializer(CarePlanOverviewSerializer):
         return str(datetime.timedelta(minutes=total))[:-3]
 
 
+class BasicCareTeamMemberSerializer(RepresentationMixin,
+                                    serializers.ModelSerializer):
+
+    class Meta:
+        model = CareTeamMember
+        fields = (
+            'id',
+            'employee_profile',
+            'role',
+            'plan',
+            'next_checkin',
+            'is_manager',
+        )
+        nested_serializers = [
+            {
+                'field': 'employee_profile',
+                'serializer_class': BasicEmployeeProfileSerializer,
+            },
+            {
+                'field': 'role',
+                'serializer_class': ProviderRoleSerializer,
+            }
+        ]
+
 
 class PatientCarePlanOverviewSerializer(CarePlanOverviewSerializer):
     """
@@ -1028,10 +1052,8 @@ class PatientCarePlanOverviewSerializer(CarePlanOverviewSerializer):
         )
 
     def get_care_team(self, obj):
-        queryset = obj.care_team_members.values_list(
-            'employee_profile', flat=True).distinct()
-        employees = EmployeeProfile.objects.filter(id__in=queryset)
-        serializer = BasicEmployeeProfileSerializer(employees, many=True)
+        queryset = obj.care_team_members.distinct()
+        serializer = BasicCareTeamMemberSerializer(queryset, many=True)
         return serializer.data
 
     def get_next_check_in(self, obj):

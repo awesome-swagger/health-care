@@ -14,8 +14,11 @@
         </div>
       </div>
       <h3>{{problemArea.name}}</h3>
-      <p>
+      <p *ngIf="problemArea.description">
         {{problemArea.description}}
+      </p>
+      <p *ngIf="!problemArea.description" class="noDesc">
+        No description
       </p>
     </div> <!--/ default problem area-->
     <div *ngIf="editIndex === i" class="problem__edit">

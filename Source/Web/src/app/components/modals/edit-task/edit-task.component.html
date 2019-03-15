@@ -144,10 +144,10 @@
 		<div class="tool">
 			<label class="noMargin">Category</label>
 			<div class="tool__anchor">
-				<button class="button button--icon button--icon--small" (click)="tooltipETM2Open=!tooltipETM2Open">
+				<button class="button button--icon button--icon--small" (click)="categoryHelpOpen=!categoryHelpOpen">
 					<i class="ss-help"></i>
 				</button>
-				<div class="tool__tip tool__tip--left" [ngClass]="{ 'isOpen' : tooltipETM2Open }">
+				<div class="tool__tip tool__tip--left" [ngClass]="{ 'isOpen' : categoryHelpOpen }">
 					<div class="tool__text">
 						By assigning the care team task a category, history and notes can be better organized.
 					</div>
@@ -165,10 +165,10 @@
 			<div class="tool">
 				<label class="noMargin">Role</label>
 				<div class="tool__anchor">
-					<button class="button button--icon button--icon--small" (click)="tooltipETM3Open=!tooltipETM3Open">
+					<button class="button button--icon button--icon--small" (click)="roleHelpOpen=!roleHelpOpen">
 						<i class="ss-help"></i>
 					</button>
-					<div class="tool__tip tool__tip--left" [ngClass]="{ 'isOpen' : tooltipETM3Open }">
+					<div class="tool__tip tool__tip--left" [ngClass]="{ 'isOpen' : roleHelpOpen }">
 						<div class="tool__text">
 							Roles are meant to identify the specific person on the care team who will be responsible for the task.
 						</div>
