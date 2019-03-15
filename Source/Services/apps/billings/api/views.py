@@ -185,18 +185,18 @@ class OrganizationBilledActivity(ParentViewSetPermissionMixin,
             employee = user.employee_profile
             if employee.organizations_managed.count() > 0:
                 organizations_managed = employee.organizations_managed.values_list('id', flat=True)
-                qs = qs.filter(
+                queryset = queryset.filter(
                     plan__patient__facility__organization__id__in=organizations_managed)
             elif employee.facilities_managed.count() > 0:
                 facilities_managed = employee.facilities_managed.values_list('id', flat=True)
                 assigned_roles = employee.assigned_roles.values_list('id', flat=True)
-                qs = qs.filter(
+                queryset = queryset.filter(
                     Q(plan__patient__facility__id__in=facilities_managed) |
                     Q(plan__care_team_members__id__in=assigned_roles)
                 )
             else:
                 assigned_roles = employee.assigned_roles.values_list('id', flat=True)
-                qs = qs.filter(plan__care_team_members__id__in=assigned_roles)
+                queryset = queryset.filter(plan__care_team_members__id__in=assigned_roles)
 
         elif user.is_patient:
             queryset = queryset.filter(
