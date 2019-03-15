@@ -66,6 +66,13 @@ export class PotentialPatientsComponent implements OnDestroy, OnInit {
           this.facilitySortDirection[f.id] = true;
         })
 
+        this.auth.user$.subscribe(user => {
+          if (!user) return;
+          if (user.facilities.length === 1) {
+            this.accordOpen[user.facilities[0].id] = true;
+          } 
+        })
+
         let potentialPatientsSub = this.store.PotentialPatient.readListPaged().subscribe(
           (potentialPatients) => {
             console.log(potentialPatients);

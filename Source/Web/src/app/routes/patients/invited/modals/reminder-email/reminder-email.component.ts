@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ModalService } from '../../../../../modules/modals';
+import { AuthService } from '../../../../../services';
 
 @Component({
   selector: 'app-reminder-email',
@@ -16,6 +17,7 @@ export class ReminderEmailComponent implements OnInit {
 
   constructor(
     private modal: ModalService,
+    private auth: AuthService,
   ) {
 
   }
@@ -24,6 +26,17 @@ export class ReminderEmailComponent implements OnInit {
     console.log(this.data);
     if (this.data) {
       this.patient = this.data.patient;
+      this.auth.user$.subscribe(user => {
+        if (!user) return;
+        this.messageInput = `Hi ${this.patient.full_name}
+        
+This is a reminder about your custom care plan from ${this.data.facility.name} click the link below to create your account.
+        
+www.careadopt.com/app_download
+        
+Thanks,
+${user.user.first_name} ${user.user.last_name}`
+      })
     }
   }
 
