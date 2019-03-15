@@ -208,6 +208,7 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
         members: [
           this.user.id,
         ].concat(results.with),
+        patient_included: results.patient_included,
         sync_to_ehr: results.syncToEHR,
         added_by: this.user.id,
         notes: results.notes,
@@ -250,6 +251,7 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
         members: [
           this.user.id,
         ].concat(results.with),
+        patient_included: results.patient_included,
         sync_to_ehr: results.syncToEHR,
         notes: results.notes,
         time_spent: results.totalMinutes,

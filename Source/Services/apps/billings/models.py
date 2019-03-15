@@ -45,6 +45,9 @@ class BilledActivity(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
         blank=True,
         related_name='activities',
         )
+    patient_included = models.BooleanField(
+        default=False,
+        help_text=_('Determines if the activity included the patient.'))
     sync_to_ehr = models.BooleanField(
         default=False
         )

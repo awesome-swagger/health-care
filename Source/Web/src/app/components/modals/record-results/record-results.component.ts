@@ -161,6 +161,7 @@ export class RecordResultsComponent implements OnInit, OnDestroy {
       task: this.task.id,
       totalMinutes: this.totalMinutes,
       with: this.withSelected.map((obj) => obj.employee_profile.id),
+      patient_included: this.patientIncluded,
       notes: this.notes,
       syncToEHR: this.syncToEHR,
       patientEngagement: this.patientEngagement,
