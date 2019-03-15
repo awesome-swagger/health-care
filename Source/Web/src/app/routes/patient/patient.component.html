@@ -69,12 +69,21 @@
       </div> <!--/.info__cell (for care team)-->
       <div class="info__cell">
         <label>Progress</label>
-        <div class="progress marCenter">
+        <div class="progress marCenter" *ngIf="plan.plan_template?.duration_weeks >= 0">
+          Week {{progressInWeeks(plan)}} of {{plan.plan_template?.duration_weeks}}
+          <div class="progress__bg">
+            <div class="progress__bar" [ngStyle]="{width: (progressInWeeks(plan) / plan.plan_template.duration_weeks) * 100 + '%'}"></div>
+          </div>
+        </div>
+        <div class="progress marCenter" *ngIf="plan.plan_template?.duration_weeks < 0">
+          Ongoing
+        </div>
+        <!-- <div class="progress marCenter">
           Week {{plan.week || 0}} of {{plan?.plan_template?.duration_weeks}}
           <div class="progress__bg">
             <div class="progress__bar" [ngStyle]="{width: ((plan?.current_week || 0) / (plan?.plan_template?.duration_weeks)) * 100 + '%'}"></div>
           </div>
-        </div>
+        </div> -->
       </div>
       <div class="info__cell">
         <label>Next&nbsp;Check-In</label>
