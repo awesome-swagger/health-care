@@ -120,10 +120,12 @@ def careteammember_post_save(sender, instance, created, **kwargs):
     :model:`plans.CareTeamMember`
     """
     if created:
-        EmployeeRole.objects.get_or_create(employee=instance.employee_profile,
-                                           role=instance.role,
-                                           facility=instance.plan.patient.facility)
+        if instance.role:
+            EmployeeRole.objects.get_or_create(employee=instance.employee_profile,
+                                               role=instance.role,
+                                               facility=instance.plan.patient.facility)
     else:
-        EmployeeRole.objects.update_or_create(employee=instance.employee_profile,
-                                              facility=instance.plan.patient.facility,
-                                              defaults={ 'role': instance.role })
+        if instance.role:
+            EmployeeRole.objects.update_or_create(employee=instance.employee_profile,
+                                                  facility=instance.plan.patient.facility,
+                                                  defaults={ 'role': instance.role })
