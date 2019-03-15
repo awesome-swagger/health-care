@@ -23,6 +23,9 @@ export class PatientTeamComponent implements OnDestroy, OnInit {
   public phoneTooltipOpen = {};
   public emailTooltipOpen = {};
 
+  public bpLoaded = false;
+  public careTeamLoaded = false;
+
   private routeSub = null;
 
   constructor(
@@ -44,6 +47,7 @@ export class PatientTeamComponent implements OnDestroy, OnInit {
         this.getCarePlan(params.planId).then((carePlan: any) => {
           this.carePlan = carePlan;
           this.billingPractitioner = this.carePlan.billing_practitioner;
+          this.bpLoaded = true;
           // Get the available roles for this care plan
           this.getAvailableRoles(params.planId).then((availableRoles: any) => {
             this.availableRoles = availableRoles;
@@ -59,6 +63,7 @@ export class PatientTeamComponent implements OnDestroy, OnInit {
             this.careManager = teamMembers.filter((obj) => {
               return obj.is_manager;
             })[0];
+            this.careTeamLoaded = true;
           });
         });
       });
