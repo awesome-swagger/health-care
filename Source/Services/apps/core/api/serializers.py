@@ -1229,18 +1229,17 @@ class BilledActivityDetailSerializer(RepresentationMixin,
         model = BilledActivity
         fields = (
             'id',
-            'get_activity_type_display',
-            'team_task',
+            'team_task_template',
             'members',
             'added_by',
             'is_billed',
-            'activity_date',
+            'activity_datetime',
             'time_spent',
         )
         nested_serializers = [
             {
-                'field': 'team_task',
-                'serializer_class': ActivityTeamTaskSerializer
+                'field': 'team_task_template',
+                'serializer_class': ActivityTeamTaskTemplateSerializer
             },
             {
                 'field': 'added_by',

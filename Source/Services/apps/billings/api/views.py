@@ -103,7 +103,6 @@ class BilledActivityViewSet(viewsets.ModelViewSet):
         )
         serializer.is_valid(raise_exception=True)
         pre_activity = BilledActivity.objects.filter(plan_id=serializer.validated_data.get('plan'),
-                                                     activity_type=serializer.validated_data.get('activity_type'),
                                                      added_by_id=serializer.validated_data.get('added_by'),
                                                      activity_date=datetime.date.today()) \
                                              .first()
