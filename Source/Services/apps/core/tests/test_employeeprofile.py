@@ -1,9 +1,12 @@
 import datetime
 import random
 import urllib
+from io import BytesIO
 
 from dateutil.relativedelta import relativedelta
+from PIL import Image
 
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.encoding import force_bytes
@@ -46,6 +49,30 @@ class TestEmployeeProfile(CoreMixin, APITestCase):
             kwargs={'pk': self.employee.id}
         )
         self.client.force_authenticate(user=self.user)
+
+    def _get_product_image(self):
+        stream = BytesIO()
+        image = Image.new('RGB', (100, 100))
+        image.save(stream, format='jpeg')
+        uploaded_file = SimpleUploadedFile(
+            "file.jpg",
+            stream.getvalue(),
+            content_type="image/jpg"
+        )
+        return uploaded_file
+
+    def test_employee_upload_image(self):
+        payload = {
+            'image': self._get_product_image()
+        }
+        url = reverse(
+            'users-detail',
+            kwargs={
+                'pk': self.employee.user.id
+            }
+        )
+        response = self.client.patch(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_employee_detail_with_user(self):
         response = self.client.get(self.detail_url)

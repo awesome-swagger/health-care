@@ -1,7 +1,11 @@
 import random
 
+from io import BytesIO
+
+from PIL import Image
 from unittest import mock
 
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db.models import Avg
 from django.urls import reverse
 from django.utils import timezone
@@ -47,6 +51,30 @@ class TestPatientProfile(TasksMixin, APITestCase):
             kwargs={'pk': self.patient.id}
         )
         self.client.force_authenticate(user=self.user)
+
+    def _get_product_image(self):
+        stream = BytesIO()
+        image = Image.new('RGB', (100, 100))
+        image.save(stream, format='jpeg')
+        uploaded_file = SimpleUploadedFile(
+            "file.jpg",
+            stream.getvalue(),
+            content_type="image/jpg"
+        )
+        return uploaded_file
+
+    def test_patient_upload_image(self):
+        payload = {
+            'image': self._get_product_image()
+        }
+        url = reverse(
+            'users-detail',
+            kwargs={
+                'pk': self.patient.user.id
+            }
+        )
+        response = self.client.patch(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def create_multiple_goals(self, care_plan):
         for i in range(5):

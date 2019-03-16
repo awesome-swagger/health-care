@@ -9,7 +9,11 @@ from django.views.generic import TemplateView
 from rest_framework import status, views, viewsets, mixins
 from rest_framework.decorators import action
 from rest_framework.generics import GenericAPIView
-from rest_framework.parsers import MultiPartParser
+from rest_framework.parsers import (
+    MultiPartParser,
+    FormParser,
+    JSONParser,
+)
 from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
@@ -52,6 +56,7 @@ class UserViewSet(
     """
     serializer_class = UserSerializer
     permission_classes = (BaseUserPermission,)
+    parser_classes = (MultiPartParser, FormParser, JSONParser)
 
     def get_queryset(self):
         qs = get_user_model().objects.all()

@@ -104,7 +104,6 @@ user_routes.register(
     base_name='notifications',
     parents_query_lookups=['user']
 )
-router.register(r'users', UserViewSet, base_name='users')
 router.register(r'employee_roles', EmployeeRoleViewSet, base_name='employee_roles')
 
 # Billings
