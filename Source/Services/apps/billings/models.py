@@ -1,9 +1,8 @@
 import datetime
 
 from django.db import models
+from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
-
-from model_utils import Choices
 
 from .signals import billedactivity_post_save
 from care_adopt_backend.mixins import (CreatedModifiedMixin,
@@ -16,30 +15,17 @@ class BilledActivity(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
     for a specific care plan or patient.
     """
 
-    ACTIVITY_TYPE = Choices(
-        ('care_plan_review', _('Care Plan Review')),
-        ('phone_call', _('Phone Call')),
-        ('notes', _('Notes')),
-        ('face_to_face', _('Face to Face')),
-        ('message', _('Message')),
-    )
-
     plan = models.ForeignKey(
         'plans.CarePlan',
         related_name='activities',
         on_delete=models.SET_NULL,
         null=True
         )
-    team_task = models.ForeignKey(
-        'tasks.TeamTask',
+    team_task_template = models.ForeignKey(
+        'tasks.TeamTaskTemplate',
         related_name='activities',
         on_delete=models.SET_NULL,
         null=True)
-    activity_type = models.CharField(
-        max_length=32,
-        choices=ACTIVITY_TYPE,
-        default=ACTIVITY_TYPE.care_plan_review
-        )
     members = models.ManyToManyField(
         'core.EmployeeProfile',
         blank=True,
@@ -56,8 +42,8 @@ class BilledActivity(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
         related_name='added_activities',
         on_delete=models.CASCADE,
         )
-    activity_date = models.DateField(
-        default=datetime.date.today
+    activity_datetime = models.DateTimeField(
+        default=timezone.now
         )
     notes = models.TextField(
         blank=True
@@ -69,7 +55,7 @@ class BilledActivity(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
         help_text=_('Determines if the instance has been billed externally.'))
 
     class Meta:
-        ordering = ('-activity_date', )
+        ordering = ('-activity_datetime', )
         verbose_name = _('Billed Activity')
         verbose_name_plural = _('Billed Activities')
 
@@ -79,7 +65,6 @@ class BilledActivity(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
 
     def __str__(self):
         return f'{self.added_by}: {self.readable_time_spent}'
-
 
 
 class BillingType(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
