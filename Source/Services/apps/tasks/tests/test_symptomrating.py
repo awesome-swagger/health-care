@@ -26,16 +26,21 @@ class TestSymptomRatingUsingEmployee(TasksMixin, APITestCase):
 
     def setUp(self):
         self.fake = Faker()
-        self.employee = self.create_employee()
+        organization = self.create_organization()
+        facility = self.create_facility(organization)
+        self.employee = self.create_employee(
+            organizations_managed=[organization])
         self.user = self.employee.user
 
-        self.plan = self.create_care_plan()
+        patient = self.create_patient(facility=facility)
+        self.plan = self.create_care_plan(patient)
         self.create_care_team_member(**{
             'employee_profile': self.employee,
             'plan': self.plan
         })
         self.symptom_task = self.create_symptom_task(**{
-            'plan': self.plan
+            'plan': self.plan,
+            'due_datetime': timezone.now()
         })
         self.symptom_rating = self.create_symptom_rating(self.symptom_task)
 
@@ -126,7 +131,8 @@ class TestSymptomRatingUsingEmployee(TasksMixin, APITestCase):
             })
             symptom_task = self.create_symptom_task(**{
                 'symptom_task_template': symptom_template,
-                'plan': self.plan
+                'plan': self.plan,
+                'due_datetime': timezone.now()
             })
 
             self.create_symptom_rating(**{
@@ -172,7 +178,8 @@ class TestSymptomRatingUsingEmployee(TasksMixin, APITestCase):
             })
             symptom_task = self.create_symptom_task(**{
                 'symptom_task_template': symptom_template,
-                'plan': self.plan
+                'plan': self.plan,
+                'due_datetime': today
             })
 
             self.create_symptom_rating(**{
