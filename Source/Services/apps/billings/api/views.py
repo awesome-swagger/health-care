@@ -1,6 +1,6 @@
 import datetime
 
-from django.db.models import Sum
+from django.db.models import Sum, Q
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
@@ -58,10 +58,11 @@ class BilledActivityViewSet(viewsets.ModelViewSet):
     )
     queryset = BilledActivity.objects.all()
     filter_backends = (DjangoFilterBackend, )
-    filterset_fields = (
-        'activity_date',
-        'plan'
-    )
+    filterset_fields = {
+        'activity_datetime': ['lte'],
+        'plan': ['exact'],
+        'team_task_tempate': ['exact']
+    }
 
     def get_queryset(self):
         qs = super(BilledActivityViewSet, self).get_queryset()
@@ -72,20 +73,20 @@ class BilledActivityViewSet(viewsets.ModelViewSet):
 
         if user.is_employee:
             employee = user.employee_profile
-            if employee.organizations_managed.count() > 0:
-                organizations_managed = employee.organizations_managed.values_list('id', flat=True)
+            if employee.organizations_managed.exists():
+                organizations = employee.organizations_managed.all()
                 qs = qs.filter(
-                    plan__patient__facility__organization__id__in=organizations_managed)
-            elif employee.facilities_managed.count() > 0:
-                facilities_managed = employee.facilities_managed.values_list('id', flat=True)
-                assigned_roles = employee.assigned_roles.values_list('id', flat=True)
+                    plan__patient__facility__organization__in=organizations)
+            elif employee.facilities_managed.exists():
+                facilities = employee.facilities_managed.all()
+                assigned_roles = employee.assigned_roles.all()
                 qs = qs.filter(
-                    Q(plan__patient__facility__id__in=facilities_managed) |
-                    Q(plan__care_team_members__id__in=assigned_roles)
+                    Q(plan__patient__facility__in=facilities) |
+                    Q(plan__care_team_members__in=assigned_roles)
                 )
             else:
-                assigned_roles = employee.assigned_roles.values_list('id', flat=True)
-                qs = qs.filter(plan__care_team_members__id__in=assigned_roles)
+                assigned_roles = employee.assigned_roles.all()
+                qs = qs.filter(plan__care_team_members__in=assigned_roles)
 
         elif user.is_patient:
             qs = qs.filter(
@@ -103,7 +104,6 @@ class BilledActivityViewSet(viewsets.ModelViewSet):
         )
         serializer.is_valid(raise_exception=True)
         pre_activity = BilledActivity.objects.filter(plan_id=serializer.validated_data.get('plan'),
-                                                     activity_type=serializer.validated_data.get('activity_type'),
                                                      added_by_id=serializer.validated_data.get('added_by'),
                                                      activity_date=datetime.date.today()) \
                                              .first()
@@ -171,7 +171,7 @@ class OrganizationBilledActivity(ParentViewSetPermissionMixin,
     filterset_fields = {
         'plan__patient__facility': ['exact'],
         'plan__plan_template__service_area': ['exact'],
-        'activity_date': ['month', 'year'],
+        'activity_datetime': ['lte'],
     }
 
     def get_queryset(self):
@@ -183,20 +183,21 @@ class OrganizationBilledActivity(ParentViewSetPermissionMixin,
 
         elif user.is_employee:
             employee = user.employee_profile
-            if employee.organizations_managed.count() > 0:
-                organizations_managed = employee.organizations_managed.values_list('id', flat=True)
+            if employee.organizations_managed.exists():
+                organizations = employee.organizations_managed.all()
                 queryset = queryset.filter(
-                    plan__patient__facility__organization__id__in=organizations_managed)
-            elif employee.facilities_managed.count() > 0:
-                facilities_managed = employee.facilities_managed.values_list('id', flat=True)
-                assigned_roles = employee.assigned_roles.values_list('id', flat=True)
+                    plan__patient__facility__organization__in=organizations)
+            elif employee.facilities_managed.exists():
+                facilities = employee.facilities_managed.all()
+                assigned_roles = employee.assigned_roles.all()
                 queryset = queryset.filter(
-                    Q(plan__patient__facility__id__in=facilities_managed) |
-                    Q(plan__care_team_members__id__in=assigned_roles)
+                    Q(plan__patient__facility__in=facilities) |
+                    Q(plan__care_team_members__in=assigned_roles)
                 )
             else:
-                assigned_roles = employee.assigned_roles.values_list('id', flat=True)
-                queryset = queryset.filter(plan__care_team_members__id__in=assigned_roles)
+                assigned_roles = employee.assigned_roles.all()
+                queryset = queryset.filter(
+                    plan__care_team_members__in=assigned_roles)
 
         elif user.is_patient:
             queryset = queryset.filter(
@@ -246,7 +247,7 @@ class OrganizationBilledActivity(ParentViewSetPermissionMixin,
             - GET /api/organizations/<organization-ID>/billed_activities/overview/?plan__patient__facility=<facility-ID>
             - GET /api/organizations/<organization-ID>/billed_activities/overview/?plan_template__service_area=<service-area-ID>
             - GET /api/organizations/<organization-ID>/billed_activities/overview/?plan__patient__facility=<facility-ID>&plan_template__service_area=<service-area-ID>
-            - - GET /api/organizations/<organization-ID>/billed_activities/overview/?activity_date__month=10&activity_date__year=2019
+            - GET /api/organizations/<organization-ID>/billed_activities/overview/?activity_datetime__lte=2019
 
         Page Usage
         ---
@@ -257,15 +258,11 @@ class OrganizationBilledActivity(ParentViewSetPermissionMixin,
         queryset = self.filter_queryset(base_queryset)
 
         # By default, filter queryset by current month and year if
-        # query parameters for `activity_date` is not given
+        # query parameters for `activity_datetime` is not given
         query_parameters = self.request.query_params.keys()
-        if 'activity_date__month' not in query_parameters and \
-           'activity_date__year' not in query_parameters:
-            this_month = timezone.now()
-            queryset = queryset.filter(
-                activity_date__year=this_month.year,
-                activity_date__month=this_month.month
-            )
+        if 'activity_datetime__lte' not in query_parameters:
+            now = timezone.now()
+            queryset = queryset.filter(activity_datetime__lte=now)
 
         # TODO: Add this when details are provided
         total_billable = 0

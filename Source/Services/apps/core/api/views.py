@@ -804,7 +804,7 @@ class OrganizationBillingPractitionerViewSet(ParentViewSetPermissionMixin,
         GET /api/organizations/<organization-ID>/billing_practitioners/?billed_plans__patient__facility=<facility-ID>
         GET /api/organizations/<organization-ID>/billing_practitioners/?billed_plans__plan_template__service_area=<service-area-ID>
         GET /api/organizations/<organization-ID>/billing_practitioners/?billed_plans__patient__facility=<facility-ID>&billed_plans__plan_template__service_area=<service-area-ID>
-        GET /api/organizations/<organization-ID>/billing_practitioners/?billed_plans__activities__activity_date__month=10&billed_plans__activities__activity_date__year=2019
+        GET /api/organizations/<organization-ID>/billing_practitioners/?billed_plans__activities__activity_datetime__month=10&billed_plans__activities__activity_datetime__year=2019
 
     USAGE
     ---
@@ -825,7 +825,7 @@ class OrganizationBillingPractitionerViewSet(ParentViewSetPermissionMixin,
     filterset_fields = {
         'billed_plans__patient__facility': ['exact'],
         'billed_plans__plan_template__service_area': ['exact'],
-        'billed_plans__activities__activity_date': ['month', 'year']
+        'billed_plans__activities__activity_datetime': ['month', 'year']
     }
 
     def get_queryset(self):
@@ -840,14 +840,14 @@ class OrganizationBillingPractitionerViewSet(ParentViewSetPermissionMixin,
                          self).filter_queryset(queryset)
 
         # By default, filter queryset by current month and year if
-        # query parameters for `activity_date` is not given
+        # query parameters for `activity_datetime` is not given
         query_parameters = self.request.query_params.keys()
-        if 'billed_plans__activities__activity_date__month' not in query_parameters and \
-           'billed_plans__activities__activity_date__year' not in query_parameters:
+        if 'billed_plans__activities__activity_datetime__month' not in query_parameters and \
+           'billed_plans__activities__activity_datetime__year' not in query_parameters:
             this_month = timezone.now()
             queryset = queryset.filter(
-                billed_plans__activities__activity_date__year=this_month.year,
-                billed_plans__activities__activity_date__month=this_month.month
+                billed_plans__activities__activity_datetime__year=this_month.year,
+                billed_plans__activities__activity_datetime__month=this_month.month
             )
 
         return queryset.distinct()
@@ -875,16 +875,16 @@ class OrganizationBillingPractitionerViewSet(ParentViewSetPermissionMixin,
                 'service_area': service_area
             })
 
-        if 'billed_plans__activities__activity_date__month' in self.request.GET:
+        if 'billed_plans__activities__activity_datetime__month' in self.request.GET:
             activity_month = self.request.GET.get(
-                'billed_plans__activities__activity_date__month')
+                'billed_plans__activities__activity_datetime__month')
             context.update({
                 'activity_month': activity_month
             })
 
-        if 'billed_plans__activities__activity_date__year' in self.request.GET:
+        if 'billed_plans__activities__activity_datetime__year' in self.request.GET:
             activity_year = self.request.GET.get(
-                'billed_plans__activities__activity_date__year')
+                'billed_plans__activities__activity_datetime__year')
             context.update({
                 'activity_year': activity_year
             })

@@ -1,13 +1,10 @@
-from django.utils.translation import ugettext_lazy as _
-
 from rest_framework import serializers
 
 from ..models import BilledActivity, BillingType
 from apps.core.api.mixins import RepresentationMixin
 from apps.core.api.serializers import BasicEmployeeProfileSerializer
 from apps.plans.api.serializers import CarePlanSerializer
-from apps.tasks.api.serializers import TeamTaskTemplateSerializer
-from apps.tasks.models import TeamTask
+from apps.tasks.models import TeamTaskTemplate
 
 
 class BillingTypeSerializer(serializers.ModelSerializer):
@@ -29,26 +26,26 @@ class BillingTypeSerializer(serializers.ModelSerializer):
         )
 
 
-class ActivityTeamTaskSerializer(RepresentationMixin,
-                                 serializers.ModelSerializer):
+class ActivityTeamTaskTemplateSerializer(serializers.ModelSerializer):
     """
-    serializer for :model:`tasks.TeamTask`
+    serializer for :model:`tasks.TeamTaskTemplate`
     """
 
     class Meta:
-        model = TeamTask
+        model = TeamTaskTemplate
         fields = (
             'id',
-            'plan',
-            'team_task_template',
-            'status',
+            'plan_template',
+            'name',
+            'is_manager_task',
+            'category',
+            'role',
+            'start_on_day',
+            'frequency',
+            'repeat_amount',
+            'appear_time',
+            'due_time',
         )
-        nested_serializers = [
-            {
-                'field': 'team_task_template',
-                'serializer_class': TeamTaskTemplateSerializer,
-            },
-        ]
 
 
 class BilledActivitySerializer(RepresentationMixin,
@@ -62,13 +59,12 @@ class BilledActivitySerializer(RepresentationMixin,
         fields = (
             'id',
             'plan',
-            'activity_type',
-            'team_task',
+            'team_task_template',
             'members',
             'patient_included',
             'sync_to_ehr',
             'added_by',
-            'activity_date',
+            'activity_datetime',
             'notes',
             'time_spent',
             'readable_time_spent',
@@ -96,7 +92,7 @@ class BilledActivitySerializer(RepresentationMixin,
                 'serializer_class': BasicEmployeeProfileSerializer
             },
             {
-                'field': 'team_task',
-                'serializer_class': ActivityTeamTaskSerializer
+                'field': 'team_task_template',
+                'serializer_class': ActivityTeamTaskTemplateSerializer
             },
         ]
