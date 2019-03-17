@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Avg
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
@@ -396,6 +397,26 @@ class AssessmentResponse(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
                 value = "decreasing"
             elif self.rating == second_response.rating:
                 value = "equal"
+        return value
+
+    @property
+    def behavior_against_care_plan(self):
+        value = ''
+        responses = AssessmentResponse.objects.filter(
+            assessment_task=self.assessment_task,
+            assessment_question=self.assessment_question)
+
+        if responses.count() == 1:
+            value = 'new'
+        else:
+            avg_responses = responses.aggregate(avg_rating=Avg('rating'))
+            avg_rating = avg_responses['avg_rating'] or 0
+            if self.rating > avg_rating:
+                value = 'better'
+            elif self.rating < avg_rating:
+                value = 'worse'
+            else:
+                value = 'avg'
         return value
 
 

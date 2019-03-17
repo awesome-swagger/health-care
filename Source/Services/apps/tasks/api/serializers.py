@@ -794,6 +794,7 @@ class AssessmentResponseOverviewSerializer(serializers.ModelSerializer):
             'rating',
             'occurrence',
             'behavior',
+            'behavior_against_care_plan',
         )
 
     def get_question(self, obj):
