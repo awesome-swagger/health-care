@@ -58,10 +58,10 @@ class BilledActivityViewSet(viewsets.ModelViewSet):
     )
     queryset = BilledActivity.objects.all()
     filter_backends = (DjangoFilterBackend, )
-    filterset_fields = (
-        'activity_date',
-        'plan'
-    )
+    filterset_fields = {
+        'activity_datetime': ['lte'],
+        'plan': ['exact']
+    }
 
     def get_queryset(self):
         qs = super(BilledActivityViewSet, self).get_queryset()
@@ -170,7 +170,7 @@ class OrganizationBilledActivity(ParentViewSetPermissionMixin,
     filterset_fields = {
         'plan__patient__facility': ['exact'],
         'plan__plan_template__service_area': ['exact'],
-        'activity_date': ['month', 'year'],
+        'activity_datetime': ['lte'],
     }
 
     def get_queryset(self):
@@ -246,7 +246,7 @@ class OrganizationBilledActivity(ParentViewSetPermissionMixin,
             - GET /api/organizations/<organization-ID>/billed_activities/overview/?plan__patient__facility=<facility-ID>
             - GET /api/organizations/<organization-ID>/billed_activities/overview/?plan_template__service_area=<service-area-ID>
             - GET /api/organizations/<organization-ID>/billed_activities/overview/?plan__patient__facility=<facility-ID>&plan_template__service_area=<service-area-ID>
-            - - GET /api/organizations/<organization-ID>/billed_activities/overview/?activity_date__month=10&activity_date__year=2019
+            - GET /api/organizations/<organization-ID>/billed_activities/overview/?activity_datetime__lte=2019
 
         Page Usage
         ---
@@ -257,15 +257,11 @@ class OrganizationBilledActivity(ParentViewSetPermissionMixin,
         queryset = self.filter_queryset(base_queryset)
 
         # By default, filter queryset by current month and year if
-        # query parameters for `activity_date` is not given
+        # query parameters for `activity_datetime` is not given
         query_parameters = self.request.query_params.keys()
-        if 'activity_date__month' not in query_parameters and \
-           'activity_date__year' not in query_parameters:
-            this_month = timezone.now()
-            queryset = queryset.filter(
-                activity_date__year=this_month.year,
-                activity_date__month=this_month.month
-            )
+        if 'activity_datetime__lte' not in query_parameters:
+            now = timezone.now()
+            queryset = queryset.filter(activity_datetime__lte=now)
 
         # TODO: Add this when details are provided
         total_billable = 0

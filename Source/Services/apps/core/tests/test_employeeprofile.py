@@ -489,7 +489,7 @@ class TestFacilityEmployee(BillingsMixin, APITestCase):
                 'plan': member_plan,
                 'added_by': employee,
                 'time_spent': minutes,
-                'activity_date': previous_month.date()
+                'activity_datetime': previous_month.date()
             })
 
         total_time_spent = str(datetime.timedelta(
@@ -682,12 +682,12 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
             })
             self.create_billed_activity(**{
                 'plan': plan,
-                'activity_date': last_month
+                'activity_datetime': last_month
             })
 
         query_params = urllib.parse.urlencode({
-            'billed_plans__activities__activity_date__month': last_month.month,
-            'billed_plans__activities__activity_date__year': last_month.year
+            'billed_plans__activities__activity_datetime__month': last_month.month,
+            'billed_plans__activities__activity_datetime__year': last_month.year
         })
         filter_url = f'{self.url}?{query_params}'
         response = self.client.get(filter_url)
@@ -1181,12 +1181,12 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
             self.create_billed_activity(**{
                 'plan': plan,
                 'added_by': self.employee,
-                'activity_date': last_month
+                'activity_datetime': last_month
             })
 
         query_params = urllib.parse.urlencode({
-            'billed_plans__activities__activity_date__month': last_month.month,
-            'billed_plans__activities__activity_date__year': last_month.year
+            'billed_plans__activities__activity_datetime__month': last_month.month,
+            'billed_plans__activities__activity_datetime__year': last_month.year
         })
         filter_url = f'{self.url}?{query_params}'
         response = self.client.get(filter_url)
