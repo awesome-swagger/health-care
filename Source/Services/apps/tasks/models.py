@@ -297,6 +297,26 @@ class SymptomRating(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
                 value = "equal"
         return value
 
+    @property
+    def behavior_against_care_plan(self):
+        value = ''
+        symptoms = SymptomRating.objects.filter(
+            symptom_task=self.symptom_task,
+            symptom=self.symptom)
+
+        if symptoms.count() == 1:
+            value = 'new'
+        else:
+            avg_symptoms = symptoms.aggregate(avg_rating=Avg('rating'))
+            avg_rating = avg_symptoms['avg_rating'] or 0
+            if self.rating > avg_rating:
+                value = 'better'
+            elif self.rating < avg_rating:
+                value = 'worse'
+            else:
+                value = 'avg'
+        return value
+
 
 class AssessmentTaskTemplate(AbstractTaskTemplate):
     plan_template = models.ForeignKey(

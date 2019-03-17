@@ -292,6 +292,7 @@ class SymptomRatingSerializer(RepresentationMixin,
             'symptom',
             'rating',
             'behavior',
+            'behavior_against_care_plan',
         )
         read_only_fields = (
             'id',
@@ -874,12 +875,14 @@ class SymptomByPlanSerializer(serializers.ModelSerializer):
 
     def get_rating(self, obj):
         plan = self.context.get('plan')
+        date_range = self.context.get('date_range')
 
         rating_obj = SymptomRating.objects.filter(
             symptom_task__plan=plan,
-            symptom=obj
+            symptom_task__due_datetime__range=date_range,
+            symptom=obj,
         ).order_by('created').last()
-        serializer = SymptomRatingSerializer(rating_obj, many=False)
+        serializer = SymptomRatingSerializer(rating_obj)
 
         return serializer.data
 
