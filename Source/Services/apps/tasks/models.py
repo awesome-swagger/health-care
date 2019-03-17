@@ -573,6 +573,28 @@ class VitalResponse(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
                     value = "equal"
         return value
 
+    @property
+    def behavior_against_care_plan(self):
+        value = 'n/a'
+        excluded_types = ['string', 'boolean']
+        if self.question.answer_type not in excluded_types:
+            responses = VitalResponse.objects.filter(
+                vital_task=self.vital_task,
+                question=self.question)
+
+            if responses.count() == 1:
+                value = 'new'
+            else:
+                avg_responses = responses.aggregate(avg_rating=Avg('rating'))
+                avg_rating = avg_responses['avg_rating'] or 0
+                if self.rating > avg_rating:
+                    value = 'better'
+                elif self.rating < avg_rating:
+                    value = 'worse'
+                else:
+                    value = 'avg'
+        return value
+
 
 # SIGNALS
 models.signals.post_save.connect(

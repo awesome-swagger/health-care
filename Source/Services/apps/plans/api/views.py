@@ -1875,10 +1875,7 @@ class VitalByPlanViewSet(ParentViewSetPermissionMixin,
         )
     ]
 
-    def filter_queryset(self, queryset):
-        queryset = super(VitalByPlanViewSet,
-                         self).filter_queryset(queryset).distinct()
-
+    def _get_date_range_filter(self):
         timestamp = self.request.GET.get('date', None)
         date_format = "%Y-%m-%d"
         date_object = datetime.datetime.strptime(timestamp, date_format).date() \
@@ -1889,9 +1886,16 @@ class VitalByPlanViewSet(ParentViewSetPermissionMixin,
         date_max = datetime.datetime.combine(date_object,
                                              datetime.time.max,
                                              tzinfo=pytz.utc)
+        return (date_min, date_max)
+
+    def filter_queryset(self, queryset):
+        queryset = super(VitalByPlanViewSet,
+                         self).filter_queryset(queryset).distinct()
+
+        date_range = self._get_date_range_filter()
 
         return queryset.filter(
-            vital_tasks__due_datetime__range=(date_min, date_max),
+            vital_tasks__due_datetime__range=date_range,
             vital_tasks__is_complete=True,
         ).distinct()
 
@@ -1901,5 +1905,6 @@ class VitalByPlanViewSet(ParentViewSetPermissionMixin,
 
         context.update({
             'plan': self.parent_obj,
+            'date_range': self._get_date_range_filter()
         })
         return context
