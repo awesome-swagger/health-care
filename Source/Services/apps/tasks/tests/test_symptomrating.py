@@ -269,6 +269,153 @@ class TestSymptomRatingUsingEmployee(TasksMixin, APITestCase):
         response = self.client.get(url)
         self.assertIsNotNone(response.data['results'][0]['rating'])
 
+    def test_get_symptoms_by_plan_against_care_plan_new(self):
+        self.client.logout()
+
+        facility = self.create_facility()
+        patient = self.create_patient(facility=facility)
+        employee = self.create_employee(facilities_managed=[facility])
+
+        self.client.force_authenticate(user=employee.user)
+
+        plan = self.create_care_plan(patient)
+        self.create_care_team_member(
+            employee_profile=employee,
+            plan=plan
+        )
+
+        now = timezone.now()
+        symptom = self.create_symptom()
+        task = self.create_symptom_task(plan=plan, due_datetime=now)
+
+        self.create_symptom_rating(symptom_task=task, symptom=symptom)
+
+        url = reverse(
+            'plan_symptoms-list',
+            kwargs={
+                'parent_lookup_ratings__symptom_task__plan': plan.id
+            }
+        )
+
+        response = self.client.get(url)
+        self.assertEqual(
+            response.data['results'][0]['rating']['behavior_against_care_plan'],
+            'new',
+        )
+
+    def test_get_symptoms_by_plan_against_care_plan_better(self):
+        self.client.logout()
+
+        facility = self.create_facility()
+        patient = self.create_patient(facility=facility)
+        employee = self.create_employee(facilities_managed=[facility])
+
+        self.client.force_authenticate(user=employee.user)
+
+        plan = self.create_care_plan(patient)
+        self.create_care_team_member(
+            employee_profile=employee,
+            plan=plan
+        )
+
+        now = timezone.now()
+        symptom = self.create_symptom()
+        task = self.create_symptom_task(plan=plan, due_datetime=now)
+
+        self.create_symptom_rating(
+            symptom_task=task, symptom=symptom, rating=1)
+        self.create_symptom_rating(
+            symptom_task=task, symptom=symptom, rating=3)
+
+        url = reverse(
+            'plan_symptoms-list',
+            kwargs={
+                'parent_lookup_ratings__symptom_task__plan': plan.id
+            }
+        )
+
+        response = self.client.get(url)
+        self.assertEqual(
+            response.data['results'][0]['rating']['behavior_against_care_plan'],
+            'better',
+        )
+
+    def test_get_symptoms_by_plan_against_care_plan_worse(self):
+        self.client.logout()
+
+        facility = self.create_facility()
+        patient = self.create_patient(facility=facility)
+        employee = self.create_employee(facilities_managed=[facility])
+
+        self.client.force_authenticate(user=employee.user)
+
+        plan = self.create_care_plan(patient)
+        self.create_care_team_member(
+            employee_profile=employee,
+            plan=plan
+        )
+
+        now = timezone.now()
+        symptom = self.create_symptom()
+        task = self.create_symptom_task(plan=plan, due_datetime=now)
+
+        self.create_symptom_rating(
+            symptom_task=task, symptom=symptom, rating=3)
+        self.create_symptom_rating(
+            symptom_task=task, symptom=symptom, rating=1)
+
+        url = reverse(
+            'plan_symptoms-list',
+            kwargs={
+                'parent_lookup_ratings__symptom_task__plan': plan.id
+            }
+        )
+
+        response = self.client.get(url)
+        self.assertEqual(
+            response.data['results'][0]['rating']['behavior_against_care_plan'],
+            'worse',
+        )
+
+    def test_get_symptoms_by_plan_against_care_plan_avg(self):
+        self.client.logout()
+
+        facility = self.create_facility()
+        patient = self.create_patient(facility=facility)
+        employee = self.create_employee(facilities_managed=[facility])
+
+        self.client.force_authenticate(user=employee.user)
+
+        plan = self.create_care_plan(patient)
+        self.create_care_team_member(
+            employee_profile=employee,
+            plan=plan
+        )
+
+        now = timezone.now()
+        symptom = self.create_symptom()
+        task = self.create_symptom_task(plan=plan, due_datetime=now)
+
+        self.create_symptom_rating(
+            symptom_task=task, symptom=symptom, rating=1)
+        self.create_symptom_rating(
+            symptom_task=task, symptom=symptom, rating=3)
+        self.create_symptom_rating(
+            symptom_task=task, symptom=symptom, rating=2)
+
+        url = reverse(
+            'plan_symptoms-list',
+            kwargs={
+                'parent_lookup_ratings__symptom_task__plan': plan.id
+            }
+        )
+
+        response = self.client.get(url)
+        self.assertEqual(
+            response.data['results'][0]['rating']['behavior_against_care_plan'],
+            'avg',
+        )
+
 
 class TestSymptomTaskUsingPatient(TasksMixin, APITestCase):
     """
