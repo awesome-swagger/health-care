@@ -2,6 +2,7 @@ import datetime
 
 import pytz
 
+from django.db.models import Q
 from django.utils import timezone
 
 from django_filters.rest_framework import DjangoFilterBackend
@@ -723,20 +724,20 @@ class VitalResponseViewSet(viewsets.ModelViewSet):
 
         if user.is_employee:
             employee_profile = user.employee_profile
-            if employee_profile.organizations_managed.count() > 0:
-                organizations_managed = employee_profile.organizations_managed.values_list('id', flat=True)
+            if employee_profile.organizations_managed.exists():
+                organizations = employee_profile.organizations_managed.all()
                 qs = qs.filter(
-                    vital_task__plan__patient__facility__organization__id__in=organizations_managed)
-            elif employee_profile.facilities_managed.count() > 0:
-                facilities_managed = employee_profile.facilities_managed.values_list('id', flat=True)
-                assigned_roles = employee_profile.assigned_roles.values_list('id', flat=True)
+                    vital_task__plan__patient__facility__organization__in=organizations)
+            elif employee_profile.facilities_managed.exists():
+                facilities = employee_profile.facilities_managed.all()
+                assigned_roles = employee_profile.assigned_roles.all()
                 qs = qs.filter(
-                    Q(vital_task__plan__patient__facility__id__in=facilities_managed) |
-                    Q(vital_task__plan__care_team_members__id__in=assigned_roles)
+                    Q(vital_task__plan__patient__facility__in=facilities) |
+                    Q(vital_task__plan__care_team_members__in=assigned_roles)
                 )
             else:
-                assigned_roles = employee_profile.assigned_roles.values_list('id', flat=True)
-                qs = qs.filter(vital_task__plan__care_team_members__id__in=assigned_roles)
+                assigned_roles = employee_profile.assigned_roles.all()
+                qs = qs.filter(vital_task__plan__care_team_members__in=assigned_roles)
         elif user.is_patient:
             qs = qs.filter(
                 vital_task__plan__patient=user.patient_profile

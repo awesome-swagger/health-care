@@ -23,16 +23,21 @@ class TestVitalResponseUsingEmployee(TasksMixin, APITestCase):
 
     def setUp(self):
         self.fake = Faker()
-        self.employee = self.create_employee()
+        organization = self.create_organization()
+        facility = self.create_facility(organization)
+        self.employee = self.create_employee(
+            organizations_managed=[organization])
         self.user = self.employee.user
 
-        self.plan = self.create_care_plan()
+        self.patient = self.create_patient(facility=facility)
+        self.plan = self.create_care_plan(self.patient)
         self.create_care_team_member(**{
             'employee_profile': self.employee,
             'plan': self.plan
         })
         self.vital_task = self.create_vital_task(**{
-            'plan': self.plan
+            'plan': self.plan,
+            'due_datetime': timezone.now()
         })
         self.template = self.vital_task.vital_task_template
         self.create_multiple_vital_questions(self.template)
@@ -51,7 +56,6 @@ class TestVitalResponseUsingEmployee(TasksMixin, APITestCase):
 
     def test_filter_by_patient_and_plan_template(self):
         plan_template = self.template.plan_template
-        patient = self.plan.patient
         response_count = self.responses.count()
 
         # create dummy vital responses
@@ -67,7 +71,7 @@ class TestVitalResponseUsingEmployee(TasksMixin, APITestCase):
         )
 
         query_params = urllib.parse.urlencode({
-            'vital_task__plan__patient': patient.id,
+            'vital_task__plan__patient': self.patient.id,
             'vital_task__vital_task_template__plan_template': plan_template.id
         })
         filter_url = f'{self.url}?{query_params}'
