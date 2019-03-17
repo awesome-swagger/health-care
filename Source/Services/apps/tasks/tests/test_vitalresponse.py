@@ -250,8 +250,9 @@ class TestVitalResponseUsingEmployee(TasksMixin, APITestCase):
             plan=plan
         )
 
+        now = timezone.now()
         for i in range(templates_count):
-            task = self.create_vital_task(plan=plan)
+            task = self.create_vital_task(plan=plan, due_datetime=now)
             self.create_multiple_vital_questions(
                 task.vital_task_template)
             self.create_responses_to_multiple_vital_questions(
@@ -288,8 +289,9 @@ class TestVitalResponseUsingEmployee(TasksMixin, APITestCase):
             plan=plan
         )
 
+        now = timezone.now()
         for i in range(templates_count):
-            task = self.create_vital_task(plan=plan)
+            task = self.create_vital_task(plan=plan, due_datetime=now)
             self.create_multiple_vital_questions(
                 task.vital_task_template)
             self.create_responses_to_multiple_vital_questions(
