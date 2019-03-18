@@ -18,12 +18,12 @@ class BillingsMixin(TasksMixin):
                 'plan': self.create_care_plan()
             })
 
-        if 'team_task' not in kwargs:
-            team_task = self.create_team_task(**{
-                'plan': kwargs.get('plan')
+        if 'team_task_template' not in kwargs:
+            team_task_template = self.create_team_task_template(**{
+                'plan_template': kwargs.get('plan').plan_template
             })
             kwargs.update({
-                'team_task': team_task
+                'team_task_template': team_task_template
             })
 
         if 'time_spent' not in kwargs:

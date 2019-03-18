@@ -1,9 +1,12 @@
 import datetime
 import random
 import urllib
+from io import BytesIO
 
 from dateutil.relativedelta import relativedelta
+from PIL import Image
 
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.encoding import force_bytes
@@ -46,6 +49,30 @@ class TestEmployeeProfile(CoreMixin, APITestCase):
             kwargs={'pk': self.employee.id}
         )
         self.client.force_authenticate(user=self.user)
+
+    def _get_product_image(self):
+        stream = BytesIO()
+        image = Image.new('RGB', (100, 100))
+        image.save(stream, format='jpeg')
+        uploaded_file = SimpleUploadedFile(
+            "file.jpg",
+            stream.getvalue(),
+            content_type="image/jpg"
+        )
+        return uploaded_file
+
+    def test_employee_upload_image(self):
+        payload = {
+            'image': self._get_product_image()
+        }
+        url = reverse(
+            'users-detail',
+            kwargs={
+                'pk': self.employee.user.id
+            }
+        )
+        response = self.client.patch(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_employee_detail_with_user(self):
         response = self.client.get(self.detail_url)
@@ -462,7 +489,7 @@ class TestFacilityEmployee(BillingsMixin, APITestCase):
                 'plan': member_plan,
                 'added_by': employee,
                 'time_spent': minutes,
-                'activity_date': previous_month.date()
+                'activity_datetime': previous_month.date()
             })
 
         total_time_spent = str(datetime.timedelta(
@@ -655,12 +682,12 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
             })
             self.create_billed_activity(**{
                 'plan': plan,
-                'activity_date': last_month
+                'activity_datetime': last_month
             })
 
         query_params = urllib.parse.urlencode({
-            'billed_plans__activities__activity_date__month': last_month.month,
-            'billed_plans__activities__activity_date__year': last_month.year
+            'billed_plans__activities__activity_datetime__month': last_month.month,
+            'billed_plans__activities__activity_datetime__year': last_month.year
         })
         filter_url = f'{self.url}?{query_params}'
         response = self.client.get(filter_url)
@@ -1154,12 +1181,12 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
             self.create_billed_activity(**{
                 'plan': plan,
                 'added_by': self.employee,
-                'activity_date': last_month
+                'activity_datetime': last_month
             })
 
         query_params = urllib.parse.urlencode({
-            'billed_plans__activities__activity_date__month': last_month.month,
-            'billed_plans__activities__activity_date__year': last_month.year
+            'billed_plans__activities__activity_datetime__month': last_month.month,
+            'billed_plans__activities__activity_datetime__year': last_month.year
         })
         filter_url = f'{self.url}?{query_params}'
         response = self.client.get(filter_url)

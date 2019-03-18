@@ -22,8 +22,9 @@ class TestBilledActivityUsingEmployee(BillingsMixin, APITestCase):
     def setUp(self):
         self.fake = Faker()
         self.facility = self.create_facility()
+        self.organization = self.facility.organization
         self.employee = self.create_employee(**{
-            'facilities': [self.facility]
+            'organizations_managed': [self.organization]
         })
         self.user = self.employee.user
         self.patient = self.create_patient(**{
@@ -63,7 +64,7 @@ class TestBilledActivityUsingEmployee(BillingsMixin, APITestCase):
     def test_get_billed_activity_detail_team_task_field(self):
         response = self.client.get(self.detail_url)
         self.assertIsNotNone(
-            response.data['team_task']['team_task_template']['category']
+            response.data['team_task_template']['category']
         )
 
     def test_get_billed_activity_detail_unauthenticated(self):
@@ -83,22 +84,6 @@ class TestBilledActivityUsingEmployee(BillingsMixin, APITestCase):
         response = self.client.post(self.url, payload)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-    def test_create_billed_activity_not_billable(self):
-        member = self.create_employee()
-        patient = self.create_patient(**{
-            'payer_reimbursement': False
-        })
-        plan = self.create_care_plan(patient)
-        payload = {
-            'plan': plan.id,
-            'members': [self.employee.id, member.id],
-            'added_by': self.employee.id,
-            'notes': self.fake.sentence(),
-            'time_spent': random.randint(5, 120)
-        }
-        response = self.client.post(self.url, payload)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-
     def test_full_update_billed_activity(self):
         member = self.create_employee()
         payload = {
@@ -110,22 +95,6 @@ class TestBilledActivityUsingEmployee(BillingsMixin, APITestCase):
         }
         response = self.client.put(self.detail_url, payload)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-    def test_full_update_billed_activity_not_billable(self):
-        member = self.create_employee()
-        patient = self.create_patient(**{
-            'payer_reimbursement': False
-        })
-        plan = self.create_care_plan(patient)
-        payload = {
-            'plan': plan.id,
-            'members': [self.employee.id, member.id],
-            'added_by': self.employee.id,
-            'notes': self.fake.sentence(),
-            'time_spent': random.randint(5, 120)
-        }
-        response = self.client.put(self.detail_url, payload)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_partial_update_billed_activity(self):
         payload = {
@@ -186,30 +155,31 @@ class TestBilledActivityUsingEmployee(BillingsMixin, APITestCase):
             kwargs={'pk': self.plan.id}
         )
         response = self.client.get(plan_url)
+
         self.assertEqual(response.data['is_billed'], True)
 
-    def test_get_billed_activities_filter_activity_date(self):
+    def test_get_billed_activities_filter_activity_datetime(self):
         now = timezone.now()
         last_week = now - relativedelta(days=7)
+        day_before_yesterday = now - relativedelta(days=2)
         filtered_results = 3
 
         for i in range(filtered_results):
             self.activity = self.create_billed_activity(**{
                 'plan': self.plan,
                 'added_by': self.employee,
-                'activity_date': last_week.date()
+                'activity_datetime': last_week
             })
 
-        # Create dummy records for billed activities without assigning
-        # `activity_date`. Defaults to current date
+        # Create dummy records for billed activities
         for i in range(filtered_results):
             self.activity = self.create_billed_activity(**{
                 'plan': self.plan,
-                'added_by': self.employee
+                'added_by': self.employee,
             })
 
         query_params = urllib.parse.urlencode({
-            'activity_date': last_week.date()
+            'activity_datetime__lte': day_before_yesterday
         })
         filter_url = f'{self.url}?{query_params}'
         response = self.client.get(filter_url)
@@ -226,8 +196,7 @@ class TestBilledActivityOverview(BillingsMixin, APITestCase):
         self.facility = self.create_facility()
         self.organization = self.facility.organization
         self.employee = self.create_employee(**{
-            'organizations': [self.organization],
-            'facilities': [self.facility]
+            'organizations_managed': [self.organization]
         })
         self.user = self.employee.user
 
@@ -635,35 +604,15 @@ class TestBilledActivityOverview(BillingsMixin, APITestCase):
         response = self.client.get(filter_url)
         self.assertEqual(response.data['billable_patients'], 5)
 
-    def test_get_billable_patients_filter_month_year(self):
-        now = timezone.now().date().replace(day=1)
+    def test_get_billable_patients_filter_activity_datetime_default(self):
+        now = timezone.now()
         last_month = now - relativedelta(months=1)
         next_month = now + relativedelta(months=1)
-
-        for i in range(5):
-            facility = self.create_facility(self.organization)
-            patient = self.create_patient(**{
-                'facility': facility,
-                'payer_reimbursement': True
-            })
-            plan = self.create_care_plan(patient)
-            members = [self.create_employee() for i in range(3)]
-            members.append(self.employee)
-
-            for member in members:
-                self.create_care_team_member(**{
-                    'employee_profile': member,
-                    'plan': plan
-                })
-
-            self.create_billed_activity(**{
-                'plan': plan,
-                'added_by': self.employee,
-                'activity_date': now
-            })
+        last_month_count = 4
+        next_month_count = 3
 
         # Create dummy records for billable patients last month
-        for i in range(5):
+        for i in range(last_month_count):
             facility = self.create_facility(self.organization)
             patient = self.create_patient(**{
                 'facility': facility,
@@ -682,11 +631,11 @@ class TestBilledActivityOverview(BillingsMixin, APITestCase):
             self.create_billed_activity(**{
                 'plan': plan,
                 'added_by': self.employee,
-                'activity_date': last_month
+                'activity_datetime': last_month
             })
 
         # Create dummy records for billable patients next month
-        for i in range(5):
+        for i in range(next_month_count):
             facility = self.create_facility(self.organization)
             patient = self.create_patient(**{
                 'facility': facility,
@@ -705,13 +654,75 @@ class TestBilledActivityOverview(BillingsMixin, APITestCase):
             self.create_billed_activity(**{
                 'plan': plan,
                 'added_by': self.employee,
-                'activity_date': next_month
+                'activity_datetime': next_month
+            })
+
+        response = self.client.get(self.url)
+        self.assertEqual(
+            response.data['billable_patients'],
+            last_month_count,
+        )
+
+    def test_get_billable_patients_filter_activity_datetime(self):
+        now = timezone.now()
+        last_month = now - relativedelta(months=1)
+        next_month = now + relativedelta(months=1)
+        last_week = now - relativedelta(days=7)
+        last_month_count = 4
+        next_month_count = 3
+
+        # Create dummy records for billable patients last month
+        for i in range(last_month_count):
+            facility = self.create_facility(self.organization)
+            patient = self.create_patient(**{
+                'facility': facility,
+                'payer_reimbursement': True
+            })
+            plan = self.create_care_plan(patient)
+            members = [self.create_employee() for i in range(3)]
+            members.append(self.employee)
+
+            for member in members:
+                self.create_care_team_member(**{
+                    'employee_profile': member,
+                    'plan': plan
+                })
+
+            self.create_billed_activity(**{
+                'plan': plan,
+                'added_by': self.employee,
+                'activity_datetime': last_month
+            })
+
+        # Create dummy records for billable patients next month
+        for i in range(next_month_count):
+            facility = self.create_facility(self.organization)
+            patient = self.create_patient(**{
+                'facility': facility,
+                'payer_reimbursement': True
+            })
+            plan = self.create_care_plan(patient)
+            members = [self.create_employee() for i in range(3)]
+            members.append(self.employee)
+
+            for member in members:
+                self.create_care_team_member(**{
+                    'employee_profile': member,
+                    'plan': plan
+                })
+
+            self.create_billed_activity(**{
+                'plan': plan,
+                'added_by': self.employee,
+                'activity_datetime': next_month
             })
 
         query_params = urllib.parse.urlencode({
-            'activity_date__month': now.month,
-            'activity_date__year': now.year
+            'activity_datetime__lte': last_week
         })
         filter_url = f'{self.url}?{query_params}'
         response = self.client.get(filter_url)
-        self.assertEqual(response.data['billable_patients'], 5)
+        self.assertEqual(
+            response.data['billable_patients'],
+            last_month_count,
+        )

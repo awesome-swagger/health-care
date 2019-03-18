@@ -720,7 +720,7 @@ class TestOrganizationPatientGraph(BillingsMixin, APITestCase):
                 plan = self.create_care_plan(patient)
                 self.create_billed_activity(**{
                     'plan': plan,
-                    'activity_date': last_month.date()
+                    'activity_datetime': last_month
                 })
 
         # Create patients for other facility

@@ -22,11 +22,16 @@ class TestAssessmentResponse(TasksMixin, APITestCase):
 
     def setUp(self):
         self.fake = Faker()
-        self.user = AdminUserFactory()
+        self.facility = self.create_facility()
+        self.employee = self.create_employee(
+            organizations_managed=[self.facility.organization])
+        self.user = self.employee.user
 
-        self.plan = self.create_care_plan()
+        patient = self.create_patient(facility=self.facility)
+        self.plan = self.create_care_plan(patient)
         self.assessment_task = self.create_assessment_task(**{
-            'plan': self.plan
+            'plan': self.plan,
+            'due_datetime': timezone.now()
         })
         self.template = self.assessment_task.assessment_task_template
         self.create_multiple_assessment_questions(self.template)
@@ -124,16 +129,20 @@ class TestAssessmentResponseUsingEmployee(TasksMixin, APITestCase):
 
     def setUp(self):
         self.fake = Faker()
-        self.employee = self.create_employee()
+        self.facility = self.create_facility()
+        self.employee = self.create_employee(
+            organizations_managed=[self.facility.organization])
         self.user = self.employee.user
 
-        self.plan = self.create_care_plan()
+        patient = self.create_patient(facility=self.facility)
+        self.plan = self.create_care_plan(patient)
         self.create_care_team_member(**{
             'employee_profile': self.employee,
             'plan': self.plan
         })
         self.assessment_task = self.create_assessment_task(**{
-            'plan': self.plan
+            'plan': self.plan,
+            'due_datetime': timezone.now()
         })
         self.template = self.assessment_task.assessment_task_template
         self.create_multiple_assessment_questions(self.template)
@@ -279,7 +288,8 @@ class TestAssessmentResponseUsingEmployee(TasksMixin, APITestCase):
         )
 
         for i in range(templates_count):
-            task = self.create_assessment_task(plan=plan)
+            task = self.create_assessment_task(
+                plan=plan, due_datetime=timezone.now())
             self.create_multiple_assessment_questions(
                 task.assessment_task_template)
             self.create_responses_to_multiple_questions(
@@ -318,7 +328,8 @@ class TestAssessmentResponseUsingEmployee(TasksMixin, APITestCase):
         )
 
         for i in range(templates_count):
-            task = self.create_assessment_task(plan=plan)
+            task = self.create_assessment_task(
+                plan=plan, due_datetime=timezone.now())
             self.create_multiple_assessment_questions(
                 task.assessment_task_template)
             self.create_responses_to_multiple_questions(

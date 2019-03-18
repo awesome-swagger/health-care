@@ -534,8 +534,8 @@ class OrganizationPatientGraphSerializer(serializers.ModelSerializer):
                 'created__year': day_obj.year
             })
             billable_kwargs.update({
-                'activity_date__month': day_obj.month,
-                'activity_date__year': day_obj.year
+                'activity_datetime__month': day_obj.month,
+                'activity_datetime__year': day_obj.year
             })
 
             enrolled_patients = PatientProfile.objects.filter(
@@ -909,9 +909,10 @@ class EmployeeAssignmentSerializer(serializers.ModelSerializer):
 
     def get_billable_hours(self, obj):
         now = timezone.now()
-        first_day = now.date().replace(day=1)
+        first_day = now.replace(
+            day=1, hour=0, minute=0, second=0, microsecond=0)
         time_spent = obj.added_activities.filter(
-            activity_date__gte=first_day).aggregate(
+            activity_datetime__gte=first_day).aggregate(
                 total=Sum('time_spent'))
         total = time_spent['total'] or 0
         return str(datetime.timedelta(minutes=total))[:-3]
@@ -1229,18 +1230,17 @@ class BilledActivityDetailSerializer(RepresentationMixin,
         model = BilledActivity
         fields = (
             'id',
-            'get_activity_type_display',
-            'team_task',
+            'team_task_template',
             'members',
             'added_by',
             'is_billed',
-            'activity_date',
+            'activity_datetime',
             'time_spent',
         )
         nested_serializers = [
             {
-                'field': 'team_task',
-                'serializer_class': ActivityTeamTaskSerializer
+                'field': 'team_task_template',
+                'serializer_class': ActivityTeamTaskTemplateSerializer
             },
             {
                 'field': 'added_by',
@@ -1327,7 +1327,7 @@ class BilledPlanSerializer(RepresentationMixin, serializers.ModelSerializer):
 
     def get_details_of_service(self, obj):
         activities = obj.activities.filter(**self.context)\
-            .order_by('activity_date')
+            .order_by('activity_datetime')
         serializer = BilledActivityDetailSerializer(activities, many=True)
         return serializer.data
 
@@ -1378,8 +1378,8 @@ class BillingPractitionerSerializer(serializers.ModelSerializer):
         activity_year = self.context.get('activity_year', now.year)
         kwargs = {
             'patient__facility__organization': organization,
-            'activities__activity_date__month': activity_month,
-            'activities__activity_date__year': activity_year
+            'activities__activity_datetime__month': activity_month,
+            'activities__activity_datetime__year': activity_year
         }
 
         if facility:
@@ -1403,8 +1403,8 @@ class BillingPractitionerSerializer(serializers.ModelSerializer):
             })
 
         activity_context = {
-            'activity_date__month': activity_month,
-            'activity_date__year': activity_year
+            'activity_datetime__month': activity_month,
+            'activity_datetime__year': activity_year
         }
         billed_plans = obj.billed_plans.filter(**kwargs).distinct()
         serializer = BilledPlanSerializer(
