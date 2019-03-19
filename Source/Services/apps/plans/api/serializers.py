@@ -221,7 +221,7 @@ class CarePlanSerializer(RepresentationMixin, serializers.ModelSerializer):
             },
             {
                 'field': 'billing_practitioner',
-                'serializer_class': EmployeeProfileSerializer,
+                'serializer_class': BasicEmployeeProfileSerializer,
             },
             {
                 'field': 'billing_type',
@@ -244,7 +244,7 @@ class CarePlanPractitionerSerializer(RepresentationMixin, serializers.ModelSeria
         nested_serializers = [
             {
                 'field': 'billing_practitioner',
-                'serializer_class': EmployeeProfileSerializer,
+                'serializer_class': BasicEmployeeProfileSerializer,
             },
         ]
 
