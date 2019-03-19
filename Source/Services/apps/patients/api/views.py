@@ -137,16 +137,28 @@ class PatientProfileViewSet(viewsets.ModelViewSet):
         """
         This endpoints will return overview of patients. It returns number of active patients,
         number of inactive patients, number of invited patients, number of potential patients
+        for the utilites what the logged in user is part of
         """
-        queryset = self.get_queryset()
-        filtered_queryset = self.filter_queryset(queryset)
+        queryset = PatientProfile.objects.filter(is_archived=False)
+
+        user = self.request.user
+        if user.is_employee:
+            employee = user.employee_profile
+            q = Q(facility__in=employee.facilities.all()) | \
+                Q(facility__in=employee.facilities_managed.all())
+            for org in employee.organizations_managed.all():
+                q |= Q(facility__in=org.facility_set.all())
+            queryset = queryset.filter(q)
+        elif user.is_patient:
+            queryset = queryset.filter(user=user)
+
         ppv = PotentialPatientViewSet()
         ppv.request = self.request
 
         res = {
-            "active": filtered_queryset.filter(is_active=True).count(),
-            "inactive": filtered_queryset.filter(is_active=False).count(),
-            "invited": filtered_queryset.filter(is_invited=True).count(),
+            "active": queryset.filter(is_active=True).count(),
+            "inactive": queryset.filter(is_active=False).count(),
+            "invited": queryset.filter(is_invited=True).count(),
             "potential": ppv.get_queryset().count()
         }
 
