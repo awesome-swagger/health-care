@@ -386,8 +386,8 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       width: '384px',
     }).subscribe(
       (updatedTask) => {
+        if (!updatedTask) return;
         this.teamMemberTemplates[taskIndex] = updatedTask;
-        console.log(this.teamMemberTemplates);
       },
       (err) => {},
       () => {
