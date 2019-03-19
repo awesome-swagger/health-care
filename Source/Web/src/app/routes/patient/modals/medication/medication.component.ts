@@ -45,6 +45,8 @@ export class MedicationComponent implements OnInit {
   public dueTime = '00:00:00';
 
   public showDate;
+  public tooltip2Open;
+  public tooltip3Open;
 
   constructor(
     private modal: ModalService,
