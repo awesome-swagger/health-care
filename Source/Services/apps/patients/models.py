@@ -81,6 +81,7 @@ class PatientProfile(AddressMixin, CreatedModifiedMixin, UUIDPrimaryKeyMixin):
         default=False,
         help_text=_('Used to determine whether a patient is billable or not.'))
     last_app_use = models.DateTimeField(default=timezone.now)
+    is_using_mobile = models.BooleanField(default=True)
     risk_level = models.IntegerField(
         default=0,
         validators=[

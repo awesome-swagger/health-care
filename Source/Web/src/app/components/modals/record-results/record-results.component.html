@@ -1,4 +1,5 @@
-<h1 class="modal__title">Record Results</h1>
+<h1 class="modal__title" *ngIf="!editing">Record Result</h1>
+<h1 class="modal__title" *ngIf="editing">Edit Record Result</h1>
 <div class="divider modal__divider"></div>
 <h2 class="center marBottom8">{{patient?.user.first_name}} {{patient?.user.last_name}}</h2>
 <h5 class="center marBottom32">{{carePlan.plan_template.service_area.name}}, {{carePlan.plan_template.name}}<span *ngIf="carePlan.billing_type">, {{carePlan.billing_type.acronym}}</span></h5>
@@ -16,8 +17,8 @@
     </div>
   </div>
   <div class="flex1">
-    <label>Care Plan</label>
-    {{carePlan.plan_template.name}}
+    <label>Time</label>
+    <app-time-picker [startingValue]="parseTime(date)" (valueChange)="setSelectedTime($event)"></app-time-picker>
   </div>
 </div> <!--/.flex (for date, type, care plan)-->
 
@@ -26,14 +27,14 @@
   <div class="flex1 marRight24">
     <label>Task</label>
     <div class="drop">
-      <div class="drop__input" (click)="tasksOpen = !tasksOpen"><span *ngIf="task">{{task.name}}</span></div>
-      <app-popover [visible]="tasksOpen" (visibleChange)="tasksOpen = $event">
+      <div class="drop__input" [ngClass]="{'drop__input--disabled': !taskEditable}" (click)="tasksOpen = !tasksOpen"><span *ngIf="selectedTaskTemplate">{{selectedTaskTemplate.name}}</span></div>
+      <app-popover [visible]="taskEditable && tasksOpen" (visibleChange)="tasksOpen = $event">
         <ul class="drop__dropdown fullWidth isOpen">
           <li class="center" *ngIf="!tasksLoaded">
             <div class="pad24 ssSpinner ssSpinner--small"></div>
           </li>
           <ng-container *ngIf="tasksLoaded">
-            <li class="drop__option" *ngFor="let t of tasks" (click)="task = t; tasksOpen = false;">
+            <li class="drop__option" *ngFor="let t of teamTaskTemplates" (click)="selectedTaskTemplate = t; tasksOpen = false;">
               <a class="drop__link">{{t.name}}</a>
             </li>
           </ng-container>

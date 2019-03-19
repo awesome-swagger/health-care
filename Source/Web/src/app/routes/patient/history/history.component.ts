@@ -20,38 +20,32 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
   public carePlan = null;
   public careTeamMembers = [];
   public dateFilter = moment();
-  public actionChoices = [
+  public taskTypeChoices = [
     {
-      display: 'Care Plan Review',
-      value: 'care_plan_review',
+      display: 'Care Team Coordination',
+      value: 'coordination',
     },
     {
-      display: 'Phone Call',
-      value: 'phone_call',
+      display: 'Patient Interaction',
+      value: 'interaction',
     },
     {
       display: 'Notes',
       value: 'notes',
-    },
-    {
-      display: 'Face to Face',
-      value: 'face_to_face',
-    },
-    {
-      display: 'Message',
-      value: 'message',
     }
   ];
+  public teamTaskChoices = [];
+  public selectedTasks = [];
   public datePickerOptions = {
     relativeLeft: '0px',
     relativeTop: '48px'
   };
-  public selectedActions = [];
   public billedActivities = [];
+  public activitiesLoaded = false;
   public selectedActivity = null;
 
   public dateFilterOpen = false;
-  public actionFilterOpen = false;
+  public taskFilterOpen = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -78,11 +72,14 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
     			// Get care plan
     			this.getCarePlan(params.planId).then((carePlan: any) => {
     				this.carePlan = carePlan;
-            this.selectedActions = this.actionChoices.concat();
+            this.getTaskTemplates().then((taskTemplates: any) => {
+              this.teamTaskChoices = taskTemplates;
+            });
             // Get billed activities
             this.getBilledActivities().then((billedActivities: any) => {
               this.billedActivities = billedActivities;
               this.selectedActivity = this.billedActivities[0];
+              this.activitiesLoaded = true;
             });
     			});
     		});
@@ -105,11 +102,32 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
     return promise;
   }
 
-  public getBilledActivities() {
+  public getTaskTemplates() {
     let promise = new Promise((resolve, reject) => {
-      let billedActivitiesSub = this.store.BilledActivity.readListPaged({
+      let teamTasksSub = this.store.TeamTaskTemplate.readListPaged().subscribe(
+        (teamTasks) => resolve(teamTasks),
+        (err) => reject(err),
+        () => {
+          teamTasksSub.unsubscribe();
+        },
+      );
+    });
+    return promise;
+  }
+
+  public getBilledActivities(taskTemplate = null) {
+    let promise = new Promise((resolve, reject) => {
+      let params = {
         plan: this.carePlan.id,
-      }).subscribe(
+      };
+      if (this.dateFilter) {
+        let endOfDay = this.dateFilter.clone().endOf('day');
+        params['activity_datetime__lte'] = endOfDay.toISOString();
+      }
+      if (taskTemplate) {
+        params['team_task_template'] = taskTemplate.id;
+      }
+      let billedActivitiesSub = this.store.BilledActivity.readListPaged(params).subscribe(
         (billedActivities) => {
           resolve(billedActivities);
         },
@@ -145,41 +163,54 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
     this.getBilledActivities().then((billedActivities: any) => {
       this.billedActivities = billedActivities;
       this.selectedActivity = this.billedActivities[0];
+      this.activitiesLoaded = true;
     });
   }
 
-  public isActionChecked(action) {
-    return this.selectedActions.findIndex((obj) => {
-      return obj.value === action.value;
+  public formatTaskType(taskType) {
+    let match = this.taskTypeChoices.find((obj) => {
+      return obj.value === taskType;
+    });
+    if (match) {
+      return match.display;
+    } else {
+      return taskType;
+    }
+  }
+
+  public isTaskChecked(task) {
+    return this.selectedTasks.findIndex((obj) => {
+      return obj.id === task.id;
     }) > -1;
   }
 
-  public checkAllActions() {
-    this.selectedActions = this.actionChoices.concat();
+  public checkAllTasks() {
+    this.selectedTasks = this.teamTaskChoices.concat();
   }
 
-  public uncheckAllActions() {
-    this.selectedActions = [];
+  public uncheckAllTasks() {
+    this.selectedTasks = [];
   }
 
-  public toggleAction(action) {
-    if (!this.isActionChecked(action)) {
-      this.selectedActions.push(action);
+  public toggleTask(task) {
+    if (!this.isTaskChecked(task)) {
+      this.selectedTasks.push(task);
     } else {
-      let index = this.selectedActions.findIndex((obj) => obj.value === action.value);
-      this.selectedActions.splice(index, 1);
+      let index = this.selectedTasks.findIndex((obj) => obj.id === task.id);
+      this.selectedTasks.splice(index, 1);
     }
   }
 
   public filteredBilledActivities() {
     return this.billedActivities.filter((activity) => {
-      let actionValues = this.selectedActions.map((obj) => obj.value);
-      return actionValues.includes(activity.activity_type);
+      // let actionValues = this.selectedActions.map((obj) => obj.value);
+      // return actionValues.includes(activity.activity_type);
+      return true;
+    }).sort((left: any, right: any) => {
+      left = moment(left.created).format();
+      right = moment(right.created).format();
+      return left - right;
     });
-  }
-
-  public formatActivityType(type) {
-    return type.replace(/_/g, ' ');
   }
 
   public openRecordResults() {
@@ -188,7 +219,7 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
       data: {
         patient: this.patient,
         carePlan: this.carePlan,
-        task: null,
+        taskEditable: true,
         totalMinutes: null,
         with: null,
         syncToEHR: false,
@@ -203,12 +234,12 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
       // Create billed activity record
       let createSub = this.store.BilledActivity.create({
         plan: this.carePlan.id,
-        activity_date: results.date.format('YYYY-MM-DD'),
-        activity_type: 'care_plan_review', // TODO: activity type
+        activity_datetime: results.date,
         members: [
           this.user.id,
         ].concat(results.with),
-        patient_included: results.patient_included,
+        team_task_template: results.teamTaskTemplate,
+        patient_included: results.patientIncluded,
         sync_to_ehr: results.syncToEHR,
         added_by: this.user.id,
         notes: results.notes,
@@ -231,12 +262,14 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
     this.modals.open(RecordResultsComponent, {
       closeDisabled: true,
       data: {
+        editing: true,
+        taskEditable: true,
         patient: this.patient,
         carePlan: this.carePlan,
-        date: moment(result.activity_date),
-        task: null,
+        date: moment(result.activity_datetime),
+        teamTaskId: result.team_task_template ? result.team_task_template.id : null,
+        patientIncluded: result.patient_included,
         totalMinutes: result.time_spent,
-        teamMembers: this.careTeamMembers,
         with: result.members.map((member) => member.id),
         syncToEHR: result.sync_to_ehr,
         notes: result.notes,
@@ -246,12 +279,12 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
     }).subscribe((results) => {
       if (!results) return;
       let updateSub = this.store.BilledActivity.update(result.id, {
-        activity_date: results.date.format('YYYY-MM-DD'),
-        activity_type: 'care_plan_review', // TODO: activity type
+        activity_datetime: results.date,
         members: [
           this.user.id,
         ].concat(results.with),
-        patient_included: results.patient_included,
+        team_task_template: results.teamTaskTemplate,
+        patient_included: results.patientIncluded,
         sync_to_ehr: results.syncToEHR,
         notes: results.notes,
         time_spent: results.totalMinutes,

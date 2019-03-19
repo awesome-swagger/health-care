@@ -54,7 +54,7 @@ class CarePlanTemplate(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
         return self.name
 
     class Meta:
-        ordering = ('-created', )
+        ordering = ('name', )
 
 
 class CarePlan(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
@@ -94,6 +94,9 @@ class CarePlan(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
         ))
     is_active = models.BooleanField(default=True)
     __original_billing_practitioner = None
+
+    class Meta:
+        ordering = ('patient', 'plan_template', )
 
     def __init__(self, *args, **kwargs):
         super(CarePlan, self).__init__(*args, **kwargs)
@@ -150,7 +153,7 @@ class PlanConsent(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
     will_complete_tasks = models.BooleanField(default=False)
 
     class Meta:
-        ordering = ('created', )
+        ordering = ('plan', )
 
     def __str__(self):
         return '{} {} {} Plan Consent'.format(

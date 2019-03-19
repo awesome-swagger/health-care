@@ -348,9 +348,18 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
   }
 
   public toggleUsingMobile() {
-    if (!this.isUsingMobile) {
-      this.setAllUpdatable();
-    }
+    let updatePatientSub = this.store.PatientProfile.update(this.patient.id, {
+      is_using_mobile: this.isUsingMobile
+    }, true).subscribe(
+      (data) => {},
+      (err) => {},
+      () => {
+        if (!this.isUsingMobile) {
+          this.setAllUpdatable();
+        }
+        updatePatientSub.unsubscribe();
+      }
+    );
   }
 
   public refetchAllTasks(dateAsMoment) {

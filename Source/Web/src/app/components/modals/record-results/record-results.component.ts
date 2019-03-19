@@ -12,13 +12,15 @@ export class RecordResultsComponent implements OnInit, OnDestroy {
 
   public data = null;
 
+  public editing = false;
   public user = null;
   public patient = null;
   public date = null;
   public carePlan = null;
   public tasksLoaded = false;
-  public tasks = [];
-  public task = null;
+  public teamTaskTemplates = [];
+  public selectedTaskTemplate = null;
+  public taskEditable = true;
   public totalMinutes = null;
   public teamMembersLoaded = false;
   public teamMembers = [];
@@ -53,12 +55,15 @@ export class RecordResultsComponent implements OnInit, OnDestroy {
     this.authSub = this.auth.user$.subscribe((user) => {
       if (!user) return;
       this.user = user;
+      this.editing = this.data.editing ? this.data.editing : false;
+      this.taskEditable = this.data.taskEditable;
       this.patient = this.data.patient;
       this.date = this.data.date ? this.data.date : moment();
       this.carePlan = this.data.carePlan;
       this.totalMinutes = this.data.totalMinutes;
       this.syncToEHR = this.data.syncToEHR;
       this.notes = this.data.notes;
+      this.patientIncluded = this.data.patientIncluded;
       this.patientEngagement = this.data.patientEngagement;
       // Get care team
       this.getCareTeamMembers(this.carePlan.id).then((teamMembers: any) => {
@@ -75,7 +80,13 @@ export class RecordResultsComponent implements OnInit, OnDestroy {
       // Get Task Templates
       this.getTaskTemplates().then((taskTemplates: any) => {
         this.tasksLoaded = true;
-        this.tasks = taskTemplates;
+        this.teamTaskTemplates = taskTemplates;
+        // If teamTaskId is passed in data, set it as the selected task.
+        if (this.data.teamTaskId) {
+          this.selectedTaskTemplate = this.teamTaskTemplates.find((obj) => {
+            return obj.id === this.data.teamTaskId;
+          });
+        }
       });
     });
   }
@@ -113,8 +124,20 @@ export class RecordResultsComponent implements OnInit, OnDestroy {
     return promise;
   }
 
+  public parseTime(time) {
+    return time.format('HH:mm:00');
+  }
+
   public setSelectedDay(e) {
-    this.date = e;
+    this.date.date(e.date());
+  }
+
+  public setSelectedTime(e) {
+    let timeSplit = e.split(':');
+    this.date.set({
+      hour: timeSplit[0],
+      minute: timeSplit[1],
+    });
   }
 
   public setPatientEngagement(num) {
@@ -151,17 +174,17 @@ export class RecordResultsComponent implements OnInit, OnDestroy {
   }
 
   public saveDisabled() {
-    return (!this.task || !this.totalMinutes);
+    return (!this.date || !this.selectedTaskTemplate || !this.totalMinutes);
   }
 
   public clickSave() {
     this.modal.close({
       date: this.date,
       carePlan: this.carePlan,
-      task: this.task.id,
+      teamTaskTemplate: this.selectedTaskTemplate.id,
       totalMinutes: this.totalMinutes,
       with: this.withSelected.map((obj) => obj.employee_profile.id),
-      patient_included: this.patientIncluded,
+      patientIncluded: this.patientIncluded,
       notes: this.notes,
       syncToEHR: this.syncToEHR,
       patientEngagement: this.patientEngagement,
