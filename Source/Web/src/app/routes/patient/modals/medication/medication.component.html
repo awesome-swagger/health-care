@@ -102,11 +102,31 @@
   </label>
   <div class="flex justifySpaceBetween marBottom32">
     <div class="modal__inputWrap marRight32">
-      <label>Appear Time</label>
+      <div class="tool">
+      <span class="matchLabel">Appear Time</span>
+        <div class="tool__anchor">
+          <button class="button button--icon button--icon--small" (click)="tooltip2Open=!tooltip2Open">
+            <i class="ss-help"></i>
+          </button>
+          <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltip2Open }">
+            <div class="tool__text">This is the time of day that a reminder notification will be sent to the patient.</div>
+          </div>
+        </div>
+      </div>
 			<app-time-picker (valueChange)="appearTime = $event;"></app-time-picker>
     </div>
     <div class="modal__inputWrap">
-      <label>Due Time</label>
+      <div class="tool">
+        <span class="matchLabel">Due Time</span>
+        <div class="tool__anchor">
+          <button class="button button--icon button--icon--small" (click)="tooltip3Open=!tooltip3Open">
+            <i class="ss-help"></i>
+          </button>
+          <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltip3Open }">
+            <div class="tool__text">This is the time of day that the medication should be taken.</div>
+          </div>
+        </div>
+      </div>
 			<app-time-picker (valueChange)="dueTime = $event;"></app-time-picker>
     </div>
   </div>

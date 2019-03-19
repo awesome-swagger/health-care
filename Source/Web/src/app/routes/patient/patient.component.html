@@ -47,7 +47,7 @@
         <div class="flex alignCenter justifyCenter">
           <div class="picName" *ngIf="plan.care_manager" [ngClass]="{'marRight8': plan.team_members.length > 0}">
             <img class="picName__img" [src]="plan.care_manager.employee_profile.user.image_url" />
-            {{plan.care_manager.employee_profile.user.first_name}} {{plan.care_manager.employee_profile.user.last_name}}<span *ngIf="plan.care_manager.employee_profile.title">, {{plan.care_manager.employee_profile.title.abbreviation}}</span>
+            {{plan.care_manager.employee_profile.user.first_name}} {{plan.care_manager.employee_profile.user.last_name}}<span *ngIf="plan.care_manager.employee_profile?.title">, {{plan.care_manager.employee_profile?.title.abbreviation}}</span>
           </div>
           <div class="tool__anchor" *ngIf="plan.team_members?.length > 0">
             <a class="flex alignCenter" (click)="teamListOpen[plan.id]=!teamListOpen[plan.id]">
@@ -58,8 +58,8 @@
               <div class="tool__tip tool__tip--bottom isOpen">
                 <div class="tool__text">
                   <div class="picName" [ngClass]="{'marBottom16': (i + 1) !== plan.team_members.length}" *ngFor="let teamMember of plan.team_members; index as i">
-                    <img class="picName__img" [src]="teamMember.employee_profile.user.image_url" />
-                    {{teamMember.employee_profile.user.first_name}} {{teamMember.employee_profile.user.last_name}}<span *ngIf="teamMember.employee_profile.title">, {{teamMember.employee_profile.title.abbreviation}}</span>
+                    <img class="picName__img" [src]="teamMember.employee_profile?.user?.image_url" />
+                    {{teamMember.employee_profile?.user.first_name}} {{teamMember.employee_profile?.user.last_name}}<span *ngIf="teamMember.employee_profile?.title">, {{teamMember.employee_profile?.title.abbreviation}}</span>
                   </div>
                 </div>
               </div>

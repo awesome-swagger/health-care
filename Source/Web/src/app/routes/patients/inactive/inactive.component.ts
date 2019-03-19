@@ -38,6 +38,7 @@ export class InactivePatientsComponent implements OnDestroy, OnInit {
   public multi2Open;
   public multi3Open;
   public multi4Open;
+  public openAlsoTip = {};
 
   public totalInactive:number = 0;
   public total:number = 0;

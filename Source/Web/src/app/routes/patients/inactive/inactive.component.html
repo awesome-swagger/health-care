@@ -173,7 +173,7 @@
             </thead>
             <tbody *ngIf="facility.inactivePatients">
               <ng-container *ngFor="let inactivePatient of facility.inactivePatients">
-                <ng-container *ngFor="let plan of inactivePatient.carePlans">
+                <ng-container *ngFor="let plan of inactivePatient.carePlans; let j = index">
                   <tr *ngIf="hasCheckedCareTeamMember(plan)">
                     <td class="left">
                       <a [routerLink]="['/patient', inactivePatient.id]" class="picName">
@@ -188,12 +188,12 @@
                     <td>
                       <a
                         class="tool__anchor justifyCenter"
-                        (click)="openAlsoTip[''+i+j] = !openAlsoTip[''+i+j]"
-                        *ngIf="getAlsoPlans(j, patient).length"
+                        (click)="openAlsoTip[''+inactivePatient.id+j] = !openAlsoTip[''+inactivePatient.id+j]"
+                        *ngIf="getAlsoPlans(j, inactivePatient).length"
                       >
-                        {{getAlsoPlans(j, patient).length}}
-                        <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : openAlsoTip[''+i+j] }">
-                          <div class="iconText iconText--white iconText--autoHeight marBottom8" *ngFor="let planName of getAlsoPlans(j, patient)">
+                        {{getAlsoPlans(j, inactivePatient).length}}
+                        <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : openAlsoTip[''+inactivePatient.id+j] }">
+                          <div class="iconText iconText--white iconText--autoHeight marBottom8" *ngFor="let planName of getAlsoPlans(j, inactivePatient)">
                             {{planName}}
                           </div>
                         </div>

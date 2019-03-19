@@ -30,31 +30,33 @@
           <div class="drop__input" (click)="multi2Open = !multi2Open">
             All
           </div>
-          <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : multi2Open }">
-            <div class="drop__buttons">
-              <button class="button button--iconText" (click)="toggleAllServiceAreas(true)">
-                <i class="ss-check ss-standard"></i> Check All
-              </button>
-              <button class="button button--iconText" (click)="toggleAllServiceAreas(false)">
-                <i class="ss-ban"></i> Uncheck All
-              </button>
-            </div>
+          <app-popover [visible]="multi2Open" (visibleChange)="multi2Open = $event">
+            <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : multi2Open }">
+              <div class="drop__buttons">
+                <button class="button button--iconText" (click)="toggleAllServiceAreas(true)">
+                  <i class="ss-check ss-standard"></i> Check All
+                </button>
+                <button class="button button--iconText" (click)="toggleAllServiceAreas(false)">
+                  <i class="ss-ban"></i> Uncheck All
+                </button>
+              </div>
 
-            <li class="drop__option">
-              <input class="input input--search drop__innerInput" type="text" placeholder="Search" [(ngModel)]="serviceAreaSearch" />
-            </li>
-
-            <ng-container *ngFor="let serviceArea of serviceAreas;">
-              <li class="drop__option" *ngIf="saSearchMatch(serviceArea)">
-                <label class="drop__checkbox styledInput"
-                title="Behavioral Health Initiative">
-                  <input type="checkbox" class="styledInput__input" [(ngModel)]="activeServiceAreas[serviceArea.id]" />
-                  <span class="styledInput__box"></span>
-                  {{serviceArea.name}}
-                </label>
+              <li class="drop__option">
+                <input class="input input--search drop__innerInput" type="text" placeholder="Search" [(ngModel)]="serviceAreaSearch" />
               </li>
-            </ng-container>
-          </ul>
+
+              <ng-container *ngFor="let serviceArea of serviceAreas;">
+                <li class="drop__option" *ngIf="saSearchMatch(serviceArea)">
+                  <label class="drop__checkbox styledInput"
+                  title="Behavioral Health Initiative">
+                    <input type="checkbox" class="styledInput__input" [(ngModel)]="activeServiceAreas[serviceArea.id]" />
+                    <span class="styledInput__box"></span>
+                    {{serviceArea.name}}
+                  </label>
+                </li>
+              </ng-container>
+            </ul>
+          </app-popover>
         </div>
     </div> <!--/ container for care plan type filter-->
 

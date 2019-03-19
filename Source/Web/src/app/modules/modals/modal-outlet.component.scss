@@ -19,6 +19,7 @@
   &__content {
     // position set in js
     margin: 0 auto;
+    margin-bottom: 50px;
     z-index: 100;
     overflow: visible;
     max-width: 1392px; // content max-width of 1440, minus 48px padding

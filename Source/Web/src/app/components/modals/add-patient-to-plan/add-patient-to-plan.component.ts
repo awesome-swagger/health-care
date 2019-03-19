@@ -413,7 +413,7 @@ export class AddPatientToPlanComponent implements OnInit {
     if (this.billingSearchString.length >= 3) {
       return _filter(this.employees, employee => {
         const name = `${_get(employee, 'user.first_name')} ${_get(employee, 'user.last_name')}`;
-        return name.indexOf(this.billingSearchString) > -1;
+        return name.toLowerCase().indexOf(this.billingSearchString.toLowerCase()) > -1;
       })
     }
     return [];
@@ -423,7 +423,7 @@ export class AddPatientToPlanComponent implements OnInit {
     if (this.CMSearchString.length >= 3) {
       return _filter(this.employees, employee => {
         const name = `${_get(employee, 'user.first_name')} ${_get(employee, 'user.last_name')}`;
-        return name.indexOf(this.CMSearchString) > -1;
+        return name.toLowerCase().indexOf(this.CMSearchString.toLowerCase()) > -1;
       })
     }
     return [];

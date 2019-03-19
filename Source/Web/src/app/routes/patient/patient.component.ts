@@ -1,29 +1,26 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+// noinspection ES6UnusedImports
 import { TitleCasePipe } from '@angular/common'
 import { ModalService, ConfirmModalComponent } from '../../modules/modals';
 import { FinancialDetailsComponent } from './modals/financial-details/financial-details.component';
 import { CarePlanConsentComponent } from './modals/care-plan-consent/care-plan-consent.component';
 import { ProblemAreasComponent } from './modals/problem-areas/problem-areas.component';
 import { AddDiagnosisComponent } from './modals/add-diagnosis/add-diagnosis.component';
-import { EditDiagnosisComponent } from './modals/edit-diagnosis/edit-diagnosis.component';
 import { ProcedureComponent } from './modals/procedure/procedure.component';
 import { MedicationComponent } from './modals/medication/medication.component';
-import { AddPatientToPlanComponent } from '../../components/modals/add-patient-to-plan/add-patient-to-plan.component';
+import { AddPatientToPlanComponent } from '../../components';
 import { PatientProfileComponent } from './modals/patient-profile/patient-profile.component';
 import { PatientCommunicationComponent } from './modals/patient-communication/patient-communication.component';
 import { PatientAddressComponent } from './modals/patient-address/patient-address.component';
 import { PatientEmergencyContactComponent } from './modals/patient-emergency-contact/patient-emergency-contact.component';
 import { DeleteMedicationComponent } from './modals/delete-medication/delete-medication.component';
-import { DeleteDiagnosisComponent } from './modals/delete-diagnosis/delete-diagnosis.component';
 import { NavbarService, StoreService, UtilsService } from '../../services';
-import patientData from './patientdata.js';
 import * as moment from 'moment';
 import {
   filter as _filter,
   find as _find
 } from 'lodash';
-import { st } from '@angular/core/src/render3';
 
 @Component({
   selector: 'app-patient',
@@ -65,9 +62,6 @@ export class PatientComponent implements OnDestroy, OnInit {
     this.routeSub = this.route.params.subscribe((params) => {
       this.getPatient(params.patientId).then((patient:any) => {
         this.patient = patient;
-        console.log('vvvvvvvvvvvvvvvvvvvvvvvvvvvvv')
-        console.log(this.patient)
-        console.log('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
         this.nav.addRecentPatient(this.patient);
         this.getCarePlans(this.patient.id).then((carePlans: any) => {
           this.carePlans = carePlans;
@@ -108,7 +102,7 @@ export class PatientComponent implements OnDestroy, OnInit {
         this.getPatientMedications(this.patient.id);
 
       }).catch(() => {
-        this.router.navigate(['/error']);
+        this.router.navigate(['/error']).then(() => {});
         // this.patient = patientData.patient;
         // this.carePlans = patientData.carePlans;
       });
@@ -120,7 +114,7 @@ export class PatientComponent implements OnDestroy, OnInit {
   }
 
   public getPatient(id) {
-    let promise = new Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       let patientSub = this.store.PatientProfile.read(id).subscribe(
         (patient) => {
           resolve(patient);
@@ -133,11 +127,10 @@ export class PatientComponent implements OnDestroy, OnInit {
         },
       );
     });
-    return promise;
   }
 
   public getProblemAreas(patientId) {
-    let promise = new Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       let problemAreasSub = this.store.ProblemArea.readListPaged({
         patient: patientId,
       }).subscribe(
@@ -148,7 +141,6 @@ export class PatientComponent implements OnDestroy, OnInit {
         },
       );
     });
-    return promise;
   }
 
   public getCarePlans(patientId) {
@@ -168,7 +160,7 @@ export class PatientComponent implements OnDestroy, OnInit {
   }
 
   public getCarePlanOverview(patientId) {
-    let promise = new Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       let overviewSub = this.store.PatientProfile.detailRoute('get', patientId, 'care_plan_overview').subscribe(
         (overview) => resolve(overview),
         (err) => reject(err),
@@ -177,11 +169,10 @@ export class PatientComponent implements OnDestroy, OnInit {
         }
       );
     });
-    return promise;
   }
 
   public getCareTeam(plan) {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
         this.store.CarePlan.detailRoute('GET', plan.id, 'care_team_members').subscribe((res:any) => {
           resolve(res);
         })
@@ -189,7 +180,7 @@ export class PatientComponent implements OnDestroy, OnInit {
   }
 
   public getPatientProcedures(patientId) {
-    let promise = new Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       let proceduresSub = this.store.PatientProcedure.readListPaged({
         patient: patientId,
       }).subscribe(
@@ -200,7 +191,6 @@ export class PatientComponent implements OnDestroy, OnInit {
         },
       );
     });
-    return promise;
   }
 
   public getPatientDiagnoses(patient) {
@@ -236,10 +226,7 @@ export class PatientComponent implements OnDestroy, OnInit {
 
   public isBefore3DaysAgo(dateAsMoment) {
     let threeDaysAgo = moment().subtract(3, 'days').startOf('day');
-    if (dateAsMoment.isBefore(threeDaysAgo)) {
-      return true;
-    }
-    return false;
+    return dateAsMoment.isBefore(threeDaysAgo);
   }
 
   public sortTeamMembersByCheckin(teamMembers) {
@@ -285,7 +272,7 @@ export class PatientComponent implements OnDestroy, OnInit {
         problemAreas: this.problemAreasFilteredByPlan(plan.id),
       },
       width: '560px',
-    }).subscribe((res) => {
+    }).subscribe(() => {
       this.getProblemAreas(this.patient.id).then((problemAreas: any) => {
         this.problemAreas = problemAreas;
       });
@@ -319,7 +306,7 @@ export class PatientComponent implements OnDestroy, OnInit {
       width: '384px',
     }).subscribe((res) => {
       if (res === okText) {
-        this.store.CarePlan.destroy(planId).subscribe(res => {
+        this.store.CarePlan.destroy(planId).subscribe(() => {
           this.carePlans = _filter(this.carePlans, plan => plan.id !== planId);
         })
       }
@@ -477,7 +464,7 @@ export class PatientComponent implements OnDestroy, OnInit {
     }).subscribe((res) => {
       if (res === 'Continue') {
         this.store.PatientProcedure.destroy(patientProcedure.id).subscribe(
-          (success) => {
+          () => {
             let index = this.patientProcedures.findIndex((obj) => obj.id === patientProcedure.id);
             this.patientProcedures.splice(index, 1);
           }
@@ -489,7 +476,7 @@ export class PatientComponent implements OnDestroy, OnInit {
 
   public addMedication() {
     this.modals.open(MedicationComponent, {
-      width: '512px',
+      width: '576px',
       data: {
         type: 'add',
         patient: this.patient,
@@ -503,7 +490,7 @@ export class PatientComponent implements OnDestroy, OnInit {
 
   public editMedication(medication) {
     this.modals.open(MedicationComponent, {
-      width: '512px',
+      width: '576px',
       data: {
         type: 'edit',
         patient: this.patient,
@@ -540,7 +527,11 @@ export class PatientComponent implements OnDestroy, OnInit {
       },
       width: '384px',
     }).subscribe(() => {
-    // do something with result
+      this.store.PatientProfile.update(this.patient.id, {
+        is_active: false,
+      }).subscribe(() => {
+        this.router.navigate(['/patients', 'active']).then(() => {})
+      })
     });
   }
 
@@ -548,13 +539,11 @@ export class PatientComponent implements OnDestroy, OnInit {
     if (!timeSpentStr) {
       return 0;
     }
-    let hours = 0;
-    let minutes = 0;
     let timeCountSplit = timeSpentStr.split(":");
     let splitHours = parseInt(timeCountSplit[0]);
     let splitMinutes = parseInt(timeCountSplit[1]);
-    hours = splitHours;
-    minutes = splitMinutes;
+    let hours = splitHours;
+    let minutes = splitMinutes;
     minutes = minutes + (hours * 60);
     return minutes;
   }

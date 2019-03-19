@@ -24,7 +24,11 @@ export class InvitedPatientsComponent implements OnDestroy, OnInit {
 
   public invitedPatients = [];
   public invitedPatientsGrouped = [];
+  public serviceAreas = [];
+  public serviceAreaSearch:string = '';
+  public carePlanSearch:string = '';
   public activeServiceAreas = {};
+  public carePlanTemplates = [];
   public activeCarePlans = {};
   public openAlsoTip = {};
   public toolIP1Open;
@@ -67,19 +71,9 @@ export class InvitedPatientsComponent implements OnDestroy, OnInit {
 
         if (user.facilities.length === 1) {
           this.facilityAccordOpen[user.facilities[0].id] = true;
-          let employeeSub = this.auth.user$.subscribe(
-            user => {
-              if (!user) return;
-              if (user.facilities.length === 1) {
-                this.facilityAccordOpen[user.facilities[0].id] = true;
-              }
-            },
-            () => {},
-            () => {
-              employeeSub.unsubscribe();
-            }
-          )
         }
+
+        this.facilities = this.facilities.filter(f => user.facilities.find(fa => fa.id === f.id))
       })
 
       this.facilities.forEach(facility => {
@@ -103,6 +97,20 @@ export class InvitedPatientsComponent implements OnDestroy, OnInit {
       this.employees = res;
       this.employees.forEach(e => {
         this.employeeChecked[e.id] = true;
+      })
+    })
+
+    this.store.ServiceArea.readListPaged().subscribe(res => {
+      this.serviceAreas = res;
+      this.serviceAreas.forEach(sa => {
+        this.activeServiceAreas[sa.id] = true;
+      })
+    })
+
+    this.store.CarePlanTemplate.readListPaged().subscribe(res => {
+      this.carePlanTemplates = res;
+      this.carePlanTemplates.forEach(cp => {
+        this.activeCarePlans[cp.id] = true;
       })
     })
 
@@ -194,15 +202,16 @@ export class InvitedPatientsComponent implements OnDestroy, OnInit {
   }
 
   public toggleAllCarePlans(status) {
-    Object.keys(this.activeServiceAreas).forEach(area => {
-      this.activeServiceAreas[area] = status;
+    Object.keys(this.activeCarePlans).forEach(area => {
+      this.activeCarePlans[area] = status;
     })
   }
 
-  public reminderEmail(patient) {
+  public reminderEmail(patient, facility) {
     let modalSub = this.modals.open(ReminderEmailComponent, {
       data: {
-        patient: patient,
+        patient,
+        facility 
       },
       width: '512px',
     }).subscribe(
@@ -250,7 +259,6 @@ export class InvitedPatientsComponent implements OnDestroy, OnInit {
     const cancelText = 'Cancel';
     const okText = 'Continue';
     this.modals.open(ConfirmModalComponent, {
-     closeDisabled: true,
      data: {
        title: 'Remove Patient?',
        body: 'Are you sure you want to revoke this patient’s invitation? This cannot be undone.',
@@ -262,8 +270,10 @@ export class InvitedPatientsComponent implements OnDestroy, OnInit {
       if (res === okText) {
         this.store.CarePlan.destroy(plan.id).subscribe(res => {
           const facility = this.facilities.find(f => f.id === facility.id);
+          facility.invitedPatients = facility.invitedPatients.filter(p => p.id !== patient.id);
           const patient = facility.invitedPatients.find(p => p.id === patient.id);
           patient.carePlans = patient.carePlans.filter(p => p.id !== plan.id);
+          document.dispatchEvent(new Event('refreshPatientOverview'));
         })
       }
     });
@@ -290,4 +300,13 @@ export class InvitedPatientsComponent implements OnDestroy, OnInit {
       this.employeeChecked[id] = status;
     })
   }
+
+  public saSearchMatch(sa) {
+    return sa.name.toLowerCase().indexOf(this.serviceAreaSearch.toLowerCase()) > -1;
+  }
+
+  public cpSearchMatch(cp) {
+    return cp.name.toLowerCase().indexOf(this.carePlanSearch.toLowerCase()) > -1;
+  }
+
 }
