@@ -18,26 +18,26 @@
                </div>
            </div>
            <div>
-             <label>Filter by Action</label>
+             <label>Filter by Task</label>
              <div class="drop">
-               <div class="drop__input" (click)="actionFilterOpen = !actionFilterOpen">
+               <div class="drop__input" (click)="taskFilterOpen = !taskFilterOpen">
                  All
                </div>
-               <app-popover [visible]="actionFilterOpen" (visibleChange)="actionFilterOpen = $event;">
+               <app-popover [visible]="taskFilterOpen" (visibleChange)="taskFilterOpen = $event;">
                  <ul class="drop__dropdown isOpen">
                    <div class="drop__buttons">
-                     <button class="button button--iconText" (click)="checkAllActions()">
+                     <button class="button button--iconText" (click)="checkAllTasks()">
                        <i class="ss-check ss-standard"></i> Check All
                      </button>
-                     <button class="button button--iconText" (click)="uncheckAllActions()">
+                     <button class="button button--iconText" (click)="uncheckAllTasks()">
                        <i class="ss-ban"></i> Uncheck All
                      </button>
                    </div>
-                   <li class="drop__option" *ngFor="let action of actionChoices">
+                   <li class="drop__option" *ngFor="let teamTask of teamTaskChoices">
                      <label class="drop__checkbox styledInput">
-                       <input type="checkbox" class="styledInput__input" [checked]="isActionChecked(action)" (click)="toggleAction(action)" />
+                       <input type="checkbox" class="styledInput__input" [checked]="isTaskChecked(teamTask)" (click)="toggleTask(teamTask)" />
                        <span class="styledInput__box"></span>
-                       {{action.display}}
+                       {{teamTask.name}}
                      </label>
                    </li>
                  </ul>
@@ -54,26 +54,27 @@
     <div class="chat chat--pad">
       <div class="chat__side">
         <div class="chat__threads">
-          <ng-container *ngIf="filteredBilledActivities().length > 0">
+          <div class="ssSpinner center pad24" *ngIf="!activitiesLoaded"></div>
+          <ng-container *ngIf="activitiesLoaded && filteredBilledActivities().length > 0">
             <div class="chat__thread" *ngFor="let activity of filteredBilledActivities()" [ngClass]="{'chat__thread--active': selectedActivity && selectedActivity.id === activity.id}" (click)="selectedActivity = activity;">
               <div class="flex alignCenter justifySpaceBetween marBottom8">
                 <h5 class="noMargin">
-                  {{moment(activity.activity_date).format('MMM DD, YYYY')}}&ensp;|&ensp;{{moment(activity.activity_date).format('h:mm A')}}
+                  {{moment(activity.activity_datetime).format('MMM DD, YYYY')}}&ensp;|&ensp;{{moment(activity.activity_datetime).format('h:mm A')}}
                 </h5>
                 <div class="pill">
                   {{activity.readable_time_spent}}
                 </div>
               </div>
-              <div class="iconText iconText--wrap iconText--autoHeight marBottom8">
-                <i class="iconText__icon ss-chats"></i>
-                {{formatActivityType(activity.activity_type) | titlecase}}
+              <div class="marBottom16">
+                <span *ngIf="activity.team_task_template">{{formatTaskType(activity.team_task_template.category)}}</span>
+                <span *ngIf="!activity.team_task_template">Patient Data Review</span>
               </div>
               <h5 class="noMargin">
                 Added by {{activity.added_by.user.first_name}} {{activity.added_by.user.last_name}}
               </h5>
             </div> <!--/.chat__thread-->
           </ng-container>
-          <ng-container *ngIf="filteredBilledActivities().length === 0">
+          <ng-container *ngIf="activitiesLoaded && filteredBilledActivities().length === 0">
             <p class="center marTop32">No activities meet criteria.</p>
           </ng-container>
         </div> <!--/.chat__threads-->
@@ -99,14 +100,13 @@
                   <i class="ss-delete"></i>
                 </button>
               </div>
-              <label>
-                <!--TODO: Show label that matches the result-->
-                <span>Care Plan Task</span>
-                <span *ngIf="">Action</span>
-              </label>
-              <h2 class="noMargin">{{formatActivityType(selectedActivity.activity_type) | titlecase}}</h2>
+              <label>Task Category</label>
+              <h2 class="noMargin">
+                <span *ngIf="selectedActivity.team_task_template">{{formatTaskType(selectedActivity.team_task_template.category)}}</span>
+                <span *ngIf="!selectedActivity.team_task_template">Patient Data Review</span>
+              </h2>
               <div class="divider divider--smallMargin"></div>
-              <h5>Added by {{selectedActivity.added_by.user.first_name}} {{selectedActivity.added_by.user.last_name}}&emsp;{{moment(selectedActivity.activity_date).format('MMM DD, YYYY')}}&ensp;|&ensp;{{moment(selectedActivity.activity_date).format('h:mm A')}}</h5>
+              <h5>Added by {{selectedActivity.added_by.user.first_name}} {{selectedActivity.added_by.user.last_name}}&emsp;{{moment(selectedActivity.activity_datetime).format('MMM DD, YYYY')}}&ensp;|&ensp;{{moment(selectedActivity.activity_datetime).format('h:mm A')}}</h5>
               <!-- <h5 class="noMargin" *ngIf="selectedActivity.lastEditedBy">Last edited by {{getEmployee(selectedActivity.lastEditedBy).first_name}} {{getEmployee(selectedActivity.lastEditedBy).last_name}}, {{getEmployee(selectedActivity.lastEditedBy).title}}&emsp;{{selectedActivity.lastEdited.format('MMM DD, YYYY')}}&ensp;|&ensp;{{selectedActivity.lastEdited.format('h:mm A')}}</h5> -->
               <div class="divider divider--smallTop"></div>
               <label>Total Time</label>
@@ -120,7 +120,13 @@
                   <li class="nameList__item nameList__item--left nameList__item--pad" *ngFor="let member of selectedActivity.members">
                     <div class="picName">
                       <img class="picName__img" [src]="member.user.image_url" />
-                      {{member.user.first_name}} {{member.user.last_name}}
+                      {{member.user.first_name}} {{member.user.last_name}}<span *ngIf="member.title">, {{member.title.abbreviation}}</span>
+                    </div>
+                  </li>
+                  <li class="nameList__item nameList__item--left nameList__item--pad" *ngIf="selectedActivity.patient_included">
+                    <div class="picName">
+                      <img class="picName__img" [src]="patient.user.image_url" />
+                      {{patient.user.first_name}} {{patient.user.last_name}}
                     </div>
                   </li>
                 </ul>
