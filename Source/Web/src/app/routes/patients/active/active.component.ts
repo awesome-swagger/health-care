@@ -4,11 +4,8 @@ import { ModalService, ConfirmModalComponent } from '../../../modules/modals';
 import { AddPatientToPlanComponent } from '../../../components';
 import { StoreService, AuthService } from '../../../services';
 import { UtilsService } from '../../../services';
-import { PopoverComponent } from '../../../modules/popover';
 import {
-  concat as _concat,
   uniqBy as _uniqBy,
-  groupBy as _groupBy,
   filter as _filter,
   find as _find,
   map as _map,
@@ -16,9 +13,7 @@ import {
   mean as _mean,
   sum as _sum,
   compact as _compact,
-  get as _get,
 } from 'lodash';
-import * as moment from 'moment';
 
 @Component({
   selector: 'app-active',
@@ -43,6 +38,7 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
 
   public employees = [];
   public employeeChecked = {};
+  public employee = null;
 
   public openAlsoTip = {};
   public activeServiceAreas = {};
@@ -50,13 +46,12 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
   public activeUsers = {};
   public users = null;
   public toolAP1Open;
-  public multi1Open;
   public multi2Open;
   public multi3Open;
   public multi4Open;
 
-  public serviceAreaSearch:string = '';
-  public carePlanSearch:string = '';
+  public serviceAreaSearch = '';
+  public carePlanSearch = '';
 
   private authSub = null;
 
@@ -73,13 +68,17 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
 
     this.authSub = this.auth.organization$.subscribe((org) => {
       if (org === null) return;
-      this.store.Organization.detailRoute('GET', org.id, 'facilities').subscribe((facilities:any) => {
+      this.store.Organization.detailRoute('GET', org.id, 'facilities').subscribe((facilities: any) => {
         this.facilities = facilities.results.filter(f => !f.is_affiliate);
+        this.auth.user$.subscribe(user => {
+          if (!user) return;
+          this.facilities = this.facilities.filter(f => user.facilities.find(fa => fa.id === f.id));
+        });
         this.facilities.forEach(facility => {
           facility.avgRiskLevel = 0;
           facility.totalTime = '0:00';
           this.accordionsOpen[facility.id] = false;
-          this.store.Facility.detailRoute('GET', facility.id, 'patients', {}, { type: 'active' }).subscribe((patients:any) => {
+          this.store.Facility.detailRoute('GET', facility.id, 'patients', {}, { type: 'active' }).subscribe((patients: any) => {
             facility.patients = patients.results;
             facility.patients.forEach(patient => {
               this.store.CarePlan.readListPaged({ patient: patient.id }).subscribe(plans => {
@@ -100,6 +99,7 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
         })
         this.auth.user$.subscribe(user => {
           if (!user) return;
+          this.employee = user;
           if (user.facilities.length === 1) {
             this.accordionsOpen[user.facilities[0].id] = true;
           }
@@ -134,8 +134,12 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
       })
     })
 
-    this.store.CarePlanTemplate.readListPaged().subscribe(templates => {
-      this.carePlanTemplates = templates
+    this.store.CarePlanTemplate.readListPaged().subscribe((templates: any) => {
+      this.carePlanTemplates = templates.sort((a, b) => {
+        let textA = a.name.toUpperCase();
+        let textB = b.name.toUpperCase();
+        return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
+      });
       templates.forEach(template => {
         this.carePlanTemplateChecked[template.id] = true;
       })
@@ -145,7 +149,7 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
       if (!org) return;
       this.store.CarePlan.detailRoute('GET', null, 'average', {}, {
         patient__facility__organization: org.id
-      }).subscribe((res:any) => {
+      }).subscribe((res: any) => {
         this.average = res;
       })
     })
@@ -159,7 +163,7 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
   }
 
   public getPatients() {
-    let promise = new Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       let patientsSub = this.store.PatientProfile.readListPaged({page: 1}).subscribe(
         (patients) => {
           resolve(patients);
@@ -172,27 +176,6 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
         }
       );
     });
-    return promise;
-  }
-
-  public groupPatientsByStatus(patients) {
-    let patientGroupDefaults = {
-      'potential': null,
-      'invited': null,
-      'inactive': null,
-      'active': null,
-    };
-    let groupedByStatus = _groupBy(patients, (obj) => {
-      return obj.status;
-    });
-    return Object.assign({}, patientGroupDefaults, groupedByStatus);
-  }
-
-  public groupPatientsByFacility(patients) {
-    let groupedByFacility = _groupBy(patients, (obj) => {
-      return obj.facility.id;
-    });
-    return groupedByFacility;
   }
 
   public get userFilterListText() {
@@ -217,7 +200,6 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
     const cancelText = 'Cancel';
     const okText = 'Continue';
     this.modals.open(ConfirmModalComponent, {
-      'closeDisabled': true,
       data: {
         title: 'Remove Patient?',
         body: 'Are you sure you want to remove this patient from this plan? This will negate their current progress. This cannot be undone.',
@@ -227,7 +209,7 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
       width: '384px',
     }).subscribe((res) => {
       if (res === okText) {
-        this.store.CarePlan.destroy(plan.id).subscribe(res => {
+        this.store.CarePlan.destroy(plan.id).subscribe(() => {
           const patientFacility = this.facilities.find(f => f.id === facility.id);
           const planPatient = _find(patientFacility.patients, p => p.id === patient.id);
           planPatient.carePlans = _filter(planPatient.carePlans, p => p.id !== plan.id);
@@ -247,9 +229,6 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
       width: '576px',
     }).subscribe(res => {
       if (!res) return;
-      console.log('vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv');
-      console.log(res);
-      console.log('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^');
       if (!(res.hasOwnProperty('patient') && res.hasOwnProperty('plan'))) {
         res.careTeamMembers = res.careTeam;
         res.engagement = res.engagement || 0;
@@ -310,7 +289,7 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
   }
 
   public routeToPatient(patient) {
-    this.router.navigate(['patient', patient.id]);
+    this.router.navigate(['patient', patient.id]).then(() => {});
   }
 
   public getAlsoPlans(i, patient) {
@@ -459,6 +438,23 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
 
   public cpSearchMatch(cp) {
     return cp.name.toLowerCase().indexOf(this.carePlanSearch.toLowerCase()) > -1;
+  }
+
+  public showUserInFilter(user) {
+    if (this.employee) {
+      return this.employee.facilities.find(f => {
+        let result = false;
+        user.facilities.forEach(uf => {
+          if (uf.id === f.id) {
+            result = true;
+          }
+        })
+        return result;
+      })
+    }
+    else {
+      return false;
+    }
   }
 
 }

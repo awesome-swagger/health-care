@@ -37,16 +37,18 @@
                 <input class="input input--search drop__innerInput" type="text" placeholder="Search" />
               </li>
 
-              <li class="drop__option" *ngFor="let user of employees">
-                <label
-                  class="drop__checkbox styledInput"
-                  title="Behavioral Health Initiative"
-                >
-                  <input type="checkbox" class="styledInput__input" [(ngModel)]="employeeChecked[user.id]" />
-                  <span class="styledInput__box"></span>
-                  {{user?.user?.first_name}} {{user?.user?.last_name}}
-                </label>
-              </li>
+              <ng-container *ngFor="let user of employees">
+                <li class="drop__option" *ngIf="showUserInFilter(user)">
+                  <label
+                    class="drop__checkbox styledInput"
+                    title="Behavioral Health Initiative"
+                  >
+                    <input type="checkbox" class="styledInput__input" [(ngModel)]="employeeChecked[user.id]" />
+                    <span class="styledInput__box"></span>
+                    {{user?.user?.first_name}} {{user?.user?.last_name}}
+                  </label>
+                </li>
+              </ng-container>
             </ul>
           </app-popover>
         </div>
@@ -291,7 +293,7 @@
                       </td>
                       <td>
                         <!--TODO: Clicking this link should also open the My Tasks accordion on the patient details page-->
-                        <a [routerLink]="['/patient/asdf/details']" class="justifyCenter">{{plan.tasks_this_week}}</a>
+                        <a [routerLink]="['/patient', patient?.id, 'details', plan?.id]" [queryParams]="{show_my_tasks: true}" class="justifyCenter">{{plan.tasks_this_week}}</a>
                       </td>
                       <td>
                         <div class="progress marCenter">

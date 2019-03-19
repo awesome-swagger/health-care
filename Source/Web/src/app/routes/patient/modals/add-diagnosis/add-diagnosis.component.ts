@@ -35,11 +35,11 @@ export class AddDiagnosisComponent implements OnInit {
   ) { }
 
   ngOnInit() {
+    console.log('---', this.data)
     if (this.data && this.data.patient) {
       this.selectedFacility = this.data.patient.facility;
     }
     if (this.data && this.data.diagnosis) {
-      console.log(this.data.diagnosis)
       this.selectedDiagnosis = this.data.diagnosis;
       this.searchString = this.data.diagnosis.name;
       this.dxSearchString = this.data.diagnosis.dx_code;
@@ -68,7 +68,7 @@ export class AddDiagnosisComponent implements OnInit {
       () => employeeSub.unsubscribe()
     )
 
-    let authSub = this.auth.organization$.subscribe(org => {
+    this.auth.organization$.subscribe(org => {
       if (!org) return;
       this.store.Organization.detailRoute('GET', org.id, 'facilities').subscribe((res:any) => {
         this.facilities = res.results;
