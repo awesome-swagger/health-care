@@ -61,7 +61,7 @@ class BilledActivityViewSet(viewsets.ModelViewSet):
     filterset_fields = {
         'activity_datetime': ['lte'],
         'plan': ['exact'],
-        'team_task_tempate': ['exact']
+        'team_task_template': ['exact']
     }
 
     def get_queryset(self):
