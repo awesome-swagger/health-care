@@ -845,7 +845,18 @@ class CarePlanPatientSerializer(serializers.ModelSerializer):
         return obj.user.get_image_url()
 
 
-class CarePlanOverviewSerializer(serializers.ModelSerializer):
+class OtherPlanSerializer(serializers.ModelSerializer):
+    plan_template = CarePlanTemplateSerializer(read_only=True)
+
+    class Meta:
+        model = CarePlan
+        fields = (
+            'id',
+            'plan_template',
+        )
+
+
+class CarePlanOverviewSerializer(RepresentationMixin, serializers.ModelSerializer):
     """
     serializer to be used by :model:`plans.CarePlan` with
     data relevant in dashboard average endpoint
@@ -853,6 +864,7 @@ class CarePlanOverviewSerializer(serializers.ModelSerializer):
     patient = CarePlanPatientSerializer(read_only=True)
     plan_template = CarePlanTemplateSerializer(read_only=True)
     other_plans = serializers.SerializerMethodField()
+    care_team_employee_ids = serializers.SerializerMethodField()
     tasks_this_week = serializers.SerializerMethodField()
     average_outcome = serializers.SerializerMethodField()
     average_engagement = serializers.SerializerMethodField()
@@ -865,6 +877,7 @@ class CarePlanOverviewSerializer(serializers.ModelSerializer):
             'patient',
             'plan_template',
             'other_plans',
+            'care_team_employee_ids',
             'tasks_this_week',
             'average_outcome',
             'average_engagement',
@@ -872,7 +885,12 @@ class CarePlanOverviewSerializer(serializers.ModelSerializer):
         )
 
     def get_other_plans(self, obj):
-        return obj.patient.care_plans.exclude(id=obj.id).count()
+        serializer = OtherPlanSerializer(
+            obj.patient.care_plans.exclude(id=obj.id), many=True)
+        return serializer.data
+
+    def get_care_team_employee_ids(self, obj):
+        return obj.care_team_members.values_list('employee_profile__id', flat=True)
 
     def get_tasks_this_week(self, obj):
         now = timezone.now()
