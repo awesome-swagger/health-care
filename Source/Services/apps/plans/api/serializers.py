@@ -991,8 +991,9 @@ class CarePlanByTemplateFacilitySerializer(CarePlanOverviewSerializer):
     def get_time_count(self, obj):
         time_spent = BilledActivity.objects.filter(
             plan=obj,
-            activity_date__gte=timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)) \
-        .aggregate(total=Sum('time_spent'))
+            activity_datetime__gte=timezone.now().replace(
+                day=1, hour=0, minute=0, second=0, microsecond=0)) \
+                .aggregate(total=Sum('time_spent'))
         total = time_spent['total'] or 0
         return str(datetime.timedelta(minutes=total))[:-3]
 

@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Avg
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
@@ -296,6 +297,26 @@ class SymptomRating(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
                 value = "equal"
         return value
 
+    @property
+    def behavior_against_care_plan(self):
+        value = ''
+        symptoms = SymptomRating.objects.filter(
+            symptom_task=self.symptom_task,
+            symptom=self.symptom)
+
+        if symptoms.count() == 1:
+            value = 'new'
+        else:
+            avg_symptoms = symptoms.aggregate(avg_rating=Avg('rating'))
+            avg_rating = avg_symptoms['avg_rating'] or 0
+            if self.rating > avg_rating:
+                value = 'better'
+            elif self.rating < avg_rating:
+                value = 'worse'
+            else:
+                value = 'avg'
+        return value
+
 
 class AssessmentTaskTemplate(AbstractTaskTemplate):
     plan_template = models.ForeignKey(
@@ -396,6 +417,26 @@ class AssessmentResponse(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
                 value = "decreasing"
             elif self.rating == second_response.rating:
                 value = "equal"
+        return value
+
+    @property
+    def behavior_against_care_plan(self):
+        value = ''
+        responses = AssessmentResponse.objects.filter(
+            assessment_task=self.assessment_task,
+            assessment_question=self.assessment_question)
+
+        if responses.count() == 1:
+            value = 'new'
+        else:
+            avg_responses = responses.aggregate(avg_rating=Avg('rating'))
+            avg_rating = avg_responses['avg_rating'] or 0
+            if self.rating > avg_rating:
+                value = 'better'
+            elif self.rating < avg_rating:
+                value = 'worse'
+            else:
+                value = 'avg'
         return value
 
 
@@ -530,6 +571,28 @@ class VitalResponse(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
                     value = "decreasing"
                 elif self.rating == second_response.rating:
                     value = "equal"
+        return value
+
+    @property
+    def behavior_against_care_plan(self):
+        value = 'n/a'
+        excluded_types = ['string', 'boolean']
+        if self.question.answer_type not in excluded_types:
+            responses = VitalResponse.objects.filter(
+                vital_task=self.vital_task,
+                question=self.question)
+
+            if responses.count() == 1:
+                value = 'new'
+            else:
+                avg_responses = responses.aggregate(avg_rating=Avg('rating'))
+                avg_rating = avg_responses['avg_rating'] or 0
+                if self.rating > avg_rating:
+                    value = 'better'
+                elif self.rating < avg_rating:
+                    value = 'worse'
+                else:
+                    value = 'avg'
         return value
 
 

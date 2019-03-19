@@ -126,7 +126,7 @@ class CarePlan(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
         now = timezone.now()
         first_day_of_month = now.replace(day=1).date()
         time_spent = self.activities.filter(
-            activity_date__gte=first_day_of_month).aggregate(
+            activity_datetime__gte=first_day_of_month).aggregate(
                 total=Sum('time_spent'))
         total = time_spent['total'] or 0
         return str(datetime.timedelta(minutes=total))[:-3]
@@ -203,7 +203,7 @@ class CareTeamMember(UUIDPrimaryKeyMixin):
         now = timezone.now()
         first_day_of_month = now.replace(day=1).date()
         time_spent = self.employee_profile.added_activities.filter(
-            plan=self.plan, activity_date__gte=first_day_of_month)\
+            plan=self.plan, activity_datetime__gte=first_day_of_month)\
             .aggregate(total=Sum('time_spent'))
         total = time_spent['total'] or 0
         return str(datetime.timedelta(minutes=total))[:-3]

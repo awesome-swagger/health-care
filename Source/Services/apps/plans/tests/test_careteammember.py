@@ -47,7 +47,7 @@ class TestCareTeamMemberUsingAdmin(BillingsMixin, APITestCase):
             activity = self.create_billed_activity(**{
                 'plan': self.plan,
                 'added_by': self.employee_member,
-                'activity_date': now
+                'activity_datetime': now
             })
             total_this_month += activity.time_spent
 
@@ -56,7 +56,7 @@ class TestCareTeamMemberUsingAdmin(BillingsMixin, APITestCase):
             self.create_billed_activity(**{
                 'plan': self.plan,
                 'added_by': self.employee_member,
-                'activity_date': last_month
+                'activity_datetime': last_month
             })
 
         response = self.client.get(self.detail_url)
@@ -126,7 +126,7 @@ class TestCareTeamMemberUsingEmployee(BillingsMixin, APITestCase):
             activity = self.create_billed_activity(**{
                 'plan': self.plan,
                 'added_by': self.employee_member,
-                'activity_date': now
+                'activity_datetime': now
             })
             total_this_month += activity.time_spent
 
@@ -135,7 +135,7 @@ class TestCareTeamMemberUsingEmployee(BillingsMixin, APITestCase):
             self.create_billed_activity(**{
                 'plan': self.plan,
                 'added_by': self.employee_member,
-                'activity_date': last_month
+                'activity_datetime': last_month
             })
 
         response = self.client.get(self.detail_url)
@@ -181,7 +181,7 @@ class TestCareTeamMemberUsingPatient(BillingsMixin, APITestCase):
             activity = self.create_billed_activity(**{
                 'plan': self.plan,
                 'added_by': self.employee_member,
-                'activity_date': now
+                'activity_datetime': now
             })
             total_this_month += activity.time_spent
 
@@ -190,7 +190,7 @@ class TestCareTeamMemberUsingPatient(BillingsMixin, APITestCase):
             self.create_billed_activity(**{
                 'plan': self.plan,
                 'added_by': self.employee_member,
-                'activity_date': last_month
+                'activity_datetime': last_month
             })
 
         response = self.client.get(self.detail_url)

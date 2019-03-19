@@ -292,6 +292,7 @@ class SymptomRatingSerializer(RepresentationMixin,
             'symptom',
             'rating',
             'behavior',
+            'behavior_against_care_plan',
         )
         read_only_fields = (
             'id',
@@ -794,6 +795,7 @@ class AssessmentResponseOverviewSerializer(serializers.ModelSerializer):
             'rating',
             'occurrence',
             'behavior',
+            'behavior_against_care_plan',
         )
 
     def get_question(self, obj):
@@ -873,12 +875,14 @@ class SymptomByPlanSerializer(serializers.ModelSerializer):
 
     def get_rating(self, obj):
         plan = self.context.get('plan')
+        date_range = self.context.get('date_range')
 
         rating_obj = SymptomRating.objects.filter(
             symptom_task__plan=plan,
-            symptom=obj
+            symptom_task__due_datetime__range=date_range,
+            symptom=obj,
         ).order_by('created').last()
-        serializer = SymptomRatingSerializer(rating_obj, many=False)
+        serializer = SymptomRatingSerializer(rating_obj)
 
         return serializer.data
 
@@ -915,6 +919,7 @@ class VitalResponseOverviewSerializer(serializers.ModelSerializer):
             'answer_type',
             'occurrence',
             'behavior',
+            'behavior_against_care_plan',
         )
 
     def get_question(self, obj):
@@ -951,22 +956,13 @@ class VitalByPlanSerializer(serializers.ModelSerializer):
 
     def get_questions(self, obj):
         plan = self.context.get('plan')
-        request = self.context.get('request')
-        timestamp = request.GET.get('date', None)
+        date_range = self.context.get('date_range')
         tasks = VitalTask.objects.filter(
             plan=plan, vital_task_template=obj)
-        date_format = "%Y-%m-%d"
-        date_object = datetime.datetime.strptime(timestamp, date_format).date() \
-            if timestamp else timezone.now().date()
-        date_min = datetime.datetime.combine(date_object,
-                                             datetime.time.min,
-                                             tzinfo=pytz.utc)
-        date_max = datetime.datetime.combine(date_object,
-                                             datetime.time.max,
-                                             tzinfo=pytz.utc)
+
         kwargs = {
             'vital_task__in': tasks,
-            'vital_task__due_datetime__range': (date_min, date_max)
+            'vital_task__due_datetime__range': date_range
         }
 
         responses = VitalResponse.objects.filter(**kwargs)
