@@ -237,6 +237,7 @@ class PatientDiagnosis(UUIDPrimaryKeyMixin):
     date_identified = models.DateField(null=True, blank=True)
     diagnosing_practitioner = models.CharField(max_length=140, null=True, blank=True)
     facility = models.CharField(max_length=140, null=True, blank=True)
+    is_chronic = models.BooleanField(default=False)
 
     class Meta:
         ordering = ('patient', 'diagnosis', )
