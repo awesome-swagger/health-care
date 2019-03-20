@@ -14,6 +14,7 @@ import {
   sum as _sum,
   compact as _compact,
 } from 'lodash';
+import * as moment from 'moment';
 
 @Component({
   selector: 'app-active',
@@ -22,10 +23,8 @@ import {
 })
 export class ActivePatientsComponent implements OnDestroy, OnInit {
 
-  public activePatients = [];
-  public activeCount = 0;
-  public activePatientsGrouped = [];
   public average = null;
+  public averageaverage;
 
   public facilities = [];
   public facilityOpen = {};
@@ -42,7 +41,6 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
 
   public openAlsoTip = {};
   public activeServiceAreas = {};
-  public activeCarePlans = {};
   public activeUsers = {};
   public users = null;
   public toolAP1Open;
@@ -54,6 +52,7 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
   public carePlanSearch = '';
 
   private authSub = null;
+  private organizationSub = null;
 
   constructor(
     private auth: AuthService,
@@ -61,105 +60,105 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
     private route: ActivatedRoute,
     private modals: ModalService,
     private store: StoreService,
-    private utils: UtilsService,
+    public utils: UtilsService,
   ) { }
 
   public ngOnInit() {
-
-    this.authSub = this.auth.organization$.subscribe((org) => {
-      if (org === null) return;
-      this.store.Organization.detailRoute('GET', org.id, 'facilities').subscribe((facilities: any) => {
-        this.facilities = facilities.results.filter(f => !f.is_affiliate);
-        this.auth.user$.subscribe(user => {
-          if (!user) return;
-          this.facilities = this.facilities.filter(f => user.facilities.find(fa => fa.id === f.id));
+    this.authSub = this.auth.user$.subscribe((user) => {
+      if (!user) return;
+      this.employee = user;
+      if (user.facilities.length === 1) {
+        this.accordionsOpen[user.facilities[0].id] = true;
+      }
+      this.organizationSub = this.auth.organization$.subscribe((organization) => {
+        if (!organization) return;
+        this.getCarePlanAverage(organization.id).then((average: any) => {
+          this.average = average;
         });
-        this.facilities.forEach(facility => {
-          facility.avgRiskLevel = 0;
-          facility.totalTime = '0:00';
-          this.accordionsOpen[facility.id] = false;
-          this.store.Facility.detailRoute('GET', facility.id, 'patients', {}, { type: 'active' }).subscribe((patients: any) => {
-            facility.patients = patients.results;
-            facility.patients.forEach(patient => {
-              this.store.CarePlan.readListPaged({ patient: patient.id }).subscribe(plans => {
-                patient.carePlans = plans;
-                patient.carePlans.forEach(plan => {
-                  plan.engagement = plan.engagement || 0;
-                  plan.outcomes = plan.outcomes || 0;
-                  plan.current_week = plan.current_week || 0;
-                  plan.risk_level = plan.risk_level || 0;
-                  plan.tasks_this_week = plan.tasks_this_week || 0;
-                  this.store.CareTeamMember.readListPaged({ plan: plan.id }).subscribe(careTeamMembers => {
-                    plan.careTeamMembers = careTeamMembers;
-                  })
-                })
-              })
+        this.getFacilitiesForOrganization(organization.id).then((facilities: any) => {
+          this.facilities = facilities.results.filter(f => !f.is_affiliate);
+          this.facilities = this.facilities.filter(f => user.facilities.find(fa => fa.id === f.id));
+          this.facilities.forEach((facility) => {
+            this.accordionsOpen[facility.id] = false;
+            this.getFacilityCarePlans(facility.id).then((carePlans: any) => {
+              facility.carePlans = carePlans.results;
+            });
+          });
+          this.store.EmployeeProfile.readListPaged().subscribe((users) => {
+            this.employees = users;
+            users.forEach((user) => {
+              this.employeeChecked[user.id] = true;
             })
-          })
-        })
-        this.auth.user$.subscribe(user => {
-          if (!user) return;
-          this.employee = user;
-          if (user.facilities.length === 1) {
-            this.accordionsOpen[user.facilities[0].id] = true;
-          }
-        })
-
-      })
-
-      this.store.EmployeeProfile.readListPaged().subscribe(users => {
-        this.employees = users;
-        users.forEach(user => {
-          this.employeeChecked[user.id] = true;
-        })
-
-        this.route.params.subscribe(params => {
-          if (!params) return;
-          if (params.userId) {
-            users.forEach(user => {
-              this.employeeChecked[user.id] = false;
-            })
-            this.employeeChecked[params.userId] = true;
-          }
-        })
-      })
-
-    },
-    )
-
-    this.store.ServiceArea.readListPaged().subscribe(serviceAreas => {
+            this.route.params.subscribe((params) => {
+              if (!params) return;
+              if (params.userId) {
+                users.forEach(user => {
+                  this.employeeChecked[user.id] = false;
+                });
+                this.employeeChecked[params.userId] = true;
+              }
+            });
+          });
+        });
+      });
+    });
+    this.store.ServiceArea.readListPaged().subscribe((serviceAreas) => {
       this.serviceAreas = serviceAreas;
-      serviceAreas.forEach(area => {
+      serviceAreas.forEach((area) => {
         this.serviceAreaChecked[area.id] = true;
-      })
+      });
     })
-
     this.store.CarePlanTemplate.readListPaged().subscribe((templates: any) => {
       this.carePlanTemplates = templates.sort((a, b) => {
         let textA = a.name.toUpperCase();
         let textB = b.name.toUpperCase();
         return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
       });
-      templates.forEach(template => {
+      templates.forEach((template) => {
         this.carePlanTemplateChecked[template.id] = true;
-      })
+      });
     })
-
-    this.auth.organization$.subscribe(org => {
-      if (!org) return;
-      this.store.CarePlan.detailRoute('GET', null, 'average', {}, {
-        patient__facility__organization: org.id
-      }).subscribe((res: any) => {
-        this.average = res;
-      })
-    })
-
   }
 
   public ngOnDestroy() {
     if (this.authSub) {
       this.authSub.unsubscribe();
     }
+    if (this.organizationSub) {
+      this.organizationSub.unsubscribe();
+    }
+  }
+
+  public getCarePlanAverage(organizationId) {
+    return new Promise((resolve, reject) => {
+      let averageSub = this.store.CarePlan.detailRoute('GET', null, 'average', {}, {
+        patient__facility__organization: organizationId
+      }).subscribe(
+        (average) => resolve(average),
+        (err) => reject(err),
+        () => averageSub.unsubscribe()
+      );
+    });
+  }
+
+  public getFacilitiesForOrganization(organizationId) {
+    return new Promise((resolve, reject) => {
+      let facilitiesSub = this.store.Organization.detailRoute('GET', organizationId, 'facilities').subscribe(
+        (facilities) => resolve(facilities),
+        (err) => reject(err),
+        () => facilitiesSub.unsubscribe()
+      );
+    });
+  }
+
+  public getFacilityCarePlans(facilityId) {
+    return new Promise((resolve, reject) => {
+      let carePlansSub = this.store.Facility.detailRoute('get', facilityId, 'care_plans').subscribe(
+        (carePlans) => resolve(carePlans),
+        (err) => reject(err),
+        () => carePlansSub.unsubscribe()
+      );
+    });
   }
 
   public getPatients() {
@@ -176,6 +175,13 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
         }
       );
     });
+  }
+
+  public progressInWeeks(plan) {
+    if (!plan || !plan.created) {
+      return 0;
+    }
+    return moment().diff(moment(plan.created), 'weeks');
   }
 
   public get userFilterListText() {
@@ -196,7 +202,7 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
     }
   }
 
-  public confirmRemovePatient(facility, patient, plan) {
+  public confirmRemovePatient(facility, plan) {
     const cancelText = 'Cancel';
     const okText = 'Continue';
     this.modals.open(ConfirmModalComponent, {
@@ -211,8 +217,7 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
       if (res === okText) {
         this.store.CarePlan.destroy(plan.id).subscribe(() => {
           const patientFacility = this.facilities.find(f => f.id === facility.id);
-          const planPatient = _find(patientFacility.patients, p => p.id === patient.id);
-          planPatient.carePlans = _filter(planPatient.carePlans, p => p.id !== plan.id);
+          patientFacility.carePlans = _filter(patientFacility.carePlans, p => p.id !== plan.id)
         });
       }
     });
@@ -229,6 +234,7 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
       width: '576px',
     }).subscribe(res => {
       if (!res) return;
+      console.log(res);
       if (!(res.hasOwnProperty('patient') && res.hasOwnProperty('plan'))) {
         res.careTeamMembers = res.careTeam;
         res.engagement = res.engagement || 0;
@@ -280,151 +286,102 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
     });
   }
 
-  public uniqueFacilities() {
-    return _uniqBy(this.activePatients.map((obj) => { return obj.facility; }), 'id');
-  }
-
-  public getPatientsForFacility(facility) {
-    return this.activePatientsGrouped[facility.id];
-  }
-
   public routeToPatient(patient) {
     this.router.navigate(['patient', patient.id]).then(() => {});
   }
 
-  public getAlsoPlans(i, patient) {
-    if (patient && patient.carePlans) {
-      const plans = patient.carePlans.slice();
-      plans.splice(i, 1);
-      return _map(plans, p => p.plan_template.name);
-    }
-    return [];
-  }
-
   public formatTime(minutes) {
-    if (!minutes) return '';
-    const h = `${Math.floor(minutes / 60) || ''}`;
+    if (!minutes) return '0:00';
+    const h = `${Math.floor(minutes / 60)}`;
     const m = `${minutes % 60}`;
     return `${h}:${m.length === 1 ? '0' : ''}${minutes % 60}`
   }
 
-  public riskLevelText(x) {
-    if (x < 50) {
-      return 'High Risk';
-    } else if (x < 70) {
-      return 'Med Risk';
-    } else if (x <= 90) {
-      return 'Low Risk';
-    } else {
-      return 'On Track';
-    }
-  }
-
-  get allPlans() {
-    if (this.activePatients) {
-      return _compact(_flattenDeep(_map(this.activePatients, p => p.care_plans)));
-    }
-  }
-
-  get avgTimeInMinutes() {
-    return Math.floor(_mean(_map(this.allPlans, p => p.time_in_minutes)));
-  }
-
-  get avgEngagement() {
-    return Math.floor(_mean(_map(this.allPlans, p => p.engagement)))
-  }
-
-  get avgOutcomes() {
-    return Math.floor(_mean(_map(this.allPlans, p => p.outcomes)))
-  }
-
-  get avgRiskLevel() {
-    return Math.floor(_mean(_map(this.allPlans, p => p.risk_level)))
-  }
-
-  public facilityPlans(i) {
-    if (this.getPatientsForFacility(i)) {
-      return _compact(_flattenDeep(_map(this.getPatientsForFacility(i), p => p.care_plans)));
-    }
-  }
-
-  public avgFacilityTimeInMinutes(i) {
-    return Math.floor(_mean(_map(this.facilityPlans(i), p => p.time_in_minutes)));
-  }
-
-  public avgFacilityRiskLevel(i) {
-    return Math.floor(_mean(_map(this.facilityPlans(i), p => p.risk_level)));
-  }
-
-  get allServiceAreas() {
-    const plans = this.allPlans;
-    return _uniqBy(_map(plans, p => p.service_area));
-  }
-
-  get allCarePlans() {
-    const plans = _filter(this.allPlans, p => this.activeServiceAreas[p.service_area]);
-    return _uniqBy(_map(plans, p => p.name));
-  }
-
   public toggleAllServiceAreas(status) {
-    Object.keys(this.serviceAreaChecked).forEach(area => {
+    Object.keys(this.serviceAreaChecked).forEach((area) => {
       this.serviceAreaChecked[area] = status;
     })
   }
 
   public toggleAllCarePlans(status) {
-    Object.keys(this.carePlanTemplateChecked).forEach(area => {
+    Object.keys(this.carePlanTemplateChecked).forEach((area) => {
       this.carePlanTemplateChecked[area] = status;
     })
   }
 
   public toggleAllUsers(status) {
-    Object.keys(this.activeUsers).forEach(area => {
-      this.activeUsers[area] = status;
+    Object.keys(this.employeeChecked).forEach((user) => {
+      this.employeeChecked[user] = status;
     })
   }
 
   public timePillColor(plan) {
-    const allotted = plan.allotted_time || 30;
-    return this.utils.timePillColor(plan.time_in_minutes, allotted);
+    if (!plan.patient.payer_reimbursement || !plan.billing_type) {
+      return;
+    }
+    const allotted = plan.billing_type.billable_minutes;
+    return this.utils.timePillColor(plan.time_count, allotted);
   }
 
-  public avgTimePillColor() {
-    const avgTime = _sum(_map(this.allPlans, p => p.time_in_minutes)) / this.allPlans.length;
-    const avgAllotted = _sum(_map(this.allPlans, p => p.allotted_time || 30)) / this.allPlans.length;
-    return this.utils.timePillColor(avgTime, avgAllotted);
+  public facilityTimeCount(facility) {
+    if (!facility.carePlans) {
+      return 0;
+    } else {
+      let plans = facility.carePlans.filter((plan) => plan.patient.payer_reimbursement && plan.billing_type);
+      return _sum(_map(plans, (plan) => plan.time_count));
+    }
   }
 
   public avgFacilityTimeColor(facility) {
-    if (this.facilityPlans(facility)) {
-      const avgTime = _sum(_map(this.facilityPlans(facility), p => p.time_in_minutes)) / this.facilityPlans(facility).length;
-      const avgAllotted = _sum(_map(this.facilityPlans(facility), p => p.allotted_time || 30)) / this.facilityPlans(facility).length;
-      return this.utils.timePillColor(avgTime, avgAllotted);
-    }
-  }
-
-  public hasActiveUser(plan) {
-    if (plan.care_team_members && plan.care_team_members.length) {
-      for (let i = 0; i < plan.care_team_members.length; i++) {
-        if (this.activeUsers[plan.care_team_members[i].employee_profile.id]) {
-          return true;
-        }
+    if (facility.carePlans) {
+      let plans = facility.carePlans.filter((plan) => plan.patient.payer_reimbursement && plan.billing_type);
+      if (plans.length === 0) {
+        return;
       }
+      const avgTime = _sum(_map(plans, (p) => p.time_count)) / plans.length;
+      const avgAllotted = _sum(_map(plans, (p) => p.billing_type.billable_minutes)) / plans.length;
+      return this.utils.timePillColor(avgTime, avgAllotted);
     } else {
-      return this.showAllUsers;
+      return;
     }
-    return false;
   }
 
-  public get showAllUsers() {
-    return true;
+  public averageTimeMinutes() {
+    let facilities = this.facilities.filter((facility) => facility.carePlans);
+    let plans = _flattenDeep(_map(facilities, (facility) => facility.carePlans));
+    plans = plans.filter((plan) => plan.patient.payer_reimbursement && plan.billing_type);
+    if (plans.length === 0) {
+      return;
+    }
+    let avgTime = _sum(_map(plans, (p) => p.time_count)) / plans.length;
+    return Math.floor(avgTime);
+  }
+
+  public averageTimePercentage() {
+    let facilities = this.facilities.filter((facility) => facility.carePlans);
+    let plans = _flattenDeep(_map(facilities, (facility) => facility.carePlans));
+    plans = plans.filter((plan) => plan.patient.payer_reimbursement && plan.billing_type);
+    if (plans.length === 0) {
+      return;
+    }
+    let avgTime = _sum(_map(plans, (p) => p.time_count)) / plans.length;
+    let avgAlloted = _sum(_map(plans, (p) => p.billing_type.billable_minutes)) / plans.length;
+    return this.utils.timePillColor(avgTime, avgAlloted);
+  }
+
+  public avgFacilityRiskLevel(facility) {
+    let avg = _sum(_map(facility.carePlans, (p) => p.risk_level)) / facility.carePlans.length;
+    return Math.floor(avg);
   }
 
   public hasCheckedCareTeamMember(plan) {
+    if (!this.employees) {
+      return true;
+    }
     let result = false;
-    if (plan.careTeamMembers) {
-      plan.careTeamMembers.forEach(teamMember => {
-        if (this.employeeChecked[teamMember.employee_profile.id] === true) {
+    if (plan.care_team_employee_ids) {
+      plan.care_team_employee_ids.forEach((employeeId) => {
+        if (this.employeeChecked[employeeId] === true) {
           result = true;
         }
       })
@@ -456,6 +413,4 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
       return false;
     }
   }
-
 }
-

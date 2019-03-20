@@ -836,6 +836,7 @@ class CarePlanPatientSerializer(serializers.ModelSerializer):
             'full_name',
             'image_url',
             'last_app_use',
+            'payer_reimbursement',
         )
 
     def get_full_name(self, obj):
@@ -845,14 +846,28 @@ class CarePlanPatientSerializer(serializers.ModelSerializer):
         return obj.user.get_image_url()
 
 
-class CarePlanOverviewSerializer(serializers.ModelSerializer):
+class OtherPlanSerializer(serializers.ModelSerializer):
+    plan_template = CarePlanTemplateSerializer(read_only=True)
+
+    class Meta:
+        model = CarePlan
+        fields = (
+            'id',
+            'plan_template',
+        )
+
+
+class CarePlanOverviewSerializer(RepresentationMixin, serializers.ModelSerializer):
     """
     serializer to be used by :model:`plans.CarePlan` with
     data relevant in dashboard average endpoint
     """
     patient = CarePlanPatientSerializer(read_only=True)
     plan_template = CarePlanTemplateSerializer(read_only=True)
+    billing_type = BasicBillingTypeSerializer(read_only=True)
+    care_team_employee_ids = serializers.SerializerMethodField()
     other_plans = serializers.SerializerMethodField()
+    time_count = serializers.SerializerMethodField()
     tasks_this_week = serializers.SerializerMethodField()
     average_outcome = serializers.SerializerMethodField()
     average_engagement = serializers.SerializerMethodField()
@@ -863,16 +878,34 @@ class CarePlanOverviewSerializer(serializers.ModelSerializer):
         fields = (
             'id',
             'patient',
+            'created',
             'plan_template',
+            'billing_type',
+            'care_team_employee_ids',
             'other_plans',
+            'time_count',
             'tasks_this_week',
             'average_outcome',
             'average_engagement',
             'risk_level',
         )
 
+    def get_care_team_employee_ids(self, obj):
+        return obj.care_team_members.values_list('employee_profile__id', flat=True)
+
     def get_other_plans(self, obj):
-        return obj.patient.care_plans.exclude(id=obj.id).count()
+        serializer = OtherPlanSerializer(
+            obj.patient.care_plans.exclude(id=obj.id), many=True)
+        return serializer.data
+
+    def get_time_count(self, obj):
+        time_spent = BilledActivity.objects.filter(
+            plan=obj,
+            activity_datetime__gte=timezone.now().replace(
+                day=1, hour=0, minute=0, second=0, microsecond=0)) \
+                .aggregate(total=Sum('time_spent'))
+        total = time_spent['total'] or 0
+        return total
 
     def get_tasks_this_week(self, obj):
         now = timezone.now()

@@ -4,8 +4,7 @@
       <div class="fullWidth flex">
         <h1 class="noMargin">Active Patients</h1>
         <div class="tool__anchor">
-          <button class="button button--icon button--icon--small"
-          (click)="toolAP1Open=!toolAP1Open">
+          <button class="button button--icon button--icon--small" (click)="toolAP1Open=!toolAP1Open">
             <i class="ss-help"></i>
           </button>
           <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : toolAP1Open }">
@@ -32,17 +31,12 @@
                   <i class="ss-ban"></i> Uncheck All
                 </button>
               </div>
-
               <li class="drop__option">
                 <input class="input input--search drop__innerInput" type="text" placeholder="Search" />
               </li>
-
               <ng-container *ngFor="let user of employees">
                 <li class="drop__option" *ngIf="showUserInFilter(user)">
-                  <label
-                    class="drop__checkbox styledInput"
-                    title="Behavioral Health Initiative"
-                  >
+                  <label class="drop__checkbox styledInput">
                     <input type="checkbox" class="styledInput__input" [(ngModel)]="employeeChecked[user.id]" />
                     <span class="styledInput__box"></span>
                     {{user?.user?.first_name}} {{user?.user?.last_name}}
@@ -53,13 +47,11 @@
           </app-popover>
         </div>
       </div>
-      <button class="button button--iconText"
-      (click)="addPatientToPlan()">
+      <button class="button button--iconText" (click)="addPatientToPlan()">
         <i class="ss-plus"></i> Add Patient
       </button>
     </div>
   </div> <!--/.flex (for title and tooltip)-->
-
   <div class="info info--horiz">
     <div class="info__cell">
       <label>Active Patients</label>
@@ -71,50 +63,31 @@
     </div>
     <div class="info__cell">
       <label>Avg Time</label>
-      <div class="pill" [ngClass]="avgTimePillColor()">
-        {{average?.totalTime || '0:00'}}
+      <div class="pill" [ngClass]="averageTimePercentage()">
+        <!-- {{averageTimePercentage() || '0:00'}} -->
+        {{formatTime(averageTimeMinutes()) || '0:00'}}
       </div>
     </div>
     <div class="info__cell">
       <label>Avg Engagement</label>
-      <div
-        class="pill"
-        [ngClass]="{
-          'pill--lime': average?.average_engagement >= 90,
-          'pill--yellow': average?.average_engagement < 90 && average?.average_engagement >= 70,
-          'pill--red': average?.average_engagement < 70 && average?.average_engagement >= 50,
-          'pill--purple': average?.average_engagement < 50
-        }"
-      >{{average?.average_engagement || '0'}}%</div>
+      <div class="pill" [ngClass]="utils.percentPillClass(average?.average_engagement)">
+        {{average?.average_engagement || '0'}}%
+      </div>
     </div>
     <div class="info__cell">
       <label>Avg Outcome</label>
-      <div
-        class="pill"
-        [ngClass]="{
-          'pill--lime': average?.average_outcome >= 90,
-          'pill--yellow': average?.average_outcome < 90 && average?.average_outcome >= 70,
-          'pill--red': average?.average_outcome < 70 && average?.average_outcome >= 50,
-          'pill--purple': average?.average_outcome < 50
-        }"
-      >{{average?.average_outcome || '0'}}%</div>
+      <div class="pill" [ngClass]="utils.percentPillClass(average?.average_outcome)">
+        {{average?.average_outcome || '0'}}%
+      </div>
     </div>
     <div class="info__cell">
       <label>Avg Risk Level</label>
-      <div
-        class="pill"
-        [ngClass]="{
-          'pill--lime': average?.risk_level >= 90,
-          'pill--yellow': average?.risk_level < 90 && average?.risk_level >= 70,
-          'pill--red': average?.risk_level < 70 && average?.risk_level >= 50,
-          'pill--purple': average?.risk_level < 50
-        }"
-      >{{riskLevelText(average?.risk_level)}} {{average?.risk_level}}%</div>
+      <div class="pill" [ngClass]="utils.percentPillClass(averageaverage?.risk_level)">
+        {{utils.getRiskLevelText(average?.risk_level)}} {{average?.risk_level}}%
+      </div>
     </div>
   </div> <!--/.info-->
-
   <div class="flex marBottom48">
-
     <div class="marRight32">
       <label>Service Area</label>
       <div class="drop">
@@ -131,15 +104,12 @@
                   <i class="ss-ban"></i> Uncheck All
                 </button>
               </div>
-
               <li class="drop__option">
                 <input class="input input--search drop__innerInput" type="text" placeholder="Search" [(ngModel)]="serviceAreaSearch" />
               </li>
-
               <ng-container *ngFor="let serviceArea of serviceAreas">
                 <li class="drop__option" *ngIf="saSearchMatch(serviceArea)">
-                  <label class="drop__checkbox styledInput"
-                  title="Behavioral Health Initiative">
+                  <label class="drop__checkbox styledInput">
                     <input type="checkbox" class="styledInput__input" [(ngModel)]="serviceAreaChecked[serviceArea.id]" />
                     <span class="styledInput__box"></span>
                     {{serviceArea.name}}
@@ -150,7 +120,6 @@
           </app-popover>
         </div>
     </div> <!--/ container for care plan type filter-->
-
     <div>
       <label>Care Plan</label>
       <div class="drop">
@@ -167,17 +136,12 @@
                   <i class="ss-ban"></i> Uncheck All
                 </button>
               </div>
-
               <li class="drop__option">
                 <input class="input input--search drop__innerInput" type="text" placeholder="Search" [(ngModel)]="carePlanSearch" />
               </li>
-
               <ng-container *ngFor="let planTemplate of carePlanTemplates">
                 <li class="drop__option" *ngIf="cpSearchMatch(planTemplate)">
-                  <label
-                    class="drop__checkbox styledInput"
-                    title="Behavioral Health Initiative"
-                  >
+                  <label class="drop__checkbox styledInput">
                     <input type="checkbox" class="styledInput__input" [(ngModel)]="carePlanTemplateChecked[planTemplate.id]" />
                     <span class="styledInput__box"></span>
                     {{planTemplate.name}}
@@ -189,25 +153,17 @@
         </div>
     </div> <!--/ container for care plan name filter-->
   </div> <!--/.flex (for filters)-->
-
-
   <ng-container *ngFor="let facility of facilities">
-    <div class="accordion" [ngClass]="{ 'isOpen' : accordionsOpen[facility.id] }" *ngIf="facility.patients?.length > 0">
+    <div class="accordion" [ngClass]="{ 'isOpen' : accordionsOpen[facility.id] }" *ngIf="facility.carePlans?.length > 0">
       <div class="accordion__head" (click)="accordionsOpen[facility.id]=!accordionsOpen[facility.id]">
-        <span class="accordion__title">{{facility.name}} ({{facility.patients?.length}})</span>
+        <span class="accordion__title">{{facility.name}} ({{facility.carePlans?.length}})</span>
         <div class="accordion__right">
-          <div class="pill pill--purple marRight32" [ngClass]="avgFacilityTimeColor(facility)">
-            {{facility.totalTime}}
+          <div class="pill marRight32" [ngClass]="avgFacilityTimeColor(facility)">
+            Time {{formatTime(facilityTimeCount(facility))}}
           </div>
-          <div
-            class="pill"
-            [ngClass]="{
-              'pill--lime': facility.avgRiskLevel >= 90,
-              'pill--yellow': facility.avgRiskLevel < 90 && facility.avgRiskLevel >= 70,
-              'pill--red': facility.avgRiskLevel < 70 && facility.avgRiskLevel >= 50,
-              'pill--purple': facility.avgRiskLevel < 50
-            }"
-          >{{facility.avgRiskLevel}}%</div>
+          <div class="pill" [ngClass]="utils.percentPillClass(facility.avgRiskLevel)">
+            {{utils.getRiskLevelText(avgFacilityRiskLevel(facility))}} {{avgFacilityRiskLevel(facility)}}%
+          </div>
           <div class="accordion__arrow">
             <i class="ss-standard ss-navigateright"></i>
           </div>
@@ -260,114 +216,90 @@
                 </tr>
               </thead>
               <tbody>
-                <ng-container *ngFor="let patient of facility.patients; let i = index">
-                  <ng-container *ngFor="let plan of patient.carePlans; let j = index">
-                    <tr *ngIf="serviceAreaChecked[plan.plan_template.service_area.id] && carePlanTemplateChecked[plan.plan_template.id] && hasCheckedCareTeamMember(plan)">
-                      <td class="left hideOverflow">
-                        <a class="picName" (click)="routeToPatient(patient)">
-                          <img class="picName__img" [src]="patient?.image_url" *ngIf="patient?.image_url" />
-                          <img class="picName__img" src="../../../assets/img/profile.svg" *ngIf="!patient?.image_url" />
-                          {{patient?.full_name}}
-                        </a>
-                      </td>
-                      <td>
-                        <div class="iconText">
-                          {{plan.plan_template.name}}
-                        </div>
-                      </td>
-                      <td>
-                        <a
-                          class="tool__anchor justifyCenter"
-                          (click)="openAlsoTip[''+i+j] = !openAlsoTip[''+i+j]"
-                          *ngIf="getAlsoPlans(j, patient).length"
-                        >
-                          {{getAlsoPlans(j, patient).length}}
-                          <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : openAlsoTip[''+i+j] }">
-                            <div class="iconText iconText--white iconText--autoHeight marBottom8" *ngFor="let planName of getAlsoPlans(j, patient)">
-                              {{planName}}
-                            </div>
-                          </div>
-                        </a>
-                      </td>
-                      <td><div class="pill" [ngClass]="timePillColor(plan)">{{formatTime(plan.time_in_minutes) || '0:00'}}</div>
-                      </td>
-                      <td>
-                        <!--TODO: Clicking this link should also open the My Tasks accordion on the patient details page-->
-                        <a [routerLink]="['/patient', patient?.id, 'details', plan?.id]" [queryParams]="{show_my_tasks: true}" class="justifyCenter">{{plan.tasks_this_week}}</a>
-                      </td>
-                      <td>
-                        <div class="progress marCenter">
-                          Week {{plan.current_week}} of {{plan.plan_template.duration_weeks}}
-                          <div class="progress__bg">
-                            <div class="progress__bar" [ngStyle]="{width: (plan.current_week / plan.plan_template.duration_weeks) * 100 + '%'}"></div>
+                <ng-container *ngFor="let plan of facility.carePlans; let i = index">
+                  <tr *ngIf="serviceAreaChecked[plan.plan_template.service_area.id] && carePlanTemplateChecked[plan.plan_template.id] && hasCheckedCareTeamMember(plan)">
+                    <td class="left hideOverflow">
+                      <a class="picName" (click)="routeToPatient(plan.patient)">
+                        <img class="picName__img" [src]="plan.patient.image_url" *ngIf="plan.patient.image_url" />
+                        <img class="picName__img" src="../../../assets/img/profile.svg" *ngIf="!plan.patient.image_url" />
+                        {{plan.patient.full_name}}
+                      </a>
+                    </td>
+                    <td>
+                      <div class="iconText">
+                        {{plan.plan_template.name}}
+                      </div>
+                    </td>
+                    <td>
+                      <a class="tool__anchor justifyCenter" (click)="openAlsoTip[plan.id] = !openAlsoTip[plan.id]" *ngIf="plan.other_plans.length > 0">
+                        {{plan.other_plans.length}}
+                        <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : openAlsoTip[plan.id] }">
+                          <div class="iconText iconText--white iconText--autoHeight marBottom8" *ngFor="let otherPlan of plan.other_plans">
+                            {{otherPlan.plan_template.name}}
                           </div>
                         </div>
-                      </td>
-                      <td>
-                        <div
-                          class="pill"
-                          [ngClass]="{
-                            'pill--lime': plan.engagement >= 90,
-                            'pill--yellow': plan.engagement < 90 && plan.engagement >= 70,
-                            'pill--red': plan.engagement < 70 && plan.engagement >= 50,
-                            'pill--purple': plan.engagement < 50
-                          }"
-                        >{{plan.engagement}}%</div>
-                      </td>
-                      <td>
-                        <div
-                          class="pill"
-                          [ngClass]="{
-                            'pill--lime': plan.outcomes >= 90,
-                            'pill--yellow': plan.outcomes < 90 && plan.outcomes >= 70,
-                            'pill--red': plan.outcomes < 70 && plan.outcomes >= 50,
-                            'pill--purple': plan.outcomes < 50
-                          }"
-                        >{{plan.outcomes}}%</div>
-                      </td>
-                      <td>
-                        <div
-                          class="pill"
-                          [ngClass]="{
-                            'pill--lime': plan.risk_level >= 90,
-                            'pill--yellow': plan.risk_level < 90 && plan.risk_level >= 70,
-                            'pill--red': plan.risk_level < 70 && plan.risk_level >= 50,
-                            'pill--purple': plan.risk_level < 50
-                          }"
-                        >{{riskLevelText(plan.risk_level)}} {{plan.risk_level}}%</div>
-                      </td>
-                      <td class="noPad">
-                        <button class="button button--center button--icon button--icon--small"
-                        (click)="confirmRemovePatient(facility, patient, plan)">
-                          <i class="ss-delete"></i>
-                        </button>
-                      </td>
-                    </tr>
-                  </ng-container>
+                      </a>
+                    </td>
+                    <td>
+                      <div class="pill" [ngClass]="timePillColor(plan)">
+                        {{formatTime(plan.time_count)}}
+                      </div>
+                    </td>
+                    <td>
+                      <a [routerLink]="['/patient', plan.patient.id, 'details', plan.id]" [queryParams]="{show_my_tasks: true}" class="justifyCenter">{{plan.tasks_this_week}}</a>
+                    </td>
+                    <td>
+                      <div class="progress marCenter">
+                        Week {{progressInWeeks(plan)}} of {{plan.plan_template.duration_weeks}}
+                        <div class="progress__bg">
+                          <div class="progress__bar" [ngStyle]="{width: (progressInWeeks(plan) / plan.plan_template.duration_weeks) * 100 + '%'}"></div>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="pill" [ngClass]="utils.percentPillClass(plan.average_engagement)">
+                        {{plan.average_engagement}}%
+                      </div>
+                    </td>
+                    <td>
+                      <div class="pill" [ngClass]="utils.percentPillClass(plan.average_outcome)">
+                        {{plan.average_outcome}}%
+                      </div>
+                    </td>
+                    <td>
+                      <div class="pill" [ngClass]="utils.percentPillClass(plan.risk_level)">
+                        {{utils.getRiskLevelText(plan.risk_level)}} {{plan.risk_level}}%
+                      </div>
+                    </td>
+                    <td class="noPad">
+                      <button class="button button--center button--icon button--icon--small" (click)="confirmRemovePatient(facility, plan)">
+                        <i class="ss-delete"></i>
+                      </button>
+                    </td>
+                  </tr>
                 </ng-container>
               </tbody>
             </table>
           </div> <!--/.tableWrap-->
         </div> <!--/.accordion__contents-->
         <div class="paginationWrap" *ngIf="">
-          <button class="button button--iconText"
-          (click)="addPatientToPlan()">
+          <button class="button button--iconText" (click)="addPatientToPlan()">
             <i class="ss-plus"></i> Add Patient
           </button>
           <div class="pagination">
-              <button class="button button--icon button--icon--dis">
-                  <i class="ss-standard ss-skipback"></i>
-              </button>
-              <button class="button button--icon button--icon--dis">
-                  <i class="ss-standard ss-directleft"></i>
-              </button>
-              <span>1 of 1</span>
-              <button class="button button--icon">
-                  <i class="ss-standard ss-directright"></i>
-              </button>
-              <button class="button button--icon">
-                  <i class="ss-standard ss-skipforward"></i>
-              </button>
+            <button class="button button--icon button--icon--dis">
+              <i class="ss-standard ss-skipback"></i>
+            </button>
+            <button class="button button--icon button--icon--dis">
+              <i class="ss-standard ss-directleft"></i>
+            </button>
+            <span>1 of 1</span>
+            <button class="button button--icon">
+              <i class="ss-standard ss-directright"></i>
+            </button>
+            <button class="button button--icon">
+              <i class="ss-standard ss-skipforward"></i>
+            </button>
           </div> <!--/.pagination-->
         </div> <!--/.paginationWrap-->
       </div> <!--/.accordion__body-->
