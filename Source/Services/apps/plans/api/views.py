@@ -1145,6 +1145,28 @@ class CarePlanByFacility(ParentViewSetPermissionMixin,
         'plan_template',
     )
 
+    def get_queryset(self):
+        qs = super(CarePlanByFacility, self).get_queryset()
+        employee_profile = utils.employee_profile_or_none(self.request.user)
+        patient_profile = utils.patient_profile_or_none(self.request.user)
+        if employee_profile is not None:
+            if employee_profile.organizations_managed.count() > 0:
+                organizations_managed = employee_profile.organizations_managed.values_list('id', flat=True)
+                qs = qs.filter(
+                    patient__facility__organization__id__in=organizations_managed)
+            elif employee_profile.facilities_managed.count() > 0:
+                facilities_managed = employee_profile.facilities_managed.values_list('id', flat=True)
+                assigned_roles = employee_profile.assigned_roles.values_list('id', flat=True)
+                qs = qs.filter(
+                    Q(patient__facility__id__in=facilities_managed) |
+                    Q(care_team_members__id__in=assigned_roles)
+                )
+            else:
+                assigned_roles = employee_profile.assigned_roles.values_list('id', flat=True)
+                qs = qs.filter(care_team_members__id__in=assigned_roles)
+            return qs.distinct()
+        return CarePlan.objects.none()
+
 
 class CarePlanByTemplateFacility(ParentViewSetPermissionMixin,
                                  NestedViewSetMixin,
