@@ -24,6 +24,7 @@ import * as moment from 'moment';
 export class ActivePatientsComponent implements OnDestroy, OnInit {
 
   public average = null;
+  public averageaverage;
 
   public facilities = [];
   public facilityOpen = {};
