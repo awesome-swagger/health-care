@@ -308,7 +308,6 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
         type: 'manager',
         planTemplateId: this.planTemplateId,
         totalPatients: this.totalPatients,
-        taskList:this.teamManagerTemplates,
       },
       width: '384px',
     }).subscribe(
@@ -354,7 +353,6 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
         type: 'team',
         planTemplateId: this.planTemplateId,
         totalPatients: this.totalPatients,
-        taskList:this.teamMemberTemplates,
       },
       overflow: 'visible',
       width: '384px',
@@ -453,7 +451,6 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
         type: 'patient',
         planTemplateId: this.planTemplateId,
         totalPatients: this.totalPatients,
-        taskList: this.patientTaskTemplates,
       },
       width: '384px',
     }).subscribe(

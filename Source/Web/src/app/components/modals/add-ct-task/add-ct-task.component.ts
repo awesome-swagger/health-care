@@ -1,4 +1,8 @@
 import { Component, OnInit } from '@angular/core';
+import {
+  groupBy as _groupBy,
+  uniqBy as _uniqBy,
+} from 'lodash';
 import { ModalService } from '../../../modules/modals';
 import { StoreService } from '../../../services';
 
@@ -44,8 +48,20 @@ export class AddCTTaskComponent implements OnInit {
     console.log(this.data);
     if (this.data) {
       this.totalPatients = this.data.totalPatients ? this.data.totalPatients : 0;
-      this.tasks = this.data.taskList ? this.data.taskList : [];
-      this.tasksShown = this.tasks;
+      this.getTaskType().dataModel.readListPaged().subscribe(
+        (tasks) => {
+          if (this.getTaskType().type === 'manager') {
+            this.tasks = tasks;
+          } else {
+            this.tasks = tasks.filter((obj) => !obj.is_manager_task);
+          }
+          this.tasksShown = _uniqBy(this.tasks, (obj) => {
+            return obj.name;
+          });
+        },
+        (err) => {},
+        () => {}
+      );
     }
   }
 
@@ -57,18 +73,25 @@ export class AddCTTaskComponent implements OnInit {
     }
   }
 
+  public uniqByNameCount(task) {
+    return this.tasks.filter((obj) => obj.name === task.name).length;
+  }
+
   public updateTaskName(task) {
-    let updateSub = this.getTaskType().dataModel.update(task.id, {
-      name: task.name,
-    }, true).subscribe(
-      (resp) => {
-        task.edit = false;
-      },
-      (err) => {},
-      () => {
-        updateSub.unsubscribe();
-      }
-    );
+    let tasks = _uniqBy(this.tasks, (obj) => obj.name);
+    tasks.forEach((obj) => {
+      let updateSub = this.getTaskType().dataModel.update(obj.id, {
+        name: task.name,
+      }, true).subscribe(
+        (resp) => {
+          task.edit = false;
+        },
+        (err) => {},
+        () => {
+          updateSub.unsubscribe();
+        }
+      );
+    });
   }
 
   public addTask(taskName) {
@@ -88,7 +111,7 @@ export class AddCTTaskComponent implements OnInit {
       task.is_manager_task = true;
     }
     let createSub = this.getTaskType().dataModel.create(task).subscribe(
-      (resp) =>{
+      (resp) => {
         this.tasks.push(resp);
         this.createTask = false;
         this.modal.close(resp);
@@ -101,16 +124,36 @@ export class AddCTTaskComponent implements OnInit {
   }
 
   public filterTasks() {
-    this.tasksShown = this.tasks.filter((obj) => {
+    let taskMatches = this.tasks.filter((obj) => {
       return obj.name.toLowerCase().indexOf(this.searchInput.toLowerCase()) >= 0;
     });
+    this.tasksShown = _uniqBy(taskMatches, (obj) => obj.name);
   }
 
   public next(task) {
-    if (!this.selectedTask) {
-      return;
+    let newTask = {
+      start_on_day: 0,
+      appear_time: '00:00:00',
+      due_time: '00:00:00',
+      name: task.name,
+      plan_template: this.data.planTemplateId,
+      category: 'interaction',
+      is_manager_task: false,
+    };
+    if (this.getTaskType().type === 'manager') {
+      newTask.is_manager_task = true;
     }
-    this.modal.close(task);
+    let createSub = this.getTaskType().dataModel.create(newTask).subscribe(
+      (resp) => {
+        this.tasks.push(resp);
+        this.createTask = false;
+        this.modal.close(resp);
+      },
+      (err) => {},
+      () => {
+        createSub.unsubscribe();
+      }
+    );
   }
 
   public close() {

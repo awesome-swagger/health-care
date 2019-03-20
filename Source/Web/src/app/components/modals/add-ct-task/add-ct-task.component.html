@@ -14,7 +14,7 @@
 	<ul class="nameList">
 		<li class="nameList__item nameList__item--padLeft nameList__item--target" [ngClass]="{'nameList__item--target--active': task.id == selectedTask?.id}" *ngFor="let task of tasksShown" (click)="selectedTask = task;">
 			<div *ngIf="!task.edit" class="flex alignCenter justifySpaceBetween fullWidth">
-				<span>{{task.name}}</span>
+				<span>{{task.name}} <span class="badge badge--chat">{{uniqByNameCount(task)}}</span></span>
 				<div class="flex">
 					<button class="button button--icon button--icon--small" (click)="task.edit=!task.edit; task.origName = task.name;">
 						<i class="ss-write"></i>
