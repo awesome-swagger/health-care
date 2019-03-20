@@ -231,11 +231,11 @@ export class UserComponent implements OnDestroy, OnInit {
       const formData = new FormData();
       const selectedFile = new ImageSnippet(event.target.result, file);
       formData.append('image', selectedFile.file);
-      this.http.request('POST', `${AppConfig.apiUrl}users/${this.employee.user.id}/upload_image/`, {
+      this.http.request('PATCH', `${AppConfig.apiUrl}users/${this.employee.user.id}/`, {
         body: formData,
         headers: new HttpHeaders().set('Accept', 'application/json'),
-      }).subscribe(res => {
-        console.log('image uploaded')
+      }).subscribe((res:any) => {
+        this.employee.user.image_url = res.image_url;
       })
     })
 

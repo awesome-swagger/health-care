@@ -52,7 +52,7 @@
                   [ngClass]="{ 'chat__message--right': isSelf(currentStream, message) }"
                 >
                   <div class="chat__picBubble">
-                    <img class="chat__img" src="../../../../assets/img/profile.svg" />
+                    <img class="chat__img" [src]="careTeam[getUser(currentStream, message).id]?.user?.image_url" />
                     <div class="chat__bubble">
                       <span *ngFor="let messageLine of message.text.split('\n')">{{messageLine}}<br></span>
                     </div>
