@@ -469,33 +469,22 @@ def get_searchable_patients(user):
     if user.is_employee:
         employee = user.employee_profile
         queryset = PatientProfile.objects.all()
-        # Admins to an organization can search for any patient tied to a
-        # facility in the organization.
-        if employee.organizations_managed.exists():
-            organizations = employee.organizations_managed.all()
-            queryset = queryset.filter(
-                facility__organization__in=organizations,
-            )
+        q = Q(facility__in=employee.facilities.all()) | \
+            Q(facility__in=employee.facilities_managed.all()) | \
+            Q(facility__organization__in=employee.organizations_managed.all())
 
-        # Admins to a facility can search for any patient within their facility
-        elif employee.facilities_managed.exists():
-            facilities = employee.facilities_managed.all()
-            queryset = queryset.filter(
-                facility__in=facilities,
-            )
-
-        # All other employees are only able to search for their own patients
+        # Search for their own patients
         # they are care managers for or a member of the care team for.
         # All other patients are not searchable or accessible to the user
-        else:
-            care_plans = employee.assigned_roles.values_list('plan')
-            patient_medications = employee.patientmedication_set.all()
-            problem_areas = employee.problemarea_set.all()
-            queryset = queryset.filter(
-                Q(care_plans__id__in=care_plans) |
-                Q(patientmedication__id__in=patient_medications) |
-                Q(problemarea__id__in=problem_areas)
-            )
+
+        care_plans = employee.assigned_roles.values_list('plan')
+        patient_medications = employee.patientmedication_set.all()
+        problem_areas = employee.problemarea_set.all()
+
+        q |= Q(care_plans__id__in=care_plans) | \
+             Q(patientmedication__id__in=patient_medications) | \
+             Q(problemarea__id__in=problem_areas)
+        queryset = queryset.filter(q)
 
     return queryset
 
