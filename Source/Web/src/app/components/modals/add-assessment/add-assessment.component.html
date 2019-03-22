@@ -18,7 +18,7 @@
             [ngClass]="{'nameList__item--target--active': assessment === selectedAssessment}"
             (click)="selectedAssessment = assessment">
           <div *ngIf="!assessment.edit" class="flex alignCenter justifySpaceBetween fullWidth">
-            <span>{{assessment.name}} <span class="badge badge--chat">{{uniqByNameCount(assessment)}}</span></span>
+            <span>{{assessment.name}}<span *ngIf="assessment.tracks_outcome">*</span><span *ngIf="assessment.tracks_satisfaction">**</span> <span class="badge badge--chat">{{uniqByNameCount(assessment)}}</span></span>
             <div class="flex">
               <button class="button button--icon button--icon--small" (click)="clickEditAssessment(assessment)">
                 <i class="ss-write"></i>
