@@ -18,7 +18,7 @@
 
 .dashRight {
   flex: 1 1 rem-calc(350);
-  padding-left: rem-calc(72);
+  padding-left: rem-calc(100);
 }
 
 .dashRisk {
@@ -158,6 +158,8 @@
 
 .timeChart {
 
+  max-width: 1280px;
+
   &__header {
     display: flex;
     justify-content: space-between;
@@ -176,6 +178,7 @@
       content: '';
       width: rem-calc(24);
       border-top: 4px solid $offWhite;
+      border-top-color: #49b48b;
       margin-right: rem-calc(8);
     }
 

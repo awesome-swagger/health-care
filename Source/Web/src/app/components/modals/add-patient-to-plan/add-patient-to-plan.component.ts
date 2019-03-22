@@ -102,6 +102,7 @@ export class AddPatientToPlanComponent implements OnInit {
       }
     }
     this.getPatients().then((patients: any) => {
+      console.log('patients', patients)
       if (this.selectedFacility) {
         this.patients = patients.filter(p => p.facility.id === this.selectedFacility.id);
       } else {
@@ -145,6 +146,10 @@ export class AddPatientToPlanComponent implements OnInit {
     this.store.EmployeeProfile.readListPaged().subscribe(res => {
       this.employees = res;
     })
+
+    setTimeout(() => {
+      console.log(this.patients);
+    }, 3000)
   }
 
   public getPatients() {

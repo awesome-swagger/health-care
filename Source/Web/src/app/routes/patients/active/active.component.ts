@@ -78,9 +78,11 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
         this.getFacilitiesForOrganization(organization.id).then((facilities: any) => {
           this.facilities = facilities.results.filter(f => !f.is_affiliate);
           this.facilities = this.facilities.filter(f => user.facilities.find(fa => fa.id === f.id));
+          console.log('facilities ---', this.facilities)
           this.facilities.forEach((facility) => {
             this.accordionsOpen[facility.id] = false;
             this.getFacilityCarePlans(facility.id).then((carePlans: any) => {
+              console.log(facility.name, '---', carePlans)
               facility.carePlans = carePlans.results;
             });
           });
@@ -92,9 +94,13 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
             this.route.params.subscribe((params) => {
               if (!params) return;
               if (params.userId) {
+                const ids = params.userId.split(',');
                 users.forEach(user => {
                   this.employeeChecked[user.id] = false;
                 });
+                ids.forEach(id => {
+                  this.employeeChecked[id] = true;
+                })
                 this.employeeChecked[params.userId] = true;
               }
             });
