@@ -1,9 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { StoreService, AuthService } from '../../services';
-import { groupBy as _groupBy } from 'lodash';
-import { PercentageGaugeComponent } from '../../components/graphs/percentage-gauge/percentage-gauge.component';
-import { ActivePatientsGraphComponent } from '../../components/graphs/active-patients-graph/active-patients-graph.component';
-import { PatientsEnrolledGraphComponent } from '../../components/graphs/patients-enrolled-graph/patients-enrolled-graph.component';
 import * as moment from 'moment';
 import { Subscription } from 'rxjs';
 import patientsEnrolledData from './patientsEnrolledData';
@@ -13,6 +9,7 @@ import {
   map as _map,
 } from 'lodash';
 import { map } from 'd3';
+import {Router} from '@angular/router';
 
 @Component({
   selector: 'app-dashboard',
@@ -22,12 +19,19 @@ import { map } from 'd3';
 export class DashboardComponent implements OnInit, OnDestroy {
 
   public org = null;
+  public user = null;
   public patients = null;
   public patientsGrouped = null;
   public employees = [];
   public employeeChecked = {};
   public facilities = [];
   public facilityChecked = {};
+  public riskLevelChecked = {
+    'on_track': true,
+    'low_risk': true,
+    'med_risk': true,
+    'high_risk': true,
+  };
 
   public riskLevelBreakdown = null;
   public patientAdoption = null;
@@ -47,12 +51,19 @@ export class DashboardComponent implements OnInit, OnDestroy {
   public patientsEnrolledStart:moment.Moment = moment().subtract(5, 'M').startOf('M');
   public patientsEnrolledEnd:moment.Moment = moment();
 
+  public topBillingStart:moment.Moment = moment().subtract('1', 'M').startOf('M');
+  public topBillingEnd:moment.Moment = moment().subtract('1', 'M').endOf('M');
+
+  public bottomBillingStart:moment.Moment = moment().subtract('2', 'M').startOf('M');
+  public bottomBillingEnd:moment.Moment = moment().subtract('2', 'M').endOf('M');
+
   public datepickerOptions = {
      relativeTop: '-368px',
    };
 
   public constructor(
     private auth: AuthService,
+    private router: Router,
     private store: StoreService,
   ) { }
 
@@ -89,9 +100,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.store.Organization.detailRoute('GET', org.id, 'patient_adoption').subscribe(
           (res:any) => {
             this.patientAdoption = res;
-            console.log('vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv');
-            console.log(this.patientAdoption);
-            console.log('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^');
           }
         )
 
@@ -119,13 +127,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
         }).subscribe(
           res => {
             this.patientOverview = res;
-            console.log('vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv');
-            console.log(this.patientOverview);
-            console.log('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^');
           }
         )
       }
     )
+
+    this.auth.user$.subscribe(user => {
+      if (!user) return;
+      this.user = user;
+    })
 
     this.filterData();
 
@@ -141,7 +151,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   public refreshAll() {
-    this.refreshRiskLevels();
+    setTimeout(() => {
+      this.refreshRiskLevels();
+    }, 0)
   }
 
   public refreshRiskLevels() {
@@ -150,10 +162,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
       let employeesChecked = _filter(Object.keys(this.employeeChecked), id => this.employeeChecked[id]).join(',')
       if (employeesChecked.length > 0) {
         params['employees'] = employeesChecked;
+        this.store.Organization.detailRoute('GET', this.org.id, 'patient_risk_levels', {}, params).subscribe((res:any) => {
+          this.riskLevelBreakdown = res;
+        });
+      } else {
+        this.store.Organization.detailRoute('GET', this.org.id, 'patient_risk_levels').subscribe(res => {
+          this.riskLevelBreakdown = res;
+        })
       }
-      this.store.Organization.detailRoute('GET', this.org.id, 'patient_risk_levels', {}, params).subscribe((res:any) => {
-        this.riskLevelBreakdown = res;
-      });
+
     }
   }
 
@@ -196,6 +213,45 @@ export class DashboardComponent implements OnInit, OnDestroy {
       return { on_track, low_risk, med_risk, high_risk };
     }
     return { on_track: 0, low_risk: 0, med_risk: 0, high_risk: 0 }
+  }
+
+  public routeToActive() {
+    let employeesChecked = _filter(Object.keys(this.employeeChecked), id => this.employeeChecked[id]).join(',')
+    if (employeesChecked.length > 0) {
+      this.router.navigate(['/patients', 'active', employeesChecked]).then(() => {})
+    } else {
+      this.router.navigate(['/patients', 'active']).then(() => {})
+    }
+  }
+
+  public showUserInFilter(user) {
+    if (this.user) {
+      return this.user.facilities.find(f => {
+        let result = false;
+        user.facilities.forEach(uf => {
+          if (uf.id === f.id) {
+            result = true;
+          }
+        })
+        return result;
+      })
+    }
+    else {
+      return false;
+    }
+  }
+
+  public get userIsAdmin() {
+    if (this.user) {
+      return this.user.facilities_managed.length > 0 || this.user.organizations_managed.length > 0;
+    }
+    return false;
+  }
+
+  public toggleAllRiskLevels(status) {
+    Object.keys(this.riskLevelChecked).forEach(r => {
+      this.riskLevelChecked[r] = status;
+    })
   }
 
 }

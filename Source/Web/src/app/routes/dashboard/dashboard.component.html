@@ -6,7 +6,7 @@
       <div class="info info--dash info--dk info--horiz">
         <div class="info__cell">
           <label>Active Patients</label>
-          <a [routerLink]="['/patients/active']" class="link--big">{{patientOverview?.active}}</a>
+          <a (click)="routeToActive()" class="link--big">{{patientOverview?.active}}</a>
         </div>
         <div class="info__cell">
           <label>Invited Patients</label>
@@ -18,36 +18,41 @@
         </div>
       </div>
       <div>
-        <label>Filter By User</label>
-        <div class="drop">
-            <div class="drop__input" (click)="multiOpen = !multiOpen">
-              All
-            </div>
-            <ul class="drop__dropdown drop__dropdown--right" [ngClass]="{ 'isOpen' : multiOpen }">
-              <div class="drop__buttons">
-                <button class="button button--iconText" (click)="toggleAllUsers(true)">
-                  <i class="ss-check ss-standard"></i> Check All
-                </button>
-                <button class="button button--iconText" (click)="toggleAllUsers(false)">
-                  <i class="ss-ban"></i> Uncheck All
-                </button>
+        <ng-container *ngIf="userIsAdmin">
+          <label>Filter By User</label>
+          <div class="drop">
+              <div class="drop__input" (click)="multiOpen = !multiOpen">
+                All
               </div>
+              <ul class="drop__dropdown drop__dropdown--right" [ngClass]="{ 'isOpen' : multiOpen }">
+                <div class="drop__buttons">
+                  <button class="button button--iconText" (click)="toggleAllUsers(true)">
+                    <i class="ss-check ss-standard"></i> Check All
+                  </button>
+                  <button class="button button--iconText" (click)="toggleAllUsers(false)">
+                    <i class="ss-ban"></i> Uncheck All
+                  </button>
+                </div>
 
-              <li class="drop__option">
-                <input class="input input--search drop__innerInput" type="text" placeholder="Search" />
-              </li>
+                <li class="drop__option">
+                  <input class="input input--search drop__innerInput" type="text" placeholder="Search" />
+                </li>
 
-              <li class="drop__option" *ngFor="let employee of employees">
-                <label class="drop__checkbox styledInput">
-                  <input type="checkbox" class="styledInput__input" [(ngModel)]="employeeChecked[employee.id]" (click)="refreshAll()" />
-                  <span class="styledInput__box"></span>
-                  <div class="picName">
-                    <img class="picName__img" src="../../../assets/img/profile.svg" />{{employee.user.first_name}} {{employee.user.last_name}}
-                  </div>
-                </label>
-              </li>
-            </ul>
-          </div> <!--/.drop (multiselect for users)-->
+                <ng-container *ngFor="let employee of employees">
+                  <li class="drop__option" *ngIf="showUserInFilter(employee)">
+                    <label class="drop__checkbox styledInput">
+                      <input type="checkbox" class="styledInput__input" [(ngModel)]="employeeChecked[employee.id]" (click)="refreshAll()" />
+                      <span class="styledInput__box"></span>
+                      <div class="picName">
+                        <img class="picName__img" src="../../../assets/img/profile.svg" />{{employee.user.first_name}} {{employee.user.last_name}}
+                      </div>
+                    </label>
+                  </li>
+                </ng-container>
+              </ul>
+            </div> <!--/.drop (multiselect for users)-->
+
+        </ng-container>
       </div>
     </div> <!--/.flexHeader (for top row)-->
 
@@ -222,13 +227,15 @@
                   <input class="input input--search drop__innerInput" type="text" placeholder="Search" />
                 </li>
 
-                <li class="drop__option" *ngFor="let facility of facilities">
-                  <label class="drop__checkbox styledInput">
-                    <input type="checkbox" class="styledInput__input" [(ngModel)]="facilityChecked[facility.id]" />
-                    <span class="styledInput__box"></span>
-                    {{facility.name}}
-                  </label>
-                </li>
+                <ng-container *ngFor="let facility of facilities">
+                  <li class="drop__option" *ngIf="!facility.is_affiliate">
+                    <label class="drop__checkbox styledInput">
+                      <input type="checkbox" class="styledInput__input" [(ngModel)]="facilityChecked[facility.id]" />
+                      <span class="styledInput__box"></span>
+                      {{facility.name}}
+                    </label>
+                  </li>
+                </ng-container>
               </ul>
             </div> <!--/.drop-->
           </div> <!--/.timeChart__selectWrap (for facility filter)-->
@@ -241,10 +248,10 @@
               </div>
               <ul class="drop__dropdown drop__dropdown--right" [ngClass]="{ 'isOpen' : multi3Open }">
                 <div class="drop__buttons">
-                  <button class="button button--iconText">
+                  <button class="button button--iconText" (click)="toggleAllRiskLevels(true)">
                     <i class="ss-check ss-standard"></i> Check All
                   </button>
-                  <button class="button button--iconText">
+                  <button class="button button--iconText" (click)="toggleAllRiskLevels(false)">
                     <i class="ss-ban"></i> Uncheck All
                   </button>
                 </div>
@@ -255,28 +262,28 @@
 
                 <li class="drop__option">
                   <label class="drop__checkbox styledInput">
-                    <input type="checkbox" class="styledInput__input" />
+                    <input type="checkbox" class="styledInput__input" [(ngModel)]="riskLevelChecked['on_track']" />
                     <span class="styledInput__box"></span>
                     On Track
                   </label>
                 </li>
                 <li class="drop__option">
                   <label class="drop__checkbox styledInput">
-                    <input type="checkbox" class="styledInput__input" />
+                    <input type="checkbox" class="styledInput__input" [(ngModel)]="riskLevelChecked['low_risk']" />
                     <span class="styledInput__box"></span>
                     Low Risk
                   </label>
                 </li>
                 <li class="drop__option">
                   <label class="drop__checkbox styledInput">
-                    <input type="checkbox" class="styledInput__input" />
+                    <input type="checkbox" class="styledInput__input" [(ngModel)]="riskLevelChecked['med_risk']" />
                     <span class="styledInput__box"></span>
                     Med Risk
                   </label>
                 </li>
                 <li class="drop__option">
                   <label class="drop__checkbox styledInput">
-                    <input type="checkbox" class="styledInput__input" />
+                    <input type="checkbox" class="styledInput__input" [(ngModel)]="riskLevelChecked['high_risk']" />
                     <span class="styledInput__box"></span>
                     High Risk
                   </label>
@@ -289,6 +296,7 @@
 
       <app-patients-enrolled-graph [data]="filteredPatientsEnrolledData"></app-patients-enrolled-graph>
 
+
     </div> <!--/.timeChart-->
 
     <div class="dashDivider"></div>
@@ -296,14 +304,14 @@
     <div class="flex justifySpaceBetween">
       <app-date-range
         [datePickerOverrides]="datepickerOptions"
-        [startDate]="defaultDates[0]"
-        [endDate]="defaultDates[1]"
+        [startDate]="topBillingStart"
+        [endDate]="topBillingEnd"
       ></app-date-range>
       <a [routerLink]="['/billing']" class="button button--iconText">
         <i class="ss-standard ss-view"></i> View Billing Details
       </a>
     </div>
-    <div class="info info--dk info--horiz">
+    <div class="info info--dk info--horiz marTop16">
       <div class="info__cell">
         <label>Total Patients</label>
         <h1 class="info__bigNumber">{{billingOverview?.billable_patients}}</h1>
@@ -329,14 +337,14 @@
     <div class="flex justifySpaceBetween">
       <app-date-range
         [datePickerOverrides]="datepickerOptions"
-        [startDate]="defaultDates[0]"
-        [endDate]="defaultDates[1]"
+        [startDate]="bottomBillingStart"
+        [endDate]="bottomBillingEnd"
       ></app-date-range>
       <a [routerLink]="['/billing']" class="button button--iconText">
         <i class="ss-standard ss-view"></i> View Billing Details
       </a>
     </div>
-    <div class="info info--dk info--horiz">
+    <div class="info info--dk info--horiz marTop16">
       <div class="info__cell">
         <label>Total Patients</label>
         <h1 class="info__bigNumber">{{billingOverview?.billable_patients}}</h1>

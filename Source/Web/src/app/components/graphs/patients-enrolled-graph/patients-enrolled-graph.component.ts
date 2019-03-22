@@ -1,10 +1,8 @@
 import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import * as d3 from 'd3';
 import {
-  get as _get,
   map as _map
 } from 'lodash';
-import * as moment from 'moment';
 
 interface MonthData {
   month: string
@@ -139,7 +137,7 @@ export class PatientsEnrolledGraphComponent implements OnInit {
             .duration(200)
             .style('opacity', 1)
           tooltip.html(
-              `<h4>${d.month}</h4><span>&middot;&middot;&middot;  Enrolled: ${d.enrolled}<br/>&mdash;  Billable: ${d.billable}</span>`
+              `<h4>${d.month}</h4><span><span style="color: #49b48b">&middot;&middot;&middot;</span>  Enrolled: ${d.enrolled}<br/><span style="color: #49b48b;">&mdash;</span>  Billable: ${d.billable}</span>`
             )
             .style('left', (d3.event.pageX) + "px")
             .style('top', (d3.event.pageY + 30) + "px")
@@ -172,7 +170,7 @@ export class PatientsEnrolledGraphComponent implements OnInit {
             .duration(200)
             .style('opacity', 1)
           tooltip.html(
-              `<h4>${d.month}</h4><span>&middot;&middot;&middot;  Enrolled: ${d.enrolled}<br/>&mdash;  Billable: ${d.billable}</span>`
+              `<h4>${d.month}</h4><span><span style="color: #49b48b;">&middot;&middot;&middot;</span>  Enrolled: ${d.enrolled}<br/><span style="color: #49b48b;">&mdash;</span>  Billable: ${d.billable}</span>`
             )
             .style('left', (d3.event.pageX) + "px")
             .style('top', (d3.event.pageY + 30) + "px")
