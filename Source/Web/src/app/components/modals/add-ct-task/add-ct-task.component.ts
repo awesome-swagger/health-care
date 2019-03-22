@@ -41,7 +41,7 @@ export class AddCTTaskComponent implements OnInit {
 
   constructor(
     private modal: ModalService,
-    private store: StoreService
+    private store: StoreService,
   ) { }
 
   public ngOnInit() {
@@ -51,7 +51,7 @@ export class AddCTTaskComponent implements OnInit {
       this.getTaskType().dataModel.readListPaged().subscribe(
         (tasks) => {
           if (this.getTaskType().type === 'manager') {
-            this.tasks = tasks;
+            this.tasks = tasks.filter((obj) => obj.is_manager_task);
           } else {
             this.tasks = tasks.filter((obj) => !obj.is_manager_task);
           }
@@ -78,12 +78,14 @@ export class AddCTTaskComponent implements OnInit {
   }
 
   public updateTaskName(task) {
-    let tasks = _uniqBy(this.tasks, (obj) => obj.name);
+    let tasks = this.tasks.filter((obj) => obj.name === task.origName || obj.name === task.name);
+    console.log(tasks);
     tasks.forEach((obj) => {
       let updateSub = this.getTaskType().dataModel.update(obj.id, {
         name: task.name,
       }, true).subscribe(
         (resp) => {
+          obj.name = task.name;
           task.edit = false;
         },
         (err) => {},
@@ -92,6 +94,13 @@ export class AddCTTaskComponent implements OnInit {
         }
       );
     });
+  }
+
+  public filterTasks() {
+    let taskMatches = this.tasks.filter((obj) => {
+      return obj.name.toLowerCase().indexOf(this.searchInput.toLowerCase()) >= 0;
+    });
+    this.tasksShown = _uniqBy(taskMatches, (obj) => obj.name);
   }
 
   public addTask(taskName) {
@@ -121,13 +130,6 @@ export class AddCTTaskComponent implements OnInit {
         createSub.unsubscribe();
       }
     );
-  }
-
-  public filterTasks() {
-    let taskMatches = this.tasks.filter((obj) => {
-      return obj.name.toLowerCase().indexOf(this.searchInput.toLowerCase()) >= 0;
-    });
-    this.tasksShown = _uniqBy(taskMatches, (obj) => obj.name);
   }
 
   public next(task) {

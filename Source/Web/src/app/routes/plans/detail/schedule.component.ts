@@ -266,7 +266,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
     );
   }
 
-  public confirmDeleteGoal(goal) {
+  public deleteGoal(goal) {
     let goalIndex = this.goalTemplates.findIndex((obj) => {
       return obj.id === goal.id;
     });
@@ -301,7 +301,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
     );
   }
 
-  public addCMTask() {
+  public addManagerTask() {
     let modalSub = this.modals.open(AddCTTaskComponent, {
       closeDisabled: false,
       data: {
@@ -311,12 +311,11 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       },
       width: '384px',
     }).subscribe(
-      (task) => {
-        if (!task) {
-          return;
-        }
+      (newTask) => {
+        if (!newTask) return;
         setTimeout(() => {
-          this.editCMTask(task);
+          this.teamManagerTemplates.push(newTask);
+          this.editManagerTask(newTask);
         }, 10);
       },
       () => {},
@@ -326,7 +325,8 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
     );
   }
 
-  public editCMTask(task) {
+  public editManagerTask(task) {
+    let taskIndex = this.teamManagerTemplates.findIndex((obj) => obj.id === task.id);
     let modalSub = this.modals.open(EditTaskComponent, {
       closeDisabled: false,
       data: {
@@ -337,7 +337,9 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       overflow: 'visible',
       width: '384px',
     }).subscribe(
-      (task) => {
+      (updatedTask) => {
+        if (!updatedTask) return;
+        this.teamManagerTemplates[taskIndex] = updatedTask;
       },
       (err) => {},
       () => {
@@ -346,7 +348,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
     );
   }
 
-  public addCTTask() {
+  public addTeamTask() {
     let modalSub = this.modals.open(AddCTTaskComponent, {
       closeDisabled: false,
       data: {
@@ -357,12 +359,12 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       overflow: 'visible',
       width: '384px',
     }).subscribe(
-      (task) => {
-        if (task !== null) {
-          setTimeout(() => {
-            this.editCTTask(task);
-          }, 10);
-        }
+      (newTask) => {
+        if (!newTask) return;
+        setTimeout(() => {
+          this.teamMemberTemplates.push(newTask);
+          this.editTeamTask(newTask);
+        }, 10);
       },
       (err) => {},
       () => {
@@ -371,7 +373,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
     );
   }
 
-  public editCTTask(task) {
+  public editTeamTask(task) {
     let taskIndex = this.teamMemberTemplates.findIndex((obj) => obj.id === task.id);
     let modalSub = this.modals.open(EditTaskComponent, {
       closeDisabled: false,
@@ -394,7 +396,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
     );
   }
 
-  public confirmDeleteCTTask(task, is_manager_task) {
+  public deleteTeamTask(task, is_manager_task) {
     let tasksIndex = this.teamTaskTemplates.findIndex((obj) => {
       return obj.id === task.id;
     });
@@ -444,7 +446,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
     );
   }
 
-  public addTask() {
+  public addPatientTask() {
     let modalSub = this.modals.open(AddCTTaskComponent, {
       closeDisabled: false,
       data: {
@@ -454,9 +456,11 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       },
       width: '384px',
     }).subscribe(
-      (task) => {
-        if (!task) return;
-        this.editTask(task);
+      (newTask) => {
+        if (!newTask) return;
+        setTimeout(() => {
+          this.editPatientTask(newTask);
+        }, 10);
       },
       (err) => {},
       () => {
@@ -465,7 +469,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
     );
   }
 
-  public editTask(task) {
+  public editPatientTask(task) {
     let modalSub = this.modals.open(EditTaskComponent, {
       closeDisabled: false,
       data: {
@@ -484,7 +488,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
     );
   }
 
-  public confirmDeleteTask(task) {
+  public deletePatientTask(task) {
     let tasksIndex = this.patientTaskTemplates.findIndex((obj) => {
       return obj.id === task.id;
     });
@@ -525,22 +529,16 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       data: {
         editingTemplate: true,
         totalPatients: this.totalPatients,
-        assessmentsList: this.assessmentTemplates,
         planTemplateId: this.planTemplateId,
       },
       width: '768px',
     }).subscribe(
       (res) => {
         if (!res) return;
-        if (res === 'create-new') {
-          setTimeout(() => {
-            this.editAssessment(null, false);
-          }, 10);
-        } else {
-          setTimeout(() => {
-            this.editAssessment(res, true);
-          }, 10);
-        }
+        setTimeout(() => {
+          this.assessmentTemplates.push(res);
+          this.editAssessment(res, false);
+        }, 10);
       },
       (err) => {},
       () => {
@@ -600,7 +598,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
     );
   }
 
-  public confirmDeleteAssessment(assessment) {
+  public deleteAssessment(assessment) {
     let tasksIndex = this.assessmentTemplates.findIndex((obj) => {
       return obj.id === assessment.id;
     });
@@ -670,7 +668,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
     }).subscribe(() => {});
   }
 
-  public confirmDeleteSymptom(symptom) {
+  public deleteSymptom(symptom) {
     let tasksIndex = this.symptomTemplates.findIndex((obj) => {
       return obj.id === symptom.id;
     });
@@ -816,7 +814,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
     });
   }
 
-  public confirmDeleteVital(vital) {
+  public deleteVital(vital) {
     let tasksIndex = this.vitalTemplates.findIndex((obj) => {
       return obj.id === vital.id;
     });
@@ -902,7 +900,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
     });
   }
 
-  public confirmDeleteStream(stream) {
+  public deleteStream(stream) {
     this.modals.open(ConfirmModalComponent, {
      closeDisabled: false,
      data: {

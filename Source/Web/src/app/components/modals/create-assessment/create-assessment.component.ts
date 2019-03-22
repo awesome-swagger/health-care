@@ -47,7 +47,7 @@ export class CreateAssessmentComponent implements OnInit {
 
   public addQuestionLine() {
     let maxOrder = -1;
-    if (!this.assessment.questions) {
+    if (!this.assessment.questions || this.assessment.questions.length === 0) {
       this.assessment.questions = [];
       maxOrder = -1;
     } else {
@@ -133,45 +133,20 @@ export class CreateAssessmentComponent implements OnInit {
     let promise = new Promise((resolve, reject) => {
       let tracksOutcome = this.assessmentTracking === 'outcome';
       let tracksSatisfaction = this.assessmentTracking === 'satisfaction';
-      if (this.assessment.id) {
-        this.assessment = Object.assign({}, this.assessment, {
-          name: this.nameInput,
-          tracks_outcome: tracksOutcome,
-          tracks_satisfaction: tracksSatisfaction,
-        });
-        let assessmentWithoutQuestions = _omit(this.assessment, 'questions');
-        let updateSub = this.store.AssessmentTaskTemplate.update(assessmentWithoutQuestions.id, _omit(assessmentWithoutQuestions, 'id'), true)
-          .subscribe(
-            (res) => resolve(res),
-            (err) => reject(err),
-            () => {
-              updateSub.unsubscribe();
-            }
-          );
-      } else {
-        this.assessment = Object.assign({}, this.assessment, {
-          name: this.nameInput,
-          plan_template: this.data.planTemplateId,
-          start_on_day: 0,
-          appear_time: '00:00:00',
-          due_time: '00:00:00',
-          frequency: 'once',
-          tracks_outcome: tracksOutcome,
-          tracks_satisfaction: tracksSatisfaction,
-        });
-        let assessmentWithoutQuestions = _omit(this.assessment, 'questions');
-        let createSub = this.store.AssessmentTaskTemplate.create(assessmentWithoutQuestions)
-          .subscribe(
-            (res) => {
-              this.assessment.id = res.id;
-              resolve(res)
-            },
-            (err) => reject(err),
-            () => {
-              createSub.unsubscribe();
-            }
-          );
-      }
+      this.assessment = Object.assign({}, this.assessment, {
+        name: this.nameInput,
+        tracks_outcome: tracksOutcome,
+        tracks_satisfaction: tracksSatisfaction,
+      });
+      let assessmentWithoutQuestions = _omit(this.assessment, 'questions');
+      let updateSub = this.store.AssessmentTaskTemplate.update(assessmentWithoutQuestions.id, _omit(assessmentWithoutQuestions, 'id'), true)
+        .subscribe(
+          (res) => resolve(res),
+          (err) => reject(err),
+          () => {
+            updateSub.unsubscribe();
+          }
+        );
     });
     return promise;
   }
@@ -203,7 +178,6 @@ export class CreateAssessmentComponent implements OnInit {
       return;
     }
     this.updateAssessment().then((assessment: any) => {
-      this.assessment.id = assessment.id;
       this.createOrUpdateAllQuestions().then(() => {
         this.modal.close(this.assessment);
       });

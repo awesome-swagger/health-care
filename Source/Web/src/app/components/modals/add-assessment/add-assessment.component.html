@@ -14,30 +14,54 @@
     <div class="listBox">
       <ul class="nameList">
         <li class="nameList__item nameList__item--padLeft nameList__item--target"
-            *ngFor="let assessment of assessmentsShown" [ngClass]="{'nameList__item--target--active': assessment === selectedAssessment}"
+            *ngFor="let assessment of assessmentsShown"
+            [ngClass]="{'nameList__item--target--active': assessment === selectedAssessment}"
             (click)="selectedAssessment = assessment">
-          <div class="flex alignCenter justifySpaceBetween fullWidth">
-            <span class="assessment--outcome">{{assessment.name}}<span *ngIf="assessment.tracks_outcome">*</span><span *ngIf="assessment.tracks_satisfaction">**</span></span>
+          <div *ngIf="!assessment.edit" class="flex alignCenter justifySpaceBetween fullWidth">
+            <span>{{assessment.name}} <span class="badge badge--chat">{{uniqByNameCount(assessment)}}</span></span>
             <div class="flex">
-              <button class="button button--icon button--icon--small" (click)="editAssessment(assessment)">
+              <button class="button button--icon button--icon--small" (click)="clickEditAssessment(assessment)">
                 <i class="ss-write"></i>
               </button>
-              <button class="button button--icon button--icon--small" (click)="deleteAssessment(assessment)">
+              <button class="button button--icon button--icon--small" (click)="clickDeleteAssessment(assessment)">
                 <i class="ss-delete"></i>
               </button>
             </div>
           </div>
+          <form *ngIf="assessment.edit" class="nameList__form">
+            <div class="nameList__inputWrap">
+              <input type="text" class="input fullWidth" [(ngModel)]="assessment.name" [ngModelOptions]="{standalone: true}" />
+            </div>
+            <div class="flex">
+              <button class="button button--icon button--icon--small" type="button" (click)="clickUndoName(assessment)">
+                <i class="ss-undo"></i>
+              </button>
+              <button class="button button--icon button--icon--small" type="submit" (click)="updateAssessmentName(assessment)">
+                <i class="ss-floppydisk"></i>
+              </button>
+            </div>
+          </form>
         </li>
       </ul>
     </div> <!--/.listBox-->
-
-    <button class="button button--iconText marBottom24" (click)="createNewAssessment()">
-      <i class="ss-plus"></i> Create New Assessment
-    </button>
-
     <h5>* Indicates an assessment used to calculate outcome %.</h5>
     <h5>** Indicates an assessment used to calculate satisfaction %.</h5>
-
+    <button *ngIf="!createAssessment" class="button button--iconText" (click)="createAssessment=!createAssessment">
+    	<i class="ss-plus"></i> Create New Assessment
+    </button>
+    <form *ngIf="createAssessment" class="nameList__form">
+    	<div class="nameList__inputWrap">
+    		<input type="text" class="input fullWidth" [(ngModel)]="newAssessmentName" [ngModelOptions]="{standalone: true}" />
+    	</div>
+    	<div class="flex">
+    		<button class="button button--icon button--icon--small" type="button" (click)="createAssessment=!createAssessment;">
+    			<i class="ss-undo"></i>
+    		</button>
+    		<button class="button button--icon button--icon--small" (click)="addAssessment(newAssessmentName)">
+    			<i class="ss-plus"></i>
+    		</button>
+    	</div>
+    </form>
     <div class="modal__buttons modal__buttons--full">
       <button class="button button--2nd" (click)="clickCancel()">
         Cancel
@@ -48,7 +72,6 @@
       </button>
     </div>
   </div> <!--/.gridCell--11-->
-
   <div class="gridCell--21">
     <div class="modal__details">
       <h2 *ngIf="!selectedAssessment" class="modal__empty">Select an assessment to see details</h2>
@@ -57,7 +80,6 @@
         <h4 class="marBottom24" *ngIf="selectedAssessment.tracks_outcome">Tracks Outcome</h4>
         <h4 class="marBottom24" *ngIf="selectedAssessment.tracks_satisfaction">Tracks Satisfaction</h4>
         <h5 class="marBottom32">Note: Each assessment includes an optional notes field (not shown here) for the patient to provide feedback.</h5>
-
         <div class="assessmentQuestion" *ngFor="let question of selectedAssessment.questions">
           <p>{{question.prompt}}</p>
           <div class="scale marBottom32">

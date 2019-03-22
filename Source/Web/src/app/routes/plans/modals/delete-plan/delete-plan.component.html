@@ -27,7 +27,17 @@
                     <span class="thSortable__text thSortable__text--left">Patient</span>
                   </th>
                   <th class="thSortable" *ngIf="!bulkReassign[facility.id]">
-                    <span class="thSortable__text">Other Plans</span>
+                    <div class="tool">
+                      <span class="thSortable__text">Also</span>
+                      <div class="tool__anchor">
+                        <button class="button button--icon button--icon--small" (click)="otherPlansInfoOpen[facility.id]=!otherPlansInfoOpen[facility.id]"><i class="ss-info"></i></button>
+                        <app-popover [visible]="otherPlansInfoOpen[facility.id]" (visibleChange)="otherPlansInfoOpen[facility.id] = $event;">
+                          <div class="tool__tip tool__tip--bottom isOpen">
+                            <div class="tool__text">This is the number of additional care plans a patient has. Click the number for details.</div>
+                          </div>
+                        </app-popover>
+                      </div>
+                    </div>
                   </th>
                   <th class="thSortable">
                     <span class="thSortable__text thSortable__text--left">Care Plan</span>
@@ -48,7 +58,18 @@
                       {{plan.patient.full_name}}
                     </a>
                   </td>
-                  <td>{{plan.other_plans}}</td>
+                  <td>
+                    <div class="tool__anchor justifyCenter" (click)="otherPlansOpen[plan.id] = !otherPlansOpen[plan.id]" *ngIf="plan.other_plans.length > 0">
+                      <span>{{plan.other_plans.length}}</span>
+                      <app-popover [visible]="otherPlansOpen[plan.id]" (visibleChange)="otherPlansOpen[plan.id]= $event;">
+                        <div class="tool__tip tool__tip--bottom isOpen">
+                          <div class="iconText iconText--white iconText--autoHeight marBottom8" *ngFor="let otherPlan of plan.other_plans">
+                            {{otherPlan.plan_template.name}}
+                          </div>
+                        </div>
+                      </app-popover>
+                    </div>
+                  </td>
                   <td class="left">
                     <div class="modal__inputWrap marRight32">
                       <div class="styledSelect">

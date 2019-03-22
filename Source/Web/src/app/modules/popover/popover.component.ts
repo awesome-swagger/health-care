@@ -35,7 +35,8 @@ export class PopoverComponent {
     this._options = this.defaultOptions;
   }
 
-  public close() {
+  public close(e) {
+    e.stopPropagation();
     this.visible = false;
   }
 

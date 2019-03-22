@@ -119,6 +119,7 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
         this.user = user;
         this.getPatientProfile(params.patientId).then((patient: any) => {
           this.patient = patient;
+          this.isUsingMobile = this.patient.is_using_mobile;
           this.nav.addRecentPatient(this.patient);
           this.getCarePlan(params.planId).then((carePlan: any) => {
         		this.carePlan = carePlan;
@@ -348,6 +349,7 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
   }
 
   public toggleUsingMobile() {
+    this.isUsingMobile = !this.isUsingMobile;
     let updatePatientSub = this.store.PatientProfile.update(this.patient.id, {
       is_using_mobile: this.isUsingMobile
     }, true).subscribe(
@@ -612,47 +614,46 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
   }
 
   public openRecordResults(task) {
-    this.modals.open(RecordResultsComponent, {
-     closeDisabled: true,
-     data: {
-       patient: this.patient,
-       carePlan: this.carePlan,
-       task: task.id,
-       totalMinutes: null,
-       with: null,
-       syncToEHR: false,
-       notes: '',
-       patientEngagement: null,
-     },
-     width: '512px',
-   }).subscribe((results) => {
-     if (!results) {
-       return;
-     }
-     this.store.BilledActivity.create({
-       activity_date: results.date.format('YYYY-MM-DD'),
-       plan: this.carePlan.id,
-       team_task: task.id,
-       activity_type: 'care_plan_review',
-       members: [
-         this.user.id,
-       ].concat(results.with),
-       patient_included: results.patient_included,
-       sync_to_ehr: results.syncToEHR,
-       added_by: this.user.id,
-       notes: results.notes,
-       time_spent: results.totalMinutes,
-     }).subscribe((res) => {
-       console.log(res);
-       // Set team task status to done.
-       // this.store.TeamTask.update(task.id, {
-       //   status: 'done',
-       // }, true).subscribe((res) => {
-       //   task.state = 'done';
-       // });
-       // Create billed activity record
-     });
-   });
+    this.store.TeamTask.read(task.id).subscribe((taskObj) => {
+      this.modals.open(RecordResultsComponent, {
+        closeDisabled: true,
+        data: {
+          patient: this.patient,
+          carePlan: this.carePlan,
+          teamTaskId: taskObj.team_task_template,
+          taskEditable: false,
+          totalMinutes: null,
+          with: null,
+          syncToEHR: false,
+          notes: '',
+          patientEngagement: null,
+        },
+        width: '512px',
+      }).subscribe((results) => {
+        if (!results) {
+          return;
+        }
+        this.store.BilledActivity.create({
+          plan: this.carePlan.id,
+          activity_datetime: results.date,
+          members: [
+            this.user.id,
+          ].concat(results.with),
+          team_task_template: results.teamTaskTemplate,
+          patient_included: results.patientIncluded,
+          sync_to_ehr: results.syncToEHR,
+          added_by: this.user.id,
+          notes: results.notes,
+          time_spent: results.totalMinutes,
+        }).subscribe((res) => {
+          this.store.TeamTask.update(task.id, {
+            status: 'done',
+          }, true).subscribe((res) => {
+            task.state = 'done';
+          });
+        });
+      });
+    });
   }
 
   public addCTTask() {

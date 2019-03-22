@@ -6,7 +6,7 @@
 	<div class="flex alignCenter justifySpaceBetween marBottom32">
 		<div>
 			<label class="styledInput">
-				<input type="checkbox" class="styledInput__input" [(ngModel)]="isUsingMobile" (ngModelChange)="toggleUsingMobile()" />
+				<input type="checkbox" class="styledInput__input" [checked]="isUsingMobile" (change)="toggleUsingMobile()" />
 				<span class="styledInput__box"></span>
 				Using Mobile Application
 			</label>

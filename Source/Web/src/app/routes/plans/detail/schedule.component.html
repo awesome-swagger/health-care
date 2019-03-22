@@ -57,7 +57,7 @@
                 </button>
               </td>
               <td class="noPad" width="48px">
-                <button class="button button--icon button--icon--small" (click)="confirmDeleteGoal(goal)">
+                <button class="button button--icon button--icon--small" (click)="deleteGoal(goal)">
                   <i class="ss-delete"></i>
                 </button>
               </td>
@@ -124,26 +124,26 @@
           </thead>
           <tbody>
             <tr *ngFor="let task of teamManagerTemplates">
-              <td class="taskName left">{{task.name | titlecase}} </td>
+              <td class="taskName left">{{task.name}} </td>
               <td>{{task.start_on_day}}</td>
               <td class="left">{{task.frequency | frequencyTransform | titlecase}}</td>
               <td class="left"> {{task.repeat_amount != -1 ? task.repeat_amount + ' times' :'Until Plan Ends'}}</td>
               <td>{{task.appear_time | timeTransform | date: 'shortTime' }}</td>
               <td>{{task.due_time | timeTransform | date: 'shortTime'}}</td>
               <td class="noPad" width="48px">
-                <button class="button button--icon button--icon--small" (click)="editCMTask(task)">
+                <button class="button button--icon button--icon--small" (click)="editManagerTask(task)">
                   <i class="ss-write"></i>
                 </button>
               </td>
               <td class="noPad" width="48px">
-                <button class="button button--icon button--icon--small" (click)="confirmDeleteCTTask(task, true)">
+                <button class="button button--icon button--icon--small" (click)="deleteTeamTask(task, true)">
                   <i class="ss-delete"></i>
                 </button>
               </td>
             </tr>
           </tbody>
         </table>
-        <button class="button button--iconText marBottom64" (click)="addCMTask()" >
+        <button class="button button--iconText marBottom64" (click)="addManagerTask()" >
           <i class="ss-plus"></i> Add Task
         </button>
         <h3 class="noMargin">Care Team Tasks (CT) ({{teamMemberTemplates.length}})</h3>
@@ -192,7 +192,7 @@
           </thead>
           <tbody>
             <tr *ngFor="let task of teamMemberTemplates">
-              <td class="taskName left">{{task.name | titlecase}} </td>
+              <td class="taskName left">{{task.name}} </td>
               <td class="left">
                 <span *ngIf="task.role && task.role.id">{{task.role.name}}</span>
                 <span *ngIf="!task.role">Not Set</span>
@@ -203,19 +203,19 @@
               <td>{{task.appear_time | timeTransform | date: 'shortTime' }}</td>
               <td>{{task.due_time | timeTransform | date: 'shortTime'}}</td>
               <td class="noPad" width="48px">
-                <button class="button button--icon button--icon--small" (click)="editCTTask(task)">
+                <button class="button button--icon button--icon--small" (click)="editTeamTask(task)">
                   <i class="ss-write"></i>
                 </button>
               </td>
               <td class="noPad" width="48px">
-                <button class="button button--icon button--icon--small" (click)="confirmDeleteCTTask(task, false)">
+                <button class="button button--icon button--icon--small" (click)="deleteTeamTask(task, false)">
                   <i class="ss-delete"></i>
                 </button>
               </td>
             </tr>
           </tbody>
         </table>
-        <button class="button button--iconText" (click)="addCTTask()" >
+        <button class="button button--iconText" (click)="addTeamTask()" >
           <i class="ss-plus"></i> Add Task
         </button>
       </div> <!--/.accordion__contents-->
@@ -274,26 +274,26 @@
           </thead>
           <tbody>
             <tr *ngFor="let pTask of patientTaskTemplates">
-              <td class="taskName left">{{pTask.name | titlecase}}</td>
+              <td class="taskName left">{{pTask.name}}</td>
               <td>{{pTask.start_on_day}}</td>
               <td class="left">{{pTask.frequency | frequencyTransform | titlecase}}</td>
               <td class="left">{{pTask.repeat_amount != -1 ? pTask.repeat_amount :'Until Plan Ends'}}</td>
               <td>{{pTask.appear_time | timeTransform | date: 'shortTime'}}</td>
               <td>{{pTask.due_time | timeTransform | date: 'shortTime'}}</td>
               <td class="noPad" width="48px">
-                <button class="button button--icon button--icon--small" (click)="editTask(pTask)">
+                <button class="button button--icon button--icon--small" (click)="editPatientTask(pTask)">
                   <i class="ss-write"></i>
                 </button>
               </td>
               <td class="noPad" width="48px">
-                <button class="button button--icon button--icon--small" (click)="confirmDeleteTask(pTask)">
+                <button class="button button--icon button--icon--small" (click)="deletePatientTask(pTask)">
                   <i class="ss-delete"></i>
                 </button>
               </td>
             </tr>
           </tbody>
         </table>
-        <button class="button button--iconText marBottom48" (click)="addTask()">
+        <button class="button button--iconText marBottom48" (click)="addPatientTask()">
           <i class="ss-plus"></i> Add Task
         </button>
         <!--/ patient tasks: tasks section-->
@@ -373,7 +373,7 @@
           </thead>
           <tbody>
             <tr *ngFor="let asmt of assessmentTemplates">
-              <td class="taskName left">{{asmt.name | titlecase}}</td>
+              <td class="taskName left">{{asmt.name}}</td>
               <td>{{asmt.start_on_day}}</td>
               <td class="left"><span *ngIf="asmt.frequency">{{asmt.frequency | frequencyTransform | titlecase}}</span></td>
               <td class="left">{{asmt.repeat_amount != -1 ? asmt.repeat_amount :'Until Plan Ends'}}</td>
@@ -387,7 +387,7 @@
                 </button>
               </td>
               <td class="noPad" width="48px">
-                <button class="button button--icon button--icon--small" (click)="confirmDeleteAssessment(asmt)">
+                <button class="button button--icon button--icon--small" (click)="deleteAssessment(asmt)">
                   <i class="ss-delete"></i>
                 </button>
               </td>
@@ -448,7 +448,7 @@
                 </button>
               </td>
               <td class="noPad" width="48px">
-                <button class="button button--icon button--icon--small" (click)="confirmDeleteSymptom(sympt)">
+                <button class="button button--icon button--icon--small" (click)="deleteSymptom(sympt)">
                   <i class="ss-delete"></i>
                 </button>
               </td>
@@ -513,7 +513,7 @@
                 </button>
               </td>
               <td class="noPad" width="48px">
-                <button class="button button--icon button--icon--small" (click)="confirmDeleteVital(vital)">
+                <button class="button button--icon button--icon--small" (click)="deleteVital(vital)">
                   <i class="ss-delete"></i>
                 </button>
               </td>
@@ -580,7 +580,7 @@
                 </button>
               </td>
               <td class="noPad" width="48px">
-                <button class="button button--icon button--icon--small" (click)="confirmDeleteStream(msg)">
+                <button class="button button--icon button--icon--small" (click)="deleteStream(msg)">
                   <i class="ss-delete"></i>
                 </button>
               </td>

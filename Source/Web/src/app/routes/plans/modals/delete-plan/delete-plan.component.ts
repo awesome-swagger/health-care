@@ -19,6 +19,8 @@ export class DeletePlanComponent implements OnInit, OnDestroy {
   public bulkManager = {};
   public bulkNewPlan = {};
   public bulkInactive = {};
+  public otherPlansInfoOpen = {};
+  public otherPlansOpen = {};
 
   private facilitiesSub = null;
 
