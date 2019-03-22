@@ -20,10 +20,10 @@
           <div *ngIf="!assessment.edit" class="flex alignCenter justifySpaceBetween fullWidth">
             <span>{{assessment.name}}<span *ngIf="assessment.tracks_outcome">*</span><span *ngIf="assessment.tracks_satisfaction">**</span> <span class="badge badge--chat">{{uniqByNameCount(assessment)}}</span></span>
             <div class="flex">
-              <button class="button button--icon button--icon--small" (click)="clickEditAssessment(assessment)">
+              <button class="button button--icon button--icon--small" (click)="clickEditAssessment(assessment, $event)">
                 <i class="ss-write"></i>
               </button>
-              <button class="button button--icon button--icon--small" (click)="clickDeleteAssessment(assessment)">
+              <button class="button button--icon button--icon--small" (click)="clickDeleteAssessment(assessment, $event)">
                 <i class="ss-delete"></i>
               </button>
             </div>
@@ -33,10 +33,10 @@
               <input type="text" class="input fullWidth" [(ngModel)]="assessment.name" [ngModelOptions]="{standalone: true}" />
             </div>
             <div class="flex">
-              <button class="button button--icon button--icon--small" type="button" (click)="clickUndoName(assessment)">
+              <button class="button button--icon button--icon--small" type="button" (click)="clickUndoName(assessment, $event)">
                 <i class="ss-undo"></i>
               </button>
-              <button class="button button--icon button--icon--small" type="submit" (click)="updateAssessmentName(assessment)">
+              <button class="button button--icon button--icon--small" type="submit" (click)="updateAssessmentName(assessment, $event)">
                 <i class="ss-floppydisk"></i>
               </button>
             </div>

@@ -709,7 +709,6 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       width: '768px',
       data: {
         editingTemplate: true,
-        taskList: vitalTemplates,
         totalPatients: this.totalPatients,
         planTemplateId: this.planTemplateId,
       },
@@ -724,13 +723,9 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
             this.previewVital('add-vital', data.data);
           }, 10);
           break;
-        case 'editVital':
-          setTimeout(() => {
-            this.editVital(data.data, true);
-          }, 10);
-          break;
         case 'createVital':
           setTimeout(() => {
+            this.vitalTemplates.push(data.data);
             this.editVital(data.data, false);
           }, 10);
         default:

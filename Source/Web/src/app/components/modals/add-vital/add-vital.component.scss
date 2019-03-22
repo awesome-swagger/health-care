@@ -5,12 +5,21 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  width: 168px;
+  width: 144px;
 }
 
 .ellipsisHeader {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  width: 250px;
+  width: 248px;
+}
+
+.button--icon--small {
+  width: 2.5rem;
+}
+
+.iconSmall {
+  width: 2.5rem;
+  text-align: center;
 }

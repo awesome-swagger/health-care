@@ -47,7 +47,7 @@ export class CreateAssessmentComponent implements OnInit {
 
   public addQuestionLine() {
     let maxOrder = -1;
-    if (!this.assessment.questions || this.assessment.questions.length === 0) {
+    if (!this.assessment.questions || this.assessment.questions.length < 1) {
       this.assessment.questions = [];
       maxOrder = -1;
     } else {

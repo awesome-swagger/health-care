@@ -162,37 +162,15 @@ export class CreateVitalComponent implements OnInit {
       }
     });
     let promise = new Promise((resolve, reject) => {
-      if (this.vital.id) {
-        let vitalWithoutQuestions = _omit(this.vital, 'questions');
-        let updateSub = this.store.VitalsTaskTemplate.update(vitalWithoutQuestions.id, _omit(vitalWithoutQuestions, 'id'), true)
-          .subscribe(
-            (res) => resolve(res),
-            (err) => reject(err),
-            () => {
-              updateSub.unsubscribe();
-            }
-          );
-      } else {
-        this.vital = Object.assign({}, this.vital, {
-          plan_template: this.data.planTemplateId,
-          start_on_day: 0,
-          appear_time: '00:00:00',
-          due_time: '00:00:00',
-          frequency: 'once',
-        });
-        let vitalWithoutQuestions = _omit(this.vital, 'questions');
-        let createSub = this.store.VitalsTaskTemplate.create(vitalWithoutQuestions)
-          .subscribe(
-            (res) => {
-              this.vital.id = res.id;
-              resolve(res);
-            },
-            (err) => reject(err),
-            () => {
-              createSub.unsubscribe();
-            }
-          );
-      }
+    let vitalWithoutQuestions = _omit(this.vital, 'questions');
+    let updateSub = this.store.VitalsTaskTemplate.update(vitalWithoutQuestions.id, _omit(vitalWithoutQuestions, 'id'), true)
+      .subscribe(
+        (res) => resolve(res),
+        (err) => reject(err),
+        () => {
+          updateSub.unsubscribe();
+        }
+      );
     });
     return promise;
   }
@@ -224,7 +202,6 @@ export class CreateVitalComponent implements OnInit {
       return;
     }
     this.updateVital().then((vital: any) => {
-      this.vital.id = vital.id;
       this.createOrUpdateAllQuestions().then(() => {
         this.modal.close(this.vital);
       });

@@ -60,21 +60,23 @@ export class AddAssessmentComponent implements OnInit {
     this.assessmentsShown = _uniqBy(assessmentMatches, (obj) => obj.name);
   }
 
-  public clickEditAssessment(assessment) {
+  public clickEditAssessment(assessment, e) {
+    e.stopPropagation();
     assessment.edit = !assessment.edit;
     assessment.origName = assessment.name;
   }
 
-  public clickUndoName(assessment) {
+  public clickUndoName(assessment, e) {
+    e.stopPropagation();
     assessment.edit = !assessment.edit;
     assessment.name = assessment.origName;
   }
 
-  public clickDeleteAssessment(assessment) {
-
+  public clickDeleteAssessment(assessment, e) {
+    e.stopPropagation();
   }
 
-  public addAssessment(assessmentName) {
+  public addAssessment(assessmentName, e) {
     if (assessmentName.length <= 0) {
       return;
     }
@@ -98,7 +100,8 @@ export class AddAssessmentComponent implements OnInit {
     );
   }
 
-  public updateAssessmentName(assessment) {
+  public updateAssessmentName(assessment, e) {
+    e.stopPropagation();
     let assessments = this.assessments.filter((obj) => obj.name === assessment.origName || obj.name === assessment.name);
     assessments.forEach((obj) => {
       let updateSub = this.store.AssessmentTaskTemplate.update(obj.id, {
