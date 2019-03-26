@@ -49,8 +49,8 @@ export class AddAssessmentComponent implements OnInit {
     }
   }
 
-  public uniqByNameCount(assesment) {
-    return this.assessments.filter((obj) => obj.name === assesment.name).length;
+  public uniqByNameCount(assessment) {
+    return this.assessments.filter((obj) => obj.name === assessment.name).length;
   }
 
   public filterAssessments() {

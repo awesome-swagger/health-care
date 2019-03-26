@@ -21,25 +21,49 @@
           [ngClass]="{'nameList__item--target--active': message.id === selectedTemplate?.id}"
           *ngFor="let message of careMessagesShown"
           (click)="selectedTemplate = message;">
-          <div class="flex alignCenter justifySpaceBetween fullWidth">
-            <span>{{message.name}}</span>
+          <div *ngIf="!message.edit" class="flex alignCenter justifySpaceBetween fullWidth">
+            <span>{{message.name}} <span class="badge badge--chat">{{uniqByNameCount(message)}}</span></span>
             <div class="flex">
-              <button class="button button--icon button--icon--small" (click)="clickEditMessage(message)">
+              <button class="button button--icon button--icon--small" (click)="clickEditMessage(message, $event)">
                 <i class="ss-write"></i>
               </button>
-              <button class="button button--icon button--icon--small" (click)="clickDeleteMessage()">
+              <button class="button button--icon button--icon--small" (click)="clickDeleteMessage(message, $event)">
                 <i class="ss-delete"></i>
               </button>
             </div>
           </div>
+          <form *ngIf="message.edit" class="nameList__form">
+            <div class="nameList__inputWrap">
+              <input type="text" class="input fullWidth" [(ngModel)]="message.name" [ngModelOptions]="{standalone: true}" />
+            </div>
+            <div class="flex">
+              <button class="button button--icon button--icon--small" type="button" (click)="clickUndoName(message, $event)">
+                <i class="ss-undo"></i>
+              </button>
+              <button class="button button--icon button--icon--small" type="submit" (click)="updateMessageName(message, $event)">
+                <i class="ss-floppydisk"></i>
+              </button>
+            </div>
+          </form>
         </li>
       </ul>
     </div> <!--/.listBox-->
-
-    <button class="button button--iconText marBottom24" (click)="clickNewStream()">
+    <button *ngIf="!createStream" class="button button--iconText" (click)="createStream=!createStream">
       <i class="ss-plus"></i> Create New Care Message
     </button>
-
+    <form *ngIf="createStream" class="nameList__form">
+      <div class="nameList__inputWrap">
+        <input type="text" class="input fullWidth" [(ngModel)]="newStreamName" [ngModelOptions]="{standalone: true}" />
+      </div>
+      <div class="flex">
+        <button class="button button--icon button--icon--small" type="button" (click)="createStream=!createStream;">
+          <i class="ss-undo"></i>
+        </button>
+        <button class="button button--icon button--icon--small" (click)="addStream(newStreamName)">
+          <i class="ss-plus"></i>
+        </button>
+      </div>
+    </form>
     <div class="modal__buttons modal__buttons--full">
       <button class="button button--2nd" (click)="clickCancel()">
         Cancel
@@ -49,7 +73,6 @@
       </button>
     </div>
   </div> <!--/.gridCell--11-->
-
   <div class="gridCell--21">
     <div class="modal__details">
       <h2 *ngIf="!selectedTemplate" class="modal__empty">Select a message stream to see details</h2>

@@ -459,6 +459,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       (newTask) => {
         if (!newTask) return;
         setTimeout(() => {
+          this.patientTaskTemplates.push(newTask);
           this.editPatientTask(newTask);
         }, 10);
       },
@@ -844,12 +845,12 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
     );
   }
 
+
   public addStream() {
     this.modals.open(AddStreamComponent, {
       closeDisabled: false,
       data: {
         editingTemplate: true,
-        taskList: this.messageQueues,
         totalPatients: this.totalPatients,
         planTemplateId: this.planTemplateId,
       },
@@ -859,13 +860,10 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
         switch (data.nextAction) {
           case 'create-stream':
             setTimeout(() => {
-              this.editStream(null);
-            }, 10);
-        	case 'edit-stream':
-            setTimeout(() => {
+              this.messageQueues.push(data.message);
               this.editStream(data.message);
             }, 10);
-        		break;
+            break;
         	default:
         		break;
         }
@@ -878,6 +876,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       closeDisabled: false,
       data: {
         stream: stream,
+        editingTemplate: true,
         totalPatients: this.totalPatients,
         planTemplateId: this.planTemplateId,
       },
