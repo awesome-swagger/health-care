@@ -321,6 +321,8 @@ class InfoMessageQueue(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
     )
     type = models.CharField(
         max_length=40, choices=TYPE_CHOICES, null=False, blank=False)
+    is_active = models.BooleanField(default=True)
+    is_available = models.BooleanField(default=True)
 
     def __str__(self):
         return self.name

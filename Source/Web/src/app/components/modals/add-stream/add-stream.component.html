@@ -20,8 +20,8 @@
         <li class="nameList__item nameList__item--padLeft nameList__item--target"
           [ngClass]="{'nameList__item--target--active': message.id === selectedTemplate?.id}"
           *ngFor="let message of careMessagesShown"
-          (click)="selectedTemplate = message;">
-          <div *ngIf="!message.edit" class="flex alignCenter justifySpaceBetween fullWidth">
+          (click)="selectMessage(message)">
+          <div *ngIf="!message.edit && !message.delete" class="flex alignCenter justifySpaceBetween fullWidth">
             <span>{{message.name}} <span class="badge badge--chat">{{uniqByNameCount(message)}}</span></span>
             <div class="flex">
               <button class="button button--icon button--icon--small" (click)="clickEditMessage(message, $event)">
@@ -43,6 +43,21 @@
               <button class="button button--icon button--icon--small" type="submit" (click)="updateMessageName(message, $event)">
                 <i class="ss-floppydisk"></i>
               </button>
+            </div>
+          </form>
+          <form *ngIf="message.delete" class="nameList__form">
+            <div class="fullWidth flex justifySpaceBetween alignCenter">
+              <div class="flex alignCenter">
+                <p class="noMargin marRight8">Are you sure you want to remove this message stream from all care plans?</p>
+              </div>
+              <div class="flex justifyEnd alignCenter">
+                <button class="button button--icon button--icon--small" type="button" (click)="confirmDeleteMessage(message, $event)">
+                  <i class="ss-check ss-standard"></i>
+                </button>
+                <button class="button button--icon button--icon--small" type="button" (click)="clickUndoDelete(message, $event)">
+                  <i class="ss-ban ss-standard"></i>
+                </button>
+              </div>
             </div>
           </form>
         </li>

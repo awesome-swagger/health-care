@@ -33,7 +33,9 @@ export class AddStreamComponent implements OnInit {
     if (this.data) {
       this.editingTemplate = this.data.editingTemplate;
       this.totalPatients = this.data.totalPatients ? this.data.totalPatients : 0;
-      this.store.InfoMessageQueue.readListPaged().subscribe(
+      this.store.InfoMessageQueue.readListPaged({
+        is_available: true,
+      }).subscribe(
         (data) => {
           this.careMessages = data;
           this.careMessagesShown = _uniqBy(this.careMessages, (obj) => {
@@ -46,15 +48,27 @@ export class AddStreamComponent implements OnInit {
     }
   }
 
-  public uniqByNameCount(queue) {
-    return this.careMessages.filter((obj) => obj.name === queue.name).length;
-  }
-
   public filterMessages() {
     let matches = this.careMessages.filter((obj) => {
       return obj.name.toLowerCase().indexOf(this.searchInput.toLowerCase()) >= 0;
     });
     this.careMessagesShown = _uniqBy(matches, (obj) => obj.name);
+  }
+
+  public selectMessage(message) {
+    if (message.edit || message.delete) {
+      return;
+    }
+    this.selectedTemplate = message;
+  }
+
+  public uniqByNameCount(message) {
+    let messages = this.careMessages.filter(
+      (obj) => obj.name === message.name
+    ).filter(
+      (obj) => obj.is_active === true
+    );
+    return messages.length;
   }
 
   public clickEditMessage(message, e) {
@@ -69,8 +83,57 @@ export class AddStreamComponent implements OnInit {
     message.name = message.origName;
   }
 
+  public updateMessageName(message, e) {
+    e.stopPropagation();
+    let messages = this.careMessages.filter((obj) => obj.name === message.origName || obj.name === message.name);
+    messages.forEach((obj) => {
+      let updateSub = this.store.InfoMessageQueue.update(obj.id, {
+        name: message.name,
+      }, true).subscribe(
+        (resp) => {
+          obj.name = message.name;
+          message.edit = false;
+        },
+        (err) => {},
+        () => {
+          updateSub.unsubscribe();
+        }
+      );
+    });
+  }
+
   public clickDeleteMessage(message, e) {
     e.stopPropagation();
+    message.delete = true;
+  }
+
+  public clickUndoDelete(message, e) {
+    e.stopPropagation();
+    message.delete = false;
+  }
+
+  public confirmDeleteAssessment(message, e) {
+    e.stopPropagation();
+    let messages = this.careMessages.filter((obj) => obj.name === message.origName || obj.name === message.name);
+    messages.forEach((obj) => {
+      let updateSub = this.store.InfoMessageQueue.update(obj.id, {
+        is_available: false,
+        is_active: false
+      }, true).subscribe(
+        (resp) => {
+          let index = this.careMessages.findIndex((a) => a.id === resp.id);
+          this.careMessages.splice(index, 1);
+          message.delete = false;
+          this.careMessagesShown = _uniqBy(this.careMessages, (obj) => {
+            return obj.name;
+          });
+        },
+        (err) => {},
+        () => {
+          updateSub.unsubscribe();
+        }
+      );
+    });
   }
 
   public addStream(streamName, e) {
@@ -97,25 +160,6 @@ export class AddStreamComponent implements OnInit {
         createSub.unsubscribe();
       }
     );
-  }
-
-  public updateMessageName(message, e) {
-    e.stopPropagation();
-    let messages = this.careMessages.filter((obj) => obj.name === message.origName || obj.name === message.name);
-    messages.forEach((obj) => {
-      let updateSub = this.store.InfoMessageQueue.update(obj.id, {
-        name: message.name,
-      }, true).subscribe(
-        (resp) => {
-          obj.name = message.name;
-          message.edit = false;
-        },
-        (err) => {},
-        () => {
-          updateSub.unsubscribe();
-        }
-      );
-    });
   }
 
   public clickCancel() {

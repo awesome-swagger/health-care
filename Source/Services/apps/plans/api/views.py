@@ -881,7 +881,7 @@ class InfoMessageQueueViewSet(viewsets.ModelViewSet):
         permissions.IsAuthenticated,
         IsEmployeeOrPatientReadOnly,
     )
-    queryset = InfoMessageQueue.objects.all()
+    queryset = InfoMessageQueue.objects.order_by('name')
     filter_backends = (DjangoFilterBackend, )
     filterset_fields = (
         'plan_template__id',
@@ -890,6 +890,13 @@ class InfoMessageQueueViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = super(InfoMessageQueueViewSet, self).get_queryset()
         user = self.request.user
+
+        active_only = self.request.query_params.get('is_active')
+        if active_only:
+            queryset = queryset.filter(is_active=True)
+        available_only = self.request.query_params.get('is_available')
+        if available_only:
+            queryset = queryset.filter(is_available=True)
 
         if user.is_patient:
             queryset = queryset.filter(
