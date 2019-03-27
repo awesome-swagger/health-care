@@ -112,6 +112,7 @@ class EmailUserAdmin(UserAdmin):
                 'phone',
                 'birthdate',
                 ('validation_key', 'validated_at',),
+                'is_active',
             ),
         }),
         ('Roles', {
