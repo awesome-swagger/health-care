@@ -498,7 +498,7 @@ class OrganizationPatientGraphSerializer(serializers.ModelSerializer):
         care_team_members = self._get_care_team_members(request)
         filter_allowed = self.context.get('filter_allowed', False)
         facilities = get_facilities_for_user(request.user, obj.id)
-        months = 12
+        months = int(request.GET.get('months', 12))
         now = timezone.now()
         data = {}
         enrolled_kwargs = {
