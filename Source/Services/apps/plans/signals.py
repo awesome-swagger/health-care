@@ -27,7 +27,7 @@ def create_scheduled_tasks(plan,
                            instance_model,
                            template_field):
     task_templates = template_model.objects.filter(
-        plan_template=plan.plan_template)
+        plan_template=plan.plan_template, is_active=True)
 
     for template in task_templates:
         template_config = {

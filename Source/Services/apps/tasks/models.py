@@ -81,6 +81,10 @@ class AbstractTaskTemplate(UUIDPrimaryKeyMixin):
     )
     appear_time = models.TimeField(null=False, blank=False)
     due_time = models.TimeField(null=False, blank=False)
+    # tracks whether or not this task should show on the care plan it is tied to
+    is_active = models.BooleanField(default=True)
+    # tracks whether or not this task should show in the available tasks
+    is_available = models.BooleanField(default=True)
 
     class Meta:
         abstract = True

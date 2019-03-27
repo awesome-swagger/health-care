@@ -67,7 +67,7 @@ from care_adopt_backend.permissions import (
 class PatientTaskTemplateViewSet(viewsets.ModelViewSet):
     serializer_class = PatientTaskTemplateSerializer
     permission_classes = (permissions.IsAuthenticated, EmployeeOrReadOnly, )
-    queryset = PatientTaskTemplate.objects.all()
+    queryset = PatientTaskTemplate.objects.order_by('name')
     filter_backends = (DjangoFilterBackend, )
     filterset_fields = (
         'plan_template__id',
@@ -77,6 +77,12 @@ class PatientTaskTemplateViewSet(viewsets.ModelViewSet):
         queryset = super(PatientTaskTemplateViewSet, self).get_queryset()
         employee_profile = utils.employee_profile_or_none(self.request.user)
         patient_profile = utils.patient_profile_or_none(self.request.user)
+        active_only = self.request.query_params.get('is_active')
+        if active_only:
+            queryset = queryset.filter(is_active=True)
+        available_only = self.request.query_params.get('is_available')
+        if available_only:
+            queryset = queryset.filter(is_available=True)
 
         if employee_profile is not None:
             # TODO: Only get task templates for patients this employee
@@ -165,6 +171,16 @@ class TeamTaskTemplateViewSet(viewsets.ModelViewSet):
         'plan_template__id',
     )
 
+    def get_queryset(self):
+        queryset = super(TeamTaskTemplateViewSet, self).get_queryset()
+        active_only = self.request.query_params.get('is_active')
+        if active_only:
+            queryset = queryset.filter(is_active=True)
+        available_only = self.request.query_params.get('is_available')
+        if available_only:
+            queryset = queryset.filter(is_available=True)
+        return queryset
+
 
 class TeamTaskViewSet(viewsets.ModelViewSet):
     serializer_class = TeamTaskSerializer
@@ -208,6 +224,16 @@ class MedicationTaskTemplateViewSet(viewsets.ModelViewSet):
     filterset_fields = (
         'plan__id',
     )
+
+    def get_queryset(self):
+        queryset = super(MedicationTaskTemplateViewSet, self).get_queryset()
+        active_only = self.request.query_params.get('is_active')
+        if active_only:
+            queryset = queryset.filter(is_active=True)
+        available_only = self.request.query_params.get('is_available')
+        if available_only:
+            queryset = queryset.filter(is_available=True)
+        return queryset
 
 
 class MedicationTaskViewSet(viewsets.ModelViewSet):
@@ -259,6 +285,16 @@ class SymptomTaskTemplateViewSet(viewsets.ModelViewSet):
     filterset_fields = (
         'plan_template__id',
     )
+
+    def get_queryset(self):
+        queryset = super(SymptomTaskTemplateViewSet, self).get_queryset()
+        active_only = self.request.query_params.get('is_active')
+        if active_only:
+            queryset = queryset.filter(is_active=True)
+        available_only = self.request.query_params.get('is_available')
+        if available_only:
+            queryset = queryset.filter(is_available=True)
+        return queryset
 
 
 class SymptomTaskViewSet(viewsets.ModelViewSet):
@@ -370,7 +406,17 @@ class AssessmentTaskTemplateViewSet(viewsets.ModelViewSet):
     filterset_fields = (
         'plan_template__id',
     )
-    queryset = AssessmentTaskTemplate.objects.all()
+    queryset = AssessmentTaskTemplate.objects.order_by('name')
+
+    def get_queryset(self):
+        queryset = super(AssessmentTaskTemplateViewSet, self).get_queryset()
+        active_only = self.request.query_params.get('is_active')
+        if active_only:
+            queryset = queryset.filter(is_active=True)
+        available_only = self.request.query_params.get('is_available')
+        if available_only:
+            queryset = queryset.filter(is_available=True)
+        return queryset
 
 
 class AssessmentQuestionViewSet(viewsets.ModelViewSet):
@@ -529,7 +575,17 @@ class VitalTaskTemplateViewSet(viewsets.ModelViewSet):
     filterset_fields = (
         'plan_template__id',
     )
-    queryset = VitalTaskTemplate.objects.all()
+    queryset = VitalTaskTemplate.objects.order_by('name')
+
+    def get_queryset(self):
+        queryset = super(VitalTaskTemplateViewSet, self).get_queryset()
+        active_only = self.request.query_params.get('is_active')
+        if active_only:
+            queryset = queryset.filter(is_active=True)
+        available_only = self.request.query_params.get('is_available')
+        if available_only:
+            queryset = queryset.filter(is_available=True)
+        return queryset
 
 
 class VitalTaskTemplateSearchViewSet(HaystackViewSet):

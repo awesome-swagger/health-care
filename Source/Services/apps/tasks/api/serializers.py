@@ -166,6 +166,8 @@ class TeamTaskTemplateSerializer(RepresentationMixin,
             'repeat_amount',
             'appear_time',
             'due_time',
+            'is_active',
+            'is_available',
         )
         nested_serializers = [
             {
@@ -388,6 +390,8 @@ class AssessmentTaskTemplateSerializer(serializers.ModelSerializer):
             'repeat_amount',
             'appear_time',
             'due_time',
+            'is_active',
+            'is_available',
             'questions',
         )
         read_only_fields = (
@@ -518,6 +522,8 @@ class BaseVitalTaskTemplateSerializer(serializers.ModelSerializer):
             'repeat_amount',
             'appear_time',
             'due_time',
+            'is_active',
+            'is_available',
         )
         read_only_fields = (
             'id',
@@ -568,6 +574,8 @@ class VitalTaskTemplateSerializer(serializers.ModelSerializer):
             'questions',
             'appear_time',
             'due_time',
+            'is_active',
+            'is_available',
         )
         read_only_fields = (
             'id',
