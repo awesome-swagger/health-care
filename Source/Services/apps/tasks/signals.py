@@ -113,7 +113,7 @@ def assign_is_complete_to_assessment_task(instance):
 
     if value:
         task.is_complete = value
-        task.save()
+        task.save(update_fields=['is_complete'])
 
 
 def assign_is_complete_to_vital_task(instance):
@@ -140,7 +140,7 @@ def assign_is_complete_to_vital_task(instance):
 
     if value:
         task.is_complete = value
-        task.save()
+        task.save(update_fields=['is_complete'])
 
 
 def assign_is_complete_to_symptom_task(instance):
@@ -152,7 +152,7 @@ def assign_is_complete_to_symptom_task(instance):
     task = instance.symptom_task
     if not task.is_complete:
         task.is_complete = True
-        task.save()
+        task.save(update_fields=['is_complete'])
 
 
 def assessmentresponse_post_save(sender, instance, created, **kwargs):
@@ -187,7 +187,15 @@ def symptomrating_post_save(sender, instance, created, **kwargs):
     :model:`tasks.SymptomRating`
     """
     if created:
-        assign_is_complete_to_symptom_task(instance)
+        template = instance.symptom_task.symptom_task_template
+        default_symptoms = template.default_symptoms.values_list(
+            'id', flat=True)
+        rated_symptoms = instance.symptom_task.ratings.values_list(
+            'symptom', flat=True).distinct()
+
+        is_complete = set(default_symptoms).issubset(rated_symptoms)
+        if is_complete:
+            assign_is_complete_to_symptom_task(instance)
 
         patient = instance.symptom_task.plan.patient
         assignment = RiskLevelAssignment(patient)
@@ -200,9 +208,17 @@ def symptomrating_post_delete(sender, instance, **kwargs):
     :model:`tasks.SymptomRating`
     """
     task = instance.symptom_task
+    template = task.symptom_task_template
     if task.is_complete:
-        task.is_complete = False
-        task.save()
+        default_symptoms = template.default_symptoms.values_list(
+            'id', flat=True)
+        rated_symptoms = instance.symptom_task.ratings.exclude(
+            id=instance.id).values_list('symptom', flat=True).distinct()
+
+        is_complete = set(default_symptoms).issubset(rated_symptoms)
+        if not is_complete:
+            task.is_complete = False
+            task.save(update_fields=['is_complete'])
 
         patient = instance.symptom_task.plan.patient
         assignment = RiskLevelAssignment(patient)
@@ -217,7 +233,7 @@ def assessmentresponse_post_delete(sender, instance, **kwargs):
     task = instance.assessment_task
     if task.is_complete:
         task.is_complete = False
-        task.save()
+        task.save(update_fields=['is_complete'])
 
         patient = instance.assessment_task.plan.patient
         assignment = RiskLevelAssignment(patient)
@@ -232,7 +248,7 @@ def vitalresponse_post_delete(sender, instance, **kwargs):
     task = instance.vital_task
     if task.is_complete:
         task.is_complete = False
-        task.save()
+        task.save(update_fields=['is_complete'])
 
         patient = instance.vital_task.plan.patient
         assignment = RiskLevelAssignment(patient)

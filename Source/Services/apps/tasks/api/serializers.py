@@ -268,17 +268,38 @@ class MedicationTaskTodaySerializer(serializers.ModelSerializer):
 
     def get_occurrence(self, obj):
         total_tasks = MedicationTask.objects.filter(
-            medication_task_template=obj.patient_task_template)
+            medication_task_template=obj.medication_task_template)
         obj_occurrence = total_tasks.filter(
             due_datetime__lte=obj.due_datetime).count()
         return f'{obj_occurrence} of {total_tasks.count()}'
 
 
-class SymptomTaskTemplateSerializer(serializers.ModelSerializer):
+class SymptomTaskTemplateSerializer(RepresentationMixin,
+                                    serializers.ModelSerializer):
 
     class Meta:
         model = SymptomTaskTemplate
-        fields = '__all__'
+        fields = (
+            'id',
+            'name',
+            'plan_template',
+            'default_symptoms',
+            'start_on_day',
+            'frequency',
+            'repeat_amount',
+            'appear_time',
+            'due_time',
+        )
+        read_only_fields = (
+            'id',
+        )
+        nested_serializers = [
+            {
+                'field': 'default_symptoms',
+                'serializer_class': SymptomSerializer,
+                'many': True
+            }
+        ]
 
 
 class SymptomRatingSerializer(RepresentationMixin,
