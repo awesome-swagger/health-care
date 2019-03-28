@@ -18,7 +18,10 @@ class TestSymptomTask(StateTestMixin, TasksMixin, APITestCase):
     def setUp(self):
         self.fake = Faker()
         self.user = AdminUserFactory()
-        self.symptom_task = self.create_symptom_task()
+        template = self.create_symptom_task_template()
+        self.symptoms = template.default_symptoms.all()
+        self.symptom_task = self.create_symptom_task(
+            symptom_task_template=template)
         self.other_task = self.create_symptom_task()
         self.plan = self.symptom_task.plan
         self.url = reverse('symptom_tasks-list')
@@ -33,7 +36,11 @@ class TestSymptomTask(StateTestMixin, TasksMixin, APITestCase):
         self.assertEqual(response.data['is_complete'], False)
 
     def test_symptom_task_with_ratings(self):
-        self.create_symptom_rating(self.symptom_task)
+        for symptom in self.symptoms:
+            self.create_symptom_rating(
+                symptom_task=self.symptom_task,
+                symptom=symptom
+            )
         response = self.client.get(self.detail_url)
         self.assertEqual(response.data['is_complete'], True)
 
@@ -42,9 +49,18 @@ class TestSymptomTask(StateTestMixin, TasksMixin, APITestCase):
         if 'status' in kwargs:
             kwargs.pop('status')
 
-        symptom_task = self.create_symptom_task(**kwargs)
+        template = self.create_symptom_task_template()
+        symptoms = template.default_symptoms.all()
+        symptom_task = self.create_symptom_task(
+            symptom_task_template=template,
+            **kwargs
+        )
         if state == 'done':
-            self.create_symptom_rating(symptom_task)
+            for symptom in symptoms:
+                self.create_symptom_rating(
+                    symptom_task=symptom_task,
+                    symptom=symptom
+                )
 
         url = reverse(
             'symptom_tasks-detail',
@@ -90,28 +106,32 @@ class TestSymptomTask(StateTestMixin, TasksMixin, APITestCase):
             self.create_symptom_task()
 
         # create one task with complete ratings
-        self.create_symptom_rating(**{
-            'symptom_task': self.symptom_task
-        })
+        for symptom in self.symptoms:
+            self.create_symptom_rating(**{
+                'symptom_task': self.symptom_task,
+                'symptom': symptom
+            })
         filter_url = f'{self.url}?is_complete=True'
         response = self.client.get(filter_url)
         self.assertEqual(response.data['count'], 1)
 
     def test_filter_by_is_not_complete(self):
         # create multiple SymptomTask without ratings
-        for i in range(3):
+        incomplete_count = 3
+        for i in range(incomplete_count):
             self.create_symptom_task()
 
         # create one task with complete ratings
-        self.create_symptom_rating(**{
-            'symptom_task': self.symptom_task
-        })
-        self.create_symptom_rating(**{
-            'symptom_task': self.other_task
-        })
+        for symptom in self.symptoms:
+            self.create_symptom_rating(**{
+                'symptom_task': self.symptom_task,
+                'symptom': symptom
+            })
+
         filter_url = f'{self.url}?is_complete=False'
         response = self.client.get(filter_url)
-        self.assertEqual(response.data['count'], 3)
+        # The +1 came from the `self.other_task` in `setUp`
+        self.assertEqual(response.data['count'], incomplete_count + 1)
 
     def test_get_symptom_ratings(self):
         count = 5
@@ -138,11 +158,15 @@ class TestSymptomTask(StateTestMixin, TasksMixin, APITestCase):
         self.assertEqual(response.data['is_complete'], False)
 
     def test_get_symptom_task_mark_complete_on_save_symptomrating(self):
-        count = 5
-        # Creating a SymptomRating will mark the SymptomTask as complete
-        for i in range(count):
+        """
+        Creating a SymptomRating for each symptoms in the symptom task template
+        will mark the SymptomTask as complete
+        """
+
+        for symptom in self.symptoms:
             self.create_symptom_rating(**{
-                'symptom_task': self.symptom_task
+                'symptom_task': self.symptom_task,
+                'symptom': symptom
             })
 
         response = self.client.get(self.detail_url)
