@@ -81,6 +81,10 @@ class AbstractTaskTemplate(UUIDPrimaryKeyMixin):
     )
     appear_time = models.TimeField(null=False, blank=False)
     due_time = models.TimeField(null=False, blank=False)
+    # tracks whether or not this task should show on the care plan it is tied to
+    is_active = models.BooleanField(default=True)
+    # tracks whether or not this task should show in the available tasks
+    is_available = models.BooleanField(default=True)
 
     class Meta:
         abstract = True
@@ -224,9 +228,17 @@ class MedicationTask(AbstractTask):
 
 
 class SymptomTaskTemplate(AbstractTaskTemplate):
+    name = models.CharField(
+        max_length=255)
     plan_template = models.ForeignKey(
-        CarePlanTemplate, null=False, blank=False, related_name="symptom_tasks",
+        CarePlanTemplate, null=False, blank=False,
+        related_name="symptom_tasks",
         on_delete=models.CASCADE)
+    default_symptoms = models.ManyToManyField(
+        'core.Symptom',
+        related_name='task_templates',
+        null=True,
+        )
 
     def __str__(self):
         return '{} symptom report template'.format(self.plan_template.name)

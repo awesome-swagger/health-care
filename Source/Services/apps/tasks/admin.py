@@ -22,7 +22,7 @@ from apps.tasks.models import (
 
 class PatientTaskTemplateAdmin(admin.ModelAdmin):
     list_display = (
-        'name', 'start_on_day', 'frequency',
+        'name', 'plan_template', 'start_on_day', 'frequency',
         'repeat_amount', 'appear_time', 'due_time', )
 
 
@@ -39,7 +39,7 @@ class PatientTaskAdmin(admin.ModelAdmin):
 
 class TeamTaskTemplateAdmin(admin.ModelAdmin):
     list_display = (
-        'name', 'start_on_day', 'frequency',
+        'name', 'plan_template', 'start_on_day', 'frequency',
         'repeat_amount', 'appear_time', 'due_time', )
 
 
@@ -74,7 +74,8 @@ class MedicationTaskAdmin(admin.ModelAdmin):
 
 class SymptomTaskTemplateAdmin(admin.ModelAdmin):
     list_display = (
-        'start_on_day', 'frequency', 'repeat_amount', 'appear_time', 'due_time', )
+        'plan_template', 'start_on_day', 'frequency', 'repeat_amount',
+        'appear_time', 'due_time', )
 
 
 class SymptomRatingInline(admin.TabularInline):

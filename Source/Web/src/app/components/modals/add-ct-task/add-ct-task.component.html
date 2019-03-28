@@ -12,14 +12,14 @@
 <input type="text" class="input input--search fullWidth marBottom32" placeholder="Search Tasks" [(ngModel)]="searchInput" (ngModelChange)="filterTasks()" />
 <div class="listBox">
 	<ul class="nameList">
-		<li class="nameList__item nameList__item--padLeft nameList__item--target" [ngClass]="{'nameList__item--target--active': task.id == selectedTask?.id}" *ngFor="let task of tasksShown" (click)="selectedTask = task;">
-			<div *ngIf="!task.edit" class="flex alignCenter justifySpaceBetween fullWidth">
+		<li class="nameList__item nameList__item--padLeft nameList__item--target" [ngClass]="{'nameList__item--target--active': task.id == selectedTask?.id}" *ngFor="let task of tasksShown" (click)="selectTask(task)">
+			<div *ngIf="!task.edit && !task.delete" class="flex alignCenter justifySpaceBetween fullWidth">
 				<span>{{task.name}} <span class="badge badge--chat">{{uniqByNameCount(task)}}</span></span>
 				<div class="flex">
-					<button class="button button--icon button--icon--small" (click)="task.edit=!task.edit; task.origName = task.name;">
+					<button class="button button--icon button--icon--small" (click)="clickEditTask(task, $event)">
 						<i class="ss-write"></i>
 					</button>
-					<button class="button button--icon button--icon--small" (click)="clickDeleteTask()">
+					<button class="button button--icon button--icon--small" (click)="clickDeleteTask(task, $event)">
 						<i class="ss-delete"></i>
 					</button>
 				</div>
@@ -29,12 +29,27 @@
 					<input type="text" class="input fullWidth" [(ngModel)]="task.name" [ngModelOptions]="{standalone: true}" />
 				</div>
 				<div class="flex">
-					<button class="button button--icon button--icon--small" type="button" (click)="task.edit=!task.edit; task.name = task.origName;">
+					<button class="button button--icon button--icon--small" type="button" (click)="clickUndoName(task, $event)">
 						<i class="ss-undo"></i>
 					</button>
-					<button class="button button--icon button--icon--small" type="submit" (click)="updateTaskName(task)">
+					<button class="button button--icon button--icon--small" type="submit" (click)="updateTaskName(task, $event)">
 						<i class="ss-floppydisk"></i>
 					</button>
+				</div>
+			</form>
+			<form *ngIf="task.delete" class="nameList__form">
+				<div class="fullWidth flex justifySpaceBetween alignCenter">
+					<div class="flex alignCenter">
+						<p class="noMargin marRight8">Are you sure you want to remove this task from all care plans?</p>
+					</div>
+					<div class="flex justifyEnd alignCenter">
+						<button class="button button--icon button--icon--small" type="button" (click)="confirmDeleteTask(task, $event)">
+							<i class="ss-check ss-standard"></i>
+						</button>
+						<button class="button button--icon button--icon--small" type="button" (click)="clickUndoDelete(task, $event)">
+							<i class="ss-ban ss-standard"></i>
+						</button>
+					</div>
 				</div>
 			</form>
 		</li>

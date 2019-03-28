@@ -36,7 +36,9 @@ export class AddAssessmentComponent implements OnInit {
     if (this.data) {
       this.editingTemplate = this.data.editingTemplate;
       this.totalPatients = this.data.totalPatients ? this.data.totalPatients : 0;
-      this.store.AssessmentTaskTemplate.readListPaged().subscribe(
+      this.store.AssessmentTaskTemplate.readListPaged({
+        is_available: true,
+      }).subscribe(
         (data) => {
           this.assessments = data;
           this.assessmentsShown = _uniqBy(this.assessments, (obj) => {
@@ -49,15 +51,27 @@ export class AddAssessmentComponent implements OnInit {
     }
   }
 
-  public uniqByNameCount(assesment) {
-    return this.assessments.filter((obj) => obj.name === assesment.name).length;
-  }
-
   public filterAssessments() {
     let assessmentMatches = this.assessments.filter((obj) => {
       return obj.name.toLowerCase().indexOf(this.searchInput.toLowerCase()) >= 0;
     });
     this.assessmentsShown = _uniqBy(assessmentMatches, (obj) => obj.name);
+  }
+
+  public selectAssessment(assessment) {
+    if (assessment.edit || assessment.delete) {
+      return;
+    }
+    this.selectedAssessment = assessment;
+  }
+
+  public uniqByNameCount(assessments) {
+    let assessmentss = this.assessments.filter(
+      (obj) => obj.name === assessments.name
+    ).filter(
+      (obj) => obj.is_active === true
+    );
+    return assessmentss.length;
   }
 
   public clickEditAssessment(assessment, e) {
@@ -72,8 +86,57 @@ export class AddAssessmentComponent implements OnInit {
     assessment.name = assessment.origName;
   }
 
+  public updateAssessmentName(assessment, e) {
+    e.stopPropagation();
+    let assessments = this.assessments.filter((obj) => obj.name === assessment.origName || obj.name === assessment.name);
+    assessments.forEach((obj) => {
+      let updateSub = this.store.AssessmentTaskTemplate.update(obj.id, {
+        name: assessment.name,
+      }, true).subscribe(
+        (resp) => {
+          obj.name = assessment.name;
+          assessment.edit = false;
+        },
+        (err) => {},
+        () => {
+          updateSub.unsubscribe();
+        }
+      );
+    });
+  }
+
   public clickDeleteAssessment(assessment, e) {
     e.stopPropagation();
+    assessment.delete = true;
+  }
+
+  public clickUndoDelete(assessment, e) {
+    e.stopPropagation();
+    assessment.delete = false;
+  }
+
+  public confirmDeleteAssessment(assessment, e) {
+    e.stopPropagation();
+    let assessments = this.assessments.filter((obj) => obj.name === assessment.origName || obj.name === assessment.name);
+    assessments.forEach((obj) => {
+      let updateSub = this.store.AssessmentTaskTemplate.update(obj.id, {
+        is_available: false,
+        is_active: false
+      }, true).subscribe(
+        (resp) => {
+          let index = this.assessments.findIndex((a) => a.id === resp.id);
+          this.assessments.splice(index, 1);
+          assessment.delete = false;
+          this.assessmentsShown = _uniqBy(this.assessments, (obj) => {
+            return obj.name;
+          });
+        },
+        (err) => {},
+        () => {
+          updateSub.unsubscribe();
+        }
+      );
+    });
   }
 
   public addAssessment(assessmentName, e) {
@@ -98,25 +161,6 @@ export class AddAssessmentComponent implements OnInit {
         createSub.unsubscribe();
       }
     );
-  }
-
-  public updateAssessmentName(assessment, e) {
-    e.stopPropagation();
-    let assessments = this.assessments.filter((obj) => obj.name === assessment.origName || obj.name === assessment.name);
-    assessments.forEach((obj) => {
-      let updateSub = this.store.AssessmentTaskTemplate.update(obj.id, {
-        name: assessment.name,
-      }, true).subscribe(
-        (resp) => {
-          obj.name = assessment.name;
-          assessment.edit = false;
-        },
-        (err) => {},
-        () => {
-          updateSub.unsubscribe();
-        }
-      );
-    });
   }
 
   public clickNext() {

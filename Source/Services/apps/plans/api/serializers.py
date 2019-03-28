@@ -378,7 +378,9 @@ class InfoMessageQueueSerializer(RepresentationMixin,
             'type',
             'messages',
             'created',
-            'modified'
+            'modified',
+            'is_active',
+            'is_available',
         )
         read_only_fields = (
             'id',

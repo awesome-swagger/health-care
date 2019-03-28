@@ -16,7 +16,7 @@
     <div class="listBox">
       <ul class="nameList">
         <li class="nameList__item nameList__item--padLeft nameList__item--target" [ngClass]="{'nameList__item--target--active': selectedVital == vital}" *ngFor="let vital of vitalsShown" (click)="showVitalPreview(vital)">
-          <div *ngIf="!vital.edit" class="flex alignCenter justifySpaceBetween fullWidth">
+          <div *ngIf="!vital.edit && !vital.delete" class="flex alignCenter justifySpaceBetween fullWidth">
             <div class="flex alignCenter">
               <span class="ellipsis">{{vital.name}}</span>
               <span class="badge badge--chat marRight8">{{uniqByNameCount(vital)}}</span>
@@ -42,6 +42,21 @@
               <button class="button button--icon button--icon--small" type="submit" (click)="updateVitalName(vital, $event)">
                 <i class="ss-floppydisk"></i>
               </button>
+            </div>
+          </form>
+          <form *ngIf="vital.delete" class="nameList__form">
+            <div class="fullWidth flex justifySpaceBetween alignCenter">
+              <div class="flex alignCenter">
+                <p class="noMargin marRight8">Are you sure you want to remove this vital from all care plans?</p>
+              </div>
+              <div class="flex justifyEnd alignCenter">
+                <button class="button button--icon button--icon--small" type="button" (click)="confirmDeleteVital(vital, $event)">
+                  <i class="ss-check ss-standard"></i>
+                </button>
+                <button class="button button--icon button--icon--small" type="button" (click)="clickUndoDelete(vital, $event)">
+                  <i class="ss-ban ss-standard"></i>
+                </button>
+              </div>
             </div>
           </form>
         </li>

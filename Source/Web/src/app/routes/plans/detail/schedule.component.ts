@@ -103,72 +103,120 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
     return promise;
   }
 
+  public getGoals(planTemplateId) {
+    return new Promise((resolve, reject) => {
+      let goalsSub = this.store.GoalTemplate.readListPaged({
+        plan_template__id: planTemplateId,
+      }).subscribe(
+        (goals) => resolve(goals),
+        (err) => reject(err),
+        () => goalsSub.unsubscribe()
+      );
+    });
+  }
+
+  public getTeamTasks(planTemplateId) {
+    return new Promise((resolve, reject) => {
+      let teamTasksSub = this.store.TeamTaskTemplate.readListPaged({
+        plan_template__id: planTemplateId,
+        is_active: true,
+      }).subscribe(
+        (teamTaskTemplates) => resolve(teamTaskTemplates),
+        (err) => reject(err),
+        () => teamTasksSub.unsubscribe()
+      );
+    });
+  }
+
+  public getPatientTasks(planTemplateId) {
+    return new Promise((resolve, reject) => {
+      let patientTasksSub = this.store.PatientTaskTemplate.readListPaged({
+        plan_template__id: planTemplateId,
+        is_active: true,
+      }).subscribe(
+        (patientTasks) => resolve(patientTasks),
+        (err) => reject(err),
+        () => patientTasksSub.unsubscribe()
+      );
+    });
+  }
+
+  public getAssessmentTasks(planTemplateId) {
+    return new Promise((resolve, reject) => {
+      let assessmentTasksSub = this.store.AssessmentTaskTemplate.readListPaged({
+        plan_template__id: planTemplateId,
+        is_active: true,
+      }).subscribe(
+        (assessments) => resolve(assessments),
+        (err) => reject(err),
+        () => assessmentTasksSub.unsubscribe()
+      );
+    });
+  }
+
+  public getSymptomTasks(planTemplateId) {
+    return new Promise((resolve, reject) => {
+      let symptomTasksSub = this.store.SymptomTaskTemplate.readListPaged({
+        plan_template__id: planTemplateId,
+        is_active: true,
+      }).subscribe(
+        (symptoms) => resolve(symptoms),
+        (err) => reject(err),
+        () => symptomTasksSub.unsubscribe()
+      );
+    });
+  }
+
+  public getVitalTasks(planTemplateId) {
+    return new Promise((resolve, reject) => {
+      let vitalTasksSub = this.store.VitalsTaskTemplate.readListPaged({
+        plan_template__id: planTemplateId,
+        is_active: true,
+      }).subscribe(
+        (vitals) => resolve(vitals),
+        (err) => reject(err),
+        () => vitalTasksSub.unsubscribe()
+      );
+    });
+  }
+
+  public getMessageQueues(planTemplateId) {
+    return new Promise((resolve, reject) => {
+      let messageQueuesSub = this.store.InfoMessageQueue.readListPaged({
+        plan_template__id: planTemplateId,
+        is_active: true,
+      }).subscribe(
+        (messages) => resolve(messages),
+        (err) => reject(err),
+        () => messageQueuesSub.unsubscribe()
+      );
+    });
+  }
+
   public getPlanTemplateSchedule(planTemplateId) {
-    let goalsSub = this.store.GoalTemplate.readListPaged({
-      plan_template__id: planTemplateId,
-    }).subscribe(
-      (goals) => {
-        this.goalTemplates = goals;
-      },
-      (err) => {},
-      () => goalsSub.unsubscribe()
-    );
-    let teamTasksSub = this.store.TeamTaskTemplate.readListPaged({
-      plan_template__id: planTemplateId,
-    }).subscribe(
-      (teamTaskTemplates) => {
-        this.teamTaskTemplates = teamTaskTemplates;
-        this.teamManagerTemplates = teamTaskTemplates.filter((task) => task.is_manager_task);
-        this.teamMemberTemplates = teamTaskTemplates.filter((task) => !task.is_manager_task);
-      },
-      (err) => {},
-      () => teamTasksSub.unsubscribe()
-    );
-    let patientTasksSub = this.store.PatientTaskTemplate.readListPaged({
-      plan_template__id: planTemplateId,
-    }).subscribe(
-      (patientTasks) => {
-        this.patientTaskTemplates = patientTasks;
-      },
-      (err) => {},
-      () => patientTasksSub.unsubscribe()
-    );
-    let assessmentTasksSub = this.store.AssessmentTaskTemplate.readListPaged({
-      plan_template__id: planTemplateId,
-    }).subscribe(
-      (assessments) => {
-        this.assessmentTemplates = assessments;
-      },
-      (err) => {},
-      () => assessmentTasksSub.unsubscribe()
-    );
-    let symptomTasksSub = this.store.SymptomTaskTemplate.readListPaged({
-      plan_template__id: planTemplateId,
-    }).subscribe(
-      (symptoms) => {
-        this.symptomTemplates = symptoms;
-      },
-      (err) => {},
-      () => symptomTasksSub.unsubscribe()
-    );
-    let vitalTasksSub = this.store.VitalsTaskTemplate.readListPaged({
-      plan_template__id: planTemplateId,
-    }).subscribe(
-      (vitals) => {
-        this.vitalTemplates = vitals;
-      },
-      (err) => {},
-      () => vitalTasksSub.unsubscribe()
-    );
-    let infoMessagesSub = this.store.InfoMessageQueue.readListPaged({
-      plan_template__id: planTemplateId,
-    }).subscribe(
-      (messages) => {
-        this.messageQueues = messages;
-      },
-      (err) => {},
-      () => infoMessagesSub.unsubscribe()
-    );
+    this.getGoals(planTemplateId).then((goals: any) => {
+      this.goalTemplates = goals;
+    });
+    this.getTeamTasks(planTemplateId).then((teamTaskTemplates: any) => {
+      this.teamTaskTemplates = teamTaskTemplates;
+      this.teamManagerTemplates = teamTaskTemplates.filter((task) => task.is_manager_task);
+      this.teamMemberTemplates = teamTaskTemplates.filter((task) => !task.is_manager_task);
+    });
+    this.getPatientTasks(planTemplateId).then((patientTasks: any) => {
+      this.patientTaskTemplates = patientTasks;
+    });
+    this.getAssessmentTasks(planTemplateId).then((assessments: any) => {
+      this.assessmentTemplates = assessments;
+    });
+    this.getSymptomTasks(planTemplateId).then((symptoms: any) => {
+      this.symptomTemplates = symptoms;
+    });
+    this.getVitalTasks(planTemplateId).then((vitals: any) => {
+      this.vitalTemplates = vitals;
+    });
+    this.getMessageQueues(planTemplateId).then((messages: any) => {
+      this.messageQueues = messages;
+    });
   }
 
   public patientTasksCount() {
@@ -312,9 +360,15 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       width: '384px',
     }).subscribe(
       (newTask) => {
+        // Refetch team tasks since they might have changed in the add modal
+        this.getTeamTasks(this.planTemplateId).then((teamTaskTemplates: any) => {
+          this.teamTaskTemplates = teamTaskTemplates;
+          this.teamManagerTemplates = teamTaskTemplates.filter((task) => task.is_manager_task);
+          this.teamMemberTemplates = teamTaskTemplates.filter((task) => !task.is_manager_task);
+        });
+        // If a new task has been created, open the edit modal
         if (!newTask) return;
         setTimeout(() => {
-          this.teamManagerTemplates.push(newTask);
           this.editManagerTask(newTask);
         }, 10);
       },
@@ -360,9 +414,15 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       width: '384px',
     }).subscribe(
       (newTask) => {
+        // Refetch team tasks since they might have changed in the add modal
+        this.getTeamTasks(this.planTemplateId).then((teamTaskTemplates: any) => {
+          this.teamTaskTemplates = teamTaskTemplates;
+          this.teamManagerTemplates = teamTaskTemplates.filter((task) => task.is_manager_task);
+          this.teamMemberTemplates = teamTaskTemplates.filter((task) => !task.is_manager_task);
+        });
+        // If a new task has been created, open the edit modal
         if (!newTask) return;
         setTimeout(() => {
-          this.teamMemberTemplates.push(newTask);
           this.editTeamTask(newTask);
         }, 10);
       },
@@ -423,7 +483,9 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       (data) => {
         if (!data) return;
         if (data.toLowerCase() === 'confirm') {
-          let destroySub = this.store.TeamTaskTemplate.destroy(task.id).subscribe(
+          let destroySub = this.store.TeamTaskTemplate.update(task.id, {
+            is_active: false,
+          }, true).subscribe(
             (resp) => {
               this.teamTaskTemplates.splice(tasksIndex, 1);
               if (is_manager_task) {
@@ -457,6 +519,9 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       width: '384px',
     }).subscribe(
       (newTask) => {
+        this.getPatientTasks(this.planTemplateId).then((patientTasks: any) => {
+          this.patientTaskTemplates = patientTasks;
+        });
         if (!newTask) return;
         setTimeout(() => {
           this.editPatientTask(newTask);
@@ -470,6 +535,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
   }
 
   public editPatientTask(task) {
+    let taskIndex = this.patientTaskTemplates.findIndex((obj) => obj.id === task.id);
     let modalSub = this.modals.open(EditTaskComponent, {
       closeDisabled: false,
       data: {
@@ -480,7 +546,10 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       overflow: 'visible',
       width: '384px',
     }).subscribe(
-      (task) => {},
+      (updatedTask) => {
+        if (!updatedTask) return;
+        this.patientTaskTemplates[taskIndex] = updatedTask;
+      },
       (err) => {},
       () => {
         modalSub.unsubscribe();
@@ -505,7 +574,9 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       (resp) => {
         if (!resp) return;
         if (resp.toLowerCase() === 'confirm') {
-          let deleteSub = this.store.PatientTaskTemplate.destroy(task.id).subscribe(
+          let deleteSub = this.store.PatientTaskTemplate.update(task.id, {
+            is_active: false,
+          }, true).subscribe(
             (data) => {
               this.patientTaskTemplates.splice(tasksIndex, 1);
             },
@@ -534,9 +605,11 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       width: '768px',
     }).subscribe(
       (res) => {
+        this.getAssessmentTasks(this.planTemplateId).then((assessments: any) => {
+          this.assessmentTemplates = assessments;
+        });
         if (!res) return;
         setTimeout(() => {
-          this.assessmentTemplates.push(res);
           this.editAssessment(res, false);
         }, 10);
       },
@@ -565,8 +638,6 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
         });
         if (index >= 0) {
           this.assessmentTemplates[index] = res;
-        } else {
-          this.assessmentTemplates.push(res);
         }
         setTimeout(() => {
           this.editAssessmentTime(res);
@@ -615,7 +686,9 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       (data) => {
         if (!data) return;
         if (data.toLowerCase() === 'confirm') {
-          let destroySub = this.store.AssessmentTaskTemplate.destroy(assessment.id).subscribe(
+          let destroySub = this.store.AssessmentTaskTemplate.update(assessment.id, {
+            is_active: false,
+          }, true).subscribe(
             (data) => {
               this.assessmentTemplates.splice(tasksIndex, 1);
             },
@@ -685,7 +758,9 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       (data) => {
         if (!data) return;
         if (data.toLowerCase() === 'confirm') {
-          let destroySub = this.store.SymptomTaskTemplate.destroy(symptom.id).subscribe(
+          let destroySub = this.store.SymptomTaskTemplate.update(symptom.id, {
+            is_active: false,
+          }, true).subscribe(
             (data) => {
               this.symptomTemplates.splice(tasksIndex, 1);
             },
@@ -713,6 +788,9 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
         planTemplateId: this.planTemplateId,
       },
     }).subscribe((data) => {
+      this.getVitalTasks(this.planTemplateId).then((vitals: any) => {
+        this.vitalTemplates = vitals;
+      });
       if (!data || !data.nextAction) {
         return;
       }
@@ -725,7 +803,6 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
           break;
         case 'createVital':
           setTimeout(() => {
-            this.vitalTemplates.push(data.data);
             this.editVital(data.data, false);
           }, 10);
         default:
@@ -758,8 +835,6 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       });
       if (index >= 0) {
         this.vitalTemplates[index] = res;
-      } else {
-        this.vitalTemplates.push(res);
       }
       setTimeout(() => {
         this.editVitalTime(res);
@@ -826,7 +901,9 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       (data) => {
         if (!data) return;
         if (data.toLowerCase() === 'confirm') {
-          let destroySub = this.store.VitalsTaskTemplate.destroy(vital.id).subscribe(
+          let destroySub = this.store.VitalsTaskTemplate.update(vital.id, {
+            is_active: false,
+          }, true).subscribe(
             (data) => {
               this.vitalTemplates.splice(tasksIndex, 1);
             },
@@ -844,28 +921,27 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
     );
   }
 
+
   public addStream() {
     this.modals.open(AddStreamComponent, {
       closeDisabled: false,
       data: {
         editingTemplate: true,
-        taskList: this.messageQueues,
         totalPatients: this.totalPatients,
         planTemplateId: this.planTemplateId,
       },
       width: '768px',
     }).subscribe((data) => {
+      this.getMessageQueues(this.planTemplateId).then((messages: any) => {
+        this.messageQueues = messages;
+      });
       if (data) {
         switch (data.nextAction) {
           case 'create-stream':
             setTimeout(() => {
-              this.editStream(null);
-            }, 10);
-        	case 'edit-stream':
-            setTimeout(() => {
               this.editStream(data.message);
             }, 10);
-        		break;
+            break;
         	default:
         		break;
         }
@@ -878,6 +954,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       closeDisabled: false,
       data: {
         stream: stream,
+        editingTemplate: true,
         totalPatients: this.totalPatients,
         planTemplateId: this.planTemplateId,
       },
@@ -911,7 +988,9 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
         let messagesIndex = this.messageQueues.findIndex((obj) => {
           return obj.id === stream.id;
         });
-        let destroySub = this.store.InfoMessageQueue.destroy(stream.id).subscribe(
+        let destroySub = this.store.InfoMessageQueue.update(stream.id, {
+          is_active: false,
+        }, true).subscribe(
           (data) => {
             this.messageQueues.splice(messagesIndex, 1);
           },

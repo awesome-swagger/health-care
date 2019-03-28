@@ -132,7 +132,7 @@ export class PatientTeamComponent implements OnDestroy, OnInit {
 
   public addCTMember(role) {
     let modalSub = this.modals.open(AddCTMemberComponent, {
-      closeDisabled: true,
+      closeDisabled: false,
       data: {
         role: role,
         is_manager: false,
@@ -181,7 +181,7 @@ export class PatientTeamComponent implements OnDestroy, OnInit {
 
   public addCareManager() {
     let modalSub = this.modals.open(AddCTMemberComponent, {
-      closeDisabled: true,
+      closeDisabled: false,
       data: {
         role: null,
         is_manager: true,
@@ -252,7 +252,7 @@ export class PatientTeamComponent implements OnDestroy, OnInit {
 
   public changeBP() {
     let modalSub = this.modals.open(AddCTMemberComponent, {
-      closeDisabled: true,
+      closeDisabled: false,
       data: {
         role: null,
         is_manager: false,
@@ -288,7 +288,7 @@ export class PatientTeamComponent implements OnDestroy, OnInit {
 
   public changeCM(currentCm) {
     let modalSub = this.modals.open(AddCTMemberComponent, {
-      closeDisabled: true,
+      closeDisabled: false,
       data: {
         role: null,
         is_manager: true,

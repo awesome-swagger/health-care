@@ -65,7 +65,7 @@ class GoalCommentAdmin(admin.ModelAdmin):
 
 
 class InfoMessageQueueAdmin(admin.ModelAdmin):
-    list_display = ('name', 'type', )
+    list_display = ('name', 'plan_template', 'type', )
 
 
 admin.site.register(ServiceArea, ServiceAreaAdmin)

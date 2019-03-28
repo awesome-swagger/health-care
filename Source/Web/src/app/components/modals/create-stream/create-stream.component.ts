@@ -123,25 +123,14 @@ export class CreateStreamComponent implements OnInit {
     let promise = new Promise((resolve, reject) => {
       this.stream.plan_template = this.data.planTemplateId;
       let streamWithoutMessages = _omit(this.stream, 'messages');
-      if (this.stream.id) {
-        let updateSub = this.store.InfoMessageQueue.update(streamWithoutMessages.id, streamWithoutMessages, true)
-          .subscribe(
-            (res) => resolve(res),
-            (err) => reject(err),
-            () => {
-              updateSub.unsubscribe();
-            }
-          );
-      } else {
-        let createSub = this.store.InfoMessageQueue.create(streamWithoutMessages)
-          .subscribe(
-            (res) => resolve(res),
-            (err) => reject(err),
-            () => {
-              createSub.unsubscribe();
-            }
-          );
-      }
+      let updateSub = this.store.InfoMessageQueue.update(streamWithoutMessages.id, streamWithoutMessages, true)
+        .subscribe(
+          (res) => resolve(res),
+          (err) => reject(err),
+          () => {
+            updateSub.unsubscribe();
+          }
+        );
     });
     return promise;
   }
