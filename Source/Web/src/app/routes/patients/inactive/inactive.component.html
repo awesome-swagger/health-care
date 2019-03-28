@@ -204,7 +204,7 @@
                     <td class="left">{{inactivePatient.care_manager}}</td>
                     <td>
                       <button class="button button--center button--icon"
-                      (click)="confirmArchive()">
+                      (click)="confirmArchive(inactivePatient.id, i)">
                         <i class="ss-filecabinet"></i>
                       </button>
                     </td>

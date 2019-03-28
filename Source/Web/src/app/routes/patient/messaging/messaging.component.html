@@ -51,13 +51,14 @@
                   class="chat__message"
                   [ngClass]="{ 'chat__message--right': isSelf(currentStream, message) }"
                 >
+                  <h5 class="chat__info" style="text-align: right;"></h5>
                   <div class="chat__picBubble">
                     <img class="chat__img" [src]="careTeam[getUser(currentStream, message).id]?.user?.image_url" />
                     <div class="chat__bubble">
                       <span *ngFor="let messageLine of message.text.split('\n')">{{messageLine}}<br></span>
                     </div>
                   </div>
-                  <h5 class="chat__info">{{getNameAndTitle(getUser(currentStream, message))}}&emsp;{{getDay(message)}}, {{getTime(message)}}</h5>
+                  <h5 class="chat__info">{{getNameAndTitle(getUser(currentStream, message))}}&emsp;{{getDay(message)}} at {{getTime(message)}}</h5>
                 </div> <!--/.chat__message-->
 
               </ng-container>

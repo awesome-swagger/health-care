@@ -16,6 +16,7 @@ export class StoreService {
   public EmployeeProfile = new Store(this.http, 'employee_profiles');
   public ProviderTitle = new Store(this.http, 'provider_titles');
   public ProviderRole = new Store(this.http, 'provider_roles');
+  public EmployeeRole = new Store(this.http, 'employee_roles');
   public ProviderSpecialty = new Store(this.http, 'provider_specialties');
   public Diagnosis = new Store(this.http, 'diagnosis');
   public Medication = new Store(this.http, 'medications');

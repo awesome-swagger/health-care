@@ -88,13 +88,14 @@ export class PatientMessagingComponent implements AfterViewChecked, OnDestroy, O
   public getMessageStreams(m, i, planId) {
     this.store.CarePlan.detailRoute('GET', planId, `message_recipients/${m.id}/team_messages`).subscribe(
       (res:any) => {
+        console.log(`stream ${i}`, m)
         this.messageStreams[i] = { id: m.id, participants: [], messages: [] };
         this.messageStreams[i].participants = _map(m.members, id => {
           return {
             id,
-            firstName: this.careTeam[id].user.first_name,
-            lastName: this.careTeam[id].user.last_name,
-            title: this.careTeam[id].title.abbreviation,
+            firstName: this.careTeam[id] ? this.careTeam[id].user.first_name : '',
+            lastName: this.careTeam[id] ? this.careTeam[id].user.last_name : '',
+            title: this.careTeam[id] ? this.careTeam[id].title.abbreviation: '',
             isCurrentUser: id === this.userId,
           }
         })
@@ -129,11 +130,11 @@ export class PatientMessagingComponent implements AfterViewChecked, OnDestroy, O
   }
 
   public initRefreshInterval() {
-    setInterval(() => {
-      this.messageRecipients.forEach((m,i) => {
-        this.refreshMessages(m,i, this.planId);
-      })
-    }, 5000)
+    // setInterval(() => {
+    //   this.messageRecipients.forEach((m,i) => {
+    //     this.refreshMessages(m,i, this.planId);
+    //   })
+    // }, 5000)
   }
 
   public ngAfterViewChecked() {

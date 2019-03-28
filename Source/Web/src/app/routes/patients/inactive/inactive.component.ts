@@ -111,7 +111,7 @@ export class InactivePatientsComponent implements OnDestroy, OnInit {
 
   public ngOnDestroy() { }
 
-  public confirmArchive() {
+  public confirmArchive(patient, facilityIndex) {
     this.modals.open(ConfirmModalComponent, {
      data: {
        title: 'Archive Patient?',
@@ -120,7 +120,28 @@ export class InactivePatientsComponent implements OnDestroy, OnInit {
        okText: 'Continue',
       },
       width: '384px',
-    }).subscribe(() => {});
+    }).subscribe((res) => {
+      if (res === 'Continue') {
+        this.store.PatientProfile.update(patient, {
+          is_archived: true,
+        }).subscribe((res) => {
+          const facility = this.facilities[facilityIndex];
+          this.store.Facility.detailRoute('GET', facility.id, 'patients', {}, {type: 'inactive'}).subscribe((res: any) => {
+            facility.inactivePatients = res.results;
+            facility.inactivePatients.forEach(patient => {
+              this.store.CarePlan.readListPaged({ patient: patient.id }).subscribe(plans => {
+                patient.carePlans = plans;
+                patient.carePlans.forEach(plan => {
+                  this.store.CareTeamMember.readListPaged({ plan: plan.id }).subscribe(careTeamMembers => {
+                    plan.careTeamMembers = careTeamMembers;
+                  })
+                })
+              })
+            })
+          })
+        })
+      }
+    });
   }
 
   public formatTimeFromNow(time) {

@@ -1,8 +1,13 @@
 <div class="ssContainer ssContents">
   <div class="flex alignCenter marBottom32">
     <div class="picName marRight8">
-      <img class="picName__img picName__img--big" *ngIf="patient?.user.image" [src]="patient?.user.image" />
-      <img class="picName__img picName__img--big" *ngIf="!patient?.user.image" src="../../../assets/img/profile.svg" />
+      <img
+        class="picName__img picName__img--big"
+        *ngIf="patient?.user.image"
+        [src]="patient?.user.image ? patient?.user.image : '../../../assets/img/profile.svg'"
+        (click)="clickImageUpload()"
+      />
+      <input #imageUpload type="file" class="hiddenInput" (change)="processUpload()" accept="image/*" />
       <div *ngIf="!editName" class="flex alignCenter">
         <h1 class="noMargin marRight8">{{patient?.user.first_name}} {{patient?.user.last_name}}</h1>
         <button class="button button--icon" (click)="editName=!editName">

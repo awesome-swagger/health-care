@@ -41,7 +41,7 @@ export class ChangeEmailComponent implements OnInit {
 
   public submit() {
     if (this.newEmail && this.user) {
-      this.store.User.detailRoute('PATCH', this.user.id, 'change_email', {
+      this.store.User.detailRoute('PATCH', this.user.user.id, 'change_email', {
         email: this.newEmail,
       }).subscribe(
         res => {

@@ -23,6 +23,7 @@ export class AddDiagnosisComponent implements OnInit {
   public selectedEmployee = null;
   public selectedDate = null;
   public selectedFacility = null;
+  public isChronic = false;
 
   public data = null;
 
@@ -44,6 +45,7 @@ export class AddDiagnosisComponent implements OnInit {
       this.searchString = this.data.diagnosis.name;
       this.dxSearchString = this.data.diagnosis.dx_code;
       this.selectedDate = moment(this.data.diagnosis.patient_diagnosis.date_identified);
+      this.isChronic = this.data.diagnosis.patient_diagnosis.is_chronic;
     }
     let diagnosisSub = this.store.Diagnosis.readListPaged().subscribe(
       diagnoses => {
@@ -131,7 +133,8 @@ export class AddDiagnosisComponent implements OnInit {
             diagnosing_practitioner: this.employeeFullName,
             facility: this.selectedFacility ? this.selectedFacility.id : '',
             patient: this.data.patient.id,
-            diagnosis: this.selectedDiagnosis.id
+            diagnosis: this.selectedDiagnosis.id,
+            is_chronic: this.isChronic,
       }).subscribe((res) => {
         const diagnosis = this.data.patient.diagnosis;
         diagnosis.push(res.id)
@@ -146,7 +149,8 @@ export class AddDiagnosisComponent implements OnInit {
         date_identified: this.selectedDate.format('YYYY-MM-DD'),
         diagnosing_practitioner: this.employeeFullName,
         facility: this.selectedFacility ? this.selectedFacility.id : '',
-        diagnosis: this.selectedDiagnosis.id
+        diagnosis: this.selectedDiagnosis.id,
+        is_chronic: this.isChronic,
       }).subscribe((res) => {
         this.modals.close(res);
       })

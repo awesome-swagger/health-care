@@ -1,7 +1,8 @@
 <h1 class="modal__title">
   <!--TODO: If adding procedure, show the following span-->
   <!---->
-  <span>Add</span>
+  <span *ngIf="data?.type !== 'edit'">Add</span>
+  <span *ngIf="data?.type === 'edit'">Edit</span>
   <!---->
   <!--TODO: If editing procedure, show the following span-->
   <!--

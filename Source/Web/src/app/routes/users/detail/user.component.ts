@@ -52,6 +52,7 @@ export class UserComponent implements OnDestroy, OnInit {
   public titles = [];
   public employedBy = null;
   public employerIsAffiliate = false;
+  public employeeRoles = [];
 
   public tooltip1Open;
   public tooltip2Open;
@@ -88,6 +89,8 @@ export class UserComponent implements OnDestroy, OnInit {
               this.isCurrentUser = true;
             }
           })
+
+          this.refreshFacilityRoles();
 
           this.activeSince = moment(this.employee.user.date_joined).format('MMM D, YYYY')
           this.first_name = this.employee.user.first_name;
@@ -176,6 +179,22 @@ export class UserComponent implements OnDestroy, OnInit {
     if (this.paramsSub) {
       this.paramsSub.unsubscribe();
     }
+  }
+
+  public refreshFacilityRoles() {
+    this.store.EmployeeRole.readListPaged({ employee: this.employee.id }).subscribe(roles => {
+      this.employeeRoles = roles;
+      this.employee.facilities.forEach(facility => {
+        facility.roles = [];
+        roles.forEach(role => {
+          if (role.facility === facility.id) {
+            this.store.ProviderRole.read(role.role).subscribe(r => {
+              facility.roles.push(r);
+            })
+          }
+        })
+      })
+    })
   }
 
   public openReassignPatients() {
@@ -311,6 +330,7 @@ export class UserComponent implements OnDestroy, OnInit {
 
   public confirmAddRole(i) {
     const role = this.selectedRole[i];
+    const facility = this.employee.facilities[i];
     const employeeName = `${this.employee.user.first_name} ${this.employee.user.last_name}`;
     const cancelText = 'Cancel';
     const okText = 'Continue';
@@ -324,16 +344,25 @@ export class UserComponent implements OnDestroy, OnInit {
       width: '384px',
     }).subscribe(res => {
       if (res === okText) {
-        const roles = _map(this.employee.roles, r => r.id);
-        roles.push(role.id);
-        this.store.EmployeeProfile.update(this.employee.id, {
-          user: this.employee.user.id,
-          roles
-        }).subscribe(
-          res => {
-            this.employee = res;
-          }
-        )
+
+        this.store.EmployeeRole.create({
+          employee: this.employee.id,
+          facility: facility.id,
+          role: role.id,
+        }).subscribe(() => {
+          this.refreshFacilityRoles();
+        })
+
+        // const roles = _map(this.employee.roles, r => r.id);
+        // roles.push(role.id);
+        // this.store.EmployeeProfile.update(this.employee.id, {
+        //   user: this.employee.user.id,
+        //   roles
+        // }).subscribe(
+        //   res => {
+        //     this.employee = res;
+        //   }
+        // )
       }
     })
   }
@@ -369,7 +398,7 @@ export class UserComponent implements OnDestroy, OnInit {
 
   }
 
-  public confirmRemoveRole(role) {
+  public confirmRemoveRole(role, facility) {
     const employeeName = `${this.employee.user.first_name} ${this.employee.user.last_name}`;
     const cancelText = 'Cancel';
     const okText = 'Continue';
@@ -384,12 +413,10 @@ export class UserComponent implements OnDestroy, OnInit {
       width: '384px',
     }).subscribe(res => {
       if (res === okText) {
-        this.store.EmployeeProfile.update(this.employee.id, {
-          user: this.employee.user.id,
-          roles
-        }).subscribe(
+        const employeeRole = this.employeeRoles.find(r => r.role === role.id && r.facility === facility.id);
+        this.store.EmployeeRole.destroy(employeeRole.id).subscribe(
           res => {
-            this.employee = res;
+            this.refreshFacilityRoles();
           }
         )
       }

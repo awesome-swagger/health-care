@@ -262,14 +262,14 @@
                         </tr>
                       </thead>
                       <tbody>
-                        <tr *ngFor="let role of employee?.roles">
+                        <tr *ngFor="let role of facility?.roles">
                           <td class="left">{{role.name}}</td>
                           <td>{{roleStats(role.id, facility.di).patients}}</td>
                           <td>{{roleStats(role.id, facility.di).managing}}</td>
                           <td>{{roleStats(role.id, facility.di).careTeam}}</td>
                           <td><i *ngIf="isBilling(role)" class="ss-standard ss-check"></i></td>
                           <td>
-                            <button class="button button--icon button--icon--small" (click)="confirmRemoveRole(role)">
+                            <button class="button button--icon button--icon--small" (click)="confirmRemoveRole(role, facility)">
                               <i class="ss-delete"></i>
                             </button>
                           </td>

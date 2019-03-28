@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import {Component, ElementRef, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 // noinspection ES6UnusedImports
 import { TitleCasePipe } from '@angular/common'
@@ -15,12 +15,18 @@ import { PatientCommunicationComponent } from './modals/patient-communication/pa
 import { PatientAddressComponent } from './modals/patient-address/patient-address.component';
 import { PatientEmergencyContactComponent } from './modals/patient-emergency-contact/patient-emergency-contact.component';
 import { DeleteMedicationComponent } from './modals/delete-medication/delete-medication.component';
-import { NavbarService, StoreService, UtilsService } from '../../services';
+import {AuthService, NavbarService, StoreService, UtilsService} from '../../services';
 import * as moment from 'moment';
 import {
   filter as _filter,
   find as _find
 } from 'lodash';
+import {HttpClient, HttpHeaders} from '@angular/common/http';
+import {AppConfig} from '../../app.config';
+
+class ImageSnippet {
+  constructor(public src: string, public file: File) {}
+}
 
 @Component({
   selector: 'app-patient',
@@ -28,6 +34,8 @@ import {
   styleUrls: ['./patient.component.scss'],
 })
 export class PatientComponent implements OnDestroy, OnInit {
+
+  @ViewChild('imageUpload') private imageUpload: ElementRef;
 
   public moment = moment;
 
@@ -47,6 +55,7 @@ export class PatientComponent implements OnDestroy, OnInit {
   public nextCheckinVisible = false;
 
   private routeSub = null;
+  public employee = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -55,6 +64,8 @@ export class PatientComponent implements OnDestroy, OnInit {
     private nav: NavbarService,
     private store: StoreService,
     public utils: UtilsService,
+    private http: HttpClient,
+    private auth: AuthService,
   ) { }
 
   public ngOnInit() {
@@ -107,6 +118,11 @@ export class PatientComponent implements OnDestroy, OnInit {
         // this.carePlans = patientData.carePlans;
       });
     });
+
+    this.auth.user$.subscribe(user => {
+      if (!user) return;
+      this.employee = user;
+    })
   }
 
   public ngOnDestroy() {
@@ -396,7 +412,12 @@ export class PatientComponent implements OnDestroy, OnInit {
         diagnosis: diagnosis,
       },
       width: '576px',
-    }).subscribe(() => {});
+    }).subscribe((res) => {
+      if (res) {
+        const d = this.patientDiagnoses.find(p => p.id === res.diagnosis);
+        d.patient_diagnosis = res;
+      }
+    });
   }
 
   public deleteDiagnosis(diagnosis, index) {
@@ -438,6 +459,7 @@ export class PatientComponent implements OnDestroy, OnInit {
   public editProcedure(patientProcedure) {
     this.modals.open(ProcedureComponent, {
       data: {
+        type: 'edit',
         patientProcedure: patientProcedure,
       },
       width: '576px',
@@ -553,5 +575,30 @@ export class PatientComponent implements OnDestroy, OnInit {
       return moment().diff(this.patient.user.birthdate, 'years');
     }
     return '';
+  }
+
+  public clickImageUpload() {
+    const event = new MouseEvent('click');
+    this.imageUpload.nativeElement.dispatchEvent(event);
+  }
+
+  public processUpload() {
+    const file : File = this.imageUpload.nativeElement.files[0];
+    const reader = new FileReader;
+
+    reader.addEventListener('load', (event:any) => {
+      const formData = new FormData();
+      const selectedFile = new ImageSnippet(event.target.result, file);
+      formData.append('image', selectedFile.file);
+      this.http.request('PATCH', `${AppConfig.apiUrl}users/${this.patient.user.id}/`, {
+        body: formData,
+        headers: new HttpHeaders().set('Accept', 'application/json'),
+      }).subscribe((res:any) => {
+        this.patient.user.image = res.image_url;
+      })
+    })
+
+    reader.readAsDataURL(file);
+
   }
 }
