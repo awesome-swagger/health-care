@@ -157,10 +157,13 @@ class TestSymptomTaskUsingEmployee(TasksMixin, APITestCase):
 
     def setUp(self):
         self.fake = Faker()
-        self.employee = self.create_employee()
+        self.facility = self.create_facility()
+        self.employee = self.create_employee(
+            organizations_managed=[self.facility.organization])
         self.user = self.employee.user
 
-        self.plan = self.create_care_plan()
+        self.patient = self.create_patient(facility=self.facility)
+        self.plan = self.create_care_plan(self.patient)
         self.create_care_team_member(**{
             'employee_profile': self.employee,
             'plan': self.plan
