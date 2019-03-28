@@ -278,7 +278,20 @@ class SymptomTaskTemplateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SymptomTaskTemplate
-        fields = '__all__'
+        fields = (
+            'id',
+            'name',
+            'plan_template',
+            'default_symptoms',
+            'start_on_day',
+            'frequency',
+            'repeat_amount',
+            'appear_time',
+            'due_time',
+        )
+        read_only_fields = (
+            'id',
+        )
 
 
 class SymptomRatingSerializer(RepresentationMixin,
