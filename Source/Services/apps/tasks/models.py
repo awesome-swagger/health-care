@@ -146,6 +146,10 @@ class TeamTaskTemplate(AbstractTaskTemplate):
     category = models.CharField(max_length=120, choices=CATEGORY_CHOICES)
     role = models.ForeignKey(
         ProviderRole, null=True, blank=True, on_delete=models.SET_NULL)
+    roles = models.ManyToManyField(
+        'core.ProviderRole',
+        related_name='team_task_templates',
+        blank=True)
 
     def __str__(self):
         return self.name
