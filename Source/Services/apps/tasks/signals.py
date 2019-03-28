@@ -113,7 +113,7 @@ def assign_is_complete_to_assessment_task(instance):
 
     if value:
         task.is_complete = value
-        task.save()
+        task.save(update_fields=['is_complete'])
 
 
 def assign_is_complete_to_vital_task(instance):
@@ -140,7 +140,7 @@ def assign_is_complete_to_vital_task(instance):
 
     if value:
         task.is_complete = value
-        task.save()
+        task.save(update_fields=['is_complete'])
 
 
 def assign_is_complete_to_symptom_task(instance):
@@ -233,7 +233,7 @@ def assessmentresponse_post_delete(sender, instance, **kwargs):
     task = instance.assessment_task
     if task.is_complete:
         task.is_complete = False
-        task.save()
+        task.save(update_fields=['is_complete'])
 
         patient = instance.assessment_task.plan.patient
         assignment = RiskLevelAssignment(patient)
@@ -248,7 +248,7 @@ def vitalresponse_post_delete(sender, instance, **kwargs):
     task = instance.vital_task
     if task.is_complete:
         task.is_complete = False
-        task.save()
+        task.save(update_fields=['is_complete'])
 
         patient = instance.vital_task.plan.patient
         assignment = RiskLevelAssignment(patient)
