@@ -123,6 +123,14 @@ class TasksMixin(PlansMixin):
 
     def create_symptom_task_template(self, **kwargs):
 
+        default_symptoms = kwargs.pop('default_symptoms',
+                                      [self.create_symptom()])
+
+        if 'name' not in kwargs:
+            kwargs.update({
+                'name': self.fake.name()
+            })
+
         if 'plan_template' not in kwargs:
             kwargs.update({
                 'plan_template': self.create_care_plan_template()
@@ -143,7 +151,10 @@ class TasksMixin(PlansMixin):
                 'due_time': datetime.time(17, 0, 0)
             })
 
-        return SymptomTaskTemplateFactory(**kwargs)
+        template = SymptomTaskTemplateFactory(**kwargs)
+        template.default_symptoms.add(*default_symptoms)
+
+        return template
 
     def create_symptom_task(self, **kwargs):
         now = timezone.now()

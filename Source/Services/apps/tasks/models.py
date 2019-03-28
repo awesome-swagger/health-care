@@ -228,9 +228,17 @@ class MedicationTask(AbstractTask):
 
 
 class SymptomTaskTemplate(AbstractTaskTemplate):
+    name = models.CharField(
+        max_length=255)
     plan_template = models.ForeignKey(
-        CarePlanTemplate, null=False, blank=False, related_name="symptom_tasks",
+        CarePlanTemplate, null=False, blank=False,
+        related_name="symptom_tasks",
         on_delete=models.CASCADE)
+    default_symptoms = models.ManyToManyField(
+        'core.Symptom',
+        related_name='task_templates',
+        null=True,
+        )
 
     def __str__(self):
         return '{} symptom report template'.format(self.plan_template.name)
