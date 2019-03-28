@@ -274,7 +274,8 @@ class MedicationTaskTodaySerializer(serializers.ModelSerializer):
         return f'{obj_occurrence} of {total_tasks.count()}'
 
 
-class SymptomTaskTemplateSerializer(serializers.ModelSerializer):
+class SymptomTaskTemplateSerializer(RepresentationMixin,
+                                    serializers.ModelSerializer):
 
     class Meta:
         model = SymptomTaskTemplate
@@ -292,6 +293,13 @@ class SymptomTaskTemplateSerializer(serializers.ModelSerializer):
         read_only_fields = (
             'id',
         )
+        nested_serializers = [
+            {
+                'field': 'default_symptoms',
+                'serializer_class': SymptomSerializer,
+                'many': True
+            }
+        ]
 
 
 class SymptomRatingSerializer(RepresentationMixin,
