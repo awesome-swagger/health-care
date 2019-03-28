@@ -360,13 +360,14 @@ class CarePlanViewSet(viewsets.ModelViewSet):
     def available_roles(self, request, pk=None):
         plan = CarePlan.objects.get(id=pk)
         template = plan.plan_template
-        care_team_members = plan.care_team_members
-        all_roles = list(template.team_tasks.filter(
-            role__isnull=False).values_list('role', flat=True).distinct())
-        assigned_roles = list(care_team_members.filter(
-                role__isnull=False).values_list('role', flat=True).distinct())
+        care_team_members = plan.care_team_members.all()
+        all_roles = template.team_tasks.values_list(
+            'roles', flat=True).distinct()
+        assigned_roles = care_team_members.filter(
+            role__isnull=False).values_list('role', flat=True).distinct()
         available_roles = ProviderRole.objects.filter(
-            id__in=list(set(all_roles) - set(assigned_roles)))
+            id__in=all_roles).exclude(id__in=assigned_roles)
+
         serializer = ProviderRoleSerializer(available_roles, many=True)
         return Response(serializer.data)
 
