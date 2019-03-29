@@ -385,6 +385,7 @@ class TestCarePlanTemplateAverage(BillingsMixin, APITestCase):
     def test_care_plan_average_total_patients(self):
         facility = self.create_facility()
         organization = facility.organization
+        self.employee.organizations_managed.add(facility.organization)
         total_patients = 5
 
         for i in range(total_patients):
@@ -409,6 +410,7 @@ class TestCarePlanTemplateAverage(BillingsMixin, APITestCase):
 
     def test_care_plan_average_total_facilities(self):
         organization = self.create_organization()
+        self.employee.organizations_managed.add(organization)
         total_facilities = 5
 
         for i in range(total_facilities):
@@ -440,6 +442,7 @@ class TestCarePlanTemplateAverage(BillingsMixin, APITestCase):
         employee = self.create_employee(**{
             'facilities': [facility]
         })
+        employee.organizations_managed.add(facility.organization)
         self.client.force_authenticate(user=employee.user)
 
         for i in range(plans_count):
@@ -624,6 +627,7 @@ class TestCarePlanTemplateAverage(BillingsMixin, APITestCase):
 
     def test_care_plan_average_outcome(self):
         organization = self.create_organization()
+        self.employee.organizations_managed.add(organization)
         average_outcome = self.generate_average_outcome_records(organization)
 
         url = reverse(
@@ -636,6 +640,8 @@ class TestCarePlanTemplateAverage(BillingsMixin, APITestCase):
 
     def test_care_plan_average_engagement(self):
         organization = self.create_organization()
+        self.employee.organizations_managed.add(organization)
+
         average_engagement = self.generate_average_engagement_records(
             organization)
 
@@ -652,6 +658,7 @@ class TestCarePlanTemplateAverage(BillingsMixin, APITestCase):
 
     def test_care_plan_average_risk_level(self):
         organization = self.create_organization()
+        self.employee.organizations_managed.add(organization)
         average_outcome = self.generate_average_outcome_records(organization)
         average_engagement = self.generate_average_engagement_records(
             organization)
