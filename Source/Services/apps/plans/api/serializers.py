@@ -933,7 +933,7 @@ class CarePlanOverviewSerializer(RepresentationMixin, serializers.ModelSerialize
 
                 team_tasks = TeamTask.objects.filter(
                     plan=obj,
-                    team_task_template__role=role,
+                    team_task_template__roles=role,
                     due_datetime__range=(start_date, end_date))
                 num_tasks = team_tasks.count()
 

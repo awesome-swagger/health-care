@@ -167,12 +167,14 @@ def get_all_tasks_for_today(user, **kwargs):
 
     if user.is_employee:
         employee = user.employee_profile
-        assigned_roles = employee.assigned_roles
+        assigned_roles = employee.assigned_roles.all()
         if plan:
-            assigned_roles = assigned_roles.filter(plan__id=plan)
+            assigned_roles = assigned_roles.filter(plan=plan)
+
+        roles = assigned_roles.values_list('role', flat=True).distinct()
         team_tasks = TeamTask.objects.filter(
-            plan__care_team_members__id__in=assigned_roles.values_list('id', flat=True),
-            team_task_template__role__id__in=assigned_roles.values_list('role__id', flat=True),
+            plan__care_team_members__in=assigned_roles,
+            team_task_template__roles__id__in=roles,
             due_datetime__range=(today_min, today_max)
         )
         if exclude_done:
@@ -270,4 +272,4 @@ def get_all_tasks_for_today(user, **kwargs):
                                                .first()
         next_checkin = recent_checkin.next_checkin if recent_checkin else None
 
-    return { "tasks": tasks, "next_checkin": next_checkin }
+    return {"tasks": tasks, "next_checkin": next_checkin}

@@ -385,6 +385,7 @@ class TestCarePlanTemplateAverage(BillingsMixin, APITestCase):
     def test_care_plan_average_total_patients(self):
         facility = self.create_facility()
         organization = facility.organization
+        self.employee.organizations_managed.add(facility.organization)
         total_patients = 5
 
         for i in range(total_patients):
@@ -409,6 +410,7 @@ class TestCarePlanTemplateAverage(BillingsMixin, APITestCase):
 
     def test_care_plan_average_total_facilities(self):
         organization = self.create_organization()
+        self.employee.organizations_managed.add(organization)
         total_facilities = 5
 
         for i in range(total_facilities):
@@ -440,6 +442,7 @@ class TestCarePlanTemplateAverage(BillingsMixin, APITestCase):
         employee = self.create_employee(**{
             'facilities': [facility]
         })
+        employee.organizations_managed.add(facility.organization)
         self.client.force_authenticate(user=employee.user)
 
         for i in range(plans_count):
@@ -624,6 +627,7 @@ class TestCarePlanTemplateAverage(BillingsMixin, APITestCase):
 
     def test_care_plan_average_outcome(self):
         organization = self.create_organization()
+        self.employee.organizations_managed.add(organization)
         average_outcome = self.generate_average_outcome_records(organization)
 
         url = reverse(
@@ -636,6 +640,8 @@ class TestCarePlanTemplateAverage(BillingsMixin, APITestCase):
 
     def test_care_plan_average_engagement(self):
         organization = self.create_organization()
+        self.employee.organizations_managed.add(organization)
+
         average_engagement = self.generate_average_engagement_records(
             organization)
 
@@ -652,6 +658,7 @@ class TestCarePlanTemplateAverage(BillingsMixin, APITestCase):
 
     def test_care_plan_average_risk_level(self):
         organization = self.create_organization()
+        self.employee.organizations_managed.add(organization)
         average_outcome = self.generate_average_outcome_records(organization)
         average_engagement = self.generate_average_engagement_records(
             organization)
@@ -676,7 +683,7 @@ class TestCarePlanByTemplateFacility(TasksMixin, APITestCase):
         self.organization = self.create_organization()
         self.facility = self.create_facility(self.organization)
         self.employee = self.create_employee(**{
-            'organizations': [self.organization],
+            'organizations_managed': [self.organization],
             'facilities': [self.facility],
             'facilities_managed': [self.facility]
         })
@@ -753,7 +760,7 @@ class TestCarePlanByTemplateFacility(TasksMixin, APITestCase):
 
         response = self.client.get(self.url)
         self.assertEqual(
-            response.data['results'][0]['other_plans'],
+            len(response.data['results'][0]['other_plans']),
             plan_count
         )
 
@@ -769,25 +776,35 @@ class TestCarePlanByTemplateFacility(TasksMixin, APITestCase):
             'plan_template': self.template,
             'patient': patient
         })
+        assigned_role = self.create_provider_role()
+        self.create_care_team_member(
+            plan=plan,
+            employee_profile=self.employee,
+            role=assigned_role
+        )
+        all_roles = [self.create_provider_role() for i in range(3)] + \
+            [assigned_role]
 
-        # Generate tasks this week
-        # NOTE: 2 tasks are created per generate call
-        self.generate_assessment_tasks(plan, now)
-        self.generate_patient_tasks(plan, now)
-        self.generate_medication_tasks(plan, now)
-        self.generate_symptom_tasks(plan, now)
-        self.generate_vital_tasks(plan, now)
+        task_template = self.create_team_task_template(
+            plan_template=plan.plan_template,
+            roles=all_roles
+        )
 
-        # Generate tasks for next week
-        # NOTE: 2 tasks are created per generate call
-        self.generate_assessment_tasks(plan, next_week)
-        self.generate_patient_tasks(plan, next_week)
-        self.generate_medication_tasks(plan, next_week)
-        self.generate_symptom_tasks(plan, next_week)
-        self.generate_vital_tasks(plan, next_week)
+        self.create_team_task(
+            plan=plan,
+            team_task_template=task_template,
+            due_datetime=now
+        )
+
+        # Generate task for next week
+        self.create_team_task(
+            plan=plan,
+            team_task_template=task_template,
+            due_datetime=next_week
+        )
 
         response = self.client.get(self.url)
         self.assertEqual(
             response.data['results'][0]['tasks_this_week'],
-            10
+            1
         )
