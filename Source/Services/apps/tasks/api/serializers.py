@@ -160,7 +160,7 @@ class TeamTaskTemplateSerializer(RepresentationMixin,
             'name',
             'is_manager_task',
             'category',
-            'role',
+            'roles',
             'start_on_day',
             'frequency',
             'repeat_amount',
@@ -171,8 +171,9 @@ class TeamTaskTemplateSerializer(RepresentationMixin,
         )
         nested_serializers = [
             {
-                'field': 'role',
+                'field': 'roles',
                 'serializer_class': ProviderRoleSerializer,
+                'many': True
             }
         ]
 
