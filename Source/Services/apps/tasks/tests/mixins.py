@@ -312,6 +312,8 @@ class TasksMixin(PlansMixin):
 
     def create_team_task_template(self, **kwargs):
 
+        roles = kwargs.pop('roles', [])
+
         if 'plan_template' not in kwargs:
             kwargs.update({
                 'plan_template': self.create_care_plan_template()
@@ -337,10 +339,14 @@ class TasksMixin(PlansMixin):
                 'due_time': datetime.time(17, 0, 0)
             })
 
-        return TeamTaskTemplateFactory(
+        template = TeamTaskTemplateFactory(
             category='notes',
             **kwargs
         )
+        if len(roles) > 0:
+            template.roles.add(*roles)
+
+        return template
 
     def create_team_task(self, **kwargs):
         now = timezone.now()

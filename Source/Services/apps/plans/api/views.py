@@ -1207,22 +1207,24 @@ class CarePlanByTemplateFacility(ParentViewSetPermissionMixin,
     def get_care_plans(self):
         instance = self.get_object()
         qs = instance.care_plans.all()
-        employee_profile = utils.employee_profile_or_none(self.request.user)
-        if employee_profile is not None:
-            if employee_profile.organizations_managed.count() > 0:
-                organizations_managed = employee_profile.organizations_managed.values_list('id', flat=True)
+
+        user = self.request.user
+        if user.is_employee:
+            employee = user.employee_profile
+            if employee.organizations_managed.exists():
+                organizations = employee.organizations_managed.all()
                 qs = qs.filter(
-                    patient__facility__organization__id__in=organizations_managed)
-            elif employee_profile.facilities_managed.count() > 0:
-                facilities_managed = employee_profile.facilities_managed.values_list('id', flat=True)
-                assigned_roles = employee_profile.assigned_roles.values_list('id', flat=True)
+                    patient__facility__organization__in=organizations)
+            elif employee.facilities_managed.exists():
+                facilities = employee.facilities_managed.all()
+                assigned_roles = employee.assigned_roles.all()
                 qs = qs.filter(
-                    Q(patient__facility__id__in=facilities_managed) |
-                    Q(care_team_members__id__in=assigned_roles)
+                    Q(patient__facility__in=facilities) |
+                    Q(care_team_members__in=assigned_roles)
                 )
             else:
-                assigned_roles = employee_profile.assigned_roles.values_list('id', flat=True)
-                qs = qs.filter(care_team_members__id__in=assigned_roles)
+                assigned_roles = employee.assigned_roles.all()
+                qs = qs.filter(care_team_members__in=assigned_roles)
             return self.filter_queryset_by_parents_lookups(qs).distinct()
 
     def retrieve(self, request, *args, **kwargs):
