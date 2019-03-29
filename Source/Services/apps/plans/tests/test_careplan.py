@@ -35,10 +35,12 @@ class TestCarePlanUsingEmployee(BillingsMixin, APITestCase):
     """
     def setUp(self):
         self.fake = Faker()
-        self.patient = self.create_patient()
-        self.facility = self.create_facility()
+        self.facility = self.create_facility(is_affiliate=False)
+        self.organization = self.facility.organization
+        self.patient = self.create_patient(facility=self.facility)
         self.employee = self.create_employee(**{
-            'facilities': [self.facility]
+            'organizations_managed': [self.organization],
+            'facilities_managed': [self.facility]
         })
         self.user = self.employee.user
 
@@ -79,13 +81,11 @@ class TestCarePlanUsingEmployee(BillingsMixin, APITestCase):
         )
 
     def test_care_plan_average_total_patient(self):
-        facility = self.create_facility()
-        organization = facility.organization
         total_patients = 5
 
         for i in range(total_patients):
             patient = self.create_patient(**{
-                'facility': facility
+                'facility': self.facility
             })
             self.create_care_plan(patient)
 
@@ -94,12 +94,13 @@ class TestCarePlanUsingEmployee(BillingsMixin, APITestCase):
             self.create_patient()
 
         url = reverse('care_plans-average')
-        avg_url = f'{url}?patient__facility__organization={organization.id}'
+        avg_url = f'{url}?patient__facility__organization={self.organization.id}'
         response = self.client.get(avg_url)
         self.assertEqual(response.data['total_patients'], total_patients)
 
     def test_care_plan_average_total_facility(self):
         organization = self.create_organization()
+        self.employee.organizations_managed.add(organization)
         total_facilities = 5
 
         for i in range(total_facilities):
@@ -120,6 +121,7 @@ class TestCarePlanUsingEmployee(BillingsMixin, APITestCase):
 
     def test_care_plan_average_total_care_plans(self):
         organization = self.create_organization()
+        self.employee.organizations_managed.add(organization)
         total_care_plans = 5
 
         for i in range(total_care_plans):
@@ -432,6 +434,8 @@ class TestCarePlanUsingEmployee(BillingsMixin, APITestCase):
 
     def test_care_plan_average_outcome(self):
         organization = self.create_organization()
+        self.employee.organizations_managed.add(organization)
+
         average_outcome = self.generate_average_outcome_records(organization)
 
         url = reverse('care_plans-average')
@@ -441,6 +445,8 @@ class TestCarePlanUsingEmployee(BillingsMixin, APITestCase):
 
     def test_care_plan_average_engagement(self):
         organization = self.create_organization()
+        self.employee.organizations_managed.add(organization)
+
         average_engagement = self.generate_average_engagement_records(
             organization)
 
@@ -453,7 +459,7 @@ class TestCarePlanUsingEmployee(BillingsMixin, APITestCase):
         )
 
     def test_care_plan_patient_average_outcome(self):
-        patient = self.create_patient()
+        patient = self.create_patient(facility=self.facility)
         plan_template = self.create_care_plan_template()
         average_outcome = self.generate_average_outcome_records(
             patient=patient, plan_template=plan_template)
@@ -468,7 +474,7 @@ class TestCarePlanUsingEmployee(BillingsMixin, APITestCase):
         self.assertEqual(response.data['average_outcome'], average_outcome)
 
     def test_care_plan_patient_average_satisfaction(self):
-        patient = self.create_patient()
+        patient = self.create_patient(facility=self.facility)
         plan_template = self.create_care_plan_template()
         average_satisfaction = self.generate_average_satisfaction_records(
             patient=patient, plan_template=plan_template)
@@ -486,7 +492,7 @@ class TestCarePlanUsingEmployee(BillingsMixin, APITestCase):
         )
 
     def test_care_plan_patient_average_engagement(self):
-        patient = self.create_patient()
+        patient = self.create_patient(facility=self.facility)
         plan_template = self.create_care_plan_template()
         average_engagement = self.generate_average_engagement_records(
             patient=patient, plan_template=plan_template)
@@ -504,7 +510,7 @@ class TestCarePlanUsingEmployee(BillingsMixin, APITestCase):
         )
 
     def test_care_plan_patient_average_risk_level(self):
-        patient = self.create_patient()
+        patient = self.create_patient(facility=self.facility)
         plan_template = self.create_care_plan_template()
         average_engagement = self.generate_average_engagement_records(
             patient=patient, plan_template=plan_template)
@@ -523,6 +529,8 @@ class TestCarePlanUsingEmployee(BillingsMixin, APITestCase):
 
     def test_care_plan_average_risk_level(self):
         organization = self.create_organization()
+        self.employee.organizations_managed.add(organization)
+
         average_outcome = self.generate_average_outcome_records(organization)
         average_engagement = self.generate_average_engagement_records(
             organization)
@@ -954,6 +962,37 @@ class TestCarePlanUsingEmployee(BillingsMixin, APITestCase):
         )
         response = self.client.post(url, {})
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_get_care_plan_available_roles(self):
+        patient = self.create_patient(**{
+            'facility': self.facility
+        })
+        plan = self.create_care_plan(patient)
+
+        assigned_role = self.create_provider_role()
+        available_roles = [self.create_provider_role() for i in range(5)]
+        all_roles = [assigned_role] + available_roles
+
+        task_template = self.create_team_task_template(
+            plan_template=plan.plan_template,
+        )
+        task_template.roles.add(*all_roles)
+
+        self.create_care_team_member(
+            plan=plan,
+            employee_profile=self.employee,
+            role=assigned_role
+        )
+
+        url = reverse(
+            'care_plans-available-roles',
+            kwargs={
+                'pk': plan.id
+            }
+        )
+
+        response = self.client.get(url)
+        self.assertEqual(len(response.data), len(available_roles))
 
 
 class TestCarePlanPostSaveSignalFrequencyOnce(TasksMixin, APITestCase):

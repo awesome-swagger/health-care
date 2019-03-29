@@ -169,7 +169,7 @@
                 </div>
               </th>
               <th class="left">
-                <span>Role</span>
+                <span>Roles</span>
               </th>
               <th class="thSortable">
                 <span class="thSortable__text">Start Day</span>
@@ -194,8 +194,8 @@
             <tr *ngFor="let task of teamMemberTemplates">
               <td class="taskName left">{{task.name}} </td>
               <td class="left">
-                <span *ngIf="task.role && task.role.id">{{task.role.name}}</span>
-                <span *ngIf="!task.role">Not Set</span>
+                <span *ngIf="task.roles && task.roles.length > 0">{{formatSelectedRoles(task)}}</span>
+                <span *ngIf="!task.roles || task.roles.length < 1">Not Set</span>
               </td>
               <td>{{task.start_on_day}}</td>
               <td class="left">{{task.frequency | frequencyTransform | titlecase}}</td>
@@ -417,6 +417,9 @@
           <thead>
             <tr>
               <th class="thSortable thSortable--sortDown">
+                <span class="thSortable__text thSortable__text--left">Symptom</span>
+              </th>
+              <th class="thSortable thSortable--sortDown">
                 <span class="thSortable__text">Start Day</span>
               </th>
               <th class="thSortable">
@@ -437,6 +440,7 @@
           </thead>
           <tbody>
             <tr *ngFor="let sympt of symptomTemplates">
+              <td class="taskName left">{{sympt.name}}</td>
               <td>{{sympt.start_on_day}}</td>
               <td class="left">{{sympt.frequency | frequencyTransform | titlecase}}</td>
               <td class="left">{{sympt.repeat_amount != -1 ? sympt.repeat_amount :'Until Plan Ends'}}</td>

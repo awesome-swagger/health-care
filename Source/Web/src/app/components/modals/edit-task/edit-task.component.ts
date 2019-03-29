@@ -27,6 +27,9 @@ export class EditTaskComponent implements OnInit {
   public taskForm: FormGroup;
   public editName = false;
   public rolesChoices = [];
+  public rolesSelected = [];
+  public symptomChoices = [];
+  public symptomsSelected = [];
   public categoriesChoices = ['notes', 'interaction', 'coordination'];
 
   public typeChoices = [
@@ -69,7 +72,9 @@ export class EditTaskComponent implements OnInit {
   public appearTimeHelpOpen = false;
   public dueTimeHelpOpen = false;
   public categoryHelpOpen = false;
+  public symptomsDropOpen = false;
   public roleHelpOpen = false;
+  public roleDropOpen = false;
 
   constructor(
     private modal: ModalService,
@@ -127,14 +132,23 @@ export class EditTaskComponent implements OnInit {
       appear_time: new FormControl(task.appear_time),
       due_time: new FormControl(task.due_time),
     });
+    if (this.getTaskType().type === 'symptom') {
+      let defaultSymptomIds = task.default_symptoms.map((obj) => obj.id);
+      this.taskForm.addControl('default_symptoms', new FormControl(defaultSymptomIds));
+      this.fetchSymptoms().then((symptoms: any) => {
+        this.symptomChoices = symptoms;
+        this.symptomsSelected = task.default_symptoms;
+      });
+    }
     if (this.getTaskType().type === 'manager' || this.getTaskType().type === 'team') {
       this.taskForm.addControl('category', new FormControl(task.category));
     }
     if (this.getTaskType().type === 'team') {
-      let roleValue = task.role ? task.role.id : null;
-      this.taskForm.addControl('role', new FormControl(roleValue));
+      let roleIds = task.roles.map((obj) => obj.id)
+      this.taskForm.addControl('roles', new FormControl(roleIds));
       this.fetchRoles().then((roles: any) => {
         this.rolesChoices = roles;
+        this.rolesSelected = task.roles;
       });
     }
   }
@@ -152,6 +166,19 @@ export class EditTaskComponent implements OnInit {
     });
   }
 
+  public fetchSymptoms() {
+    let promise = new Promise((resolve, reject) => {
+      let symptomsSub = this.store.Symptom.readListPaged().subscribe(
+        (symptoms) => resolve(symptoms),
+        (err) => reject(err),
+        () => {
+          symptomsSub.unsubscribe();
+        },
+      );
+    });
+    return promise;
+  }
+
   public fetchRoles() {
     let promise = new Promise((resolve, reject) => {
       let rolesSub = this.store.ProviderRole.readListPaged().subscribe(
@@ -163,6 +190,58 @@ export class EditTaskComponent implements OnInit {
       );
     });
     return promise;
+  }
+
+  public isSymptomSelected(symptom) {
+    return this.symptomsSelected.findIndex((obj) => obj.id === symptom.id) > -1;
+  }
+
+  public toggleSymptomSelected(symptom) {
+    let index = this.symptomsSelected.findIndex((obj) => obj.id === symptom.id);
+    if (index > -1) {
+      this.symptomsSelected.splice(index, 1);
+    } else {
+      this.symptomsSelected.push(symptom);
+    }
+    let selectedIds = this.symptomsSelected.map((obj) => obj.id);
+    this.taskForm.controls['default_symptoms'].setValue(selectedIds);
+  }
+
+  public formatSelectedSymptoms() {
+    if (!this.symptomsSelected || this.symptomsSelected.length < 1) {
+      return '';
+    }
+    if (this.symptomsSelected.length > 1) {
+      return `${this.symptomsSelected[0].name}, +${this.symptomsSelected.length - 1}`
+    } else {
+      return this.symptomsSelected[0].name;
+    }
+  }
+
+  public isRoleSelected(role) {
+    return this.rolesSelected.findIndex((obj) => obj.id === role.id) > -1;
+  }
+
+  public toggleRoleSelected(role) {
+    let index = this.rolesSelected.findIndex((obj) => obj.id === role.id);
+    if (index > -1) {
+      this.rolesSelected.splice(index, 1);
+    } else {
+      this.rolesSelected.push(role);
+    }
+    let selectedIds = this.rolesSelected.map((obj) => obj.id);
+    this.taskForm.controls['roles'].setValue(selectedIds);
+  }
+
+  public formatSelectedRoles() {
+    if (!this.rolesSelected || this.rolesSelected.length < 1) {
+      return '';
+    }
+    if (this.rolesSelected.length > 1) {
+      return `${this.rolesSelected[0].name}, +${this.rolesSelected.length - 1}`
+    } else {
+      return this.rolesSelected[0].name;
+    }
   }
 
   public createTask() {
@@ -199,18 +278,16 @@ export class EditTaskComponent implements OnInit {
     if (this.getTaskType().type === 'manager') {
       this.task.is_manager_task = true;
     }
-    if (this.getTaskType().type === 'symptom') {
-      if (!this.task.id) {
-        this.createTask();
-      } else {
-        this.updateTask();
-      }
-    } else {
-      this.updateTask();
-    }
+    this.updateTask();
   }
 
   public close() {
     this.modal.close(null);
+  }
+
+  public saveDisabled() {
+    if (this.getTaskType().type === 'symptom') {
+      return this.symptomsSelected.length < 1;
+    }
   }
 }

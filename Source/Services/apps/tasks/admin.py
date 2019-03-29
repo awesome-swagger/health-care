@@ -23,7 +23,7 @@ from apps.tasks.models import (
 class PatientTaskTemplateAdmin(admin.ModelAdmin):
     list_display = (
         'name', 'plan_template', 'start_on_day', 'frequency',
-        'repeat_amount', 'appear_time', 'due_time', )
+        'repeat_amount', 'appear_time', 'due_time', 'is_active', 'is_available', )
 
 
 class PatientTaskAdmin(admin.ModelAdmin):
@@ -40,7 +40,7 @@ class PatientTaskAdmin(admin.ModelAdmin):
 class TeamTaskTemplateAdmin(admin.ModelAdmin):
     list_display = (
         'name', 'plan_template', 'start_on_day', 'frequency',
-        'repeat_amount', 'appear_time', 'due_time', )
+        'repeat_amount', 'appear_time', 'due_time', 'is_active', 'is_available', )
 
 
 class TeamTaskAdmin(admin.ModelAdmin):
@@ -58,7 +58,7 @@ class MedicationTaskTemplateAdmin(admin.ModelAdmin):
 
     list_display = (
         'plan', 'patient_medication', 'start_on_day', 'frequency',
-        'repeat_amount', 'appear_time', 'due_time', )
+        'repeat_amount', 'appear_time', 'due_time', 'is_active', 'is_available', )
 
 
 class MedicationTaskAdmin(admin.ModelAdmin):
@@ -75,7 +75,7 @@ class MedicationTaskAdmin(admin.ModelAdmin):
 class SymptomTaskTemplateAdmin(admin.ModelAdmin):
     list_display = (
         'plan_template', 'start_on_day', 'frequency', 'repeat_amount',
-        'appear_time', 'due_time', )
+        'appear_time', 'due_time', 'is_active', 'is_available', )
 
 
 class SymptomRatingInline(admin.TabularInline):
@@ -101,7 +101,7 @@ class AssessmentTaskTemplateAdmin(admin.ModelAdmin):
     ]
     list_display = (
         'name', 'plan_template', 'start_on_day', 'frequency', 'repeat_amount',
-        'appear_time', 'due_time', 'tracks_outcome', 'tracks_satisfaction', )
+        'appear_time', 'due_time', 'tracks_outcome', 'tracks_satisfaction', 'is_active', 'is_available',  )
 
 
 class AssessmentResponseInline(admin.TabularInline):
@@ -131,7 +131,7 @@ class VitalTaskTemplateAdmin(admin.ModelAdmin):
     ]
     list_display = (
         'name', 'plan_template', 'start_on_day', 'frequency', 'repeat_amount',
-        'appear_time', 'due_time', )
+        'appear_time', 'due_time', 'is_active', 'is_available',  )
 
 
 class VitalTaskAdmin(admin.ModelAdmin):

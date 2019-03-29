@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';import {
   groupBy as _groupBy,
   uniqBy as _uniqBy,
+  omit as _omit,
 } from 'lodash';
 import { StoreService } from '../../../services';
 import { ModalService } from '../../../modules/modals';
@@ -169,14 +170,25 @@ export class AddVitalComponent implements OnInit {
       appear_time: '00:00:00',
       due_time: '00:00:00',
       name: this.selectedVital.name,
+      instructions: this.selectedVital.instructions,
       plan_template: this.data.planTemplateId,
     };
     let createSub = this.store.VitalsTaskTemplate.create(newVital).subscribe(
       (resp) => {
         this.vitals.push(resp);
-        this.modalRespData.nextAction = 'createVital';
-        this.modalRespData.data = resp;
-        this.modal.close(this.modalRespData);
+        this.createVital = false;
+        this.selectedVital.questions.forEach((question, i, array) => {
+          let updatedQuestion = _omit(question, 'id');
+          updatedQuestion.vital_task_template = resp.id;
+          this.store.VitalsQuestions.create(updatedQuestion).subscribe((newQuestion) => {
+            resp.questions.push(newQuestion);
+            if (i === array.length - 1) {
+              this.modalRespData.nextAction = 'createVital';
+              this.modalRespData.data = resp;
+              this.modal.close(this.modalRespData);
+            }
+          });
+        });
       },
       (err) => {},
       () => {

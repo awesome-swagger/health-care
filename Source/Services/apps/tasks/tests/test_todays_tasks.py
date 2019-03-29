@@ -21,9 +21,15 @@ class TestUserTask(TasksMixin, APITestCase):
 
     def setUp(self):
         self.fake = Faker()
-        self.employee = self.create_employee()
+        self.facility = self.create_facility()
+        self.organization = self.facility.organization
+        self.employee = self.create_employee(
+            organizations_managed=[self.organization]
+        )
         self.role = self.employee.roles.first()
-        self.patient = self.create_patient()
+        self.patient = self.create_patient(
+            facility=self.facility
+        )
         self.plan = self.create_care_plan(self.patient)
         self.create_care_team_member(**{
             'employee_profile': self.employee,
@@ -95,7 +101,7 @@ class TestUserTask(TasksMixin, APITestCase):
         self.generate_tasks_for_plan(dummy_plan)
 
         response = self.client.get(self.url)
-        self.assertEqual(len(response.data), 5)
+        self.assertEqual(len(response.data['tasks']), 5)
 
     def test_get_tasks_by_user_and_plan_template(self):
         for i in range(2):
@@ -116,7 +122,7 @@ class TestUserTask(TasksMixin, APITestCase):
 
         filter_url = f'{self.url}?{query_params}'
         response = self.client.get(filter_url)
-        self.assertEqual(len(response.data), 10)
+        self.assertEqual(len(response.data['tasks']), 10)
 
     def test_get_tasks_by_user_plan_template_and_date(self):
         yesterday = timezone.now() - relativedelta(days=1)
@@ -142,7 +148,7 @@ class TestUserTask(TasksMixin, APITestCase):
 
         filter_url = f'{self.url}?{query_params}'
         response = self.client.get(filter_url)
-        self.assertEqual(len(response.data), 5)
+        self.assertEqual(len(response.data['tasks']), 5)
 
 
 class TestTodaysTaskForEmployee(TasksMixin, APITestCase):
@@ -175,8 +181,17 @@ class TestTodaysTaskForEmployee(TasksMixin, APITestCase):
         appear_datetime = pytz.utc.localize(
             self.fake.past_datetime(start_date="-1d")
         )
+        roles = [self.create_provider_role() for i in range(3)]
+        roles += [self.role]
+
+        template = self.create_team_task_template(
+            plan_template=self.plan.plan_template,
+            roles=roles
+        )
+
         kwargs.update({
             'plan': self.plan,
+            'team_task_template': template,
             'appear_datetime': appear_datetime,
             'due_datetime': timezone.now()
         })
@@ -185,7 +200,7 @@ class TestTodaysTaskForEmployee(TasksMixin, APITestCase):
     def test_get_all_tasks_today(self):
         self.create_team_task_due_today()
         response = self.client.get(self.url)
-        self.assertEqual(len(response.data), 1)
+        self.assertEqual(len(response.data['tasks']), 1)
 
     def test_unauthenticated_user_access(self):
         self.client.logout()
@@ -272,7 +287,7 @@ class TestTodaysTaskForPatient(TasksMixin, APITestCase):
         self.create_vital_task_due_today()
 
         response = self.client.get(self.url)
-        self.assertEqual(len(response.data), 5)
+        self.assertEqual(len(response.data['tasks']), 5)
 
     def test_unauthenticated_user_access(self):
         self.client.logout()

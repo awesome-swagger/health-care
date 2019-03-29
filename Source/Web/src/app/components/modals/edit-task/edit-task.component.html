@@ -10,7 +10,7 @@
 <!--TODO: If editing a task on a care plan instance, except for a medication task, show the following-->
 <h5 *ngIf="">NOTE: You are working on one patient's care plan. To do this for everyone, go to care plans.</h5>
 
-<div *ngIf="getTaskType().type !== 'symptom' && getTaskType().type !== 'medication'">
+<div *ngIf="getTaskType().type !== 'medication'">
 	<label class="noMargin">Task</label>
 	<div class="flex alignCenter marBottom32">
 		<div *ngIf="!editName" class="flex alignCenter justifySpaceBetween fullWidth">
@@ -140,6 +140,28 @@
 	</div>
 	<!--/.flex (for appear time and due time)-->
 
+	<div *ngIf="getTaskType().type === 'symptom'">
+		<ng-container>
+			<label>Symptoms</label>
+			<div class="drop">
+				<div class="drop__input" (click)="symptomsDropOpen = !symptomsDropOpen">{{formatSelectedSymptoms()}}</div>
+				<app-popover [visible]="symptomsDropOpen" (visibleChange)="symptomsDropOpen = $event">
+				<ul class="drop__dropdown fullWidth isOpen">
+					<ng-container>
+						<li class="drop__option" *ngFor="let symptom of symptomChoices">
+							<label class="drop__checkbox styledInput">
+								<input type="checkbox" class="styledInput__input" [checked]="isSymptomSelected(symptom)" (change)="toggleSymptomSelected(symptom)" />
+								<span class="styledInput__box"></span>
+								{{symptom.name}}
+							</label>
+						</li>
+					</ng-container>
+				</ul>
+				</app-popover>
+			</div> <!--/.drop (for Multiselect)-->
+		</ng-container>
+	</div>
+
 	<div *ngIf="getTaskType().type === 'team' || getTaskType().type === 'manager'">
 		<div class="tool">
 			<label class="noMargin">Category</label>
@@ -160,26 +182,35 @@
 				<option [value]="category" *ngFor="let category of categoriesChoices">{{category | titlecase}}</option>
 			</select>
 		</div>
-
 		<ng-container *ngIf="getTaskType().type !== 'manager'">
 			<div class="tool">
-				<label class="noMargin">Role</label>
+				<label class="noMargin">Roles</label>
 				<div class="tool__anchor">
 					<button class="button button--icon button--icon--small" (click)="roleHelpOpen=!roleHelpOpen">
 						<i class="ss-help"></i>
 					</button>
 					<div class="tool__tip tool__tip--left" [ngClass]="{ 'isOpen' : roleHelpOpen }">
 						<div class="tool__text">
-							Roles are meant to identify the specific person on the care team who will be responsible for the task.
+							Roles are meant to identify the specific providers on the care team who will be responsible for the task.
 						</div>
 					</div>
 				</div>
 			</div>
-			<!--/.tool (for role)-->
-			<div class="styledSelect fullWidth">
-				<select class="styledSelect__select" formControlName="role" (change)="taskForm.controls.role.setValue($event.target.value)">
-					<option [value]="role.id" *ngFor="let role of rolesChoices">{{role.name}}</option>
-				</select>
+			<div class="drop">
+				<div class="drop__input" (click)="roleDropOpen = !roleDropOpen">{{formatSelectedRoles()}}</div>
+				<app-popover [visible]="roleDropOpen" (visibleChange)="roleDropOpen = $event">
+				<ul class="drop__dropdown fullWidth isOpen">
+					<ng-container>
+						<li class="drop__option" *ngFor="let role of rolesChoices">
+							<label class="drop__checkbox styledInput">
+								<input type="checkbox" class="styledInput__input" [checked]="isRoleSelected(role)" (change)="toggleRoleSelected(role)" />
+								<span class="styledInput__box"></span>
+								{{role.name}}
+							</label>
+						</li>
+					</ng-container>
+				</ul>
+				</app-popover>
 			</div>
 		</ng-container>
 	</div>
@@ -189,7 +220,7 @@
 		<button class="button button--2nd" (click)="close()">
 			Cancel
 		</button>
-		<button type="submit" class="button">
+		<button type="submit" class="button" [disabled]="saveDisabled()">
 			Save
 		</button>
 	</div>

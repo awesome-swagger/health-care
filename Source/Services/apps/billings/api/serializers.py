@@ -39,7 +39,7 @@ class ActivityTeamTaskTemplateSerializer(serializers.ModelSerializer):
             'name',
             'is_manager_task',
             'category',
-            'role',
+            'roles',
             'start_on_day',
             'frequency',
             'repeat_amount',
