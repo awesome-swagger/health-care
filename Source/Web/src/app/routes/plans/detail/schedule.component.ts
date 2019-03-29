@@ -718,7 +718,6 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       overflow: 'visible',
       width: '384px',
     }).subscribe((symptom) => {
-      if (!symptom) return;
       this.getSymptomTasks(this.planTemplateId).then((symptoms: any) => {
         this.symptomTemplates = symptoms;
       });

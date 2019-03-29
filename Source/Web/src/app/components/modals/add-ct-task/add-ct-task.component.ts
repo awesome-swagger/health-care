@@ -214,11 +214,15 @@ export class AddCTTaskComponent implements OnInit {
       plan_template: this.data.planTemplateId,
       is_manager_task: false,
     };
+    if (this.getTaskType().type === 'symptom') {
+      console.log('here', task.default_symptoms);
+      newTask['default_symptoms'] = task.default_symptoms.map((obj) => obj.id);
+    }
     if (this.getTaskType().type === 'team' || this.getTaskType().type === 'manager') {
-      task['category'] = 'interaction';
+      newTask['category'] = 'interaction';
     }
     if (this.getTaskType().type === 'manager') {
-      task['is_manager_task'] = true;
+      newTask['is_manager_task'] = true;
     }
     let createSub = this.getTaskType().dataModel.create(newTask).subscribe(
       (resp) => {

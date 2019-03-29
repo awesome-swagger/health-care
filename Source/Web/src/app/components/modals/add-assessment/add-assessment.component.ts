@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import {
   groupBy as _groupBy,
   uniqBy as _uniqBy,
+  omit as _omit,
 } from 'lodash';
 import { ModalService } from '../../../modules/modals';
 import { StoreService } from '../../../services';
@@ -175,7 +176,16 @@ export class AddAssessmentComponent implements OnInit {
       (resp) => {
         this.assessments.push(resp);
         this.createAssessment = false;
-        this.modal.close(resp);
+        this.selectedAssessment.questions.forEach((question, i, array) => {
+          let updatedQuestion = _omit(question, 'id');
+          updatedQuestion.assessment_task_template = resp.id;
+          this.store.AssessmentQuestion.create(updatedQuestion).subscribe((newQuestion) => {
+            resp.questions.push(newQuestion);
+            if (i === array.length - 1) {
+              this.modal.close(resp);
+            }
+          });
+        });
       },
       (err) => {},
       () => {
