@@ -9,6 +9,9 @@ def patientprofile_post_save(sender, instance, created, **kwargs):
     if created and instance.is_invited:
         mailer = PatientsMailer()
         mailer.send_verification_email(instance)
+    if created and not instance.communication_email:
+        instance.communication_email = instance.user.email
+        instance.save()
 
 
 def reminder_email_post_save(sender, instance, created, **kwargs):

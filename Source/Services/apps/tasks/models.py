@@ -239,7 +239,7 @@ class SymptomTaskTemplate(AbstractTaskTemplate):
     default_symptoms = models.ManyToManyField(
         'core.Symptom',
         related_name='task_templates',
-        null=True,
+        blank=True,
         )
 
     def __str__(self):
