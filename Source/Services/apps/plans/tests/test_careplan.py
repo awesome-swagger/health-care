@@ -963,6 +963,37 @@ class TestCarePlanUsingEmployee(BillingsMixin, APITestCase):
         response = self.client.post(url, {})
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
+    def test_get_care_plan_available_roles(self):
+        patient = self.create_patient(**{
+            'facility': self.facility
+        })
+        plan = self.create_care_plan(patient)
+
+        assigned_role = self.create_provider_role()
+        available_roles = [self.create_provider_role() for i in range(5)]
+        all_roles = [assigned_role] + available_roles
+
+        task_template = self.create_team_task_template(
+            plan_template=plan.plan_template,
+        )
+        task_template.roles.add(*all_roles)
+
+        self.create_care_team_member(
+            plan=plan,
+            employee_profile=self.employee,
+            role=assigned_role
+        )
+
+        url = reverse(
+            'care_plans-available-roles',
+            kwargs={
+                'pk': plan.id
+            }
+        )
+
+        response = self.client.get(url)
+        self.assertEqual(len(response.data), len(available_roles))
+
 
 class TestCarePlanPostSaveSignalFrequencyOnce(TasksMixin, APITestCase):
     """

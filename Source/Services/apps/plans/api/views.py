@@ -358,7 +358,7 @@ class CarePlanViewSet(viewsets.ModelViewSet):
 
     @action(methods=['get'], detail=True)
     def available_roles(self, request, pk=None):
-        plan = CarePlan.objects.get(id=pk)
+        plan = self.get_object()
         template = plan.plan_template
         care_team_members = plan.care_team_members.all()
         all_roles = template.team_tasks.values_list(
