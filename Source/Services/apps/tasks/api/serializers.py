@@ -291,6 +291,8 @@ class SymptomTaskTemplateSerializer(RepresentationMixin,
             'repeat_amount',
             'appear_time',
             'due_time',
+            'is_active',
+            'is_available',
         )
         read_only_fields = (
             'id',

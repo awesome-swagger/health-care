@@ -37,6 +37,11 @@ export class AddCTTaskComponent implements OnInit {
       title: 'Add Patient Task',
       dataModel: this.store.PatientTaskTemplate,
     },
+    {
+      type: 'symptom',
+      title: 'Add Symptom Task',
+      dataModel: this.store.SymptomTaskTemplate,
+    }
   ];
 
   constructor(
@@ -176,11 +181,13 @@ export class AddCTTaskComponent implements OnInit {
       due_time: '00:00:00',
       name: taskName,
       plan_template: this.data.planTemplateId,
-      category: 'interaction',
       is_manager_task: false,
     }
+    if (this.getTaskType().type === 'team' || this.getTaskType().type === 'manager') {
+      task['category'] = 'interaction';
+    }
     if (this.getTaskType().type === 'manager') {
-      task.is_manager_task = true;
+      task['is_manager_task'] = true;
     }
     let createSub = this.getTaskType().dataModel.create(task).subscribe(
       (resp) => {
@@ -205,11 +212,13 @@ export class AddCTTaskComponent implements OnInit {
       due_time: '00:00:00',
       name: task.name,
       plan_template: this.data.planTemplateId,
-      category: 'interaction',
       is_manager_task: false,
     };
+    if (this.getTaskType().type === 'team' || this.getTaskType().type === 'manager') {
+      task['category'] = 'interaction';
+    }
     if (this.getTaskType().type === 'manager') {
-      newTask.is_manager_task = true;
+      task['is_manager_task'] = true;
     }
     let createSub = this.getTaskType().dataModel.create(newTask).subscribe(
       (resp) => {

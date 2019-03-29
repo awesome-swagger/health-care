@@ -417,6 +417,9 @@
           <thead>
             <tr>
               <th class="thSortable thSortable--sortDown">
+                <span class="thSortable__text thSortable__text--left">Symptom</span>
+              </th>
+              <th class="thSortable thSortable--sortDown">
                 <span class="thSortable__text">Start Day</span>
               </th>
               <th class="thSortable">
@@ -437,6 +440,7 @@
           </thead>
           <tbody>
             <tr *ngFor="let sympt of symptomTemplates">
+              <td class="taskName left">{{sympt.name}}</td>
               <td>{{sympt.start_on_day}}</td>
               <td class="left">{{sympt.frequency | frequencyTransform | titlecase}}</td>
               <td class="left">{{sympt.repeat_amount != -1 ? sympt.repeat_amount :'Until Plan Ends'}}</td>

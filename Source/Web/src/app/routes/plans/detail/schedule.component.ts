@@ -707,24 +707,25 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
   }
 
   public addSymptom() {
-    this.modals.open(EditTaskComponent, {
+    this.modals.open(AddCTTaskComponent, {
       closeDisabled: false,
       data: {
         type: 'symptom',
-        task: {
-          start_on_day: 0,
-          appear_time: '00:00:00',
-          due_time: '00:00:00',
-          plan_template: this.planTemplateId,
-          totalPatients: this.totalPatients,
-          frequency: 'once',
-        }
+        editingTemplate: true,
+        totalPatients: this.totalPatients,
+        planTemplateId: this.planTemplateId,
       },
       overflow: 'visible',
       width: '384px',
     }).subscribe((symptom) => {
       if (!symptom) return;
-      this.symptomTemplates.push(symptom);
+      this.getSymptomTasks(this.planTemplateId).then((symptoms: any) => {
+        this.symptomTemplates = symptoms;
+      });
+      if (!symptom) return;
+      setTimeout(() => {
+        this.editSymptom(symptom);
+      }, 10);
     });
   }
 
@@ -738,7 +739,15 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       },
       overflow: 'visible',
       width: '384px',
-    }).subscribe(() => {});
+    }).subscribe((res) => {
+      if (!res) return;
+      let index = this.symptomTemplates.findIndex((obj) => {
+        return obj.id === res.id;
+      });
+      if (index >= 0) {
+        this.symptomTemplates[index] = res;
+      }
+    });
   }
 
   public deleteSymptom(symptom) {
