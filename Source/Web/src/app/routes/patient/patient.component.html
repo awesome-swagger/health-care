@@ -371,20 +371,20 @@
         <div class="flex justifySpaceBetween">
           <div class="marRight32">
             <label class="info__label2">Name</label>
-            <p class="info__p">{{patient?.emergencyContact?.name}}</p>
+            <p class="info__p">{{emergencyContact?.first_name}} {{emergencyContact?.last_name}}</p>
           </div>
           <div>
             <label class="info__label2">Relationship</label>
-            <p class="info__p">{{patient?.emergencyContact?.relationship}}</p>
+            <p class="info__p">{{emergencyContact?.relationship}}</p>
           </div>
         </div>
         <label class="info__label2">Phone</label>
         <p class="info__p">
-          <a href="tel:">{{patient?.emergencyContact?.phone}}</a>
+          <a href="tel:">{{emergencyContact?.phone}}</a>
         </p>
         <label class="info__label2">Email</label>
         <p class="info__p info__p--noMargin">
-          <a href="mailto:">{{patient?.emergencyContact?.email}}</a>
+          <a href="mailto:">{{emergencyContact?.email}}</a>
         </p>
       </div> <!--/.info (for emergency contact)-->
     </div> <!--/.cols__colSmall-->

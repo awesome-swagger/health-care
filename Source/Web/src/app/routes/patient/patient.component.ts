@@ -49,6 +49,7 @@ export class PatientComponent implements OnDestroy, OnInit {
   public patientProcedures = [];
   public teamListOpen = {};
   public patientStats = null;
+  public emergencyContact = null;
 
   public editName;
   public tooltipPSOpen;
@@ -74,6 +75,7 @@ export class PatientComponent implements OnDestroy, OnInit {
       this.getPatient(params.patientId).then((patient:any) => {
         this.patient = patient;
         this.nav.addRecentPatient(this.patient);
+        this.getEmergencyContact();
         this.getCarePlans(this.patient.id).then((carePlans: any) => {
           this.carePlans = carePlans;
     			this.getCarePlanOverview(this.patient.id).then((overview: any) => {
@@ -185,6 +187,16 @@ export class PatientComponent implements OnDestroy, OnInit {
         }
       );
     });
+  }
+
+  public getEmergencyContact() {
+    this.store.PatientProfile.detailRoute('GET', this.patient.id, 'emergency_contacts').subscribe((res:any) => {
+      if (res.results[0]) {
+        this.emergencyContact = res.results[0];
+      } else {
+        this.emergencyContact = {};
+      }
+    })
   }
 
   public getCareTeam(plan) {
@@ -383,8 +395,14 @@ export class PatientComponent implements OnDestroy, OnInit {
 
   public editPatientEmergencyContact() {
     this.modals.open(PatientEmergencyContactComponent, {
+      data: {
+        emergencyContact: this.emergencyContact,
+        patient: this.patient,
+      },
       width: '512px',
-    }).subscribe(() => {});
+    }).subscribe((res) => {
+      this.emergencyContact = res;
+    });
   }
 
   public addDiagnosis() {

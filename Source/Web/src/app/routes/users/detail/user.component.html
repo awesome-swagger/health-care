@@ -34,7 +34,7 @@
           </form>
         </div>
         <div class="fullWidth flex">
-          <div>
+          <div class="marRight32">
             <label>Status</label>
             {{employee?.status}} <span *ngIf="employee?.status === 'active'">({{activeSince}})</span>
           </div>
@@ -44,10 +44,9 @@
         </div>
       </div>
       <div>
-        <!--TODO: Show "change password" button in place of "make inactive" if user is viewing this themselves-->
-        <!--<button class="button button--iconText">
-          <i class="ss-ban"></i> Make Inactive
-        </button>-->
+        <button class="button button--iconText" (click)="openChangePassword()" *ngIf="isCurrentUser">
+          Change Password
+        </button>
       </div>
   </div> <!--/.flexHeader-->
 

@@ -3,28 +3,28 @@
   <div class="flex justifySpaceBetween marBottom32">
     <div class="modal__inputWrap marRight32">
       <label>Name</label>
-      <input type="text" class="input fullWidth" />
+      <input type="text" class="input fullWidth" [(ngModel)]="name" name="name" />
     </div>
     <div class="modal__inputWrap160">
       <label>Relationship</label>
-      <input type="text" class="input fullWidth" />
+      <input type="text" class="input fullWidth" [(ngModel)]="relationship" name="relationship" />
     </div>
   </div>
   <div class="flex justifySpaceBetween marBottom32">
     <div class="modal__inputWrap160 marRight32">
       <label>Phone</label>
-      <input type="text" class="input fullWidth" />
+      <input type="text" class="input fullWidth" [(ngModel)]="phone" name="phone" />
     </div>
     <div class="modal__inputWrap">
       <label>Email</label>
-      <input type="email" class="input fullWidth" />
+      <input type="email" class="input fullWidth" [(ngModel)]="email" name="email" />
     </div>
   </div>
   <div class="modal__buttons">
-    <button class="button button--2nd">
+    <button class="button button--2nd" (click)="close()">
       Cancel
     </button>
-    <button class="button">
+    <button class="button" (click)="save()">
       Save
     </button>
   </div>
