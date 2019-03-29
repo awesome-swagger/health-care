@@ -402,6 +402,17 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
     );
   }
 
+  public formatSelectedRoles(task) {
+    if (!task.roles || task.roles.length < 1) {
+      return '';
+    }
+    if (task.roles.length > 1) {
+      return `${task.roles[0].name}, +${task.roles.length - 1}`
+    } else {
+      return task.roles[0].name;
+    }
+  }
+
   public addTeamTask() {
     let modalSub = this.modals.open(AddCTTaskComponent, {
       closeDisabled: false,

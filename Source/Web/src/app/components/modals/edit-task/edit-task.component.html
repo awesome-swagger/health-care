@@ -182,26 +182,35 @@
 				<option [value]="category" *ngFor="let category of categoriesChoices">{{category | titlecase}}</option>
 			</select>
 		</div>
-
 		<ng-container *ngIf="getTaskType().type !== 'manager'">
 			<div class="tool">
-				<label class="noMargin">Role</label>
+				<label class="noMargin">Roles</label>
 				<div class="tool__anchor">
 					<button class="button button--icon button--icon--small" (click)="roleHelpOpen=!roleHelpOpen">
 						<i class="ss-help"></i>
 					</button>
 					<div class="tool__tip tool__tip--left" [ngClass]="{ 'isOpen' : roleHelpOpen }">
 						<div class="tool__text">
-							Roles are meant to identify the specific person on the care team who will be responsible for the task.
+							Roles are meant to identify the specific providers on the care team who will be responsible for the task.
 						</div>
 					</div>
 				</div>
 			</div>
-			<!--/.tool (for role)-->
-			<div class="styledSelect fullWidth">
-				<select class="styledSelect__select" formControlName="role" (change)="taskForm.controls.role.setValue($event.target.value)">
-					<option [value]="role.id" *ngFor="let role of rolesChoices">{{role.name}}</option>
-				</select>
+			<div class="drop">
+				<div class="drop__input" (click)="roleDropOpen = !roleDropOpen">{{formatSelectedRoles()}}</div>
+				<app-popover [visible]="roleDropOpen" (visibleChange)="roleDropOpen = $event">
+				<ul class="drop__dropdown fullWidth isOpen">
+					<ng-container>
+						<li class="drop__option" *ngFor="let role of rolesChoices">
+							<label class="drop__checkbox styledInput">
+								<input type="checkbox" class="styledInput__input" [checked]="isRoleSelected(role)" (change)="toggleRoleSelected(role)" />
+								<span class="styledInput__box"></span>
+								{{role.name}}
+							</label>
+						</li>
+					</ng-container>
+				</ul>
+				</app-popover>
 			</div>
 		</ng-container>
 	</div>

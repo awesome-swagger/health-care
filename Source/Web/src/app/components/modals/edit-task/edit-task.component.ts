@@ -27,6 +27,7 @@ export class EditTaskComponent implements OnInit {
   public taskForm: FormGroup;
   public editName = false;
   public rolesChoices = [];
+  public rolesSelected = [];
   public symptomChoices = [];
   public symptomsSelected = [];
   public categoriesChoices = ['notes', 'interaction', 'coordination'];
@@ -71,7 +72,9 @@ export class EditTaskComponent implements OnInit {
   public appearTimeHelpOpen = false;
   public dueTimeHelpOpen = false;
   public categoryHelpOpen = false;
+  public symptomsDropOpen = false;
   public roleHelpOpen = false;
+  public roleDropOpen = false;
 
   constructor(
     private modal: ModalService,
@@ -141,10 +144,11 @@ export class EditTaskComponent implements OnInit {
       this.taskForm.addControl('category', new FormControl(task.category));
     }
     if (this.getTaskType().type === 'team') {
-      let roleValue = task.role ? task.role.id : null;
-      this.taskForm.addControl('role', new FormControl(roleValue));
+      let roleIds = task.roles.map((obj) => obj.id)
+      this.taskForm.addControl('roles', new FormControl(roleIds));
       this.fetchRoles().then((roles: any) => {
         this.rolesChoices = roles;
+        this.rolesSelected = task.roles;
       });
     }
   }
@@ -211,6 +215,32 @@ export class EditTaskComponent implements OnInit {
       return `${this.symptomsSelected[0].name}, +${this.symptomsSelected.length - 1}`
     } else {
       return this.symptomsSelected[0].name;
+    }
+  }
+
+  public isRoleSelected(role) {
+    return this.rolesSelected.findIndex((obj) => obj.id === role.id) > -1;
+  }
+
+  public toggleRoleSelected(role) {
+    let index = this.rolesSelected.findIndex((obj) => obj.id === role.id);
+    if (index > -1) {
+      this.rolesSelected.splice(index, 1);
+    } else {
+      this.rolesSelected.push(role);
+    }
+    let selectedIds = this.rolesSelected.map((obj) => obj.id);
+    this.taskForm.controls['roles'].setValue(selectedIds);
+  }
+
+  public formatSelectedRoles() {
+    if (!this.rolesSelected || this.rolesSelected.length < 1) {
+      return '';
+    }
+    if (this.rolesSelected.length > 1) {
+      return `${this.rolesSelected[0].name}, +${this.rolesSelected.length - 1}`
+    } else {
+      return this.rolesSelected[0].name;
     }
   }
 
