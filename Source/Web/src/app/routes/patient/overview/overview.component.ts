@@ -364,7 +364,7 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
 
   public confirmDeleteCTTask(task) {
     this.modals.open(ConfirmModalComponent, {
-     closeDisabled: true,
+     closeDisabled: false,
      data: {
        title: 'Delete Task?',
        body: 'Are you sure you want to remove this task?',

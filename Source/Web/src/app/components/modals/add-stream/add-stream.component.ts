@@ -112,7 +112,7 @@ export class AddStreamComponent implements OnInit {
     message.delete = false;
   }
 
-  public confirmDeleteAssessment(message, e) {
+  public confirmDeleteMessage(message, e) {
     e.stopPropagation();
     let messages = this.careMessages.filter((obj) => obj.name === message.origName || obj.name === message.name);
     messages.forEach((obj) => {

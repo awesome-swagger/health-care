@@ -93,6 +93,7 @@
       <h2 *ngIf="!selectedTemplate" class="modal__empty">Select a message stream to see details</h2>
       <div *ngIf="selectedTemplate">
         <h2 class="marTop16">{{selectedTemplate.name}}</h2>
+        <p class="note">Note: Each message toast can have a thread of toasts spread over time. Click the edit pencil to see the times of all toasts.</p>
         <ul class="messagesList">
           <li *ngFor="let message of selectedTemplate.messages">
             {{message.text}}
