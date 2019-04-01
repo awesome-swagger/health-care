@@ -3,22 +3,22 @@
   <div class="flex justifySpaceBetween marBottom32">
     <div class="modal__inputWrap marRight32">
       <label>Street</label>
-      <input type="text" class="input fullWidth" />
+      <input type="text" class="input fullWidth" [(ngModel)]="addr_street" name="street" />
     </div>
     <div class="modal__inputWrap100">
       <label>Apt # (opt)</label>
-      <input type="text" class="input fullWidth" />
+      <input type="text" class="input fullWidth" [(ngModel)]="addr_suite" name="suite" />
     </div>
   </div> <!--/.flex (for street, apt)-->
   <div class="flex justifySpaceBetween">
     <div class="modal__inputWrap marRight32">
       <label>City</label>
-      <input type="text" class="input fullWidth" />
+      <input type="text" class="input fullWidth" [(ngModel)]="addr_city" name="city"/>
     </div>
     <div class="modal__inputWrap100 marRight32">
       <label>State</label>
       <div class="styledSelect">
-        <select class="styledSelect__select">
+        <select class="styledSelect__select" [(ngModel)]="addr_state" name="state">
           <option value="AL">AL</option>
           <option value="AK">AK</option>
           <option value="AZ">AZ</option>
@@ -75,14 +75,14 @@
     </div>
     <div class="modal__inputWrap100">
       <label>ZIP</label>
-      <input type="text" class="input fullWidth" />
+      <input type="text" class="input fullWidth" [(ngModel)]="addr_zip" name="zip" />
     </div>
   </div> <!--/.flex (for city, state, zip)-->
   <div class="modal__buttons">
-    <button class="button button--2nd">
+    <button class="button button--2nd" (click)="close()">
       Cancel
     </button>
-    <button class="button">
+    <button class="button" (click)="save()">
       Save
     </button>
   </div>

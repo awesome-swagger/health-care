@@ -87,6 +87,8 @@ export class UserComponent implements OnDestroy, OnInit {
             if (!res) return;
             if (res.id === this.employee.id) {
               this.isCurrentUser = true;
+            } else {
+              this.isCurrentUser = false;
             }
           })
 

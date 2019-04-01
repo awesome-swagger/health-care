@@ -314,19 +314,19 @@
         <div class="flex justifySpaceBetween">
           <div>
             <label class="info__label2">Street</label>
-            <p class="info__p">{{patient?.address?.street}}</p>
+            <p class="info__p">{{patient?.addr_street}}</p>
             <label class="info__label2">State</label>
-            <p class="info__p info__p--noMargin">{{patient?.address?.state}}</p>
+            <p class="info__p info__p--noMargin">{{patient?.addr_state}}</p>
           </div>
           <div>
             <label class="info__label2">Apt #</label>
-            <p class="info__p">{{patient?.address?.apt ? patient?.address?.apt : '- -'}}</p>
+            <p class="info__p">{{patient?.addr_suite ? patient?.addr_suite : '- -'}}</p>
             <label class="info__label2">ZIP</label>
-            <p class="info__p info__p--noMargin">{{patient?.address?.zip}}</p>
+            <p class="info__p info__p--noMargin">{{patient?.addr_zip}}</p>
           </div>
           <div>
             <label class="info__label2">City</label>
-            <p class="info__p">{{patient?.address?.city}}</p>
+            <p class="info__p">{{patient?.addr_city}}</p>
           </div>
         </div>
       </div> <!--/.info (for address)-->
@@ -389,7 +389,10 @@
       </div> <!--/.info (for emergency contact)-->
     </div> <!--/.cols__colSmall-->
   </div> <!--/.cols for profile, address, etc.-->
-  <button class="button button--2nd" (click)="confirmMakePatientInactive()">
+  <button class="button button--2nd" *ngIf="patient?.is_active" (click)="confirmMakePatientInactive()">
     Make Inactive
+  </button>
+  <button class="button button--2nd" *ngIf="!patient?.is_active" (click)="confirmMakePatientActive()">
+    Make Active
   </button>
 </div> <!--/.ssContainer-->

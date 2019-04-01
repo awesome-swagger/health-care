@@ -73,15 +73,13 @@ export class MedicationComponent implements OnInit {
     }
 
     if (this.data && this.data.medication) {
-      console.log('vvvvvvvvvvvvvvvvvvvvvvvvvvvvv')
-      console.log(this.data.medication)
-      console.log('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
       this.selectedMedication = this.data.medication.medication;
       this.datePrescribed = moment(this.data.medication.date_prescribed);
       this.doseMg = this.data.medication.dose_mg;
       this.durationDays = this.data.medication.duration_days;
       this.selectedEmployee = this.data.medication.prescribing_practitioner;
       this.employeeSearchString = this.employeeFullName;
+      this.instructions = this.data.medication.instructions;
     }
   }
 
@@ -152,11 +150,12 @@ export class MedicationComponent implements OnInit {
         date_prescribed: this.datePrescribed.format('YYYY-MM-DD'),
         duration_days: this.durationDays,
         prescribing_practitioner: this.selectedEmployee.id,
+        instructions: this.instructions,
       }).subscribe(res => {
         this.modal.close(res);
       })
     }
-    if (this.data.type === 'add') {
+    if (this.data.type === 'edit') {
       this.store.PatientMedication.update(this.data.medication.id, {
         patient: this.patient.id,
         medication: this.selectedMedication.id,
@@ -164,10 +163,13 @@ export class MedicationComponent implements OnInit {
         date_prescribed: this.datePrescribed.format('YYYY-MM-DD'),
         duration_days: this.durationDays,
         prescribing_practitioner: this.selectedEmployee.id,
+        instructions: this.instructions,
       }).subscribe(res => {
         this.modal.close(res);
       })
     }
+
+
   }
 
   public compareFn(c1, c2) {

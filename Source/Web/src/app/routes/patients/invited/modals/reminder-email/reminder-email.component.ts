@@ -12,7 +12,7 @@ export class ReminderEmailComponent implements OnInit {
   public data = null;
 
   public patient = null;
-  public subjectInput = '';
+  public subjectInput = 'CareAdopt Email Reminder';
   public messageInput = '';
 
   constructor(
@@ -28,7 +28,7 @@ export class ReminderEmailComponent implements OnInit {
       this.patient = this.data.patient;
       this.auth.user$.subscribe(user => {
         if (!user) return;
-        this.messageInput = `Hi ${this.patient.full_name}
+        this.messageInput = `Hi ${this.patient.full_name},
         
 This is a reminder about your custom care plan from ${this.data.facility.name} click the link below to create your account.
         

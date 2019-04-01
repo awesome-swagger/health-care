@@ -390,7 +390,14 @@ export class PatientComponent implements OnDestroy, OnInit {
   public editPatientAddress() {
     this.modals.open(PatientAddressComponent, {
       width: '512px',
-    }).subscribe(() => {});
+      data: {
+        patient: this.patient,
+      }
+    }).subscribe((res) => {
+      if (res) {
+        this.patient = res;
+      }
+    });
   }
 
   public editPatientEmergencyContact() {
@@ -569,6 +576,24 @@ export class PatientComponent implements OnDestroy, OnInit {
     }).subscribe(() => {
       this.store.PatientProfile.update(this.patient.id, {
         is_active: false,
+      }).subscribe(() => {
+        this.router.navigate(['/patients', 'active']).then(() => {})
+      })
+    });
+  }
+
+  public confirmMakePatientActive() {
+     this.modals.open(ConfirmModalComponent, {
+     data: {
+       title: 'Make Patient Inactive?',
+       body: 'Are you sure you want to make this patient active again?',
+       cancelText: 'Cancel',
+       okText: 'Continue',
+      },
+      width: '384px',
+    }).subscribe(() => {
+      this.store.PatientProfile.update(this.patient.id, {
+        is_active: true,
       }).subscribe(() => {
         this.router.navigate(['/patients', 'active']).then(() => {})
       })
