@@ -48,7 +48,6 @@ export class DeletePlanComponent implements OnInit, OnDestroy {
         return !obj.is_affiliate;
       }).slice();
       this.facilities.forEach((facility) => {
-        this.accordianStatuses[facility.id] = true;
         this.getPlansForTemplate(facility.id, this.data.planTemplate.id).then((plans: any) => {
           if (this.data.plan) {
             facility.planInstances = plans.results.filter((obj) => obj.id === this.data.plan.id);

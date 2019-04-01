@@ -569,7 +569,7 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
 
   public addGoal() {
     this.modals.open(GoalComponent, {
-      closeDisabled: true,
+      closeDisabled: false,
       width: '512px',
     }).subscribe(() => {});
   }
@@ -616,7 +616,7 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
   public openRecordResults(task) {
     this.store.TeamTask.read(task.id).subscribe((taskObj) => {
       this.modals.open(RecordResultsComponent, {
-        closeDisabled: true,
+        closeDisabled: false,
         data: {
           patient: this.patient,
           carePlan: this.carePlan,
@@ -658,7 +658,7 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
 
   public addCTTask() {
     this.modals.open(AddCTTaskComponent, {
-      closeDisabled: true,
+      closeDisabled: false,
       width: '384px',
     }).subscribe(() => {});
   }
