@@ -249,7 +249,7 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
 
   public openGoal() {
     this.modals.open(GoalComponent, {
-      closeDisabled: true,
+      closeDisabled: false,
       data: {
         goalTemplate: 'test',
       },
@@ -259,7 +259,7 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
 
   public editGoal(goal) {
     this.modals.open(GoalComponent, {
-      closeDisabled: true,
+      closeDisabled: false,
       data: {
         creatingTemplate: false,
         goalTemplate: goal,
@@ -270,7 +270,7 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
 
   public confirmDeleteGoal() {
     this.modals.open(ConfirmModalComponent, {
-     'closeDisabled': true,
+     closeDisabled: false,
      data: {
        title: 'Delete Goal?',
        body: 'Are you sure you want to delete this care plan goal?',
@@ -285,7 +285,7 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
 
   public addCMTask() {
     let modalSub = this.modals.open(AddCTTaskComponent, {
-      closeDisabled: true,
+      closeDisabled: false,
       width: '384px',
       data: {
         type: 'manager',
@@ -308,7 +308,7 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
 
   public editCMTask(task) {
     let modalSub = this.modals.open(EditTaskComponent, {
-      closeDisabled: true,
+      closeDisabled: false,
       width: '384px',
       data: {
         task: task,
@@ -325,7 +325,7 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
 
   public addCTTask() {
     let modalSub = this.modals.open(AddCTTaskComponent, {
-      closeDisabled: true,
+      closeDisabled: false,
       width: '384px',
       data: {
         type: 'team',
@@ -347,7 +347,7 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
 
   public editCTTask(task) {
     let modalSub = this.modals.open(EditTaskComponent, {
-      closeDisabled: true,
+      closeDisabled: false,
       width: '384px',
       data: {
         task: task,
@@ -364,7 +364,7 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
 
   public confirmDeleteCTTask(task) {
     this.modals.open(ConfirmModalComponent, {
-     'closeDisabled': true,
+     closeDisabled: true,
      data: {
        title: 'Delete Task?',
        body: 'Are you sure you want to remove this task?',
@@ -379,7 +379,7 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
 
   public addTask() {
     let modalSub = this.modals.open(AddCTTaskComponent, {
-      closeDisabled: true,
+      closeDisabled: false,
       data: {
         type: 'patient',
         planTemplateId: this.carePlan.plan_template.id,
@@ -402,7 +402,7 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
 
   public editTask(task) {
     let modalSub = this.modals.open(EditTaskComponent, {
-      closeDisabled: true,
+      closeDisabled: false,
       data: {
         task: task,
         type: 'patient',
@@ -419,7 +419,7 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
 
   public confirmDeleteTask() {
     this.modals.open(ConfirmModalComponent, {
-     'closeDisabled': true,
+     closeDisabled: false,
      data: {
        title: 'Delete Task?',
        body: 'Are you sure you want to remove this task?',
@@ -434,7 +434,7 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
 
   public addAssessment() {
     let modalSub = this.modals.open(AddAssessmentComponent, {
-      closeDisabled: true,
+      closeDisabled: false,
       data: {
         editingTemplate: true,
         assessmentsList: this.planAssessmentTasks,
@@ -465,7 +465,7 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
 
   public editAssessment(assessment) {
     let modalSub = this.modals.open(CreateAssessmentComponent, {
-      closeDisabled: true,
+      closeDisabled: false,
       data: {
         assessment: assessment,
         planTemplateId: this.carePlan.plan_template.id,
@@ -494,7 +494,7 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
 
   public editAssessmentTime(assessment) {
     let modalSub = this.modals.open(EditTaskComponent, {
-      closeDisabled: true,
+      closeDisabled: false,
       data: {
         task: assessment,
         type: 'assessment',
@@ -511,7 +511,7 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
 
   public confirmDeleteAssessment() {
     this.modals.open(ConfirmModalComponent, {
-     'closeDisabled': true,
+     closeDisabled: false,
      data: {
        title: 'Delete Assessment?',
        body: 'Are you sure you want to remove this assessment?',
@@ -526,7 +526,7 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
 
   public addSymptom() {
     this.modals.open(EditTaskComponent, {
-      closeDisabled: true,
+      closeDisabled: false,
       data: {
         type: 'symptom',
         task: {
@@ -548,7 +548,7 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
 
   public editSymptom(symptom) {
     this.modals.open(EditTaskComponent, {
-      closeDisabled: true,
+      closeDisabled: false,
       data: {
         type: 'symptom',
         task: symptom,
@@ -559,7 +559,7 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
 
   public confirmDeleteSymptom() {
     this.modals.open(ConfirmModalComponent, {
-     'closeDisabled': true,
+     closeDisabled: false,
      data: {
        title: 'Delete Symptom Report?',
        body: 'Are you sure you want to remove this symptom report?',
@@ -574,7 +574,7 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
 
   public addVital() {
     this.modals.open(AddVitalComponent, {
-      closeDisabled: true,
+      closeDisabled: false,
       width: '768px',
       data: {
         taskList: this.planVitalTasks,
@@ -599,7 +599,7 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
 
   public editVital(vital) {
     this.modals.open(CreateVitalComponent, {
-      closeDisabled: true,
+      closeDisabled: false,
       width: '800px',
       data: {
         vital: vital,
@@ -622,7 +622,7 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
 
   public editVitalTime(vital) {
     let modalSub = this.modals.open(EditTaskComponent, {
-      closeDisabled: true,
+      closeDisabled: false,
       data: {
         type: 'vital',
         task: vital,
@@ -639,7 +639,7 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
 
   public confirmDeleteVital() {
     this.modals.open(ConfirmModalComponent, {
-     'closeDisabled': true,
+     closeDisabled: false,
      data: {
        title: 'Delete Vital?',
        body: 'Are you sure you want to remove this vital report?',
@@ -654,7 +654,7 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
 
   public addMedication() {
     this.modals.open(MedicationComponent, {
-      closeDisabled: true,
+      closeDisabled: false,
       data: {
         plan: this.carePlan,
       },
@@ -685,7 +685,7 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
 
   public editMedication(medication) {
     this.modals.open(EditTaskComponent, {
-      closeDisabled: true,
+      closeDisabled: false,
       data: {
         type: 'medication',
         task: medication,
@@ -696,7 +696,7 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
 
   public confirmDeleteMedication() {
     this.modals.open(ConfirmModalComponent, {
-     'closeDisabled': true,
+     closeDisabled: false,
      data: {
        title: 'Delete Task?',
        body: 'Are you sure you want to remove this medication task?',
@@ -711,7 +711,7 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
 
   public addStream() {
     this.modals.open(AddStreamComponent, {
-      closeDisabled: true,
+      closeDisabled: false,
       data: {
           taskList: this.planCareMessages,
           planTemplateId: this.carePlan.plan_template.id,
@@ -738,7 +738,7 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
 
   public editStream(stream) {
     this.modals.open(CreateStreamComponent, {
-      closeDisabled: true,
+      closeDisabled: false,
       data: {
         stream: stream,
         planTemplateId: this.carePlan.plan_template.id,
@@ -761,7 +761,7 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
 
   public confirmDeleteStream() {
     this.modals.open(ConfirmModalComponent, {
-     'closeDisabled': true,
+     closeDisabled: false,
      data: {
        title: 'Delete Message Stream?',
        body: 'Are you sure you want to remove this message stream?',
