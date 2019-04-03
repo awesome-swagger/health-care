@@ -6,6 +6,7 @@ import {
   filter as _filter,
   flatten as _flatten,
   groupBy as _groupBy,
+  uniqBy as _uniqBy,
 } from 'lodash';
 import { ModalService, ConfirmModalComponent } from '../../../modules/modals';
 import { PopoverOptions } from '../../../modules/popover';
@@ -254,7 +255,8 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
   }
 
   public getAllTeamMemberTasks(planTemplate, date) {
-    let promises = this.careTeamMembers.map((obj) => this.getTeamMemberTasks(obj, planTemplate, date));
+    let promises = _uniqBy(this.careTeamMembers, (obj) => obj.employee_profile.id)
+      .map((obj) => this.getTeamMemberTasks(obj, planTemplate, date));
     return Promise.all(promises);
   }
 
@@ -570,11 +572,40 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
   public addGoal() {
     this.modals.open(GoalComponent, {
       closeDisabled: false,
+      data: {
+        creatingTemplate: true,
+      },
       width: '512px',
-    }).subscribe(() => {});
+    }).subscribe(
+      (results) => {
+        if (results !== null) {
+          let createSub = this.store.GoalTemplate.create({
+            name: results.name,
+            plan_template: this.carePlan.plan_template.id,
+            description: results.description,
+            focus: results.focus,
+            duration_weeks: results.duration_weeks,
+            start_on_day: results.start_on_day,
+          }).subscribe(
+            (goal) => {
+              this.refetchAllTasks(this.selectedDate).then(() => {
+                this.detailsLoaded = true;
+              });
+            },
+            (err) => {},
+            () => {
+              createSub.unsubscribe();
+            }
+          );
+        }
+      }
+    );
   }
 
   public updateGoal(goal) {
+    let goalIndex = this.planGoals.findIndex((obj) => {
+      return obj.id === goal.id;
+    });
     this.modals.open(GoalComponent, {
       closeDisabled: true,
       data: {
@@ -583,18 +614,32 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
         goal: goal,
       },
       width: '512px',
-    }).subscribe((updatedGoal) => {
-      if (!updatedGoal) {
+    }).subscribe((results) => {
+      if (!results) {
         return;
       }
-      // TODO: Update individual goal, rather than goal template for all of this plan type.
+      // create goal progress instance
       this.store.GoalProgress.create({
         goal: goal.id,
-        rating: updatedGoal.progress,
+        rating: results.progress,
       }).subscribe((newProgress) => {
-        this.refetchAllTasks(this.selectedDate).then(() => {
-          this.detailsLoaded = true;
-        });
+        // TODO: Update individual goal, rather than goal template for all of this plan type.
+        let updateSub = this.store.GoalTemplate.update(goal.goal_template.id, {
+          name: results.name,
+          description: results.description,
+          focus: results.focus,
+          duration_weeks: results.duration_weeks,
+          start_on_day: results.start_on_day,
+        }, true).subscribe(
+          (updatedGoal) => {
+            this.planGoals[goalIndex].goal_template = updatedGoal;
+            this.planGoals[goalIndex].latest_progress = newProgress;
+          },
+          (err) => {},
+          () => {
+            updateSub.unsubscribe();
+          }
+        );
       });
     });
   }
