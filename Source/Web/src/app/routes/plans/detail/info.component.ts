@@ -1,6 +1,10 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { sumBy as _sumBy } from 'lodash';
+import {
+  sum as _sum,
+  sumBy as _sumBy,
+  map as _map,
+} from 'lodash';
 import * as moment from 'moment';
 import { ModalService, ConfirmModalComponent } from '../../../modules/modals';
 import { AddPlanComponent } from '../modals/add-plan/add-plan.component';
@@ -150,26 +154,42 @@ export class PlanInfoComponent implements OnDestroy, OnInit {
     }).subscribe(() => {});
   }
 
-  public zeroPad(num) {
-    return num < 10 ? `0${num}` : `${num}`;
+  public formatTime(minutes) {
+    if (!minutes) return '0:00';
+    const h = `${Math.floor(minutes / 60)}`;
+    const m = `${minutes % 60}`;
+    return `${h}:${m.length === 1 ? '0' : ''}${minutes % 60}`
+  }
+
+  public timePillColor(plan) {
+    if (!plan.patient.payer_reimbursement || !plan.billing_type) {
+      return;
+    }
+    let timeCount = plan
+    let allotted = plan.billing_type.billable_minutes;
+    return this.utils.timePillColor(plan.time_count, allotted);
   }
 
   public totalTimeCount(plans) {
-    let hours = 0;
-    let minutes = 0;
-    plans.forEach((obj) => {
-      if (!obj.time_count) {
-        return;
-      }
-      let timeCountSplit = obj.time_count.split(":");
-      let splitHours = parseInt(timeCountSplit[0]);
-      let splitMinutes = parseInt(timeCountSplit[1]);
-      hours += splitHours;
-      minutes += splitMinutes;
-    });
-    hours += Math.floor((minutes / 60));
-    minutes = minutes % 60;
-    return `${hours}:${this.zeroPad(minutes)}`;
+    if (!plans || plans.length < 1) {
+      return;
+    }
+    let total = 0;
+    // let billablePlans = plans.filter((plan) => plan.patient.payer_reimbursement && plan.billing_type);
+    return _sum(_map(plans, (plan) => plan.time_count));
+  }
+
+  public averageTimeColor(plans) {
+    if (!plans || plans.length < 1) {
+      return;
+    }
+    let billablePlans = plans.filter((plan) => plan.patient.payer_reimbursement && plan.billing_type);
+    if (plans.length === 0) {
+      return;
+    }
+    const avgTime = _sum(_map(billablePlans, (p) => p.time_count)) / billablePlans.length;
+    const avgAllotted = _sum(_map(billablePlans, (p) => p.billing_type.billable_minutes)) / billablePlans.length;
+    return this.utils.timePillColor(avgTime, avgAllotted);
   }
 
   public progressInWeeks(plan) {

@@ -273,8 +273,12 @@
 								</td>
 								<td>{{task.occurrence}}</td>
 								<td class="left">
-									<span *ngIf="task.responsible_person">{{task.responsible_person.employee_profile.user.first_name}} {{task.responsible_person.employee_profile.user.last_name}}<span *ngIf="task.responsible_person.employee_profile.title">,
-											{{task.responsible_person.employee_profile.title.abbreviation}}</span> ({{task.responsible_person.role.name}})</span>
+									<span *ngIf="task.responsible_person">
+										<span>{{task.responsible_person.employee_profile.user.first_name}} {{task.responsible_person.employee_profile.user.last_name}}</span>
+										<span *ngIf="task.responsible_person.employee_profile.title">, {{task.responsible_person.employee_profile.title.abbreviation}}</span>
+										<span *ngIf="task.responsible_person.role"> ({{task.responsible_person.role.name}})</span>
+										<span *ngIf="!task.responsible_person.role"> (Care Manager)</span>
+									</span>
 								</td>
 							</tr>
 						</tbody>

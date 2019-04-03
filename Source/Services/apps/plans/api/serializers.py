@@ -702,6 +702,7 @@ class CarePlanTemplateAverageSerializer(serializers.ModelSerializer):
             'plan__id__in': employee_care_plans.values_list('id', flat=True),
             'plan__patient__facility__is_affiliate': False,
             'plan__plan_template': obj,
+            'activity_datetime__gte': timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         }
         if facility:
             kwargs.update({
@@ -1014,6 +1015,7 @@ class CarePlanByTemplateFacilitySerializer(CarePlanOverviewSerializer):
             'id',
             'patient',
             'plan_template',
+            'billing_type',
             'other_plans',
             'tasks_this_week',
             'average_outcome',
@@ -1030,7 +1032,7 @@ class CarePlanByTemplateFacilitySerializer(CarePlanOverviewSerializer):
                 day=1, hour=0, minute=0, second=0, microsecond=0)) \
                 .aggregate(total=Sum('time_spent'))
         total = time_spent['total'] or 0
-        return str(datetime.timedelta(minutes=total))[:-3]
+        return total
 
 
 class BasicCareTeamMemberSerializer(RepresentationMixin,

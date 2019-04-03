@@ -5,8 +5,8 @@
       <span class="accordion__title">{{facility.name}} (<span *ngIf="facility.plans">{{facility.plans.length}}</span><span *ngIf="!facility.plans">0</span>)</span>
       <!-- Shows if stats are available for plan -->
       <div class="accordion__right" *ngIf="facility.plans && facility.plans.length > 0">
-        <div class="pill marRight16">
-          Time {{totalTimeCount(facility.plans)}}
+        <div class="pill marRight16" [ngClass]="averageTimeColor(facility.plans)">
+          Time {{formatTime(totalTimeCount(facility.plans))}}
         </div>
         <div class="pill" [ngClass]="utils.percentPillClass(totalFacilityRiskLevel(facility))">
           {{utils.getRiskLevelText(totalFacilityRiskLevel(facility))}} {{totalFacilityRiskLevel(facility)}}%
@@ -94,7 +94,10 @@
                     </app-popover>
                   </div>
                 </td>
-                <td><div class="pill">{{plan.time_count}}</div>
+                <td>
+                  <div class="pill" [ngClass]="timePillColor(plan)">
+                    {{formatTime(plan.time_count)}}
+                  </div>
                 </td>
                 <td>
                   <!--TODO: This link should also open the care team tasks accordion on the plan instance overview page-->
