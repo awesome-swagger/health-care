@@ -24,6 +24,8 @@ export class MedicationComponent implements OnInit {
     {displayName: 'Weekends', value: 'weekends'},
   ];
   public plan = null;
+  public plans = [];
+  public selectedPlan = null;
   public patient = null;
   public medications = [];
   public careTeamMembers = [];
@@ -67,7 +69,9 @@ export class MedicationComponent implements OnInit {
     )
 
     if (this.data) {
+      console.log('patient --- ',this.data.patient);
       this.plan = this.data.plan;
+      this.plans = this.data.plans;
       this.patient = this.data.patient;
       // Get the assigned team members for this care plan
     }
@@ -80,6 +84,23 @@ export class MedicationComponent implements OnInit {
       this.selectedEmployee = this.data.medication.prescribing_practitioner;
       this.employeeSearchString = this.employeeFullName;
       this.instructions = this.data.medication.instructions;
+
+      if (this.data.medication.task) {
+        const task = this.data.medication.task;
+        this.appearTime = task.appear_time;
+        this.dueTime = task.due_time;
+        this.frequency = task.frequency;
+        this.selectedPlan = this.plans.find(p => p.id === task.plan);
+        this.repeatAmount = task.repeat_amount;
+        this.startDay = task.start_on_day;
+
+        if (this.repeatAmount > 0) {
+          this.repeatsChoice = 'other';
+        } else {
+          this.repeatsChoice = 'plan_end';
+        }
+
+      }
     }
   }
 
@@ -152,7 +173,20 @@ export class MedicationComponent implements OnInit {
         prescribing_practitioner: this.selectedEmployee.id,
         instructions: this.instructions,
       }).subscribe(res => {
-        this.modal.close(res);
+
+        this.store.MedicationTaskTemplate.create({
+          plan: this.selectedPlan.id,
+          patient_medication: res.id,
+          start_on_day: this.startDay,
+          frequency: this.frequency,
+          repeat_amount: this.repeatsChoice === 'plan_end' ? -1 : this.repeatAmount,
+          appear_time: this.appearTime,
+          due_time: this.dueTime,
+        }).subscribe((task:any) => {
+          res.task = task;
+          this.modal.close(res);
+        })
+
       })
     }
     if (this.data.type === 'edit') {
@@ -165,6 +199,19 @@ export class MedicationComponent implements OnInit {
         prescribing_practitioner: this.selectedEmployee.id,
         instructions: this.instructions,
       }).subscribe(res => {
+
+        this.store.MedicationTaskTemplate.update(this.data.medication.task.id, {
+          plan: this.selectedPlan.id,
+          patient_medication: res.id,
+          start_on_day: this.startDay,
+          frequency: this.frequency,
+          repeat_amount: this.repeatsChoice === 'plan_end' ? -1 : this.repeatAmount,
+          appear_time: this.appearTime,
+          due_time: this.dueTime,
+        }).subscribe((task:any) => {
+          res.task = task;
+          this.modal.close(res);
+        })
         this.modal.close(res);
       })
     }

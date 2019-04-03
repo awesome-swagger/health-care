@@ -18,7 +18,7 @@ backend:
   links:
   - database
   volumes:
-    - /data/CareAdopt/media:/server/dev/media
+    - /data/CareAdopt/media:/care_adopt_backend/server/dev/media
   ports:
   - "8000:8000"
   environment:

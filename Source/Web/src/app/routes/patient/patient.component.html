@@ -212,10 +212,10 @@
     <div class="info cols__colSmall marRight32">
       <h3>Medications</h3>
       <ul class="nameList nameList--dk marBottom16">
-        <li *ngFor="let medication of patientMedications" class="nameList__item">
+        <li *ngFor="let medication of patientMedications; let i = index;" class="nameList__item">
           <span>{{medication?.medication?.name}}</span>
           <div class="flex">
-            <button class="button button--icon button--icon--small" (click)="editMedication(medication)">
+            <button class="button button--icon button--icon--small" (click)="editMedication(medication, i)">
               <i class="ss-write"></i>
             </button>
             <button class="button button--icon button--icon--small" (click)="deleteMedication(medication?.id)">

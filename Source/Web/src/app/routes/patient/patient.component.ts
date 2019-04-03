@@ -98,6 +98,7 @@ export class PatientComponent implements OnDestroy, OnInit {
               }
             });
     			});
+          this.getPatientMedications(this.patient.id);
         });
         this.getProblemAreas(this.patient.id).then((problemAreas: any) => {
           this.problemAreas = problemAreas;
@@ -112,7 +113,6 @@ export class PatientComponent implements OnDestroy, OnInit {
 
         this.getPatientDiagnoses(this.patient);
 
-        this.getPatientMedications(this.patient.id);
 
       }).catch(() => {
         this.router.navigate(['/error']).then(() => {});
@@ -241,6 +241,14 @@ export class PatientComponent implements OnDestroy, OnInit {
     this.store.PatientMedication.readListPaged({ patient: patientId }).subscribe(
       res => {
         this.patientMedications = res;
+        this.carePlans.forEach(cp => {
+          this.store.MedicationTaskTemplate.readListPaged({plan__id: cp.id}).subscribe((res:any) => {
+            res.forEach(taskTemplate => {
+              const patientMedication = this.patientMedications.find(m => m.id === taskTemplate.patient_medication.id);
+              patientMedication.task = taskTemplate;
+            })
+          })
+        })
       }
     )
   }
@@ -527,6 +535,7 @@ export class PatientComponent implements OnDestroy, OnInit {
       data: {
         type: 'add',
         patient: this.patient,
+        plans: this.carePlans,
       },
     }).subscribe((res) => {
       if (res) {
@@ -535,17 +544,18 @@ export class PatientComponent implements OnDestroy, OnInit {
     });
   }
 
-  public editMedication(medication) {
+  public editMedication(medication, i) {
     this.modals.open(MedicationComponent, {
       width: '576px',
       data: {
         type: 'edit',
         patient: this.patient,
+        plans: this.carePlans,
         medication,
       }
     }).subscribe((res) => {
-      if (res === 'delete') {
-        this.patientMedications = this.patientMedications.filter(m => m.id !== medication.id);
+      if (res) {
+        this.patientMedications[i] = res;
       }
     });
   }
