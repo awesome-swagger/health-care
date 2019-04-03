@@ -9,9 +9,9 @@
     class="input fullWidth modal__inputWrap"
     [ngClass]="{'input--search': !selectedPatient }"
     placeholder="Search Patients"
-    (click)="dropAPPM0Open=!dropAPPM0Open"
     [value]="selectedPatientName()"
     [disabled]="selectedPatient"
+    [(ngModel)]="patientSearchString"
   />
   <button
     class="button button--icon searchClear"
@@ -21,7 +21,7 @@
     <i class="ss-delete"></i>
   </button>
 
-  <ul class="drop__dropdown fullWidth" [ngClass]="{ 'isOpen' : dropAPPM0Open }" (click)="dropAPPM0Open=!dropAPPM0Open">
+  <ul class="drop__dropdown fullWidth isOpen" *ngIf="!selectedPatient">
     <li class="drop__option" *ngFor="let patient of allPatients" (click)="selectPatient(patient)">
       <a class="drop__link">
         <div class="picName">
@@ -136,7 +136,8 @@
     <div class="modal__inputWrap marRight32">
       <label>Insurance</label>
       <div class="styledSelect">
-        <select class="styledSelect__select">
+        <select class="styledSelect__select" [(ngModel)]="selectedInsurance" [compareWith]="compareFn">
+          <option *ngFor="let insurance of insurances" [value]="insurance">{{insurance.name}}</option>
         </select>
       </div>
     </div>
@@ -174,17 +175,17 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let diagnosis of diagnoses; let i = index">
+        <tr *ngFor="let diagnosis of patientDiagnoses; let i = index">
           <td class="left">
-            <span *ngIf="editDiagnosisIndex !== i">{{diagnosis.name}}</span>
+            <span *ngIf="editDiagnosisIndex !== i">{{diagnosis.diagnosis.name}}</span>
             <form *ngIf="editDiagnosisIndex === i" class="flex">
               <div class="drop">
-                <input type="text" class="input input--search fullWidth" placeholder="Search Diagnoses" />
+                <input type="text" class="input input--search fullWidth" placeholder="Search Diagnoses" name="diagnosis" />
               </div>
             </form>
           </td>
           <td class="left">
-            <span *ngIf="editDiagnosisIndex !== i">{{diagnosis.chronic ? 'Chronic' : 'Not Chronic'}}</span>
+            <span *ngIf="editDiagnosisIndex !== i">{{diagnosis.is_chronic ? 'Chronic' : 'Not Chronic'}}</span>
             <div *ngIf="editDiagnosisIndex === i" class="styledSelect">
               <select class="styledSelect__select">
                 <option>Not Chronic</option>
@@ -193,18 +194,17 @@
             </div>
           </td>
           <td class="noPad">
-            <!--TODO: Show help button if diagnosis was formerly assigned-->
-            <div *ngIf="diagnosis.original" class="tool__anchor flex justifyEnd">
-              <button class="button button--icon button--icon--small">
+            <div *ngIf="true" class="tool__anchor flex justifyEnd">
+              <button class="button button--icon button--icon--small" (click)="helpTip[i]=!helpTip[i]">
                 <i class="ss-help"></i>
               </button>
-              <div class="tool__tip tool__tip--right" [ngClass]="{ 'isOpen' : false }">
+              <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : helpTip[i] }">
                 <div class="tool__text">
                   Go to the patient profile to edit or remove previously added diagnoses.
                 </div>
               </div>
             </div>
-            <div *ngIf="!diagnosis.original && editDiagnosisIndex !== i" class="flex">
+            <div *ngIf="!diagnosis.original && editDiagnosisIndex !== i && false" class="flex">
               <button class="button button--icon button--icon--small" (click)="editDiagnosis(i)">
                 <i class="ss-write"></i>
               </button>
@@ -231,10 +231,19 @@
   </button>
   <form *ngIf="createDiagnosis" class="flex">
     <div class="drop">
-      <input type="text" class="input input--search" placeholder="Search Diagnoses" [(ngModel)]="newDiagnosis" name="newDiagnosis"/>
+      <input type="text" class="input input--search" placeholder="Search Diagnoses" [(ngModel)]="diagnosisSearchString" name="newDiagnosis"/>
+      <ul class="drop__dropdown fullWidth" [ngClass]="{ 'isOpen' : diagnosisSearchString.length > 2 && !selectedDiagnosis }">
+        <li class="drop__option" *ngFor="let diagnosis of searchDiagnoses">
+          <a class="drop__link" (click)="selectDiagnosis(diagnosis)">
+            <div class="picName">
+              {{diagnosis.name}}
+            </div>
+          </a>
+        </li>
+      </ul>
     </div>
     <div *ngIf="createDiagnosis" class="styledSelect">
-      <select class="styledSelect__select" [(ngModel)]="newDiagnosisIsChronic">
+      <select class="styledSelect__select" [(ngModel)]="newDiagnosisIsChronic" name="newDiagnosisSelect">
         <option [ngValue]="false">Not Chronic</option>
         <option [ngValue]="true">Chronic</option>
       </select>

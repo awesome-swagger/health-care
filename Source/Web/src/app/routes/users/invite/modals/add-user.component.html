@@ -29,7 +29,7 @@
   <div class="modal__inputWrap marBottom16 marRight16">
     <label>Employed By</label>
     <div class="styledSelect">
-      <select class="styledSelect__select" [(ngModel)]="employedByInput" [compareWith]="compareFn">
+      <select class="styledSelect__select" [(ngModel)]="employedByInput" (change)="selectOrg()" [compareWith]="compareFn">
         <option>- - - -</option>
         <option [ngValue]="organization">{{organization?.name}}</option>
         <option *ngFor="let affiliate of filteredFacilities(true)" [ngValue]="affiliate">{{affiliate.name}}</option>

@@ -7,6 +7,8 @@ import {
   get as _get,
   uniqWith as _uniqWith,
 } from 'lodash';
+import {AuthService} from '../../../services';
+import * as moment from 'moment';
 
 @Component({
   selector: 'app-add-patient-to-plan',
@@ -34,13 +36,7 @@ export class AddPatientToPlanComponent implements OnInit {
   public selectedPlan = null;
   public planTypes = ['BHI', 'CCM', 'CCCM', 'CoCM', 'RPM', 'TCM'];
   public selectedPlanType = 'BHI';
-  public diagnoses = [
-    {
-      name: 'Diabetes',
-      original: false,
-      chronic: true,
-    }
-  ];
+  public diagnoses = [];
   public editDiagnosisIndex = -1;
   public firstName = '';
   public lastName = '';
@@ -56,10 +52,19 @@ export class AddPatientToPlanComponent implements OnInit {
   public careManagerRole = null;
   public billingPractitionerRole = null;
   public source = '';
+  public patientSearchString = '';
+  public insurances = [];
+  public selectedInsurance = null;
+  public patientDiagnoses = [];
+  public helpTip = [];
+  public diagnosisSearchString = '';
+  public selectedDiagnosis = null;
+  public employee = null;
 
   public dropAPPM2Open;
 
   constructor(
+    private auth: AuthService,
     private store: StoreService,
     private modals: ModalService
   ) { }
@@ -147,6 +152,22 @@ export class AddPatientToPlanComponent implements OnInit {
       this.employees = res;
     })
 
+    this.auth.organization$.subscribe(org => {
+      if (!org) return;
+      this.getInsurances(org.id).then((insurances:any) => {
+        this.insurances = insurances;
+      });
+    })
+
+    this.auth.user$.subscribe(user => {
+      if (!user) return;
+      this.employee = user;
+    })
+
+    this.store.Diagnosis.readListPaged().subscribe((res:any) => {
+      this.diagnoses = res;
+    })
+
     setTimeout(() => {
       console.log(this.patients);
     }, 3000)
@@ -200,6 +221,14 @@ export class AddPatientToPlanComponent implements OnInit {
     });
   }
 
+  public getInsurances(orgId) {
+    return new Promise((resolve) => {
+      this.store.Organization.detailRoute('GET', orgId, 'insurances').subscribe((res:any) => {
+        resolve(res.results);
+      })
+    })
+  }
+
   public carePlansFiltered() {
     if (!this.selectedServiceArea) {
       return [];
@@ -226,6 +255,18 @@ export class AddPatientToPlanComponent implements OnInit {
     } else {
       this.selectedFacility = patient.facility;
     }
+
+    if (this.selectedPatient.diagnosis) {
+      this.selectedPatient.diagnosis.forEach(d => {
+        this.store.PatientDiagnosis.read(d).subscribe((diagnosis:any) => {
+          this.store.Diagnosis.read(diagnosis.diagnosis).subscribe((res:any) => {
+            diagnosis.diagnosis = res;
+            diagnosis.original = true;
+            this.patientDiagnoses.push(diagnosis);
+          })
+        })
+      })
+    }
   }
 
   public unselectPatient() {
@@ -235,18 +276,39 @@ export class AddPatientToPlanComponent implements OnInit {
     this.phoneNumber = '';
     this.email = '';
     this.selectedFacility = null;
+    this.patientSearchString = '';
   }
 
   public addDiagnosis() {
     this.createDiagnosis = !this.createDiagnosis
-    this.diagnoses.push({
-      name: this.newDiagnosis,
-      original: false,
-      chronic: this.newDiagnosisIsChronic,
-    });
+
+    this.store.PatientDiagnosis.create({
+      type: "N/A",
+      date_identified: moment().format('YYYY-MM-DD'),
+      diagnosing_practitioner: this.employee.user.first_name + ' ' + this.employee.user.last_name,
+      facility: this.selectedFacility ? this.selectedFacility.id : '',
+      patient: this.selectedPatient.id,
+      diagnosis: this.selectedDiagnosis.id,
+      is_chronic: this.newDiagnosisIsChronic,
+    }).subscribe((res:any) => {
+      res.diagnosis = this.selectedDiagnosis;
+      this.selectedDiagnosis = null;
+      this.patientDiagnoses.push(res);
+      this.selectedPatient.diagnosis.push(res.id)
+      this.store.PatientProfile.update(this.selectedPatient.id, {
+        diagnosis: this.selectedPatient.diagnosis,
+      }).subscribe(() => {})
+    })
+    // this.diagnoses.push({
+    //   name: this.newDiagnosis,
+    //   original: false,
+    //   chronic: this.newDiagnosisIsChronic,
+    // });
   }
 
   public editDiagnosis(index) {
+    this.selectedDiagnosis = this.patientDiagnoses[index].diagnosis;
+    this.diagnosisSearchString = this.patientDiagnoses[index].diagnosis.name;
     this.editDiagnosisIndex = index;
   }
 
@@ -374,6 +436,7 @@ export class AddPatientToPlanComponent implements OnInit {
           facility: this.selectedFacility.id,
           is_active: true,
           is_invited: false,
+          insurance: this.selectedInsurance.id,
         }).subscribe(patient => {
           this.store.CarePlan.create({
             patient: patient.id,
@@ -453,6 +516,9 @@ export class AddPatientToPlanComponent implements OnInit {
   }
 
   public get allPatients() {
+    if (this.patientSearchString.length < 3) {
+      return [];
+    }
     const arr = [
       ...this.patients,
       ...this.potentialPatients.map(p => {
@@ -461,10 +527,24 @@ export class AddPatientToPlanComponent implements OnInit {
         }
       })
     ].sort((a, b) => {
-      var textA = a.user.first_name.toUpperCase();
-      var textB = b.user.first_name.toUpperCase();
+      const textA = a.user.first_name.toUpperCase();
+      const textB = b.user.first_name.toUpperCase();
       return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
     });
-    return arr
+    return arr.filter(u => {
+      return (u.user.first_name + ' ' + u.user.last_name).toLowerCase().indexOf(this.patientSearchString.toLowerCase()) > -1;
+    })
+  }
+
+  public get searchDiagnoses() {
+    if (this.diagnosisSearchString.length < 3) {
+      return [];
+    }
+    return this.diagnoses.filter(d => d.name.toLowerCase().indexOf(this.diagnosisSearchString.toLowerCase()) > -1);
+  }
+
+  public selectDiagnosis(diagnosis) {
+    this.selectedDiagnosis = diagnosis;
+    this.diagnosisSearchString = diagnosis.name;
   }
 }

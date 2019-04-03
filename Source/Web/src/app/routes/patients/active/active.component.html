@@ -156,7 +156,7 @@
   <ng-container *ngFor="let facility of facilities">
     <div class="accordion" [ngClass]="{ 'isOpen' : accordionsOpen[facility.id] }" *ngIf="facility.carePlans?.length > 0">
       <div class="accordion__head" (click)="accordionsOpen[facility.id]=!accordionsOpen[facility.id]">
-        <span class="accordion__title">{{facility.name}} ({{facility.carePlans?.length}})</span>
+        <span class="accordion__title">{{facility.name}} ({{facilityTotal[facility.id]}})</span>
         <div class="accordion__right">
           <div class="pill marRight32" [ngClass]="avgFacilityTimeColor(facility)">
             Time {{formatTime(facilityTimeCount(facility))}}
@@ -282,22 +282,38 @@
             </table>
           </div> <!--/.tableWrap-->
         </div> <!--/.accordion__contents-->
-        <div class="paginationWrap" *ngIf="">
+        <div class="paginationWrap" *ngIf="true">
           <button class="button button--iconText" (click)="addPatientToPlan()">
             <i class="ss-plus"></i> Add Patient
           </button>
           <div class="pagination">
-            <button class="button button--icon button--icon--dis">
+            <button
+              class="button button--icon button--icon--dis"
+              (click)="navigatePages(facility.id, 1)"
+              [disabled]="facilityPage[facility.id] === 1"
+            >
               <i class="ss-standard ss-skipback"></i>
             </button>
-            <button class="button button--icon button--icon--dis">
+            <button
+              class="button button--icon button--icon--dis"
+              (click)="navigatePages(facility.id, facilityPage[facility.id] - 1)"
+              [disabled]="facilityPage[facility.id] === 1"
+            >
               <i class="ss-standard ss-directleft"></i>
             </button>
-            <span>1 of 1</span>
-            <button class="button button--icon">
+            <span>{{facilityPage[facility.id]}} of {{facilityPageCount[facility.id]}}</span>
+            <button
+              class="button button--icon"
+              (click)="navigatePages(facility.id, facilityPage[facility.id] + 1)"
+              [disabled]="facilityPage[facility.id] === facilityPageCount[facility.id]"
+            >
               <i class="ss-standard ss-directright"></i>
             </button>
-            <button class="button button--icon">
+            <button
+              class="button button--icon"
+              (click)="navigatePages(facility.id, facilityPageCount[facility.id])"
+              [disabled]="facilityPage[facility.id] === facilityPageCount[facility.id]"
+            >
               <i class="ss-standard ss-skipforward"></i>
             </button>
           </div> <!--/.pagination-->

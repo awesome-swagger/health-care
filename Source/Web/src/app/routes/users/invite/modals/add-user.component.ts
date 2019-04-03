@@ -182,4 +182,11 @@ export class AddUserComponent implements OnInit {
       this.modals.close('')
     }
   }
+
+  public selectOrg() {
+
+    Object.keys(this.facilityChecked).forEach(id => {
+      this.facilityChecked[id] = !this.employedByInput.hasOwnProperty('organization');
+    })
+  }
 }

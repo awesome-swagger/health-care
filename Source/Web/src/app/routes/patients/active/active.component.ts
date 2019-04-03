@@ -33,6 +33,10 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
   public carePlanTemplates = [];
   public carePlanTemplateChecked = {};
 
+  public facilityPage = {};
+  public facilityTotal = {};
+  public facilityPageCount = {};
+
   public accordionsOpen = {};
 
   public employees = [];
@@ -81,9 +85,12 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
           console.log('facilities ---', this.facilities)
           this.facilities.forEach((facility) => {
             this.accordionsOpen[facility.id] = false;
+            this.facilityPage[facility.id] = 1;
             this.getFacilityCarePlans(facility.id).then((carePlans: any) => {
               console.log(facility.name, '---', carePlans)
               facility.carePlans = carePlans.results;
+              this.facilityTotal[facility.id] = carePlans.count;
+              this.facilityPageCount[facility.id] = this.getPageCount(carePlans.count);
             });
           });
           this.store.EmployeeProfile.readListPaged().subscribe((users) => {
@@ -159,7 +166,9 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
 
   public getFacilityCarePlans(facilityId) {
     return new Promise((resolve, reject) => {
-      let carePlansSub = this.store.Facility.detailRoute('get', facilityId, 'care_plans').subscribe(
+      let carePlansSub = this.store.Facility.detailRoute('get', facilityId, 'care_plans', {}, {
+        page: this.facilityPage[facilityId],
+      }).subscribe(
         (carePlans) => resolve(carePlans),
         (err) => reject(err),
         () => carePlansSub.unsubscribe()
@@ -418,5 +427,18 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
     else {
       return false;
     }
+  }
+
+  public getPageCount(count) {
+    return Math.ceil(count / 20);
+  }
+
+  public navigatePages(facilityId, to) {
+    this.facilityPage[facilityId] = to;
+    this.getFacilityCarePlans(facilityId).then((carePlans:any) => {
+      console.log(carePlans)
+      const facility = this.facilities.find(f => f.id === facilityId);
+      facility.carePlans = carePlans.results;
+    })
   }
 }
