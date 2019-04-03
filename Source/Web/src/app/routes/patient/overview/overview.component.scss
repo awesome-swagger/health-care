@@ -1,0 +1,12 @@
+.taskName {
+  width: 224px;
+  max-width: 224px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tooltipAnchorFix {
+  max-width: 114px;
+  width: 114px;
+}

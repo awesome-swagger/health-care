@@ -940,7 +940,6 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
     );
   }
 
-
   public addStream() {
     this.modals.open(AddStreamComponent, {
       closeDisabled: false,
