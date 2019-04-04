@@ -67,7 +67,10 @@ from care_adopt_backend.permissions import (
 
 class PatientTaskTemplateViewSet(DestroyTemplateMixin, viewsets.ModelViewSet):
     serializer_class = PatientTaskTemplateSerializer
-    permission_classes = (permissions.IsAuthenticated, EmployeeOrReadOnly, )
+    permission_classes = (
+        permissions.IsAuthenticated,
+        IsEmployeeOrPatientReadOnly,
+    )
     queryset = PatientTaskTemplate.objects.order_by('name')
     filter_backends = (DjangoFilterBackend, )
     filterset_fields = (
