@@ -379,7 +379,8 @@ class SymptomRatingViewSet(viewsets.ModelViewSet):
         return queryset
 
 
-class AssessmentTaskTemplateViewSet(viewsets.ModelViewSet):
+class AssessmentTaskTemplateViewSet(DestroyTemplateMixin,
+                                    viewsets.ModelViewSet):
     serializer_class = AssessmentTaskTemplateSerializer
     permission_classes = (permissions.IsAuthenticated, EmployeeOrReadOnly, )
     filter_backends = (DjangoFilterBackend, )
@@ -389,6 +390,7 @@ class AssessmentTaskTemplateViewSet(viewsets.ModelViewSet):
         'is_available',
     )
     queryset = AssessmentTaskTemplate.objects.order_by('name')
+    task_field = 'assessment_tasks'
 
 
 class AssessmentQuestionViewSet(viewsets.ModelViewSet):
