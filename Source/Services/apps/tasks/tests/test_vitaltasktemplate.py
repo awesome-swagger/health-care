@@ -2,7 +2,9 @@ import datetime
 import random
 
 from django.urls import reverse
+from django.utils import timezone
 
+from dateutil.relativedelta import relativedelta
 from faker import Faker
 from rest_framework import status
 from rest_framework.test import APITestCase
@@ -88,8 +90,32 @@ class TestVitalTaskTemplateUsingEmployee(TasksMixin, APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_delete_vital_task_template(self):
+        now = timezone.now()
+        plan = self.create_care_plan()
+        tasks_before = 3
+        tasks_after = 5
+
+        for i in range(tasks_before):
+            days_ago = 3 - i
+            self.create_vital_task(
+                plan=plan,
+                vital_task_template=self.template,
+                due_datetime=now - relativedelta(days=days_ago)
+            )
+
+        for i in range(tasks_after):
+            self.create_vital_task(
+                plan=plan,
+                vital_task_template=self.template,
+                due_datetime=now + relativedelta(days=i, hours=1)
+            )
+
         response = self.client.delete(self.detail_url, {})
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(self.template.vital_tasks.count(), tasks_before)
+
+        get_response = self.client.get(self.detail_url)
+        self.assertFalse(get_response.data['is_active'])
 
 
 class TestVitalTaskTemplateUsingPatient(TasksMixin, APITestCase):
