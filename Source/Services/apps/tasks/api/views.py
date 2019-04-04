@@ -263,7 +263,7 @@ class MedicationTaskViewSet(viewsets.ModelViewSet):
         return qs.distinct()
 
 
-class SymptomTaskTemplateViewSet(viewsets.ModelViewSet):
+class SymptomTaskTemplateViewSet(DestroyTemplateMixin, viewsets.ModelViewSet):
     serializer_class = SymptomTaskTemplateSerializer
     permission_classes = (permissions.IsAuthenticated, EmployeeOrReadOnly, )
     queryset = SymptomTaskTemplate.objects.all()
@@ -273,6 +273,7 @@ class SymptomTaskTemplateViewSet(viewsets.ModelViewSet):
         'is_active',
         'is_available',
     )
+    task_field = 'symptom_tasks'
 
 
 class SymptomTaskViewSet(viewsets.ModelViewSet):
