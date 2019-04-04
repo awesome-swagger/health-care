@@ -112,7 +112,9 @@ class PatientTask(AbstractTask):
     plan = models.ForeignKey(
         CarePlan, null=False, blank=False, on_delete=models.CASCADE)
     patient_task_template = models.ForeignKey(
-        PatientTaskTemplate, null=False, blank=False, on_delete=models.CASCADE)
+        PatientTaskTemplate,
+        related_name='patient_tasks',
+        on_delete=models.CASCADE)
     STATUS_CHOICES = (
         ('undefined', 'Undefined'),
         ('missed', 'Missed'),
@@ -162,7 +164,9 @@ class TeamTask(AbstractTask):
     plan = models.ForeignKey(
         CarePlan, null=False, blank=False, on_delete=models.CASCADE)
     team_task_template = models.ForeignKey(
-        TeamTaskTemplate, null=False, blank=False, on_delete=models.CASCADE)
+        TeamTaskTemplate,
+        related_name='team_tasks',
+        on_delete=models.CASCADE)
     status = models.CharField(
         choices=STATUS_CHOICES, max_length=12, default="undefined")
 
@@ -250,7 +254,9 @@ class SymptomTask(AbstractTask):
     plan = models.ForeignKey(
         CarePlan, null=False, blank=False, on_delete=models.CASCADE)
     symptom_task_template = models.ForeignKey(
-        SymptomTaskTemplate, null=False, blank=False, on_delete=models.CASCADE)
+        SymptomTaskTemplate,
+        related_name='symptom_tasks',
+        on_delete=models.CASCADE)
     comments = models.CharField(max_length=1024, null=True, blank=True)
     is_complete = models.BooleanField(
         default=False,
