@@ -37,6 +37,7 @@ from ..permissions import (
 )
 from ..utils import get_all_tasks_for_today
 from .filters import DurationFilter
+from .mixins import DestroyTemplateMixin
 from . serializers import (
     PatientTaskTemplateSerializer,
     PatientTaskSerializer,
@@ -504,7 +505,7 @@ class AssessmentResponseViewSet(viewsets.ModelViewSet):
         return queryset
 
 
-class VitalTaskTemplateViewSet(viewsets.ModelViewSet):
+class VitalTaskTemplateViewSet(DestroyTemplateMixin, viewsets.ModelViewSet):
     """
     Viewset for :model:`tasks.VitalTaskTemplate`
     ========
@@ -543,6 +544,7 @@ class VitalTaskTemplateViewSet(viewsets.ModelViewSet):
         'is_available',
     )
     queryset = VitalTaskTemplate.objects.order_by('name')
+    task_field = 'vital_tasks'
 
 
 class VitalTaskTemplateSearchViewSet(HaystackViewSet):
