@@ -163,7 +163,7 @@ class PatientTaskViewSet(viewsets.ModelViewSet):
         return queryset
 
 
-class TeamTaskTemplateViewSet(viewsets.ModelViewSet):
+class TeamTaskTemplateViewSet(DestroyTemplateMixin, viewsets.ModelViewSet):
     serializer_class = TeamTaskTemplateSerializer
     permission_classes = (permissions.IsAuthenticated, EmployeeOrReadOnly, )
     queryset = TeamTaskTemplate.objects.order_by('name')
@@ -173,6 +173,7 @@ class TeamTaskTemplateViewSet(viewsets.ModelViewSet):
         'is_active',
         'is_available',
     )
+    task_field = 'team_tasks'
 
 
 class TeamTaskViewSet(viewsets.ModelViewSet):
