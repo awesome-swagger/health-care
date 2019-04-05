@@ -3,7 +3,6 @@
     <div class="picName marRight8">
       <img
         class="picName__img picName__img--big"
-        *ngIf="patient?.user.image"
         [src]="patient?.user.image ? patient?.user.image : '../../../assets/img/profile.svg'"
         (click)="clickImageUpload()"
       />
@@ -166,45 +165,45 @@
     <div class="info info--horiz">
       <div class="info__cell">
         <label>Readmits</label>
-        {{patientStats?.readmissions_count}}
+        {{numberFormat(patientStats?.readmissions_count)}}
       </div>
       <div class="info__cell">
         <label>Readmit %</label>
-        {{patientStats?.readmissions_percent}}
+        {{patientStats?.readmissions_percent}}%
       </div>
       <div class="info__cell">
         <label>Cost of Readmits</label>
-        {{patientStats?.readmissions_cost}}
+        ${{numberFormat(patientStats?.readmissions_cost)}}
       </div>
       <div class="info__cell">
         <label>ED Visits</label>
-        {{patientStats?.ed_visits}}
+        {{numberFormat(patientStats?.ed_visits)}}
       </div>
       <div class="info__cell">
         <label>Opioid Use</label>
-        {{patientStats?.opioid_use}}
+        {{numberFormat(patientStats?.opioid_use)}}
       </div>
     </div> <!--/.info (first one for patient stats)-->
     <div class="info info--horiz">
       <div class="info__cell">
         <label>Admits</label>
-        {{patientStats?.admits}}
+        {{numberFormat(patientStats?.admits)}}
       </div>
       <div class="info__cell">
         <label>Avg Stay</label>
-        {{patientStats?.avg_stay_length}}
+        {{numberFormat(patientStats?.avg_stay_length)}}
       </div>
       <div class="info__cell">
         <label>PCP Visits</label>
-        {{patientStats?.pcp_visits}}
+        {{numberFormat(patientStats?.pcp_visits)}}
       </div>
       <div class="info__cell">
         <label>Specialist Visits</label>
-        {{patientStats?.specialist_visits}}
+        {{numberFormat(patientStats?.specialist_visits)}}
       </div>
       <div class="info__cell">
         <label>Total Cost</label>
-        {{patientStats?.total_cost}}
+        ${{numberFormat(patientStats?.total_cost)}}
       </div>
     </div> <!--/.info (second one for patient stats)-->
   </div>

@@ -654,4 +654,8 @@ export class PatientComponent implements OnDestroy, OnInit {
     reader.readAsDataURL(file);
 
   }
+
+  public numberFormat(num):string {
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  }
 }

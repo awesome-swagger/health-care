@@ -196,7 +196,7 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
     if (!plan || !plan.created) {
       return 0;
     }
-    return moment().diff(moment(plan.created), 'weeks');
+    return moment().diff(moment(plan.created), 'weeks') + 1;
   }
 
   public get userFilterListText() {

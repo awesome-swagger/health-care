@@ -96,6 +96,7 @@ export class AddPatientToPlanComponent implements OnInit {
         this.phoneNumber = this.data.patient.user.phone;
         this.email = this.data.patient.user.email;
         this.selectedFacility = this.data.patient.facility;
+        this.payerReimburses = this.data.patient.payer_reimbursement;
       }
 
       if (this.data.potentialPatient) {
@@ -104,6 +105,7 @@ export class AddPatientToPlanComponent implements OnInit {
         this.phoneNumber = this.data.potentialPatient.phone;
         this.source = this.data.potentialPatient.source;
         this.selectedPlan = this.data.potentialPatient.care_plan;
+        this.email = this.data.potentialPatient.email;
       }
     }
     this.getPatients().then((patients: any) => {
@@ -249,6 +251,7 @@ export class AddPatientToPlanComponent implements OnInit {
     this.lastName = patient.user.last_name;
     this.phoneNumber = patient.user.phone;
     this.email = patient.user.email;
+    this.payerReimburses = patient.payer_reimbursement;
 
     if (patient.facility[0] && typeof patient.facility[0] === 'string') {
       this.selectedFacility = this.facilities.find(f => f.id === patient.facility[0])
@@ -299,11 +302,6 @@ export class AddPatientToPlanComponent implements OnInit {
         diagnosis: this.selectedPatient.diagnosis,
       }).subscribe(() => {})
     })
-    // this.diagnoses.push({
-    //   name: this.newDiagnosis,
-    //   original: false,
-    //   chronic: this.newDiagnosisIsChronic,
-    // });
   }
 
   public editDiagnosis(index) {
@@ -356,6 +354,7 @@ export class AddPatientToPlanComponent implements OnInit {
         last_name: this.lastName,
         care_plan: this.selectedPlan.id,
         phone: this.phoneNumber,
+        email: this.email,
         source: this.source,
         facility: [
           this.selectedFacility.id,
@@ -376,6 +375,7 @@ export class AddPatientToPlanComponent implements OnInit {
         first_name: this.firstName,
         last_name: this.lastName,
         care_plan: this.selectedPlan.id,
+        email: this.email,
         phone: this.phoneNumber,
         source: this.source,
         facility: [
@@ -437,6 +437,7 @@ export class AddPatientToPlanComponent implements OnInit {
           is_active: true,
           is_invited: false,
           insurance: this.selectedInsurance.id,
+          payer_reimbursement: this.payerReimburses,
         }).subscribe(patient => {
           this.store.CarePlan.create({
             patient: patient.id,

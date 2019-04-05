@@ -75,11 +75,7 @@ export class PotentialPatientsComponent implements OnDestroy, OnInit {
 
         let potentialPatientsSub = this.store.PotentialPatient.readListPaged().subscribe(
           (potentialPatients) => {
-            console.log(potentialPatients);
             this.potentialPatients = potentialPatients;
-            console.log('vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv');
-            console.log(this.facilities);
-            console.log('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^');
 
             this.potentialPatients.forEach(p => {
               p.facility && p.facility.forEach(f => {

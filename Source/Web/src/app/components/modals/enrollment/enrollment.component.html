@@ -5,41 +5,22 @@
 </button>
 
 <h1 class="modal__title noMargin">
-  <!--TODO: Show if enroll patient step 1 or 2-->
   <span>Enroll Patient</span>
-  <!--TODO: Show if care plan consent-->
-  <span *ngIf="">Care Plan Consent</span>
 </h1>
 <div class="divider"></div>
 <h2 class="center marBottom32">
-  <!--TODO: Show if enroll patient step 1-->
   <span *ngIf="!showEPStep2">Step 1 of 2: Verbal Confirmation</span>
-  <!--TODO: Show if enroll patient step 2-->
   <span *ngIf="showEPStep2">Step 2 of 2: Patient Info</span>
-  <!--TODO: Show if care plan consent-->
-  <span *ngIf="">Theresa Beckstrom</span>
 </h2>
-<!--TODO: Show if enroll patient step 1-->
-<h5 *ngIf="!showEPStep2" class="marBottom24">Call the patient to obtain verbal consent for care plan enrollment.</h5>
-<!--TODO: Show if enroll patient step 2-->
-<h5 *ngIf="showEPStep2"  class="marBottom24">Collect or verify the following information with the patient.</h5>
-
-<!--TODO: Show if enroll patient step 1-->
-<div *ngIf="!showEPStep2" class="flex justifySpaceBetween marBottom48">
-  <div *ngIf="!showEPStep2" class="marRight16">
-    <label>Patient</label>
-    {{data?.patient?.first_name}} {{data?.patient?.last_name}}
-  </div>
-  <div class="marRight16">
-    <label>Phone</label>
-    <span class="noWrap">{{phoneNum(data?.patient?.phone)}}</span>
-  </div>
-  <div>
-    <label>Care Plan & Type</label>
-    {{data?.patient?.care_plan.name}}{{ data?.patient?.care_plan.type ? ': ' + data.patient.care_plan.type : ''}}
-  </div>
-</div>
-
+<h5 *ngIf="!showEPStep2" class="marBottom24 center">Call the patient to obtain verbal consent for care plan enrollment.</h5>
+<h5 *ngIf="showEPStep2"  class="marBottom24 center">Collect or verify the following information with the patient.</h5>
+<div class="divider"></div>
+<ng-container *ngIf="!showEPStep2" >
+  <h3 class="center marBottom16 marRight16">{{data?.patient?.first_name}} {{data?.patient?.last_name}}   {{phoneNum(data?.patient?.phone)}}</h3>
+  <h4 class="center marBottom16">{{data?.patient?.email}}</h4>
+  <h4 class="center marBottom16">{{data?.patient?.care_plan?.service_area.name}}, {{data?.patient?.care_plan?.name}}</h4>
+  <div class="divider"></div>
+</ng-container>
 <div *ngIf="!showEPStep2">
   <h5 class="marBottom32">Patients can be enrolled without meeting reimbursement requirements. However, they won’t be eligible to receive reimbursement until requirements have been meet. </h5>
   <label>Reimbursement Requirements (opt)</label>

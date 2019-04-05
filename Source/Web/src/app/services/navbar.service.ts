@@ -27,7 +27,6 @@ export class NavbarService {
   }
 
   public normalState() {
-    console.log('normal state');
     this.planDetailId = null;
     this.patientDetailId = null;
     this.patientPlanId = null;
@@ -37,7 +36,6 @@ export class NavbarService {
   }
 
   public planDetailState(id) {
-    console.log('plan detail state');
     this.planDetailId = id;
     this.patientDetailId = null;
     this.patientPlanId = null;
@@ -47,7 +45,6 @@ export class NavbarService {
   }
 
   public patientDetailState(patientId, planId) {
-    console.log('patient state');
     this.planDetailId = null;
     this.patientDetailId = patientId;
     this.patientPlanId = planId;
