@@ -262,7 +262,7 @@ def medicationtasktemplate_post_save(sender, instance, created, **kwargs):
     """
     if created:
         duration_weeks = instance.plan.plan_template.duration_weeks
-        instance_model = apps.get_model('tasks', 'MedicationTask')
+        instance_model = apps.get_model('tasks', 'PatientTask')
         template_config = {
             'medication_task_template': instance
         }
@@ -272,6 +272,38 @@ def medicationtasktemplate_post_save(sender, instance, created, **kwargs):
             instance_model,
             template_config
         )
+
+
+def patienttasktemplate_post_save(sender, instance, created, **kwargs):
+    """
+    Function to be used as signal (post_save) when saving
+    :model:`tasks.PatientTaskTemplate`
+    """
+    if created:
+        duration_weeks = instance.plan_template.duration_weeks
+        instance_model = apps.get_model('tasks', 'PatientTask')
+
+        template_config = {
+            'patient_task_template': instance,
+        }
+
+        plans = instance.plan_template.care_plans.filter(is_active=True)
+        for plan in plans:
+
+            if plan.is_ongoing:
+                template_config.update({
+                    'plan': plan
+                })
+
+                days_past = timezone.now() - plan.created
+                duration_weeks -= round(days_past.days / 7)
+
+                create_tasks_from_template(
+                    instance,
+                    duration_weeks,
+                    instance_model,
+                    template_config
+                )
 
 
 def patienttask_post_save(sender, instance, created, **kwargs):
