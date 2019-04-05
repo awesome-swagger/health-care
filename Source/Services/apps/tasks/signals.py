@@ -280,7 +280,6 @@ def patienttasktemplate_post_save(sender, instance, created, **kwargs):
     :model:`tasks.PatientTaskTemplate`
     """
     if created:
-        duration_weeks = instance.plan_template.duration_weeks
         instance_model = apps.get_model('tasks', 'PatientTask')
 
         template_config = {
@@ -289,7 +288,7 @@ def patienttasktemplate_post_save(sender, instance, created, **kwargs):
 
         plans = instance.plan_template.care_plans.filter(is_active=True)
         for plan in plans:
-
+            duration_weeks = instance.plan_template.duration_weeks
             if plan.is_ongoing:
                 template_config.update({
                     'plan': plan
