@@ -53,10 +53,9 @@
 
     <div class="chat chat--pad">
       <div class="chat__side">
-        <div class="chat__threads">
-          <div class="ssSpinner center pad24" *ngIf="!activitiesLoaded"></div>
-          <ng-container *ngIf="activitiesLoaded && filteredBilledActivities().length > 0">
-            <div class="chat__thread" *ngFor="let activity of filteredBilledActivities()" [ngClass]="{'chat__thread--active': selectedActivity && selectedActivity.id === activity.id}" (click)="selectedActivity = activity;">
+        <div class="chat__threads" (scroll)="scrollHistory($event)">
+          <ng-container *ngIf="billedActivities.length > 0">
+            <div class="chat__thread" *ngFor="let activity of billedActivities" [ngClass]="{'chat__thread--active': selectedActivity && selectedActivity.id === activity.id}" (click)="selectedActivity = activity;">
               <div class="flex alignCenter justifySpaceBetween marBottom8">
                 <h5 class="noMargin">
                   {{moment(activity.activity_datetime).format('MMM DD, YYYY')}}&ensp;|&ensp;{{moment(activity.activity_datetime).format('h:mm A')}}
@@ -74,9 +73,10 @@
               </h5>
             </div> <!--/.chat__thread-->
           </ng-container>
-          <ng-container *ngIf="activitiesLoaded && filteredBilledActivities().length === 0">
+          <ng-container *ngIf="activitiesLoaded && billedActivities.length === 0">
             <p class="center marTop32">No activities meet criteria.</p>
           </ng-container>
+          <div class="ssSpinner center pad24" *ngIf="!activitiesLoaded"></div>
         </div> <!--/.chat__threads-->
       </div> <!--/.chat__side-->
 
@@ -92,11 +92,11 @@
           <div class="chat__innerContents">
             <div class="historyItem">
               <div class="historyItem__buttons">
-                <button class="button button--icon button--icon--small" (click)="editResults(selectedActivity)">
+                <button class="button button--icon button--icon--small" *ngIf="isActivityOwnerOrAdmin(selectedActivity)" (click)="editResults(selectedActivity)">
                   <i class="ss-write"></i>
                 </button>
                 <!--TODO: Hide the delete button if the item is a care plan task-->
-                <button class="button button--icon button--icon--small" (click)="confirmDelete(selectedActivity)">
+                <button class="button button--icon button--icon--small" *ngIf="isActivityOwnerOrAdmin(selectedActivity)" (click)="confirmDelete(selectedActivity)">
                   <i class="ss-delete"></i>
                 </button>
               </div>

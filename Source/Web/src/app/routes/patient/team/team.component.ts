@@ -215,7 +215,7 @@ export class PatientTeamComponent implements OnDestroy, OnInit {
 
   public removeCTMember(teamMember) {
     let modalSub = this.modals.open(ConfirmModalComponent, {
-     closeDisabled: true,
+     closeDisabled: false,
      data: {
        title: 'Remove Provider?',
        body: 'Are you sure you want to remove this provider from the care team?',

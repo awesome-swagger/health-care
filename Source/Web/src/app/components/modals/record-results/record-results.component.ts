@@ -130,6 +130,8 @@ export class RecordResultsComponent implements OnInit, OnDestroy {
 
   public setSelectedDay(e) {
     this.date.date(e.date());
+    this.date.month(e.month());
+    this.date.year(e.year());
   }
 
   public setSelectedTime(e) {

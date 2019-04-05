@@ -9,6 +9,7 @@ from rest_framework import viewsets, permissions, mixins
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework_extensions.mixins import NestedViewSetMixin
+from rest_framework.pagination import PageNumberPagination
 
 from ..models import BilledActivity, BillingType
 from ..permissions import IsAdminOrEmployeeActivityOwner
@@ -18,6 +19,12 @@ from apps.core.api.views import OrganizationViewSet
 from apps.core.models import Organization
 from apps.patients.models import PatientProfile
 from apps.tasks.permissions import IsEmployeeOrPatientReadOnly
+
+
+class BilledActivityPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 20
 
 
 class BilledActivityViewSet(viewsets.ModelViewSet):
@@ -56,6 +63,7 @@ class BilledActivityViewSet(viewsets.ModelViewSet):
         permissions.IsAuthenticated,
         IsAdminOrEmployeeActivityOwner,
     )
+    pagination_class = BilledActivityPagination
     queryset = BilledActivity.objects.all()
     filter_backends = (DjangoFilterBackend, )
     filterset_fields = {
