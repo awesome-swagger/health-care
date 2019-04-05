@@ -1,6 +1,9 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, HostListener } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import * as moment from 'moment';
+import {
+  orderBy as _orderBy,
+} from 'lodash';
 import { ModalService, ConfirmModalComponent } from '../../../modules/modals';
 import { RecordResultsComponent } from '../../../components';
 import { AuthService, NavbarService, StoreService } from '../../../services';
@@ -15,6 +18,7 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
   public moment = moment;
 
   public user = null;
+  public organization = null;
   public userRoles = [];
   public patient = null;
   public carePlan = null;
@@ -41,6 +45,8 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
     relativeTop: '48px'
   };
   public billedActivities = [];
+  public billedActivitiesPage = 1;
+  public billedActivitiesHasNext = false;
   public activitiesLoaded = false;
   public selectedActivity = null;
 
@@ -64,11 +70,16 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
     		if (!user) {
     			return;
     		}
+        this.user = user;
+        // Get organization
+        this.auth.organization$.subscribe((organization) => {
+          if (!organization) return;
+          this.organization = organization;
+        });
     		// Get patient
     		this.getPatient(params.patientId).then((patient: any) => {
     			this.patient = patient;
     			this.nav.addRecentPatient(this.patient);
-    			this.user = user;
     			// Get care plan
     			this.getCarePlan(params.planId).then((carePlan: any) => {
     				this.carePlan = carePlan;
@@ -76,10 +87,11 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
               this.teamTaskChoices = taskTemplates;
             });
             // Get billed activities
-            this.getBilledActivities().then((billedActivities: any) => {
-              this.billedActivities = billedActivities;
+            this.getBilledActivities(this.billedActivitiesPage).then((billedActivities: any) => {
+              this.billedActivities = billedActivities.results;
+              this.billedActivitiesHasNext = !!billedActivities.next;
               this.selectedActivity = this.billedActivities[0];
-              this.activitiesLoaded = true;
+              this.sortBilledActivities();
             });
     			});
     		});
@@ -115,10 +127,12 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
     return promise;
   }
 
-  public getBilledActivities(taskTemplate = null) {
+  public getBilledActivities(pageNum, taskTemplate = null) {
+    this.activitiesLoaded = false;
     let promise = new Promise((resolve, reject) => {
       let params = {
         plan: this.carePlan.id,
+        page: pageNum,
       };
       if (this.dateFilter) {
         let endOfDay = this.dateFilter.clone().endOf('day');
@@ -127,8 +141,9 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
       if (taskTemplate) {
         params['team_task_template'] = taskTemplate.id;
       }
-      let billedActivitiesSub = this.store.BilledActivity.readListPaged(params).subscribe(
+      let billedActivitiesSub = this.store.BilledActivity.readList(params).subscribe(
         (billedActivities) => {
+          this.activitiesLoaded = true;
           resolve(billedActivities);
         },
         (err) => reject(err),
@@ -159,11 +174,14 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
     }
     this.dateFilter = e;
     this.dateFilterOpen = false;
+    this.billedActivities = [];
+    this.billedActivitiesPage = 1;
+    this.billedActivitiesHasNext = false;
     // Get billed activities
-    this.getBilledActivities().then((billedActivities: any) => {
-      this.billedActivities = billedActivities;
-      this.selectedActivity = this.billedActivities[0];
-      this.activitiesLoaded = true;
+    this.getBilledActivities(this.billedActivitiesPage).then((billedActivities: any) => {
+      this.billedActivities = billedActivities.results;
+      this.billedActivitiesHasNext = !!billedActivities.next;
+      this.sortBilledActivities();
     });
   }
 
@@ -201,16 +219,19 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
     }
   }
 
-  public filteredBilledActivities() {
-    return this.billedActivities.filter((activity) => {
-      // let actionValues = this.selectedActions.map((obj) => obj.value);
-      // return actionValues.includes(activity.activity_type);
-      return true;
-    }).sort((left: any, right: any) => {
-      left = moment(left.created).format();
-      right = moment(right.created).format();
-      return left - right;
-    });
+  public sortBilledActivities() {
+    this.billedActivities = _orderBy(this.billedActivities, (obj) => { return moment(obj.activity_datetime); }, ['desc']);
+  }
+
+  public isActivityOwnerOrAdmin(activity) {
+    let isActivityOwner = activity.added_by.id === this.user.id;
+    let isFacilityManager = this.user.facilities_managed
+      .map((obj) => obj.id)
+      .includes(activity.plan.patient.facility.id);
+    let isOrganizationManager = this.organization && this.user.organizations_managed
+      .map((obj) => obj.id)
+      .includes(this.organization.id);
+    return isActivityOwner || isFacilityManager || isOrganizationManager;
   }
 
   public openRecordResults() {
@@ -246,9 +267,9 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
         time_spent: results.totalMinutes,
       }).subscribe(
         (newResult) => {
-          // check if date is current date, if it is push it to the list, if not, switch to the new date
           this.billedActivities.push(newResult);
           this.selectedActivity = newResult;
+          this.sortBilledActivities();
         },
         (err) => {},
         () => {
@@ -260,7 +281,7 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
 
   public editResults(result) {
     this.modals.open(RecordResultsComponent, {
-      closeDisabled: true,
+      closeDisabled: false,
       data: {
         editing: true,
         taskEditable: true,
@@ -293,6 +314,7 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
           let resultIndex = this.billedActivities.findIndex((obj) => obj.id === result.id);
           this.billedActivities[resultIndex] = updatedResult;
           this.selectedActivity = this.billedActivities[resultIndex];
+          this.sortBilledActivities();
         },
         (err) => {},
         () => {
@@ -319,11 +341,27 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
           (success) => {
             let index = this.billedActivities.findIndex((obj) => obj.id === result.id);
             this.billedActivities.splice(index, 1);
+            this.sortBilledActivities();
           },
           (err) => {},
           () => {},
         );
       }
     });
+  }
+
+  @HostListener('scroll', ['$event'])
+  public scrollHistory(event: any) {
+    if (event.target.offsetHeight + event.target.scrollTop >= event.target.scrollHeight) {
+      if (this.billedActivitiesHasNext && this.activitiesLoaded) {
+        this.billedActivitiesPage++;
+        this.getBilledActivities(this.billedActivitiesPage).then((billedActivities: any) => {
+          this.billedActivities = this.billedActivities.concat(billedActivities.results);
+          this.billedActivitiesHasNext = !!billedActivities.next;
+          this.sortBilledActivities();
+        });
+        console.log(event);
+      }
+    }
   }
 }
