@@ -15,6 +15,7 @@ from .signals import (
     patienttasktemplate_post_save,
     patienttask_post_save,
     patienttask_post_delete,
+    symptomtasktemplate_post_save,
     symptomtask_post_save,
     symptomtask_post_delete,
     medicationtask_post_save,
@@ -657,6 +658,10 @@ models.signals.post_save.connect(
 models.signals.post_delete.connect(
     patienttask_post_delete,
     sender=PatientTask
+)
+models.signals.post_save.connect(
+    symptomtasktemplate_post_save,
+    sender=SymptomTaskTemplate
 )
 models.signals.post_save.connect(
     symptomtask_post_save,

@@ -347,6 +347,37 @@ def medicationtask_post_delete(sender, instance, **kwargs):
     assignment.assign_risk_level_to_patient()
 
 
+def symptomtasktemplate_post_save(sender, instance, created, **kwargs):
+    """
+    Function to be used as signal (post_save) when saving
+    :model:`tasks.SymptomTaskTemplate`
+    """
+    if created:
+        instance_model = apps.get_model('tasks', 'SymptomTask')
+
+        template_config = {
+            'symptom_task_template': instance,
+        }
+
+        plans = instance.plan_template.care_plans.filter(is_active=True)
+        for plan in plans:
+            duration_weeks = instance.plan_template.duration_weeks
+            if plan.is_ongoing:
+                template_config.update({
+                    'plan': plan
+                })
+
+                days_past = timezone.now() - plan.created
+                duration_weeks -= round(days_past.days / 7)
+
+                create_tasks_from_template(
+                    instance,
+                    duration_weeks,
+                    instance_model,
+                    template_config
+                )
+
+
 def symptomtask_post_save(sender, instance, created, **kwargs):
     """
     Function to be used as signal (post_save) when saving
