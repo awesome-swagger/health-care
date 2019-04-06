@@ -155,6 +155,34 @@ def assign_is_complete_to_symptom_task(instance):
         task.save(update_fields=['is_complete'])
 
 
+def create_tasks_for_ongoing_plans(task_template,
+                                   template_field_name,
+                                   task_model_name):
+    instance_model = apps.get_model('tasks', task_model_name)
+
+    template_config = {
+        template_field_name: task_template,
+    }
+
+    plans = task_template.plan_template.care_plans.filter(is_active=True)
+    for plan in plans:
+        duration_weeks = task_template.plan_template.duration_weeks
+        if plan.is_ongoing:
+            template_config.update({
+                'plan': plan
+            })
+
+            days_past = timezone.now() - plan.created
+            duration_weeks -= round(days_past.days / 7)
+
+            create_tasks_from_template(
+                task_template,
+                duration_weeks,
+                instance_model,
+                template_config
+            )
+
+
 def assessmentresponse_post_save(sender, instance, created, **kwargs):
     """
     Function to be used as signal (post_save) when saving
@@ -280,29 +308,11 @@ def patienttasktemplate_post_save(sender, instance, created, **kwargs):
     :model:`tasks.PatientTaskTemplate`
     """
     if created:
-        instance_model = apps.get_model('tasks', 'PatientTask')
-
-        template_config = {
-            'patient_task_template': instance,
-        }
-
-        plans = instance.plan_template.care_plans.filter(is_active=True)
-        for plan in plans:
-            duration_weeks = instance.plan_template.duration_weeks
-            if plan.is_ongoing:
-                template_config.update({
-                    'plan': plan
-                })
-
-                days_past = timezone.now() - plan.created
-                duration_weeks -= round(days_past.days / 7)
-
-                create_tasks_from_template(
-                    instance,
-                    duration_weeks,
-                    instance_model,
-                    template_config
-                )
+        create_tasks_for_ongoing_plans(
+            instance,
+            'patient_task_template',
+            'PatientTask'
+        )
 
 
 def patienttask_post_save(sender, instance, created, **kwargs):
@@ -353,29 +363,11 @@ def symptomtasktemplate_post_save(sender, instance, created, **kwargs):
     :model:`tasks.SymptomTaskTemplate`
     """
     if created:
-        instance_model = apps.get_model('tasks', 'SymptomTask')
-
-        template_config = {
-            'symptom_task_template': instance,
-        }
-
-        plans = instance.plan_template.care_plans.filter(is_active=True)
-        for plan in plans:
-            duration_weeks = instance.plan_template.duration_weeks
-            if plan.is_ongoing:
-                template_config.update({
-                    'plan': plan
-                })
-
-                days_past = timezone.now() - plan.created
-                duration_weeks -= round(days_past.days / 7)
-
-                create_tasks_from_template(
-                    instance,
-                    duration_weeks,
-                    instance_model,
-                    template_config
-                )
+        create_tasks_for_ongoing_plans(
+            instance,
+            'symptom_task_template',
+            'SymptomTask'
+        )
 
 
 def symptomtask_post_save(sender, instance, created, **kwargs):
@@ -395,29 +387,11 @@ def assessmenttasktemplate_post_save(sender, instance, created, **kwargs):
     :model:`tasks.AssessmentTaskTemplate`
     """
     if created:
-        instance_model = apps.get_model('tasks', 'AssessmentTask')
-
-        template_config = {
-            'assessment_task_template': instance,
-        }
-
-        plans = instance.plan_template.care_plans.filter(is_active=True)
-        for plan in plans:
-            duration_weeks = instance.plan_template.duration_weeks
-            if plan.is_ongoing:
-                template_config.update({
-                    'plan': plan
-                })
-
-                days_past = timezone.now() - plan.created
-                duration_weeks -= round(days_past.days / 7)
-
-                create_tasks_from_template(
-                    instance,
-                    duration_weeks,
-                    instance_model,
-                    template_config
-                )
+        create_tasks_for_ongoing_plans(
+            instance,
+            'assessment_task_template',
+            'AssessmentTask'
+        )
 
 
 def assessmenttask_post_save(sender, instance, created, **kwargs):
@@ -437,29 +411,11 @@ def vitaltasktemplate_post_save(sender, instance, created, **kwargs):
     :model:`tasks.VitalTaskTemplate`
     """
     if created:
-        instance_model = apps.get_model('tasks', 'VitalTask')
-
-        template_config = {
-            'vital_task_template': instance,
-        }
-
-        plans = instance.plan_template.care_plans.filter(is_active=True)
-        for plan in plans:
-            duration_weeks = instance.plan_template.duration_weeks
-            if plan.is_ongoing:
-                template_config.update({
-                    'plan': plan
-                })
-
-                days_past = timezone.now() - plan.created
-                duration_weeks -= round(days_past.days / 7)
-
-                create_tasks_from_template(
-                    instance,
-                    duration_weeks,
-                    instance_model,
-                    template_config
-                )
+        create_tasks_for_ongoing_plans(
+            instance,
+            'vital_task_template',
+            'VitalTask'
+        )
 
 
 def vitaltask_post_save(sender, instance, created, **kwargs):
