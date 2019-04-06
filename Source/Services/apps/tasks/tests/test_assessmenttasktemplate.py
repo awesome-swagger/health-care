@@ -10,6 +10,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from .mixins import TasksMixin
+from apps.tasks.models import AssessmentTaskTemplate
 
 
 class TestAssessmentTaskTemplateUsingEmployee(TasksMixin, APITestCase):
@@ -67,6 +68,63 @@ class TestAssessmentTaskTemplateUsingEmployee(TasksMixin, APITestCase):
         }
         response = self.client.post(self.url, payload)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_create_assessment_task_template_with_ongoing_plans(self):
+        template = self.create_care_plan_template(duration_weeks=6)
+
+        for i in range(3):
+            plan = self.create_care_plan(
+                plan_template=template
+            )
+            plan.created = timezone.now() - relativedelta(weeks=2)
+            plan.save(update_fields=['created'])
+
+        payload = {
+            'plan_template': template.id,
+            'name': self.fake.name(),
+            'start_on_day': random.randint(1, 5),
+            'appear_time': datetime.time(8, 0, 0),
+            'due_time': datetime.time(17, 0, 0)
+        }
+        response = self.client.post(self.url, payload)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        task_template = AssessmentTaskTemplate.objects.get(
+            id=response.data['id']
+        )
+        self.assertTrue(task_template.assessment_tasks.exists())
+
+    def test_create_assessment_task_template_with_ongoing_plans_weekly(self):
+        total_duration = 6
+        past_duration = 2
+        plans_count = 3
+        template = self.create_care_plan_template(
+            duration_weeks=total_duration
+        )
+
+        for i in range(plans_count):
+            plan = self.create_care_plan(
+                plan_template=template
+            )
+            plan.created = timezone.now() - relativedelta(weeks=past_duration)
+            plan.save(update_fields=['created'])
+
+        payload = {
+            'plan_template': template.id,
+            'name': self.fake.name(),
+            'start_on_day': random.randint(1, 5),
+            'frequency': 'weekly',
+            'appear_time': datetime.time(8, 0, 0),
+            'due_time': datetime.time(17, 0, 0)
+        }
+        response = self.client.post(self.url, payload)
+        task_template = AssessmentTaskTemplate.objects.get(
+            id=response.data['id']
+        )
+        self.assertEqual(
+            task_template.assessment_tasks.count(),
+            (total_duration - past_duration) * plans_count
+        )
 
     def test_full_update_assessment_task_template(self):
         template = self.create_care_plan_template()
