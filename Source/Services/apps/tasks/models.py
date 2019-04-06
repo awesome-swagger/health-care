@@ -23,6 +23,7 @@ from .signals import (
     assessmenttasktemplate_post_save,
     assessmenttask_post_save,
     assessmenttask_post_delete,
+    vitaltasktemplate_post_save,
     vitaltask_post_save,
     vitaltask_post_delete,
 )
@@ -691,6 +692,10 @@ models.signals.post_save.connect(
 models.signals.post_delete.connect(
     assessmenttask_post_delete,
     sender=AssessmentTask
+)
+models.signals.post_save.connect(
+    vitaltasktemplate_post_save,
+    sender=VitalTaskTemplate
 )
 models.signals.post_save.connect(
     vitaltask_post_save,
