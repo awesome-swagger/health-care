@@ -376,6 +376,19 @@ def symptomtasktemplate_post_save(sender, instance, created, **kwargs):
         )
 
 
+def teamtasktemplate_post_save(sender, instance, created, **kwargs):
+    """
+    Function to be used as signal (post_save) when saving
+    :model:`tasks.TeamTaskTemplate`
+    """
+    if created:
+        create_tasks_for_ongoing_plans(
+            instance,
+            'team_task_template',
+            'TeamTask'
+        )
+
+
 def symptomtask_post_save(sender, instance, created, **kwargs):
     """
     Function to be used as signal (post_save) when saving
