@@ -155,6 +155,46 @@ def assign_is_complete_to_symptom_task(instance):
         task.save(update_fields=['is_complete'])
 
 
+def create_tasks_for_ongoing_plans(task_template,
+                                   template_field_name,
+                                   task_model_name):
+    is_medication = task_model_name == 'MedicationTask'
+    instance_model = apps.get_model('tasks', task_model_name)
+
+    template_config = {
+        template_field_name: task_template,
+    }
+
+    if is_medication:
+        duration_weeks = task_template.plan.plan_template.duration_weeks
+        create_tasks_from_template(
+            task_template,
+            duration_weeks,
+            instance_model,
+            template_config
+        )
+    else:
+        plan_template = task_template.plan_template
+
+        plans = plan_template.care_plans.filter(is_active=True)
+        for plan in plans:
+            duration_weeks = plan_template.duration_weeks
+            if plan.is_ongoing:
+                template_config.update({
+                    'plan': plan
+                })
+
+                days_past = timezone.now() - plan.created
+                duration_weeks -= round(days_past.days / 7)
+
+                create_tasks_from_template(
+                    task_template,
+                    duration_weeks,
+                    instance_model,
+                    template_config
+                )
+
+
 def assessmentresponse_post_save(sender, instance, created, **kwargs):
     """
     Function to be used as signal (post_save) when saving
@@ -261,16 +301,23 @@ def medicationtasktemplate_post_save(sender, instance, created, **kwargs):
     :model:`tasks.MedicationTaskTemplate`
     """
     if created:
-        duration_weeks = instance.plan.plan_template.duration_weeks
-        instance_model = apps.get_model('tasks', 'MedicationTask')
-        template_config = {
-            'medication_task_template': instance
-        }
-        create_tasks_from_template(
+        create_tasks_for_ongoing_plans(
             instance,
-            duration_weeks,
-            instance_model,
-            template_config
+            'medication_task_template',
+            'MedicationTask'
+        )
+
+
+def patienttasktemplate_post_save(sender, instance, created, **kwargs):
+    """
+    Function to be used as signal (post_save) when saving
+    :model:`tasks.PatientTaskTemplate`
+    """
+    if created:
+        create_tasks_for_ongoing_plans(
+            instance,
+            'patient_task_template',
+            'PatientTask'
         )
 
 
@@ -316,6 +363,19 @@ def medicationtask_post_delete(sender, instance, **kwargs):
     assignment.assign_risk_level_to_patient()
 
 
+def symptomtasktemplate_post_save(sender, instance, created, **kwargs):
+    """
+    Function to be used as signal (post_save) when saving
+    :model:`tasks.SymptomTaskTemplate`
+    """
+    if created:
+        create_tasks_for_ongoing_plans(
+            instance,
+            'symptom_task_template',
+            'SymptomTask'
+        )
+
+
 def symptomtask_post_save(sender, instance, created, **kwargs):
     """
     Function to be used as signal (post_save) when saving
@@ -327,6 +387,19 @@ def symptomtask_post_save(sender, instance, created, **kwargs):
         assignment.assign_risk_level_to_patient()
 
 
+def assessmenttasktemplate_post_save(sender, instance, created, **kwargs):
+    """
+    Function to be used as signal (post_save) when saving
+    :model:`tasks.AssessmentTaskTemplate`
+    """
+    if created:
+        create_tasks_for_ongoing_plans(
+            instance,
+            'assessment_task_template',
+            'AssessmentTask'
+        )
+
+
 def assessmenttask_post_save(sender, instance, created, **kwargs):
     """
     Function to be used as signal (post_save) when saving
@@ -336,6 +409,19 @@ def assessmenttask_post_save(sender, instance, created, **kwargs):
         patient = instance.plan.patient
         assignment = RiskLevelAssignment(patient)
         assignment.assign_risk_level_to_patient()
+
+
+def vitaltasktemplate_post_save(sender, instance, created, **kwargs):
+    """
+    Function to be used as signal (post_save) when saving
+    :model:`tasks.VitalTaskTemplate`
+    """
+    if created:
+        create_tasks_for_ongoing_plans(
+            instance,
+            'vital_task_template',
+            'VitalTask'
+        )
 
 
 def vitaltask_post_save(sender, instance, created, **kwargs):

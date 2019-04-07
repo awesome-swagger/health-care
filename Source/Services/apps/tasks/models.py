@@ -12,14 +12,18 @@ from .signals import (
     assessmentresponse_post_delete,
     vitalresponse_post_delete,
     medicationtasktemplate_post_save,
+    patienttasktemplate_post_save,
     patienttask_post_save,
     patienttask_post_delete,
+    symptomtasktemplate_post_save,
     symptomtask_post_save,
     symptomtask_post_delete,
     medicationtask_post_save,
     medicationtask_post_delete,
+    assessmenttasktemplate_post_save,
     assessmenttask_post_save,
     assessmenttask_post_delete,
+    vitaltasktemplate_post_save,
     vitaltask_post_save,
     vitaltask_post_delete,
 )
@@ -112,7 +116,9 @@ class PatientTask(AbstractTask):
     plan = models.ForeignKey(
         CarePlan, null=False, blank=False, on_delete=models.CASCADE)
     patient_task_template = models.ForeignKey(
-        PatientTaskTemplate, null=False, blank=False, on_delete=models.CASCADE)
+        PatientTaskTemplate,
+        related_name='patient_tasks',
+        on_delete=models.CASCADE)
     STATUS_CHOICES = (
         ('undefined', 'Undefined'),
         ('missed', 'Missed'),
@@ -162,7 +168,9 @@ class TeamTask(AbstractTask):
     plan = models.ForeignKey(
         CarePlan, null=False, blank=False, on_delete=models.CASCADE)
     team_task_template = models.ForeignKey(
-        TeamTaskTemplate, null=False, blank=False, on_delete=models.CASCADE)
+        TeamTaskTemplate,
+        related_name='team_tasks',
+        on_delete=models.CASCADE)
     status = models.CharField(
         choices=STATUS_CHOICES, max_length=12, default="undefined")
 
@@ -250,7 +258,9 @@ class SymptomTask(AbstractTask):
     plan = models.ForeignKey(
         CarePlan, null=False, blank=False, on_delete=models.CASCADE)
     symptom_task_template = models.ForeignKey(
-        SymptomTaskTemplate, null=False, blank=False, on_delete=models.CASCADE)
+        SymptomTaskTemplate,
+        related_name='symptom_tasks',
+        on_delete=models.CASCADE)
     comments = models.CharField(max_length=1024, null=True, blank=True)
     is_complete = models.BooleanField(
         default=False,
@@ -640,12 +650,20 @@ models.signals.post_save.connect(
     sender=MedicationTaskTemplate
 )
 models.signals.post_save.connect(
+    patienttasktemplate_post_save,
+    sender=PatientTaskTemplate
+)
+models.signals.post_save.connect(
     patienttask_post_save,
     sender=PatientTask
 )
 models.signals.post_delete.connect(
     patienttask_post_delete,
     sender=PatientTask
+)
+models.signals.post_save.connect(
+    symptomtasktemplate_post_save,
+    sender=SymptomTaskTemplate
 )
 models.signals.post_save.connect(
     symptomtask_post_save,
@@ -664,12 +682,20 @@ models.signals.post_delete.connect(
     sender=MedicationTask
 )
 models.signals.post_save.connect(
+    assessmenttasktemplate_post_save,
+    sender=AssessmentTaskTemplate
+)
+models.signals.post_save.connect(
     assessmenttask_post_save,
     sender=AssessmentTask
 )
 models.signals.post_delete.connect(
     assessmenttask_post_delete,
     sender=AssessmentTask
+)
+models.signals.post_save.connect(
+    vitaltasktemplate_post_save,
+    sender=VitalTaskTemplate
 )
 models.signals.post_save.connect(
     vitaltask_post_save,
