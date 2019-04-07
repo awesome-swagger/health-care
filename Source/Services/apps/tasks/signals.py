@@ -158,29 +158,41 @@ def assign_is_complete_to_symptom_task(instance):
 def create_tasks_for_ongoing_plans(task_template,
                                    template_field_name,
                                    task_model_name):
+    is_medication = task_model_name == 'MedicationTask'
     instance_model = apps.get_model('tasks', task_model_name)
 
     template_config = {
         template_field_name: task_template,
     }
 
-    plans = task_template.plan_template.care_plans.filter(is_active=True)
-    for plan in plans:
-        duration_weeks = task_template.plan_template.duration_weeks
-        if plan.is_ongoing:
-            template_config.update({
-                'plan': plan
-            })
+    if is_medication:
+        duration_weeks = task_template.plan.plan_template.duration_weeks
+        create_tasks_from_template(
+            task_template,
+            duration_weeks,
+            instance_model,
+            template_config
+        )
+    else:
+        plan_template = task_template.plan_template
 
-            days_past = timezone.now() - plan.created
-            duration_weeks -= round(days_past.days / 7)
+        plans = plan_template.care_plans.filter(is_active=True)
+        for plan in plans:
+            duration_weeks = plan_template.duration_weeks
+            if plan.is_ongoing:
+                template_config.update({
+                    'plan': plan
+                })
 
-            create_tasks_from_template(
-                task_template,
-                duration_weeks,
-                instance_model,
-                template_config
-            )
+                days_past = timezone.now() - plan.created
+                duration_weeks -= round(days_past.days / 7)
+
+                create_tasks_from_template(
+                    task_template,
+                    duration_weeks,
+                    instance_model,
+                    template_config
+                )
 
 
 def assessmentresponse_post_save(sender, instance, created, **kwargs):
@@ -289,16 +301,10 @@ def medicationtasktemplate_post_save(sender, instance, created, **kwargs):
     :model:`tasks.MedicationTaskTemplate`
     """
     if created:
-        duration_weeks = instance.plan.plan_template.duration_weeks
-        instance_model = apps.get_model('tasks', 'PatientTask')
-        template_config = {
-            'medication_task_template': instance
-        }
-        create_tasks_from_template(
+        create_tasks_for_ongoing_plans(
             instance,
-            duration_weeks,
-            instance_model,
-            template_config
+            'medication_task_template',
+            'MedicationTask'
         )
 
 
