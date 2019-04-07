@@ -187,13 +187,49 @@ class PatientTaskTemplate(AbstractTaskTemplate):
         return self.name
 
 
-class PatientTask(AbstractTask):
+class CarePlanPatientTask(models.Model):
+
     plan = models.ForeignKey(
-        CarePlan, null=False, blank=False, on_delete=models.CASCADE)
+        'plans.CarePlan',
+        related_name='plan_patient_tasks',
+        on_delete=models.CASCADE)
     patient_task_template = models.ForeignKey(
-        PatientTaskTemplate,
+        'tasks.PatientTaskTemplate',
+        related_name='plan_patient_tasks',
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True)
+
+    start_on_day = models.IntegerField(
+        blank=True,
+        null=True)
+    frequency = models.CharField(
+        max_length=20,
+        choices=FREQUENCY_CHOICES,
+        blank=True)
+
+    repeat_amount = models.IntegerField(
+        blank=True,
+        null=True)
+    appear_time = models.TimeField(
+        blank=True,
+        null=True)
+    due_time = models.TimeField(
+        blank=True,
+        null=True)
+
+
+class PatientTask(AbstractTask):
+    plan_task = models.ForeignKey(
+        'tasks.CarePlanPatientTask',
         related_name='patient_tasks',
         on_delete=models.CASCADE)
+    # plan = models.ForeignKey(
+    #     CarePlan, null=False, blank=False, on_delete=models.CASCADE)
+    # patient_task_template = models.ForeignKey(
+    #     PatientTaskTemplate,
+    #     related_name='patient_tasks',
+    #     on_delete=models.CASCADE)
     STATUS_CHOICES = (
         ('undefined', 'Undefined'),
         ('missed', 'Missed'),
@@ -203,7 +239,7 @@ class PatientTask(AbstractTask):
         choices=STATUS_CHOICES, max_length=12, default="undefined")
 
     class Meta:
-        ordering = ('plan', 'patient_task_template', 'due_datetime', )
+        ordering = ('plan_task', 'due_datetime', )
 
     @property
     def is_complete(self):
