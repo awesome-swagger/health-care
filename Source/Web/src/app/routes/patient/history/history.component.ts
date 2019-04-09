@@ -3,6 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import * as moment from 'moment';
 import {
   orderBy as _orderBy,
+  uniqBy as _uniqBy,
 } from 'lodash';
 import { ModalService, ConfirmModalComponent } from '../../../modules/modals';
 import { RecordResultsComponent } from '../../../components';
@@ -38,6 +39,7 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
       value: 'notes',
     }
   ];
+  public teamTasks = [];
   public teamTaskChoices = [];
   public selectedTasks = [];
   public datePickerOptions = {
@@ -84,7 +86,9 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
     			this.getCarePlan(params.planId).then((carePlan: any) => {
     				this.carePlan = carePlan;
             this.getTaskTemplates().then((taskTemplates: any) => {
-              this.teamTaskChoices = taskTemplates;
+              this.teamTasks = taskTemplates;
+              this.teamTaskChoices = _uniqBy(taskTemplates, (obj) => obj.name);
+              this.selectedTasks = this.teamTaskChoices.concat();
             });
             // Get billed activities
             this.getBilledActivities(this.billedActivitiesPage).then((billedActivities: any) => {
@@ -133,6 +137,7 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
       let params = {
         plan: this.carePlan.id,
         page: pageNum,
+        page_size: 10,
       };
       if (this.dateFilter) {
         let endOfDay = this.dateFilter.clone().endOf('day');
@@ -217,6 +222,13 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
       let index = this.selectedTasks.findIndex((obj) => obj.id === task.id);
       this.selectedTasks.splice(index, 1);
     }
+  }
+
+  public filteredBilledActivities() {
+    return this.billedActivities.filter((activity) => {
+      let selectedTaskNames = this.selectedTasks.map((task) => task.name);
+      return selectedTaskNames.includes(activity.team_task_template.name);
+    });
   }
 
   public sortBilledActivities() {
@@ -360,7 +372,6 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
           this.billedActivitiesHasNext = !!billedActivities.next;
           this.sortBilledActivities();
         });
-        console.log(event);
       }
     }
   }
