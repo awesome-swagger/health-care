@@ -532,13 +532,13 @@ class PatientProfileSearchViewSet(HaystackViewSet):
     def get_queryset(self, index_models=[]):
         search_str = self.request.GET.get('q')
 
-        if search_str:
+        if search_str and len(search_str) > 2:
             searchable_patient_ids = get_searchable_patients(
                 self.request.user).values_list('id', flat=True).distinct()
             queryset = super(PatientProfileSearchViewSet, self).get_queryset(
                 index_models,
             ).filter(id__in=searchable_patient_ids)
-            queryset = queryset.filter(content=search_str)
+            queryset = queryset.filter(content__contains=search_str)
 
             return queryset
 
