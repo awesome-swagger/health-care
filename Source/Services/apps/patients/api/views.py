@@ -1,4 +1,5 @@
 from django.db.models import Q
+from django.db.models import Count
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth import get_user_model
 from django_filters.rest_framework import DjangoFilterBackend
@@ -155,7 +156,9 @@ class PatientProfileViewSet(viewsets.ModelViewSet):
         res = {
             "active": queryset.filter(is_active=True).count(),
             "inactive": queryset.filter(is_active=False).count(),
-            "invited": queryset.filter(is_invited=True).count(),
+            "invited": queryset.filter(is_invited=True)
+                               .annotate(num_care_plans=Count('care_plans'))
+                               .filter(num_care_plans__gt=0).count(),
             "potential": ppv.get_queryset().count()
         }
 
@@ -627,10 +630,7 @@ class PotentialPatientViewSet(viewsets.ModelViewSet):
         # If user is a employee, get all organizations that they belong to
         if user.is_employee:
             employee = user.employee_profile
-            q = Q(facility__in=employee.facilities.all()) | \
-                Q(facility__in=employee.facilities_managed.all())
-            for org in employee.organizations_managed.all():
-                q |= Q(facility__in=org.facility_set.all())
+            q = Q(facility__in=employee.facilities.all())
             queryset = queryset.filter(q)
 
         elif user.is_patient:
