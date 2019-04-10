@@ -494,9 +494,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       (data) => {
         if (!data) return;
         if (data.toLowerCase() === 'confirm') {
-          let destroySub = this.store.TeamTaskTemplate.update(task.id, {
-            is_active: false,
-          }, true).subscribe(
+          let destroySub = this.store.TeamTaskTemplate.destroy(task.id).subscribe(
             (resp) => {
               this.teamTaskTemplates.splice(tasksIndex, 1);
               if (is_manager_task) {
@@ -585,9 +583,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       (resp) => {
         if (!resp) return;
         if (resp.toLowerCase() === 'confirm') {
-          let deleteSub = this.store.PatientTaskTemplate.update(task.id, {
-            is_active: false,
-          }, true).subscribe(
+          let deleteSub = this.store.PatientTaskTemplate.destroy(task.id).subscribe(
             (data) => {
               this.patientTaskTemplates.splice(tasksIndex, 1);
             },
@@ -697,9 +693,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       (data) => {
         if (!data) return;
         if (data.toLowerCase() === 'confirm') {
-          let destroySub = this.store.AssessmentTaskTemplate.update(assessment.id, {
-            is_active: false,
-          }, true).subscribe(
+          let destroySub = this.store.AssessmentTaskTemplate.destroy(assessment.id).subscribe(
             (data) => {
               this.assessmentTemplates.splice(tasksIndex, 1);
             },
@@ -777,9 +771,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       (data) => {
         if (!data) return;
         if (data.toLowerCase() === 'confirm') {
-          let destroySub = this.store.SymptomTaskTemplate.update(symptom.id, {
-            is_active: false,
-          }, true).subscribe(
+          let destroySub = this.store.SymptomTaskTemplate.destroy(symptom.id).subscribe(
             (data) => {
               this.symptomTemplates.splice(tasksIndex, 1);
             },
@@ -920,9 +912,7 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       (data) => {
         if (!data) return;
         if (data.toLowerCase() === 'confirm') {
-          let destroySub = this.store.VitalsTaskTemplate.update(vital.id, {
-            is_active: false,
-          }, true).subscribe(
+          let destroySub = this.store.VitalsTaskTemplate.destroy(vital.id).subscribe(
             (data) => {
               this.vitalTemplates.splice(tasksIndex, 1);
             },

@@ -6,6 +6,8 @@ from django.db.models import Sum
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
+from dateutil.relativedelta import relativedelta
+
 from apps.core.models import EmployeeProfile, ProviderRole
 from apps.patients.models import PatientProfile
 from care_adopt_backend.mixins import CreatedModifiedMixin, UUIDPrimaryKeyMixin
@@ -140,6 +142,12 @@ class CarePlan(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
             is_manager=True).values_list(
                 'employee_profile', flat=True).distinct()
         return EmployeeProfile.objects.filter(id__in=employee_ids)
+
+    @property
+    def is_ongoing(self):
+        end_date = self.created + relativedelta(
+            weeks=self.plan_template.duration_weeks)
+        return timezone.now() < end_date
 
 
 class PlanConsent(CreatedModifiedMixin, UUIDPrimaryKeyMixin):

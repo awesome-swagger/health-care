@@ -10,6 +10,21 @@ database:
     - /data/CareAdopt/db:/var/db
   ports:
   - "5432:5432"
+elasticsearch:
+  image: blacktop/elasticsearch:2.4
+  container_name: ca-elasticsearch
+  environment:
+    - cluster.name=careadopt
+    - bootstrap.memory_lock=true
+    - "ES_JAVA_OPTS= -Xms2g -Xmx2g"
+  ulimits:
+    memlock:
+      soft: -1
+      hard: -1
+  volumes:
+    - ./database/esdata:/var/elasticsearch/data
+  ports:
+  - "9200:9200"
 backend:
   build: .
   command: bash /care_adopt_backend/server/django_devserver.sh
@@ -17,12 +32,14 @@ backend:
   hostname: ca-services
   links:
   - database
+  - elasticsearch
   volumes:
     - /data/CareAdopt/media:/care_adopt_backend/server/dev/media
   ports:
   - "8000:8000"
   environment:
     DB_HOST: ca-postgres
+    ELASTICSEARCH_HOST: ca-elasticsearch
     PYTHONUNBUFFERED: 1
     FQDN: careadopt.dev.mfire.co
     ADDITIONAL_DOMAINS: '*'

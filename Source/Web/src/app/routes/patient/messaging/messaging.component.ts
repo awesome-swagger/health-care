@@ -1,6 +1,6 @@
 import { AfterViewChecked, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { NavbarService, StoreService, AuthService } from '../../../services';
+import { AuthService, NavbarService, StoreService, TimeTrackerService } from '../../../services';
 import { AddConversationComponent } from './add-conversation/add-conversation.component';
 import {
   map as _map,
@@ -19,6 +19,7 @@ import { ModalService } from '../../../modules/modals';
 })
 export class PatientMessagingComponent implements AfterViewChecked, OnDestroy, OnInit {
 
+  public user = null;
   public patient = null;
 
   public messageStreams = [];
@@ -41,12 +42,14 @@ export class PatientMessagingComponent implements AfterViewChecked, OnDestroy, O
     private route: ActivatedRoute,
     private router: Router,
     private store: StoreService,
+    private timer: TimeTrackerService,
   ) { }
 
 
   public ngOnInit() {
     this.auth.user$.subscribe((user) => {
       if (!user) { return }
+      this.user = user;
       this.userId = user.user.id;
       this.route.params.subscribe((params) => {
         this.planId = params.planId;
@@ -59,6 +62,9 @@ export class PatientMessagingComponent implements AfterViewChecked, OnDestroy, O
           (err) => {},
           () => {},
         );
+        this.getCarePlan(params.planId).then((plan: any) => {
+          this.timer.startTimer(this.user, plan);
+        });
 
         this.store.CarePlan.detailRoute('GET', params.planId, 'care_team_members').subscribe(
           (res:any) => {
@@ -83,6 +89,23 @@ export class PatientMessagingComponent implements AfterViewChecked, OnDestroy, O
 
     })
     this.scrollBottom();
+  }
+
+  public ngOnDestroy() {
+    this.timer.stopTimer();
+  }
+
+  public getCarePlan(planId) {
+    let promise = new Promise((resolve, reject) => {
+      let carePlanSub = this.store.CarePlan.read(planId).subscribe(
+        (carePlan) => resolve(carePlan),
+        (err) => reject(err),
+        () => {
+          carePlanSub.unsubscribe();
+        },
+      );
+    });
+    return promise;
   }
 
   public getMessageStreams(m, i, planId) {
@@ -141,7 +164,6 @@ export class PatientMessagingComponent implements AfterViewChecked, OnDestroy, O
     this.scrollBottom();
   }
 
-  public ngOnDestroy() { }
 
   public scrollBottom() {
     this.chatBox.nativeElement.scrollTop = this.chatBox.nativeElement.scrollHeight + 64;

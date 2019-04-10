@@ -322,7 +322,7 @@ SECRET_KEY = '7iw@hrmhjg&rb$t0&h5lq@_43=ho+=ci_lrkpgr50isv&_x1ac'
 HAYSTACK_CONNECTIONS = {
     'default': {
         'ENGINE': 'haystack.backends.elasticsearch2_backend.Elasticsearch2SearchEngine',
-        'URL': 'http://127.0.0.1:9200/',
+        'URL': 'http://{}:9200/'.format(os.environ.get('ELASTICSEARCH_HOST', '127.0.0.1')),
         'INDEX_NAME': 'haystack',
     },
 }

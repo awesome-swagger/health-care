@@ -17,7 +17,7 @@
                  </app-popover>
                </div>
            </div>
-           <div>
+           <div class="marRight32">
              <label>Filter by Task</label>
              <div class="drop">
                <div class="drop__input" (click)="taskFilterOpen = !taskFilterOpen">
@@ -44,6 +44,13 @@
                </app-popover>
              </div>
            </div>
+           <div class="marTop32">
+       			<label class="styledInput">
+       				<input type="checkbox" class="styledInput__input" [checked]="showDataReview" (change)="showDataReview = !showDataReview" />
+       				<span class="styledInput__box"></span>
+       				Show Patient Data Review
+       			</label>
+       		</div>
          </div> <!--/.flex (for filters)-->
          <button class="button button--iconText" (click)="openRecordResults()">
            <i class="ss-plus"></i> Record Result
@@ -54,8 +61,8 @@
     <div class="chat chat--pad">
       <div class="chat__side">
         <div class="chat__threads" (scroll)="scrollHistory($event)">
-          <ng-container *ngIf="billedActivities.length > 0">
-            <div class="chat__thread" *ngFor="let activity of billedActivities" [ngClass]="{'chat__thread--active': selectedActivity && selectedActivity.id === activity.id}" (click)="selectedActivity = activity;">
+          <ng-container *ngIf="filteredBilledActivities().length > 0">
+            <div class="chat__thread" *ngFor="let activity of filteredBilledActivities()" [ngClass]="{'chat__thread--active': selectedActivity && selectedActivity.id === activity.id}" (click)="selectedActivity = activity;">
               <div class="flex alignCenter justifySpaceBetween marBottom8">
                 <h5 class="noMargin">
                   {{moment(activity.activity_datetime).format('MMM DD, YYYY')}}&ensp;|&ensp;{{moment(activity.activity_datetime).format('h:mm A')}}
@@ -73,7 +80,7 @@
               </h5>
             </div> <!--/.chat__thread-->
           </ng-container>
-          <ng-container *ngIf="activitiesLoaded && billedActivities.length === 0">
+          <ng-container *ngIf="activitiesLoaded && filteredBilledActivities().length === 0">
             <p class="center marTop32">No activities meet criteria.</p>
           </ng-container>
           <div class="ssSpinner center pad24" *ngIf="!activitiesLoaded"></div>

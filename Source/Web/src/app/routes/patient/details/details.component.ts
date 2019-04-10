@@ -11,7 +11,7 @@ import {
 import { ModalService, ConfirmModalComponent } from '../../../modules/modals';
 import { PopoverOptions } from '../../../modules/popover';
 import { RecordResultsComponent, GoalComponent, AddCTTaskComponent } from '../../../components';
-import { AuthService, NavbarService, StoreService, UtilsService } from '../../../services';
+import { AuthService, NavbarService, StoreService, TimeTrackerService, UtilsService } from '../../../services';
 import { GoalCommentsComponent } from './modals/goal-comments/goal-comments.component';
 
 @Component({
@@ -101,6 +101,7 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
     private modals: ModalService,
     private auth: AuthService,
     private store: StoreService,
+    private timer: TimeTrackerService,
     private nav: NavbarService,
     public utils: UtilsService,
   ) { }
@@ -124,6 +125,7 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
           this.nav.addRecentPatient(this.patient);
           this.getCarePlan(params.planId).then((carePlan: any) => {
         		this.carePlan = carePlan;
+            this.timer.startTimer(this.user, this.carePlan);
             this.getCareTeam(params.planId).then((teamMembers: any) => {
               this.careTeamMembers = teamMembers.filter((obj) => {
                 return obj.employee_profile.user.id !== this.user.user.id;
@@ -146,6 +148,7 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
   }
 
   public ngOnDestroy() {
+    this.timer.stopTimer();
     if (this.queryParamsSub) {
       this.queryParamsSub.unsubscribe();
     }

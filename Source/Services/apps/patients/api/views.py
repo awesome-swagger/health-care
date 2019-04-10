@@ -144,10 +144,7 @@ class PatientProfileViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if user.is_employee:
             employee = user.employee_profile
-            q = Q(facility__in=employee.facilities.all()) | \
-                Q(facility__in=employee.facilities_managed.all())
-            for org in employee.organizations_managed.all():
-                q |= Q(facility__in=org.facility_set.all())
+            q = Q(facility__in=employee.facilities.all())
             queryset = queryset.filter(q)
         elif user.is_patient:
             queryset = queryset.filter(user=user)
@@ -532,13 +529,13 @@ class PatientProfileSearchViewSet(HaystackViewSet):
     def get_queryset(self, index_models=[]):
         search_str = self.request.GET.get('q')
 
-        if search_str:
+        if search_str and len(search_str) > 2:
             searchable_patient_ids = get_searchable_patients(
                 self.request.user).values_list('id', flat=True).distinct()
             queryset = super(PatientProfileSearchViewSet, self).get_queryset(
                 index_models,
             ).filter(id__in=searchable_patient_ids)
-            queryset = queryset.filter(content=search_str)
+            queryset = queryset.filter(content__contains=search_str)
 
             return queryset
 

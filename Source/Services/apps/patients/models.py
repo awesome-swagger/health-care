@@ -60,6 +60,7 @@ class PatientProfile(AddressMixin, CreatedModifiedMixin, UUIDPrimaryKeyMixin):
         EmailUser, on_delete=models.CASCADE, related_name='patient_profile')
     facility = models.ForeignKey(
         Facility, null=False, blank=False, on_delete=models.CASCADE)
+    communication_email = models.EmailField(blank=True, null=True)
     emr_code = models.CharField(
         max_length=100, blank=True, null=True,
         help_text="By adding the emr code to the patient profile, we can link "
