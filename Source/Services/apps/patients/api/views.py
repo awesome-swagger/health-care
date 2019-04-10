@@ -144,10 +144,7 @@ class PatientProfileViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if user.is_employee:
             employee = user.employee_profile
-            q = Q(facility__in=employee.facilities.all()) | \
-                Q(facility__in=employee.facilities_managed.all())
-            for org in employee.organizations_managed.all():
-                q |= Q(facility__in=org.facility_set.all())
+            q = Q(facility__in=employee.facilities.all())
             queryset = queryset.filter(q)
         elif user.is_patient:
             queryset = queryset.filter(user=user)
