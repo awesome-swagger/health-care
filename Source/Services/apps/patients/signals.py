@@ -12,6 +12,9 @@ def patientprofile_post_save(sender, instance, created, **kwargs):
     if created and not instance.communication_email:
         instance.communication_email = instance.user.email
         instance.save()
+    if instance.is_using_mobile and instance.is_active:
+        instance.is_active = False
+        instance.save()
 
 
 def reminder_email_post_save(sender, instance, created, **kwargs):
