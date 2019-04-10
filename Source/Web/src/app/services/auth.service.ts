@@ -5,7 +5,7 @@ import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/do';
 import { AppConfig } from '../app.config';
 import { HttpService } from './http.service';
-import { LocalStorageService } from './storage.service';
+import { LocalStorageService, SessionStorageService } from './storage.service';
 import { StoreService } from './store.service';
 
 interface Token {
@@ -28,6 +28,7 @@ export class AuthService {
 
   constructor(
     private storage: LocalStorageService,
+    private session: SessionStorageService,
     private http: HttpService,
     private store: StoreService,
   ) {
@@ -69,6 +70,7 @@ export class AuthService {
     this.user = null;
     this.storage.removeItem('user');
     this.storage.removeItem('organization');
+    this.session.removeItem('planTimers');
     this.userSubject$.next(null);
     this.organizationSubject$.next(null);
   }

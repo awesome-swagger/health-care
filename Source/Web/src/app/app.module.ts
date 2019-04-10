@@ -59,6 +59,7 @@ import {
   LocalStorageService,
   SessionStorageService,
   StoreService,
+  TimeTrackerService,
   ValidationService,
 } from './services';
 
@@ -254,6 +255,7 @@ import { AddUserToFacilityComponent } from './routes/users/detail/modals/add-use
     StoreService,
     LocalStorageService,
     SessionStorageService,
+    TimeTrackerService,
     ValidationService,
   ],
   bootstrap: [AppComponent],

@@ -17,7 +17,7 @@
                  </app-popover>
                </div>
            </div>
-           <div>
+           <div class="marRight32">
              <label>Filter by Task</label>
              <div class="drop">
                <div class="drop__input" (click)="taskFilterOpen = !taskFilterOpen">
@@ -44,6 +44,13 @@
                </app-popover>
              </div>
            </div>
+           <div>
+       			<label class="styledInput">
+       				<input type="checkbox" class="styledInput__input" [checked]="showDataReview" (change)="showDataReview = !showDataReview" />
+       				<span class="styledInput__box"></span>
+       				Show Patient Data Review
+       			</label>
+       		</div>
          </div> <!--/.flex (for filters)-->
          <button class="button button--iconText" (click)="openRecordResults()">
            <i class="ss-plus"></i> Record Result

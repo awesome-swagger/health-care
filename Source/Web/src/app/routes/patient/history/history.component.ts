@@ -7,7 +7,7 @@ import {
 } from 'lodash';
 import { ModalService, ConfirmModalComponent } from '../../../modules/modals';
 import { RecordResultsComponent } from '../../../components';
-import { AuthService, NavbarService, StoreService } from '../../../services';
+import { AuthService, NavbarService, StoreService, TimeTrackerService } from '../../../services';
 
 @Component({
   selector: 'app-patient-history',
@@ -42,6 +42,7 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
   public teamTasks = [];
   public teamTaskChoices = [];
   public selectedTasks = [];
+  public showDataReview = true;
   public datePickerOptions = {
     relativeLeft: '0px',
     relativeTop: '48px'
@@ -62,6 +63,7 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
     private auth: AuthService,
     private store: StoreService,
     private nav: NavbarService,
+    private timer: TimeTrackerService,
   ) { }
 
   public ngOnInit() {
@@ -85,6 +87,7 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
     			// Get care plan
     			this.getCarePlan(params.planId).then((carePlan: any) => {
     				this.carePlan = carePlan;
+            this.timer.startTimer(this.user, this.carePlan);
             this.getTaskTemplates().then((taskTemplates: any) => {
               this.teamTasks = taskTemplates;
               this.teamTaskChoices = _uniqBy(taskTemplates, (obj) => obj.name);
@@ -97,13 +100,19 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
               this.selectedActivity = this.billedActivities[0];
               this.sortBilledActivities();
             });
+            this.timer.emitBilledActivity.subscribe((activity) => {
+              this.billedActivities.push(activity);
+              this.sortBilledActivities();
+            });
     			});
     		});
     	});
     });
   }
 
-  public ngOnDestroy() { }
+  public ngOnDestroy() {
+    this.timer.stopTimer();
+  }
 
   public getPatient(patientId) {
     let promise = new Promise((resolve, reject) => {
@@ -225,8 +234,12 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
   }
 
   public filteredBilledActivities() {
+    let selectedTaskNames = this.selectedTasks.map((task) => task.name);
     return this.billedActivities.filter((activity) => {
-      let selectedTaskNames = this.selectedTasks.map((task) => task.name);
+      let isPatientDataReview = !activity.team_task_template;
+      if (isPatientDataReview) {
+        return this.showDataReview;
+      }
       return selectedTaskNames.includes(activity.team_task_template.name);
     });
   }
@@ -338,7 +351,7 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
 
   public confirmDelete(result) {
     this.modals.open(ConfirmModalComponent, {
-     closeDisabled: true,
+     closeDisabled: false,
      data: {
        title: 'Delete Record?',
        body: 'Are you sure you want to delete this history record?',

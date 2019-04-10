@@ -3,7 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ModalService, ConfirmModalComponent } from '../../../modules/modals';
 import { ToastService } from '../../../modules/toast';
 import { AddCTMemberComponent } from '../../../components';
-import { NavbarService, StoreService } from '../../../services';
+import { AuthService, NavbarService, StoreService, TimeTrackerService, } from '../../../services';
 
 @Component({
   selector: 'app-patient-team',
@@ -12,6 +12,7 @@ import { NavbarService, StoreService } from '../../../services';
 })
 export class PatientTeamComponent implements OnDestroy, OnInit {
 
+  public user = null;
   public patient = null;
   public planId = null;
   public carePlan = null;
@@ -33,39 +34,48 @@ export class PatientTeamComponent implements OnDestroy, OnInit {
     private router: Router,
     private modals: ModalService,
     private toast: ToastService,
-    private store: StoreService,
+    private auth: AuthService,
     private nav: NavbarService,
+    private store: StoreService,
+    private timer: TimeTrackerService,
   ) { }
 
   public ngOnInit() {
     this.routeSub = this.route.params.subscribe((params) => {
       this.planId = params.planId;
       this.nav.patientDetailState(params.patientId, params.planId);
-      this.bpLoaded = false;
-      this.careTeamLoaded = false;
-      this.getPatient(params.patientId).then((patient: any) => {
-        this.patient = patient;
-        this.nav.addRecentPatient(this.patient);
-        this.getCarePlan(params.planId).then((carePlan: any) => {
-          this.carePlan = carePlan;
-          this.billingPractitioner = this.carePlan.billing_practitioner;
-          this.bpLoaded = true;
-          // Get the available roles for this care plan
-          this.getAvailableRoles(params.planId).then((availableRoles: any) => {
-            this.availableRoles = availableRoles;
-          }, (err) => {
-            this.toast.error('Error fetching available roles');
-            console.log(err);
-          });
-          // Get the assigned team members for this care plan
-          this.getCareTeam(params.planId).then((teamMembers: any) => {
-            this.careTeamMembers = teamMembers.filter((obj) => {
-              return !obj.is_manager && obj.role;
+      this.auth.user$.subscribe((user) => {
+        if (!user) {
+          return;
+        }
+        this.user = user;
+        this.bpLoaded = false;
+        this.careTeamLoaded = false;
+        this.getPatient(params.patientId).then((patient: any) => {
+          this.patient = patient;
+          this.nav.addRecentPatient(this.patient);
+          this.getCarePlan(params.planId).then((carePlan: any) => {
+            this.carePlan = carePlan;
+            this.timer.startTimer(this.user, this.carePlan);
+            this.billingPractitioner = this.carePlan.billing_practitioner;
+            this.bpLoaded = true;
+            // Get the available roles for this care plan
+            this.getAvailableRoles(params.planId).then((availableRoles: any) => {
+              this.availableRoles = availableRoles;
+            }, (err) => {
+              this.toast.error('Error fetching available roles');
+              console.log(err);
             });
-            this.careManager = teamMembers.filter((obj) => {
-              return obj.is_manager;
-            })[0];
-            this.careTeamLoaded = true;
+            // Get the assigned team members for this care plan
+            this.getCareTeam(params.planId).then((teamMembers: any) => {
+              this.careTeamMembers = teamMembers.filter((obj) => {
+                return !obj.is_manager && obj.role;
+              });
+              this.careManager = teamMembers.filter((obj) => {
+                return obj.is_manager;
+              })[0];
+              this.careTeamLoaded = true;
+            });
           });
         });
       });
@@ -73,6 +83,7 @@ export class PatientTeamComponent implements OnDestroy, OnInit {
   }
 
   public ngOnDestroy() {
+    this.timer.stopTimer();
     if (this.routeSub) {
       this.routeSub.unsubscribe();
     }

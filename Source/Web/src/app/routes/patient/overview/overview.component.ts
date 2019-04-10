@@ -13,7 +13,7 @@ import {
   CreateVitalComponent,
   PreviewVitalComponent,
 } from '../../../components';
-import { StoreService, NavbarService, } from '../../../services';
+import { AuthService, NavbarService, StoreService, TimeTrackerService, } from '../../../services';
 import { MedicationComponent } from '../modals/medication/medication.component';
 
 @Component({
@@ -23,6 +23,7 @@ import { MedicationComponent } from '../modals/medication/medication.component';
 })
 export class PatientOverviewComponent implements OnDestroy, OnInit {
 
+  public user = null;
   public patient = null;
   public carePlan = null;
   public planGoals = [];
@@ -43,31 +44,42 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private modals: ModalService,
-    private store: StoreService,
+    private auth: AuthService,
     private nav: NavbarService,
+    private store: StoreService,
+    private timer: TimeTrackerService,
   ) { }
 
   public ngOnInit() {
     this.route.params.subscribe((params) => {
       this.nav.patientDetailState(params.patientId, params.planId);
-      this.store.PatientProfile.read(params.patientId).subscribe(
-        (patient) => {
-          this.patient = patient;
-          this.nav.addRecentPatient(this.patient);
-          this.store.CarePlan.read(params.planId).subscribe(
-            (carePlan) => {
-              this.carePlan = carePlan;
-              this.fetchPlanSchedule(this.carePlan);
-            }
-          );
-        },
-        (err) => {},
-        () => {},
-      );
+      this.auth.user$.subscribe((user) => {
+    		if (!user) {
+    			return;
+    		}
+        this.user = user;
+        this.store.PatientProfile.read(params.patientId).subscribe(
+          (patient) => {
+            this.patient = patient;
+            this.nav.addRecentPatient(this.patient);
+            this.store.CarePlan.read(params.planId).subscribe(
+              (carePlan) => {
+                this.carePlan = carePlan;
+                this.timer.startTimer(this.user, this.carePlan);
+                this.fetchPlanSchedule(this.carePlan);
+              }
+            );
+          },
+          (err) => {},
+          () => {},
+        );
+      });
     });
   }
 
-  public ngOnDestroy() { }
+  public ngOnDestroy() {
+    this.timer.stopTimer();
+  }
 
   public fetchPlanGoals(planTemplateId) {
     let promise = new Promise((resolve, reject) => {
