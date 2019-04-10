@@ -436,7 +436,7 @@ export class AddPatientToPlanComponent implements OnInit {
           facility: this.selectedFacility.id,
           is_active: true,
           is_invited: false,
-          insurance: this.selectedInsurance.id,
+          insurance: this.selectedInsurance ? this.selectedInsurance.id : null,
           payer_reimbursement: this.payerReimburses,
         }).subscribe(patient => {
           this.store.CarePlan.create({

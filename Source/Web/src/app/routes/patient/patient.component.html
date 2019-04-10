@@ -173,7 +173,7 @@
       </div>
       <div class="info__cell">
         <label>Cost of Readmits</label>
-        ${{numberFormat(patientStats?.readmissions_cost)}}
+        {{patientStats?.readmissions_cost ? '$' : ''}}{{numberFormat(patientStats?.readmissions_cost)}}
       </div>
       <div class="info__cell">
         <label>ED Visits</label>
@@ -203,7 +203,7 @@
       </div>
       <div class="info__cell">
         <label>Total Cost</label>
-        ${{numberFormat(patientStats?.total_cost)}}
+        {{patientStats?.total_cost ? '$' : ''}}{{numberFormat(patientStats?.total_cost)}}
       </div>
     </div> <!--/.info (second one for patient stats)-->
   </div>

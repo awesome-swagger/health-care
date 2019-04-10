@@ -595,7 +595,7 @@ export class PatientComponent implements OnDestroy, OnInit {
   public confirmMakePatientActive() {
      this.modals.open(ConfirmModalComponent, {
      data: {
-       title: 'Make Patient Inactive?',
+       title: 'Make Patient Active?',
        body: 'Are you sure you want to make this patient active again?',
        cancelText: 'Cancel',
        okText: 'Continue',
@@ -656,6 +656,8 @@ export class PatientComponent implements OnDestroy, OnInit {
   }
 
   public numberFormat(num):string {
-    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    if (num){
+      return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
   }
 }

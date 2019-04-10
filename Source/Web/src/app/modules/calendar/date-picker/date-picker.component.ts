@@ -102,11 +102,13 @@ export class DatePickerComponent {
   }
 
   public set selected(value) {
-    this._selected = value;
-    this.selectedChange.emit(this._selected);
-    this.currentMonth = value.month();
-    this.currentYear = value.year();
-    this.daysInMonth = value.daysInMonth();
-    this.firstDayWeekday = moment(`${this.currentYear}-${this.zeroPad(this.currentMonth + 1)}-01`).day();
+    if (value) {
+      this._selected = value;
+      this.selectedChange.emit(this._selected);
+      this.currentMonth = value.month();
+      this.currentYear = value.year();
+      this.daysInMonth = value.daysInMonth();
+      this.firstDayWeekday = moment(`${this.currentYear}-${this.zeroPad(this.currentMonth + 1)}-01`).day();
+    }
   }
 }

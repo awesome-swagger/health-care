@@ -16,7 +16,7 @@
 <h5 *ngIf="showEPStep2"  class="marBottom24 center">Collect or verify the following information with the patient.</h5>
 <div class="divider"></div>
 <ng-container *ngIf="!showEPStep2" >
-  <h3 class="center marBottom16 marRight16">{{data?.patient?.first_name}} {{data?.patient?.last_name}}   {{phoneNum(data?.patient?.phone)}}</h3>
+  <h3 class="center marBottom16 marRight16">{{data?.patient?.first_name}} {{data?.patient?.last_name}}   {{data?.patient?.phone}}</h3>
   <h4 class="center marBottom16">{{data?.patient?.email}}</h4>
   <h4 class="center marBottom16">{{data?.patient?.care_plan?.service_area.name}}, {{data?.patient?.care_plan?.name}}</h4>
   <div class="divider"></div>
