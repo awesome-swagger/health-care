@@ -44,7 +44,7 @@
             <ul class="drop__dropdown isOpen">
               <ng-container *ngFor="let patient of searchResults">
                 <li class="drop__option">
-                  <a class="drop__link" [routerLink]="['/patient', patient.id]">
+                  <a class="drop__link" (click)="routeToPatient(patient.id)">
                     <div class="picName">
                       <img class="picName__img" src="../../../assets/img/profile.svg" />{{patient.user.first_name}} {{patient.user.last_name}}
                     </div>

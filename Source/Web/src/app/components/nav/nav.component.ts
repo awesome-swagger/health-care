@@ -138,7 +138,7 @@ export class NavComponent implements OnDestroy, OnInit {
           q: searchStr,
         }).subscribe(
           (searchResults: any) => {
-            this.searchResults = searchResults;
+            this.searchResults = searchResults.results;
             if (this.searchResults.length > 0) {
               this.searchOpen = true;
             }
@@ -221,8 +221,9 @@ export class NavComponent implements OnDestroy, OnInit {
     this.router.navigate(['/patients/active']);
   }
 
-  public routeToPatient(patient) {
-    this.router.navigate(['/patient', patient.id]);
+  public routeToPatient(id) {
+    this.searchString = '';
+    this.router.navigate(['/patient', id]);
   }
 
   public routeToPatientPage(route) {
