@@ -147,6 +147,211 @@ class TestAssessmentTaskTemplateUsingEmployee(TasksMixin, APITestCase):
         response = self.client.patch(self.detail_url, payload)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    def test_update_start_on_day_assessmenttasktemplate_with_ongoing_plans(self):
+        template = self.create_care_plan_template(duration_weeks=6)
+        start_on_day = 2
+
+        for i in range(3):
+            plan = self.create_care_plan(
+                plan_template=template
+            )
+            plan.created = timezone.now() - relativedelta(weeks=2)
+            plan.save(update_fields=['created'])
+
+        task_template = self.create_assessment_task_template(
+            plan_template=template,
+            start_on_day=4,
+        )
+
+        payload = {
+            'start_on_day': start_on_day,
+        }
+        url = reverse(
+            'assessment_task_templates-detail',
+            kwargs={
+                'pk': task_template.id
+            }
+        )
+        response = self.client.patch(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        task_template = AssessmentTaskTemplate.objects.get(
+            id=response.data['id']
+        )
+        self.assertTrue(task_template.assessment_tasks.exists())
+
+        now = timezone.now()
+        due_datetime = now + relativedelta(days=start_on_day)
+        tasks = task_template.assessment_tasks.filter(due_datetime__gte=now)
+        for task in tasks:
+            self.assertEqual(task.due_datetime.date(), due_datetime.date())
+
+    def test_update_frequency_assessmenttasktemplate_with_ongoing_plans(self):
+        total_duration = 6
+        past_duration = 2
+        plans_count = 3
+        template = self.create_care_plan_template(
+            duration_weeks=total_duration
+        )
+
+        for i in range(plans_count):
+            plan = self.create_care_plan(
+                plan_template=template
+            )
+            plan.created = timezone.now() - relativedelta(weeks=past_duration)
+            plan.save(update_fields=['created'])
+
+        task_template = self.create_assessment_task_template(
+            plan_template=template
+        )
+
+        payload = {
+            'frequency': 'weekly',
+        }
+        url = reverse(
+            'assessment_task_templates-detail',
+            kwargs={
+                'pk': task_template.id
+            }
+        )
+        response = self.client.patch(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        now = timezone.now()
+        task_template = AssessmentTaskTemplate.objects.get(
+            id=response.data['id']
+        )
+        tasks = task_template.assessment_tasks.filter(due_datetime__gte=now)
+        self.assertTrue(tasks.exists())
+
+        self.assertEqual(
+            tasks.count(),
+            (total_duration - past_duration) * plans_count
+        )
+
+    def test_update_repeat_amount_assessmenttasktemplate_with_ongoing_plans(self):
+        total_duration = 6
+        past_duration = 2
+        plans_count = 3
+        repeat_amount = 5
+        template = self.create_care_plan_template(
+            duration_weeks=total_duration
+        )
+
+        for i in range(plans_count):
+            plan = self.create_care_plan(
+                plan_template=template
+            )
+            plan.created = timezone.now() - relativedelta(weeks=past_duration)
+            plan.save(update_fields=['created'])
+
+        task_template = self.create_assessment_task_template(
+            plan_template=template,
+        )
+
+        payload = {
+            'frequency': 'daily',
+            'repeat_amount': repeat_amount
+        }
+        url = reverse(
+            'assessment_task_templates-detail',
+            kwargs={
+                'pk': task_template.id
+            }
+        )
+        response = self.client.patch(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        now = timezone.now()
+        task_template = AssessmentTaskTemplate.objects.get(
+            id=response.data['id']
+        )
+        tasks = task_template.assessment_tasks.filter(due_datetime__gte=now)
+        self.assertTrue(tasks.exists())
+
+        self.assertEqual(
+            tasks.count(),
+            plans_count * repeat_amount
+        )
+
+    def test_update_appear_time_assessmenttasktemplate_with_ongoing_plans(self):
+        template = self.create_care_plan_template(duration_weeks=6)
+        appear_time = datetime.time(10, 0, 0)
+
+        for i in range(3):
+            plan = self.create_care_plan(
+                plan_template=template
+            )
+            plan.created = timezone.now() - relativedelta(weeks=2)
+            plan.save(update_fields=['created'])
+
+        task_template = self.create_assessment_task_template(
+            plan_template=template,
+            appear_time=datetime.time(8, 0, 0),
+        )
+
+        payload = {
+            'appear_time': appear_time,
+        }
+        url = reverse(
+            'assessment_task_templates-detail',
+            kwargs={
+                'pk': task_template.id
+            }
+        )
+        response = self.client.patch(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        task_template = AssessmentTaskTemplate.objects.get(
+            id=response.data['id']
+        )
+        self.assertTrue(task_template.assessment_tasks.exists())
+
+        now = timezone.now()
+        tasks = task_template.assessment_tasks.filter(due_datetime__gte=now)
+        for task in tasks:
+            self.assertEqual(task.appear_datetime.hour, appear_time.hour)
+            self.assertEqual(task.appear_datetime.minute, appear_time.minute)
+
+    def test_update_due_time_assessmenttasktemplate_with_ongoing_plans(self):
+        template = self.create_care_plan_template(duration_weeks=6)
+        due_time = datetime.time(20, 0, 0)
+
+        for i in range(3):
+            plan = self.create_care_plan(
+                plan_template=template
+            )
+            plan.created = timezone.now() - relativedelta(weeks=2)
+            plan.save(update_fields=['created'])
+
+        task_template = self.create_assessment_task_template(
+            plan_template=template,
+            due_time=datetime.time(17, 0, 0),
+        )
+
+        payload = {
+            'due_time': due_time,
+        }
+        url = reverse(
+            'assessment_task_templates-detail',
+            kwargs={
+                'pk': task_template.id
+            }
+        )
+        response = self.client.patch(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        task_template = AssessmentTaskTemplate.objects.get(
+            id=response.data['id']
+        )
+        self.assertTrue(task_template.assessment_tasks.exists())
+
+        now = timezone.now()
+        tasks = task_template.assessment_tasks.filter(due_datetime__gte=now)
+        for task in tasks:
+            self.assertEqual(task.due_datetime.hour, due_time.hour)
+            self.assertEqual(task.due_datetime.minute, due_time.minute)
+
     def test_delete_assessment_task_template(self):
         now = timezone.now()
         plan = self.create_care_plan()
