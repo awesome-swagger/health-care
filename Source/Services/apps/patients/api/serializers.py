@@ -41,8 +41,13 @@ from ..search_indexes import PatientProfileIndex
 
 class PatientSearchUserInfo(SettingsUserForSerializers,
                             serializers.ModelSerializer):
+    image_url = serializers.SerializerMethodField()
+
+    def get_image_url(self, obj):
+        return obj.get_image_url()
+
     class Meta:
-        fields = ('first_name', 'last_name', )
+        fields = ('first_name', 'last_name', 'image_url',)
 
 
 class PatientSearchSerializer(serializers.ModelSerializer):

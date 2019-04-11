@@ -20,6 +20,8 @@ def patientprofile_post_save(sender, instance, created, **kwargs):
 def reminder_email_post_save(sender, instance, created, **kwargs):
     if created:
         instance.send_reminder_email()
+        instance.patient.emails_sent = instance.patient.emails_sent + 1
+        instance.patient.save()
 
 
 def emergencycontact_post_save(sender, instance, created, **kwargs):

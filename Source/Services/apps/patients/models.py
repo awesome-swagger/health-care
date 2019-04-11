@@ -137,6 +137,7 @@ class PatientProfile(AddressMixin, CreatedModifiedMixin, UUIDPrimaryKeyMixin):
         max_length=64,
         blank=True,
         help_text=_('When provided, this should be unique.'))
+    emails_sent = models.PositiveIntegerField(default=0)
 
     class Meta:
         ordering = ('user', )
