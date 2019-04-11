@@ -7,7 +7,8 @@ from apps.patients.models import (
     PatientMedication,
     PatientVerificationCode,
     PotentialPatient,
-    PatientStat
+    PatientStat,
+    ReminderEmail
 )
 
 
@@ -59,3 +60,4 @@ admin.site.register(PatientMedication, PatientMedicationAdmin)
 admin.site.register(PatientVerificationCode, PatientVerificationCodeAdmin)
 admin.site.register(PotentialPatient, PotentialPatientAdmin)
 admin.site.register(PatientStat, PatientStatAdmin)
+admin.site.register(ReminderEmail)
