@@ -398,6 +398,14 @@ def symptomtasktemplate_post_save(sender, instance, created, **kwargs):
             'symptom_task_template',
             'SymptomTask'
         )
+    elif instance.is_schedule_fields_changed:
+        now = timezone.now()
+        instance.symptom_tasks.filter(due_datetime__gte=now).delete()
+        create_tasks_for_ongoing_plans(
+            instance,
+            'symptom_task_template',
+            'SymptomTask'
+        )
 
 
 def teamtasktemplate_post_save(sender, instance, created, **kwargs):
