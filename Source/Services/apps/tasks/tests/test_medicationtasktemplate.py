@@ -247,3 +247,206 @@ class TestMedicationTaskTemplate(TasksMixin, APITestCase):
         response = self.client.post(self.url, payload)
         template = MedicationTaskTemplate.objects.get(id=response.data['id'])
         self.assertEqual(template.medication_tasks.count(), days.count())
+
+    def test_partial_update_medication_task_template(self):
+        payload = {
+            'start_on_day': random.randint(1, 5),
+        }
+        template = self.create_medication_task_template()
+        detail_url = reverse(
+            'medication_task_templates-detail',
+            kwargs={'pk': template.id}
+        )
+        response = self.client.patch(detail_url, payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_update_start_on_day_medicationtasktemplate_with_ongoing_plans(self):
+        start_on_day = 2
+
+        task_template = self.create_medication_task_template(
+            start_on_day=4,
+        )
+
+        payload = {
+            'start_on_day': start_on_day,
+        }
+        url = reverse(
+            'medication_task_templates-detail',
+            kwargs={
+                'pk': task_template.id
+            }
+        )
+        response = self.client.patch(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        task_template = MedicationTaskTemplate.objects.get(
+            id=response.data['id']
+        )
+        self.assertTrue(task_template.medication_tasks.exists())
+
+        now = timezone.now()
+        due_datetime = now + relativedelta(days=start_on_day)
+        tasks = task_template.medication_tasks.filter(due_datetime__gte=now)
+        for task in tasks:
+            self.assertEqual(task.due_datetime.date(), due_datetime.date())
+
+    def test_update_frequency_medicationtasktemplate_with_ongoing_plans(self):
+        total_duration = 6
+        past_duration = 2
+        template = self.create_care_plan_template(
+            duration_weeks=total_duration
+        )
+
+        plan = self.create_care_plan(
+            plan_template=template
+        )
+        plan.created = timezone.now() - relativedelta(weeks=past_duration)
+        plan.save(update_fields=['created'])
+
+        task_template = self.create_medication_task_template(
+            plan=plan,
+            frequency='daily'
+        )
+
+        payload = {
+            'frequency': 'weekly',
+        }
+        url = reverse(
+            'medication_task_templates-detail',
+            kwargs={
+                'pk': task_template.id
+            }
+        )
+        response = self.client.patch(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        now = timezone.now()
+        task_template = MedicationTaskTemplate.objects.get(
+            id=response.data['id']
+        )
+        tasks = task_template.medication_tasks.filter(due_datetime__gte=now)
+        self.assertTrue(tasks.exists())
+
+        self.assertEqual(
+            tasks.count(),
+            (total_duration - past_duration)
+        )
+
+    def test_update_repeat_amount_medicationtasktemplate_with_ongoing_plans(self):
+        total_duration = 6
+        past_duration = 2
+        repeat_amount = 5
+        template = self.create_care_plan_template(
+            duration_weeks=total_duration
+        )
+
+        plan = self.create_care_plan(
+            plan_template=template
+        )
+        plan.created = timezone.now() - relativedelta(weeks=past_duration)
+        plan.save(update_fields=['created'])
+
+        task_template = self.create_medication_task_template(
+            plan=plan,
+        )
+
+        payload = {
+            'frequency': 'daily',
+            'repeat_amount': repeat_amount
+        }
+        url = reverse(
+            'medication_task_templates-detail',
+            kwargs={
+                'pk': task_template.id
+            }
+        )
+        response = self.client.patch(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        now = timezone.now()
+        task_template = MedicationTaskTemplate.objects.get(
+            id=response.data['id']
+        )
+        tasks = task_template.medication_tasks.filter(due_datetime__gte=now)
+        self.assertTrue(tasks.exists())
+
+        self.assertEqual(
+            tasks.count(),
+            repeat_amount
+        )
+
+    def test_update_appear_time_medicationtasktemplate_with_ongoing_plans(self):
+        template = self.create_care_plan_template(duration_weeks=6)
+        appear_time = time(10, 0, 0)
+
+        plan = self.create_care_plan(
+            plan_template=template
+        )
+        plan.created = timezone.now() - relativedelta(weeks=2)
+        plan.save(update_fields=['created'])
+
+        task_template = self.create_medication_task_template(
+            plan=plan,
+            appear_time=time(8, 0, 0),
+        )
+
+        payload = {
+            'appear_time': appear_time,
+        }
+        url = reverse(
+            'medication_task_templates-detail',
+            kwargs={
+                'pk': task_template.id
+            }
+        )
+        response = self.client.patch(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        task_template = MedicationTaskTemplate.objects.get(
+            id=response.data['id']
+        )
+        self.assertTrue(task_template.medication_tasks.exists())
+
+        now = timezone.now()
+        tasks = task_template.medication_tasks.filter(due_datetime__gte=now)
+        for task in tasks:
+            self.assertEqual(task.appear_datetime.hour, appear_time.hour)
+            self.assertEqual(task.appear_datetime.minute, appear_time.minute)
+
+    def test_update_due_time_medicationtasktemplate_with_ongoing_plans(self):
+        template = self.create_care_plan_template(duration_weeks=6)
+        due_time = time(20, 0, 0)
+
+        plan = self.create_care_plan(
+            plan_template=template
+        )
+        plan.created = timezone.now() - relativedelta(weeks=2)
+        plan.save(update_fields=['created'])
+
+        task_template = self.create_medication_task_template(
+            plan=plan,
+            due_time=time(17, 0, 0),
+        )
+
+        payload = {
+            'due_time': due_time,
+        }
+        url = reverse(
+            'medication_task_templates-detail',
+            kwargs={
+                'pk': task_template.id
+            }
+        )
+        response = self.client.patch(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        task_template = MedicationTaskTemplate.objects.get(
+            id=response.data['id']
+        )
+        self.assertTrue(task_template.medication_tasks.exists())
+
+        now = timezone.now()
+        tasks = task_template.medication_tasks.filter(due_datetime__gte=now)
+        for task in tasks:
+            self.assertEqual(task.due_datetime.hour, due_time.hour)
+            self.assertEqual(task.due_datetime.minute, due_time.minute)

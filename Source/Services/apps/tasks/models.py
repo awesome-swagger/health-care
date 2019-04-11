@@ -11,19 +11,25 @@ from .signals import (
     symptomrating_post_delete,
     assessmentresponse_post_delete,
     vitalresponse_post_delete,
+    medicationtasktemplate_post_init,
     medicationtasktemplate_post_save,
+    patienttasktemplate_post_init,
     patienttasktemplate_post_save,
     patienttask_post_save,
     patienttask_post_delete,
+    symptomtasktemplate_post_init,
     symptomtasktemplate_post_save,
     symptomtask_post_save,
     symptomtask_post_delete,
+    teamtasktemplate_post_init,
     teamtasktemplate_post_save,
     medicationtask_post_save,
     medicationtask_post_delete,
+    assessmenttasktemplate_post_init,
     assessmenttasktemplate_post_save,
     assessmenttask_post_save,
     assessmenttask_post_delete,
+    vitaltasktemplate_post_init,
     vitaltasktemplate_post_save,
     vitaltask_post_save,
     vitaltask_post_delete,
@@ -91,8 +97,76 @@ class AbstractTaskTemplate(UUIDPrimaryKeyMixin):
     # tracks whether or not this task should show in the available tasks
     is_available = models.BooleanField(default=True)
 
+    previous_start_on_day = None
+    previous_frequency = None
+    previous_repeat_amount = None
+    previous_appear_time = None
+    previous_due_time = None
+
     class Meta:
         abstract = True
+
+    @property
+    def is_start_on_day_changed(self):
+        return self.previous_start_on_day != self.start_on_day
+
+    @property
+    def is_frequency_changed(self):
+        return self.previous_frequency != self.frequency
+
+    @property
+    def is_repeat_amount_changed(self):
+        return self.previous_repeat_amount != self.repeat_amount
+
+    @property
+    def is_appear_time_changed(self):
+        return self.previous_appear_time != self.appear_time
+
+    @property
+    def is_due_time_changed(self):
+        return self.previous_due_time != self.due_time
+
+    @property
+    def is_schedule_fields_changed(self):
+        return self.is_start_on_day_changed or \
+            self.is_frequency_changed or \
+            self.is_repeat_amount_changed or \
+            self.is_appear_time_changed or \
+            self.is_due_time_changed
+
+    def assign_previous_fields(self):
+        self.previous_start_on_day = self.start_on_day
+        self.previous_frequency = self.frequency
+        self.previous_repeat_amount = self.repeat_amount
+        self.previous_appear_time = self.appear_time
+        self.previous_due_time = self.due_time
+
+    def delete(self, using=None, soft=True, *args, **kwargs):
+        """
+        Soft delete object (set its ``is_removed`` field to True).
+        Actually delete object if setting ``soft`` to False.
+        """
+        if soft:
+            task_model_lookup = {
+                'AssessmentTaskTemplate': 'assessment_tasks',
+                'MedicationTaskTemplate': 'medication_tasks',
+                'PatientTaskTemplate': 'patient_tasks',
+                'SymptomTaskTemplate': 'symptom_tasks',
+                'TeamTaskTemplate': 'team_tasks',
+                'VitalTaskTemplate': 'vital_tasks'
+            }
+            model_name = self.__class__.__name__
+            if model_name in task_model_lookup:
+                task_model = getattr(self, task_model_lookup[model_name], None)
+
+                if task_model:
+                    now = timezone.now()
+                    task_model.filter(due_datetime__gte=now).delete()
+            self.is_active = False
+            self.save(using=using)
+        else:
+            return super(AbstractTaskTemplate, self).delete(
+                using=using, *args, **kwargs)
 
 
 class AbstractTask(UUIDPrimaryKeyMixin, StateMixin):
@@ -646,9 +720,17 @@ models.signals.post_delete.connect(
     vitalresponse_post_delete,
     sender=VitalResponse
 )
+models.signals.post_init.connect(
+    medicationtasktemplate_post_init,
+    sender=MedicationTaskTemplate
+)
 models.signals.post_save.connect(
     medicationtasktemplate_post_save,
     sender=MedicationTaskTemplate
+)
+models.signals.post_init.connect(
+    patienttasktemplate_post_init,
+    sender=PatientTaskTemplate
 )
 models.signals.post_save.connect(
     patienttasktemplate_post_save,
@@ -662,6 +744,10 @@ models.signals.post_delete.connect(
     patienttask_post_delete,
     sender=PatientTask
 )
+models.signals.post_init.connect(
+    symptomtasktemplate_post_init,
+    sender=SymptomTaskTemplate
+)
 models.signals.post_save.connect(
     symptomtasktemplate_post_save,
     sender=SymptomTaskTemplate
@@ -673,6 +759,10 @@ models.signals.post_save.connect(
 models.signals.post_delete.connect(
     symptomtask_post_delete,
     sender=SymptomTask
+)
+models.signals.post_init.connect(
+    teamtasktemplate_post_init,
+    sender=TeamTaskTemplate
 )
 models.signals.post_save.connect(
     teamtasktemplate_post_save,
@@ -686,6 +776,10 @@ models.signals.post_delete.connect(
     medicationtask_post_delete,
     sender=MedicationTask
 )
+models.signals.post_init.connect(
+    assessmenttasktemplate_post_init,
+    sender=AssessmentTaskTemplate
+)
 models.signals.post_save.connect(
     assessmenttasktemplate_post_save,
     sender=AssessmentTaskTemplate
@@ -697,6 +791,10 @@ models.signals.post_save.connect(
 models.signals.post_delete.connect(
     assessmenttask_post_delete,
     sender=AssessmentTask
+)
+models.signals.post_init.connect(
+    vitaltasktemplate_post_init,
+    sender=VitalTaskTemplate
 )
 models.signals.post_save.connect(
     vitaltasktemplate_post_save,
