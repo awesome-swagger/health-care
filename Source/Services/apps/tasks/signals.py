@@ -308,12 +308,32 @@ def medicationtasktemplate_post_save(sender, instance, created, **kwargs):
         )
 
 
+def patienttasktemplate_post_init(sender, instance, **kwargs):
+    """
+    Function to be used as signal (post_init) when initializing
+    :model:`tasks.PatientTaskTemplate`
+    """
+    instance.previous_start_on_day = instance.start_on_day
+    instance.previous_frequency = instance.frequency
+    instance.previous_repeat_amount = instance.repeat_amount
+    instance.previous_appear_time = instance.appear_time
+    instance.previous_due_time = instance.due_time
+
+
 def patienttasktemplate_post_save(sender, instance, created, **kwargs):
     """
     Function to be used as signal (post_save) when saving
     :model:`tasks.PatientTaskTemplate`
     """
     if created:
+        create_tasks_for_ongoing_plans(
+            instance,
+            'patient_task_template',
+            'PatientTask'
+        )
+    elif instance.is_schedule_fields_changed:
+        now = timezone.now()
+        instance.patient_tasks.filter(due_datetime__gte=now).delete()
         create_tasks_for_ongoing_plans(
             instance,
             'patient_task_template',
