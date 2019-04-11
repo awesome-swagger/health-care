@@ -16,6 +16,7 @@ from .signals import (
     patienttasktemplate_post_save,
     patienttask_post_save,
     patienttask_post_delete,
+    symptomtasktemplate_post_init,
     symptomtasktemplate_post_save,
     symptomtask_post_save,
     symptomtask_post_delete,
@@ -128,6 +129,13 @@ class AbstractTaskTemplate(UUIDPrimaryKeyMixin):
             self.is_repeat_amount_changed or \
             self.is_appear_time_changed or \
             self.is_due_time_changed
+
+    def assign_previous_fields(self):
+        self.previous_start_on_day = self.start_on_day
+        self.previous_frequency = self.frequency
+        self.previous_repeat_amount = self.repeat_amount
+        self.previous_appear_time = self.appear_time
+        self.previous_due_time = self.due_time
 
 
 class AbstractTask(UUIDPrimaryKeyMixin, StateMixin):
@@ -700,6 +708,10 @@ models.signals.post_save.connect(
 models.signals.post_delete.connect(
     patienttask_post_delete,
     sender=PatientTask
+)
+models.signals.post_init.connect(
+    symptomtasktemplate_post_init,
+    sender=SymptomTaskTemplate
 )
 models.signals.post_save.connect(
     symptomtasktemplate_post_save,

@@ -313,11 +313,7 @@ def patienttasktemplate_post_init(sender, instance, **kwargs):
     Function to be used as signal (post_init) when initializing
     :model:`tasks.PatientTaskTemplate`
     """
-    instance.previous_start_on_day = instance.start_on_day
-    instance.previous_frequency = instance.frequency
-    instance.previous_repeat_amount = instance.repeat_amount
-    instance.previous_appear_time = instance.appear_time
-    instance.previous_due_time = instance.due_time
+    instance.assign_previous_fields()
 
 
 def patienttasktemplate_post_save(sender, instance, created, **kwargs):
@@ -381,6 +377,14 @@ def medicationtask_post_delete(sender, instance, **kwargs):
     patient = instance.medication_task_template.plan.patient
     assignment = RiskLevelAssignment(patient)
     assignment.assign_risk_level_to_patient()
+
+
+def symptomtasktemplate_post_init(sender, instance, **kwargs):
+    """
+    Function to be used as signal (post_init) when initializing
+    :model:`tasks.SymptomTaskTemplate`
+    """
+    instance.assign_previous_fields()
 
 
 def symptomtasktemplate_post_save(sender, instance, created, **kwargs):
