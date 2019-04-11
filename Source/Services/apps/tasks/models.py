@@ -11,6 +11,7 @@ from .signals import (
     symptomrating_post_delete,
     assessmentresponse_post_delete,
     vitalresponse_post_delete,
+    medicationtasktemplate_post_init,
     medicationtasktemplate_post_save,
     patienttasktemplate_post_init,
     patienttasktemplate_post_save,
@@ -691,6 +692,10 @@ models.signals.post_delete.connect(
 models.signals.post_delete.connect(
     vitalresponse_post_delete,
     sender=VitalResponse
+)
+models.signals.post_init.connect(
+    medicationtasktemplate_post_init,
+    sender=MedicationTaskTemplate
 )
 models.signals.post_save.connect(
     medicationtasktemplate_post_save,

@@ -167,6 +167,8 @@ def create_tasks_for_ongoing_plans(task_template,
 
     if is_medication:
         duration_weeks = task_template.plan.plan_template.duration_weeks
+        days_past = timezone.now() - task_template.plan.created
+        duration_weeks -= round(days_past.days / 7)
         create_tasks_from_template(
             task_template,
             duration_weeks,
@@ -295,12 +297,28 @@ def vitalresponse_post_delete(sender, instance, **kwargs):
         assignment.assign_risk_level_to_patient()
 
 
+def medicationtasktemplate_post_init(sender, instance, **kwargs):
+    """
+    Function to be used as signal (post_init) when initializing
+    :model:`tasks.MedicationTaskTemplate`
+    """
+    instance.assign_previous_fields()
+
+
 def medicationtasktemplate_post_save(sender, instance, created, **kwargs):
     """
     Function to be used as signal (post_save) when saving
     :model:`tasks.MedicationTaskTemplate`
     """
     if created:
+        create_tasks_for_ongoing_plans(
+            instance,
+            'medication_task_template',
+            'MedicationTask'
+        )
+    elif instance.is_schedule_fields_changed:
+        now = timezone.now()
+        instance.medication_tasks.filter(due_datetime__gte=now).delete()
         create_tasks_for_ongoing_plans(
             instance,
             'medication_task_template',
