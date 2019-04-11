@@ -448,12 +448,28 @@ def symptomtask_post_save(sender, instance, created, **kwargs):
         assignment.assign_risk_level_to_patient()
 
 
+def assessmenttasktemplate_post_init(sender, instance, **kwargs):
+    """
+    Function to be used as signal (post_init) when initializing
+    :model:`tasks.AssessmentTaskTemplate`
+    """
+    instance.assign_previous_fields()
+
+
 def assessmenttasktemplate_post_save(sender, instance, created, **kwargs):
     """
     Function to be used as signal (post_save) when saving
     :model:`tasks.AssessmentTaskTemplate`
     """
     if created:
+        create_tasks_for_ongoing_plans(
+            instance,
+            'assessment_task_template',
+            'AssessmentTask'
+        )
+    elif instance.is_schedule_fields_changed:
+        now = timezone.now()
+        instance.assessment_tasks.filter(due_datetime__gte=now).delete()
         create_tasks_for_ongoing_plans(
             instance,
             'assessment_task_template',
