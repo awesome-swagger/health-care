@@ -39,6 +39,7 @@ export class InvitedPatientsComponent implements OnDestroy, OnInit {
   public multi2Open;
   public multi3Open;
   public multi4Open;
+  public totalInvited = 0;
 
   public facilityAccordOpen = {};
 
@@ -114,22 +115,18 @@ export class InvitedPatientsComponent implements OnDestroy, OnInit {
       })
     })
 
+    this.auth.organization$.subscribe(org => {
+      if (!org) return;
+      this.store.PatientProfile.listRoute('GET', 'overview', {}, {
+        'facility__organization__id': org.id,
+      }).subscribe((res: any) => {
+        this.totalInvited = res.invited;
+      })
+    })
+
   }
 
   public ngOnDestroy() { }
-
-  public get totalInvited() {
-    if (this.facilities) {
-      let result = 0;
-      this.facilities.forEach(f => {
-        if (f.invitedPatients) {
-          result += f.invitedPatients.length;
-        }
-      })
-      return result;
-    }
-    return 0;
-  }
 
   public getPatients(facility) {
     let promise = new Promise((resolve, reject) => {

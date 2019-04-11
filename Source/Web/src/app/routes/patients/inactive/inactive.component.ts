@@ -62,7 +62,6 @@ export class InactivePatientsComponent implements OnDestroy, OnInit {
         this.facilities.forEach(facility => {
           this.facilitiesOpen[facility.id] = false;
           this.getInactivePatients(facility.id).then((inactivePatients:any) => {
-            this.totalInactive += inactivePatients.count;
             this.facilityPages[facility.id] = 1;
             this.facilityTotals[facility.id] = inactivePatients.count;
             facility.inactivePatients = inactivePatients.results;
@@ -86,6 +85,7 @@ export class InactivePatientsComponent implements OnDestroy, OnInit {
           if (user.facilities.length === 1) {
             this.facilitiesOpen[user.facilities[0].id] = true;
           }
+          this.facilities = this.facilities.filter(f => user.facilities.find(fac => fac.id === f.id));
         })
       }
     )
@@ -94,6 +94,15 @@ export class InactivePatientsComponent implements OnDestroy, OnInit {
       this.employees = res;
       this.employees.forEach(e => {
         this.employeeChecked[e.id] = true;
+      })
+    })
+
+    this.auth.organization$.subscribe(org => {
+      if (!org) return;
+      this.store.PatientProfile.listRoute('GET', 'overview', {}, {
+        'facility__organization__id': org.id,
+      }).subscribe((res: any) => {
+        this.totalInactive = res.inactive;
       })
     })
 
