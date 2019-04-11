@@ -12,6 +12,7 @@ from .signals import (
     assessmentresponse_post_delete,
     vitalresponse_post_delete,
     medicationtasktemplate_post_save,
+    patienttasktemplate_post_init,
     patienttasktemplate_post_save,
     patienttask_post_save,
     patienttask_post_delete,
@@ -91,8 +92,42 @@ class AbstractTaskTemplate(UUIDPrimaryKeyMixin):
     # tracks whether or not this task should show in the available tasks
     is_available = models.BooleanField(default=True)
 
+    previous_start_on_day = None
+    previous_frequency = None
+    previous_repeat_amount = None
+    previous_appear_time = None
+    previous_due_time = None
+
     class Meta:
         abstract = True
+
+    @property
+    def is_start_on_day_changed(self):
+        return self.previous_start_on_day != self.start_on_day
+
+    @property
+    def is_frequency_changed(self):
+        return self.previous_frequency != self.frequency
+
+    @property
+    def is_repeat_amount_changed(self):
+        return self.previous_repeat_amount != self.repeat_amount
+
+    @property
+    def is_appear_time_changed(self):
+        return self.previous_appear_time != self.appear_time
+
+    @property
+    def is_due_time_changed(self):
+        return self.previous_due_time != self.due_time
+
+    @property
+    def is_schedule_fields_changed(self):
+        return self.is_start_on_day_changed or \
+            self.is_frequency_changed or \
+            self.is_repeat_amount_changed or \
+            self.is_appear_time_changed or \
+            self.is_due_time_changed
 
 
 class AbstractTask(UUIDPrimaryKeyMixin, StateMixin):
@@ -649,6 +684,10 @@ models.signals.post_delete.connect(
 models.signals.post_save.connect(
     medicationtasktemplate_post_save,
     sender=MedicationTaskTemplate
+)
+models.signals.post_init.connect(
+    patienttasktemplate_post_init,
+    sender=PatientTaskTemplate
 )
 models.signals.post_save.connect(
     patienttasktemplate_post_save,
