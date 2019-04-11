@@ -37,7 +37,6 @@ from ..permissions import (
 )
 from ..utils import get_all_tasks_for_today
 from .filters import DurationFilter
-from .mixins import DestroyTemplateMixin
 from . serializers import (
     PatientTaskTemplateSerializer,
     PatientTaskSerializer,
@@ -65,7 +64,7 @@ from care_adopt_backend.permissions import (
 )
 
 
-class PatientTaskTemplateViewSet(DestroyTemplateMixin, viewsets.ModelViewSet):
+class PatientTaskTemplateViewSet(viewsets.ModelViewSet):
     serializer_class = PatientTaskTemplateSerializer
     permission_classes = (
         permissions.IsAuthenticated,
@@ -163,7 +162,7 @@ class PatientTaskViewSet(viewsets.ModelViewSet):
         return queryset
 
 
-class TeamTaskTemplateViewSet(DestroyTemplateMixin, viewsets.ModelViewSet):
+class TeamTaskTemplateViewSet(viewsets.ModelViewSet):
     serializer_class = TeamTaskTemplateSerializer
     permission_classes = (permissions.IsAuthenticated, EmployeeOrReadOnly, )
     queryset = TeamTaskTemplate.objects.order_by('name')
@@ -173,7 +172,6 @@ class TeamTaskTemplateViewSet(DestroyTemplateMixin, viewsets.ModelViewSet):
         'is_active',
         'is_available',
     )
-    task_field = 'team_tasks'
 
 
 class TeamTaskViewSet(viewsets.ModelViewSet):
@@ -263,7 +261,7 @@ class MedicationTaskViewSet(viewsets.ModelViewSet):
         return qs.distinct()
 
 
-class SymptomTaskTemplateViewSet(DestroyTemplateMixin, viewsets.ModelViewSet):
+class SymptomTaskTemplateViewSet(viewsets.ModelViewSet):
     serializer_class = SymptomTaskTemplateSerializer
     permission_classes = (permissions.IsAuthenticated, EmployeeOrReadOnly, )
     queryset = SymptomTaskTemplate.objects.all()
@@ -273,7 +271,6 @@ class SymptomTaskTemplateViewSet(DestroyTemplateMixin, viewsets.ModelViewSet):
         'is_active',
         'is_available',
     )
-    task_field = 'symptom_tasks'
 
 
 class SymptomTaskViewSet(viewsets.ModelViewSet):
@@ -379,8 +376,7 @@ class SymptomRatingViewSet(viewsets.ModelViewSet):
         return queryset
 
 
-class AssessmentTaskTemplateViewSet(DestroyTemplateMixin,
-                                    viewsets.ModelViewSet):
+class AssessmentTaskTemplateViewSet(viewsets.ModelViewSet):
     serializer_class = AssessmentTaskTemplateSerializer
     permission_classes = (permissions.IsAuthenticated, EmployeeOrReadOnly, )
     filter_backends = (DjangoFilterBackend, )
@@ -390,7 +386,6 @@ class AssessmentTaskTemplateViewSet(DestroyTemplateMixin,
         'is_available',
     )
     queryset = AssessmentTaskTemplate.objects.order_by('name')
-    task_field = 'assessment_tasks'
 
 
 class AssessmentQuestionViewSet(viewsets.ModelViewSet):
@@ -513,7 +508,7 @@ class AssessmentResponseViewSet(viewsets.ModelViewSet):
         return queryset
 
 
-class VitalTaskTemplateViewSet(DestroyTemplateMixin, viewsets.ModelViewSet):
+class VitalTaskTemplateViewSet(viewsets.ModelViewSet):
     """
     Viewset for :model:`tasks.VitalTaskTemplate`
     ========
@@ -552,7 +547,6 @@ class VitalTaskTemplateViewSet(DestroyTemplateMixin, viewsets.ModelViewSet):
         'is_available',
     )
     queryset = VitalTaskTemplate.objects.order_by('name')
-    task_field = 'vital_tasks'
 
 
 class VitalTaskTemplateSearchViewSet(HaystackViewSet):

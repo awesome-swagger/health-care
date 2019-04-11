@@ -167,6 +167,8 @@ def create_tasks_for_ongoing_plans(task_template,
 
     if is_medication:
         duration_weeks = task_template.plan.plan_template.duration_weeks
+        days_past = timezone.now() - task_template.plan.created
+        duration_weeks -= round(days_past.days / 7)
         create_tasks_from_template(
             task_template,
             duration_weeks,
@@ -295,6 +297,14 @@ def vitalresponse_post_delete(sender, instance, **kwargs):
         assignment.assign_risk_level_to_patient()
 
 
+def medicationtasktemplate_post_init(sender, instance, **kwargs):
+    """
+    Function to be used as signal (post_init) when initializing
+    :model:`tasks.MedicationTaskTemplate`
+    """
+    instance.assign_previous_fields()
+
+
 def medicationtasktemplate_post_save(sender, instance, created, **kwargs):
     """
     Function to be used as signal (post_save) when saving
@@ -306,6 +316,22 @@ def medicationtasktemplate_post_save(sender, instance, created, **kwargs):
             'medication_task_template',
             'MedicationTask'
         )
+    elif instance.is_schedule_fields_changed:
+        now = timezone.now()
+        instance.medication_tasks.filter(due_datetime__gte=now).delete()
+        create_tasks_for_ongoing_plans(
+            instance,
+            'medication_task_template',
+            'MedicationTask'
+        )
+
+
+def patienttasktemplate_post_init(sender, instance, **kwargs):
+    """
+    Function to be used as signal (post_init) when initializing
+    :model:`tasks.PatientTaskTemplate`
+    """
+    instance.assign_previous_fields()
 
 
 def patienttasktemplate_post_save(sender, instance, created, **kwargs):
@@ -314,6 +340,14 @@ def patienttasktemplate_post_save(sender, instance, created, **kwargs):
     :model:`tasks.PatientTaskTemplate`
     """
     if created:
+        create_tasks_for_ongoing_plans(
+            instance,
+            'patient_task_template',
+            'PatientTask'
+        )
+    elif instance.is_schedule_fields_changed:
+        now = timezone.now()
+        instance.patient_tasks.filter(due_datetime__gte=now).delete()
         create_tasks_for_ongoing_plans(
             instance,
             'patient_task_template',
@@ -363,6 +397,14 @@ def medicationtask_post_delete(sender, instance, **kwargs):
     assignment.assign_risk_level_to_patient()
 
 
+def symptomtasktemplate_post_init(sender, instance, **kwargs):
+    """
+    Function to be used as signal (post_init) when initializing
+    :model:`tasks.SymptomTaskTemplate`
+    """
+    instance.assign_previous_fields()
+
+
 def symptomtasktemplate_post_save(sender, instance, created, **kwargs):
     """
     Function to be used as signal (post_save) when saving
@@ -374,6 +416,22 @@ def symptomtasktemplate_post_save(sender, instance, created, **kwargs):
             'symptom_task_template',
             'SymptomTask'
         )
+    elif instance.is_schedule_fields_changed:
+        now = timezone.now()
+        instance.symptom_tasks.filter(due_datetime__gte=now).delete()
+        create_tasks_for_ongoing_plans(
+            instance,
+            'symptom_task_template',
+            'SymptomTask'
+        )
+
+
+def teamtasktemplate_post_init(sender, instance, **kwargs):
+    """
+    Function to be used as signal (post_init) when initializing
+    :model:`tasks.TeamTaskTemplate`
+    """
+    instance.assign_previous_fields()
 
 
 def teamtasktemplate_post_save(sender, instance, created, **kwargs):
@@ -382,6 +440,14 @@ def teamtasktemplate_post_save(sender, instance, created, **kwargs):
     :model:`tasks.TeamTaskTemplate`
     """
     if created:
+        create_tasks_for_ongoing_plans(
+            instance,
+            'team_task_template',
+            'TeamTask'
+        )
+    elif instance.is_schedule_fields_changed:
+        now = timezone.now()
+        instance.team_tasks.filter(due_datetime__gte=now).delete()
         create_tasks_for_ongoing_plans(
             instance,
             'team_task_template',
@@ -400,12 +466,28 @@ def symptomtask_post_save(sender, instance, created, **kwargs):
         assignment.assign_risk_level_to_patient()
 
 
+def assessmenttasktemplate_post_init(sender, instance, **kwargs):
+    """
+    Function to be used as signal (post_init) when initializing
+    :model:`tasks.AssessmentTaskTemplate`
+    """
+    instance.assign_previous_fields()
+
+
 def assessmenttasktemplate_post_save(sender, instance, created, **kwargs):
     """
     Function to be used as signal (post_save) when saving
     :model:`tasks.AssessmentTaskTemplate`
     """
     if created:
+        create_tasks_for_ongoing_plans(
+            instance,
+            'assessment_task_template',
+            'AssessmentTask'
+        )
+    elif instance.is_schedule_fields_changed:
+        now = timezone.now()
+        instance.assessment_tasks.filter(due_datetime__gte=now).delete()
         create_tasks_for_ongoing_plans(
             instance,
             'assessment_task_template',
@@ -424,12 +506,28 @@ def assessmenttask_post_save(sender, instance, created, **kwargs):
         assignment.assign_risk_level_to_patient()
 
 
+def vitaltasktemplate_post_init(sender, instance, **kwargs):
+    """
+    Function to be used as signal (post_init) when initializing
+    :model:`tasks.VitalTaskTemplate`
+    """
+    instance.assign_previous_fields()
+
+
 def vitaltasktemplate_post_save(sender, instance, created, **kwargs):
     """
     Function to be used as signal (post_save) when saving
     :model:`tasks.VitalTaskTemplate`
     """
     if created:
+        create_tasks_for_ongoing_plans(
+            instance,
+            'vital_task_template',
+            'VitalTask'
+        )
+    elif instance.is_schedule_fields_changed:
+        now = timezone.now()
+        instance.vital_tasks.filter(due_datetime__gte=now).delete()
         create_tasks_for_ongoing_plans(
             instance,
             'vital_task_template',
