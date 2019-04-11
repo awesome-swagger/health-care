@@ -177,6 +177,8 @@ export class PlansComponent implements OnDestroy, OnInit {
               risk_level: 0,
               total_facilities: 0,
               total_patients: 0,
+              time_count: 0,
+              time_allotted: 0,
             });
           } else {
             resolve(carePlanTemplateAverages);
@@ -189,6 +191,8 @@ export class PlansComponent implements OnDestroy, OnInit {
             risk_level: 0,
             total_facilities: 0,
             total_patients: 0,
+            time_count: 0,
+            time_allotted: 0,
           });
         },
         () => {
@@ -262,22 +266,51 @@ export class PlansComponent implements OnDestroy, OnInit {
     return num < 10 ? `0${num}` : `${num}`;
   }
 
+  public formatTime(minutes) {
+    if (!minutes) return '0:00';
+    const h = `${Math.floor(minutes / 60)}`;
+    const m = `${minutes % 60}`;
+    return `${h}:${m.length === 1 ? '0' : ''}${minutes % 60}`
+  }
+
   public totalTimeCount(templates) {
-    let hours = 0;
     let minutes = 0;
     templates.forEach((obj) => {
       if (!obj.averages.time_count) {
         return;
       }
-      let timeCountSplit = obj.averages.time_count.split(":");
-      let splitHours = parseInt(timeCountSplit[0]);
-      let splitMinutes = parseInt(timeCountSplit[1]);
-      hours += splitHours;
-      minutes += splitMinutes;
+      minutes += obj.averages.time_count;
     });
-    hours += Math.floor((minutes / 60));
-    minutes = minutes % 60;
-    return `${hours}:${this.zeroPad(minutes)}`;
+    return minutes;
+  }
+
+  public totalTimeAllotted(templates) {
+    let minutes = 0;
+    templates.forEach((obj) => {
+      if (!obj.averages.time_allotted) {
+        return;
+      }
+      minutes += obj.averages.time_allotted;
+    });
+    return minutes;
+  }
+
+  public templateTimeColor(template) {
+    let totalTime = template.averages.time_count;
+    let totalAllotted = template.averages.time_allotted;
+    if (totalAllotted < 1) {
+      return null;
+    }
+    return this.utils.timePillColor(totalTime, totalAllotted);
+  }
+
+  public serviceAreaTimeColor(templates) {
+    let totalTime = this.totalTimeCount(templates);
+    let totalAllotted = this.totalTimeAllotted(templates);
+    if (totalAllotted < 1) {
+      return null;
+    }
+    return this.utils.timePillColor(totalTime, totalAllotted);
   }
 
   public totalRiskLevel(templates) {

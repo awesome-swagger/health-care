@@ -150,6 +150,22 @@ export class PlanHeaderComponent implements OnInit, OnDestroy {
     return promise;
   }
 
+  public formatTime(minutes) {
+    if (!minutes) return '0:00';
+    const h = `${Math.floor(minutes / 60)}`;
+    const m = `${minutes % 60}`;
+    return `${h}:${m.length === 1 ? '0' : ''}${minutes % 60}`
+  }
+
+  public totalTimePillColor(average) {
+    let totalTime = average.time_count;
+    let totalAllotted = average.time_allotted;
+    if (totalAllotted < 1) {
+      return null;
+    }
+    return this.utils.timePillColor(totalTime, totalAllotted);
+  }
+
   @Input()
   public get planTemplate() {
     return this._planTemplate;

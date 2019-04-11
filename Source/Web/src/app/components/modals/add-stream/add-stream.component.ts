@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import {
   groupBy as _groupBy,
   uniqBy as _uniqBy,
+  omit as _omit,
 } from 'lodash';
 import { ModalService } from '../../../modules/modals';
 import { StoreService } from '../../../services';
@@ -176,9 +177,18 @@ export class AddStreamComponent implements OnInit {
       (resp) => {
         this.careMessages.push(resp);
         this.createStream = false;
-        this.modal.close({
-          nextAction: 'create-stream',
-          message: resp,
+        this.selectedTemplate.messages.forEach((message, i, array) => {
+          let updatedMessage = _omit(message, 'id');
+          updatedMessage.queue = resp.id;
+          this.store.InfoMessage.create(updatedMessage).subscribe((newMessage) => {
+            resp.messages.push(newMessage);
+            if (i === array.length - 1) {
+              this.modal.close({
+                nextAction: 'create-stream',
+                message: resp,
+              });
+            }
+          });
         });
       },
       (err) => {},

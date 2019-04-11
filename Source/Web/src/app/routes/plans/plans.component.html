@@ -134,8 +134,8 @@
       <div class="accordion__head" (click)="accordionsOpen[plan.serviceArea]=!accordionsOpen[plan.serviceArea]">
         <span class="accordion__title">{{plan.serviceAreaObj.name}} ({{filteredTemplates(plan.templates).length}}) ({{plan.totalPatients}})</span>
         <div class="accordion__right">
-          <div class="pill marRight16">
-            Time {{totalTimeCount(filteredTemplates(plan.templates))}}
+          <div class="pill marRight16" [ngClass]="serviceAreaTimeColor(filteredTemplates(plan.templates))">
+            Time {{formatTime(totalTimeCount(filteredTemplates(plan.templates)))}}
           </div>
           <div class="pill" *ngIf="plan.totalPatients > 0" [ngClass]="utils.percentPillClass(totalRiskLevel(filteredTemplates(plan.templates)))">
             {{utils.getRiskLevelText(totalRiskLevel(filteredTemplates(plan.templates)))}} {{totalRiskLevel(filteredTemplates(plan.templates))}}%
@@ -192,9 +192,8 @@
                 <td>{{item.averages.total_patients}}</td>
                 <td>{{item.averages.total_facilities}}</td>
                 <td>
-                  <div class="pill">
-                    <span *ngIf="!item.averages.time_count">0:00</span>
-                    <span *ngIf="item.averages.time_count">{{item.averages.time_count}}</span>
+                  <div class="pill" [ngClass]="templateTimeColor(item)">
+                    <span>{{formatTime(item.averages.time_count)}}</span>
                   </div>
                 </td>
                 <td>
