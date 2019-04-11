@@ -141,6 +141,33 @@ class AbstractTaskTemplate(UUIDPrimaryKeyMixin):
         self.previous_appear_time = self.appear_time
         self.previous_due_time = self.due_time
 
+    def delete(self, using=None, soft=True, *args, **kwargs):
+        """
+        Soft delete object (set its ``is_removed`` field to True).
+        Actually delete object if setting ``soft`` to False.
+        """
+        if soft:
+            task_model_lookup = {
+                'AssessmentTaskTemplate': 'assessment_tasks',
+                'MedicationTaskTemplate': 'medication_tasks',
+                'PatientTaskTemplate': 'patient_tasks',
+                'SymptomTaskTemplate': 'symptom_tasks',
+                'TeamTaskTemplate': 'team_tasks',
+                'VitalTaskTemplate': 'vital_tasks'
+            }
+            model_name = self.__class__.__name__
+            if model_name in task_model_lookup:
+                task_model = getattr(self, task_model_lookup[model_name], None)
+
+                if task_model:
+                    now = timezone.now()
+                    task_model.filter(due_datetime__gte=now).delete()
+            self.is_active = False
+            self.save(using=using)
+        else:
+            return super(AbstractTaskTemplate, self).delete(
+                using=using, *args, **kwargs)
+
 
 class AbstractTask(UUIDPrimaryKeyMixin, StateMixin):
     appear_datetime = models.DateTimeField(null=False, blank=False)
