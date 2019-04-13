@@ -42,7 +42,7 @@ def calculate_task_percentage(patient):
 
     # Patient tasks
     patient_tasks = PatientTask.objects.filter(
-        plan__patient=patient,
+        patient_template__plan__patient=patient,
         **kwargs
     )
     completed_patient_tasks = patient_tasks.filter(status='done')
@@ -95,7 +95,7 @@ def get_all_tasks_of_patient_today(patient):
                                           tzinfo=pytz.utc)
 
     patient_tasks = PatientTask.objects.filter(
-        plan__patient__id=patient.id,
+        patient_template__plan__patient__id=patient.id,
         due_datetime__range=(today_min, today_max)
         )
     medication_tasks = MedicationTask.objects.filter(
@@ -199,7 +199,7 @@ def get_all_tasks_for_today(user, **kwargs):
     elif user.is_patient:
         patient = user.patient_profile
         patient_tasks = PatientTask.objects.filter(
-            plan__patient__id=patient.id,
+            patient_template__plan__patient__id=patient.id,
             due_datetime__range=(today_min, today_max))
         medication_tasks = MedicationTask.objects.filter(
             medication_task_template__plan__patient__id=patient.id,
@@ -222,7 +222,7 @@ def get_all_tasks_for_today(user, **kwargs):
 
         if plan_template:
             patient_tasks = patient_tasks.filter(
-                patient_task_template__plan_template=plan_template)
+                patient_template__patient_task_template__plan_template=plan_template)
             medication_tasks = medication_tasks.filter(
                 medication_task_template__plan__plan_template=plan_template)
             symptom_tasks = symptom_tasks.filter(

@@ -252,6 +252,10 @@ class BaseOrganizationPatientSerializer(serializers.ModelSerializer):
             'plan__patient__facility__in': facilities,
             'due_datetime__lte': now
         }
+        patient_kwargs = {
+            'patient_template__plan__patient__facility__in': facilities,
+            'due_datetime__lte': now
+        }
         medication_kwargs = {
             'medication_task_template__plan__patient__facility__in': facilities,
             'due_datetime__lte': now
@@ -260,6 +264,9 @@ class BaseOrganizationPatientSerializer(serializers.ModelSerializer):
         if care_team_members.exists() and filter_allowed:
             kwargs.update({
                 'plan__care_team_members__employee_profile__in': care_team_members
+            })
+            patient_kwargs.update({
+                'patient_template__plan__care_team_members__employee_profile__in': care_team_members
             })
             medication_kwargs.update({
                 'medication_task_template__plan__care_team_members__employee_profile__in': care_team_members
@@ -273,7 +280,7 @@ class BaseOrganizationPatientSerializer(serializers.ModelSerializer):
                 'medication_task_template__plan__patient__facility__id': request.GET.get('facility')
             })
 
-        patient_tasks = PatientTask.objects.filter(**kwargs)
+        patient_tasks = PatientTask.objects.filter(**patient_kwargs)
         medication_tasks = MedicationTask.objects.filter(**medication_kwargs)
         symptom_tasks = SymptomTask.objects.filter(**kwargs)
         assessment_tasks = AssessmentTask.objects.filter(**kwargs)

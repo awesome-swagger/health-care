@@ -30,10 +30,16 @@ def create_scheduled_tasks(plan,
         plan_template=plan.plan_template, is_active=True)
 
     for template in task_templates:
-        template_config = {
-            '{}'.format(template_field): template,
-            'plan': plan,
-        }
+        if template_field == 'patient_task_template':
+            template_config = {
+                'patient_template__{}'.format(template_field): template,
+                'patient_template__plan': plan,
+            }
+        else:
+            template_config = {
+                '{}'.format(template_field): template,
+                'plan': plan,
+            }
 
         create_tasks_from_template(
             template,

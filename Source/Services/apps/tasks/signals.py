@@ -35,12 +35,16 @@ class RiskLevelAssignment(object):
             'plan__patient': self.patient,
             'due_datetime__lte': now
         }
+        patient_kwargs = {
+            'patient_template__plan__patient': self.patient,
+            'due_datetime__lte': now
+        }
         medication_kwargs = {
             'medication_task_template__plan__patient': self.patient,
             'due_datetime__lte': now
         }
 
-        patient_tasks = PatientTask.objects.filter(**task_kwargs)
+        patient_tasks = PatientTask.objects.filter(**patient_kwargs)
         medication_tasks = MedicationTask.objects.filter(**medication_kwargs)
         symptom_tasks = SymptomTask.objects.filter(**task_kwargs)
         assessment_tasks = AssessmentTask.objects.filter(**task_kwargs)

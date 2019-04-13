@@ -77,7 +77,6 @@ class PatientTaskTemplateViewSet(viewsets.ModelViewSet):
         'is_active',
         'is_available',
     )
-    task_field = 'patient_tasks'
 
     def get_queryset(self):
         queryset = super(PatientTaskTemplateViewSet, self).get_queryset()
