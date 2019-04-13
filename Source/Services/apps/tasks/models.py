@@ -264,9 +264,7 @@ class CarePlanPatientTemplate(models.Model):
 class PatientTask(AbstractTask):
     patient_template = models.ForeignKey(
         'tasks.CarePlanPatientTemplate',
-        on_delete=models.CASCADE,
-        blank=True,
-        null=True)
+        on_delete=models.CASCADE)
     plan = models.ForeignKey(
         CarePlan, null=False, blank=False, on_delete=models.CASCADE)
     patient_task_template = models.ForeignKey(
