@@ -187,49 +187,92 @@ class PatientTaskTemplate(AbstractTaskTemplate):
         return self.name
 
 
-class CarePlanPatientTask(models.Model):
+class CarePlanPatientTemplate(models.Model):
+    """
+    This stores the connection between a patient's plan and
+    a patient task template.
+
+    This is the solution for implementing ad hoc tasks
+    """
 
     plan = models.ForeignKey(
         'plans.CarePlan',
-        related_name='plan_patient_tasks',
+        related_name='plan_patient_templates',
         on_delete=models.CASCADE)
     patient_task_template = models.ForeignKey(
         'tasks.PatientTaskTemplate',
-        related_name='plan_patient_tasks',
+        related_name='plan_patient_templates',
         on_delete=models.CASCADE,
         blank=True,
         null=True)
 
-    start_on_day = models.IntegerField(
+    custom_start_on_day = models.IntegerField(
         blank=True,
         null=True)
-    frequency = models.CharField(
+    custom_frequency = models.CharField(
         max_length=20,
         choices=FREQUENCY_CHOICES,
         blank=True)
 
-    repeat_amount = models.IntegerField(
+    custom_repeat_amount = models.IntegerField(
         blank=True,
         null=True)
-    appear_time = models.TimeField(
+    custom_appear_time = models.TimeField(
         blank=True,
         null=True)
-    due_time = models.TimeField(
+    custom_due_time = models.TimeField(
         blank=True,
         null=True)
+
+    class Meta:
+        verbose_name = _('Care Plan Patient Template')
+        verbose_name = _('Care Plan Patient Templates')
+
+    def __str__(self):
+        return f'{self.plan}: {self.patient_task_template}'
+
+    @property
+    def start_on_day(self):
+        return self.custom_start_on_day \
+            if self.custom_start_on_day is not None \
+            else self.patient_task_template.start_on_day
+
+    @property
+    def frequency(self):
+        return self.custom_frequency if self.custom_frequency \
+            else self.patient_task_template.frequency
+
+    @property
+    def repeat_amount(self):
+        return self.custom_repeat_amount \
+            if self.custom_repeat_amount is not None \
+            else self.patient_task_template.repeat_amount
+
+    @property
+    def appear_time(self):
+        return self.custom_appear_time \
+            if self.custom_appear_time is not None \
+            else self.patient_task_template.appear_time
+
+    @property
+    def due_time(self):
+        return self.custom_due_time \
+            if self.custom_due_time is not None \
+            else self.patient_task_template.due_time
 
 
 class PatientTask(AbstractTask):
-    plan_task = models.ForeignKey(
-        'tasks.CarePlanPatientTask',
+    patient_template = models.ForeignKey(
+        'tasks.CarePlanPatientTemplate',
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True)
+    plan = models.ForeignKey(
+        CarePlan, null=False, blank=False, on_delete=models.CASCADE)
+    patient_task_template = models.ForeignKey(
+        PatientTaskTemplate,
         related_name='patient_tasks',
         on_delete=models.CASCADE)
-    # plan = models.ForeignKey(
-    #     CarePlan, null=False, blank=False, on_delete=models.CASCADE)
-    # patient_task_template = models.ForeignKey(
-    #     PatientTaskTemplate,
-    #     related_name='patient_tasks',
-    #     on_delete=models.CASCADE)
     STATUS_CHOICES = (
         ('undefined', 'Undefined'),
         ('missed', 'Missed'),
@@ -239,7 +282,7 @@ class PatientTask(AbstractTask):
         choices=STATUS_CHOICES, max_length=12, default="undefined")
 
     class Meta:
-        ordering = ('plan_task', 'due_datetime', )
+        ordering = ('patient_template', 'due_datetime', )
 
     @property
     def is_complete(self):
