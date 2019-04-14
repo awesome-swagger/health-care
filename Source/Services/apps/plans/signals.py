@@ -8,6 +8,7 @@ from django.utils import timezone
 from .utils import create_tasks_from_template
 from apps.core.models import EmployeeRole
 
+
 def replace_time(datetime_obj, time_obj):
     return datetime_obj.replace(
         hour=time_obj.hour,
@@ -31,9 +32,19 @@ def create_scheduled_tasks(plan,
 
     for template in task_templates:
         if template_field == 'patient_task_template':
+            CarePlanPatientTemplate = apps.get_model('tasks',
+                                                     'CarePlanPatientTemplate')
+
+            template_kwargs = {
+                'plan': plan,
+                template_field: template
+            }
+
+            patient_template = CarePlanPatientTemplate.objects.create(
+                **template_kwargs
+            )
             template_config = {
-                'patient_template__{}'.format(template_field): template,
-                'patient_template__plan': plan,
+                'patient_template': patient_template,
             }
         else:
             template_config = {
