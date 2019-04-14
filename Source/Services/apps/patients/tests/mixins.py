@@ -35,6 +35,11 @@ class PatientsMixin(CoreMixin):
                 'is_active': True
             })
 
+        if 'is_using_mobile' not in kwargs:
+            kwargs.update({
+                'is_using_mobile': False
+            })
+
         if 'insurance' not in kwargs:
             insurance = self.create_insurance(**{
                 'organization': kwargs.get('facility').organization
