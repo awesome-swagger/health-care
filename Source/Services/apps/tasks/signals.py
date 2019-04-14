@@ -365,7 +365,7 @@ def patienttask_post_save(sender, instance, created, **kwargs):
     :model:`tasks.PatientTask`
     """
     if created or instance.status in ['missed', 'done']:
-        patient = instance.plan.patient
+        patient = instance.patient_template.plan.patient
         assignment = RiskLevelAssignment(patient)
         assignment.assign_risk_level_to_patient()
 
