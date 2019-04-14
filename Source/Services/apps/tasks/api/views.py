@@ -106,10 +106,10 @@ class PatientTaskViewSet(viewsets.ModelViewSet):
     queryset = PatientTask.objects.all()
     filter_backends = (DjangoFilterBackend, )
     filterset_fields = {
-        'plan': ['exact'],
-        'patient_task_template': ['exact'],
-        'plan__patient': ['exact'],
-        'patient_task_template__plan_template': ['exact'],
+        'patient_template__plan': ['exact'],
+        'patient_template__patient_task_template': ['exact'],
+        'patient_template__plan__patient': ['exact'],
+        'patient_template__patient_task_template__plan_template': ['exact'],
         'status': ['exact'],
         'appear_datetime': ['lte', 'gte']
     }
@@ -120,22 +120,22 @@ class PatientTaskViewSet(viewsets.ModelViewSet):
 
         if user.is_employee:
             employee_profile = user.employee_profile
-            if employee_profile.organizations_managed.count() > 0:
-                organizations_managed = employee_profile.organizations_managed.values_list('id', flat=True)
+            if employee_profile.organizations_managed.exists():
+                organizations = employee_profile.organizations_managed.all()
                 qs = qs.filter(
-                    plan__patient__facility__organization__id__in=organizations_managed)
-            elif employee_profile.facilities_managed.count() > 0:
-                facilities_managed = employee_profile.facilities_managed.values_list('id', flat=True)
-                assigned_roles = employee_profile.assigned_roles.values_list('id', flat=True)
+                    patient_template__plan__patient__facility__organization__in=organizations)
+            elif employee_profile.facilities_managed.exists():
+                facilities = employee_profile.facilities_managed.all()
+                assigned_roles = employee_profile.assigned_roles.all()
                 qs = qs.filter(
-                    Q(plan__patient__facility__id__in=facilities_managed) |
-                    Q(plan__care_team_members__id__in=assigned_roles)
+                    Q(patient_template__plan__patient__facility__in=facilities) |
+                    Q(patient_template__plan__care_team_members__in=assigned_roles)
                 )
             else:
-                assigned_roles = employee_profile.assigned_roles.values_list('id', flat=True)
-                qs = qs.filter(plan__care_team_members__id__in=assigned_roles)
+                assigned_roles = employee_profile.assigned_roles.all()
+                qs = qs.filter(patient_template__plan__care_team_members__in=assigned_roles)
         elif user.is_patient:
-            qs = qs.filter(plan__patient=user.patient_profile)
+            qs = qs.filter(patient_template__plan__patient=user.patient_profile)
 
         return qs.distinct()
 
@@ -143,8 +143,8 @@ class PatientTaskViewSet(viewsets.ModelViewSet):
         queryset = super(PatientTaskViewSet, self).filter_queryset(queryset)
 
         query_parameters = self.request.query_params.keys()
-        if 'plan__patient' in query_parameters and \
-           'patient_task_template__plan_template' in query_parameters and \
+        if 'patient_template__plan__patient' in query_parameters and \
+           'patient_template__patient_task_template__plan_template' in query_parameters and \
            'appear_datetime__gte' not in query_parameters and \
            'appear_datetime__lte' not in query_parameters:
             today = timezone.now().date()

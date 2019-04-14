@@ -51,8 +51,7 @@ class PatientTaskSerializer(RepresentationMixin, serializers.ModelSerializer):
         model = PatientTask
         fields = (
             'id',
-            'plan',
-            'patient_task_template',
+            'patient_template',
             'appear_datetime',
             'due_datetime',
             'status',
@@ -62,12 +61,12 @@ class PatientTaskSerializer(RepresentationMixin, serializers.ModelSerializer):
         read_only_fields = (
             'id',
         )
-        nested_serializers = [
-            {
-                'field': 'patient_task_template',
-                'serializer_class': PatientTaskTemplateSerializer,
-            }
-        ]
+        # nested_serializers = [
+        #     {
+        #         'field': 'patient_task_template',
+        #         'serializer_class': PatientTaskTemplateSerializer,
+        #     }
+        # ]
 
 
 class PatientTaskTodaySerializer(serializers.ModelSerializer):

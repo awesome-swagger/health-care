@@ -28,8 +28,11 @@ class TestPatientTaskTimezoneConversion(TasksMixin, APITestCase):
         self.user = RegularUserFactory(time_zone='Asia/Manila')
         self.patient = self.create_patient(self.user)
         self.plan = self.create_care_plan(self.patient)
+        self.patient_template = self.create_plan_patient_template(
+            plan=self.plan
+        )
         self.patient_task = self.create_patient_task(**{
-            'plan': self.plan
+            'patient_template': self.patient_template
         })
         self.other_task = self.create_patient_task(**{
             'status': 'missed'
@@ -78,8 +81,11 @@ class TestPatientTask(StateTestMixin, TasksMixin, APITestCase):
         self.user = AdminUserFactory()
 
         self.plan = self.create_care_plan()
+        self.patient_template = self.create_plan_patient_template(
+            plan=self.plan
+        )
         self.patient_task = self.create_patient_task(**{
-            'plan': self.plan
+            'patient_template': self.patient_template
         })
         self.other_task = self.create_patient_task(**{
             'status': 'missed'
@@ -111,7 +117,7 @@ class TestPatientTask(StateTestMixin, TasksMixin, APITestCase):
     def execute_state_test(self, state, **kwargs):
 
         kwargs.update({
-            'plan': self.plan
+            'plan': self.patient_template
         })
 
         patient_task = self.create_patient_task(**kwargs)
@@ -129,7 +135,7 @@ class TestPatientTask(StateTestMixin, TasksMixin, APITestCase):
         self.execute_state_test('missed', **kwargs)
 
     def test_filter_by_care_plan(self):
-        filter_url = f'{self.url}?plan={self.plan.id}'
+        filter_url = f'{self.url}?plan={self.patient_template.plan.id}'
         response = self.client.get(filter_url)
         self.assertEqual(response.data['count'], 1)
 
@@ -139,7 +145,7 @@ class TestPatientTask(StateTestMixin, TasksMixin, APITestCase):
         self.assertEqual(response.data['count'], 1)
 
     def test_filter_by_patient(self):
-        filter_url = f'{self.url}?plan__patient={self.plan.patient.id}'
+        filter_url = f'{self.url}?patient_template__plan__patient={self.plan.patient.id}'
         response = self.client.get(filter_url)
         self.assertEqual(response.data['count'], 1)
 
@@ -182,9 +188,12 @@ class TestPatientTask(StateTestMixin, TasksMixin, APITestCase):
             task_template = self.create_patient_task_template(**{
                 'plan_template': plan_template
             })
+            patient_template = self.create_plan_patient_template(
+                plan=plan,
+                patient_task_template=task_template
+            )
             self.create_patient_task(**{
-                'plan': plan,
-                'patient_task_template': task_template,
+                'patient_template': patient_template,
                 'appear_datetime': days_ago,
             })
 
@@ -196,14 +205,17 @@ class TestPatientTask(StateTestMixin, TasksMixin, APITestCase):
             task_template = self.create_patient_task_template(**{
                 'plan_template': plan_template
             })
+            patient_template = self.create_plan_patient_template(
+                plan=plan,
+                patient_task_template=task_template
+            )
             self.create_patient_task(**{
-                'plan': plan,
-                'patient_task_template': task_template
+                'patient_template': patient_template
             })
 
         query_params = urllib.parse.urlencode({
-            'plan__patient': patient.id,
-            'patient_task_template__plan_template': plan_template.id,
+            'patient_template__plan__patient': patient.id,
+            'patient_template__patient_task_template__plan_template': plan_template.id,
             'appear_datetime__lte': days_ago_max,
             'appear_datetime__gte': days_ago_min
         })
@@ -229,8 +241,11 @@ class TestPatientTaskUsingEmployee(TasksMixin, APITestCase):
             'employee_profile': self.employee,
             'plan': self.plan
         })
+        self.patient_template = self.create_plan_patient_template(
+            plan=self.plan
+        )
         self.patient_task = self.create_patient_task(**{
-            'plan': self.plan
+            'patient_template': self.patient_template
         })
         self.url = reverse('patient_tasks-list')
         self.detail_url = reverse(
@@ -269,9 +284,13 @@ class TestPatientTaskUsingEmployee(TasksMixin, APITestCase):
             self.fake.future_datetime(end_date="+30d")
         )
 
+        patient_template = self.create_plan_patient_template(
+            plan=self.plan,
+            patient_task_template=template
+        )
+
         payload = {
-            'plan': self.plan.id,
-            'patient_task_template': template.id,
+            'patient_template': patient_template.id,
             'appear_datetime': appear_datetime,
             'due_datetime': due_datetime,
         }
@@ -288,9 +307,14 @@ class TestPatientTaskUsingEmployee(TasksMixin, APITestCase):
         due_datetime = pytz.utc.localize(
             self.fake.future_datetime(end_date="+30d")
         )
+
+        patient_template = self.create_plan_patient_template(
+            plan=self.plan,
+            patient_task_template=template
+        )
+
         payload = {
-            'plan': self.plan.id,
-            'patient_task_template': template.id,
+            'patient_template': self.patient_template.id,
             'appear_datetime': appear_datetime,
             'due_datetime': due_datetime,
         }
@@ -307,9 +331,14 @@ class TestPatientTaskUsingEmployee(TasksMixin, APITestCase):
         due_datetime = pytz.utc.localize(
             self.fake.future_datetime(end_date="+30d")
         )
+
+        patient_template = self.create_plan_patient_template(
+            plan=self.plan,
+            patient_task_template=template
+        )
+
         payload = {
-            'plan': self.plan.id,
-            'patient_task_template': template.id,
+            'patient_template': patient_template.id,
             'appear_datetime': appear_datetime,
             'due_datetime': due_datetime,
         }
@@ -374,8 +403,11 @@ class TestPatientTaskUsingPatient(TasksMixin, APITestCase):
         self.user = self.patient.user
 
         self.plan = self.create_care_plan(patient=self.patient)
+        self.patient_template = self.create_plan_patient_template(
+            plan=self.plan
+        )
         self.patient_task = self.create_patient_task(**{
-            'plan': self.plan
+            'patient_template': self.patient_template
         })
         self.url = reverse('patient_tasks-list')
         self.detail_url = reverse(
@@ -414,9 +446,13 @@ class TestPatientTaskUsingPatient(TasksMixin, APITestCase):
             self.fake.future_datetime(end_date="+30d")
         )
 
+        patient_template = self.create_plan_patient_template(
+            plan=self.plan,
+            patient_task_template=template
+        )
+
         payload = {
-            'plan': self.plan.id,
-            'patient_task_template': template.id,
+            'patient_template': patient_template.id,
             'appear_datetime': appear_datetime,
             'due_datetime': due_datetime,
         }
@@ -433,9 +469,14 @@ class TestPatientTaskUsingPatient(TasksMixin, APITestCase):
         due_datetime = pytz.utc.localize(
             self.fake.future_datetime(end_date="+30d")
         )
+
+        patient_template = self.create_plan_patient_template(
+            plan=self.plan,
+            patient_task_template=template
+        )
+
         payload = {
-            'plan': self.plan.id,
-            'patient_task_template': template.id,
+            'patient_template': patient_template.id,
             'appear_datetime': appear_datetime,
             'due_datetime': due_datetime,
         }
@@ -452,9 +493,14 @@ class TestPatientTaskUsingPatient(TasksMixin, APITestCase):
         due_datetime = pytz.utc.localize(
             self.fake.future_datetime(end_date="+30d")
         )
+
+        patient_template = self.create_plan_patient_template(
+            plan=self.plan,
+            patient_task_template=template
+        )
+
         payload = {
-            'plan': self.plan.id,
-            'patient_task_template': template.id,
+            'patient_template': patient_template.id,
             'appear_datetime': appear_datetime,
             'due_datetime': due_datetime,
         }
