@@ -388,7 +388,7 @@ class TestCarePlanUsingEmployee(BillingsMixin, APITestCase):
             due_datetime__lte=now
         )
         patient_tasks = PatientTask.objects.filter(
-            plan__in=plans,
+            patient_template__plan__in=plans,
             due_datetime__lte=now
         )
         medication_tasks = MedicationTask.objects.filter(
