@@ -265,12 +265,7 @@ class PatientTask(AbstractTask):
     patient_template = models.ForeignKey(
         'tasks.CarePlanPatientTemplate',
         on_delete=models.CASCADE)
-    plan = models.ForeignKey(
-        CarePlan, null=False, blank=False, on_delete=models.CASCADE)
-    patient_task_template = models.ForeignKey(
-        PatientTaskTemplate,
-        related_name='patient_tasks',
-        on_delete=models.CASCADE)
+
     STATUS_CHOICES = (
         ('undefined', 'Undefined'),
         ('missed', 'Missed'),
