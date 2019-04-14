@@ -193,6 +193,19 @@ def create_tasks_for_ongoing_plans(task_template,
                 days_past = timezone.now() - plan.created
                 duration_weeks -= round(days_past.days / 7)
 
+                if task_model_name == 'PatientTask':
+                    CarePlanPatientTemplate = apps.get_model(
+                        'tasks',
+                        'CarePlanPatientTemplate'
+                    )
+                    patient_template = CarePlanPatientTemplate.objects.create(
+                        plan=plan,
+                        patient_task_template=task_template
+                    )
+                    template_config = {
+                        'patient_template': patient_template
+                    }
+
                 create_tasks_from_template(
                     task_template,
                     duration_weeks,
@@ -375,7 +388,7 @@ def patienttask_post_delete(sender, instance, **kwargs):
     Function to be used as signal (post_delete) when deleting
     :model:`tasks.PatientTask`
     """
-    patient = instance.plan.patient
+    patient = instance.patient_template.plan.patient
     assignment = RiskLevelAssignment(patient)
     assignment.assign_risk_level_to_patient()
 

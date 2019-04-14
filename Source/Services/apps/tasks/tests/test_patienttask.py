@@ -45,7 +45,7 @@ class TestPatientTaskTimezoneConversion(TasksMixin, APITestCase):
         self.client.force_authenticate(user=self.user)
 
     def test_timezone_conversion_from_user_due(self):
-        gmt_plus_8 = "+08:00"
+        gmt_plus_8 = '+08:00'
         self.client.force_login(user=self.user)
         response = self.client.get(self.detail_url)
         self.assertEqual(response.data['due_datetime'][-6:], gmt_plus_8)
@@ -58,7 +58,7 @@ class TestPatientTaskTimezoneConversion(TasksMixin, APITestCase):
         self.assertEqual(response.data['due_datetime'][-6:], server_gmt)
 
     def test_timezone_conversion_from_user_appear(self):
-        gmt_plus_8 = "+08:00"
+        gmt_plus_8 = '+08:00'
         self.client.force_login(user=self.user)
         response = self.client.get(self.detail_url)
         self.assertEqual(response.data['appear_datetime'][-6:], gmt_plus_8)
@@ -80,14 +80,31 @@ class TestPatientTask(StateTestMixin, TasksMixin, APITestCase):
         self.fake = Faker()
         self.user = AdminUserFactory()
 
-        self.plan = self.create_care_plan()
+        self.facility = self.create_facility()
+        self.organization = self.facility.organization
+        self.create_employee(
+            user=self.user,
+            organizations_managed=[self.organization]
+        )
+        self.patient = self.create_patient(
+            facility=self.facility
+        )
+
+        self.plan = self.create_care_plan(self.patient)
         self.patient_template = self.create_plan_patient_template(
             plan=self.plan
         )
         self.patient_task = self.create_patient_task(**{
             'patient_template': self.patient_template
         })
+
+        other_patient = self.create_patient(facility=self.facility)
+        other_plan = self.create_care_plan(other_patient)
+        other_patient_template = self.create_plan_patient_template(
+            plan=other_plan
+        )
         self.other_task = self.create_patient_task(**{
+            'patient_template': other_patient_template,
             'status': 'missed'
         })
         self.url = reverse('patient_tasks-list')
@@ -117,7 +134,7 @@ class TestPatientTask(StateTestMixin, TasksMixin, APITestCase):
     def execute_state_test(self, state, **kwargs):
 
         kwargs.update({
-            'plan': self.patient_template
+            'patient_template': self.patient_template
         })
 
         patient_task = self.create_patient_task(**kwargs)
@@ -135,12 +152,15 @@ class TestPatientTask(StateTestMixin, TasksMixin, APITestCase):
         self.execute_state_test('missed', **kwargs)
 
     def test_filter_by_care_plan(self):
-        filter_url = f'{self.url}?plan={self.patient_template.plan.id}'
+        query_params = urllib.parse.urlencode({
+            'patient_template__plan': self.patient_template.plan.id
+        })
+        filter_url = f'{self.url}?{query_params}'
         response = self.client.get(filter_url)
         self.assertEqual(response.data['count'], 1)
 
     def test_filter_by_patient_task_template(self):
-        filter_url = f'{self.url}?patient_task_template={self.patient_task.patient_task_template.id}'
+        filter_url = f'{self.url}?patient_template__patient_task_template={self.patient_task.patient_template.patient_task_template.id}'
         response = self.client.get(filter_url)
         self.assertEqual(response.data['count'], 1)
 
@@ -171,7 +191,9 @@ class TestPatientTask(StateTestMixin, TasksMixin, APITestCase):
         self.assertEqual(response.data['count'], count)
 
     def test_patient_task_filter_appear_datetime(self):
-        patient = self.create_patient()
+        patient = self.create_patient(
+            facility=self.facility
+        )
         plan_template = self.create_care_plan_template()
         days_ago = timezone.now() - relativedelta(days=5)
         days_ago_min = datetime.datetime.combine(days_ago,
@@ -182,10 +204,10 @@ class TestPatientTask(StateTestMixin, TasksMixin, APITestCase):
                                                  tzinfo=pytz.utc)
 
         for i in range(5):
+            task_template = self.create_patient_task_template(
+                plan_template=plan_template
+            )
             plan = self.create_care_plan(patient, **{
-                'plan_template': plan_template
-            })
-            task_template = self.create_patient_task_template(**{
                 'plan_template': plan_template
             })
             patient_template = self.create_plan_patient_template(
@@ -202,9 +224,9 @@ class TestPatientTask(StateTestMixin, TasksMixin, APITestCase):
             plan = self.create_care_plan(patient, **{
                 'plan_template': plan_template
             })
-            task_template = self.create_patient_task_template(**{
-                'plan_template': plan_template
-            })
+            task_template = self.create_patient_task_template(
+                plan_template=plan_template
+            )
             patient_template = self.create_plan_patient_template(
                 plan=plan,
                 patient_task_template=task_template
@@ -233,10 +255,18 @@ class TestPatientTaskUsingEmployee(TasksMixin, APITestCase):
 
     def setUp(self):
         self.fake = Faker()
-        self.employee = self.create_employee()
+        self.facility = self.create_facility()
+        self.organization = self.facility.organization
+        self.employee = self.create_employee(
+            organizations_managed=[self.organization]
+        )
+        self.patient = self.create_patient(
+            facility=self.facility
+        )
+
         self.user = self.employee.user
 
-        self.plan = self.create_care_plan()
+        self.plan = self.create_care_plan(self.patient)
         self.create_care_team_member(**{
             'employee_profile': self.employee,
             'plan': self.plan
