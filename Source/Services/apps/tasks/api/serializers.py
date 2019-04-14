@@ -10,6 +10,7 @@ from drf_haystack.serializers import HaystackSerializerMixin
 from rest_framework import serializers
 
 from ..models import (
+    CarePlanPatientTemplate,
     PatientTaskTemplate,
     PatientTask,
     TeamTaskTemplate,
@@ -45,6 +46,47 @@ class PatientTaskTemplateSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class CarePlanPatientTemplateSerializer(RepresentationMixin,
+                                        serializers.ModelSerializer):
+    """
+    Serializer to be used by :model:`tasks.CarePlanPatientTemplate`
+    """
+
+    class Meta:
+        model = CarePlanPatientTemplate
+        fields = (
+            'id',
+            'plan',
+            'patient_task_template',
+            'custom_start_on_day',
+            'custom_frequency',
+            'custom_repeat_amount',
+            'custom_appear_time',
+            'custom_due_time',
+            'start_on_day',
+            'frequency',
+            'repeat_amount',
+            'appear_time',
+            'due_time',
+        )
+        write_only_fields = (
+            'custom_start_on_day',
+            'custom_frequency',
+            'custom_repeat_amount',
+            'custom_appear_time',
+            'custom_due_time',
+        )
+        read_only_fields = (
+            'id',
+        )
+        nested_serializers = [
+            {
+                'field': 'patient_task_template',
+                'serializer_class': PatientTaskTemplateSerializer,
+            }
+        ]
+
+
 class PatientTaskSerializer(RepresentationMixin, serializers.ModelSerializer):
 
     class Meta:
@@ -61,12 +103,12 @@ class PatientTaskSerializer(RepresentationMixin, serializers.ModelSerializer):
         read_only_fields = (
             'id',
         )
-        # nested_serializers = [
-        #     {
-        #         'field': 'patient_task_template',
-        #         'serializer_class': PatientTaskTemplateSerializer,
-        #     }
-        # ]
+        nested_serializers = [
+            {
+                'field': 'patient_template',
+                'serializer_class': CarePlanPatientTemplateSerializer,
+            }
+        ]
 
 
 class PatientTaskTodaySerializer(serializers.ModelSerializer):
