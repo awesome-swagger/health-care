@@ -49,7 +49,7 @@
       <div class="info__cell">
         <label>Care Team</label>
         <div class="flex alignCenter justifyCenter">
-          <div class="picName" *ngIf="plan.care_manager" [ngClass]="{'marRight8': plan.team_members.length > 0}">
+          <div class="picName cellTextHeight" *ngIf="plan.care_manager" [ngClass]="{'marRight8': plan.team_members.length > 0}">
             <img class="picName__img" [src]="plan.care_manager.employee_profile.user.image_url" />
             {{plan.care_manager.employee_profile.user.first_name}} {{plan.care_manager.employee_profile.user.last_name}}<span *ngIf="plan.care_manager.employee_profile?.title">, {{plan.care_manager.employee_profile?.title.abbreviation}}</span>
           </div>
@@ -113,7 +113,10 @@
       </div>
       <div class="info__cell">
         <label>Last&nbsp;Contact</label>
-        <a [routerLink]="['/patient/asdf/history']" class="justifyCenter">{{plan.daysSinceContact || 0}} days ago</a>
+        <div class="flex alignCenter justifyCenter">
+          <a (click)="routeToHistory(plan.patient, plan)" class="justifyCenter" *ngIf="plan.overview?.last_contact">{{formatTimeSince(plan.overview?.last_contact.activity_datetime)}}</a>
+          <div class="flex alignCenter cellTextHeight" *ngIf="!plan.overview?.last_contact">---</div>
+        </div>
       </div>
       <div class="info__cell">
         <label>Problems</label>

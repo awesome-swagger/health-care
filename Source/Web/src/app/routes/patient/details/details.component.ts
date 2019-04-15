@@ -610,7 +610,7 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
       return obj.id === goal.id;
     });
     this.modals.open(GoalComponent, {
-      closeDisabled: true,
+      closeDisabled: false,
       data: {
         update: true,
         patientName: `${this.patient.user.first_name} ${this.patient.user.last_name}`,
@@ -655,6 +655,7 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
         patient: this.patient,
         goal: goal,
       },
+      overflow: 'auto',
       width: '512px',
     }).subscribe((res) => {
       console.log(res);

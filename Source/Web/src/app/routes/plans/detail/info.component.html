@@ -114,7 +114,10 @@
                     Ongoing
                   </div>
                 </td>
-                <td>---</td>
+                <td>
+                  <a (click)="routeToHistory(plan.patient, plan)" class="justifyCenter" *ngIf="plan.last_contact">{{formatTimeSince(plan.last_contact.activity_datetime)}}</a>
+                  <span *ngIf="!plan.last_contact">---</span>
+                </td>
                 <td><div class="pill" [ngClass]="utils.percentPillClass(plan.average_engagement)">{{plan.average_engagement}}%</div></td>
                 <td><div class="pill" [ngClass]="utils.percentPillClass(plan.average_outcome)">{{plan.average_outcome}}%</div></td>
                 <td><div class="pill" [ngClass]="utils.percentPillClass(plan.risk_level)">{{utils.getRiskLevelText(plan.risk_level)}} {{plan.risk_level}}%</div></td>

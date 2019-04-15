@@ -887,6 +887,16 @@ class OtherPlanSerializer(serializers.ModelSerializer):
         )
 
 
+class LastContactSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = BilledActivity
+        fields = (
+            'id',
+            'activity_datetime',
+        )
+
+
 class CarePlanOverviewSerializer(RepresentationMixin, serializers.ModelSerializer):
     """
     serializer to be used by :model:`plans.CarePlan` with
@@ -898,6 +908,7 @@ class CarePlanOverviewSerializer(RepresentationMixin, serializers.ModelSerialize
     care_team_employee_ids = serializers.SerializerMethodField()
     other_plans = serializers.SerializerMethodField()
     time_count = serializers.SerializerMethodField()
+    last_contact = serializers.SerializerMethodField()
     tasks_this_week = serializers.SerializerMethodField()
     average_outcome = serializers.SerializerMethodField()
     average_engagement = serializers.SerializerMethodField()
@@ -914,6 +925,7 @@ class CarePlanOverviewSerializer(RepresentationMixin, serializers.ModelSerialize
             'care_team_employee_ids',
             'other_plans',
             'time_count',
+            'last_contact',
             'tasks_this_week',
             'average_outcome',
             'average_engagement',
@@ -936,6 +948,15 @@ class CarePlanOverviewSerializer(RepresentationMixin, serializers.ModelSerialize
                 .aggregate(total=Sum('time_spent'))
         total = time_spent['total'] or 0
         return total
+
+    def get_last_contact(self, obj):
+        last_patient_included_activity = BilledActivity.objects.filter(
+            plan=obj,
+            patient_included=True).order_by('-activity_datetime').first()
+        if last_patient_included_activity:
+            serializer = LastContactSerializer(last_patient_included_activity, many=False)
+            return serializer.data
+        return None
 
     def get_tasks_this_week(self, obj):
         now = timezone.now()
@@ -1048,6 +1069,7 @@ class CarePlanByTemplateFacilitySerializer(CarePlanOverviewSerializer):
             'average_outcome',
             'average_engagement',
             'risk_level',
+            'last_contact',
             'time_count',
             'created'
         )
@@ -1111,6 +1133,7 @@ class PatientCarePlanOverviewSerializer(CarePlanOverviewSerializer):
             'plan_template',
             'care_team',
             'next_check_in',
+            'last_contact',
             'problem_areas_count',
             'time_spent_this_month',
             'risk_level',
