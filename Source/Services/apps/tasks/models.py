@@ -150,18 +150,21 @@ class AbstractTaskTemplate(UUIDPrimaryKeyMixin):
             task_model_lookup = {
                 'AssessmentTaskTemplate': 'assessment_tasks',
                 'MedicationTaskTemplate': 'medication_tasks',
-                'PatientTaskTemplate': 'patient_tasks',
                 'SymptomTaskTemplate': 'symptom_tasks',
                 'TeamTaskTemplate': 'team_tasks',
                 'VitalTaskTemplate': 'vital_tasks'
             }
             model_name = self.__class__.__name__
-            if model_name in task_model_lookup:
+            if model_name == 'PatientTaskTemplate':
+                task_model = PatientTask.objects.filter(
+                    patient_template__patient_task_template=self
+                )
+            elif model_name in task_model_lookup:
                 task_model = getattr(self, task_model_lookup[model_name], None)
 
-                if task_model:
-                    now = timezone.now()
-                    task_model.filter(due_datetime__gte=now).delete()
+            if task_model:
+                now = timezone.now()
+                task_model.filter(due_datetime__gte=now).delete()
             self.is_active = False
             self.save(using=using)
         else:

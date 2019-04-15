@@ -10,7 +10,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from .mixins import TasksMixin
-from apps.tasks.models import PatientTaskTemplate
+from apps.tasks.models import PatientTask, PatientTaskTemplate
 
 
 class TestPatientTaskTemmplateUsingEmployee(TasksMixin, APITestCase):
@@ -67,7 +67,10 @@ class TestPatientTaskTemmplateUsingEmployee(TasksMixin, APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         task_template = PatientTaskTemplate.objects.get(id=response.data['id'])
-        self.assertTrue(task_template.patient_tasks.exists())
+        tasks = PatientTask.objects.filter(
+            patient_template__patient_task_template=task_template
+        )
+        self.assertTrue(tasks.exists())
 
     def test_create_patient_task_template_with_ongoing_plans_weekly(self):
         total_duration = 6
@@ -94,8 +97,11 @@ class TestPatientTaskTemmplateUsingEmployee(TasksMixin, APITestCase):
         }
         response = self.client.post(self.url, payload)
         task_template = PatientTaskTemplate.objects.get(id=response.data['id'])
+        tasks = PatientTask.objects.filter(
+            patient_template__patient_task_template=task_template
+        )
         self.assertEqual(
-            task_template.patient_tasks.count(),
+            tasks.count(),
             (total_duration - past_duration) * plans_count
         )
 
@@ -162,11 +168,17 @@ class TestPatientTaskTemmplateUsingEmployee(TasksMixin, APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         task_template = PatientTaskTemplate.objects.get(id=response.data['id'])
-        self.assertTrue(task_template.patient_tasks.exists())
+        tasks = PatientTask.objects.filter(
+            patient_template__patient_task_template=task_template
+        )
+        self.assertTrue(tasks.exists())
 
         now = timezone.now()
         due_datetime = now + relativedelta(days=start_on_day)
-        tasks = task_template.patient_tasks.filter(due_datetime__gte=now)
+        tasks = PatientTask.objects.filter(
+            patient_template__patient_task_template=task_template,
+            due_datetime__gte=now
+        )
         for task in tasks:
             self.assertEqual(task.due_datetime.date(), due_datetime.date())
 
@@ -203,7 +215,10 @@ class TestPatientTaskTemmplateUsingEmployee(TasksMixin, APITestCase):
 
         now = timezone.now()
         task_template = PatientTaskTemplate.objects.get(id=response.data['id'])
-        tasks = task_template.patient_tasks.filter(due_datetime__gte=now)
+        tasks = PatientTask.objects.filter(
+            patient_template__patient_task_template=task_template,
+            due_datetime__gte=now
+        )
         self.assertTrue(tasks.exists())
 
         self.assertEqual(
@@ -246,7 +261,10 @@ class TestPatientTaskTemmplateUsingEmployee(TasksMixin, APITestCase):
 
         now = timezone.now()
         task_template = PatientTaskTemplate.objects.get(id=response.data['id'])
-        tasks = task_template.patient_tasks.filter(due_datetime__gte=now)
+        tasks = PatientTask.objects.filter(
+            patient_template__patient_task_template=task_template,
+            due_datetime__gte=now
+        )
         self.assertTrue(tasks.exists())
 
         self.assertEqual(
@@ -283,10 +301,13 @@ class TestPatientTaskTemmplateUsingEmployee(TasksMixin, APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         task_template = PatientTaskTemplate.objects.get(id=response.data['id'])
-        self.assertTrue(task_template.patient_tasks.exists())
+        tasks = PatientTask.objects.filter(
+            patient_template__patient_task_template=task_template
+        )
+        self.assertTrue(tasks.exists())
 
         now = timezone.now()
-        tasks = task_template.patient_tasks.filter(due_datetime__gte=now)
+        tasks = tasks.filter(due_datetime__gte=now)
         for task in tasks:
             self.assertEqual(task.appear_datetime.hour, appear_time.hour)
             self.assertEqual(task.appear_datetime.minute, appear_time.minute)
@@ -320,10 +341,13 @@ class TestPatientTaskTemmplateUsingEmployee(TasksMixin, APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         task_template = PatientTaskTemplate.objects.get(id=response.data['id'])
-        self.assertTrue(task_template.patient_tasks.exists())
+        tasks = PatientTask.objects.filter(
+            patient_template__patient_task_template=task_template
+        )
+        self.assertTrue(tasks.exists())
 
         now = timezone.now()
-        tasks = task_template.patient_tasks.filter(due_datetime__gte=now)
+        tasks = tasks.filter(due_datetime__gte=now)
         for task in tasks:
             self.assertEqual(task.due_datetime.hour, due_time.hour)
             self.assertEqual(task.due_datetime.minute, due_time.minute)
@@ -336,22 +360,34 @@ class TestPatientTaskTemmplateUsingEmployee(TasksMixin, APITestCase):
 
         for i in range(tasks_before):
             days_ago = 3 - i
-            self.create_patient_task(
+            patient_template = self.create_plan_patient_template(
                 plan=plan,
-                patient_task_template=self.template,
+                patient_task_template=self.template
+            )
+            self.create_patient_task(
+                patient_template=patient_template,
                 due_datetime=now - relativedelta(days=days_ago)
             )
 
         for i in range(tasks_after):
-            self.create_patient_task(
+            patient_template = self.create_plan_patient_template(
                 plan=plan,
-                patient_task_template=self.template,
+                patient_task_template=self.template
+            )
+            self.create_patient_task(
+                patient_template=patient_template,
                 due_datetime=now + relativedelta(days=i, hours=1)
             )
 
         response = self.client.delete(self.detail_url, {})
+
+        tasks = PatientTask.objects.filter(
+            patient_template__plan=plan,
+            patient_template__patient_task_template=self.template
+        )
+
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertEqual(self.template.patient_tasks.count(), tasks_before)
+        self.assertEqual(tasks.count(), tasks_before)
 
         get_response = self.client.get(self.detail_url)
         self.assertFalse(get_response.data['is_active'])
