@@ -197,7 +197,11 @@ export class PatientHeaderComponent implements OnInit, OnDestroy {
   }
 
   public routeToHistory(patient, plan) {
-    this.router.navigate(['/patient', patient.id, 'history', plan.id]);
+    this.router.navigate(['/patient', patient.id, 'history', plan.id], {
+      queryParams: {
+        last_patient_interaction: true,
+      }
+    });
   }
 
   public changeSelectedPlan(plan) {

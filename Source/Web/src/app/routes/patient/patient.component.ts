@@ -264,7 +264,11 @@ export class PatientComponent implements OnDestroy, OnInit {
   }
 
   public routeToHistory(patient, plan) {
-    this.router.navigate(['/patient', patient.id, 'history', plan.id]);
+    this.router.navigate(['/patient', patient.id, 'history', plan.id], {
+      queryParams: {
+        last_patient_interaction: true,
+      }
+    });
   }
 
   public progressInWeeks(plan) {
