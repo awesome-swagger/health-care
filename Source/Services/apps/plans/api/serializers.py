@@ -612,6 +612,7 @@ class CarePlanTemplateAverageSerializer(serializers.ModelSerializer):
     """
     total_patients = serializers.SerializerMethodField()
     total_facilities = serializers.SerializerMethodField()
+    time_allotted = serializers.SerializerMethodField()
     time_count = serializers.SerializerMethodField()
     average_outcome = serializers.SerializerMethodField()
     average_engagement = serializers.SerializerMethodField()
@@ -627,6 +628,7 @@ class CarePlanTemplateAverageSerializer(serializers.ModelSerializer):
             'duration_weeks',
             'total_patients',
             'total_facilities',
+            'time_allotted',
             'time_count',
             'average_outcome',
             'average_engagement',
@@ -692,6 +694,31 @@ class CarePlanTemplateAverageSerializer(serializers.ModelSerializer):
         return self.care_plans_for_employee(obj, employee).filter(**kwargs).values_list(
             'patient__facility', flat=True).distinct().count()
 
+    def get_time_allotted(self, obj):
+        facility = self.context.get('facility', None)
+        organization = self.context.get('organization', None)
+        employee = self.context['request'].user.employee_profile
+        employee_care_plans = self.care_plans_for_employee(obj, employee)
+
+        kwargs = {
+            'patient__payer_reimbursement': True,
+            'billing_type__isnull': False,
+        }
+        if facility:
+            kwargs.update({
+                'patient__facility': facility
+            })
+        if organization:
+            kwargs.update({
+                'patient__facility__organization': organization
+            })
+
+        billable_plans = employee_care_plans.filter(**kwargs)
+        time_allotted = billable_plans.aggregate(
+            total=Sum('billing_type__billable_minutes'))
+        total = time_allotted['total'] or 0
+        return total
+
     def get_time_count(self, obj):
         facility = self.context.get('facility', None)
         organization = self.context.get('organization', None)
@@ -717,7 +744,7 @@ class CarePlanTemplateAverageSerializer(serializers.ModelSerializer):
         time_spent = BilledActivity.objects.filter(**kwargs).aggregate(
             total=Sum('time_spent'))
         total = time_spent['total'] or 0
-        return str(datetime.timedelta(minutes=total))[:-3]
+        return total
 
     def get_average_outcome(self, obj):
         facility = self.context.get('facility', None)
@@ -860,6 +887,16 @@ class OtherPlanSerializer(serializers.ModelSerializer):
         )
 
 
+class LastContactSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = BilledActivity
+        fields = (
+            'id',
+            'activity_datetime',
+        )
+
+
 class CarePlanOverviewSerializer(RepresentationMixin, serializers.ModelSerializer):
     """
     serializer to be used by :model:`plans.CarePlan` with
@@ -871,6 +908,7 @@ class CarePlanOverviewSerializer(RepresentationMixin, serializers.ModelSerialize
     care_team_employee_ids = serializers.SerializerMethodField()
     other_plans = serializers.SerializerMethodField()
     time_count = serializers.SerializerMethodField()
+    last_contact = serializers.SerializerMethodField()
     tasks_this_week = serializers.SerializerMethodField()
     average_outcome = serializers.SerializerMethodField()
     average_engagement = serializers.SerializerMethodField()
@@ -887,6 +925,7 @@ class CarePlanOverviewSerializer(RepresentationMixin, serializers.ModelSerialize
             'care_team_employee_ids',
             'other_plans',
             'time_count',
+            'last_contact',
             'tasks_this_week',
             'average_outcome',
             'average_engagement',
@@ -909,6 +948,15 @@ class CarePlanOverviewSerializer(RepresentationMixin, serializers.ModelSerialize
                 .aggregate(total=Sum('time_spent'))
         total = time_spent['total'] or 0
         return total
+
+    def get_last_contact(self, obj):
+        last_patient_included_activity = BilledActivity.objects.filter(
+            plan=obj,
+            patient_included=True).order_by('-activity_datetime').first()
+        if last_patient_included_activity:
+            serializer = LastContactSerializer(last_patient_included_activity, many=False)
+            return serializer.data
+        return None
 
     def get_tasks_this_week(self, obj):
         now = timezone.now()
@@ -1021,6 +1069,7 @@ class CarePlanByTemplateFacilitySerializer(CarePlanOverviewSerializer):
             'average_outcome',
             'average_engagement',
             'risk_level',
+            'last_contact',
             'time_count',
             'created'
         )
@@ -1084,6 +1133,7 @@ class PatientCarePlanOverviewSerializer(CarePlanOverviewSerializer):
             'plan_template',
             'care_team',
             'next_check_in',
+            'last_contact',
             'problem_areas_count',
             'time_spent_this_month',
             'risk_level',

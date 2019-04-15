@@ -92,6 +92,20 @@ export class PlanInfoComponent implements OnDestroy, OnInit {
     }
   }
 
+  public formatTimeSince(time) {
+    let momentTime = moment(time);
+    let today = moment().startOf('day');
+    if (momentTime.isSame(today, 'day')) {
+      return 'Today';
+    } else {
+      return momentTime.fromNow();
+    }
+  }
+
+  public routeToHistory(patient, plan) {
+    this.router.navigate(['/patient', patient.id, 'history', plan.id]);
+  }
+
   public getPlanTemplate(id) {
     let promise = new Promise((resolve, reject) => {
       let readSub = this.store.CarePlanTemplate.read(id).subscribe(
@@ -181,15 +195,18 @@ export class PlanInfoComponent implements OnDestroy, OnInit {
 
   public averageTimeColor(plans) {
     if (!plans || plans.length < 1) {
-      return;
+      return null;
     }
     let billablePlans = plans.filter((plan) => plan.patient.payer_reimbursement && plan.billing_type);
     if (plans.length === 0) {
-      return;
+      return null;
     }
-    const avgTime = _sum(_map(billablePlans, (p) => p.time_count)) / billablePlans.length;
-    const avgAllotted = _sum(_map(billablePlans, (p) => p.billing_type.billable_minutes)) / billablePlans.length;
-    return this.utils.timePillColor(avgTime, avgAllotted);
+    let totalTime = _sum(_map(billablePlans, (p) => p.time_count));
+    const totalAllotted = _sum(_map(billablePlans, (p) => p.billing_type.billable_minutes));
+    if (totalAllotted < 1) {
+      return null;
+    }
+    return this.utils.timePillColor(totalTime, totalAllotted);
   }
 
   public progressInWeeks(plan) {
