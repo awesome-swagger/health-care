@@ -47,8 +47,8 @@
     </div>
     <div class="info__cell">
       <label>Time Count</label>
-      <div class="pill">
-        {{carePlanAverage.time_count}}
+      <div class="pill" [ngClass]="totalTimePillColor(carePlanAverage)">
+        {{formatTime(carePlanAverage.time_count)}}
       </div>
     </div>
     <div class="info__cell">

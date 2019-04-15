@@ -253,6 +253,20 @@ export class PatientComponent implements OnDestroy, OnInit {
     )
   }
 
+  public formatTimeSince(time) {
+    let momentTime = moment(time);
+    let today = moment().startOf('day');
+    if (momentTime.isSame(today, 'day')) {
+      return 'Today';
+    } else {
+      return momentTime.fromNow();
+    }
+  }
+
+  public routeToHistory(patient, plan) {
+    this.router.navigate(['/patient', patient.id, 'history', plan.id]);
+  }
+
   public progressInWeeks(plan) {
     if (!plan || !plan.created) {
       return 0;

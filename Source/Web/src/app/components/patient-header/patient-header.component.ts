@@ -186,6 +186,20 @@ export class PatientHeaderComponent implements OnInit, OnDestroy {
     return this.patientPlansOverview.find((obj) => obj.plan_template.id === planTemplateId);
   }
 
+  public formatTimeSince(time) {
+    let momentTime = moment(time);
+    let today = moment().startOf('day');
+    if (momentTime.isSame(today, 'day')) {
+      return 'Today';
+    } else {
+      return momentTime.fromNow();
+    }
+  }
+
+  public routeToHistory(patient, plan) {
+    this.router.navigate(['/patient', patient.id, 'history', plan.id]);
+  }
+
   public changeSelectedPlan(plan) {
     this.router.navigate(['/patient', this.patient.id, this.currentPage, plan.id]);
   }

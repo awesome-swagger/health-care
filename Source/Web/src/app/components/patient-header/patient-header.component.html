@@ -137,7 +137,10 @@
   </div>
   <div class="info__cell">
     <label>Last&nbsp;Contact</label>
-    <a (click)="routeToPatientHistory()" class="justifyCenter">N/A</a>
+    <div class="flex alignCenter justifyCenter">
+      <a (click)="routeToHistory(plan.patient, plan)" class="justifyCenter" *ngIf="selectedPlanOverview?.last_contact">{{formatTimeSince(selectedPlanOverview?.last_contact.activity_datetime)}}</a>
+      <div *ngIf="!selectedPlanOverview?.last_contact">---</div>
+    </div>
   </div>
   <div class="info__cell">
     <label>Problems</label>
