@@ -913,7 +913,6 @@ class TestOrganizationPatientRiskLevel(TasksMixin, APITestCase):
         patients_on_track = 3
         self.create_on_track_patients(patients_on_track)
         response = self.client.get(self.url)
-        import pdb; pdb.set_trace()
         self.assertAlmostEqual(response.data['on_track'], patients_on_track)
 
     def test_patient_risk_level_low_risk(self):
