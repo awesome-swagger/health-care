@@ -1,5 +1,4 @@
 import datetime
-import pytz
 import random
 
 from django.urls import reverse
