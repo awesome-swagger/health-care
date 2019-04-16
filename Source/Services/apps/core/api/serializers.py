@@ -934,12 +934,17 @@ class EmployeeAssignmentSerializer(serializers.ModelSerializer):
     def get_average_engagement(self, task_kwargs):
         kwargs = task_kwargs.pop('kwargs')
         medication_kwargs = task_kwargs.pop('medication_kwargs')
-        patient_tasks = PatientTask.objects.filter(**kwargs)
         medication_tasks = MedicationTask.objects.filter(
             **medication_kwargs)
         symptom_tasks = SymptomTask.objects.filter(**kwargs)
         assessment_tasks = AssessmentTask.objects.filter(**kwargs)
         vital_tasks = VitalTask.objects.filter(**kwargs)
+
+        plans = kwargs.pop('plan__in')
+        kwargs.update({
+            'patient_template__plan__in': plans
+        })
+        patient_tasks = PatientTask.objects.filter(**kwargs)
 
         total_patient_tasks = patient_tasks.count()
         total_medication_tasks = medication_tasks.count()
