@@ -12,6 +12,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from ..models import (
+    CarePlanPatientTemplate,
     PatientTaskTemplate,
     PatientTask,
     TeamTaskTemplate,
@@ -38,6 +39,7 @@ from ..permissions import (
 from ..utils import get_all_tasks_for_today
 from .filters import DurationFilter
 from . serializers import (
+    CarePlanPatientTemplateSerializer,
     PatientTaskTemplateSerializer,
     PatientTaskSerializer,
     TeamTaskTemplateSerializer,
@@ -95,6 +97,81 @@ class PatientTaskTemplateViewSet(viewsets.ModelViewSet):
             return queryset
         else:
             return queryset
+
+
+class CarePlanPatientTemplateViewSet(viewsets.ModelViewSet):
+    """
+    Viewset for :model:`tasks.CarePlanPatientTemplate`
+    ========
+
+    create:
+        Creates :model:`tasks.CarePlanPatientTemplate` object.
+        Only admins and employees are allowed to perform this action.
+
+    update:
+        Updates :model:`tasks.CarePlanPatientTemplate` object.
+        Only admins and employees who belong to the same care team are allowed
+        to perform this action.
+
+    partial_update:
+        Updates one or more fields of an existing plan patient template object.
+        Only admins and employees who belong to the same care team are allowed
+        to perform this action.
+
+    retrieve:
+        Retrieves a :model:`tasks.CarePlanPatientTemplate` instance.
+        Admins will have access to all plan patient template objects. Employees
+        will only have access to those plan patient templates belonging to its
+        own care team. Patients will have access to all plan patient templates
+        assigned to them.
+
+    list:
+        Returns list of all :model:`tasks.CarePlanPatientTemplate` objects.
+        Admins will get all existing plan patient template objects. Employees
+        will get the plan patient templates belonging to a certain care team.
+        Patients will get all plan patient templates belonging to them.
+
+    delete:
+        Deletes a :model:`tasks.CarePlanPatientTemplate` instance.
+        Only admins and employees who belong to the same care team are allowed
+        to perform this action.
+    """
+    serializer_class = CarePlanPatientTemplateSerializer
+    permission_classes = (
+        permissions.IsAuthenticated,
+        IsEmployeeOrPatientReadOnly,
+    )
+    filter_backends = (DjangoFilterBackend, )
+    filterset_fields = (
+        'plan',
+        'patient_task_template',
+    )
+    queryset = CarePlanPatientTemplate.objects.all()
+
+    def get_queryset(self):
+        qs = super(CarePlanPatientTemplateViewSet, self).get_queryset()
+        user = self.request.user
+
+        if user.is_employee:
+            employee_profile = user.employee_profile
+            if employee_profile.organizations_managed.exists():
+                organizations = employee_profile.organizations_managed.all()
+                qs = qs.filter(
+                    plan__patient__facility__organization__in=organizations)
+            elif employee_profile.facilities_managed.exists():
+                facilities = employee_profile.facilities_managed.all()
+                assigned_roles = employee_profile.assigned_roles.all()
+                qs = qs.filter(
+                    Q(plan__patient__facility__in=facilities) |
+                    Q(plan__care_team_members__in=assigned_roles)
+                )
+            else:
+                assigned_roles = employee_profile.assigned_roles.all()
+                qs = qs.filter(plan__care_team_members__in=assigned_roles)
+        elif user.is_patient:
+            qs = qs.filter(plan__patient=user.patient_profile)
+
+        return qs.distinct()
 
 
 class PatientTaskViewSet(viewsets.ModelViewSet):
