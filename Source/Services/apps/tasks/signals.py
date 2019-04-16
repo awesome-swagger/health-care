@@ -343,6 +343,14 @@ def medicationtasktemplate_post_save(sender, instance, created, **kwargs):
         )
 
 
+def careplanpatienttemplate_post_init(sender, instance, **kwargs):
+    """
+    Function to be used as signal (post_init) when initializing
+    :model:`tasks.CarePlanPatientTemplate`
+    """
+    instance.assign_previous_fields()
+
+
 def patienttasktemplate_post_init(sender, instance, **kwargs):
     """
     Function to be used as signal (post_init) when initializing

@@ -6,6 +6,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from .signals import (
     assessmentresponse_post_save,
+    careplanpatienttemplate_post_init,
     symptomrating_post_save,
     vitalresponse_post_save,
     symptomrating_post_delete,
@@ -227,6 +228,12 @@ class CarePlanPatientTemplate(models.Model):
         blank=True,
         null=True)
 
+    previous_start_on_day = None
+    previous_frequency = None
+    previous_repeat_amount = None
+    previous_appear_time = None
+    previous_due_time = None
+
     class Meta:
         verbose_name = _('Care Plan Patient Template')
         verbose_name = _('Care Plan Patient Templates')
@@ -262,6 +269,49 @@ class CarePlanPatientTemplate(models.Model):
         return self.custom_due_time \
             if self.custom_due_time is not None \
             else self.patient_task_template.due_time
+
+    @property
+    def has_custom_values(self):
+        return self.custom_start_on_day is not None or \
+            self.custom_frequency or \
+            self.custom_repeat_amount is not None or \
+            self.custom_appear_time is not None or \
+            self.custom_due_time is not None
+
+    @property
+    def is_custom_start_on_day_changed(self):
+        return self.previous_start_on_day != self.custom_start_on_day
+
+    @property
+    def is_custom_frequency_changed(self):
+        return self.previous_frequency != self.custom_frequency
+
+    @property
+    def is_custom_repeat_amount_changed(self):
+        return self.previous_repeat_amount != self.custom_repeat_amount
+
+    @property
+    def is_custom_appear_time_changed(self):
+        return self.previous_appear_time != self.custom_appear_time
+
+    @property
+    def is_custom_due_time_changed(self):
+        return self.previous_due_time != self.custom_due_time
+
+    @property
+    def is_schedule_fields_changed(self):
+        return self.is_custom_start_on_day_changed or \
+            self.is_custom_frequency_changed or \
+            self.is_custom_repeat_amount_changed or \
+            self.is_custom_appear_time_changed or \
+            self.is_custom_due_time_changed
+
+    def assign_previous_fields(self):
+        self.previous_start_on_day = self.custom_start_on_day
+        self.previous_frequency = self.custom_frequency
+        self.previous_repeat_amount = self.custom_repeat_amount
+        self.previous_appear_time = self.custom_appear_time
+        self.previous_due_time = self.custom_due_time
 
 
 class PatientTask(AbstractTask):
@@ -774,6 +824,10 @@ class VitalResponse(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
 models.signals.post_save.connect(
     assessmentresponse_post_save,
     sender=AssessmentResponse
+)
+models.signals.post_init.connect(
+    careplanpatienttemplate_post_init,
+    sender=CarePlanPatientTemplate
 )
 models.signals.post_save.connect(
     symptomrating_post_save,
