@@ -477,6 +477,33 @@ class SymptomTaskTemplate(AbstractTaskTemplate):
         return '{} symptom report template'.format(self.plan_template.name)
 
 
+class CarePlanSymptomTemplate(AbstractPlanTaskTemplate):
+    """
+    This stores the connection between a patient's plan and
+    a symptom task template.
+
+    This is the solution for implementing ad hoc tasks
+    """
+
+    plan = models.ForeignKey(
+        'plans.CarePlan',
+        related_name='plan_symptom_templates',
+        on_delete=models.CASCADE)
+    symptom_task_template = models.ForeignKey(
+        'tasks.SymptomTaskTemplate',
+        related_name='plan_symptom_templates',
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True)
+
+    class Meta:
+        verbose_name = _('Care Plan Symptom Template')
+        verbose_name = _('Care Plan Symptom Templates')
+
+    def __str__(self):
+        return f'{self.plan}: {self.symptom_task_template}'
+
+
 class SymptomTask(AbstractTask):
     plan = models.ForeignKey(
         CarePlan, null=False, blank=False, on_delete=models.CASCADE)
