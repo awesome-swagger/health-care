@@ -39,6 +39,10 @@ class RiskLevelAssignment(object):
             'patient_template__plan__patient': self.patient,
             'due_datetime__lte': now
         }
+        symptom_kwargs = {
+            'symptom_template__plan__patient': self.patient,
+            'due_datetime__lte': now
+        }
         medication_kwargs = {
             'medication_task_template__plan__patient': self.patient,
             'due_datetime__lte': now
@@ -46,7 +50,7 @@ class RiskLevelAssignment(object):
 
         patient_tasks = PatientTask.objects.filter(**patient_kwargs)
         medication_tasks = MedicationTask.objects.filter(**medication_kwargs)
-        symptom_tasks = SymptomTask.objects.filter(**task_kwargs)
+        symptom_tasks = SymptomTask.objects.filter(**symptom_kwargs)
         assessment_tasks = AssessmentTask.objects.filter(**task_kwargs)
         vital_tasks = VitalTask.objects.filter(**task_kwargs)
 
