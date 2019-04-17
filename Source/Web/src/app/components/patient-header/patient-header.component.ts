@@ -254,6 +254,20 @@ export class PatientHeaderComponent implements OnInit, OnDestroy {
     return time.format('HH:mm:00');
   }
 
+  public timePillColor(plan) {
+    if (!this.patient.payer_reimbursement || !plan.billing_type) {
+      return null;
+    }
+    if (plan.billing_type.acronym === 'TCM') {
+      return this.utils.timePillColorTCM(plan.created);
+    } else {
+      let overview = this.getOverviewForPlanTemplate(this.selectedPlan.plan_template.id);
+      let timeCount = this.totalMinutes(overview.time_spent_this_month);
+      let allotted = plan.billing_type.billable_minutes;
+      return this.utils.timePillColor(timeCount, allotted);
+    }
+  }
+
   public totalMinutes(timeSpentStr) {
     if (!timeSpentStr) {
       return 0;

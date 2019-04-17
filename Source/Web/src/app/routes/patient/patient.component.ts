@@ -263,6 +263,19 @@ export class PatientComponent implements OnDestroy, OnInit {
     }
   }
 
+  public timePillColor(plan) {
+    if (!this.patient.payer_reimbursement || !plan.billing_type) {
+      return null;
+    }
+    if (plan.billing_type.acronym === 'TCM') {
+      return this.utils.timePillColorTCM(plan.created);
+    } else {
+      let timeCount = this.totalMinutes(plan.overview.time_spent_this_month);
+      let allotted = plan.billing_type.billable_minutes;
+      return this.utils.timePillColor(timeCount, allotted);
+    }
+  }
+
   public routeToHistory(patient, plan) {
     this.router.navigate(['/patient', patient.id, 'history', plan.id], {
       queryParams: {

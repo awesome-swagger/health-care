@@ -132,11 +132,8 @@
           </div>
         </label>
         <ng-container *ngIf="patient && plan.overview">
-          <div class="pill" *ngIf="!patient?.payer_reimbursement || !plan.billing_type">
-            {{plan.overview?.time_spent_this_month}}
-          </div>
-          <div class="pill" *ngIf="patient?.payer_reimbursement && plan.billing_type" [ngClass]="utils.timePillColor(totalMinutes(plan.overview?.time_spent_this_month), plan.billing_type.billable_minutes)">
-            {{plan.overview?.time_spent_this_month}}
+          <div class="pill" [ngClass]="timePillColor(plan)">
+            {{plan.overview.time_spent_this_month}}
           </div>
         </ng-container>
       </div> <!--/.info__cell (for time)-->
