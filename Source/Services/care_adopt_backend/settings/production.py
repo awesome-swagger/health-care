@@ -332,5 +332,11 @@ CELERY_BEAT_SCHEDULE = {
     'remind_invited_patients': {
         'task': 'apps.patients.tasks.remind_invited_patients',
         'schedule': crontab(minute=0, hour=22),
+    },
+    'check_inactivity_patient': {
+        'task': 'apps.patients.tasks.check_inactivity_patient',
+        'schedule': crontab(minute="*"),
     }
 }
+
+CELERY_BROKER_URL = "redis://localhost:6379/0"
