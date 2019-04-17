@@ -8,6 +8,8 @@ from .signals import (
     assessmentresponse_post_save,
     careplanpatienttemplate_post_init,
     careplanpatienttemplate_post_save,
+    careplansymptomtemplate_post_init,
+    careplansymptomtemplate_post_save,
     symptomrating_post_save,
     vitalresponse_post_save,
     symptomrating_post_delete,
@@ -923,6 +925,14 @@ models.signals.post_save.connect(
 models.signals.post_delete.connect(
     patienttask_post_delete,
     sender=PatientTask
+)
+models.signals.post_init.connect(
+    careplansymptomtemplate_post_init,
+    sender=CarePlanSymptomTemplate
+)
+models.signals.post_save.connect(
+    careplansymptomtemplate_post_save,
+    sender=CarePlanSymptomTemplate
 )
 models.signals.post_init.connect(
     symptomtasktemplate_post_init,
