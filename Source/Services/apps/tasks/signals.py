@@ -380,7 +380,7 @@ def careplanpatienttemplate_post_save(sender, instance, created, **kwargs):
         now = timezone.now()
         PatientTask = apps.get_model('tasks', 'PatientTask')
         PatientTask.objects.filter(
-            patient_template__patient_task_template=instance,
+            patient_template=instance,
             due_datetime__gte=now).delete()
         create_tasks_for_ongoing_plans(
             instance.patient_task_template,
