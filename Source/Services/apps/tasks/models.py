@@ -505,6 +505,11 @@ class CarePlanSymptomTemplate(AbstractPlanTaskTemplate):
 
 
 class SymptomTask(AbstractTask):
+    symptom_template = models.ForeignKey(
+        'tasks.CarePlanPatientTemplate',
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True)
     plan = models.ForeignKey(
         CarePlan, null=False, blank=False, on_delete=models.CASCADE)
     symptom_task_template = models.ForeignKey(
