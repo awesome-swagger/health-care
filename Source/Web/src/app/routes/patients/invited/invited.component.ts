@@ -39,6 +39,7 @@ export class InvitedPatientsComponent implements OnDestroy, OnInit {
   public multi2Open;
   public multi3Open;
   public multi4Open;
+  public totalInvited = 0;
 
   public facilityAccordOpen = {};
 
@@ -114,22 +115,18 @@ export class InvitedPatientsComponent implements OnDestroy, OnInit {
       })
     })
 
+    this.auth.organization$.subscribe(org => {
+      if (!org) return;
+      this.store.PatientProfile.listRoute('GET', 'overview', {}, {
+        'facility__organization__id': org.id,
+      }).subscribe((res: any) => {
+        this.totalInvited = res.invited;
+      })
+    })
+
   }
 
   public ngOnDestroy() { }
-
-  public get totalInvited() {
-    if (this.facilities) {
-      let result = 0;
-      this.facilities.forEach(f => {
-        if (f.invitedPatients) {
-          result += f.invitedPatients.length;
-        }
-      })
-      return result;
-    }
-    return 0;
-  }
 
   public getPatients(facility) {
     let promise = new Promise((resolve, reject) => {
@@ -264,16 +261,24 @@ export class InvitedPatientsComponent implements OnDestroy, OnInit {
        body: 'Are you sure you want to revoke this patient’s invitation? This cannot be undone.',
        cancelText,
        okText,
-      },
+     },
       width: '384px',
     }).subscribe((res) => {
       if (res === okText) {
         this.store.CarePlan.destroy(plan.id).subscribe(res => {
-          const facility = this.facilities.find(f => f.id === facility.id);
-          facility.invitedPatients = facility.invitedPatients.filter(p => p.id !== patient.id);
-          const patient = facility.invitedPatients.find(p => p.id === patient.id);
-          patient.carePlans = patient.carePlans.filter(p => p.id !== plan.id);
+          const targetFacility = this.facilities.find(f => f.id === facility.id);
+          const targetPatient = targetFacility.invitedPatients.find(p => p.id === patient.id);
+          patient.carePlans = targetPatient.carePlans.filter(p => p.id !== plan.id);
           document.dispatchEvent(new Event('refreshPatientOverview'));
+
+          this.auth.organization$.subscribe(org => {
+            if (!org) return;
+            this.store.PatientProfile.listRoute('GET', 'overview', {}, {
+              'facility__organization__id': org.id,
+            }).subscribe((res: any) => {
+              this.totalInvited = res.invited;
+            })
+          })
         })
       }
     });
@@ -307,6 +312,12 @@ export class InvitedPatientsComponent implements OnDestroy, OnInit {
 
   public cpSearchMatch(cp) {
     return cp.name.toLowerCase().indexOf(this.carePlanSearch.toLowerCase()) > -1;
+  }
+
+  public patientsWithPlansCount(patients) {
+    if (patients) {
+      return patients.filter(p => p.carePlans && p.carePlans.length).length;
+    }
   }
 
 }

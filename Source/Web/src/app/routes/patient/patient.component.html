@@ -169,7 +169,7 @@
       </div>
       <div class="info__cell">
         <label>Readmit %</label>
-        {{patientStats?.readmissions_percent}}%
+        {{patientStats?.readmissions_percent}}{{patientStats?.readmissions_percent ? '%' : ''}}
       </div>
       <div class="info__cell">
         <label>Cost of Readmits</label>
