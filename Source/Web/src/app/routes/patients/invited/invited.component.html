@@ -140,7 +140,7 @@
   <ng-container *ngFor="let facility of facilities">
     <div class="accordion" [ngClass]="{ 'isOpen' : facilityAccordOpen[facility.id] }">
       <div class="accordion__head" (click)="facilityAccordOpen[facility.id] = !facilityAccordOpen[facility.id]">
-        <span class="accordion__title">{{facility?.name}} ({{facility?.invitedPatients?.length || 0}})</span>
+        <span class="accordion__title">{{facility?.name}} ({{patientsWithPlansCount(facility?.invitedPatients) || 0}})</span>
         <div class="accordion__right">
           <div class="accordion__arrow">
             <i class="ss-standard ss-navigateright"></i>

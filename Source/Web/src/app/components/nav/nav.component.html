@@ -46,7 +46,7 @@
                 <li class="drop__option">
                   <a class="drop__link" (click)="routeToPatient(patient.id)">
                     <div class="picName">
-                      <img class="picName__img" src="../../../assets/img/profile.svg" />{{patient.user.first_name}} {{patient.user.last_name}}
+                      <img class="picName__img" [src]="patient?.user?.image_url ? patient.user.image_url : '../../../assets/img/profile.svg'" />{{patient.user.first_name}} {{patient.user.last_name}}
                     </div>
                   </a>
                 </li>
