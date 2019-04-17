@@ -371,7 +371,7 @@ def careplanpatienttemplate_post_save(sender, instance, created, **kwargs):
     """
     if created and instance.has_custom_values:
         create_tasks_for_ongoing_plans(
-            instance,
+            instance.patient_task_template,
             'patient_task_template',
             'PatientTask',
             plan_task_template_instance=instance
@@ -383,9 +383,10 @@ def careplanpatienttemplate_post_save(sender, instance, created, **kwargs):
             patient_template__patient_task_template=instance,
             due_datetime__gte=now).delete()
         create_tasks_for_ongoing_plans(
-            instance,
+            instance.patient_task_template,
             'patient_task_template',
-            'PatientTask'
+            'PatientTask',
+            plan_task_template_instance=instance
         )
 
 
