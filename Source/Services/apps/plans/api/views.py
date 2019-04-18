@@ -398,7 +398,7 @@ class CarePlanViewSet(viewsets.ModelViewSet):
             medication_task_template__plan__in=queryset,
             due_datetime__lte=now)
         symptom_tasks = SymptomTask.objects.filter(
-            plan__in=queryset,
+            symptom_template__plan__in=queryset,
             due_datetime__lte=now)
         assessment_tasks = AssessmentTask.objects.filter(
             plan__in=queryset,
