@@ -479,6 +479,12 @@ class SymptomTaskTemplate(AbstractTaskTemplate):
     def __str__(self):
         return '{} symptom report template'.format(self.plan_template.name)
 
+    @property
+    def symptom_tasks(self):
+        return SymptomTask.objects.filter(
+            symptom_template__symptom_task_template=self
+        )
+
 
 class CarePlanSymptomTemplate(AbstractPlanTaskTemplate):
     """

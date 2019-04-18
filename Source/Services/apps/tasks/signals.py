@@ -535,7 +535,10 @@ def symptomtasktemplate_post_save(sender, instance, created, **kwargs):
         )
     elif instance.is_schedule_fields_changed:
         now = timezone.now()
-        instance.symptom_tasks.filter(due_datetime__gte=now).delete()
+        SymptomTask = apps.get_model('tasks', 'SymptomTask')
+        SymptomTask.objects.filter(
+            symptom_template__symptom_task_template=instance,
+            due_datetime__gte=now).delete()
         create_tasks_for_ongoing_plans(
             instance,
             'symptom_task_template',
