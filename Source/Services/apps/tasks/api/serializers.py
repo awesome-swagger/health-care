@@ -998,7 +998,7 @@ class SymptomByPlanSerializer(serializers.ModelSerializer):
         date_range = self.context.get('date_range')
 
         rating_obj = SymptomRating.objects.filter(
-            symptom_task__plan=plan,
+            symptom_task__symptom_template__plan=plan,
             symptom_task__due_datetime__range=date_range,
             symptom=obj,
         ).order_by('created').last()
@@ -1008,10 +1008,10 @@ class SymptomByPlanSerializer(serializers.ModelSerializer):
 
     def get_occurrence(self, obj):
         plan = self.context.get('plan')
-        total_tasks = SymptomTask.objects.filter(plan=plan)
+        total_tasks = SymptomTask.objects.filter(symptom_template__plan=plan)
 
         rating_obj = SymptomRating.objects.filter(
-            symptom_task__plan=plan,
+            symptom_task__symptom_template__plan=plan,
             symptom=obj
         ).order_by('created').last()
 

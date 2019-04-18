@@ -308,7 +308,7 @@ def symptomrating_post_delete(sender, instance, **kwargs):
             task.is_complete = False
             task.save(update_fields=['is_complete'])
 
-        patient = instance.symptom_task.plan.patient
+        patient = instance.symptom_task.symptom_template.plan.patient
         assignment = RiskLevelAssignment(patient)
         assignment.assign_risk_level_to_patient()
 

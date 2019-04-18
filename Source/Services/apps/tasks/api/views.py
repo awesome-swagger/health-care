@@ -400,8 +400,8 @@ class SymptomRatingViewSet(viewsets.ModelViewSet):
     queryset = SymptomRating.objects.all()
     filter_backends = (DjangoFilterBackend, )
     filterset_fields = {
-        'symptom_task__plan__patient': ['exact'],
-        'symptom_task__symptom_task_template__plan_template': ['exact'],
+        'symptom_task__symptom_template__plan__patient': ['exact'],
+        'symptom_task__symptom_template__symptom_task_template__plan_template': ['exact'],
         'symptom_task__due_datetime': ['lte', 'gte']
     }
 
@@ -414,19 +414,19 @@ class SymptomRatingViewSet(viewsets.ModelViewSet):
             if employee_profile.organizations_managed.exists():
                 organizations = employee_profile.organizations_managed.all()
                 qs = qs.filter(
-                    symptom_task__plan__patient__facility__organization__in=organizations)
+                    symptom_task__symptom_template__plan__patient__facility__organization__in=organizations)
             elif employee_profile.facilities_managed.exists():
                 facilities = employee_profile.facilities_managed.all()
                 assigned_roles = employee_profile.assigned_roles.all()
                 qs = qs.filter(
-                    Q(symptom_task__plan__patient__facility__in=facilities) |
-                    Q(symptom_task__plan__care_team_members__in=assigned_roles)
+                    Q(symptom_task__symptom_template__plan__patient__facility__in=facilities) |
+                    Q(symptom_task__symptom_template__plan__care_team_members__in=assigned_roles)
                 )
             else:
                 assigned_roles = employee_profile.assigned_roles.all()
-                qs = qs.filter(symptom_task__plan__care_team_members__in=assigned_roles)
+                qs = qs.filter(symptom_task__symptom_template__plan__care_team_members__in=assigned_roles)
         elif user.is_patient:
-            qs = qs.filter(symptom_task__plan__patient=user.patient_profile)
+            qs = qs.filter(symptom_task__symptom_template__plan__patient=user.patient_profile)
 
         return qs.distinct()
 
@@ -434,8 +434,8 @@ class SymptomRatingViewSet(viewsets.ModelViewSet):
         queryset = super(SymptomRatingViewSet, self).filter_queryset(queryset)
 
         query_parameters = self.request.query_params.keys()
-        if 'symptom_task__plan__patient' in query_parameters and \
-           'symptom_task__symptom_task_template__plan_template' in query_parameters and \
+        if 'symptom_task__symptom_template__plan__patient' in query_parameters and \
+           'symptom_task__symptom_template__symptom_task_template__plan_template' in query_parameters and \
            'symptom_task__due_datetime__gte' not in query_parameters and \
            'symptom_task__due_datetime__lte' not in query_parameters:
             today = timezone.now().date()
