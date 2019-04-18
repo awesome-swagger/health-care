@@ -192,9 +192,9 @@ class TasksMixin(PlansMixin):
 
     def create_symptom_task(self, **kwargs):
         now = timezone.now()
-        if 'plan_template' not in kwargs:
+        if 'symptom_template' not in kwargs:
             kwargs.update({
-                'plan_template': self.create_plan_symptom_template()
+                'symptom_template': self.create_plan_symptom_template()
             })
 
         if 'appear_datetime' not in kwargs:

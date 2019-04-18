@@ -1,4 +1,5 @@
 import pytz
+import urllib
 
 from django.urls import reverse
 
@@ -20,7 +21,6 @@ class TestSymptomTask(StateTestMixin, TasksMixin, APITestCase):
         self.user = AdminUserFactory()
         self.facility = self.create_facility()
         self.organization = self.facility.organization
-        self.create_employee(organizations_managed=[self.organization])
         patient = self.create_patient(facility=self.facility)
         self.plan = self.create_care_plan(patient)
         template = self.create_symptom_task_template()
@@ -83,17 +83,20 @@ class TestSymptomTask(StateTestMixin, TasksMixin, APITestCase):
         self.assertEqual(response.data['state'], state)
 
     def test_filter_by_care_plan(self):
-        filter_url = f'{self.url}?plan__id={self.plan.id}'
+        filter_url = f'{self.url}?symptom_template__plan={self.plan.id}'
         response = self.client.get(filter_url)
         self.assertEqual(response.data['count'], 1)
 
     def test_filter_by_symptom_task_template(self):
-        filter_url = f'{self.url}?symptom_task_template__id={self.symptom_task.symptom_task_template.id}'
+        query_params = urllib.parse.urlencode({
+            'symptom_template__symptom_task_template': self.symptom_task.symptom_template.symptom_task_template.id
+        })
+        filter_url = f'{self.url}?{query_params}'
         response = self.client.get(filter_url)
         self.assertEqual(response.data['count'], 1)
 
     def test_filter_by_patient(self):
-        filter_url = f'{self.url}?plan__patient__id={self.plan.patient.id}'
+        filter_url = f'{self.url}?symptom_template__plan__patient={self.plan.patient.id}'
         response = self.client.get(filter_url)
         self.assertEqual(response.data['count'], 1)
 
@@ -400,7 +403,6 @@ class TestSymptomTaskUsingPatient(TasksMixin, APITestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_full_update_symptom_task(self):
-        template = self.create_symptom_task_template()
 
         appear_datetime = pytz.utc.localize(
             self.fake.future_datetime(end_date="+5d")
@@ -410,8 +412,7 @@ class TestSymptomTaskUsingPatient(TasksMixin, APITestCase):
             self.fake.future_datetime(end_date="+30d")
         )
         payload = {
-            'plan': self.plan.id,
-            'symptom_task_template': template.id,
+            'symptom_template': self.symptom_template.id,
             'appear_datetime': appear_datetime,
             'due_datetime': due_datetime,
             'comments': self.fake.sentence(nb_words=10),
@@ -420,7 +421,6 @@ class TestSymptomTaskUsingPatient(TasksMixin, APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_full_update_symptom_task_not_owner(self):
-        template = self.create_symptom_task_template()
 
         appear_datetime = pytz.utc.localize(
             self.fake.future_datetime(end_date="+5d")
@@ -430,8 +430,7 @@ class TestSymptomTaskUsingPatient(TasksMixin, APITestCase):
             self.fake.future_datetime(end_date="+30d")
         )
         payload = {
-            'plan': self.plan.id,
-            'symptom_task_template': template.id,
+            'symptom_template': self.symptom_template.id,
             'appear_datetime': appear_datetime,
             'due_datetime': due_datetime,
             'comments': self.fake.sentence(nb_words=10),
