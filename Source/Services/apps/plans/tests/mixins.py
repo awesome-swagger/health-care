@@ -4,8 +4,6 @@ from django.utils import timezone
 
 from .factories import (
     CarePlanFactory,
-    ServiceAreaFactory,
-    CarePlanTemplateFactory,
     CareTeamMemberFactory,
     GoalTeamplateFactory,
     GoalFactory,
@@ -53,31 +51,6 @@ class PlansMixin(PatientsMixin):
     #         })
 
     #     return BillingTypeFactory(**kwargs)
-
-    def create_service_area(self, **kwargs):
-        if 'name' not in kwargs:
-            kwargs.update({
-                'name': self.fake.name()
-            })
-        return ServiceAreaFactory(**kwargs)
-
-    def create_care_plan_template(self, **kwargs):
-        if 'name' not in kwargs:
-            kwargs.update({
-                'name': self.fake.name()
-            })
-
-        if 'service_area' not in kwargs:
-            kwargs.update({
-                'service_area': self.create_service_area()
-            })
-
-        if 'duration_weeks' not in kwargs:
-            kwargs.update({
-                'duration_weeks': random.randint(1, 3)
-            })
-
-        return CarePlanTemplateFactory(**kwargs)
 
     def create_care_team_member(self, **kwargs):
         if 'employee_profile' not in kwargs:

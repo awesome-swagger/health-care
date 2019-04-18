@@ -165,17 +165,23 @@ class BaseOrganizationTestMixin(TasksMixin):
 
     def generate_patient_tasks(self, plan, due_datetime):
         template = self.create_patient_task_template()
+        patient_template = self.create_plan_patient_template(
+            plan=plan,
+            patient_task_template=template
+        )
         self.create_patient_task(**{
-            'plan': plan,
-            'patient_task_template': template,
+            'patient_template': patient_template,
             'due_datetime': due_datetime,
             'status': 'done'
         })
 
         incomplete_template = self.create_patient_task_template()
+        incomplete_patient_template = self.create_plan_patient_template(
+            plan=plan,
+            patient_task_template=incomplete_template
+        )
         self.create_patient_task(**{
-            'plan': plan,
-            'patient_task_template': incomplete_template,
+            'patient_template': incomplete_patient_template,
             'due_datetime': due_datetime
         })
 
@@ -251,7 +257,7 @@ class BaseOrganizationTestMixin(TasksMixin):
             due_datetime__lte=now
         )
         patient_tasks = PatientTask.objects.filter(
-            plan__in=plans,
+            patient_template__plan__in=plans,
             due_datetime__lte=now
         )
         medication_tasks = MedicationTask.objects.filter(

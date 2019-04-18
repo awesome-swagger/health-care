@@ -25,12 +25,15 @@ def add_days_and_replace_time(datetime_obj, days, time_obj):
 def create_tasks_from_template(template,
                                duration_weeks,
                                instance_model,
-                               template_config={}):
+                               template_config={},
+                               task_template=None):
 
     # for ongoing plans (duration_weeks = -1), set it as 3 years
     duration_weeks = 157 if duration_weeks == -1 else duration_weeks
     date_end = timezone.now() + relativedelta(weeks=duration_weeks)
     plan_end = datetime.combine(date_end.date(), time.max, tzinfo=pytz.utc)
+
+    template = task_template if task_template else template
 
     due_datetime = add_days_and_replace_time(
         timezone.now(),

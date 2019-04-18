@@ -12,9 +12,41 @@ from .factories import (
 )
 from apps.accounts.tests.factories import RegularUserFactory
 from apps.core.tests.mixins import CoreMixin
+from apps.plans.tests.factories import (
+    ServiceAreaFactory,
+    CarePlanTemplateFactory,
+)
 
 
-class PatientsMixin(CoreMixin):
+class CarePlanTemplateMixin(object):
+
+    def create_service_area(self, **kwargs):
+        if 'name' not in kwargs:
+            kwargs.update({
+                'name': self.fake.name()
+            })
+        return ServiceAreaFactory(**kwargs)
+
+    def create_care_plan_template(self, **kwargs):
+        if 'name' not in kwargs:
+            kwargs.update({
+                'name': self.fake.name()
+            })
+
+        if 'service_area' not in kwargs:
+            kwargs.update({
+                'service_area': self.create_service_area()
+            })
+
+        if 'duration_weeks' not in kwargs:
+            kwargs.update({
+                'duration_weeks': random.randint(1, 3)
+            })
+
+        return CarePlanTemplateFactory(**kwargs)
+
+
+class PatientsMixin(CoreMixin, CarePlanTemplateMixin):
 
     def create_patient(self, user=None, **kwargs):
         if user is None:
@@ -33,6 +65,11 @@ class PatientsMixin(CoreMixin):
         if 'is_active' not in kwargs:
             kwargs.update({
                 'is_active': True
+            })
+
+        if 'is_using_mobile' not in kwargs:
+            kwargs.update({
+                'is_using_mobile': False
             })
 
         if 'insurance' not in kwargs:
@@ -134,7 +171,7 @@ class PatientsMixin(CoreMixin):
 
         if 'care_plan' not in kwargs:
             kwargs.update({
-                'care_plan': self.fake.name()
+                'care_plan': self.create_care_plan_template()
             })
 
         if 'phone' not in kwargs:

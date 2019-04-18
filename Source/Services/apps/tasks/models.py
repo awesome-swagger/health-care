@@ -6,6 +6,8 @@ from django.utils.translation import ugettext_lazy as _
 
 from .signals import (
     assessmentresponse_post_save,
+    careplanpatienttemplate_post_init,
+    careplanpatienttemplate_post_save,
     symptomrating_post_save,
     vitalresponse_post_save,
     symptomrating_post_delete,
@@ -150,18 +152,21 @@ class AbstractTaskTemplate(UUIDPrimaryKeyMixin):
             task_model_lookup = {
                 'AssessmentTaskTemplate': 'assessment_tasks',
                 'MedicationTaskTemplate': 'medication_tasks',
-                'PatientTaskTemplate': 'patient_tasks',
                 'SymptomTaskTemplate': 'symptom_tasks',
                 'TeamTaskTemplate': 'team_tasks',
                 'VitalTaskTemplate': 'vital_tasks'
             }
             model_name = self.__class__.__name__
-            if model_name in task_model_lookup:
+            if model_name == 'PatientTaskTemplate':
+                task_model = PatientTask.objects.filter(
+                    patient_template__patient_task_template=self
+                )
+            elif model_name in task_model_lookup:
                 task_model = getattr(self, task_model_lookup[model_name], None)
 
-                if task_model:
-                    now = timezone.now()
-                    task_model.filter(due_datetime__gte=now).delete()
+            if task_model:
+                now = timezone.now()
+                task_model.filter(due_datetime__gte=now).delete()
             self.is_active = False
             self.save(using=using)
         else:
@@ -187,13 +192,156 @@ class PatientTaskTemplate(AbstractTaskTemplate):
         return self.name
 
 
-class PatientTask(AbstractTask):
+class AbstractPlanTaskTemplate(UUIDPrimaryKeyMixin):
+    """
+    Abstract model for common fields and properties involved in
+    plan task template implementation
+    """
+
+    custom_start_on_day = models.IntegerField(
+        blank=True,
+        null=True)
+    custom_frequency = models.CharField(
+        max_length=20,
+        choices=FREQUENCY_CHOICES,
+        blank=True)
+
+    custom_repeat_amount = models.IntegerField(
+        blank=True,
+        null=True)
+    custom_appear_time = models.TimeField(
+        blank=True,
+        null=True)
+    custom_due_time = models.TimeField(
+        blank=True,
+        null=True)
+
+    previous_start_on_day = None
+    previous_frequency = None
+    previous_repeat_amount = None
+    previous_appear_time = None
+    previous_due_time = None
+
+    class Meta:
+        abstract = True
+
+    def get_task_template_field(self):
+        model_name = self.__class__.__name__
+        plan_task_template_lookup = {
+            'CarePlanPatientTemplate': self.patient_task_template
+        }
+        return plan_task_template_lookup[model_name]
+
+    @property
+    def start_on_day(self):
+        task_template = self.get_task_template_field()
+        return self.custom_start_on_day \
+            if self.custom_start_on_day is not None \
+            else task_template.start_on_day
+
+    @property
+    def frequency(self):
+        task_template = self.get_task_template_field()
+        return self.custom_frequency if self.custom_frequency \
+            else task_template.frequency
+
+    @property
+    def repeat_amount(self):
+        task_template = self.get_task_template_field()
+        return self.custom_repeat_amount \
+            if self.custom_repeat_amount is not None \
+            else task_template.repeat_amount
+
+    @property
+    def appear_time(self):
+        task_template = self.get_task_template_field()
+        return self.custom_appear_time \
+            if self.custom_appear_time is not None \
+            else task_template.appear_time
+
+    @property
+    def due_time(self):
+        task_template = self.get_task_template_field()
+        return self.custom_due_time \
+            if self.custom_due_time is not None \
+            else task_template.due_time
+
+    @property
+    def has_custom_values(self):
+        return self.custom_start_on_day is not None or \
+            self.custom_frequency or \
+            self.custom_repeat_amount is not None or \
+            self.custom_appear_time is not None or \
+            self.custom_due_time is not None
+
+    @property
+    def is_custom_start_on_day_changed(self):
+        return self.previous_start_on_day != self.custom_start_on_day
+
+    @property
+    def is_custom_frequency_changed(self):
+        return self.previous_frequency != self.custom_frequency
+
+    @property
+    def is_custom_repeat_amount_changed(self):
+        return self.previous_repeat_amount != self.custom_repeat_amount
+
+    @property
+    def is_custom_appear_time_changed(self):
+        return self.previous_appear_time != self.custom_appear_time
+
+    @property
+    def is_custom_due_time_changed(self):
+        return self.previous_due_time != self.custom_due_time
+
+    @property
+    def is_schedule_fields_changed(self):
+        return self.is_custom_start_on_day_changed or \
+            self.is_custom_frequency_changed or \
+            self.is_custom_repeat_amount_changed or \
+            self.is_custom_appear_time_changed or \
+            self.is_custom_due_time_changed
+
+    def assign_previous_fields(self):
+        self.previous_start_on_day = self.custom_start_on_day
+        self.previous_frequency = self.custom_frequency
+        self.previous_repeat_amount = self.custom_repeat_amount
+        self.previous_appear_time = self.custom_appear_time
+        self.previous_due_time = self.custom_due_time
+
+
+class CarePlanPatientTemplate(AbstractPlanTaskTemplate):
+    """
+    This stores the connection between a patient's plan and
+    a patient task template.
+
+    This is the solution for implementing ad hoc tasks
+    """
+
     plan = models.ForeignKey(
-        CarePlan, null=False, blank=False, on_delete=models.CASCADE)
-    patient_task_template = models.ForeignKey(
-        PatientTaskTemplate,
-        related_name='patient_tasks',
+        'plans.CarePlan',
+        related_name='plan_patient_templates',
         on_delete=models.CASCADE)
+    patient_task_template = models.ForeignKey(
+        'tasks.PatientTaskTemplate',
+        related_name='plan_patient_templates',
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True)
+
+    class Meta:
+        verbose_name = _('Care Plan Patient Template')
+        verbose_name = _('Care Plan Patient Templates')
+
+    def __str__(self):
+        return f'{self.plan}: {self.patient_task_template}'
+
+
+class PatientTask(AbstractTask):
+    patient_template = models.ForeignKey(
+        'tasks.CarePlanPatientTemplate',
+        on_delete=models.CASCADE)
+
     STATUS_CHOICES = (
         ('undefined', 'Undefined'),
         ('missed', 'Missed'),
@@ -203,7 +351,7 @@ class PatientTask(AbstractTask):
         choices=STATUS_CHOICES, max_length=12, default="undefined")
 
     class Meta:
-        ordering = ('plan', 'patient_task_template', 'due_datetime', )
+        ordering = ('patient_template', 'due_datetime', )
 
     @property
     def is_complete(self):
@@ -699,6 +847,14 @@ class VitalResponse(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
 models.signals.post_save.connect(
     assessmentresponse_post_save,
     sender=AssessmentResponse
+)
+models.signals.post_init.connect(
+    careplanpatienttemplate_post_init,
+    sender=CarePlanPatientTemplate
+)
+models.signals.post_save.connect(
+    careplanpatienttemplate_post_save,
+    sender=CarePlanPatientTemplate
 )
 models.signals.post_save.connect(
     symptomrating_post_save,

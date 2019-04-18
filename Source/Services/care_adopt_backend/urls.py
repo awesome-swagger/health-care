@@ -66,6 +66,7 @@ from apps.plans.api.views import (
     VitalByPlanViewSet,
 )
 from apps.tasks.api.views import (
+    CarePlanPatientTemplateViewSet,
     PatientTaskTemplateViewSet,
     PatientTaskViewSet,
     TeamTaskTemplateViewSet,
@@ -367,6 +368,11 @@ router.register(
     base_name='potential_patients')
 
 # Tasks
+CarePlanPatientTemplateViewSet
+router.register(
+    r'plan_patient_templates',
+    CarePlanPatientTemplateViewSet,
+    base_name='plan_patient_templates')
 router.register(
     r'patient_task_templates',
     PatientTaskTemplateViewSet,
