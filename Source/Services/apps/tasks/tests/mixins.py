@@ -9,6 +9,7 @@ from dateutil.relativedelta import relativedelta
 
 from .factories import (
     CarePlanPatientTemplateFactory,
+    CarePlanSymptomTemplateFactory,
     PatientTaskTemplateFactory,
     PatientTaskFactory,
     MedicationTaskTemplateFactory,
@@ -179,14 +180,21 @@ class TasksMixin(PlansMixin):
 
         return template
 
-    def create_symptom_task(self, **kwargs):
-        now = timezone.now()
+    def create_plan_symptom_template(self, **kwargs):
         if 'plan' not in kwargs:
             kwargs.update({'plan': self.create_care_plan()})
 
         if 'symptom_task_template' not in kwargs:
             kwargs.update({
                 'symptom_task_template': self.create_symptom_task_template()
+            })
+        return CarePlanSymptomTemplateFactory(**kwargs)
+
+    def create_symptom_task(self, **kwargs):
+        now = timezone.now()
+        if 'plan_template' not in kwargs:
+            kwargs.update({
+                'plan_template': self.create_plan_symptom_template()
             })
 
         if 'appear_datetime' not in kwargs:
