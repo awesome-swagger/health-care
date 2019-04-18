@@ -1153,8 +1153,8 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
 
         response = self.client.get(self.url)
         self.assertIsNotNone(
-            response.data['results'][0]['plans'][0]['details_of_service'][0][
-                'team_task']['team_task_template']
+            response.data['results'][0]['plans'][0]['details_of_service'][0]
+            ['team_task_template']
         )
 
     def test_get_plans_details_of_service_filter_month_year(self):

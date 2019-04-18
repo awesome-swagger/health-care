@@ -787,8 +787,14 @@ class CarePlanTemplateAverageSerializer(serializers.ModelSerializer):
             'plan__patient__facility__is_affiliate': False,
             'due_datetime__lte': now
         }
+        patient_kwargs = {
+            'patient_template__plan__in': employee_care_plans,
+            'patient_template__plan__plan_template': obj,
+            'patient_template__plan__patient__facility__is_affiliate': False,
+            'due_datetime__lte': now
+        }
         medication_kwargs = {
-            'medication_task_template__plan__id__in': employee_care_plans.values_list('id', flat=True),
+            'medication_task_template__plan__in': employee_care_plans,
             'medication_task_template__plan__plan_template': obj,
             'medication_task_template__plan__patient__facility__is_affiliate': False,
             'due_datetime__lte': now
@@ -796,6 +802,9 @@ class CarePlanTemplateAverageSerializer(serializers.ModelSerializer):
         if facility:
             task_kwargs.update({
                 'plan__patient__facility': facility
+            })
+            patient_kwargs.update({
+                'patient_template__plan__patient__facility': facility
             })
             medication_kwargs.update({
                 'medication_task_template__plan__patient__facility': facility
@@ -805,11 +814,14 @@ class CarePlanTemplateAverageSerializer(serializers.ModelSerializer):
             task_kwargs.update({
                 'plan__patient__facility__organization': organization
             })
+            patient_kwargs.update({
+                'patient_template__plan__patient__facility__organization': organization
+            })
             medication_kwargs.update({
                 'medication_task_template__plan__patient__facility__organization': organization
             })
 
-        patient_tasks = PatientTask.objects.filter(**task_kwargs)
+        patient_tasks = PatientTask.objects.filter(**patient_kwargs)
         medication_tasks = MedicationTask.objects.filter(**medication_kwargs)
         symptom_tasks = SymptomTask.objects.filter(**task_kwargs)
         assessment_tasks = AssessmentTask.objects.filter(**task_kwargs)
@@ -1000,7 +1012,7 @@ class CarePlanOverviewSerializer(RepresentationMixin, serializers.ModelSerialize
     def get_average_engagement(self, obj):
         now = timezone.now()
         patient_tasks = PatientTask.objects.filter(
-            plan=obj,
+            patient_template__plan=obj,
             due_datetime__lte=now)
         medication_tasks = MedicationTask.objects.filter(
             medication_task_template__plan=obj,

@@ -392,7 +392,7 @@ class CarePlanViewSet(viewsets.ModelViewSet):
     def calculate_average_engagement(self, queryset):
         now = timezone.now()
         patient_tasks = PatientTask.objects.filter(
-            plan__in=queryset,
+            patient_template__plan__in=queryset,
             due_datetime__lte=now)
         medication_tasks = MedicationTask.objects.filter(
             medication_task_template__plan__in=queryset,

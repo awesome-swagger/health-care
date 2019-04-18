@@ -8,6 +8,7 @@ from django.utils import timezone
 from dateutil.relativedelta import relativedelta
 
 from .factories import (
+    CarePlanPatientTemplateFactory,
     PatientTaskTemplateFactory,
     PatientTaskFactory,
     MedicationTaskTemplateFactory,
@@ -61,14 +62,21 @@ class TasksMixin(PlansMixin):
             **kwargs
         )
 
-    def create_patient_task(self, **kwargs):
-        now = timezone.now()
+    def create_plan_patient_template(self, **kwargs):
         if 'plan' not in kwargs:
             kwargs.update({'plan': self.create_care_plan()})
 
         if 'patient_task_template' not in kwargs:
             kwargs.update({
                 'patient_task_template': self.create_patient_task_template()
+            })
+        return CarePlanPatientTemplateFactory(**kwargs)
+
+    def create_patient_task(self, **kwargs):
+        now = timezone.now()
+        if 'patient_template' not in kwargs:
+            kwargs.update({
+                'patient_template': self.create_plan_patient_template()
             })
 
         if 'appear_datetime' not in kwargs:
@@ -584,18 +592,24 @@ class TasksMixin(PlansMixin):
 
     def generate_patient_tasks(self, plan, due_datetime, with_incomplete=True):
         template = self.create_patient_task_template()
+        patient_template = self.create_plan_patient_template(
+            plan=plan,
+            patient_task_template=template
+        )
         self.create_patient_task(**{
-            'plan': plan,
-            'patient_task_template': template,
+            'patient_template': patient_template,
             'due_datetime': due_datetime,
             'status': 'done'
         })
 
         if with_incomplete:
             incomplete_template = self.create_patient_task_template()
+            incomplete_patient_template = self.create_plan_patient_template(
+                plan=plan,
+                patient_task_template=incomplete_template
+            )
             self.create_patient_task(**{
-                'plan': plan,
-                'patient_task_template': incomplete_template,
+                'patient_template': incomplete_patient_template,
                 'due_datetime': due_datetime
             })
 

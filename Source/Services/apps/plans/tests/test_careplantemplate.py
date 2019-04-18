@@ -581,7 +581,7 @@ class TestCarePlanTemplateAverage(BillingsMixin, APITestCase):
             due_datetime__lte=now
         )
         patient_tasks = PatientTask.objects.filter(
-            plan__plan_template=self.template,
+            patient_template__plan__plan_template=self.template,
             due_datetime__lte=now
         )
         medication_tasks = MedicationTask.objects.filter(

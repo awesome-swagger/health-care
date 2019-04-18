@@ -33,7 +33,7 @@ class PatientTaskAdmin(admin.ModelAdmin):
     is_complete.boolean = True
 
     list_display = (
-        'plan', 'patient_task_template', 'appear_datetime', 'due_datetime',
+        'appear_datetime', 'due_datetime',
         is_complete, )
 
 
