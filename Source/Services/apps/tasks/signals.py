@@ -275,7 +275,7 @@ def symptomrating_post_save(sender, instance, created, **kwargs):
     :model:`tasks.SymptomRating`
     """
     if created:
-        template = instance.symptom_task.symptom_task_template
+        template = instance.symptom_task.symptom_template.symptom_task_template
         default_symptoms = template.default_symptoms.values_list(
             'id', flat=True)
         rated_symptoms = instance.symptom_task.ratings.values_list(
@@ -285,7 +285,7 @@ def symptomrating_post_save(sender, instance, created, **kwargs):
         if is_complete:
             assign_is_complete_to_symptom_task(instance)
 
-        patient = instance.symptom_task.plan.patient
+        patient = instance.symptom_task.symptom_template.plan.patient
         assignment = RiskLevelAssignment(patient)
         assignment.assign_risk_level_to_patient()
 
@@ -296,7 +296,7 @@ def symptomrating_post_delete(sender, instance, **kwargs):
     :model:`tasks.SymptomRating`
     """
     task = instance.symptom_task
-    template = task.symptom_task_template
+    template = task.symptom_template.symptom_task_template
     if task.is_complete:
         default_symptoms = template.default_symptoms.values_list(
             'id', flat=True)
@@ -578,7 +578,7 @@ def symptomtask_post_save(sender, instance, created, **kwargs):
     :model:`tasks.SymptomTask`
     """
     if created:
-        patient = instance.plan.patient
+        patient = instance.symptom_template.plan.patient
         assignment = RiskLevelAssignment(patient)
         assignment.assign_risk_level_to_patient()
 
@@ -668,7 +668,7 @@ def symptomtask_post_delete(sender, instance, **kwargs):
     Function to be used as signal (post_delete) when deleting
     :model:`tasks.SymptomTask`
     """
-    patient = instance.plan.patient
+    patient = instance.symptom_template.plan.patient
     assignment = RiskLevelAssignment(patient)
     assignment.assign_risk_level_to_patient()
 

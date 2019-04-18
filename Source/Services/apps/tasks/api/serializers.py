@@ -11,6 +11,7 @@ from rest_framework import serializers
 
 from ..models import (
     CarePlanPatientTemplate,
+    CarePlanSymptomTemplate,
     PatientTaskTemplate,
     PatientTask,
     TeamTaskTemplate,
@@ -348,6 +349,47 @@ class SymptomTaskTemplateSerializer(RepresentationMixin,
         ]
 
 
+class CarePlanSymptomTemplateSerializer(RepresentationMixin,
+                                        serializers.ModelSerializer):
+    """
+    Serializer to be used by :model:`tasks.CarePlanSymptomTemplate`
+    """
+
+    class Meta:
+        model = CarePlanSymptomTemplate
+        fields = (
+            'id',
+            'plan',
+            'symptom_task_template',
+            'custom_start_on_day',
+            'custom_frequency',
+            'custom_repeat_amount',
+            'custom_appear_time',
+            'custom_due_time',
+            'start_on_day',
+            'frequency',
+            'repeat_amount',
+            'appear_time',
+            'due_time',
+        )
+        write_only_fields = (
+            'custom_start_on_day',
+            'custom_frequency',
+            'custom_repeat_amount',
+            'custom_appear_time',
+            'custom_due_time',
+        )
+        read_only_fields = (
+            'id',
+        )
+        nested_serializers = [
+            {
+                'field': 'symptom_task_template',
+                'serializer_class': SymptomTaskTemplateSerializer,
+            }
+        ]
+
+
 class SymptomRatingSerializer(RepresentationMixin,
                               serializers.ModelSerializer):
 
@@ -372,7 +414,7 @@ class SymptomRatingSerializer(RepresentationMixin,
         ]
 
 
-class SymptomTaskSerializer(serializers.ModelSerializer):
+class SymptomTaskSerializer(RepresentationMixin, serializers.ModelSerializer):
 
     ratings = SymptomRatingSerializer(many=True, read_only=True)
 
@@ -380,8 +422,7 @@ class SymptomTaskSerializer(serializers.ModelSerializer):
         model = SymptomTask
         fields = (
             'id',
-            'plan',
-            'symptom_task_template',
+            'symptom_template',
             'appear_datetime',
             'due_datetime',
             'comments',
@@ -393,6 +434,12 @@ class SymptomTaskSerializer(serializers.ModelSerializer):
             'id',
             'ratings',
         )
+        nested_serializers = [
+            {
+                'field': 'symptom_template',
+                'serializer_class': CarePlanSymptomTemplateSerializer,
+            }
+        ]
 
 
 class SymptomTaskTodaySerializer(serializers.ModelSerializer):
