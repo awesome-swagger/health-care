@@ -471,8 +471,8 @@ class SymptomTaskTodaySerializer(serializers.ModelSerializer):
 
     def get_occurrence(self, obj):
         total_tasks = SymptomTask.objects.filter(
-            plan=obj.plan,
-            symptom_task_template=obj.symptom_task_template)
+            symptom_template=obj.symptom_template
+        )
         obj_occurrence = total_tasks.filter(
             due_datetime__lte=obj.due_datetime).count()
         return f'{obj_occurrence} of {total_tasks.count()}'

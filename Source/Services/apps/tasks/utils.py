@@ -102,7 +102,7 @@ def get_all_tasks_of_patient_today(patient):
         medication_task_template__plan__patient__id=patient.id,
         due_datetime__range=(today_min, today_max))
     symptom_tasks = SymptomTask.objects.filter(
-        plan__patient__id=patient.id,
+        symptom_template__plan__patient__id=patient.id,
         due_datetime__range=(today_min, today_max))
     assessment_tasks = AssessmentTask.objects.filter(
         plan__patient__id=patient.id,
@@ -205,7 +205,7 @@ def get_all_tasks_for_today(user, **kwargs):
             medication_task_template__plan__patient__id=patient.id,
             due_datetime__range=(today_min, today_max))
         symptom_tasks = SymptomTask.objects.filter(
-            plan__patient__id=patient.id,
+            symptom_template__plan__patient__id=patient.id,
             due_datetime__range=(today_min, today_max))
         assessment_tasks = AssessmentTask.objects.filter(
             plan__patient__id=patient.id,
@@ -226,7 +226,7 @@ def get_all_tasks_for_today(user, **kwargs):
             medication_tasks = medication_tasks.filter(
                 medication_task_template__plan__plan_template=plan_template)
             symptom_tasks = symptom_tasks.filter(
-                symptom_task_template__plan_template=plan_template)
+                symptom_template__symptom_task_template__plan_template=plan_template)
             assessment_tasks = assessment_tasks.filter(
                 assessment_task_template__plan_template=plan_template)
             vital_tasks = vital_tasks.filter(
