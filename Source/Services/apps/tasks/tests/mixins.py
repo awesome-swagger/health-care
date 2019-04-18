@@ -640,18 +640,24 @@ class TasksMixin(PlansMixin):
 
     def generate_symptom_tasks(self, plan, due_datetime, with_incomplete=True):
         template = self.create_symptom_task_template()
+        symptom_template = self.create_plan_symptom_template(
+            plan=plan,
+            symptom_task_template=template
+        )
         symptom_task = self.create_symptom_task(**{
-            'plan': plan,
-            'symptom_task_template': template,
+            'symptom_template': symptom_template,
             'due_datetime': due_datetime,
         })
         self.create_symptom_rating(symptom_task)
 
         if with_incomplete:
             incomplete_template = self.create_symptom_task_template()
+            symptom_template = self.create_plan_symptom_template(
+                plan=plan,
+                symptom_task_template=incomplete_template
+            )
             self.create_symptom_task(**{
-                'plan': plan,
-                'symptom_task_template': incomplete_template,
+                'symptom_template': symptom_template,
                 'due_datetime': due_datetime
             })
 
