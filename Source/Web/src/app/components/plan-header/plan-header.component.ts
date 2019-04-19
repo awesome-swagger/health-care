@@ -158,7 +158,7 @@ export class PlanHeaderComponent implements OnInit, OnDestroy {
   }
 
   public totalTimePillColor(average) {
-    let totalTime = average.time_count;
+    let totalTime = average.non_tcm_time_count;
     let totalAllotted = average.time_allotted;
     if (totalAllotted < 1) {
       return null;

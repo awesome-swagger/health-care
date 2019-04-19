@@ -8,6 +8,22 @@ export class UtilsService {
 
   constructor() { }
 
+  public timePillColorTCM(planStart) {
+    let planStartMoment = moment(planStart);
+    let daysSinceStart = moment().diff(planStartMoment, 'days');
+    if (daysSinceStart < 7) {
+      return 'pill--lime';
+    } else if (daysSinceStart < 14) {
+      return 'pill--yellow';
+    } else if (daysSinceStart < 21) {
+      return 'pill--red';
+    } else if (daysSinceStart < 29) {
+      return 'pill--purple';
+    } else {
+      return null;
+    }
+  }
+
   public timePillColor(minutes, allotted) {
     const daysThisMonth = moment().daysInMonth();
     const currentDay = moment().date();

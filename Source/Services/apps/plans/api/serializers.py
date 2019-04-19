@@ -614,6 +614,7 @@ class CarePlanTemplateAverageSerializer(serializers.ModelSerializer):
     total_facilities = serializers.SerializerMethodField()
     time_allotted = serializers.SerializerMethodField()
     time_count = serializers.SerializerMethodField()
+    non_tcm_time_count = serializers.SerializerMethodField()
     average_outcome = serializers.SerializerMethodField()
     average_engagement = serializers.SerializerMethodField()
     risk_level = serializers.SerializerMethodField()
@@ -630,6 +631,7 @@ class CarePlanTemplateAverageSerializer(serializers.ModelSerializer):
             'total_facilities',
             'time_allotted',
             'time_count',
+            'non_tcm_time_count',
             'average_outcome',
             'average_engagement',
             'risk_level',
@@ -742,6 +744,36 @@ class CarePlanTemplateAverageSerializer(serializers.ModelSerializer):
             })
 
         time_spent = BilledActivity.objects.filter(**kwargs).aggregate(
+            total=Sum('time_spent'))
+        total = time_spent['total'] or 0
+        return total
+
+    def get_non_tcm_time_count(self, obj):
+        facility = self.context.get('facility', None)
+        organization = self.context.get('organization', None)
+        employee = self.context['request'].user.employee_profile
+        employee_care_plans = self.care_plans_for_employee(obj, employee)
+
+        kwargs = {
+            'plan__id__in': employee_care_plans.values_list('id', flat=True),
+            'plan__patient__facility__is_affiliate': False,
+            'plan__plan_template': obj,
+            'activity_datetime__gte': timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        }
+        exclude_kwargs = {
+            'plan__billing_type__acronym': 'TCM',
+        }
+        if facility:
+            kwargs.update({
+                'plan__patient__facility': facility
+            })
+
+        if organization:
+            kwargs.update({
+                'plan__patient__facility__organization': organization
+            })
+
+        time_spent = BilledActivity.objects.exclude(**exclude_kwargs).filter(**kwargs).aggregate(
             total=Sum('time_spent'))
         total = time_spent['total'] or 0
         return total
@@ -1068,7 +1100,6 @@ class CarePlanByTemplateFacilitySerializer(CarePlanOverviewSerializer):
     serializer to be used by :model:`plans.CarePlan` with
     data relevant in dashboard average endpoint
     """
-    time_count = serializers.SerializerMethodField()
 
     class Meta(CarePlanOverviewSerializer.Meta):
         fields = (
@@ -1085,15 +1116,6 @@ class CarePlanByTemplateFacilitySerializer(CarePlanOverviewSerializer):
             'time_count',
             'created'
         )
-
-    def get_time_count(self, obj):
-        time_spent = BilledActivity.objects.filter(
-            plan=obj,
-            activity_datetime__gte=timezone.now().replace(
-                day=1, hour=0, minute=0, second=0, microsecond=0)) \
-                .aggregate(total=Sum('time_spent'))
-        total = time_spent['total'] or 0
-        return total
 
 
 class BasicCareTeamMemberSerializer(RepresentationMixin,
@@ -1143,6 +1165,7 @@ class PatientCarePlanOverviewSerializer(CarePlanOverviewSerializer):
             'id',
             'patient',
             'plan_template',
+            'billing_type',
             'care_team',
             'next_check_in',
             'last_contact',

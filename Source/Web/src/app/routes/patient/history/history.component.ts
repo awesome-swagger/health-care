@@ -51,6 +51,7 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
   public billedActivitiesPage = 1;
   public billedActivitiesHasNext = false;
   public activitiesLoaded = false;
+  public showLastPatientInteraction = false;
   public selectedActivity = null;
 
   public dateFilterOpen = false;
@@ -67,6 +68,11 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
   ) { }
 
   public ngOnInit() {
+    this.route.queryParams.subscribe((queryParams) => {
+      if (queryParams['last_patient_interaction']) {
+        this.showLastPatientInteraction = true;
+      }
+    });
     this.route.params.subscribe((params) => {
     	this.nav.patientDetailState(params.patientId, params.planId);
     	// Get auth user
@@ -97,7 +103,16 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
             this.getBilledActivities(this.billedActivitiesPage).then((billedActivities: any) => {
               this.billedActivities = billedActivities.results;
               this.billedActivitiesHasNext = !!billedActivities.next;
-              this.selectedActivity = this.billedActivities[0];
+              if (this.showLastPatientInteraction) {
+                let patientActivities = this.billedActivities.filter((obj) => {
+                  return obj.patient_included;
+                });
+                if (patientActivities.length > 0) {
+                  this.selectedActivity = patientActivities[0];
+                }
+              } else {
+                this.selectedActivity = this.billedActivities[0];
+              }
               this.sortBilledActivities();
             });
             this.timer.emitBilledActivity.subscribe((activity) => {
