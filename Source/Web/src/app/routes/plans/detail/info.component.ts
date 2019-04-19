@@ -103,7 +103,11 @@ export class PlanInfoComponent implements OnDestroy, OnInit {
   }
 
   public routeToHistory(patient, plan) {
-    this.router.navigate(['/patient', patient.id, 'history', plan.id]);
+    this.router.navigate(['/patient', patient.id, 'history', plan.id], {
+      queryParams: {
+        last_patient_interaction: true,
+      }
+    });
   }
 
   public getPlanTemplate(id) {
@@ -177,11 +181,15 @@ export class PlanInfoComponent implements OnDestroy, OnInit {
 
   public timePillColor(plan) {
     if (!plan.patient.payer_reimbursement || !plan.billing_type) {
-      return;
+      return null;
     }
-    let timeCount = plan
-    let allotted = plan.billing_type.billable_minutes;
-    return this.utils.timePillColor(plan.time_count, allotted);
+    if (plan.billing_type.acronym === 'TCM') {
+      return this.utils.timePillColorTCM(plan.created);
+    } else {
+      let timeCount = plan.time_count;
+      let allotted = plan.billing_type.billable_minutes;
+      return this.utils.timePillColor(timeCount, allotted);
+    }
   }
 
   public totalTimeCount(plans) {
@@ -198,7 +206,8 @@ export class PlanInfoComponent implements OnDestroy, OnInit {
       return null;
     }
     let billablePlans = plans.filter((plan) => plan.patient.payer_reimbursement && plan.billing_type);
-    if (plans.length === 0) {
+    billablePlans = billablePlans.filter((plan) => plan.billing_type.acronym !== 'TCM');
+    if (billablePlans.length === 0) {
       return null;
     }
     let totalTime = _sum(_map(billablePlans, (p) => p.time_count));

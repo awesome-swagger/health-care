@@ -178,6 +178,7 @@ export class PlansComponent implements OnDestroy, OnInit {
               total_facilities: 0,
               total_patients: 0,
               time_count: 0,
+              non_tcm_time_count: 0,
               time_allotted: 0,
             });
           } else {
@@ -192,6 +193,7 @@ export class PlansComponent implements OnDestroy, OnInit {
             total_facilities: 0,
             total_patients: 0,
             time_count: 0,
+            non_tcm_time_count: 0,
             time_allotted: 0,
           });
         },
@@ -273,30 +275,20 @@ export class PlansComponent implements OnDestroy, OnInit {
     return `${h}:${m.length === 1 ? '0' : ''}${minutes % 60}`
   }
 
-  public totalTimeCount(templates) {
-    let minutes = 0;
-    templates.forEach((obj) => {
-      if (!obj.averages.time_count) {
-        return;
-      }
-      minutes += obj.averages.time_count;
-    });
-    return minutes;
+  public totalTimeCount(templates, excludeTCM=false) {
+    if (excludeTCM) {
+      return _sumBy(templates, (obj) => obj.averages.non_tcm_time_count);
+    } else {
+      return _sumBy(templates, (obj) => obj.averages.time_count);
+    }
   }
 
   public totalTimeAllotted(templates) {
-    let minutes = 0;
-    templates.forEach((obj) => {
-      if (!obj.averages.time_allotted) {
-        return;
-      }
-      minutes += obj.averages.time_allotted;
-    });
-    return minutes;
+    return _sumBy(templates, (obj) => obj.averages.time_allotted);
   }
 
   public templateTimeColor(template) {
-    let totalTime = template.averages.time_count;
+    let totalTime = template.averages.non_tcm_time_count;
     let totalAllotted = template.averages.time_allotted;
     if (totalAllotted < 1) {
       return null;
@@ -305,7 +297,7 @@ export class PlansComponent implements OnDestroy, OnInit {
   }
 
   public serviceAreaTimeColor(templates) {
-    let totalTime = this.totalTimeCount(templates);
+    let totalTime = this.totalTimeCount(templates, true);
     let totalAllotted = this.totalTimeAllotted(templates);
     if (totalAllotted < 1) {
       return null;

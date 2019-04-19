@@ -197,7 +197,11 @@ export class PatientHeaderComponent implements OnInit, OnDestroy {
   }
 
   public routeToHistory(patient, plan) {
-    this.router.navigate(['/patient', patient.id, 'history', plan.id]);
+    this.router.navigate(['/patient', patient.id, 'history', plan.id], {
+      queryParams: {
+        last_patient_interaction: true,
+      }
+    });
   }
 
   public changeSelectedPlan(plan) {
@@ -248,6 +252,20 @@ export class PatientHeaderComponent implements OnInit, OnDestroy {
 
   public parseTime(time) {
     return time.format('HH:mm:00');
+  }
+
+  public timePillColor(plan) {
+    if (!this.patient.payer_reimbursement || !plan.billing_type) {
+      return null;
+    }
+    if (plan.billing_type.acronym === 'TCM') {
+      return this.utils.timePillColorTCM(plan.created);
+    } else {
+      let overview = this.getOverviewForPlanTemplate(this.selectedPlan.plan_template.id);
+      let timeCount = this.totalMinutes(overview.time_spent_this_month);
+      let allotted = plan.billing_type.billable_minutes;
+      return this.utils.timePillColor(timeCount, allotted);
+    }
   }
 
   public totalMinutes(timeSpentStr) {

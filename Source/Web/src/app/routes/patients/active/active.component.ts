@@ -332,10 +332,14 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
 
   public timePillColor(plan) {
     if (!plan.patient.payer_reimbursement || !plan.billing_type) {
-      return;
+      return null;
     }
-    const allotted = plan.billing_type.billable_minutes;
-    return this.utils.timePillColor(plan.time_count, allotted);
+    if (plan.billing_type.acronym === 'TCM') {
+      return this.utils.timePillColorTCM(plan.created);
+    } else {
+      const allotted = plan.billing_type.billable_minutes;
+      return this.utils.timePillColor(plan.time_count, allotted);
+    }
   }
 
   public facilityTimeCount(facility) {
@@ -348,17 +352,20 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
   }
 
   public avgFacilityTimeColor(facility) {
-    if (facility.carePlans) {
-      let plans = facility.carePlans.filter((plan) => plan.patient.payer_reimbursement && plan.billing_type);
-      if (plans.length === 0) {
-        return;
-      }
-      const avgTime = _sum(_map(plans, (p) => p.time_count)) / plans.length;
-      const avgAllotted = _sum(_map(plans, (p) => p.billing_type.billable_minutes)) / plans.length;
-      return this.utils.timePillColor(avgTime, avgAllotted);
-    } else {
-      return;
+    if (!facility.carePlans || facility.carePlans.length < 1) {
+      return null;
     }
+    let billablePlans = facility.carePlans.filter((plan) => plan.patient.payer_reimbursement && plan.billing_type);
+    billablePlans = billablePlans.filter((plan) => plan.billing_type.acronym !== 'TCM');
+    if (billablePlans.length < 1) {
+      return null;
+    }
+    const avgTime = _sum(_map(billablePlans, (p) => p.time_count)) / billablePlans.length;
+    const avgAllotted = _sum(_map(billablePlans, (p) => p.billing_type.billable_minutes)) / billablePlans.length;
+    if (avgAllotted < 1) {
+      return null;
+    }
+    return this.utils.timePillColor(avgTime, avgAllotted);
   }
 
   public averageTimeMinutes() {
@@ -375,13 +382,16 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
   public averageTimePercentage() {
     let facilities = this.facilities.filter((facility) => facility.carePlans);
     let plans = _flattenDeep(_map(facilities, (facility) => facility.carePlans));
-    plans = plans.filter((plan) => plan.patient.payer_reimbursement && plan.billing_type);
-    if (plans.length === 0) {
-      return;
+    let billablePlans = plans.filter((plan) => plan.patient.payer_reimbursement && plan.billing_type);
+    if (billablePlans.length < 1) {
+      return null;
     }
-    let avgTime = _sum(_map(plans, (p) => p.time_count)) / plans.length;
-    let avgAlloted = _sum(_map(plans, (p) => p.billing_type.billable_minutes)) / plans.length;
-    return this.utils.timePillColor(avgTime, avgAlloted);
+    let avgTime = _sum(_map(billablePlans, (p) => p.time_count)) / billablePlans.length;
+    let avgAllotted = _sum(_map(billablePlans, (p) => p.billing_type.billable_minutes)) / billablePlans.length;
+    if (avgAllotted < 1) {
+      return null;
+    }
+    return this.utils.timePillColor(avgTime, avgAllotted);
   }
 
   public avgFacilityRiskLevel(facility) {
