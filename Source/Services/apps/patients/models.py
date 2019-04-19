@@ -76,7 +76,7 @@ class PatientProfile(AddressMixin, CreatedModifiedMixin, UUIDPrimaryKeyMixin):
         null=True
     )
     is_invited = models.BooleanField(default=False)
-    is_active = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
     is_archived = models.BooleanField(default=False)
     payer_reimbursement = models.BooleanField(
         default=False,
