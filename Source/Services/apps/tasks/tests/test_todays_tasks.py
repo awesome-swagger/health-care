@@ -50,9 +50,12 @@ class TestUserTask(TasksMixin, APITestCase):
         patient_template = self.create_patient_task_template(**{
             'plan_template': plan.plan_template
         })
+        plan_patient_template = self.create_plan_patient_template(
+            plan=plan,
+            patient_task_template=patient_template
+        )
         self.create_patient_task(**{
-            'patient_task_template': patient_template,
-            'plan': plan,
+            'patient_template': plan_patient_template,
             'due_datetime': date_object
         })
 
@@ -225,8 +228,11 @@ class TestTodaysTaskForPatient(TasksMixin, APITestCase):
         appear_datetime = pytz.utc.localize(
             self.fake.past_datetime(start_date="-1d")
         )
+        patient_template = self.create_plan_patient_template(
+            plan=self.plan
+        )
         kwargs.update({
-            'plan': self.plan,
+            'patient_template': patient_template,
             'appear_datetime': appear_datetime,
             'due_datetime': timezone.now()
         })

@@ -10,6 +10,7 @@ from drf_haystack.serializers import HaystackSerializerMixin
 from rest_framework import serializers
 
 from ..models import (
+    CarePlanPatientTemplate,
     PatientTaskTemplate,
     PatientTask,
     TeamTaskTemplate,
@@ -45,14 +46,54 @@ class PatientTaskTemplateSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class CarePlanPatientTemplateSerializer(RepresentationMixin,
+                                        serializers.ModelSerializer):
+    """
+    Serializer to be used by :model:`tasks.CarePlanPatientTemplate`
+    """
+
+    class Meta:
+        model = CarePlanPatientTemplate
+        fields = (
+            'id',
+            'plan',
+            'patient_task_template',
+            'custom_start_on_day',
+            'custom_frequency',
+            'custom_repeat_amount',
+            'custom_appear_time',
+            'custom_due_time',
+            'start_on_day',
+            'frequency',
+            'repeat_amount',
+            'appear_time',
+            'due_time',
+        )
+        write_only_fields = (
+            'custom_start_on_day',
+            'custom_frequency',
+            'custom_repeat_amount',
+            'custom_appear_time',
+            'custom_due_time',
+        )
+        read_only_fields = (
+            'id',
+        )
+        nested_serializers = [
+            {
+                'field': 'patient_task_template',
+                'serializer_class': PatientTaskTemplateSerializer,
+            }
+        ]
+
+
 class PatientTaskSerializer(RepresentationMixin, serializers.ModelSerializer):
 
     class Meta:
         model = PatientTask
         fields = (
             'id',
-            'plan',
-            'patient_task_template',
+            'patient_template',
             'appear_datetime',
             'due_datetime',
             'status',
@@ -64,8 +105,8 @@ class PatientTaskSerializer(RepresentationMixin, serializers.ModelSerializer):
         )
         nested_serializers = [
             {
-                'field': 'patient_task_template',
-                'serializer_class': PatientTaskTemplateSerializer,
+                'field': 'patient_template',
+                'serializer_class': CarePlanPatientTemplateSerializer,
             }
         ]
 
@@ -95,12 +136,12 @@ class PatientTaskTodaySerializer(serializers.ModelSerializer):
         return 'patient_task'
 
     def get_name(self, obj):
-        return obj.patient_task_template.name
+        return obj.patient_template.patient_task_template.name
 
     def get_occurrence(self, obj):
         total_tasks = PatientTask.objects.filter(
-            plan=obj.plan,
-            patient_task_template=obj.patient_task_template)
+            patient_template=obj.patient_template
+        )
         obj_occurrence = total_tasks.filter(
             due_datetime__lte=obj.due_datetime).count()
         return f'{obj_occurrence} of {total_tasks.count()}'

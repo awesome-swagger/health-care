@@ -1,6 +1,15 @@
 import factory
 
 
+class CarePlanPatientTemplateFactory(factory.django.DjangoModelFactory):
+    """
+    Factory for :model:`tasks.PatientTaskTemplate`
+    """
+
+    class Meta:
+        model = 'tasks.CarePlanPatientTemplate'
+
+
 class PatientTaskTemplateFactory(factory.django.DjangoModelFactory):
     """
     Factory for :model:`tasks.PatientTaskTemplate`
