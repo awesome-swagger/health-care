@@ -74,11 +74,6 @@ def check_inactivity_patient():
                                              is_using_mobile=True) \
                                      .update(is_active=False)
 
-    # test
-    patient = PatientProfile.objects.get(pk='83437bc8-ac13-47f7-a1fd-727fc4d40b8d')
-    patient.risk_level = patient.risk_level + 1
-    patient.save()
-
 
 class DailyInfoMessage(PeriodicTask):
     """

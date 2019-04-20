@@ -339,4 +339,4 @@ CELERY_BEAT_SCHEDULE = {
     }
 }
 
-CELERY_BROKER_URL = "redis://localhost:6379/0"
+CELERY_BROKER_URL = "redis://{}:6379/0".format(os.environ.get('REDIS_HOST', 'localhost'))
