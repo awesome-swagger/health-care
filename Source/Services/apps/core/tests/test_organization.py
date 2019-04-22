@@ -201,17 +201,23 @@ class BaseOrganizationTestMixin(TasksMixin):
 
     def generate_symptom_tasks(self, plan, due_datetime):
         template = self.create_symptom_task_template()
+        symptom_template = self.create_plan_symptom_template(
+            plan=plan,
+            symptom_task_template=template
+        )
         symptom_task = self.create_symptom_task(**{
-            'plan': plan,
-            'symptom_task_template': template,
+            'symptom_template': symptom_template,
             'due_datetime': due_datetime,
         })
         self.create_symptom_rating(symptom_task)
 
         incomplete_template = self.create_symptom_task_template()
+        incomplete_symptom_template = self.create_plan_symptom_template(
+            plan=plan,
+            symptom_task_template=incomplete_template
+        )
         self.create_symptom_task(**{
-            'plan': plan,
-            'symptom_task_template': incomplete_template,
+            'symptom_template': incomplete_symptom_template,
             'due_datetime': due_datetime
         })
 
@@ -265,7 +271,7 @@ class BaseOrganizationTestMixin(TasksMixin):
             due_datetime__lte=now
         )
         symptom_tasks = SymptomTask.objects.filter(
-            plan__in=plans,
+            symptom_template__plan__in=plans,
             due_datetime__lte=now
         )
         vital_tasks = VitalTask.objects.filter(

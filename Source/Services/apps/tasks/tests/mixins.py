@@ -652,12 +652,12 @@ class TasksMixin(PlansMixin):
 
         if with_incomplete:
             incomplete_template = self.create_symptom_task_template()
-            symptom_template = self.create_plan_symptom_template(
+            incomplete_symptom_template = self.create_plan_symptom_template(
                 plan=plan,
                 symptom_task_template=incomplete_template
             )
             self.create_symptom_task(**{
-                'symptom_template': symptom_template,
+                'symptom_template': incomplete_symptom_template,
                 'due_datetime': due_datetime
             })
 
