@@ -203,7 +203,7 @@ def create_tasks_for_ongoing_plans(task_template,
                             'tasks',
                             'CarePlanPatientTemplate'
                         )
-                        patient_template = CarePlanPatientTemplate.objects.create(
+                        patient_template, created = CarePlanPatientTemplate.objects.get_or_create(
                             plan=plan,
                             patient_task_template=task_template
                         )
