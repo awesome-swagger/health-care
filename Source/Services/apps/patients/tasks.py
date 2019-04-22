@@ -5,6 +5,7 @@ import random
 import pytz
 
 from datetime import timedelta
+from dateutil.relativedelta import relativedelta
 
 from celery import shared_task
 from celery.schedules import crontab
@@ -59,6 +60,19 @@ def remind_invited_patients():
             subject=reminder_template.subject,
             message=reminder_template.message,
         )
+
+
+@shared_task
+def check_inactivity_patient():
+    """
+    If is_using_mobile is true and it's been 3 months, then it marks them as inactive.
+    """
+    now = timezone.now()
+    days_ago = now - relativedelta(days=90)
+    patients = PatientProfile.objects.filter(is_active=True,
+                                             last_app_use__lt=days_ago,
+                                             is_using_mobile=True) \
+                                     .update(is_active=False)
 
 
 class DailyInfoMessage(PeriodicTask):

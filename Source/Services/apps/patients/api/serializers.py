@@ -561,6 +561,7 @@ class FacilityInactivePatientSerializer(serializers.ModelSerializer):
             'id',
             'full_name',
             'email',
+            'emails_sent',
             'image_url',
             'care_plan',
             'last_app_use',
