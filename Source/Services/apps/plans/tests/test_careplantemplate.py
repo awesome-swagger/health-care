@@ -484,9 +484,6 @@ class TestCarePlanTemplateAverage(BillingsMixin, APITestCase):
                 'time_spent': minutes,
             })
 
-        total_time_spent = str(datetime.timedelta(
-            minutes=total_minutes))[:-3]
-
         query_params = urllib.parse.urlencode({
             'care_plans__patient__facility__organization': facility.organization.id
         })
@@ -496,7 +493,7 @@ class TestCarePlanTemplateAverage(BillingsMixin, APITestCase):
         )
         avg_url = f'{url}?{query_params}'
         response = self.client.get(avg_url)
-        self.assertEqual(response.data['time_count'], total_time_spent)
+        self.assertEqual(response.data['time_count'], total_minutes)
 
     def generate_average_outcome_records(self, organization):
         total_facilities = 3
@@ -589,7 +586,7 @@ class TestCarePlanTemplateAverage(BillingsMixin, APITestCase):
             due_datetime__lte=now
         )
         symptom_tasks = SymptomTask.objects.filter(
-            plan__plan_template=self.template,
+            symptom_template__plan__plan_template=self.template,
             due_datetime__lte=now
         )
         vital_tasks = VitalTask.objects.filter(
