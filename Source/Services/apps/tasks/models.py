@@ -418,6 +418,12 @@ class TeamTask(AbstractTask):
         ('missed', 'Missed'),
         ('done', 'Done'),
     )
+
+    team_template = models.ForeignKey(
+        'tasks.CarePlanTeamTemplate',
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True)
     plan = models.ForeignKey(
         CarePlan, null=False, blank=False, on_delete=models.CASCADE)
     team_task_template = models.ForeignKey(
