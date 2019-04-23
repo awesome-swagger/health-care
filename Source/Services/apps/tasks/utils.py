@@ -56,7 +56,7 @@ def calculate_task_percentage(patient):
 
     # Symptom tasks
     symptom_tasks = SymptomTask.objects.filter(
-        plan__patient=patient,
+        symptom_template__plan__patient=patient,
         **kwargs
     )
     completed_symptom_tasks = symptom_tasks.filter(is_complete=True)
