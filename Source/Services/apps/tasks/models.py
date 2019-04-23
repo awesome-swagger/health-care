@@ -385,6 +385,33 @@ class TeamTaskTemplate(AbstractTaskTemplate):
         return self.name
 
 
+class CarePlanTeamTemplate(AbstractPlanTaskTemplate):
+    """
+    This stores the connection between a patient's plan and
+    a team task template.
+
+    This is the solution for implementing ad hoc tasks
+    """
+
+    plan = models.ForeignKey(
+        'plans.CarePlan',
+        related_name='plan_team_templates',
+        on_delete=models.CASCADE)
+    symptom_task_template = models.ForeignKey(
+        'tasks.TeamTaskTemplate',
+        related_name='plan_team_templates',
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True)
+
+    class Meta:
+        verbose_name = _('Care Plan Team Template')
+        verbose_name = _('Care Plan Team Templates')
+
+    def __str__(self):
+        return f'{self.plan}: {self.team_task_template}'
+
+
 class TeamTask(AbstractTask):
     STATUS_CHOICES = (
         ('undefined', 'Undefined'),
