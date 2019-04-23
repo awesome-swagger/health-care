@@ -242,12 +242,12 @@ class PatientProfileViewSet(viewsets.ModelViewSet):
         """
         patient = self.get_object()
         symptoms = SymptomRating.objects.filter(
-            symptom_task__plan__patient=patient
+            symptom_task__symptom_template__plan__patient=patient
         ).values_list('symptom', flat=True).distinct()
         ratings = []
         for symptom in symptoms:
             rating = SymptomRating.objects.filter(
-                symptom_task__plan__patient=patient,
+                symptom_task__symptom_template__plan__patient=patient,
                 symptom=symptom).order_by('-created').first()
             if rating:
                 ratings.append(rating)
