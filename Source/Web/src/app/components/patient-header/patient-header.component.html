@@ -1,7 +1,7 @@
 <div class="flex alignCenter justifySpaceBetween marBottom24" *ngIf="patient">
   <div class="flex alignCenter">
     <div class="picName marRight24">
-      <img class="picName__img picName__img--big" [src]="patient.user.image_url" *ngIf="patient?.user.image_url" />
+      <img class="picName__img picName__img--big" [src]="patient.user.image" *ngIf="patient?.user.image" />
       <h1 class="noMargin">{{patient?.user.first_name}} {{patient?.user.last_name}}</h1>
     </div>
     <div class="drop">

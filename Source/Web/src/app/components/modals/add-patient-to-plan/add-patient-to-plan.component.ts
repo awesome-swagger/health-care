@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { StoreService } from '../../../services/store.service';
 import { ModalService } from '../../../modules/modals';
-import { Subscription } from 'rxjs/Subscription';
 import {
   filter as _filter,
   get as _get,
@@ -26,6 +25,7 @@ export class AddPatientToPlanComponent implements OnInit {
   public patients = [];
   public potentialPatients = [];
   public selectedPatient = null;
+  public potentialPatient = null;
   public payerReimburses = false;
   public enrollPatientChecked = false;
   public newDiagnosis = '';
@@ -35,7 +35,7 @@ export class AddPatientToPlanComponent implements OnInit {
   public carePlans = [];
   public selectedPlan = null;
   public planTypes = ['BHI', 'CCM', 'CCCM', 'CoCM', 'RPM', 'TCM'];
-  public selectedPlanType = 'BHI';
+  public selectedPlanType = '';
   public diagnoses = [];
   public editDiagnosisIndex = -1;
   public firstName = '';
@@ -61,7 +61,24 @@ export class AddPatientToPlanComponent implements OnInit {
   public selectedDiagnosis = null;
   public employee = null;
 
+  public planStartDate = null;
+  public birthDate = null;
+
+  public step = 'add-patient-to-plan';
+
   public dropAPPM2Open;
+  public showDate = false;
+
+  public verbal_consent = false;
+  public seen_within_year = false;
+  public discussed_co_pay = false;
+  public will_use_mobile_app = false;
+  public will_interact_with_team = false;
+  public will_complete_tasks = false;
+
+  public communicationPreference = 'In-App Messaging';
+  public gender = '';
+
 
   constructor(
     private auth: AuthService,
@@ -329,6 +346,124 @@ export class AddPatientToPlanComponent implements OnInit {
     }
   }
 
+  public handleLater() {
+    let potentialPatientSub = this.store.PotentialPatient.create({
+      first_name: this.firstName,
+      last_name: this.lastName,
+      care_plan: this.selectedPlan.id,
+      email: this.email,
+      phone: this.phoneNumber,
+      source: this.source,
+      facility: [
+        this.selectedFacility.id,
+      ],
+    }).subscribe((data) => {
+      this.modals.setOption('width', '384px');
+      this.step = 'potential-added';
+    },
+     (err) => {
+    },
+     () => {
+      potentialPatientSub.unsubscribe();
+    })
+  }
+
+  public handleEnroll() {
+    if (!this.selectedPatient) {
+      this.store.AddUser.createAlt({
+        email: this.email,
+        first_name: this.firstName,
+        last_name: this.lastName,
+        password1: 'password',
+        password2: 'password',
+        gender: this.gender,
+      }).subscribe(user => {
+        this.store.PatientProfile.create({
+          user: user.pk,
+          facility: this.selectedFacility.id,
+          is_active: true,
+          is_invited: false,
+        }).subscribe(patientProfile => {
+          this.store.CarePlan.create({
+            patient: patientProfile.id,
+            plan_template: this.selectedPlan.id
+          }).subscribe(plan => {
+            this.store.CareTeamMember.create({
+              employee_profile: this.selectedCM.id,
+              role: this.careManagerRole.id,
+              plan: plan.id,
+              is_manager: true,
+            }).subscribe(res => {
+              plan.careTeam = [res];
+              if (this.payerReimburses && this.billingPractitionerRole && this.selectedBilling) {
+                this.store.CareTeamMember.create({
+                  employee_profile: this.selectedBilling.id,
+                  role: this.billingPractitionerRole.id,
+                  plan: plan.id,
+                  is_manager: false,
+                }).subscribe(res => {
+                  this.step = 'patient-added';
+                })
+              }
+            })
+            this.store.PlanConsentForm.create({
+              plan: plan.id,
+              verbal_consent: this.verbal_consent,
+              seen_within_year: this.seen_within_year,
+              discussed_co_pay: this.discussed_co_pay,
+              will_use_mobile_app: this.will_use_mobile_app,
+              will_interact_with_team: this.will_interact_with_team,
+              will_complete_tasks: this.will_complete_tasks,
+            }).subscribe(res => {
+              this.step = 'patient-added';
+              // this.store.PotentialPatient.destroy(patient.id).subscribe(res => {
+              //   this.modals.close({ patient: patient.id, facility: patient.facility[0] });
+              // })
+            })
+          })
+        })
+      })
+    } else {
+      this.store.CarePlan.create({
+        patient: this.selectedPatient.id,
+        plan_template: this.selectedPlan.id
+      }).subscribe(plan => {
+        this.store.CareTeamMember.create({
+          employee_profile: this.selectedCM.id,
+          role: this.careManagerRole.id,
+          plan: plan.id,
+          is_manager: true,
+        }).subscribe(res => {
+          plan.careTeam = [res];
+          if (this.payerReimburses && this.billingPractitionerRole && this.selectedBilling) {
+            this.store.CareTeamMember.create({
+              employee_profile: this.selectedBilling.id,
+              role: this.billingPractitionerRole.id,
+              plan: plan.id,
+              is_manager: false,
+            }).subscribe(res => {
+              this.step = 'patient-added';
+            })
+          }
+        })
+        this.store.PlanConsentForm.create({
+          plan: plan.id,
+          verbal_consent: this.verbal_consent,
+          seen_within_year: this.seen_within_year,
+          discussed_co_pay: this.discussed_co_pay,
+          will_use_mobile_app: this.will_use_mobile_app,
+          will_interact_with_team: this.will_interact_with_team,
+          will_complete_tasks: this.will_complete_tasks,
+        }).subscribe(res => {
+          this.step = 'patient-added';
+          // this.store.PotentialPatient.destroy(patient.id).subscribe(res => {
+          //   this.modals.close({ patient: patient.id, facility: patient.facility[0] });
+          // })
+        })
+      })
+    }
+  }
+
   public handleSubmit() {
 
     if (this.selectedPatient && !this.selectedPatient.user.hasOwnProperty('patient_profile')) {
@@ -341,9 +476,7 @@ export class AddPatientToPlanComponent implements OnInit {
         this.store.User.update(this.selectedPatient.user.id, {
           phone: this.phoneNumber,
         }).subscribe(res => {
-          console.log('vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv');
-          console.log(res);
-          console.log('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^');
+
         })
       }
     }
