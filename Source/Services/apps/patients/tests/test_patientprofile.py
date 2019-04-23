@@ -127,12 +127,15 @@ class TestPatientProfile(TasksMixin, APITestCase):
     def test_latest_symptoms(self):
         first_symptom = self.create_symptom()
         second_symptom = self.create_symptom()
+        symptom_template = self.create_plan_symptom_template(
+            plan=self.care_plan
+        )
 
         first_task = self.create_symptom_task(**{
-            'plan': self.care_plan
+            'symptom_template': symptom_template
         })
         second_task = self.create_symptom_task(**{
-            'plan': self.care_plan
+            'symptom_template': symptom_template
         })
 
         self.create_symptom_rating(first_task, **{
@@ -152,9 +155,12 @@ class TestPatientProfile(TasksMixin, APITestCase):
 
     def test_latest_symptoms_behavior_decreasing(self):
         symptom = self.create_symptom()
+        symptom_template = self.create_plan_symptom_template(
+            plan=self.care_plan
+        )
 
         first_task = self.create_symptom_task(**{
-            'plan': self.care_plan
+            'symptom_template': symptom_template
         })
 
         self.create_symptom_rating(first_task, **{
@@ -174,9 +180,12 @@ class TestPatientProfile(TasksMixin, APITestCase):
 
     def test_latest_symptoms_behavior_increasing(self):
         symptom = self.create_symptom()
+        symptom_template = self.create_plan_symptom_template(
+            plan=self.care_plan
+        )
 
         first_task = self.create_symptom_task(**{
-            'plan': self.care_plan
+            'symptom_template': symptom_template
         })
 
         self.create_symptom_rating(first_task, **{
@@ -196,14 +205,17 @@ class TestPatientProfile(TasksMixin, APITestCase):
 
     def test_latest_symptoms_behavior_equal(self):
         symptom = self.create_symptom()
+        symptom_template = self.create_plan_symptom_template(
+            plan=self.care_plan
+        )
 
         first_task = self.create_symptom_task(**{
-            'plan': self.care_plan
+            'symptom_template': symptom_template
         })
 
         # Create another task for dummy
         self.create_symptom_task(**{
-            'plan': self.care_plan
+            'symptom_template': symptom_template
         })
 
         self.create_symptom_rating(first_task, **{
@@ -415,13 +427,16 @@ class TestPatientProfileDashboard(TasksMixin, APITestCase):
         self.client.force_authenticate(user=self.user)
 
     def generate_patient_tasks(self):
+        patient_template = self.create_plan_patient_template(
+            plan=self.plan
+        )
         for i in range(3):
             # Create PatientTask with status `undefined`
-            self.create_patient_task(**{'plan': self.plan})
+            self.create_patient_task(**{'patient_template': patient_template})
 
             # Create PatientTask with status `done`
             self.create_patient_task(**{
-                'plan': self.plan,
+                'patient_template': patient_template,
                 'status': 'done'
             })
 
@@ -440,14 +455,17 @@ class TestPatientProfileDashboard(TasksMixin, APITestCase):
             })
 
     def generate_symptom_tasks(self):
+        symptom_template = self.create_plan_symptom_template(
+            plan=self.plan
+        )
         for i in range(5):
             self.create_symptom_task(**{
-                'plan': self.plan
+                'symptom_template': symptom_template
             })
 
             if i < 3:
                 task = self.create_symptom_task(**{
-                    'plan': self.plan
+                    'symptom_template': symptom_template
                 })
                 self.create_symptom_rating(symptom_task=task)
 
