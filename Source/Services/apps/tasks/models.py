@@ -384,6 +384,12 @@ class TeamTaskTemplate(AbstractTaskTemplate):
     def __str__(self):
         return self.name
 
+    @property
+    def team_tasks(self):
+        return TeamTask.objects.filter(
+            team_template__team_task_template=self
+        )
+
 
 class CarePlanTeamTemplate(AbstractPlanTaskTemplate):
     """
