@@ -48,6 +48,7 @@ export class StoreService {
   public InfoMessage = new Store(this.http, 'info_messages');
   // Tasks
   public PatientTaskTemplate = new Store(this.http, 'patient_task_templates');
+  public PlanPatientTemplates = new Store(this.http, 'plan_patient_templates')
   public PatientTask = new Store(this.http, 'patient_tasks');
   public TeamTaskTemplate = new Store(this.http, 'team_task_templates');
   public TeamTask = new Store(this.http, 'team_tasks');

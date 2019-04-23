@@ -113,6 +113,21 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
     return promise;
   }
 
+  public fetchPlanPatientTemplates(planId) {
+    let promise = new Promise((resolve, reject) => {
+      let tasksSub = this.store.PlanPatientTemplates.readListPaged({
+        plan: planId
+      }).subscribe(
+        (patientTasks) => resolve(patientTasks),
+        (err) => reject(err),
+        () => {
+          tasksSub.unsubscribe();
+        },
+      );
+    });
+    return promise;
+  }
+
   public fetchPatientTasks(planTemplateId) {
     let promise = new Promise((resolve, reject) => {
       let tasksSub = this.store.PatientTaskTemplate.readListPaged({
@@ -218,7 +233,10 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
       this.planTeamManagerTasks = planTeamTasks.filter((task) => task.is_manager_task);
       this.planTeamMemberTasks = planTeamTasks.filter((task) => !task.is_manager_task);
     });
-    this.fetchPatientTasks(carePlan.plan_template.id).then((planPatientTasks: any) => {
+    // this.fetchPatientTasks(carePlan.plan_template.id).then((planPatientTasks: any) => {
+    //   this.planPatientTasks = planPatientTasks;
+    // });
+    this.fetchPlanPatientTemplates(carePlan.id).then((planPatientTasks: any) => {
       this.planPatientTasks = planPatientTasks;
     });
     this.fetchAssessments(carePlan.plan_template.id).then((planAssessmentTasks: any) => {
@@ -545,7 +563,7 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
       width: '384px',
     }).subscribe(
       (newTask) => {
-        this.fetchPatientTasks(this.carePlan.plan_template.id).then((planPatientTasks: any) => {
+        this.fetchPlanPatientTemplates(this.carePlan.id).then((planPatientTasks: any) => {
           this.planPatientTasks = planPatientTasks;
         });
         if (!newTask) return;

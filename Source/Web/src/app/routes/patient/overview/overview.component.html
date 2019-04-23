@@ -356,7 +356,7 @@
           </thead>
           <tbody>
             <tr *ngFor="let patientTask of planPatientTasks">
-              <td class="taskName left">{{patientTask.name}}</td>
+              <td class="taskName left">{{patientTask.patient_task_template.name}}</td>
               <td>{{patientTask.start_on_day}}</td>
               <td class="left">{{patientTask.frequency | frequencyTransform | titlecase}}</td>
               <td class="left">{{patientTask.repeat_amount != -1 ? patientTask.repeat_amount :'Until Plan Ends'}}</td>

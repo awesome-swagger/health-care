@@ -1,6 +1,7 @@
 from django.contrib import admin
 from apps.tasks.models import (
     PatientTaskTemplate,
+    CarePlanPatientTemplate,
     PatientTask,
     TeamTaskTemplate,
     TeamTask,
@@ -24,6 +25,10 @@ class PatientTaskTemplateAdmin(admin.ModelAdmin):
     list_display = (
         'name', 'plan_template', 'start_on_day', 'frequency',
         'repeat_amount', 'appear_time', 'due_time', 'is_active', 'is_available', )
+
+
+class CarePlanPatientTemplateAdmin(admin.ModelAdmin):
+    list_display = ('plan', 'patient_task_template', )
 
 
 class PatientTaskAdmin(admin.ModelAdmin):
@@ -147,6 +152,7 @@ class VitalTaskAdmin(admin.ModelAdmin):
 
 
 admin.site.register(PatientTaskTemplate, PatientTaskTemplateAdmin)
+admin.site.register(CarePlanPatientTemplate, CarePlanPatientTemplateAdmin)
 admin.site.register(PatientTask, PatientTaskAdmin)
 admin.site.register(TeamTaskTemplate, TeamTaskTemplateAdmin)
 admin.site.register(TeamTask, TeamTaskAdmin)
