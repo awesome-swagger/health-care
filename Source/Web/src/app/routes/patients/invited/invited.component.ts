@@ -223,6 +223,7 @@ export class InvitedPatientsComponent implements OnDestroy, OnInit {
           message: response.message,
         }).subscribe(
           (success) => {
+            patient.emails_sent++;
             console.log('Successfully sent email');
           },
           (err) => {

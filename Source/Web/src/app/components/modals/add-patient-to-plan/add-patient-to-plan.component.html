@@ -1,331 +1,520 @@
-<h1 class="modal__title">
-  <span *ngIf="action === 'add'">Add a Patient to a Plan</span>
-  <span *ngIf="action === 'edit'">Edit Patient Details</span>
-</h1>
+<ng-container *ngIf="step === 'add-patient-to-plan'">
+  <h1 class="modal__title">
+    <span *ngIf="action === 'add'">Add a Patient to a Plan</span>
+    <span *ngIf="action === 'edit'">Edit Patient Details</span>
+  </h1>
 
-<div class="drop marBottom32 flex justifySpaceBetween" *ngIf="action === 'add'">
-  <input
-    type="text"
-    class="input fullWidth modal__inputWrap"
-    [ngClass]="{'input--search': !selectedPatient }"
-    placeholder="Search Patients"
-    [value]="selectedPatientName()"
-    [disabled]="selectedPatient"
-    [(ngModel)]="patientSearchString"
-  />
-  <button
-    class="button button--icon searchClear"
-    (click)="unselectPatient()"
-    *ngIf="selectedPatient && !data.disableRemovePatient"
-  >
-    <i class="ss-delete"></i>
-  </button>
+  <div class="drop marBottom32 flex justifySpaceBetween" *ngIf="action === 'add'">
+    <input
+      type="text"
+      class="input fullWidth modal__inputWrap"
+      [ngClass]="{'input--search': !selectedPatient }"
+      placeholder="Search Patients"
+      [value]="selectedPatientName()"
+      [disabled]="selectedPatient"
+      [(ngModel)]="patientSearchString"
+    />
+    <button
+      class="button button--icon searchClear"
+      (click)="unselectPatient()"
+      *ngIf="selectedPatient && !data.disableRemovePatient"
+    >
+      <i class="ss-delete"></i>
+    </button>
 
-  <ul class="drop__dropdown fullWidth isOpen" *ngIf="!selectedPatient">
-    <li class="drop__option" *ngFor="let patient of allPatients" (click)="selectPatient(patient)">
-      <a class="drop__link">
-        <div class="picName">
-          <img class="picName__img" [src]="patient?.user.image ? patient?.user.image : '../../../assets/img/profile.svg'" />{{patient?.user?.first_name}} {{patient?.user?.last_name}}
-        </div>
-      </a>
-    </li>
-  </ul>
-</div>
-<!--TODO: Show the following div if the patient needs to be added to the system, or if editing new patient details-->
-<div class="flex justifySpaceBetween">
-  <div class="modal__inputWrap marRight16">
-    <label>First Name</label>
-    <input class="input fullWidth" [(ngModel)]="firstName" [disabled]="selectedPatient" />
+    <ul class="drop__dropdown fullWidth isOpen" *ngIf="!selectedPatient">
+      <li class="drop__option" *ngFor="let patient of allPatients" (click)="selectPatient(patient)">
+        <a class="drop__link">
+          <div class="picName">
+            <img class="picName__img" [src]="patient?.user.image ? patient?.user.image : '../../../assets/img/profile.svg'" />{{patient?.user?.first_name}} {{patient?.user?.last_name}}
+          </div>
+        </a>
+      </li>
+    </ul>
   </div>
-  <div class="modal__inputWrap">
-    <label>Last Name</label>
-    <input class="input fullWidth" [(ngModel)]="lastName" [disabled]="selectedPatient" />
-  </div>
-</div>
-
-<div class="divider"></div>
-
-<div class="flex justifySpaceBetween">
-  <div class="modal__inputWrap marRight16 fullWidth">
-    <label>Mobile Phone</label>
-    <input class="input fullWidth" [(ngModel)]="phoneNumber" [disabled]="selectedPatient && phoneNumber" />
-  </div>
-  <div class="modal__inputWrap fullWidth">
-    <label>Email</label>
-    <input class="input fullWidth" [(ngModel)]="email" [disabled]="selectedPatient && email" />
-  </div>
-</div>
-
-<div class="divider"></div>
-
-<div class="flex justifySpaceBetween">
-  <div class="divider"></div>
-  <div class="modal__inputWrap fullWidth marRight16">
-    <label>Facility</label>
-    <div class="styledSelect">
-      <select class="styledSelect__select" [(ngModel)]="selectedFacility"  [compareWith]="compareFn" [disabled]="selectedPatient">
-        <option *ngFor="let facility of filteredFacilities" [ngValue]="facility">{{facility.name}}</option>
-      </select>
-    </div>
-  </div>
-  <div class="modal__inputWrap fullWidth">
-    <label>Source</label>
-    <div class="styledSelect">
-      <select class="styledSelect__select" [(ngModel)]="source">
-        <option></option>
-        <option value="Analytics">Analytics</option>
-        <option value="MD Referral">MD Referral</option>
-        <option value="Office Staff">Office Staff</option>
-        <option value="Care Manager">Care Manager</option>
-        <option value="Discharge Planner">Discharge Planner</option>
-        <option value="Enrollment Coordinator">Enrollment Coordinator</option>
-        <option value="Patient Request">Patient Request</option>
-        <option value="Other">Other</option>
-      </select>
-    </div>
-  </div>
-</div>
-
-<div class="divider"></div>
-
-<div class="flex justifySpaceBetween">
-  <div class="modal__inputWrap fullWidth marRight16">
-    <label>Service Area</label>
-    <div class="styledSelect">
-      <select class="styledSelect__select" [(ngModel)]="selectedServiceArea" [compareWith]="compareFn">
-        <option *ngFor="let serviceArea of serviceAreas" [ngValue]="serviceArea">{{serviceArea.name}}</option>
-      </select>
-    </div>
-  </div>
-  <div class="modal__inputWrap fullWidth">
-    <label>Care Plan</label>
-    <div class="styledSelect">
-      <select class="styledSelect__select" [disabled]="!selectedServiceArea" [(ngModel)]="selectedPlan" [compareWith]="compareFn">
-        <option *ngFor="let plan of carePlansFiltered()" [ngValue]="plan">{{plan.name}}</option>
-      </select>
-    </div>
-  </div>
-</div>
-
-<div class="divider"></div>
-
-<label class="styledInput">
-  <input type="checkbox" class="styledInput__input" [(ngModel)]="enrollPatientChecked" />
-  <span class="styledInput__box"></span>
-  Enroll Patient
-</label>
-
-<p>By default the patient will be added to the Potential Patients unless you select the checkbox Enroll Patient.</p>
-
-<div class="divider"></div>
-
-<ng-container *ngIf="enrollPatientChecked">
-  <label class="styledInput">
-    <input type="checkbox" class="styledInput__input" [(ngModel)]="payerReimburses"/>
-    <span class="styledInput__box"></span>
-    Payer Reimbursement
-  </label>
-
-  <p>Determininng payer reimbursement can be accomplished after the patient has been enrolled.</p>
-
-  <div class="divider"></div>
-</ng-container>
-
-<ng-container *ngIf="payerReimburses">
+  <!--TODO: Show the following div if the patient needs to be added to the system, or if editing new patient details-->
   <div class="flex justifySpaceBetween">
-    <div class="modal__inputWrap marRight32">
-      <label>Insurance</label>
-      <div class="styledSelect">
-        <select class="styledSelect__select" [(ngModel)]="selectedInsurance" [compareWith]="compareFn">
-          <option *ngFor="let insurance of insurances" [value]="insurance">{{insurance.name}}</option>
-        </select>
-      </div>
+    <div class="modal__inputWrap marRight16">
+      <label>First Name</label>
+      <input class="input fullWidth" [(ngModel)]="firstName" [disabled]="selectedPatient" />
     </div>
     <div class="modal__inputWrap">
-      <label>Billing Category</label>
+      <label>Last Name</label>
+      <input class="input fullWidth" [(ngModel)]="lastName" [disabled]="selectedPatient" />
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="flex justifySpaceBetween">
+    <div class="modal__inputWrap marRight16 fullWidth">
+      <label>Mobile Phone</label>
+      <input class="input fullWidth" [(ngModel)]="phoneNumber" [disabled]="selectedPatient && phoneNumber" />
+    </div>
+    <div class="modal__inputWrap fullWidth">
+      <label>Email</label>
+      <input class="input fullWidth" [(ngModel)]="email" [disabled]="selectedPatient && email" />
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="flex justifySpaceBetween">
+    <div class="divider"></div>
+    <div class="modal__inputWrap fullWidth marRight16">
+      <label>Facility</label>
       <div class="styledSelect">
-        <select class="styledSelect__select" [(ngModel)]="selectedPlanType">
-          <option [value]="null"></option>
-          <option *ngFor="let planType of planTypes" [ngValue]="planType">{{planType}}</option>
+        <select class="styledSelect__select" [(ngModel)]="selectedFacility"  [compareWith]="compareFn" [disabled]="selectedPatient">
+          <option *ngFor="let facility of filteredFacilities" [ngValue]="facility">{{facility.name}}</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal__inputWrap fullWidth">
+      <label>Source</label>
+      <div class="styledSelect">
+        <select class="styledSelect__select" [(ngModel)]="source">
+          <option></option>
+          <option value="Analytics">Analytics</option>
+          <option value="MD Referral">MD Referral</option>
+          <option value="Office Staff">Office Staff</option>
+          <option value="Care Manager">Care Manager</option>
+          <option value="Discharge Planner">Discharge Planner</option>
+          <option value="Enrollment Coordinator">Enrollment Coordinator</option>
+          <option value="Patient Request">Patient Request</option>
+          <option value="Other">Other</option>
         </select>
       </div>
     </div>
   </div>
-  <div class="divider"></div>
-</ng-container>
 
-<!--TODO: Show the following if "care plan type" is CCM or CCCM-->
-<div *ngIf="selectedPlanType === 'CCM' || selectedPlanType === 'CCCM'">
-  <h5>
-  </h5>
-  <div class="iconText iconText--wrap iconText--autoHeight error">
-    <i class="iconText__icon ss-alert"></i>
-    <span class="error__text">
-      Patients must be diagnosed with 2 or more chronic conditions<br />
-      to qualify for CCM or CCCM plans.
-    </span>
+  <div class="divider"></div>
+
+  <div class="flex justifySpaceBetween">
+    <div class="modal__inputWrap fullWidth marRight16">
+      <label>Service Area</label>
+      <div class="styledSelect">
+        <select class="styledSelect__select" [(ngModel)]="selectedServiceArea" [compareWith]="compareFn">
+          <option *ngFor="let serviceArea of serviceAreas" [ngValue]="serviceArea">{{serviceArea.name}}</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal__inputWrap fullWidth">
+      <label>Care Plan</label>
+      <div class="styledSelect">
+        <select class="styledSelect__select" [disabled]="!selectedServiceArea" [(ngModel)]="selectedPlan" [compareWith]="compareFn">
+          <option *ngFor="let plan of carePlansFiltered()" [ngValue]="plan">{{plan.name}}</option>
+        </select>
+      </div>
+    </div>
   </div>
-  <!--TODO: Show the following if the patient has one or more diagnoses.-->
-  <div>
-    <table class="marBottom8 fullWidth">
-      <thead>
-        <tr>
-          <th class="left">Diagnosis</th>
-          <th class="left">Chronic</th>
-          <th class="noPad"></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let diagnosis of patientDiagnoses; let i = index">
-          <td class="left">
-            <span *ngIf="editDiagnosisIndex !== i">{{diagnosis.diagnosis.name}}</span>
-            <form *ngIf="editDiagnosisIndex === i" class="flex">
-              <div class="drop">
-                <input type="text" class="input input--search fullWidth" placeholder="Search Diagnoses" name="diagnosis" />
+
+  <div class="divider"></div>
+
+  <label class="styledInput">
+    <input type="checkbox" class="styledInput__input" [(ngModel)]="enrollPatientChecked" />
+    <span class="styledInput__box"></span>
+    Enroll Patient
+  </label>
+
+  <p>By default the patient will be added to the Potential Patients unless you select the checkbox Enroll Patient.</p>
+
+  <div class="divider"></div>
+
+  <ng-container *ngIf="enrollPatientChecked">
+    <label class="styledInput">
+      <input type="checkbox" class="styledInput__input" [(ngModel)]="payerReimburses"/>
+      <span class="styledInput__box"></span>
+      Payer Reimbursement
+    </label>
+
+    <p>Determininng payer reimbursement can be accomplished after the patient has been enrolled.</p>
+
+    <div class="divider"></div>
+  </ng-container>
+
+  <ng-container *ngIf="payerReimburses">
+    <div class="flex justifySpaceBetween">
+      <div class="modal__inputWrap marRight32">
+        <label>Insurance</label>
+        <div class="styledSelect">
+          <select class="styledSelect__select" [(ngModel)]="selectedInsurance" [compareWith]="compareFn">
+            <option *ngFor="let insurance of insurances" [value]="insurance">{{insurance.name}}</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal__inputWrap">
+        <label>Billing Category</label>
+        <div class="styledSelect">
+          <select class="styledSelect__select" [(ngModel)]="selectedPlanType">
+            <option [ngValue]="''"></option>
+            <option *ngFor="let planType of planTypes" [ngValue]="planType">{{planType}}</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="divider"></div>
+  </ng-container>
+
+  <!--TODO: Show the following if "care plan type" is CCM or CCCM-->
+  <div *ngIf="selectedPlanType === 'CCM' || selectedPlanType === 'CCCM'">
+    <h5>
+    </h5>
+    <div class="iconText iconText--wrap iconText--autoHeight error">
+      <i class="iconText__icon ss-alert"></i>
+      <span class="error__text">
+        Patients must be diagnosed with 2 or more chronic conditions<br />
+        to qualify for CCM or CCCM plans.
+      </span>
+    </div>
+    <!--TODO: Show the following if the patient has one or more diagnoses.-->
+    <div>
+      <table class="marBottom8 fullWidth">
+        <thead>
+          <tr>
+            <th class="left">Diagnosis</th>
+            <th class="left">Chronic</th>
+            <th class="noPad"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let diagnosis of patientDiagnoses; let i = index">
+            <td class="left">
+              <span *ngIf="editDiagnosisIndex !== i">{{diagnosis.diagnosis.name}}</span>
+              <form *ngIf="editDiagnosisIndex === i" class="flex">
+                <div class="drop">
+                  <input type="text" class="input input--search fullWidth" placeholder="Search Diagnoses" name="diagnosis" />
+                </div>
+              </form>
+            </td>
+            <td class="left">
+              <span *ngIf="editDiagnosisIndex !== i">{{diagnosis.is_chronic ? 'Chronic' : 'Not Chronic'}}</span>
+              <div *ngIf="editDiagnosisIndex === i" class="styledSelect">
+                <select class="styledSelect__select">
+                  <option>Not Chronic</option>
+                  <option>Chronic</option>
+                </select>
               </div>
-            </form>
-          </td>
-          <td class="left">
-            <span *ngIf="editDiagnosisIndex !== i">{{diagnosis.is_chronic ? 'Chronic' : 'Not Chronic'}}</span>
-            <div *ngIf="editDiagnosisIndex === i" class="styledSelect">
-              <select class="styledSelect__select">
-                <option>Not Chronic</option>
-                <option>Chronic</option>
-              </select>
-            </div>
-          </td>
-          <td class="noPad">
-            <div *ngIf="true" class="tool__anchor flex justifyEnd">
-              <button class="button button--icon button--icon--small" (click)="helpTip[i]=!helpTip[i]">
-                <i class="ss-help"></i>
-              </button>
-              <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : helpTip[i] }">
-                <div class="tool__text">
-                  Go to the patient profile to edit or remove previously added diagnoses.
+            </td>
+            <td class="noPad">
+              <div *ngIf="true" class="tool__anchor flex justifyEnd">
+                <button class="button button--icon button--icon--small" (click)="helpTip[i]=!helpTip[i]">
+                  <i class="ss-help"></i>
+                </button>
+                <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : helpTip[i] }">
+                  <div class="tool__text">
+                    Go to the patient profile to edit or remove previously added diagnoses.
+                  </div>
                 </div>
               </div>
-            </div>
-            <div *ngIf="!diagnosis.original && editDiagnosisIndex !== i && false" class="flex">
-              <button class="button button--icon button--icon--small" (click)="editDiagnosis(i)">
-                <i class="ss-write"></i>
-              </button>
-              <button class="button button--icon button--icon--small">
-                <i class="ss-delete"></i>
-              </button>
-            </div>
-            <div *ngIf="editDiagnosisIndex === i" class="flex">
-              <button class="button button--icon button--icon--small" (click)="editDiagnosis(-1)">
-                <i class="ss-undo"></i>
-              </button>
-              <button class="button button--icon button--icon--small">
-                <i class="ss-floppydisk"></i>
-              </button>
-            </div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-  <button *ngIf="!createDiagnosis" class="button button--iconText"
-  (click)="createDiagnosis=!createDiagnosis">
-    <i class="ss-plus"></i> Add Diagnosis
-  </button>
-  <form *ngIf="createDiagnosis" class="flex">
+              <div *ngIf="!diagnosis.original && editDiagnosisIndex !== i && false" class="flex">
+                <button class="button button--icon button--icon--small" (click)="editDiagnosis(i)">
+                  <i class="ss-write"></i>
+                </button>
+                <button class="button button--icon button--icon--small">
+                  <i class="ss-delete"></i>
+                </button>
+              </div>
+              <div *ngIf="editDiagnosisIndex === i" class="flex">
+                <button class="button button--icon button--icon--small" (click)="editDiagnosis(-1)">
+                  <i class="ss-undo"></i>
+                </button>
+                <button class="button button--icon button--icon--small">
+                  <i class="ss-floppydisk"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <button *ngIf="!createDiagnosis" class="button button--iconText"
+    (click)="createDiagnosis=!createDiagnosis">
+      <i class="ss-plus"></i> Add Diagnosis
+    </button>
+    <form *ngIf="createDiagnosis" class="flex">
+      <div class="drop">
+        <input type="text" class="input input--search" placeholder="Search Diagnoses" [(ngModel)]="diagnosisSearchString" name="newDiagnosis"/>
+        <ul class="drop__dropdown fullWidth" [ngClass]="{ 'isOpen' : diagnosisSearchString.length > 2 && !selectedDiagnosis }">
+          <li class="drop__option" *ngFor="let diagnosis of searchDiagnoses">
+            <a class="drop__link" (click)="selectDiagnosis(diagnosis)">
+              <div class="picName">
+                {{diagnosis.name}}
+              </div>
+            </a>
+          </li>
+        </ul>
+      </div>
+      <div *ngIf="createDiagnosis" class="styledSelect">
+        <select class="styledSelect__select" [(ngModel)]="newDiagnosisIsChronic" name="newDiagnosisSelect">
+          <option [ngValue]="false">Not Chronic</option>
+          <option [ngValue]="true">Chronic</option>
+        </select>
+      </div>
+      <div class="flex">
+        <button class="button button--icon button--icon--small"
+        (click)="createDiagnosis=!createDiagnosis">
+          <i class="ss-undo"></i>
+        </button>
+        <button class="button button--icon button--icon--small"
+        (click)="addDiagnosis()">
+          <i class="ss-plus"></i>
+        </button>
+      </div>
+    </form>
+    <div class="divider"></div>
+  </div> <!--/ section for diagnoses-->
+
+  <!--TODO: Hide BP section if "payer reimburses" is not checked-->
+  <!--TODO: Disable BP input until care plan is selected-->
+  <div *ngIf="payerReimburses">
+    <label>Billing Practitioner</label>
     <div class="drop">
-      <input type="text" class="input input--search" placeholder="Search Diagnoses" [(ngModel)]="diagnosisSearchString" name="newDiagnosis"/>
-      <ul class="drop__dropdown fullWidth" [ngClass]="{ 'isOpen' : diagnosisSearchString.length > 2 && !selectedDiagnosis }">
-        <li class="drop__option" *ngFor="let diagnosis of searchDiagnoses">
-          <a class="drop__link" (click)="selectDiagnosis(diagnosis)">
+      <input
+        type="text"
+        class="input input--search fullWidth marBottom32"
+        placeholder="Search Providers"
+        [(ngModel)]="billingSearchString"
+        (keypress)="selectedBilling = null"
+      />
+      <ul class="drop__dropdown fullWidth" [ngClass]="{ 'isOpen' : billingSearchString.length >= 3 && !selectedBilling }">
+        <li class="drop__option" *ngFor="let employee of searchBillingEmployees">
+          <a class="drop__link" (click)="setBillingPractitioner(employee)">
             <div class="picName">
-              {{diagnosis.name}}
+              <img class="picName__img" [src]="employee?.user.image_url ? employee?.user.image_url : '../../../assets/img/profile.svg'" />{{employee?.user?.first_name}} {{employee?.user?.last_name}}, {{employee?.title?.abbreviation}}
             </div>
           </a>
         </li>
       </ul>
     </div>
-    <div *ngIf="createDiagnosis" class="styledSelect">
-      <select class="styledSelect__select" [(ngModel)]="newDiagnosisIsChronic" name="newDiagnosisSelect">
-        <option [ngValue]="false">Not Chronic</option>
-        <option [ngValue]="true">Chronic</option>
+    <label>Care Plan Role (opt)</label>
+    <div class="styledSelect">
+      <select class="styledSelect__select">
+        <option>None</option>
+        <option>Care Manager</option>
+        <option>Primary Care Provider</option>
+        <option>Specialist</option>
       </select>
     </div>
-    <div class="flex">
-      <button class="button button--icon button--icon--small"
-      (click)="createDiagnosis=!createDiagnosis">
-        <i class="ss-undo"></i>
-      </button>
-      <button class="button button--icon button--icon--small"
-      (click)="addDiagnosis()">
-        <i class="ss-plus"></i>
-      </button>
+    <div class="divider"></div>
+  </div> <!--/ section for BP-->
+
+  <!--TODO: Hide CM section if BP role is CM-->
+  <!--TODO: Disable CM input until care plan is selected-->
+  <div *ngIf="enrollPatientChecked">
+    <label>Care Manager</label>
+    <div class="drop">
+      <input
+        type="text"
+        class="input input--search fullWidth marBottom32"
+        placeholder="Search Care Managers"
+        [(ngModel)]="CMSearchString"
+        (keypress)="selectedCM = null"
+      />
+      <ul class="drop__dropdown fullWidth" [ngClass]="{ 'isOpen' : CMSearchString.length >= 3 && !selectedCM }">
+        <li class="drop__option" *ngFor="let employee of searchCMEmployees">
+          <a class="drop__link" (click)="setCareManager(employee)">
+            <div class="picName">
+              <img class="picName__img" [src]="employee?.user.image_url ? employee?.user.image_url : '../../../assets/img/profile.svg'" />{{employee?.user?.first_name}} {{employee?.user?.last_name}}, {{employee?.title?.abbreviation}}
+            </div>
+          </a>
+        </li>
+      </ul>
     </div>
-  </form>
-  <div class="divider"></div>
-</div> <!--/ section for diagnoses-->
-
-<!--TODO: Hide BP section if "payer reimburses" is not checked-->
-<!--TODO: Disable BP input until care plan is selected-->
-<div *ngIf="payerReimburses">
-  <label>Billing Practitioner</label>
-  <div class="drop">
-    <input
-      type="text"
-      class="input input--search fullWidth marBottom32"
-      placeholder="Search Providers"
-      [(ngModel)]="billingSearchString"
-      (keypress)="selectedBilling = null"
-    />
-    <ul class="drop__dropdown fullWidth" [ngClass]="{ 'isOpen' : billingSearchString.length >= 3 && !selectedBilling }">
-      <li class="drop__option" *ngFor="let employee of searchBillingEmployees">
-        <a class="drop__link" (click)="setBillingPractitioner(employee)">
-          <div class="picName">
-            <img class="picName__img" [src]="employee?.user.image_url ? employee?.user.image_url : '../../../assets/img/profile.svg'" />{{employee?.user?.first_name}} {{employee?.user?.last_name}}, {{employee?.title?.abbreviation}}
-          </div>
-        </a>
-      </li>
-    </ul>
   </div>
-  <label>Care Plan Role (opt)</label>
-  <div class="styledSelect">
-    <select class="styledSelect__select">
-      <option>None</option>
-      <option>Care Manager</option>
-      <option>Primary Care Provider</option>
-      <option>Specialist</option>
-    </select>
-  </div>
-  <div class="divider"></div>
-</div> <!--/ section for BP-->
 
-<!--TODO: Hide CM section if BP role is CM-->
-<!--TODO: Disable CM input until care plan is selected-->
-<div *ngIf="enrollPatientChecked">
-  <label>Care Manager</label>
-  <div class="drop">
-    <input
-      type="text"
-      class="input input--search fullWidth marBottom32"
-      placeholder="Search Care Managers"
-      [(ngModel)]="CMSearchString"
-      (keypress)="selectedCM = null"
-    />
-    <ul class="drop__dropdown fullWidth" [ngClass]="{ 'isOpen' : CMSearchString.length >= 3 && !selectedCM }">
-      <li class="drop__option" *ngFor="let employee of searchCMEmployees">
-        <a class="drop__link" (click)="setCareManager(employee)">
-          <div class="picName">
-            <img class="picName__img" [src]="employee?.user.image_url ? employee?.user.image_url : '../../../assets/img/profile.svg'" />{{employee?.user?.first_name}} {{employee?.user?.last_name}}, {{employee?.title?.abbreviation}}
-          </div>
-        </a>
-      </li>
-    </ul>
+  <div class="modal__buttons">
+    <button class="button button--2nd" (click)="clickClose()">
+      Cancel
+    </button>
+    <button [disabled]="saveDisabled" class="button" (click)="handleSubmit()" *ngIf="!enrollPatientChecked">
+      Save
+    </button>
+    <button class="button button--2nd marRight32" (click)="handleLater()" *ngIf="enrollPatientChecked && !selectedPatient">
+      Later
+    </button>
+    <button class="button" (click)="step = 'enrollment-1'" *ngIf="enrollPatientChecked">
+      Enroll
+    </button>
   </div>
-</div>
+</ng-container>
 
-<div class="modal__buttons">
-  <button class="button button--2nd" (click)="clickClose()">
-    Cancel
+
+
+
+<ng-container *ngIf="step === 'enrollment-1' || step === 'enrollment-2'">
+  <!--TODO: Show "back" button if enroll patient step 2-->
+  <button *ngIf="step === 'enrollment-2'" class="modal__back button button--icon"
+  (click)="step = 'enrollment-1'">
+    <i class="ss-standard ss-navigateleft"></i>
   </button>
-  <button [disabled]="saveDisabled" class="button" (click)="handleSubmit()">
-    Save
-  </button>
-</div>
+
+  <h1 class="modal__title noMargin">
+    <span>Enroll Patient</span>
+  </h1>
+  <div class="divider"></div>
+  <h2 class="center marBottom32">
+    <span *ngIf="step === 'enrollment-1'">Step 1 of 2: Verbal Confirmation</span>
+    <span *ngIf="step === 'enrollment-2'">Step 2 of 2: Patient Info</span>
+  </h2>
+  <h5 *ngIf="step === 'enrollment-1'" class="marBottom24 center">Call the patient to obtain verbal consent for care plan enrollment.</h5>
+  <h5 *ngIf="step === 'enrollment-2'"  class="marBottom24 center">Collect or verify the following information with the patient.</h5>
+  <div class="divider"></div>
+  <ng-container *ngIf="step === 'enrollment-1'" >
+    <h3 class="center marBottom16 marRight16">{{firstName}} {{lastName}}   {{phoneNumber}}</h3>
+    <h4 class="center marBottom16">{{email}}</h4>
+    <h4 class="center marBottom16">{{selectedPlan?.service_area.name}}, {{selectedPlan?.name}}</h4>
+    <div class="divider"></div>
+  </ng-container>
+  <div *ngIf="step === 'enrollment-1'">
+    <h5 class="marBottom32">Patients can be enrolled without meeting reimbursement requirements. However, they won’t be eligible to receive reimbursement until requirements have been meet. </h5>
+    <label>Reimbursement Requirements (opt)</label>
+    <label class="styledInput">
+      <input type="checkbox" class="styledInput__input" [(ngModel)]="verbal_consent" />
+      <span class="styledInput__box"></span>
+      Patient has verbally consented to begin care plan.
+    </label>
+    <label class="styledInput">
+      <input type="checkbox" class="styledInput__input" [(ngModel)]="seen_within_year" />
+      <span class="styledInput__box"></span>
+      Patient has been seen by the billing practitioner within the past year.
+    </label>
+    <label class="styledInput styledInput--marBottom32">
+      <input type="checkbox" class="styledInput__input" [(ngModel)]="discussed_co_pay" />
+      <span class="styledInput__box"></span>
+      Patient understands the potential co-pay.
+    </label>
+
+    <label>Patient Commitment (Opt)</label>
+    <label class="styledInput">
+      <input type="checkbox" class="styledInput__input" [(ngModel)]="will_use_mobile_app" />
+      <span class="styledInput__box"></span>
+      Use the mobile app.
+    </label>
+    <div class="iconText iconText--wrap iconText--autoHeight error marBottom8" *ngIf="false">
+      <i class="iconText__icon ss-alert"></i>
+      <span class="error__text">
+      For RPM plans, the patient must agree to use the mobile app.
+      </span>
+    </div>
+    <label class="styledInput">
+      <input type="checkbox" class="styledInput__input" [(ngModel)]="will_interact_with_team" />
+      <span class="styledInput__box"></span>
+      Interact with their care team.
+    </label>
+    <label class="styledInput">
+      <input type="checkbox" class="styledInput__input" [(ngModel)]="will_complete_tasks" />
+      <span class="styledInput__box"></span>
+      Complete daily tasks.
+    </label>
+
+    <div class="modal__inputWrap0 marTop32">
+      <label>Plan Start Date</label>
+      <div class="datepicker">
+        <div class="datepicker__date" (click)="showDate=!showDate">
+          <span *ngIf="!planStartDate">Select Date</span>
+          <span *ngIf="planStartDate">{{planStartDate.format('MMM D, YYYY')}}</span>
+        </div>
+        <app-popover [visible]="showDate" (visibleChange)="showDate = $event">
+          <app-date-picker
+            class="datepicker__picker datepicker__picker--top"
+            [selected]="planStartDate"
+            (selectedChange)="planStartDate = $event"
+          ></app-date-picker>
+        </app-popover>
+      </div>
+    </div>
+  </div>
+
+  <!--TODO: show if enroll patient step 2-->
+  <div *ngIf="step === 'enrollment-2'">
+    <label>Email</label>
+    <input type="email" class="input fullWidth marBottom32" [(ngModel)]="email" />
+    <div class="flex justifySpaceBetween marBottom32">
+      <div class="modal__inputWrap marRight32">
+        <label>Communication Preference</label>
+        <div class="styledSelect fullWidth">
+          <select class="styledSelect__select" [(ngModel)]="communicationPreference">
+            <option value="In-App Messaging">In-App Messaging</option>
+            <option value="Email">Email</option>
+            <option value="Phone">Phone</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal__inputWrap">
+        <label>Gender</label>
+        <div class="styledSelect fullWidth">
+          <select class="styledSelect__select" [(ngModel)]="gender">
+            <option value="Female">Female</option>
+            <option value="Male">Male</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="flex justifySpaceBetween">
+      <div class="modal__inputWrap0 marRight32">
+        <label>Date of Birth</label>
+        <div class="datepicker">
+          <div class="datepicker__date" (click)="showDate=!showDate">
+            <span *ngIf="!birthDate">Select Date</span>
+            <span *ngIf="birthDate">{{birthDate.format('MMM D, YYYY')}}</span>
+          </div>
+          <app-popover [visible]="showDate" (visibleChange)="showDate = $event">
+            <app-date-picker
+              class="datepicker__picker datepicker__picker--top"
+              [selected]="birthDate"
+              (selectedChange)="birthDate = $event"
+            ></app-date-picker>
+          </app-popover>
+        </div>
+      </div>
+      <div class="modal__inputWrap">
+        <label>Secondary Insurance (opt)</label>
+        <div class="styledSelect fullWidth">
+          <select class="styledSelect__select">
+            <option>- - - - - - - -</option>
+            <option>Humana</option>
+            <option>Medicaid</option>
+            <option>Medicare</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal__buttons">
+    <button class="button button--2nd" (click)="clickClose()">
+      Cancel
+    </button>
+    <!--TODO: Show if enroll patient step 1-->
+    <!--TODO: Save input states when moving to a different step-->
+    <button *ngIf="step === 'enrollment-1'" class="button"
+    (click)="step = 'enrollment-2'">
+      Next
+    </button>
+    <!--TODO: Show if enroll patient step 2-->
+    <button *ngIf="step === 'enrollment-2'" class="button" (click)="handleEnroll()">
+      Enroll
+    </button>
+  </div>
+
+</ng-container>
+
+
+<ng-container *ngIf="step === 'patient-added' || step === 'potential-added'">
+  <h1 class="modal__title noMargin">Patient Added</h1>
+  <h2 class="center">{{firstName}} {{lastName}}</h2>
+  <p class="center" *ngIf="step === 'potential-added'">is now found in potential patients</p>
+  <p class="center" *ngIf="step === 'patient-added'">is now enrolled in</p>
+  <h3 class="center marBottom32" *ngIf="step === 'potential-added'">
+    <span class="marRight8">{{selectedFacility?.name}}</span>
+  </h3>
+  <h3 class="center marBottom32">
+    <span class="marRight8">{{selectedPlan?.service_area?.name}}, {{selectedPlan?.name}}</span>
+  </h3>
+  <div class="flex justifyEnd marBottom32 modal__buttons">
+    <button class="button" (click)="handleClose(null)">
+      Done
+    </button>
+  </div>
+</ng-container>

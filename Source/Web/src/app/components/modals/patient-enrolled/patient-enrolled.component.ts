@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import {StoreService} from '../../../services';
 
 @Component({
   selector: 'app-patient-enrolled',
@@ -8,12 +9,19 @@ import { Component, OnInit } from '@angular/core';
 export class PatientEnrolledComponent implements OnInit {
 
   public data = null;
+  public facility = null;
 
-  constructor() {
+  constructor(
+    private store: StoreService,
+  ) {
 
   }
 
   public ngOnInit() {
-    console.log(this.data);
+    if (this.data.patient && this.data.patient.facility[0]) {
+      this.store.Facility.read(this.data.patient.facility[0]).subscribe((res: any) => {
+        this.facility = res;
+      })
+    }
   }
 }
