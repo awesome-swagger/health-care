@@ -424,17 +424,11 @@ class TeamTask(AbstractTask):
         on_delete=models.CASCADE,
         blank=True,
         null=True)
-    plan = models.ForeignKey(
-        CarePlan, null=False, blank=False, on_delete=models.CASCADE)
-    team_task_template = models.ForeignKey(
-        TeamTaskTemplate,
-        related_name='team_tasks',
-        on_delete=models.CASCADE)
     status = models.CharField(
         choices=STATUS_CHOICES, max_length=12, default="undefined")
 
     class Meta:
-        ordering = ('plan', 'team_task_template', 'due_datetime', )
+        ordering = ('team_template', 'due_datetime', )
 
     @property
     def is_complete(self):
