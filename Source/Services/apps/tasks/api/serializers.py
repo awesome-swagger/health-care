@@ -12,6 +12,7 @@ from rest_framework import serializers
 from ..models import (
     CarePlanPatientTemplate,
     CarePlanSymptomTemplate,
+    CarePlanTeamTemplate,
     PatientTaskTemplate,
     PatientTask,
     TeamTaskTemplate,
@@ -220,14 +221,55 @@ class TeamTaskTemplateSerializer(RepresentationMixin,
         ]
 
 
-class TeamTaskSerializer(serializers.ModelSerializer):
+class CarePlanTeamTemplateSerializer(RepresentationMixin,
+                                     serializers.ModelSerializer):
+    """
+    Serializer to be used by :model:`tasks.CarePlanTeamTemplate`
+    """
+
+    class Meta:
+        model = CarePlanTeamTemplate
+        fields = (
+            'id',
+            'plan',
+            'team_task_template',
+            'custom_start_on_day',
+            'custom_frequency',
+            'custom_repeat_amount',
+            'custom_appear_time',
+            'custom_due_time',
+            'start_on_day',
+            'frequency',
+            'repeat_amount',
+            'appear_time',
+            'due_time',
+        )
+        write_only_fields = (
+            'custom_start_on_day',
+            'custom_frequency',
+            'custom_repeat_amount',
+            'custom_appear_time',
+            'custom_due_time',
+        )
+        read_only_fields = (
+            'id',
+        )
+        nested_serializers = [
+            {
+                'field': 'team_task_template',
+                'serializer_class': TeamTaskTemplateSerializer,
+            }
+        ]
+
+
+class TeamTaskSerializer(RepresentationMixin,
+                         serializers.ModelSerializer):
 
     class Meta:
         model = TeamTask
         fields = (
             'id',
-            'plan',
-            'team_task_template',
+            'team_template',
             'appear_datetime',
             'due_datetime',
             'status',
@@ -237,6 +279,12 @@ class TeamTaskSerializer(serializers.ModelSerializer):
         read_only_fields = (
             'id',
         )
+        nested_serializers = [
+            {
+                'field': 'team_template',
+                'serializer_class': CarePlanTeamTemplateSerializer,
+            }
+        ]
 
 
 class MedicationTaskTemplateSerializer(RepresentationMixin, serializers.ModelSerializer):
