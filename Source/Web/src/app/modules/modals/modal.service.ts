@@ -76,6 +76,10 @@ export class ModalService {
     this.result.complete();
   }
 
+  public setOption(option, value) {
+    this.outlet.options[option] = value;
+  }
+
   public setOutlet(_outlet) {
     this.outlet = _outlet;
   }

@@ -1,16 +1,13 @@
-<h1 class="modal__title noMargin">Patient Enrolled</h1>
-<div class="divider"></div>
-<h2 class="center">Alexander Montgomery</h2>
-<p class="center">is now enrolled in</p>
+<h1 class="modal__title noMargin">Patient Added</h1>
+<h2 class="center">{{data?.patient?.first_name}} {{data?.patient?.last_name}}</h2>
+<p class="center">is now found in potential patients</p>
 <h3 class="center marBottom32">
-  <span class="marRight8">Heart Disease</span>
-  <i class="ss-satellitedish marRight8"></i>
-  <span>RPM</span>
+  <span class="marRight8">{{facility?.name}}</span>
 </h3>
-<p class="red marBottom32">
-  Inform the patient that an email has been sent to download the app. They must download the app by START DATE.
-</p>
-<div class="flex justifyEnd marBottom32">
+<h3 class="center marBottom32">
+  <span class="marRight8">{{data?.patient?.care_plan?.service_area?.name}}, {{data?.patient?.care_plan?.name}}</span>
+</h3>
+<div class="flex justifyEnd marBottom32 modal__buttons">
   <button class="button">
     Done
   </button>

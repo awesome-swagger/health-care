@@ -32,6 +32,9 @@ export class EnrollmentComponent implements OnInit {
 
   public ngOnInit() {
     console.log(this.data);
+    if (this.data && this.data.patient) {
+      this.email = this.data.patient.email || '';
+    }
   }
 
   public phoneNum(num) {
