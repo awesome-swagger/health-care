@@ -427,9 +427,7 @@ class TeamTask(AbstractTask):
 
     team_template = models.ForeignKey(
         'tasks.CarePlanTeamTemplate',
-        on_delete=models.CASCADE,
-        blank=True,
-        null=True)
+        on_delete=models.CASCADE)
     status = models.CharField(
         choices=STATUS_CHOICES, max_length=12, default="undefined")
 
