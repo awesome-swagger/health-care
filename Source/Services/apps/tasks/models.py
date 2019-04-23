@@ -397,7 +397,7 @@ class CarePlanTeamTemplate(AbstractPlanTaskTemplate):
         'plans.CarePlan',
         related_name='plan_team_templates',
         on_delete=models.CASCADE)
-    symptom_task_template = models.ForeignKey(
+    team_task_template = models.ForeignKey(
         'tasks.TeamTaskTemplate',
         related_name='plan_team_templates',
         on_delete=models.CASCADE,
