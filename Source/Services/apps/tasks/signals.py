@@ -186,31 +186,44 @@ def create_tasks_for_ongoing_plans(task_template,
         )
     else:
         plan_template = task_template.plan_template
+        duration_weeks = plan_template.duration_weeks
+        field_lookup = {
+            'PatientTask': 'patient',
+            'SymptomTask': 'symptom'
+        }
+        if task_model_name in field_lookup:
+            task_type = field_lookup[task_model_name]
 
-        plans = plan_template.care_plans.filter(is_active=True)
-        for plan in plans:
-            duration_weeks = plan_template.duration_weeks
-            if plan.is_ongoing:
-                template_config.update({
-                    'plan': plan
-                })
+        if plan_task_template:
+            template_config = {
+                f'{task_type}_template': plan_task_template
+            }
+            create_tasks_from_template(
+                task_template,
+                duration_weeks,
+                instance_model,
+                template_config,
+                plan_task_template
+            )
+        else:
+            plans = plan_template.care_plans.filter(is_active=True)
+            for plan in plans:
+                if plan.is_ongoing:
+                    template_config.update({
+                        'plan': plan
+                    })
 
-                days_past = timezone.now() - plan.created
-                duration_weeks -= round(days_past.days / 7)
+                    days_past = timezone.now() - plan.created
+                    duration_weeks -= round(days_past.days / 7)
 
-                model_lookup = {
-                    'PatientTask': 'CarePlanPatientTemplate',
-                    'SymptomTask': 'CarePlanSymptomTemplate'
-                }
-                field_lookup = {
-                    'PatientTask': 'patient',
-                    'SymptomTask': 'symptom'
-                }
-                if task_model_name in model_lookup:
-                    task_model = model_lookup[task_model_name]
-                    task_type = field_lookup[task_model_name]
+                    model_lookup = {
+                        'PatientTask': 'CarePlanPatientTemplate',
+                        'SymptomTask': 'CarePlanSymptomTemplate'
+                    }
 
-                    if plan_task_template is None:
+                    if task_model_name in model_lookup:
+                        task_model = model_lookup[task_model_name]
+
                         PlanTemplateModel = apps.get_model(
                             'tasks',
                             task_model
@@ -224,23 +237,23 @@ def create_tasks_for_ongoing_plans(task_template,
                             **kwargs
                         )
 
-                    template_config = {
-                        f'{task_type}_template': plan_task_template
-                    }
-                    create_tasks_from_template(
-                        task_template,
-                        duration_weeks,
-                        instance_model,
-                        template_config,
-                        plan_task_template
-                    )
-                else:
-                    create_tasks_from_template(
-                        task_template,
-                        duration_weeks,
-                        instance_model,
-                        template_config
-                    )
+                        template_config = {
+                            f'{task_type}_template': plan_task_template
+                        }
+                        create_tasks_from_template(
+                            task_template,
+                            duration_weeks,
+                            instance_model,
+                            template_config,
+                            plan_task_template
+                        )
+                    else:
+                        create_tasks_from_template(
+                            task_template,
+                            duration_weeks,
+                            instance_model,
+                            template_config
+                        )
 
 
 def assessmentresponse_post_save(sender, instance, created, **kwargs):
