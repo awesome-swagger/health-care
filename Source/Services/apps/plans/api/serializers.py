@@ -44,6 +44,8 @@ from apps.tasks.models import (
     VitalTask,
 )
 
+from ..utils import Base64ImageField
+
 
 class BasicEmployeePlanSerializer(serializers.ModelSerializer):
     """
@@ -1251,6 +1253,7 @@ class TeamMessageSerializer(RepresentationMixin, serializers.ModelSerializer):
     """
     serializer to be used by :model:`plans.TeamMessage`
     """
+    image = Base64ImageField(max_length=None, use_url=True, required=False)
 
     class Meta:
         model = TeamMessage
@@ -1261,6 +1264,7 @@ class TeamMessageSerializer(RepresentationMixin, serializers.ModelSerializer):
             'content',
             'created',
             'modified',
+            'image'
         )
         read_only_fields = (
             'id',
