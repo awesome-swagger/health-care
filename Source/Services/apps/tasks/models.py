@@ -10,6 +10,8 @@ from .signals import (
     careplanpatienttemplate_post_save,
     careplansymptomtemplate_post_init,
     careplansymptomtemplate_post_save,
+    careplanteamtemplate_post_init,
+    careplanteamtemplate_post_save,
     symptomrating_post_save,
     vitalresponse_post_save,
     symptomrating_post_delete,
@@ -988,6 +990,14 @@ models.signals.post_save.connect(
 models.signals.post_delete.connect(
     symptomtask_post_delete,
     sender=SymptomTask
+)
+models.signals.post_init.connect(
+    careplanteamtemplate_post_init,
+    sender=CarePlanTeamTemplate
+)
+models.signals.post_save.connect(
+    careplanteamtemplate_post_save,
+    sender=CarePlanTeamTemplate
 )
 models.signals.post_init.connect(
     teamtasktemplate_post_init,

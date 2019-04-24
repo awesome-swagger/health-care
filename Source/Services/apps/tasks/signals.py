@@ -562,6 +562,40 @@ def symptomtasktemplate_post_save(sender, instance, created, **kwargs):
         )
 
 
+def careplanteamtemplate_post_init(sender, instance, **kwargs):
+    """
+    Function to be used as signal (post_init) when initializing
+    :model:`tasks.CarePlanTeamTemplate`
+    """
+    instance.assign_previous_fields()
+
+
+def careplanteamtemplate_post_save(sender, instance, created, **kwargs):
+    """
+    Function to be used as signal (post_save) when saving
+    :model:`tasks.CarePlanTeamTemplate`
+    """
+    if created and instance.has_custom_values:
+        create_tasks_for_ongoing_plans(
+            instance.team_task_template,
+            'team_task_template',
+            'TeamTask',
+            plan_task_template=instance
+        )
+    elif instance.is_schedule_fields_changed:
+        now = timezone.now()
+        TeamTask = apps.get_model('tasks', 'TeamTask')
+        TeamTask.objects.filter(
+            team_template=instance,
+            due_datetime__gte=now).delete()
+        create_tasks_for_ongoing_plans(
+            instance.team_task_template,
+            'team_task_template',
+            'TeamTask',
+            plan_task_template=instance
+        )
+
+
 def teamtasktemplate_post_init(sender, instance, **kwargs):
     """
     Function to be used as signal (post_init) when initializing
