@@ -8,6 +8,8 @@ from .signals import (
     assessmentresponse_post_save,
     careplanpatienttemplate_post_init,
     careplanpatienttemplate_post_save,
+    careplansymptomtemplate_post_init,
+    careplansymptomtemplate_post_save,
     symptomrating_post_save,
     vitalresponse_post_save,
     symptomrating_post_delete,
@@ -228,7 +230,8 @@ class AbstractPlanTaskTemplate(UUIDPrimaryKeyMixin):
     def get_task_template_field(self):
         model_name = self.__class__.__name__
         plan_task_template_lookup = {
-            'CarePlanPatientTemplate': self.patient_task_template
+            'CarePlanPatientTemplate': getattr(self, 'patient_task_template', None),
+            'CarePlanSymptomTemplate': getattr(self, 'symptom_task_template', None),
         }
         return plan_task_template_lookup[model_name]
 
@@ -476,13 +479,43 @@ class SymptomTaskTemplate(AbstractTaskTemplate):
     def __str__(self):
         return '{} symptom report template'.format(self.plan_template.name)
 
+    @property
+    def symptom_tasks(self):
+        return SymptomTask.objects.filter(
+            symptom_template__symptom_task_template=self
+        )
+
+
+class CarePlanSymptomTemplate(AbstractPlanTaskTemplate):
+    """
+    This stores the connection between a patient's plan and
+    a symptom task template.
+
+    This is the solution for implementing ad hoc tasks
+    """
+
+    plan = models.ForeignKey(
+        'plans.CarePlan',
+        related_name='plan_symptom_templates',
+        on_delete=models.CASCADE)
+    symptom_task_template = models.ForeignKey(
+        'tasks.SymptomTaskTemplate',
+        related_name='plan_symptom_templates',
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True)
+
+    class Meta:
+        verbose_name = _('Care Plan Symptom Template')
+        verbose_name = _('Care Plan Symptom Templates')
+
+    def __str__(self):
+        return f'{self.plan}: {self.symptom_task_template}'
+
 
 class SymptomTask(AbstractTask):
-    plan = models.ForeignKey(
-        CarePlan, null=False, blank=False, on_delete=models.CASCADE)
-    symptom_task_template = models.ForeignKey(
-        SymptomTaskTemplate,
-        related_name='symptom_tasks',
+    symptom_template = models.ForeignKey(
+        'tasks.CarePlanSymptomTemplate',
         on_delete=models.CASCADE)
     comments = models.CharField(max_length=1024, null=True, blank=True)
     is_complete = models.BooleanField(
@@ -899,6 +932,14 @@ models.signals.post_save.connect(
 models.signals.post_delete.connect(
     patienttask_post_delete,
     sender=PatientTask
+)
+models.signals.post_init.connect(
+    careplansymptomtemplate_post_init,
+    sender=CarePlanSymptomTemplate
+)
+models.signals.post_save.connect(
+    careplansymptomtemplate_post_save,
+    sender=CarePlanSymptomTemplate
 )
 models.signals.post_init.connect(
     symptomtasktemplate_post_init,

@@ -341,19 +341,21 @@ class TestSymptomTaskTemmplateUsingEmployee(TasksMixin, APITestCase):
         plan = self.create_care_plan()
         tasks_before = 3
         tasks_after = 5
+        symptom_template = self.create_plan_symptom_template(
+            plan=plan,
+            symptom_task_template=self.template
+        )
 
         for i in range(tasks_before):
             days_ago = 3 - i
             self.create_symptom_task(
-                plan=plan,
-                symptom_task_template=self.template,
+                symptom_template=symptom_template,
                 due_datetime=now - relativedelta(days=days_ago)
             )
 
         for i in range(tasks_after):
             self.create_symptom_task(
-                plan=plan,
-                symptom_task_template=self.template,
+                symptom_template=symptom_template,
                 due_datetime=now + relativedelta(days=i, hours=1)
             )
 

@@ -39,6 +39,10 @@ class RiskLevelAssignment(object):
             'patient_template__plan__patient': self.patient,
             'due_datetime__lte': now
         }
+        symptom_kwargs = {
+            'symptom_template__plan__patient': self.patient,
+            'due_datetime__lte': now
+        }
         medication_kwargs = {
             'medication_task_template__plan__patient': self.patient,
             'due_datetime__lte': now
@@ -46,7 +50,7 @@ class RiskLevelAssignment(object):
 
         patient_tasks = PatientTask.objects.filter(**patient_kwargs)
         medication_tasks = MedicationTask.objects.filter(**medication_kwargs)
-        symptom_tasks = SymptomTask.objects.filter(**task_kwargs)
+        symptom_tasks = SymptomTask.objects.filter(**symptom_kwargs)
         assessment_tasks = AssessmentTask.objects.filter(**task_kwargs)
         vital_tasks = VitalTask.objects.filter(**task_kwargs)
 
@@ -162,7 +166,7 @@ def assign_is_complete_to_symptom_task(instance):
 def create_tasks_for_ongoing_plans(task_template,
                                    template_field_name,
                                    task_model_name,
-                                   plan_task_template_instance=None):
+                                   plan_task_template=None):
     is_medication = task_model_name == 'MedicationTask'
     instance_model = apps.get_model('tasks', task_model_name)
 
@@ -182,49 +186,75 @@ def create_tasks_for_ongoing_plans(task_template,
         )
     else:
         plan_template = task_template.plan_template
+        field_lookup = {
+            'PatientTask': 'patient',
+            'SymptomTask': 'symptom'
+        }
+        if task_model_name in field_lookup:
+            task_type = field_lookup[task_model_name]
 
-        plans = plan_template.care_plans.filter(is_active=True)
-        for plan in plans:
+        if plan_task_template:
             duration_weeks = plan_template.duration_weeks
-            if plan.is_ongoing:
-                template_config.update({
-                    'plan': plan
-                })
+            template_config = {
+                f'{task_type}_template': plan_task_template
+            }
+            create_tasks_from_template(
+                task_template,
+                duration_weeks,
+                instance_model,
+                template_config,
+                plan_task_template
+            )
+        else:
+            plans = plan_template.care_plans.filter(is_active=True)
+            for plan in plans:
+                if plan.is_ongoing:
+                    duration_weeks = plan_template.duration_weeks
+                    template_config.update({
+                        'plan': plan
+                    })
 
-                days_past = timezone.now() - plan.created
-                duration_weeks -= round(days_past.days / 7)
+                    days_past = timezone.now() - plan.created
+                    duration_weeks -= round(days_past.days / 7)
 
-                if task_model_name == 'PatientTask':
-
-                    if plan_task_template_instance:
-                        patient_template = plan_task_template_instance
-                    else:
-                        CarePlanPatientTemplate = apps.get_model(
-                            'tasks',
-                            'CarePlanPatientTemplate'
-                        )
-                        patient_template, created = CarePlanPatientTemplate.objects.get_or_create(
-                            plan=plan,
-                            patient_task_template=task_template
-                        )
-
-                    template_config = {
-                        'patient_template': patient_template
+                    model_lookup = {
+                        'PatientTask': 'CarePlanPatientTemplate',
+                        'SymptomTask': 'CarePlanSymptomTemplate'
                     }
-                    create_tasks_from_template(
-                        task_template,
-                        duration_weeks,
-                        instance_model,
-                        template_config,
-                        patient_template
-                    )
-                else:
-                    create_tasks_from_template(
-                        task_template,
-                        duration_weeks,
-                        instance_model,
-                        template_config
-                    )
+
+                    if task_model_name in model_lookup:
+                        task_model = model_lookup[task_model_name]
+
+                        PlanTemplateModel = apps.get_model(
+                            'tasks',
+                            task_model
+                        )
+
+                        kwargs = {
+                            'plan': plan,
+                            f'{task_type}_task_template': task_template
+                        }
+                        plan_task_template, created = PlanTemplateModel.objects.get_or_create(
+                            **kwargs
+                        )
+
+                        template_config = {
+                            f'{task_type}_template': plan_task_template
+                        }
+                        create_tasks_from_template(
+                            task_template,
+                            duration_weeks,
+                            instance_model,
+                            template_config,
+                            plan_task_template
+                        )
+                    else:
+                        create_tasks_from_template(
+                            task_template,
+                            duration_weeks,
+                            instance_model,
+                            template_config
+                        )
 
 
 def assessmentresponse_post_save(sender, instance, created, **kwargs):
@@ -259,7 +289,7 @@ def symptomrating_post_save(sender, instance, created, **kwargs):
     :model:`tasks.SymptomRating`
     """
     if created:
-        template = instance.symptom_task.symptom_task_template
+        template = instance.symptom_task.symptom_template.symptom_task_template
         default_symptoms = template.default_symptoms.values_list(
             'id', flat=True)
         rated_symptoms = instance.symptom_task.ratings.values_list(
@@ -269,7 +299,7 @@ def symptomrating_post_save(sender, instance, created, **kwargs):
         if is_complete:
             assign_is_complete_to_symptom_task(instance)
 
-        patient = instance.symptom_task.plan.patient
+        patient = instance.symptom_task.symptom_template.plan.patient
         assignment = RiskLevelAssignment(patient)
         assignment.assign_risk_level_to_patient()
 
@@ -280,7 +310,7 @@ def symptomrating_post_delete(sender, instance, **kwargs):
     :model:`tasks.SymptomRating`
     """
     task = instance.symptom_task
-    template = task.symptom_task_template
+    template = task.symptom_template.symptom_task_template
     if task.is_complete:
         default_symptoms = template.default_symptoms.values_list(
             'id', flat=True)
@@ -292,7 +322,7 @@ def symptomrating_post_delete(sender, instance, **kwargs):
             task.is_complete = False
             task.save(update_fields=['is_complete'])
 
-        patient = instance.symptom_task.plan.patient
+        patient = instance.symptom_task.symptom_template.plan.patient
         assignment = RiskLevelAssignment(patient)
         assignment.assign_risk_level_to_patient()
 
@@ -374,7 +404,7 @@ def careplanpatienttemplate_post_save(sender, instance, created, **kwargs):
             instance.patient_task_template,
             'patient_task_template',
             'PatientTask',
-            plan_task_template_instance=instance
+            plan_task_template=instance
         )
     elif instance.is_schedule_fields_changed:
         now = timezone.now()
@@ -386,7 +416,7 @@ def careplanpatienttemplate_post_save(sender, instance, created, **kwargs):
             instance.patient_task_template,
             'patient_task_template',
             'PatientTask',
-            plan_task_template_instance=instance
+            plan_task_template=instance
         )
 
 
@@ -464,6 +494,40 @@ def medicationtask_post_delete(sender, instance, **kwargs):
     assignment.assign_risk_level_to_patient()
 
 
+def careplansymptomtemplate_post_init(sender, instance, **kwargs):
+    """
+    Function to be used as signal (post_init) when initializing
+    :model:`tasks.CarePlanSymptomTemplate`
+    """
+    instance.assign_previous_fields()
+
+
+def careplansymptomtemplate_post_save(sender, instance, created, **kwargs):
+    """
+    Function to be used as signal (post_save) when saving
+    :model:`tasks.CarePlanSymptomTemplate`
+    """
+    if created and instance.has_custom_values:
+        create_tasks_for_ongoing_plans(
+            instance.symptom_task_template,
+            'symptom_task_template',
+            'SymptomTask',
+            plan_task_template=instance
+        )
+    elif instance.is_schedule_fields_changed:
+        now = timezone.now()
+        SymptomTask = apps.get_model('tasks', 'SymptomTask')
+        SymptomTask.objects.filter(
+            symptom_template=instance,
+            due_datetime__gte=now).delete()
+        create_tasks_for_ongoing_plans(
+            instance.symptom_task_template,
+            'symptom_task_template',
+            'SymptomTask',
+            plan_task_template=instance
+        )
+
+
 def symptomtasktemplate_post_init(sender, instance, **kwargs):
     """
     Function to be used as signal (post_init) when initializing
@@ -485,7 +549,10 @@ def symptomtasktemplate_post_save(sender, instance, created, **kwargs):
         )
     elif instance.is_schedule_fields_changed:
         now = timezone.now()
-        instance.symptom_tasks.filter(due_datetime__gte=now).delete()
+        SymptomTask = apps.get_model('tasks', 'SymptomTask')
+        SymptomTask.objects.filter(
+            symptom_template__symptom_task_template=instance,
+            due_datetime__gte=now).delete()
         create_tasks_for_ongoing_plans(
             instance,
             'symptom_task_template',
@@ -528,7 +595,7 @@ def symptomtask_post_save(sender, instance, created, **kwargs):
     :model:`tasks.SymptomTask`
     """
     if created:
-        patient = instance.plan.patient
+        patient = instance.symptom_template.plan.patient
         assignment = RiskLevelAssignment(patient)
         assignment.assign_risk_level_to_patient()
 
@@ -618,7 +685,7 @@ def symptomtask_post_delete(sender, instance, **kwargs):
     Function to be used as signal (post_delete) when deleting
     :model:`tasks.SymptomTask`
     """
-    patient = instance.plan.patient
+    patient = instance.symptom_template.plan.patient
     assignment = RiskLevelAssignment(patient)
     assignment.assign_risk_level_to_patient()
 
