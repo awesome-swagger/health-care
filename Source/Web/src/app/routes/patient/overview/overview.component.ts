@@ -115,7 +115,7 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
 
   public fetchPlanPatientTemplates(planId) {
     let promise = new Promise((resolve, reject) => {
-      let tasksSub = this.store.PlanPatientTemplates.readListPaged({
+      let tasksSub = this.store.PlanPatientTemplate.readListPaged({
         plan: planId
       }).subscribe(
         (patientTasks) => resolve(patientTasks),
@@ -556,8 +556,8 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
     let modalSub = this.modals.open(AddCTTaskComponent, {
       closeDisabled: false,
       data: {
-        type: 'patient',
-        planTemplateId: this.carePlan.plan_template.id,
+        type: 'plan-patient',
+        planId: this.carePlan.id,
         totalPatients: 0,
       },
       width: '384px',
