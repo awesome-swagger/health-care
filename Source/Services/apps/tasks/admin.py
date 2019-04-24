@@ -92,7 +92,7 @@ class SymptomTaskAdmin(admin.ModelAdmin):
         SymptomRatingInline,
     ]
     list_display = (
-        'plan', 'symptom_task_template', 'appear_datetime', 'due_datetime',
+        'symptom_template', 'appear_datetime', 'due_datetime',
         'is_complete', )
 
 

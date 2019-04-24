@@ -66,12 +66,15 @@ class TestUserTask(TasksMixin, APITestCase):
             'due_datetime': date_object
         })
 
-        symptom_template = self.create_symptom_task_template(**{
+        symptom_task_template = self.create_symptom_task_template(**{
             'plan_template': plan.plan_template
         })
+        symptom_template = self.create_plan_symptom_template(
+            plan=plan,
+            symptom_task_template=symptom_task_template
+        )
         self.create_symptom_task(**{
-            'symptom_task_template': symptom_template,
-            'plan': plan,
+            'symptom_template': symptom_template,
             'due_datetime': date_object
         })
         assessment_template = self.create_assessment_task_template(**{
@@ -256,8 +259,11 @@ class TestTodaysTaskForPatient(TasksMixin, APITestCase):
         appear_datetime = pytz.utc.localize(
             self.fake.past_datetime(start_date="-1d")
         )
+        symptom_template = self.create_plan_symptom_template(
+            plan=self.plan
+        )
         kwargs.update({
-            'plan': self.plan,
+            'symptom_template': symptom_template,
             'appear_datetime': appear_datetime,
             'due_datetime': timezone.now()
         })

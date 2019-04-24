@@ -38,8 +38,11 @@ class TestSymptomRatingUsingEmployee(TasksMixin, APITestCase):
             'employee_profile': self.employee,
             'plan': self.plan
         })
+        self.symptom_template = self.create_plan_symptom_template(
+            plan=self.plan
+        )
         self.symptom_task = self.create_symptom_task(**{
-            'plan': self.plan,
+            'symptom_template': self.symptom_template,
             'due_datetime': timezone.now()
         })
         self.symptom_rating = self.create_symptom_rating(self.symptom_task)
@@ -84,7 +87,7 @@ class TestSymptomRatingUsingEmployee(TasksMixin, APITestCase):
 
     def test_create_symptom_rating(self):
         task = self.create_symptom_task(**{
-            'plan': self.plan
+            'symptom_template': self.symptom_template,
         })
         symptom = self.create_symptom()
 
@@ -98,7 +101,7 @@ class TestSymptomRatingUsingEmployee(TasksMixin, APITestCase):
 
     def test_full_update_symptom_rating(self):
         task = self.create_symptom_task(**{
-            'plan': self.plan
+            'symptom_template': self.symptom_template,
         })
         symptom = self.create_symptom()
 
@@ -126,12 +129,16 @@ class TestSymptomRatingUsingEmployee(TasksMixin, APITestCase):
         patient = self.plan.patient
 
         for i in range(5):
-            symptom_template = self.create_symptom_task_template(**{
+            plan = self.create_care_plan(patient)
+            task_template = self.create_symptom_task_template(**{
                 'plan_template': plan_template
             })
+            symptom_template = self.create_plan_symptom_template(
+                plan=plan,
+                symptom_task_template=task_template
+            )
             symptom_task = self.create_symptom_task(**{
-                'symptom_task_template': symptom_template,
-                'plan': self.plan,
+                'symptom_template': symptom_template,
                 'due_datetime': timezone.now()
             })
 
@@ -141,11 +148,14 @@ class TestSymptomRatingUsingEmployee(TasksMixin, APITestCase):
 
         # create dummy goals for the patient
         for i in range(5):
-            symptom_template = self.create_symptom_task_template(**{
+            task_template = self.create_symptom_task_template(**{
                 'plan_template': plan_template
             })
+            symptom_template = self.create_plan_symptom_template(
+                symptom_task_template=task_template
+            )
             symptom_task = self.create_symptom_task(**{
-                'symptom_task_template': symptom_template,
+                'symptom_template': symptom_template,
             })
 
             self.create_symptom_rating(**{
@@ -153,8 +163,8 @@ class TestSymptomRatingUsingEmployee(TasksMixin, APITestCase):
             })
 
         query_params = urllib.parse.urlencode({
-            'symptom_task__plan__patient': patient.id,
-            'symptom_task__symptom_task_template__plan_template': plan_template.id
+            'symptom_task__symptom_template__plan__patient': patient.id,
+            'symptom_task__symptom_template__symptom_task_template__plan_template': plan_template.id
         })
 
         filter_url = f'{self.url}?{query_params}'
@@ -173,12 +183,16 @@ class TestSymptomRatingUsingEmployee(TasksMixin, APITestCase):
                                               tzinfo=pytz.utc)
 
         for i in range(5):
-            symptom_template = self.create_symptom_task_template(**{
+            plan = self.create_care_plan(patient)
+            task_template = self.create_symptom_task_template(**{
                 'plan_template': plan_template
             })
+            symptom_template = self.create_plan_symptom_template(
+                plan=plan,
+                symptom_task_template=task_template
+            )
             symptom_task = self.create_symptom_task(**{
-                'symptom_task_template': symptom_template,
-                'plan': self.plan,
+                'symptom_template': symptom_template,
                 'due_datetime': today
             })
 
@@ -188,11 +202,14 @@ class TestSymptomRatingUsingEmployee(TasksMixin, APITestCase):
 
         # create dummy goals for the patient
         for i in range(5):
-            symptom_template = self.create_symptom_task_template(**{
+            task_template = self.create_symptom_task_template(**{
                 'plan_template': plan_template
             })
+            symptom_template = self.create_plan_symptom_template(
+                symptom_task_template=task_template
+            )
             symptom_task = self.create_symptom_task(**{
-                'symptom_task_template': symptom_template,
+                'symptom_template': symptom_template,
             })
 
             self.create_symptom_rating(**{
@@ -200,8 +217,8 @@ class TestSymptomRatingUsingEmployee(TasksMixin, APITestCase):
             })
 
         query_params = urllib.parse.urlencode({
-            'symptom_task__plan__patient': patient.id,
-            'symptom_task__symptom_task_template__plan_template': plan_template.id,
+            'symptom_task__symptom_template__plan__patient': patient.id,
+            'symptom_task__symptom_template__symptom_task_template__plan_template': plan_template.id,
             'modified__lte': today_max,
             'modified__gte': today_min
         })
@@ -232,9 +249,12 @@ class TestSymptomRatingUsingEmployee(TasksMixin, APITestCase):
             default_symptoms=symptoms
         )
 
-        task = self.create_symptom_task(
+        symptom_template = self.create_plan_symptom_template(
             plan=plan,
-            symptom_task_template=template,
+            symptom_task_template=template
+        )
+        task = self.create_symptom_task(
+            symptom_template=symptom_template,
             due_datetime=now
         )
 
@@ -244,7 +264,7 @@ class TestSymptomRatingUsingEmployee(TasksMixin, APITestCase):
         url = reverse(
             'plan_symptoms-list',
             kwargs={
-                'parent_lookup_ratings__symptom_task__plan': plan.id
+                'parent_lookup_ratings__symptom_task__symptom_template__plan': plan.id
             }
         )
 
@@ -269,9 +289,13 @@ class TestSymptomRatingUsingEmployee(TasksMixin, APITestCase):
         now = timezone.now()
         template = self.create_symptom_task_template()
         symptoms = template.default_symptoms.all()
-        task = self.create_symptom_task(
+
+        symptom_template = self.create_plan_symptom_template(
             plan=plan,
-            symptom_task_template=template,
+            symptom_task_template=template
+        )
+        task = self.create_symptom_task(
+            symptom_template=symptom_template,
             due_datetime=now)
 
         for symptom in symptoms:
@@ -280,7 +304,7 @@ class TestSymptomRatingUsingEmployee(TasksMixin, APITestCase):
         url = reverse(
             'plan_symptoms-list',
             kwargs={
-                'parent_lookup_ratings__symptom_task__plan': plan.id
+                'parent_lookup_ratings__symptom_task__symptom_template__plan': plan.id
             }
         )
 
@@ -305,18 +329,20 @@ class TestSymptomRatingUsingEmployee(TasksMixin, APITestCase):
         now = timezone.now()
         template = self.create_symptom_task_template()
         symptom = template.default_symptoms.first()
-        task = self.create_symptom_task(
+        symptom_template = self.create_plan_symptom_template(
             plan=plan,
-            symptom_task_template=template,
-            due_datetime=now
+            symptom_task_template=template
         )
+        task = self.create_symptom_task(
+            symptom_template=symptom_template,
+            due_datetime=now)
 
         self.create_symptom_rating(symptom_task=task, symptom=symptom)
 
         url = reverse(
             'plan_symptoms-list',
             kwargs={
-                'parent_lookup_ratings__symptom_task__plan': plan.id
+                'parent_lookup_ratings__symptom_task__symptom_template__plan': plan.id
             }
         )
 
@@ -344,11 +370,13 @@ class TestSymptomRatingUsingEmployee(TasksMixin, APITestCase):
         now = timezone.now()
         template = self.create_symptom_task_template()
         symptom = template.default_symptoms.first()
-        task = self.create_symptom_task(
+        symptom_template = self.create_plan_symptom_template(
             plan=plan,
-            symptom_task_template=template,
-            due_datetime=now
+            symptom_task_template=template
         )
+        task = self.create_symptom_task(
+            symptom_template=symptom_template,
+            due_datetime=now)
 
         self.create_symptom_rating(
             symptom_task=task, symptom=symptom, rating=1)
@@ -358,7 +386,7 @@ class TestSymptomRatingUsingEmployee(TasksMixin, APITestCase):
         url = reverse(
             'plan_symptoms-list',
             kwargs={
-                'parent_lookup_ratings__symptom_task__plan': plan.id
+                'parent_lookup_ratings__symptom_task__symptom_template__plan': plan.id
             }
         )
 
@@ -386,11 +414,13 @@ class TestSymptomRatingUsingEmployee(TasksMixin, APITestCase):
         now = timezone.now()
         template = self.create_symptom_task_template()
         symptom = template.default_symptoms.first()
-        task = self.create_symptom_task(
+        symptom_template = self.create_plan_symptom_template(
             plan=plan,
-            symptom_task_template=template,
-            due_datetime=now
+            symptom_task_template=template
         )
+        task = self.create_symptom_task(
+            symptom_template=symptom_template,
+            due_datetime=now)
 
         self.create_symptom_rating(
             symptom_task=task, symptom=symptom, rating=3)
@@ -400,7 +430,7 @@ class TestSymptomRatingUsingEmployee(TasksMixin, APITestCase):
         url = reverse(
             'plan_symptoms-list',
             kwargs={
-                'parent_lookup_ratings__symptom_task__plan': plan.id
+                'parent_lookup_ratings__symptom_task__symptom_template__plan': plan.id
             }
         )
 
@@ -428,11 +458,13 @@ class TestSymptomRatingUsingEmployee(TasksMixin, APITestCase):
         now = timezone.now()
         template = self.create_symptom_task_template()
         symptom = template.default_symptoms.first()
-        task = self.create_symptom_task(
+        symptom_template = self.create_plan_symptom_template(
             plan=plan,
-            symptom_task_template=template,
-            due_datetime=now
+            symptom_task_template=template
         )
+        task = self.create_symptom_task(
+            symptom_template=symptom_template,
+            due_datetime=now)
 
         self.create_symptom_rating(
             symptom_task=task, symptom=symptom, rating=1)
@@ -444,7 +476,7 @@ class TestSymptomRatingUsingEmployee(TasksMixin, APITestCase):
         url = reverse(
             'plan_symptoms-list',
             kwargs={
-                'parent_lookup_ratings__symptom_task__plan': plan.id
+                'parent_lookup_ratings__symptom_task__symptom_template__plan': plan.id
             }
         )
 
@@ -467,8 +499,11 @@ class TestSymptomTaskUsingPatient(TasksMixin, APITestCase):
         self.user = self.patient.user
 
         self.plan = self.create_care_plan(self.patient)
+        self.symptom_template = self.create_plan_symptom_template(
+            plan=self.plan
+        )
         self.symptom_task = self.create_symptom_task(**{
-            'plan': self.plan
+            'symptom_template': self.symptom_template
         })
         self.symptom_rating = self.create_symptom_rating(self.symptom_task)
 
@@ -510,7 +545,7 @@ class TestSymptomTaskUsingPatient(TasksMixin, APITestCase):
 
     def test_create_symptom_rating(self):
         task = self.create_symptom_task(**{
-            'plan': self.plan
+            'symptom_template': self.symptom_template
         })
         symptom = self.create_symptom()
 
@@ -524,7 +559,7 @@ class TestSymptomTaskUsingPatient(TasksMixin, APITestCase):
 
     def test_full_update_symptom_rating(self):
         task = self.create_symptom_task(**{
-            'plan': self.plan
+            'symptom_template': self.symptom_template
         })
         symptom = self.create_symptom()
 
@@ -538,7 +573,7 @@ class TestSymptomTaskUsingPatient(TasksMixin, APITestCase):
 
     def test_full_update_symptom_task_not_owner(self):
         task = self.create_symptom_task(**{
-            'plan': self.plan
+            'symptom_template': self.symptom_template
         })
         symptom = self.create_symptom()
 

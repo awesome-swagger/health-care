@@ -13,6 +13,7 @@ from rest_framework.views import APIView
 
 from ..models import (
     CarePlanPatientTemplate,
+    CarePlanSymptomTemplate,
     PatientTaskTemplate,
     PatientTask,
     TeamTaskTemplate,
@@ -40,6 +41,7 @@ from ..utils import get_all_tasks_for_today
 from .filters import DurationFilter
 from . serializers import (
     CarePlanPatientTemplateSerializer,
+    CarePlanSymptomTemplateSerializer,
     PatientTaskTemplateSerializer,
     PatientTaskSerializer,
     TeamTaskTemplateSerializer,
@@ -349,6 +351,81 @@ class SymptomTaskTemplateViewSet(viewsets.ModelViewSet):
     )
 
 
+class CarePlanSymptomTemplateViewSet(viewsets.ModelViewSet):
+    """
+    Viewset for :model:`tasks.CarePlanSymptomTemplate`
+    ========
+
+    create:
+        Creates :model:`tasks.CarePlanSymptomTemplate` object.
+        Only admins and employees are allowed to perform this action.
+
+    update:
+        Updates :model:`tasks.CarePlanSymptomTemplate` object.
+        Only admins and employees who belong to the same care team are allowed
+        to perform this action.
+
+    partial_update:
+        Updates one or more fields of an existing plan symptom template object.
+        Only admins and employees who belong to the same care team are allowed
+        to perform this action.
+
+    retrieve:
+        Retrieves a :model:`tasks.CarePlanSymptomTemplate` instance.
+        Admins will have access to all plan symptom template objects. Employees
+        will only have access to those plan symptom templates belonging to its
+        own care team. Patients will have access to all plan symptom templates
+        assigned to them.
+
+    list:
+        Returns list of all :model:`tasks.CarePlanSymptomTemplate` objects.
+        Admins will get all existing plan symptom template objects. Employees
+        will get the plan symptom templates belonging to a certain care team.
+        Patients will get all plan symptom templates belonging to them.
+
+    delete:
+        Deletes a :model:`tasks.CarePlanSymptomTemplate` instance.
+        Only admins and employees who belong to the same care team are allowed
+        to perform this action.
+    """
+    serializer_class = CarePlanSymptomTemplateSerializer
+    permission_classes = (
+        permissions.IsAuthenticated,
+        IsEmployeeOrPatientReadOnly,
+    )
+    filter_backends = (DjangoFilterBackend, )
+    filterset_fields = (
+        'plan',
+        'symptom_task_template',
+    )
+    queryset = CarePlanSymptomTemplate.objects.all()
+
+    def get_queryset(self):
+        qs = super(CarePlanSymptomTemplateViewSet, self).get_queryset()
+        user = self.request.user
+
+        if user.is_employee:
+            employee_profile = user.employee_profile
+            if employee_profile.organizations_managed.exists():
+                organizations = employee_profile.organizations_managed.all()
+                qs = qs.filter(
+                    plan__patient__facility__organization__in=organizations)
+            elif employee_profile.facilities_managed.exists():
+                facilities = employee_profile.facilities_managed.all()
+                assigned_roles = employee_profile.assigned_roles.all()
+                qs = qs.filter(
+                    Q(plan__patient__facility__in=facilities) |
+                    Q(plan__care_team_members__in=assigned_roles)
+                )
+            else:
+                assigned_roles = employee_profile.assigned_roles.all()
+                qs = qs.filter(plan__care_team_members__in=assigned_roles)
+        elif user.is_patient:
+            qs = qs.filter(plan__patient=user.patient_profile)
+
+        return qs.distinct()
+
+
 class SymptomTaskViewSet(viewsets.ModelViewSet):
     serializer_class = SymptomTaskSerializer
     permission_classes = (
@@ -358,9 +435,9 @@ class SymptomTaskViewSet(viewsets.ModelViewSet):
     queryset = SymptomTask.objects.all()
     filter_backends = (DjangoFilterBackend, DurationFilter)
     filterset_fields = (
-        'plan__id',
-        'symptom_task_template__id',
-        'plan__patient__id',
+        'symptom_template__plan',
+        'symptom_template__symptom_task_template',
+        'symptom_template__plan__patient',
         'is_complete',
     )
 
@@ -373,20 +450,20 @@ class SymptomTaskViewSet(viewsets.ModelViewSet):
             if employee.organizations_managed.exists():
                 organizations = employee.organizations_managed.all()
                 qs = qs.filter(
-                    plan__patient__facility__organization__in=organizations
+                    symptom_template__plan__patient__facility__organization__in=organizations
                 )
             elif employee.facilities_managed.exists():
                 facilities = employee.facilities_managed.all()
                 assigned_roles = employee.assigned_roles.all()
                 qs = qs.filter(
-                    Q(plan__patient__facility__in=facilities) |
-                    Q(plan__care_team_members__in=assigned_roles)
+                    Q(symptom_template__plan__patient__facility__in=facilities) |
+                    Q(symptom_template__plan__care_team_members__in=assigned_roles)
                 )
             else:
                 assigned_roles = employee.assigned_roles.all()
-                qs = qs.filter(plan__care_team_members__in=assigned_roles)
+                qs = qs.filter(symptom_template__plan__care_team_members__in=assigned_roles)
         elif user.is_patient:
-            qs = qs.filter(plan__patient=user.patient_profile)
+            qs = qs.filter(symptom_template__plan__patient=user.patient_profile)
 
         return qs.distinct()
 
@@ -400,8 +477,8 @@ class SymptomRatingViewSet(viewsets.ModelViewSet):
     queryset = SymptomRating.objects.all()
     filter_backends = (DjangoFilterBackend, )
     filterset_fields = {
-        'symptom_task__plan__patient': ['exact'],
-        'symptom_task__symptom_task_template__plan_template': ['exact'],
+        'symptom_task__symptom_template__plan__patient': ['exact'],
+        'symptom_task__symptom_template__symptom_task_template__plan_template': ['exact'],
         'symptom_task__due_datetime': ['lte', 'gte']
     }
 
@@ -414,19 +491,19 @@ class SymptomRatingViewSet(viewsets.ModelViewSet):
             if employee_profile.organizations_managed.exists():
                 organizations = employee_profile.organizations_managed.all()
                 qs = qs.filter(
-                    symptom_task__plan__patient__facility__organization__in=organizations)
+                    symptom_task__symptom_template__plan__patient__facility__organization__in=organizations)
             elif employee_profile.facilities_managed.exists():
                 facilities = employee_profile.facilities_managed.all()
                 assigned_roles = employee_profile.assigned_roles.all()
                 qs = qs.filter(
-                    Q(symptom_task__plan__patient__facility__in=facilities) |
-                    Q(symptom_task__plan__care_team_members__in=assigned_roles)
+                    Q(symptom_task__symptom_template__plan__patient__facility__in=facilities) |
+                    Q(symptom_task__symptom_template__plan__care_team_members__in=assigned_roles)
                 )
             else:
                 assigned_roles = employee_profile.assigned_roles.all()
-                qs = qs.filter(symptom_task__plan__care_team_members__in=assigned_roles)
+                qs = qs.filter(symptom_task__symptom_template__plan__care_team_members__in=assigned_roles)
         elif user.is_patient:
-            qs = qs.filter(symptom_task__plan__patient=user.patient_profile)
+            qs = qs.filter(symptom_task__symptom_template__plan__patient=user.patient_profile)
 
         return qs.distinct()
 
@@ -434,8 +511,8 @@ class SymptomRatingViewSet(viewsets.ModelViewSet):
         queryset = super(SymptomRatingViewSet, self).filter_queryset(queryset)
 
         query_parameters = self.request.query_params.keys()
-        if 'symptom_task__plan__patient' in query_parameters and \
-           'symptom_task__symptom_task_template__plan_template' in query_parameters and \
+        if 'symptom_task__symptom_template__plan__patient' in query_parameters and \
+           'symptom_task__symptom_template__symptom_task_template__plan_template' in query_parameters and \
            'symptom_task__due_datetime__gte' not in query_parameters and \
            'symptom_task__due_datetime__lte' not in query_parameters:
             today = timezone.now().date()

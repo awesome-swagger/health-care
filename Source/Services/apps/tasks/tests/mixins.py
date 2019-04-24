@@ -9,6 +9,7 @@ from dateutil.relativedelta import relativedelta
 
 from .factories import (
     CarePlanPatientTemplateFactory,
+    CarePlanSymptomTemplateFactory,
     PatientTaskTemplateFactory,
     PatientTaskFactory,
     MedicationTaskTemplateFactory,
@@ -179,14 +180,21 @@ class TasksMixin(PlansMixin):
 
         return template
 
-    def create_symptom_task(self, **kwargs):
-        now = timezone.now()
+    def create_plan_symptom_template(self, **kwargs):
         if 'plan' not in kwargs:
             kwargs.update({'plan': self.create_care_plan()})
 
         if 'symptom_task_template' not in kwargs:
             kwargs.update({
                 'symptom_task_template': self.create_symptom_task_template()
+            })
+        return CarePlanSymptomTemplateFactory(**kwargs)
+
+    def create_symptom_task(self, **kwargs):
+        now = timezone.now()
+        if 'symptom_template' not in kwargs:
+            kwargs.update({
+                'symptom_template': self.create_plan_symptom_template()
             })
 
         if 'appear_datetime' not in kwargs:
@@ -632,18 +640,24 @@ class TasksMixin(PlansMixin):
 
     def generate_symptom_tasks(self, plan, due_datetime, with_incomplete=True):
         template = self.create_symptom_task_template()
+        symptom_template = self.create_plan_symptom_template(
+            plan=plan,
+            symptom_task_template=template
+        )
         symptom_task = self.create_symptom_task(**{
-            'plan': plan,
-            'symptom_task_template': template,
+            'symptom_template': symptom_template,
             'due_datetime': due_datetime,
         })
         self.create_symptom_rating(symptom_task)
 
         if with_incomplete:
             incomplete_template = self.create_symptom_task_template()
+            incomplete_symptom_template = self.create_plan_symptom_template(
+                plan=plan,
+                symptom_task_template=incomplete_template
+            )
             self.create_symptom_task(**{
-                'plan': plan,
-                'symptom_task_template': incomplete_template,
+                'symptom_template': incomplete_symptom_template,
                 'due_datetime': due_datetime
             })
 
