@@ -34,10 +34,12 @@ def create_scheduled_tasks(plan,
         model_lookup = {
             'patient_task_template': 'CarePlanPatientTemplate',
             'symptom_task_template': 'CarePlanSymptomTemplate',
+            'team_task_template': 'CareplanTeamTemplate',
         }
         field_lookup = {
             'patient_task_template': 'patient_template',
-            'symptom_task_template': 'symptom_template'
+            'symptom_task_template': 'symptom_template',
+            'team_task_template': 'team_template',
         }
         if template_field in model_lookup:
             PlanTemplateModel = apps.get_model(
