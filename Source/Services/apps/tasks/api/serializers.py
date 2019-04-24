@@ -176,17 +176,17 @@ class TeamTaskTodaySerializer(serializers.ModelSerializer):
         return 'team_task'
 
     def get_name(self, obj):
-        return obj.team_task_template.name
+        return obj.team_template.team_task_template.name
 
     def get_patient(self, obj):
-        patient = obj.plan.patient
+        patient = obj.team_template.plan.patient
         serializer = BasicPatientSerializer(patient)
         return serializer.data
 
     def get_occurrence(self, obj):
         total_tasks = TeamTask.objects.filter(
-            plan=obj.plan,
-            team_task_template=obj.team_task_template)
+            team_template=obj.team_template
+        )
         obj_occurrence = total_tasks.filter(
             due_datetime__lte=obj.due_datetime).count()
         return f'{obj_occurrence} of {total_tasks.count()}'
