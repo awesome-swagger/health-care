@@ -195,9 +195,13 @@ class TestTodaysTaskForEmployee(TasksMixin, APITestCase):
             roles=roles
         )
 
+        team_template = self.create_plan_team_template(
+            plan=self.plan,
+            team_task_template=template
+        )
+
         kwargs.update({
-            'plan': self.plan,
-            'team_task_template': template,
+            'team_template': team_template,
             'appear_datetime': appear_datetime,
             'due_datetime': timezone.now()
         })
