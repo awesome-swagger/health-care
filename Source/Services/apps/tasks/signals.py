@@ -188,7 +188,8 @@ def create_tasks_for_ongoing_plans(task_template,
         plan_template = task_template.plan_template
         field_lookup = {
             'PatientTask': 'patient',
-            'SymptomTask': 'symptom'
+            'SymptomTask': 'symptom',
+            'TeamTask': 'team'
         }
         if task_model_name in field_lookup:
             task_type = field_lookup[task_model_name]
@@ -219,7 +220,8 @@ def create_tasks_for_ongoing_plans(task_template,
 
                     model_lookup = {
                         'PatientTask': 'CarePlanPatientTemplate',
-                        'SymptomTask': 'CarePlanSymptomTemplate'
+                        'SymptomTask': 'CarePlanSymptomTemplate',
+                        'TeamTask': 'CarePlanTeamTemplate',
                     }
 
                     if task_model_name in model_lookup:
