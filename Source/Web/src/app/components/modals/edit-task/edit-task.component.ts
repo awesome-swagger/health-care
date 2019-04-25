@@ -13,6 +13,7 @@ import { StoreService } from '../../../services';
 export class EditTaskComponent implements OnInit {
 
   public data = null;
+  public isAdhoc = false;
   public totalPatients = 0;
   public frequencyOptions: Array<any> = [
     {displayName: 'Once', value: 'once'},
@@ -68,6 +69,20 @@ export class EditTaskComponent implements OnInit {
       title: 'Edit Medication Task',
       dataModel: this.store.MedicationTaskTemplate,
     },
+    {
+      type: 'plan-patient',
+      title: 'Edit Patient Task',
+      dataModel: this.store.PatientTaskTemplate,
+      relatedModel: this.store.PlanPatientTemplate,
+      relatedField: 'patient_task_template',
+    },
+    {
+      type: 'plan-symptom',
+      title: 'Edit Symptom',
+      dataModel: this.store.SymptomTaskTemplate,
+      relatedModel: this.store.PlanSymptomTemplate,
+      relatedField: 'symptom_task_template',
+    },
   ];
   public appearTimeHelpOpen = false;
   public dueTimeHelpOpen = false;
@@ -83,8 +98,13 @@ export class EditTaskComponent implements OnInit {
 
   public ngOnInit() {
     if (this.data) {
-      this.totalPatients = this.data.totalPatients ? this.data.totalPatients : 0;
+      console.log(this.data);
+      let adhocTypes = ['plan-patient', 'plan-symptom',];
+      if (adhocTypes.includes(this.data.type)) {
+        this.isAdhoc = true;
+      }
       this.task = this.data && this.data.task ? this.data.task : {};
+      this.totalPatients = this.data.totalPatients ? this.data.totalPatients : 0;
       this.initForm(this.task);
     }
   }
@@ -97,18 +117,32 @@ export class EditTaskComponent implements OnInit {
     }
   }
 
+  public getRelatedModel() {
+    return this.task[this.getTaskType().relatedField];
+  }
+
+  public getTaskName() {
+    if (!this.isAdhoc) {
+      return this.task.name;
+    } else {
+      return this.getRelatedModel().name;
+    }
+  }
+
   public updateTaskName() {
     if (!this.task) {
       return;
     }
-    let keys = Object.keys(this.task);
-    keys.forEach((key) => {
-     if (this.nameForm.value[key] != undefined) {
-        this.task[key] = this.nameForm.value[key];
-      }
-    });
-    let updateSub = this.getTaskType().dataModel.update(this.task.id, {
-      name: this.task.name,
+    let id = null;
+    if (!this.isAdhoc) {
+      this.task.name = this.nameForm.value['name'];
+      id = this.task.id;
+    } else {
+      this.getRelatedModel().name = this.nameForm.value['name'];
+      id = this.getRelatedModel().id;
+    }
+    let updateSub = this.getTaskType().dataModel.update(id, {
+      name: this.nameForm.value['name'],
     }, true).subscribe(
       (task) => {
         this.editName = false;
@@ -121,9 +155,15 @@ export class EditTaskComponent implements OnInit {
   }
 
   public initForm(task) {
-    this.nameForm = new FormGroup({
-      name: new FormControl(task.name),
-    });
+    if (task.name) {
+      this.nameForm = new FormGroup({
+        name: new FormControl(task.name),
+      });
+    } else if (task[this.getTaskType().relatedField].name) {
+      this.nameForm = new FormGroup({
+        name: new FormControl(task[this.getTaskType().relatedField].name),
+      });
+    }
     this.taskForm = new FormGroup({
       start_on_day: new FormControl(task.start_on_day),
       frequency: new FormControl(task.frequency),
@@ -133,7 +173,13 @@ export class EditTaskComponent implements OnInit {
       due_time: new FormControl(task.due_time),
     });
     if (this.getTaskType().type === 'symptom') {
-      let defaultSymptomIds = task.default_symptoms.map((obj) => obj.id);
+      let defaultSymptomIds = [];
+      if (task.default_symptoms) {
+        defaultSymptomIds = task.default_symptoms.map((obj) => obj.id);
+      } else {
+        task.default_symptoms = [];
+        defaultSymptomIds = [];
+      }
       this.taskForm.addControl('default_symptoms', new FormControl(defaultSymptomIds));
       this.fetchSymptoms().then((symptoms: any) => {
         this.symptomChoices = symptoms;
@@ -155,12 +201,21 @@ export class EditTaskComponent implements OnInit {
 
   public updateFormFields() {
     let keys = Object.keys(this.task);
+    let customFields = ['start_on_day', 'frequency', 'repeat_amount', 'appear_time', 'due_time'];
     keys.forEach((key) => {
      if (this.taskForm.value[key] != undefined) {
-        if (key === 'repeat_amount' && this.taskForm.value['repeat_amount'] != -1){
-          this.task[key] = this.taskForm.value['repeat_amount_input'];
+        if (key === 'repeat_amount' && this.taskForm.value['repeat_amount'] != -1) {
+          if (!this.isAdhoc) {
+            this.task[key] = this.taskForm.value['repeat_amount_input'];
+          } else {
+            this.task['custom_' + key] = this.taskForm.value['repeat_amount_input'];
+          }
         } else {
-          this.task[key] = this.taskForm.value[key];
+          if (!this.isAdhoc) {
+            this.task[key] = this.taskForm.value[key];
+          } else if (customFields.includes(key)) {
+            this.task['custom_' + key] = this.taskForm.value[key];
+          }
         }
       }
     });
@@ -245,15 +300,29 @@ export class EditTaskComponent implements OnInit {
   }
 
   public createTask() {
-    let createSub = this.getTaskType().dataModel.create(this.task).subscribe(
-      (task) => {
-        this.modal.close(task);
-      },
-      (err) => {},
-      () => {
-        createSub.unsubscribe();
-      },
-    );
+    if (!this.isAdhoc) {
+      let createSub = this.getTaskType().dataModel.create(this.task).subscribe(
+        (task) => {
+          this.task = task;
+          this.modal.close(task);
+        },
+        (err) => {},
+        () => {
+          createSub.unsubscribe();
+        },
+      );
+    } else {
+      let createSub = this.getTaskType().relatedModel.create(this.task).subscribe(
+        (task) => {
+          this.task = task;
+          this.modal.close(task);
+        },
+        (err) => {},
+        () => {
+          createSub.unsubscribe();
+        }
+      );
+    }
   }
 
   public updateTask() {
@@ -262,15 +331,30 @@ export class EditTaskComponent implements OnInit {
       postData = _omit(postData, 'patient_medication');
     }
     postData = _omit(postData, 'id');
-    let updateSub = this.getTaskType().dataModel.update(this.task.id, postData, true).subscribe(
-      (task) => {
-        this.modal.close(task);
-      },
-      (err) => {},
-      () => {
-        updateSub.unsubscribe();
-      },
-    );
+    if (!this.isAdhoc) {
+      let updateSub = this.getTaskType().dataModel.update(this.task.id, postData, true).subscribe(
+        (task) => {
+          this.task = task;
+          this.modal.close(task);
+        },
+        (err) => {},
+        () => {
+          updateSub.unsubscribe();
+        },
+      );
+    } else {
+      postData = _omit(postData, this.getTaskType().relatedField);
+      let updateSub = this.getTaskType().relatedModel.update(this.task.id, postData, true).subscribe(
+        (task) => {
+          this.task = task;
+          this.modal.close(task);
+        },
+        (err) => {},
+        () => {
+          updateSub.unsubscribe();
+        },
+      );
+    }
   }
 
   public submitTask() {
@@ -278,7 +362,12 @@ export class EditTaskComponent implements OnInit {
     if (this.getTaskType().type === 'manager') {
       this.task.is_manager_task = true;
     }
-    this.updateTask();
+    console.log(this.task);
+    if (!this.task.id) {
+      this.createTask();
+    } else {
+      this.updateTask();
+    }
   }
 
   public close() {

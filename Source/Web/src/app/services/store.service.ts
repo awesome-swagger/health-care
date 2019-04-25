@@ -55,6 +55,7 @@ export class StoreService {
   public MedicationTaskTemplate = new Store(this.http, 'medication_task_templates');
   public MedicationTask = new Store(this.http, 'medication_tasks');
   public SymptomTaskTemplate = new Store(this.http, 'symptom_task_templates');
+  public PlanSymptomTemplate = new Store(this.http, 'plan_symptom_templates')
   public SymptomTask = new Store(this.http, 'symptom_tasks');
   public SymptomRating = new Store(this.http, 'symptom_ratings');
   public AssessmentTaskTemplate = new Store(this.http, 'assessment_task_templates');

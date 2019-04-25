@@ -14,7 +14,7 @@
 	<label class="noMargin">Task</label>
 	<div class="flex alignCenter marBottom32">
 		<div *ngIf="!editName" class="flex alignCenter justifySpaceBetween fullWidth">
-			<h2 class="noMargin">{{task.name | titlecase}}</h2>
+			<h2 class="noMargin">{{getTaskName()}}</h2>
 			<div class="flex">
 				<button class="button button--icon button--icon--small" (click)="editName=!editName">
 					<i class="ss-write"></i>

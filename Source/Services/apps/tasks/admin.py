@@ -8,6 +8,7 @@ from apps.tasks.models import (
     MedicationTaskTemplate,
     MedicationTask,
     SymptomTaskTemplate,
+    CarePlanSymptomTemplate,
     SymptomTask,
     SymptomRating,
     AssessmentTaskTemplate,
@@ -81,6 +82,10 @@ class SymptomTaskTemplateAdmin(admin.ModelAdmin):
     list_display = (
         'plan_template', 'start_on_day', 'frequency', 'repeat_amount',
         'appear_time', 'due_time', 'is_active', 'is_available', )
+
+
+class CarePlanSymptomTemplateAdmin(admin.ModelAdmin):
+    list_display = ('plan', 'symptom_task_template', )
 
 
 class SymptomRatingInline(admin.TabularInline):
@@ -159,6 +164,7 @@ admin.site.register(TeamTask, TeamTaskAdmin)
 admin.site.register(MedicationTaskTemplate, MedicationTaskTemplateAdmin)
 admin.site.register(MedicationTask, MedicationTaskAdmin)
 admin.site.register(SymptomTaskTemplate, SymptomTaskTemplateAdmin)
+admin.site.register(CarePlanSymptomTemplate, CarePlanSymptomTemplateAdmin)
 admin.site.register(SymptomTask, SymptomTaskAdmin)
 admin.site.register(AssessmentTaskTemplate, AssessmentTaskTemplateAdmin)
 admin.site.register(AssessmentTask, AssessmentTaskAdmin)

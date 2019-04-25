@@ -522,7 +522,7 @@
           </thead>
           <tbody>
             <tr *ngFor="let symptomTask of planSymptomTasks">
-              <td class="taskName left">{{symptomTask.name}}</td>
+              <td class="taskName left">{{symptomTask.symptom_task_template.name}}</td>
               <td>{{symptomTask.start_on_day}}</td>
               <td class="left">{{symptomTask.frequency | frequencyTransform | titlecase}}</td>
               <td class="left">{{symptomTask.repeat_amount != -1 ? symptomTask.repeat_amount :'Until Plan Ends'}}</td>
