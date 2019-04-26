@@ -10,6 +10,8 @@ from .signals import (
     careplanpatienttemplate_post_save,
     careplansymptomtemplate_post_init,
     careplansymptomtemplate_post_save,
+    careplanteamtemplate_post_init,
+    careplanteamtemplate_post_save,
     symptomrating_post_save,
     vitalresponse_post_save,
     symptomrating_post_delete,
@@ -232,6 +234,7 @@ class AbstractPlanTaskTemplate(UUIDPrimaryKeyMixin):
         plan_task_template_lookup = {
             'CarePlanPatientTemplate': getattr(self, 'patient_task_template', None),
             'CarePlanSymptomTemplate': getattr(self, 'symptom_task_template', None),
+            'CarePlanTeamTemplate': getattr(self, 'team_task_template', None),
         }
         return plan_task_template_lookup[model_name]
 
@@ -384,6 +387,39 @@ class TeamTaskTemplate(AbstractTaskTemplate):
     def __str__(self):
         return self.name
 
+    @property
+    def team_tasks(self):
+        return TeamTask.objects.filter(
+            team_template__team_task_template=self
+        )
+
+
+class CarePlanTeamTemplate(AbstractPlanTaskTemplate):
+    """
+    This stores the connection between a patient's plan and
+    a team task template.
+
+    This is the solution for implementing ad hoc tasks
+    """
+
+    plan = models.ForeignKey(
+        'plans.CarePlan',
+        related_name='plan_team_templates',
+        on_delete=models.CASCADE)
+    team_task_template = models.ForeignKey(
+        'tasks.TeamTaskTemplate',
+        related_name='plan_team_templates',
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True)
+
+    class Meta:
+        verbose_name = _('Care Plan Team Template')
+        verbose_name = _('Care Plan Team Templates')
+
+    def __str__(self):
+        return f'{self.plan}: {self.team_task_template}'
+
 
 class TeamTask(AbstractTask):
     STATUS_CHOICES = (
@@ -391,17 +427,15 @@ class TeamTask(AbstractTask):
         ('missed', 'Missed'),
         ('done', 'Done'),
     )
-    plan = models.ForeignKey(
-        CarePlan, null=False, blank=False, on_delete=models.CASCADE)
-    team_task_template = models.ForeignKey(
-        TeamTaskTemplate,
-        related_name='team_tasks',
+
+    team_template = models.ForeignKey(
+        'tasks.CarePlanTeamTemplate',
         on_delete=models.CASCADE)
     status = models.CharField(
         choices=STATUS_CHOICES, max_length=12, default="undefined")
 
     class Meta:
-        ordering = ('plan', 'team_task_template', 'due_datetime', )
+        ordering = ('team_template', 'due_datetime', )
 
     @property
     def is_complete(self):
@@ -956,6 +990,14 @@ models.signals.post_save.connect(
 models.signals.post_delete.connect(
     symptomtask_post_delete,
     sender=SymptomTask
+)
+models.signals.post_init.connect(
+    careplanteamtemplate_post_init,
+    sender=CarePlanTeamTemplate
+)
+models.signals.post_save.connect(
+    careplanteamtemplate_post_save,
+    sender=CarePlanTeamTemplate
 )
 models.signals.post_init.connect(
     teamtasktemplate_post_init,
