@@ -703,14 +703,6 @@ class AssessmentTask(AbstractTask):
         on_delete=models.CASCADE,
         blank=True,
         null=True)
-    plan = models.ForeignKey(
-        CarePlan,
-        related_name='assessment_tasks',
-        on_delete=models.CASCADE)
-    assessment_task_template = models.ForeignKey(
-        AssessmentTaskTemplate,
-        related_name='assessment_tasks',
-        on_delete=models.CASCADE)
     comments = models.CharField(max_length=1024, null=True, blank=True)
     is_complete = models.BooleanField(
         default=False,
