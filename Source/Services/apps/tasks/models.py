@@ -700,9 +700,7 @@ class AssessmentQuestion(UUIDPrimaryKeyMixin):
 class AssessmentTask(AbstractTask):
     assessment_template = models.ForeignKey(
         'tasks.CarePlanAssessmentTemplate',
-        on_delete=models.CASCADE,
-        blank=True,
-        null=True)
+        on_delete=models.CASCADE,)
     comments = models.CharField(max_length=1024, null=True, blank=True)
     is_complete = models.BooleanField(
         default=False,
