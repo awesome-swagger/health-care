@@ -84,6 +84,7 @@ export class EditTaskComponent implements OnInit {
       relatedField: 'symptom_task_template',
     },
   ];
+  public adhocTypes = ['plan-patient', 'plan-symptom'];
   public appearTimeHelpOpen = false;
   public dueTimeHelpOpen = false;
   public categoryHelpOpen = false;
@@ -99,8 +100,7 @@ export class EditTaskComponent implements OnInit {
   public ngOnInit() {
     if (this.data) {
       console.log(this.data);
-      let adhocTypes = ['plan-patient', 'plan-symptom',];
-      if (adhocTypes.includes(this.data.type)) {
+      if (this.adhocTypes.includes(this.data.type)) {
         this.isAdhoc = true;
       }
       this.task = this.data && this.data.task ? this.data.task : {};
@@ -172,18 +172,24 @@ export class EditTaskComponent implements OnInit {
       appear_time: new FormControl(task.appear_time),
       due_time: new FormControl(task.due_time),
     });
-    if (this.getTaskType().type === 'symptom') {
+    if (this.getTaskType().type === 'symptom' || this.getTaskType().type === 'plan-symptom') {
       let defaultSymptomIds = [];
       if (task.default_symptoms) {
         defaultSymptomIds = task.default_symptoms.map((obj) => obj.id);
+      } else if (task.symptom_task_template && task.symptom_task_template.default_symptoms) {
+        defaultSymptomIds = task.symptom_task_template.default_symptoms.map((obj) => obj.id);
       } else {
-        task.default_symptoms = [];
         defaultSymptomIds = [];
+        task.default_symptoms = [];
       }
       this.taskForm.addControl('default_symptoms', new FormControl(defaultSymptomIds));
       this.fetchSymptoms().then((symptoms: any) => {
         this.symptomChoices = symptoms;
-        this.symptomsSelected = task.default_symptoms;
+        if (task.default_symptoms) {
+          this.symptomsSelected = task.default_symptoms;
+        } else if (task.symptom_task_template && task.symptom_task_template.default_symptoms) {
+          this.symptomsSelected = task.symptom_task_template.default_symptoms;
+        }
       });
     }
     if (this.getTaskType().type === 'manager' || this.getTaskType().type === 'team') {
@@ -300,8 +306,9 @@ export class EditTaskComponent implements OnInit {
   }
 
   public createTask() {
+    let postData = Object.assign({}, this.task);
     if (!this.isAdhoc) {
-      let createSub = this.getTaskType().dataModel.create(this.task).subscribe(
+      let createSub = this.getTaskType().dataModel.create(postData).subscribe(
         (task) => {
           this.task = task;
           this.modal.close(task);
@@ -312,7 +319,8 @@ export class EditTaskComponent implements OnInit {
         },
       );
     } else {
-      let createSub = this.getTaskType().relatedModel.create(this.task).subscribe(
+      postData[this.getTaskType().relatedField] = this.task[this.getTaskType().relatedField].id;
+      let createSub = this.getTaskType().relatedModel.create(postData).subscribe(
         (task) => {
           this.task = task;
           this.modal.close(task);

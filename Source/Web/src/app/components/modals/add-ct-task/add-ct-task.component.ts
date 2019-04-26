@@ -225,20 +225,6 @@ export class AddCTTaskComponent implements OnInit {
       }
       this.createTask = false;
       this.modal.close(task);
-      // let createSub = this.getTaskType().dataModel.create(task).subscribe(
-      //   (resp) => {
-      //     this.tasks.push(resp);
-      //     this.tasksShown = _uniqBy(this.tasks, (obj) => {
-      //       return obj.name;
-      //     });
-      //     this.createTask = false;
-      //     this.modal.close(resp);
-      //   },
-      //   (err) => {},
-      //   () => {
-      //     createSub.unsubscribe();
-      //   }
-      // );
     } else {
       task = {
         custom_start_on_day: 0,
@@ -251,68 +237,38 @@ export class AddCTTaskComponent implements OnInit {
       };
       this.createTask = false;
       this.modal.close(task);
-      // let createSub = this.getTaskType().relatedModel.create(task).subscribe(
-      //   (resp) => {
-      //     this.createTask = false;
-      //     this.modal.close(resp);
-      //   },
-      //   (err) => {},
-      //   () => {
-      //     createSub.unsubscribe();
-      //   }
-      // );
     }
   }
 
   public next(task) {
     let newTask = {};
+    newTask = {
+      start_on_day: task.start_on_day,
+      frequency: task.frequency,
+      repeat_amount: task.repeat_amount,
+      appear_time: task.appear_time,
+      due_time: task.due_time,
+      name: task.name,
+      plan_template: this.data.planTemplateId,
+      is_manager_task: false,
+    };
     if (!this.isAdhoc) {
-      newTask = {
-        start_on_day: task.start_on_day,
-        frequency: task.frequency,
-        repeat_amount: task.repeat_amount,
-        appear_time: task.appear_time,
-        due_time: task.due_time,
-        name: task.name,
-        plan_template: this.data.planTemplateId,
-        is_manager_task: false,
-      };
-      if (this.getTaskType().type === 'symptom') {
-        newTask['default_symptoms'] = task.default_symptoms.map((obj) => obj.id);
-      }
-      if (this.getTaskType().type === 'team' || this.getTaskType().type === 'manager') {
-        newTask['category'] = 'interaction';
-      }
-      if (this.getTaskType().type === 'manager') {
-        newTask['is_manager_task'] = true;
-      }
-      this.createTask = false;
-      let createSub = this.getTaskType().dataModel.create(newTask).subscribe(
-        (resp) => {
-          this.createTask = false;
-          this.modal.close(resp);
-        },
-        (err) => {},
-        () => {
-          createSub.unsubscribe();
-        }
-      );
+      newTask['plan_template'] = this.data.planTemplateId;
     } else {
-      newTask = {
-        plan: this.data.planId,
-      };
-      newTask[this.getTaskType().relatedField] = task.id;
-      let createSub = this.getTaskType().relatedModel.create(newTask).subscribe(
-        (resp) => {
-          this.createTask = false;
-          this.modal.close(resp);
-        },
-        (err) => {},
-        () => {
-          createSub.unsubscribe();
-        }
-      );
+      newTask['plan'] = this.data.planId;
+      newTask[this.getTaskType().relatedField] = task;
     }
+    if (this.getTaskType().type === 'symptom') {
+      newTask['default_symptoms'] = task.default_symptoms;
+    }
+    if (this.getTaskType().type === 'team' || this.getTaskType().type === 'manager') {
+      newTask['category'] = 'interaction';
+    }
+    if (this.getTaskType().type === 'manager') {
+      newTask['is_manager_task'] = true;
+    }
+    this.createTask = false;
+    this.modal.close(newTask);
   }
 
   public close() {

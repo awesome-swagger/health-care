@@ -140,7 +140,7 @@
 	</div>
 	<!--/.flex (for appear time and due time)-->
 
-	<div *ngIf="getTaskType().type === 'symptom'">
+	<div *ngIf="getTaskType().type === 'symptom' || getTaskType().type === 'plan-symptom'">
 		<ng-container>
 			<label>Symptoms</label>
 			<div class="drop">

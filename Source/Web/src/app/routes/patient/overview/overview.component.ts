@@ -780,9 +780,7 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
       (data) => {
         if (!data) return;
         if (data.toLowerCase() === 'confirm') {
-          let destroySub = this.store.SymptomTaskTemplate.update(symptom.id, {
-            is_active: false,
-          }, true).subscribe(
+          let destroySub = this.store.PlanSymptomTemplate.destroy(symptom.id).subscribe(
             (data) => {
               this.planSymptomTasks.splice(tasksIndex, 1);
             },
