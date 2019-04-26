@@ -187,6 +187,7 @@ def create_tasks_for_ongoing_plans(task_template,
     else:
         plan_template = task_template.plan_template
         field_lookup = {
+            'AssessmentTask': 'assessment',
             'PatientTask': 'patient',
             'SymptomTask': 'symptom',
             'TeamTask': 'team'
@@ -219,6 +220,7 @@ def create_tasks_for_ongoing_plans(task_template,
                     duration_weeks -= round(days_past.days / 7)
 
                     model_lookup = {
+                        'AssessmentTask': 'CarePlanAssessmentTemplate',
                         'PatientTask': 'CarePlanPatientTemplate',
                         'SymptomTask': 'CarePlanSymptomTemplate',
                         'TeamTask': 'CarePlanTeamTemplate',
@@ -671,7 +673,7 @@ def assessmenttask_post_save(sender, instance, created, **kwargs):
     :model:`tasks.AssessmentTask`
     """
     if created:
-        patient = instance.plan.patient
+        patient = instance.assessment_template.plan.patient
         assignment = RiskLevelAssignment(patient)
         assignment.assign_risk_level_to_patient()
 
