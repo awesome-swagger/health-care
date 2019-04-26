@@ -648,6 +648,12 @@ class AssessmentTaskTemplate(AbstractTaskTemplate):
             self.name,
         )
 
+    @property
+    def assessment_tasks(self):
+        return AssessmentTask.objects.filter(
+            assessment_template__assessment_task_template=self
+        )
+
 
 class CarePlanAssessmentTemplate(AbstractPlanTaskTemplate):
     """
