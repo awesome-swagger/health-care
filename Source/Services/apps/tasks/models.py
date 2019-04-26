@@ -649,6 +649,33 @@ class AssessmentTaskTemplate(AbstractTaskTemplate):
         )
 
 
+class CarePlanAssessmentTemplate(AbstractPlanTaskTemplate):
+    """
+    This stores the connection between a patient's plan and
+    assessment task template.
+
+    This is the solution for implementing ad hoc tasks
+    """
+
+    plan = models.ForeignKey(
+        'plans.CarePlan',
+        related_name='plan_assessment_templates',
+        on_delete=models.CASCADE)
+    assessment_task_template = models.ForeignKey(
+        'tasks.AssessmentTaskTemplate',
+        related_name='plan_assessment_templates',
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True)
+
+    class Meta:
+        verbose_name = _('Care Plan Assessment Template')
+        verbose_name = _('Care Plan Assessment Templates')
+
+    def __str__(self):
+        return f'{self.plan}: {self.assessment_task_template}'
+
+
 class AssessmentQuestion(UUIDPrimaryKeyMixin):
     assessment_task_template = models.ForeignKey(
         AssessmentTaskTemplate,
