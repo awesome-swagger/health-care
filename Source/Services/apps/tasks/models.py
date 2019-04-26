@@ -235,6 +235,7 @@ class AbstractPlanTaskTemplate(UUIDPrimaryKeyMixin):
     def get_task_template_field(self):
         model_name = self.__class__.__name__
         plan_task_template_lookup = {
+            'CarePlanAssessmentTemplate': getattr(self, 'assessment_task_template', None),
             'CarePlanPatientTemplate': getattr(self, 'patient_task_template', None),
             'CarePlanSymptomTemplate': getattr(self, 'symptom_task_template', None),
             'CarePlanTeamTemplate': getattr(self, 'team_task_template', None),
