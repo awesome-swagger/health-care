@@ -633,9 +633,9 @@ class AssessmentTaskViewSet(viewsets.ModelViewSet):
     queryset = AssessmentTask.objects.all()
     filter_backends = (DjangoFilterBackend, DurationFilter)
     filterset_fields = (
-        'plan__id',
-        'assessment_task_template__id',
-        'plan__patient__id',
+        'assessment_template__plan__id',
+        'assessment_template__assessment_task_template__id',
+        'assessment_template__plan__patient__id',
     )
 
     def get_queryset(self):
@@ -643,23 +643,23 @@ class AssessmentTaskViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if user.is_employee:
             employee_profile = user.employee_profile
-            if employee_profile.organizations_managed.count() > 0:
-                organizations_managed = employee_profile.organizations_managed.values_list('id', flat=True)
+            if employee_profile.organizations_managed.exists():
+                organizations = employee_profile.organizations_managed.all()
                 qs = qs.filter(
-                    plan__patient__facility__organization__id__in=organizations_managed)
-            elif employee_profile.facilities_managed.count() > 0:
-                facilities_managed = employee_profile.facilities_managed.values_list('id', flat=True)
-                assigned_roles = employee_profile.assigned_roles.values_list('id', flat=True)
+                    assessment_template__plan__patient__facility__organization__in=organizations)
+            elif employee_profile.facilities_managed.exists():
+                facilities = employee_profile.facilities_managed.all()
+                assigned_roles = employee_profile.assigned_roles.all()
                 qs = qs.filter(
-                    Q(plan__patient__facility__id__in=facilities_managed) |
-                    Q(plan__care_team_members__id__in=assigned_roles)
+                    Q(assessment_template__plan__patient__facility__in=facilities) |
+                    Q(assessment_template__plan__care_team_members__in=assigned_roles)
                 )
             else:
-                assigned_roles = employee_profile.assigned_roles.values_list('id', flat=True)
-                qs = qs.filter(plan__care_team_members__id__in=assigned_roles)
+                assigned_roles = employee_profile.assigned_roles.all()
+                qs = qs.filter(assessment_template__plan__care_team_members__in=assigned_roles)
         elif user.is_patient:
             qs = qs.filter(
-                plan__patient=user.patient_profile
+                assessment_template__plan__patient=user.patient_profile
             )
         return qs.distinct()
 

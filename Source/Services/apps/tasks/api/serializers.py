@@ -10,6 +10,7 @@ from drf_haystack.serializers import HaystackSerializerMixin
 from rest_framework import serializers
 
 from ..models import (
+    CarePlanAssessmentTemplate,
     CarePlanPatientTemplate,
     CarePlanSymptomTemplate,
     CarePlanTeamTemplate,
@@ -601,6 +602,47 @@ class AssessmentResponseSerializer(RepresentationMixin,
         return obj.assessment_question.assessment_task_template.tracks_satisfaction
 
 
+class CarePlanAssessmentTemplateSerializer(RepresentationMixin,
+                                           serializers.ModelSerializer):
+    """
+    Serializer to be used by :model:`tasks.CarePlanAssessmentTemplate`
+    """
+
+    class Meta:
+        model = CarePlanAssessmentTemplate
+        fields = (
+            'id',
+            'plan',
+            'assessment_task_template',
+            'custom_start_on_day',
+            'custom_frequency',
+            'custom_repeat_amount',
+            'custom_appear_time',
+            'custom_due_time',
+            'start_on_day',
+            'frequency',
+            'repeat_amount',
+            'appear_time',
+            'due_time',
+        )
+        write_only_fields = (
+            'custom_start_on_day',
+            'custom_frequency',
+            'custom_repeat_amount',
+            'custom_appear_time',
+            'custom_due_time',
+        )
+        read_only_fields = (
+            'id',
+        )
+        nested_serializers = [
+            {
+                'field': 'assessment_task_template',
+                'serializer_class': AssessmentTaskTemplateSerializer,
+            }
+        ]
+
+
 class AssessmentTaskSerializer(RepresentationMixin,
                                serializers.ModelSerializer):
 
@@ -610,8 +652,7 @@ class AssessmentTaskSerializer(RepresentationMixin,
         model = AssessmentTask
         fields = (
             'id',
-            'plan',
-            'assessment_task_template',
+            'assessment_template',
             'appear_datetime',
             'due_datetime',
             'comments',
@@ -624,8 +665,8 @@ class AssessmentTaskSerializer(RepresentationMixin,
         )
         nested_serializers = [
             {
-                'field': 'assessment_task_template',
-                'serializer_class': AssessmentTaskTemplateSerializer,
+                'field': 'assessment_template',
+                'serializer_class': CarePlanAssessmentTemplateSerializer,
             }
         ]
 
