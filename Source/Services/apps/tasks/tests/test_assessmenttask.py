@@ -20,8 +20,8 @@ class TestAssessmentTask(StateTestMixin, TasksMixin, APITestCase):
         self.user = AdminUserFactory()
         self.assessment_task = self.create_assessment_task()
         self.other_task = self.create_assessment_task()
-        self.plan = self.assessment_task.plan
-        self.assessment_task_template = self.assessment_task.assessment_task_template
+        self.plan = self.assessment_task.assessment_template.plan
+        self.assessment_task_template = self.assessment_task.assessment_template.assessment_task_template
         self.url = reverse('assessment_tasks-list')
         self.detail_url = reverse(
             'assessment_tasks-detail',
@@ -31,7 +31,7 @@ class TestAssessmentTask(StateTestMixin, TasksMixin, APITestCase):
 
     def test_assessment_task_without_response(self):
         self.create_multiple_assessment_questions(
-            self.assessment_task.assessment_task_template
+            self.assessment_task.assessment_template.assessment_task_template
         )
         response = self.client.get(self.detail_url)
         self.assertEqual(response.data['is_complete'], False)
@@ -64,9 +64,9 @@ class TestAssessmentTask(StateTestMixin, TasksMixin, APITestCase):
         task = self.create_assessment_task(**kwargs)
         if state == 'done':
             self.create_responses_to_multiple_questions(
-                task.assessment_task_template,
+                task.assessment_template.assessment_task_template,
                 task,
-                task.assessment_task_template.questions.all()
+                task.assessment_template.assessment_task_template.questions.all()
             )
 
         url = reverse(
@@ -77,17 +77,17 @@ class TestAssessmentTask(StateTestMixin, TasksMixin, APITestCase):
         self.assertEqual(response.data['state'], state)
 
     def test_filter_by_care_plan(self):
-        filter_url = f'{self.url}?plan__id={self.plan.id}'
+        filter_url = f'{self.url}?assessment_template__plan__id={self.plan.id}'
         response = self.client.get(filter_url)
         self.assertEqual(response.data['count'], 1)
 
     def test_filter_by_assessment_task_template(self):
-        filter_url = f'{self.url}?assessment_task_template__id={self.assessment_task_template.id}'
+        filter_url = f'{self.url}?assessment_template__assessment_task_template__id={self.assessment_task_template.id}'
         response = self.client.get(filter_url)
         self.assertEqual(response.data['count'], 1)
 
     def test_filter_by_patient(self):
-        filter_url = f'{self.url}?plan__patient__id={self.plan.patient.id}'
+        filter_url = f'{self.url}?assessment_template__plan__patient__id={self.plan.patient.id}'
         response = self.client.get(filter_url)
         self.assertEqual(response.data['count'], 1)
 
@@ -113,7 +113,7 @@ class TestAssessmentTask(StateTestMixin, TasksMixin, APITestCase):
         )
         response = self.client.get(self.detail_url)
         self.assertEqual(
-            response.data['assessment_task_template']['questions'][0]['prompt'],
+            response.data['assessment_template']['assessment_task_template']['questions'][0]['prompt'],
             question.prompt
         )
 
@@ -171,16 +171,26 @@ class TestAssessmentTaskUsingEmployee(TasksMixin, APITestCase):
 
     def setUp(self):
         self.fake = Faker()
-        self.employee = self.create_employee()
+        self.facility = self.create_facility()
+        self.organization = self.facility.organization
+        self.employee = self.create_employee(
+            organizations_managed=[self.organization]
+        )
         self.user = self.employee.user
 
-        self.plan = self.create_care_plan()
+        patient = self.create_patient(
+            facility=self.facility
+        )
+        self.plan = self.create_care_plan(patient)
         self.create_care_team_member(**{
             'employee_profile': self.employee,
             'plan': self.plan
         })
+        self.assessment_template = self.create_plan_assessment_template(
+            plan=self.plan
+        )
         self.assessment_task = self.create_assessment_task(**{
-            'plan': self.plan
+            'assessment_template': self.assessment_template
         })
         self.url = reverse('assessment_tasks-list')
         self.detail_url = reverse(
@@ -219,9 +229,12 @@ class TestAssessmentTaskUsingEmployee(TasksMixin, APITestCase):
             self.fake.future_datetime(end_date="+30d")
         )
 
+        assessment_template = self.create_plan_assessment_template(
+            plan=self.plan,
+            assessment_task_template=template
+        )
         payload = {
-            'plan': self.plan.id,
-            'assessment_task_template': template.id,
+            'assessment_template': assessment_template.id,
             'appear_datetime': appear_datetime,
             'due_datetime': due_datetime,
             'comments': self.fake.sentence(nb_words=10),
@@ -239,9 +252,12 @@ class TestAssessmentTaskUsingEmployee(TasksMixin, APITestCase):
         due_datetime = pytz.utc.localize(
             self.fake.future_datetime(end_date="+30d")
         )
+        assessment_template = self.create_plan_assessment_template(
+            plan=self.plan,
+            assessment_task_template=template
+        )
         payload = {
-            'plan': self.plan.id,
-            'assessment_task_template': template.id,
+            'assessment_template': assessment_template.id,
             'appear_datetime': appear_datetime,
             'due_datetime': due_datetime,
             'comments': self.fake.sentence(nb_words=10),
@@ -259,9 +275,12 @@ class TestAssessmentTaskUsingEmployee(TasksMixin, APITestCase):
         due_datetime = pytz.utc.localize(
             self.fake.future_datetime(end_date="+30d")
         )
+        assessment_template = self.create_plan_assessment_template(
+            plan=self.plan,
+            assessment_task_template=template
+        )
         payload = {
-            'plan': self.plan.id,
-            'assessment_task_template': template.id,
+            'assessment_template': assessment_template.id,
             'appear_datetime': appear_datetime,
             'due_datetime': due_datetime,
             'comments': self.fake.sentence(nb_words=10),
@@ -336,8 +355,11 @@ class TestAssessmentTaskUsingPatient(TasksMixin, APITestCase):
         self.user = self.patient.user
 
         self.plan = self.create_care_plan(patient=self.patient)
+        self.assessment_template = self.create_plan_assessment_template(
+            plan=self.plan
+        )
         self.assessment_task = self.create_assessment_task(**{
-            'plan': self.plan
+            'assessment_template': self.assessment_template
         })
         self.url = reverse('assessment_tasks-list')
         self.detail_url = reverse(
@@ -376,9 +398,12 @@ class TestAssessmentTaskUsingPatient(TasksMixin, APITestCase):
             self.fake.future_datetime(end_date="+30d")
         )
 
+        assessment_template = self.create_plan_assessment_template(
+            plan=self.plan,
+            assessment_task_template=template
+        )
         payload = {
-            'plan': self.plan.id,
-            'assessment_task_template': template.id,
+            'assessment_template': assessment_template.id,
             'appear_datetime': appear_datetime,
             'due_datetime': due_datetime,
             'comments': self.fake.sentence(nb_words=10),
@@ -396,9 +421,12 @@ class TestAssessmentTaskUsingPatient(TasksMixin, APITestCase):
         due_datetime = pytz.utc.localize(
             self.fake.future_datetime(end_date="+30d")
         )
+        assessment_template = self.create_plan_assessment_template(
+            plan=self.plan,
+            assessment_task_template=template
+        )
         payload = {
-            'plan': self.plan.id,
-            'assessment_task_template': template.id,
+            'assessment_template': assessment_template.id,
             'appear_datetime': appear_datetime,
             'due_datetime': due_datetime,
             'comments': self.fake.sentence(nb_words=10),
@@ -416,9 +444,12 @@ class TestAssessmentTaskUsingPatient(TasksMixin, APITestCase):
         due_datetime = pytz.utc.localize(
             self.fake.future_datetime(end_date="+30d")
         )
+        assessment_template = self.create_plan_assessment_template(
+            plan=self.plan,
+            assessment_task_template=template
+        )
         payload = {
-            'plan': self.plan.id,
-            'assessment_task_template': template.id,
+            'assessment_template': assessment_template.id,
             'appear_datetime': appear_datetime,
             'due_datetime': due_datetime,
             'comments': self.fake.sentence(nb_words=10),

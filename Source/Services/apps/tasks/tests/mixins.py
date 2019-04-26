@@ -8,6 +8,7 @@ from django.utils import timezone
 from dateutil.relativedelta import relativedelta
 
 from .factories import (
+    CarePlanAssessmentTemplateFactory,
     CarePlanPatientTemplateFactory,
     CarePlanSymptomTemplateFactory,
     CarePlanTeamTemplateFactory,
@@ -264,6 +265,16 @@ class TasksMixin(PlansMixin):
 
         return AssessmentTaskTemplateFactory(**kwargs)
 
+    def create_plan_assessment_template(self, **kwargs):
+        if 'plan' not in kwargs:
+            kwargs.update({'plan': self.create_care_plan()})
+
+        if 'assessment_task_template' not in kwargs:
+            kwargs.update({
+                'assessment_task_template': self.create_assessment_task_template()
+            })
+        return CarePlanAssessmentTemplateFactory(**kwargs)
+
     def create_assessment_question(self, assessment_task_template=None):
         if assessment_task_template is None:
             assessment_task_template = self.create_assessment_task_template()
@@ -277,12 +288,10 @@ class TasksMixin(PlansMixin):
 
     def create_assessment_task(self, **kwargs):
         now = timezone.now()
-        if 'plan' not in kwargs:
-            kwargs.update({'plan': self.create_care_plan()})
 
-        if 'assessment_task_template' not in kwargs:
+        if 'assessment_template' not in kwargs:
             kwargs.update({
-                'assessment_task_template': self.create_assessment_task_template()
+                'assessment_template': self.create_plan_assessment_template()
             })
 
         if 'appear_datetime' not in kwargs:
