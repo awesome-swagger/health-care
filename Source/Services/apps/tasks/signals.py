@@ -738,7 +738,7 @@ def assessmenttask_post_delete(sender, instance, **kwargs):
     Function to be used as signal (post_delete) when deleting
     :model:`tasks.AssessmentTask`
     """
-    patient = instance.plan.patient
+    patient = instance.assessment_template.plan.patient
     assignment = RiskLevelAssignment(patient)
     assignment.assign_risk_level_to_patient()
 
