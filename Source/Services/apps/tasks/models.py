@@ -698,6 +698,11 @@ class AssessmentQuestion(UUIDPrimaryKeyMixin):
 
 
 class AssessmentTask(AbstractTask):
+    assessment_template = models.ForeignKey(
+        'tasks.CarePlanAssessmentTemplate',
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True)
     plan = models.ForeignKey(
         CarePlan,
         related_name='assessment_tasks',
