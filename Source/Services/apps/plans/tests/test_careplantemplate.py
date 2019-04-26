@@ -787,16 +787,19 @@ class TestCarePlanByTemplateFacility(TasksMixin, APITestCase):
             roles=all_roles
         )
 
-        self.create_team_task(
+        team_template = self.create_plan_team_template(
             plan=plan,
-            team_task_template=task_template,
+            team_task_template=task_template
+        )
+
+        self.create_team_task(
+            team_template=team_template,
             due_datetime=now
         )
 
         # Generate task for next week
         self.create_team_task(
-            plan=plan,
-            team_task_template=task_template,
+            team_template=team_template,
             due_datetime=next_week
         )
 

@@ -12,6 +12,7 @@ from rest_framework import serializers
 from ..models import (
     CarePlanPatientTemplate,
     CarePlanSymptomTemplate,
+    CarePlanTeamTemplate,
     PatientTaskTemplate,
     PatientTask,
     TeamTaskTemplate,
@@ -175,17 +176,17 @@ class TeamTaskTodaySerializer(serializers.ModelSerializer):
         return 'team_task'
 
     def get_name(self, obj):
-        return obj.team_task_template.name
+        return obj.team_template.team_task_template.name
 
     def get_patient(self, obj):
-        patient = obj.plan.patient
+        patient = obj.team_template.plan.patient
         serializer = BasicPatientSerializer(patient)
         return serializer.data
 
     def get_occurrence(self, obj):
         total_tasks = TeamTask.objects.filter(
-            plan=obj.plan,
-            team_task_template=obj.team_task_template)
+            team_template=obj.team_template
+        )
         obj_occurrence = total_tasks.filter(
             due_datetime__lte=obj.due_datetime).count()
         return f'{obj_occurrence} of {total_tasks.count()}'
@@ -220,14 +221,55 @@ class TeamTaskTemplateSerializer(RepresentationMixin,
         ]
 
 
-class TeamTaskSerializer(serializers.ModelSerializer):
+class CarePlanTeamTemplateSerializer(RepresentationMixin,
+                                     serializers.ModelSerializer):
+    """
+    Serializer to be used by :model:`tasks.CarePlanTeamTemplate`
+    """
+
+    class Meta:
+        model = CarePlanTeamTemplate
+        fields = (
+            'id',
+            'plan',
+            'team_task_template',
+            'custom_start_on_day',
+            'custom_frequency',
+            'custom_repeat_amount',
+            'custom_appear_time',
+            'custom_due_time',
+            'start_on_day',
+            'frequency',
+            'repeat_amount',
+            'appear_time',
+            'due_time',
+        )
+        write_only_fields = (
+            'custom_start_on_day',
+            'custom_frequency',
+            'custom_repeat_amount',
+            'custom_appear_time',
+            'custom_due_time',
+        )
+        read_only_fields = (
+            'id',
+        )
+        nested_serializers = [
+            {
+                'field': 'team_task_template',
+                'serializer_class': TeamTaskTemplateSerializer,
+            }
+        ]
+
+
+class TeamTaskSerializer(RepresentationMixin,
+                         serializers.ModelSerializer):
 
     class Meta:
         model = TeamTask
         fields = (
             'id',
-            'plan',
-            'team_task_template',
+            'team_template',
             'appear_datetime',
             'due_datetime',
             'status',
@@ -237,6 +279,12 @@ class TeamTaskSerializer(serializers.ModelSerializer):
         read_only_fields = (
             'id',
         )
+        nested_serializers = [
+            {
+                'field': 'team_template',
+                'serializer_class': CarePlanTeamTemplateSerializer,
+            }
+        ]
 
 
 class MedicationTaskTemplateSerializer(RepresentationMixin, serializers.ModelSerializer):

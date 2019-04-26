@@ -19,6 +19,15 @@ class CarePlanSymptomTemplateFactory(factory.django.DjangoModelFactory):
         model = 'tasks.CarePlanSymptomTemplate'
 
 
+class CarePlanTeamTemplateFactory(factory.django.DjangoModelFactory):
+    """
+    Factory for :model:`tasks.TeamTaskTemplate`
+    """
+
+    class Meta:
+        model = 'tasks.CarePlanTeamTemplate'
+
+
 class PatientTaskTemplateFactory(factory.django.DjangoModelFactory):
     """
     Factory for :model:`tasks.PatientTaskTemplate`

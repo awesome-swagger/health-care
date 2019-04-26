@@ -22,8 +22,11 @@ class TestTeamTask(StateTestMixin, TasksMixin, APITestCase):
         self.patient = self.create_patient(facility=facility)
         self.plan = self.create_care_plan(self.patient)
         self.user = self.employee.user
-        self.team_task = self.create_team_task(
+        team_template = self.create_plan_team_template(
             plan=self.plan
+        )
+        self.team_task = self.create_team_task(
+            team_template=team_template
         )
         self.detail_url = reverse(
             'team_tasks-detail',
@@ -49,7 +52,13 @@ class TestTeamTask(StateTestMixin, TasksMixin, APITestCase):
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def execute_state_test(self, state, **kwargs):
-        team_task = self.create_team_task(plan=self.plan, **kwargs)
+        team_template = self.create_plan_team_template(
+            plan=self.plan
+        )
+        team_task = self.create_team_task(
+            team_template=team_template,
+            **kwargs
+        )
         url = reverse(
             'team_tasks-detail',
             kwargs={'pk': team_task.id}
