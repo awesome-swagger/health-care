@@ -10,7 +10,7 @@ import {
 } from 'lodash';
 import { ModalService, ConfirmModalComponent } from '../../../modules/modals';
 import { PopoverOptions } from '../../../modules/popover';
-import { RecordResultsComponent, GoalComponent, AddCTTaskComponent } from '../../../components';
+import { RecordResultsComponent, GoalComponent, AddCTTaskComponent, EditTaskComponent } from '../../../components';
 import { AuthService, NavbarService, StoreService, TimeTrackerService, UtilsService } from '../../../services';
 import { GoalCommentsComponent } from './modals/goal-comments/goal-comments.component';
 
@@ -706,10 +706,60 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
   }
 
   public addCTTask() {
-    this.modals.open(AddCTTaskComponent, {
+    let modalSub = this.modals.open(AddCTTaskComponent, {
       closeDisabled: false,
+      data: {
+        type: 'team',
+        planTemplateId: this.carePlan.plan_template.id,
+        totalPatients: 0,
+      },
+      overflow: 'visible',
       width: '384px',
-    }).subscribe(() => {});
+    }).subscribe(
+      (newTask) => {
+        // let formattedDate = this.selectedDate.utc().format('YYYY-MM-DD');
+        // // Refetch team tasks since they might have changed in the add modal
+        // let userTasksPromise = this.getUserTasks(this.carePlan.plan_template.id, formattedDate).then((tasks: any) => {
+        //   this.userTasks = tasks.tasks.filter((obj) => obj.patient && obj.patient.id === this.patient.id);
+        // });
+        // this.teamTasks = [];
+        // let teamTasksPromise = this.getAllTeamMemberTasks(this.carePlan.plan_template.id, formattedDate).then((teamMemberTasks: any) => {
+        //   teamMemberTasks.forEach((tasks) => {
+        //     this.teamTasks = this.teamTasks.concat(tasks.tasks.filter((obj) => obj.patient && obj.patient.id === this.patient.id));
+        //   });
+        // });
+        // // If a new task has been created, open the edit modal
+        if (!newTask) return;
+        setTimeout(() => {
+          this.editTeamTask(newTask);
+        }, 10);
+      },
+      (err) => {},
+      () => {
+        modalSub.unsubscribe();
+      }
+    );
+  }
+
+  public editTeamTask(task) {
+    let modalSub = this.modals.open(EditTaskComponent, {
+      closeDisabled: false,
+      data: {
+        task: task,
+        totalPatients: 0,
+        type: 'team',
+      },
+      overflow: 'visible',
+      width: '384px',
+    }).subscribe(
+      (updatedTask) => {
+        if (!updatedTask) return;
+      },
+      (err) => {},
+      () => {
+        modalSub.unsubscribe();
+      }
+    );
   }
 
   public isUpdatingPatientTask(task) {

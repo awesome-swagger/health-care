@@ -944,42 +944,49 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
     this.modals.open(MedicationComponent, {
       closeDisabled: false,
       data: {
-        plan: this.carePlan,
+        type: 'add',
+        patient: this.patient,
+        plans: [this.carePlan],
       },
       width: '540px',
     }).subscribe((data) => {
-      if (data.patient_medication && data.task) {
-        this.store.PatientMedication.create(data.patient_medication).subscribe(
-          (patientMedication) => {
-            data.task.patient_medication = patientMedication.id;
-            this.store.MedicationTaskTemplate.create(data.task).subscribe(
-              (medicationTask) => {
-                this.planMedicationTasks.push(medicationTask);
-              },
-              (err) => {
-                console.log('Error creating medication task template', err);
-              },
-              () => {}
-            );
-          },
-          (err) => {
-            console.log('Error creating patient medication', err);
-          },
-          () => {}
-        );
-      }
+      // if (data.patient_medication && data.task) {
+      //   this.store.PatientMedication.create(data.patient_medication).subscribe(
+      //     (patientMedication) => {
+      //       data.task.patient_medication = patientMedication.id;
+      //       this.store.MedicationTaskTemplate.create(data.task).subscribe(
+      //         (medicationTask) => {
+      //           this.planMedicationTasks.push(medicationTask);
+      //         },
+      //         (err) => {
+      //           console.log('Error creating medication task template', err);
+      //         },
+      //         () => {}
+      //       );
+      //     },
+      //     (err) => {
+      //       console.log('Error creating patient medication', err);
+      //     },
+      //     () => {}
+      //   );
+      // }
     });
   }
 
   public editMedication(medication) {
-    this.modals.open(EditTaskComponent, {
-      closeDisabled: false,
+    this.modals.open(MedicationComponent, {
+      width: '576px',
       data: {
-        type: 'medication',
-        task: medication,
-      },
-      width: '540px',
-    }).subscribe((res) => {});
+        type: 'edit',
+        patient: this.patient,
+        plans: [this.carePlan],
+        medication: medication,
+      }
+    }).subscribe((res) => {
+      // if (res) {
+      //   this.patientMedications[i] = res;
+      // }
+    });
   }
 
   public confirmDeleteMedication() {
