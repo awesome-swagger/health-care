@@ -12,6 +12,8 @@ from .models import (
     GoalComment,
     InfoMessageQueue,
     InfoMessage,
+    TeamMessage,
+    MessageRecipient
 )
 
 
@@ -79,3 +81,5 @@ admin.site.register(GoalProgress, GoalProgressAdmin)
 admin.site.register(GoalComment, GoalCommentAdmin)
 admin.site.register(InfoMessageQueue, InfoMessageQueueAdmin)
 admin.site.register(InfoMessage)
+admin.site.register(TeamMessage)
+admin.site.register(MessageRecipient)
