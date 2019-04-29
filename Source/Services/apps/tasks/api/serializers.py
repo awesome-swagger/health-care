@@ -11,6 +11,8 @@ from rest_framework import serializers
 
 from ..models import (
     CarePlanPatientTemplate,
+    CarePlanSymptomTemplate,
+    CarePlanTeamTemplate,
     PatientTaskTemplate,
     PatientTask,
     TeamTaskTemplate,
@@ -174,17 +176,17 @@ class TeamTaskTodaySerializer(serializers.ModelSerializer):
         return 'team_task'
 
     def get_name(self, obj):
-        return obj.team_task_template.name
+        return obj.team_template.team_task_template.name
 
     def get_patient(self, obj):
-        patient = obj.plan.patient
+        patient = obj.team_template.plan.patient
         serializer = BasicPatientSerializer(patient)
         return serializer.data
 
     def get_occurrence(self, obj):
         total_tasks = TeamTask.objects.filter(
-            plan=obj.plan,
-            team_task_template=obj.team_task_template)
+            team_template=obj.team_template
+        )
         obj_occurrence = total_tasks.filter(
             due_datetime__lte=obj.due_datetime).count()
         return f'{obj_occurrence} of {total_tasks.count()}'
@@ -219,14 +221,55 @@ class TeamTaskTemplateSerializer(RepresentationMixin,
         ]
 
 
-class TeamTaskSerializer(serializers.ModelSerializer):
+class CarePlanTeamTemplateSerializer(RepresentationMixin,
+                                     serializers.ModelSerializer):
+    """
+    Serializer to be used by :model:`tasks.CarePlanTeamTemplate`
+    """
+
+    class Meta:
+        model = CarePlanTeamTemplate
+        fields = (
+            'id',
+            'plan',
+            'team_task_template',
+            'custom_start_on_day',
+            'custom_frequency',
+            'custom_repeat_amount',
+            'custom_appear_time',
+            'custom_due_time',
+            'start_on_day',
+            'frequency',
+            'repeat_amount',
+            'appear_time',
+            'due_time',
+        )
+        write_only_fields = (
+            'custom_start_on_day',
+            'custom_frequency',
+            'custom_repeat_amount',
+            'custom_appear_time',
+            'custom_due_time',
+        )
+        read_only_fields = (
+            'id',
+        )
+        nested_serializers = [
+            {
+                'field': 'team_task_template',
+                'serializer_class': TeamTaskTemplateSerializer,
+            }
+        ]
+
+
+class TeamTaskSerializer(RepresentationMixin,
+                         serializers.ModelSerializer):
 
     class Meta:
         model = TeamTask
         fields = (
             'id',
-            'plan',
-            'team_task_template',
+            'team_template',
             'appear_datetime',
             'due_datetime',
             'status',
@@ -236,6 +279,12 @@ class TeamTaskSerializer(serializers.ModelSerializer):
         read_only_fields = (
             'id',
         )
+        nested_serializers = [
+            {
+                'field': 'team_template',
+                'serializer_class': CarePlanTeamTemplateSerializer,
+            }
+        ]
 
 
 class MedicationTaskTemplateSerializer(RepresentationMixin, serializers.ModelSerializer):
@@ -348,6 +397,47 @@ class SymptomTaskTemplateSerializer(RepresentationMixin,
         ]
 
 
+class CarePlanSymptomTemplateSerializer(RepresentationMixin,
+                                        serializers.ModelSerializer):
+    """
+    Serializer to be used by :model:`tasks.CarePlanSymptomTemplate`
+    """
+
+    class Meta:
+        model = CarePlanSymptomTemplate
+        fields = (
+            'id',
+            'plan',
+            'symptom_task_template',
+            'custom_start_on_day',
+            'custom_frequency',
+            'custom_repeat_amount',
+            'custom_appear_time',
+            'custom_due_time',
+            'start_on_day',
+            'frequency',
+            'repeat_amount',
+            'appear_time',
+            'due_time',
+        )
+        write_only_fields = (
+            'custom_start_on_day',
+            'custom_frequency',
+            'custom_repeat_amount',
+            'custom_appear_time',
+            'custom_due_time',
+        )
+        read_only_fields = (
+            'id',
+        )
+        nested_serializers = [
+            {
+                'field': 'symptom_task_template',
+                'serializer_class': SymptomTaskTemplateSerializer,
+            }
+        ]
+
+
 class SymptomRatingSerializer(RepresentationMixin,
                               serializers.ModelSerializer):
 
@@ -372,7 +462,7 @@ class SymptomRatingSerializer(RepresentationMixin,
         ]
 
 
-class SymptomTaskSerializer(serializers.ModelSerializer):
+class SymptomTaskSerializer(RepresentationMixin, serializers.ModelSerializer):
 
     ratings = SymptomRatingSerializer(many=True, read_only=True)
 
@@ -380,8 +470,7 @@ class SymptomTaskSerializer(serializers.ModelSerializer):
         model = SymptomTask
         fields = (
             'id',
-            'plan',
-            'symptom_task_template',
+            'symptom_template',
             'appear_datetime',
             'due_datetime',
             'comments',
@@ -393,6 +482,12 @@ class SymptomTaskSerializer(serializers.ModelSerializer):
             'id',
             'ratings',
         )
+        nested_serializers = [
+            {
+                'field': 'symptom_template',
+                'serializer_class': CarePlanSymptomTemplateSerializer,
+            }
+        ]
 
 
 class SymptomTaskTodaySerializer(serializers.ModelSerializer):
@@ -424,8 +519,8 @@ class SymptomTaskTodaySerializer(serializers.ModelSerializer):
 
     def get_occurrence(self, obj):
         total_tasks = SymptomTask.objects.filter(
-            plan=obj.plan,
-            symptom_task_template=obj.symptom_task_template)
+            symptom_template=obj.symptom_template
+        )
         obj_occurrence = total_tasks.filter(
             due_datetime__lte=obj.due_datetime).count()
         return f'{obj_occurrence} of {total_tasks.count()}'
@@ -951,7 +1046,7 @@ class SymptomByPlanSerializer(serializers.ModelSerializer):
         date_range = self.context.get('date_range')
 
         rating_obj = SymptomRating.objects.filter(
-            symptom_task__plan=plan,
+            symptom_task__symptom_template__plan=plan,
             symptom_task__due_datetime__range=date_range,
             symptom=obj,
         ).order_by('created').last()
@@ -961,10 +1056,10 @@ class SymptomByPlanSerializer(serializers.ModelSerializer):
 
     def get_occurrence(self, obj):
         plan = self.context.get('plan')
-        total_tasks = SymptomTask.objects.filter(plan=plan)
+        total_tasks = SymptomTask.objects.filter(symptom_template__plan=plan)
 
         rating_obj = SymptomRating.objects.filter(
-            symptom_task__plan=plan,
+            symptom_task__symptom_template__plan=plan,
             symptom=obj
         ).order_by('created').last()
 

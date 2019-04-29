@@ -56,7 +56,7 @@ def calculate_task_percentage(patient):
 
     # Symptom tasks
     symptom_tasks = SymptomTask.objects.filter(
-        plan__patient=patient,
+        symptom_template__plan__patient=patient,
         **kwargs
     )
     completed_symptom_tasks = symptom_tasks.filter(is_complete=True)
@@ -102,7 +102,7 @@ def get_all_tasks_of_patient_today(patient):
         medication_task_template__plan__patient__id=patient.id,
         due_datetime__range=(today_min, today_max))
     symptom_tasks = SymptomTask.objects.filter(
-        plan__patient__id=patient.id,
+        symptom_template__plan__patient__id=patient.id,
         due_datetime__range=(today_min, today_max))
     assessment_tasks = AssessmentTask.objects.filter(
         plan__patient__id=patient.id,
@@ -173,8 +173,8 @@ def get_all_tasks_for_today(user, **kwargs):
 
         roles = assigned_roles.values_list('role', flat=True).distinct()
         team_tasks = TeamTask.objects.filter(
-            plan__care_team_members__in=assigned_roles,
-            team_task_template__roles__id__in=roles,
+            team_template__plan__care_team_members__in=assigned_roles,
+            team_template__team_task_template__roles__id__in=roles,
             due_datetime__range=(today_min, today_max)
         )
         if exclude_done:
@@ -205,7 +205,7 @@ def get_all_tasks_for_today(user, **kwargs):
             medication_task_template__plan__patient__id=patient.id,
             due_datetime__range=(today_min, today_max))
         symptom_tasks = SymptomTask.objects.filter(
-            plan__patient__id=patient.id,
+            symptom_template__plan__patient__id=patient.id,
             due_datetime__range=(today_min, today_max))
         assessment_tasks = AssessmentTask.objects.filter(
             plan__patient__id=patient.id,
@@ -226,7 +226,7 @@ def get_all_tasks_for_today(user, **kwargs):
             medication_tasks = medication_tasks.filter(
                 medication_task_template__plan__plan_template=plan_template)
             symptom_tasks = symptom_tasks.filter(
-                symptom_task_template__plan_template=plan_template)
+                symptom_template__symptom_task_template__plan_template=plan_template)
             assessment_tasks = assessment_tasks.filter(
                 assessment_task_template__plan_template=plan_template)
             vital_tasks = vital_tasks.filter(

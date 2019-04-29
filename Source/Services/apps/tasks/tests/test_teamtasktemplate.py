@@ -342,18 +342,21 @@ class TestTeamTaskTemmplateUsingEmployee(TasksMixin, APITestCase):
         tasks_before = 3
         tasks_after = 5
 
+        team_template = self.create_plan_team_template(
+            plan=plan,
+            team_task_template=self.template
+        )
+
         for i in range(tasks_before):
             days_ago = 3 - i
             self.create_team_task(
-                plan=plan,
-                team_task_template=self.template,
+                team_template=team_template,
                 due_datetime=now - relativedelta(days=days_ago)
             )
 
         for i in range(tasks_after):
             self.create_team_task(
-                plan=plan,
-                team_task_template=self.template,
+                team_template=team_template,
                 due_datetime=now + relativedelta(days=i, hours=1)
             )
 

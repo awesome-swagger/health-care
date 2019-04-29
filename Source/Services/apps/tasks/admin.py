@@ -50,7 +50,7 @@ class TeamTaskAdmin(admin.ModelAdmin):
     is_complete.boolean = True
 
     list_display = (
-        'plan', 'team_task_template', 'appear_datetime', 'due_datetime',
+        'team_template', 'appear_datetime', 'due_datetime',
         is_complete, )
 
 
@@ -87,7 +87,7 @@ class SymptomTaskAdmin(admin.ModelAdmin):
         SymptomRatingInline,
     ]
     list_display = (
-        'plan', 'symptom_task_template', 'appear_datetime', 'due_datetime',
+        'symptom_template', 'appear_datetime', 'due_datetime',
         'is_complete', )
 
 

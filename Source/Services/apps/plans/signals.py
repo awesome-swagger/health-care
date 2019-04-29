@@ -31,20 +31,32 @@ def create_scheduled_tasks(plan,
         plan_template=plan.plan_template, is_active=True)
 
     for template in task_templates:
-        if template_field == 'patient_task_template':
-            CarePlanPatientTemplate = apps.get_model('tasks',
-                                                     'CarePlanPatientTemplate')
+        model_lookup = {
+            'patient_task_template': 'CarePlanPatientTemplate',
+            'symptom_task_template': 'CarePlanSymptomTemplate',
+            'team_task_template': 'CareplanTeamTemplate',
+        }
+        field_lookup = {
+            'patient_task_template': 'patient_template',
+            'symptom_task_template': 'symptom_template',
+            'team_task_template': 'team_template',
+        }
+        if template_field in model_lookup:
+            PlanTemplateModel = apps.get_model(
+                'tasks',
+                model_lookup[template_field]
+            )
 
             template_kwargs = {
                 'plan': plan,
                 template_field: template
             }
 
-            patient_template = CarePlanPatientTemplate.objects.create(
+            plan_template = PlanTemplateModel.objects.create(
                 **template_kwargs
             )
             template_config = {
-                'patient_template': patient_template,
+                field_lookup[template_field]: plan_template,
             }
         else:
             template_config = {

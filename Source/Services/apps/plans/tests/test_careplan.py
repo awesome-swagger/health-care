@@ -396,7 +396,7 @@ class TestCarePlanUsingEmployee(BillingsMixin, APITestCase):
             due_datetime__lte=now
         )
         symptom_tasks = SymptomTask.objects.filter(
-            plan__in=plans,
+            symptom_template__plan__in=plans,
             due_datetime__lte=now
         )
         vital_tasks = VitalTask.objects.filter(
@@ -1038,7 +1038,7 @@ class TestCarePlanPostSaveSignalFrequencyOnce(TasksMixin, APITestCase):
 
         response = self.client.post(self.url, payload)
         count = TeamTask.objects.filter(
-            plan__id=response.data['id']).count()
+            team_template__plan__id=response.data['id']).count()
         self.assertEqual(count, 1)
 
     def test_create_care_plan_symptom_task(self):
@@ -1053,7 +1053,7 @@ class TestCarePlanPostSaveSignalFrequencyOnce(TasksMixin, APITestCase):
 
         response = self.client.post(self.url, payload)
         count = SymptomTask.objects.filter(
-            plan__id=response.data['id']).count()
+            symptom_template__plan__id=response.data['id']).count()
         self.assertEqual(count, 1)
 
     def test_create_care_plan_assessment_task(self):
@@ -1140,7 +1140,7 @@ class TestCarePlanPostSaveSignalDailyWithRepeat(TasksMixin, APITestCase):
 
         response = self.client.post(self.url, payload)
         count = TeamTask.objects.filter(
-            plan__id=response.data['id']).count()
+            team_template__plan__id=response.data['id']).count()
         self.assertEqual(count, repeat_amount)
 
     def test_create_care_plan_symptom_task_with_repeat(self):
@@ -1157,7 +1157,7 @@ class TestCarePlanPostSaveSignalDailyWithRepeat(TasksMixin, APITestCase):
 
         response = self.client.post(self.url, payload)
         count = SymptomTask.objects.filter(
-            plan__id=response.data['id']).count()
+            symptom_template__plan__id=response.data['id']).count()
         self.assertEqual(count, repeat_amount)
 
     def test_create_care_plan_assessment_task_with_repeat(self):
@@ -1268,7 +1268,7 @@ class TestCarePlanPostSaveSignalDailyWithoutRepeat(TasksMixin, APITestCase):
 
         response = self.client.post(self.url, payload)
         count = TeamTask.objects.filter(
-            plan__id=response.data['id']).count()
+            team_template__plan__id=response.data['id']).count()
         self.assertEqual(count, days.count())
 
     def test_create_care_plan_symptom_task_without_repeat(self):
@@ -1293,7 +1293,7 @@ class TestCarePlanPostSaveSignalDailyWithoutRepeat(TasksMixin, APITestCase):
 
         response = self.client.post(self.url, payload)
         count = SymptomTask.objects.filter(
-            plan__id=response.data['id']).count()
+            symptom_template__plan__id=response.data['id']).count()
         self.assertEqual(count, days.count())
 
     def test_create_care_plan_assessment_task_without_repeat(self):
@@ -1400,7 +1400,7 @@ class TestCarePlanPostSaveSignalWeeklyWithRepeat(TasksMixin, APITestCase):
 
         response = self.client.post(self.url, payload)
         count = TeamTask.objects.filter(
-            plan__id=response.data['id']).count()
+            team_template__plan__id=response.data['id']).count()
         self.assertEqual(count, repeat_amount)
 
     def test_create_care_plan_symptom_task_with_repeat(self):
@@ -1417,7 +1417,7 @@ class TestCarePlanPostSaveSignalWeeklyWithRepeat(TasksMixin, APITestCase):
 
         response = self.client.post(self.url, payload)
         count = SymptomTask.objects.filter(
-            plan__id=response.data['id']).count()
+            symptom_template__plan__id=response.data['id']).count()
         self.assertEqual(count, repeat_amount)
 
     def test_create_care_plan_assessment_task_with_repeat(self):
@@ -1512,7 +1512,7 @@ class TestCarePlanPostSaveSignalWeeklyWithoutRepeat(TasksMixin, APITestCase):
 
         response = self.client.post(self.url, payload)
         count = TeamTask.objects.filter(
-            plan__id=response.data['id']).count()
+            team_template__plan__id=response.data['id']).count()
         self.assertEqual(count, self.duration_weeks)
 
     def test_create_care_plan_symptom_task_without_repeat(self):
@@ -1529,7 +1529,7 @@ class TestCarePlanPostSaveSignalWeeklyWithoutRepeat(TasksMixin, APITestCase):
 
         response = self.client.post(self.url, payload)
         count = SymptomTask.objects.filter(
-            plan__id=response.data['id']).count()
+            symptom_template__plan__id=response.data['id']).count()
         self.assertEqual(count, self.duration_weeks)
 
     def test_create_care_plan_assessment_task_without_repeat(self):
@@ -1620,7 +1620,7 @@ class TestCarePlanPostSaveSignalOtherDayWithRepeat(TasksMixin, APITestCase):
 
         response = self.client.post(self.url, payload)
         count = TeamTask.objects.filter(
-            plan__id=response.data['id']).count()
+            team_template__plan__id=response.data['id']).count()
         self.assertEqual(count, repeat_amount)
 
     def test_create_care_plan_symptom_task_with_repeat(self):
@@ -1637,7 +1637,7 @@ class TestCarePlanPostSaveSignalOtherDayWithRepeat(TasksMixin, APITestCase):
 
         response = self.client.post(self.url, payload)
         count = SymptomTask.objects.filter(
-            plan__id=response.data['id']).count()
+            symptom_template__plan__id=response.data['id']).count()
         self.assertEqual(count, repeat_amount)
 
     def test_create_care_plan_assessment_task_with_repeat(self):
@@ -1752,7 +1752,7 @@ class TestCarePlanPostSaveSignalOtherDayWithoutRepeat(TasksMixin, APITestCase):
 
         response = self.client.post(self.url, payload)
         count = TeamTask.objects.filter(
-            plan__id=response.data['id']).count()
+            team_template__plan__id=response.data['id']).count()
         self.assertEqual(count, days.count())
 
     def test_create_care_plan_symptom_task_without_repeat(self):
@@ -1779,7 +1779,7 @@ class TestCarePlanPostSaveSignalOtherDayWithoutRepeat(TasksMixin, APITestCase):
 
         response = self.client.post(self.url, payload)
         count = SymptomTask.objects.filter(
-            plan__id=response.data['id']).count()
+            symptom_template__plan__id=response.data['id']).count()
         self.assertEqual(count, days.count())
 
     def test_create_care_plan_assessment_task_without_repeat(self):
@@ -1890,7 +1890,7 @@ class TestCarePlanPostSaveSignalWeekdaysWithRepeat(TasksMixin, APITestCase):
 
         response = self.client.post(self.url, payload)
         count = TeamTask.objects.filter(
-            plan__id=response.data['id']).count()
+            team_template__plan__id=response.data['id']).count()
         self.assertEqual(count, repeat_amount)
 
     def test_create_care_plan_symptom_task_with_repeat(self):
@@ -1907,7 +1907,7 @@ class TestCarePlanPostSaveSignalWeekdaysWithRepeat(TasksMixin, APITestCase):
 
         response = self.client.post(self.url, payload)
         count = SymptomTask.objects.filter(
-            plan__id=response.data['id']).count()
+            symptom_template__plan__id=response.data['id']).count()
         self.assertEqual(count, repeat_amount)
 
     def test_create_care_plan_assessment_task_with_repeat(self):
@@ -2025,7 +2025,7 @@ class TestCarePlanPostSaveSignalWeekdaysWithoutRepeat(TasksMixin, APITestCase):
 
         response = self.client.post(self.url, payload)
         count = TeamTask.objects.filter(
-            plan__id=response.data['id']).count()
+            team_template__plan__id=response.data['id']).count()
         self.assertEqual(count, days.count())
 
     def test_create_care_plan_symptom_task_without_repeat(self):
@@ -2053,7 +2053,7 @@ class TestCarePlanPostSaveSignalWeekdaysWithoutRepeat(TasksMixin, APITestCase):
 
         response = self.client.post(self.url, payload)
         count = SymptomTask.objects.filter(
-            plan__id=response.data['id']).count()
+            symptom_template__plan__id=response.data['id']).count()
         self.assertEqual(count, days.count())
 
     def test_create_care_plan_assessment_task_without_repeat(self):
@@ -2166,7 +2166,7 @@ class TestCarePlanPostSaveSignalWeekendsWithRepeat(TasksMixin, APITestCase):
 
         response = self.client.post(self.url, payload)
         count = TeamTask.objects.filter(
-            plan__id=response.data['id']).count()
+            team_template__plan__id=response.data['id']).count()
         self.assertEqual(count, repeat_amount)
 
     def test_create_care_plan_symptom_task_with_repeat(self):
@@ -2183,7 +2183,7 @@ class TestCarePlanPostSaveSignalWeekendsWithRepeat(TasksMixin, APITestCase):
 
         response = self.client.post(self.url, payload)
         count = SymptomTask.objects.filter(
-            plan__id=response.data['id']).count()
+            symptom_template__plan__id=response.data['id']).count()
         self.assertEqual(count, repeat_amount)
 
     def test_create_care_plan_assessment_task_with_repeat(self):

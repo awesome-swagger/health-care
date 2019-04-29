@@ -398,7 +398,7 @@ class CarePlanViewSet(viewsets.ModelViewSet):
             medication_task_template__plan__in=queryset,
             due_datetime__lte=now)
         symptom_tasks = SymptomTask.objects.filter(
-            plan__in=queryset,
+            symptom_template__plan__in=queryset,
             due_datetime__lte=now)
         assessment_tasks = AssessmentTask.objects.filter(
             plan__in=queryset,
@@ -1837,10 +1837,10 @@ class SymptomByPlanViewSet(ParentViewSetPermissionMixin,
         permissions.IsAuthenticated,
     )
     queryset = Symptom.objects.all()
-    parent_field = 'ratings__symptom_task__plan'
+    parent_field = 'ratings__symptom_task__symptom_template__plan'
     parent_lookup = [
         (
-            'ratings__symptom_task__plan',
+            'ratings__symptom_task__symptom_template__plan',
             CarePlan,
             CarePlanViewSet
         )
