@@ -44,6 +44,20 @@ export class AddCTTaskComponent implements OnInit {
       dataModel: this.store.SymptomTaskTemplate,
     },
     {
+      type: 'plan-manager',
+      title: 'Add CM Task',
+      dataModel: this.store.TeamTaskTemplate,
+      relatedModel: this.store.PlanTeamTemplate,
+      relatedField: 'team_task_template',
+    },
+    {
+      type: 'plan-team',
+      title: 'Add CT Task',
+      dataModel: this.store.TeamTaskTemplate,
+      relatedModel: this.store.PlanTeamTemplate,
+      relatedField: 'team_task_template',
+    },
+    {
       type: 'plan-patient',
       title: 'Add Patient Task',
       dataModel: this.store.PatientTaskTemplate,
@@ -77,10 +91,11 @@ export class AddCTTaskComponent implements OnInit {
         is_available: true,
       }).subscribe(
         (tasks) => {
+          this.tasks = tasks;
           if (this.getTaskType().type === 'manager') {
-            this.tasks = tasks.filter((obj) => obj.is_manager_task);
-          } else {
-            this.tasks = tasks.filter((obj) => !obj.is_manager_task);
+            this.tasks = this.tasks.filter((obj) => obj.is_manager_task);
+          } else if (this.getTaskType().type === 'team') {
+            this.tasks = this.tasks.filter((obj) => !obj.is_manager_task);
           }
           this.tasksShown = _uniqBy(this.tasks, (obj) => this.getTaskName(obj));
         },
@@ -104,6 +119,11 @@ export class AddCTTaskComponent implements OnInit {
 
   public getTaskNameRelated(task) {
     return task[this.getTaskType().relatedField].name;
+  }
+
+  public isTeamTask() {
+    let teamTaskTypes = ['manager', 'team', 'plan-manager', 'plan-team'];
+    return teamTaskTypes.includes(this.getTaskType().type);
   }
 
   public filterTasks() {
@@ -249,7 +269,6 @@ export class AddCTTaskComponent implements OnInit {
       appear_time: task.appear_time,
       due_time: task.due_time,
       name: task.name,
-      plan_template: this.data.planTemplateId,
       is_manager_task: false,
     };
     if (!this.isAdhoc) {
@@ -261,7 +280,7 @@ export class AddCTTaskComponent implements OnInit {
     if (this.getTaskType().type === 'symptom') {
       newTask['default_symptoms'] = task.default_symptoms;
     }
-    if (this.getTaskType().type === 'team' || this.getTaskType().type === 'manager') {
+    if (this.isTeamTask()) {
       newTask['category'] = 'interaction';
     }
     if (this.getTaskType().type === 'manager') {

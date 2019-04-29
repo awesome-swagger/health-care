@@ -4,6 +4,7 @@ from apps.tasks.models import (
     CarePlanPatientTemplate,
     PatientTask,
     TeamTaskTemplate,
+    CarePlanTeamTemplate,
     TeamTask,
     MedicationTaskTemplate,
     MedicationTask,
@@ -47,6 +48,10 @@ class TeamTaskTemplateAdmin(admin.ModelAdmin):
     list_display = (
         'name', 'plan_template', 'start_on_day', 'frequency',
         'repeat_amount', 'appear_time', 'due_time', 'is_active', 'is_available', )
+
+
+class CarePlanTeamTemplateAdmin(admin.ModelAdmin):
+    list_display = ('plan', 'team_task_template', )
 
 
 class TeamTaskAdmin(admin.ModelAdmin):
@@ -160,6 +165,7 @@ admin.site.register(PatientTaskTemplate, PatientTaskTemplateAdmin)
 admin.site.register(CarePlanPatientTemplate, CarePlanPatientTemplateAdmin)
 admin.site.register(PatientTask, PatientTaskAdmin)
 admin.site.register(TeamTaskTemplate, TeamTaskTemplateAdmin)
+admin.site.register(CarePlanTeamTemplate, CarePlanTeamTemplateAdmin)
 admin.site.register(TeamTask, TeamTaskAdmin)
 admin.site.register(MedicationTaskTemplate, MedicationTaskTemplateAdmin)
 admin.site.register(MedicationTask, MedicationTaskAdmin)

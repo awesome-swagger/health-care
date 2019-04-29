@@ -196,7 +196,7 @@ export class EditTaskComponent implements OnInit {
       this.taskForm.addControl('category', new FormControl(task.category));
     }
     if (this.getTaskType().type === 'team') {
-      let roleIds = task.roles.map((obj) => obj.id)
+      let roleIds = task.roles.map((obj) => obj.id);
       this.taskForm.addControl('roles', new FormControl(roleIds));
       this.fetchRoles().then((roles: any) => {
         this.rolesChoices = roles;

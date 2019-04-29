@@ -182,10 +182,10 @@ def get_all_tasks_for_today(user, **kwargs):
 
         if plan_template:
             team_tasks = team_tasks.filter(
-                team_task_template__plan_template=plan_template)
+                team_template__team_task_template__plan_template=plan_template)
 
         if plan:
-            team_tasks = team_tasks.filter(plan=plan)
+            team_tasks = team_tasks.filter(team_template__plan=plan)
 
         if team_tasks.exists():
             serializer = TeamTaskTodaySerializer(

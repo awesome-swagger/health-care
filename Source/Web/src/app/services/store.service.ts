@@ -48,14 +48,12 @@ export class StoreService {
   public InfoMessage = new Store(this.http, 'info_messages');
   // Tasks
   public PatientTaskTemplate = new Store(this.http, 'patient_task_templates');
-  public PlanPatientTemplate = new Store(this.http, 'plan_patient_templates')
   public PatientTask = new Store(this.http, 'patient_tasks');
   public TeamTaskTemplate = new Store(this.http, 'team_task_templates');
   public TeamTask = new Store(this.http, 'team_tasks');
   public MedicationTaskTemplate = new Store(this.http, 'medication_task_templates');
   public MedicationTask = new Store(this.http, 'medication_tasks');
   public SymptomTaskTemplate = new Store(this.http, 'symptom_task_templates');
-  public PlanSymptomTemplate = new Store(this.http, 'plan_symptom_templates')
   public SymptomTask = new Store(this.http, 'symptom_tasks');
   public SymptomRating = new Store(this.http, 'symptom_ratings');
   public AssessmentTaskTemplate = new Store(this.http, 'assessment_task_templates');
@@ -65,6 +63,10 @@ export class StoreService {
   public VitalsTaskTemplate = new Store(this.http, 'vital_task_templates');
   public VitalsQuestions = new Store(this.http, 'vital_questions');
   public VitalResponse = new Store(this.http, 'vital_responses');
+  // Ad-hoc Tasks
+  public PlanPatientTemplate = new Store(this.http, 'plan_patient_templates');
+  public PlanTeamTemplate = new Store(this.http, 'plan_team_templates');
+  public PlanSymptomTemplate = new Store(this.http, 'plan_symptom_templates');
 
   constructor(private http: HttpService) { }
 }

@@ -97,11 +97,10 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
     return promise;
   }
 
-  public fetchTeamTasks(planTemplateId) {
+  public fetchTeamTasks(planId) {
     let promise = new Promise((resolve, reject) => {
-      let tasksSub = this.store.TeamTaskTemplate.readListPaged({
-        plan_template__id: planTemplateId,
-        is_active: true,
+      let tasksSub = this.store.PlanTeamTemplate.readListPaged({
+        plan: planId
       }).subscribe(
         (teamTasks) => resolve(teamTasks),
         (err) => reject(err),
@@ -113,7 +112,7 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
     return promise;
   }
 
-  public fetchPlanPatientTemplates(planId) {
+  public fetchPatientTasks(planId) {
     let promise = new Promise((resolve, reject) => {
       let tasksSub = this.store.PlanPatientTemplate.readListPaged({
         plan: planId
@@ -211,12 +210,12 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
     this.fetchPlanGoals(carePlan.plan_template.id).then((planGoals: any) => {
       this.planGoals = planGoals;
     });
-    this.fetchTeamTasks(carePlan.plan_template.id).then((planTeamTasks: any) => {
+    this.fetchTeamTasks(carePlan.id).then((planTeamTasks: any) => {
       this.planTeamTasks = planTeamTasks;
       this.planTeamManagerTasks = planTeamTasks.filter((task) => task.is_manager_task);
       this.planTeamMemberTasks = planTeamTasks.filter((task) => !task.is_manager_task);
     });
-    this.fetchPlanPatientTemplates(carePlan.id).then((planPatientTasks: any) => {
+    this.fetchPatientTasks(carePlan.id).then((planPatientTasks: any) => {
       this.planPatientTasks = planPatientTasks;
     });
     this.fetchAssessments(carePlan.plan_template.id).then((planAssessmentTasks: any) => {
@@ -568,7 +567,7 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
       width: '384px',
     }).subscribe(
       (updatedTask) => {
-        this.fetchPlanPatientTemplates(this.carePlan.id).then((planPatientTasks: any) => {
+        this.fetchPatientTasks(this.carePlan.id).then((planPatientTasks: any) => {
           this.planPatientTasks = planPatientTasks;
         });
         if (!updatedTask) return;
