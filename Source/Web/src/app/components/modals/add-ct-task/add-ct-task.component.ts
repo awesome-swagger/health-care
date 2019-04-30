@@ -15,6 +15,7 @@ export class AddCTTaskComponent implements OnInit {
 
   public data = null;
   public totalPatients = 0;
+  public isAdhoc = false; // Determines if the task being added is only for a single plan
   public tasks = [];
   public searchInput = '';
   public tasksShown = [];
@@ -41,7 +42,35 @@ export class AddCTTaskComponent implements OnInit {
       type: 'symptom',
       title: 'Add Symptom Task',
       dataModel: this.store.SymptomTaskTemplate,
-    }
+    },
+    {
+      type: 'plan-manager',
+      title: 'Add CM Task',
+      dataModel: this.store.TeamTaskTemplate,
+      relatedModel: this.store.PlanTeamTemplate,
+      relatedField: 'team_task_template',
+    },
+    {
+      type: 'plan-team',
+      title: 'Add CT Task',
+      dataModel: this.store.TeamTaskTemplate,
+      relatedModel: this.store.PlanTeamTemplate,
+      relatedField: 'team_task_template',
+    },
+    {
+      type: 'plan-patient',
+      title: 'Add Patient Task',
+      dataModel: this.store.PatientTaskTemplate,
+      relatedModel: this.store.PlanPatientTemplate,
+      relatedField: 'patient_task_template',
+    },
+    {
+      type: 'plan-symptom',
+      title: 'Add Symptom Task',
+      dataModel: this.store.SymptomTaskTemplate,
+      relatedModel: this.store.PlanSymptomTemplate,
+      relatedField: 'symptom_task_template',
+    },
   ];
 
   constructor(
@@ -53,18 +82,22 @@ export class AddCTTaskComponent implements OnInit {
     console.log(this.data);
     if (this.data) {
       this.totalPatients = this.data.totalPatients ? this.data.totalPatients : 0;
+      if (this.data.planTemplateId) {
+        this.isAdhoc = false;
+      } else if (this.data.planId) {
+        this.isAdhoc = true;
+      }
       this.getTaskType().dataModel.readListPaged({
         is_available: true,
       }).subscribe(
         (tasks) => {
+          this.tasks = tasks;
           if (this.getTaskType().type === 'manager') {
-            this.tasks = tasks.filter((obj) => obj.is_manager_task);
-          } else {
-            this.tasks = tasks.filter((obj) => !obj.is_manager_task);
+            this.tasks = this.tasks.filter((obj) => obj.is_manager_task);
+          } else if (this.getTaskType().type === 'team') {
+            this.tasks = this.tasks.filter((obj) => !obj.is_manager_task);
           }
-          this.tasksShown = _uniqBy(this.tasks, (obj) => {
-            return obj.name;
-          });
+          this.tasksShown = _uniqBy(this.tasks, (obj) => this.getTaskName(obj));
         },
         (err) => {},
         () => {}
@@ -80,11 +113,26 @@ export class AddCTTaskComponent implements OnInit {
     }
   }
 
+  public getTaskName(task) {
+    return task.name;
+  }
+
+  public getTaskNameRelated(task) {
+    return task[this.getTaskType().relatedField].name;
+  }
+
+  public isTeamTask() {
+    let teamTaskTypes = ['manager', 'team', 'plan-manager', 'plan-team'];
+    return teamTaskTypes.includes(this.getTaskType().type);
+  }
+
   public filterTasks() {
     let taskMatches = this.tasks.filter((obj) => {
-      return obj.name.toLowerCase().indexOf(this.searchInput.toLowerCase()) >= 0;
+      return this.getTaskName(obj).toLowerCase().indexOf(this.searchInput.toLowerCase()) >= 0;
     });
-    this.tasksShown = _uniqBy(taskMatches, (obj) => obj.name);
+    this.tasksShown = _uniqBy(taskMatches, (obj) => {
+      return this.getTaskName(obj);
+    });
   }
 
   public selectTask(task) {
@@ -96,10 +144,10 @@ export class AddCTTaskComponent implements OnInit {
 
   public uniqByNameCount(task) {
     let tasks = this.tasks.filter(
-      (obj) => obj.name === task.name
-    ).filter(
-      (obj) => obj.is_active === true
-    );
+      (obj) => {
+        return this.getTaskName(obj) === this.getTaskName(task);
+      }
+    ).filter((obj) => obj.is_active === true);
     return tasks.length;
   }
 
@@ -175,68 +223,71 @@ export class AddCTTaskComponent implements OnInit {
     if (taskName.length <= 0) {
       return;
     }
-    let task = {
-      start_on_day: 0,
-      appear_time: '00:00:00',
-      due_time: '00:00:00',
-      name: taskName,
-      plan_template: this.data.planTemplateId,
-      is_manager_task: false,
-    }
-    if (this.getTaskType().type === 'team' || this.getTaskType().type === 'manager') {
-      task['category'] = 'interaction';
-    }
-    if (this.getTaskType().type === 'manager') {
-      task['is_manager_task'] = true;
-    }
-    let createSub = this.getTaskType().dataModel.create(task).subscribe(
-      (resp) => {
-        this.tasks.push(resp);
-        this.tasksShown = _uniqBy(this.tasks, (obj) => {
-          return obj.name;
-        });
-        this.createTask = false;
-        this.modal.close(resp);
-      },
-      (err) => {},
-      () => {
-        createSub.unsubscribe();
+    let task = {};
+    if (!this.isAdhoc) {
+      task = {
+        start_on_day: 0,
+        frequency: 'once',
+        repeat_amount: -1,
+        appear_time: '00:00:00',
+        due_time: '00:00:00',
+        is_active: true,
+        is_available: true,
+        plan_template: this.data.planTemplateId,
+        name: taskName,
+        is_manager_task: false,
+      };
+      if (this.getTaskType().type === 'team' || this.getTaskType().type === 'manager') {
+        task['category'] = 'interaction';
       }
-    );
+      if (this.getTaskType().type === 'manager') {
+        task['is_manager_task'] = true;
+      }
+      this.createTask = false;
+      this.modal.close(task);
+    } else {
+      task = {
+        custom_start_on_day: 0,
+        custom_frequency: 'once',
+        custom_repeat_amount: -1,
+        custom_appear_time: '00:00:00',
+        custom_due_time: '00:00:00',
+        custom_name: taskName,
+        plan: this.data.planId,
+      };
+      this.createTask = false;
+      this.modal.close(task);
+    }
   }
 
   public next(task) {
-    let newTask = {
-      start_on_day: 0,
-      appear_time: '00:00:00',
-      due_time: '00:00:00',
+    let newTask = {};
+    newTask = {
+      start_on_day: task.start_on_day,
+      frequency: task.frequency,
+      repeat_amount: task.repeat_amount,
+      appear_time: task.appear_time,
+      due_time: task.due_time,
       name: task.name,
-      plan_template: this.data.planTemplateId,
       is_manager_task: false,
     };
-    if (this.getTaskType().type === 'symptom') {
-      newTask['default_symptoms'] = task.default_symptoms.map((obj) => obj.id);
+    if (!this.isAdhoc) {
+      newTask['plan_template'] = this.data.planTemplateId;
+    } else {
+      newTask['plan'] = this.data.planId;
+      newTask[this.getTaskType().relatedField] = task;
     }
-    if (this.getTaskType().type === 'team' || this.getTaskType().type === 'manager') {
+    if (this.getTaskType().type === 'symptom') {
+      newTask['default_symptoms'] = task.default_symptoms;
+    }
+    if (this.isTeamTask()) {
       newTask['category'] = 'interaction';
     }
     if (this.getTaskType().type === 'manager') {
       newTask['is_manager_task'] = true;
     }
-    let createSub = this.getTaskType().dataModel.create(newTask).subscribe(
-      (resp) => {
-        this.tasks.push(resp);
-        this.tasksShown = _uniqBy(this.tasks, (obj) => {
-          return obj.name;
-        });
-        this.createTask = false;
-        this.modal.close(resp);
-      },
-      (err) => {},
-      () => {
-        createSub.unsubscribe();
-      }
-    );
+    this.createTask = false;
+    this.modal.close(newTask);
   }
 
   public close() {

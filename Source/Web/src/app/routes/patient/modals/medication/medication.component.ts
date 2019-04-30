@@ -127,7 +127,7 @@ export class MedicationComponent implements OnInit {
   public get datePrescribedFormatted() {
     if (this.datePrescribed) {
       return moment(this.datePrescribed).format('MMMM D, YYYY');
-    } 
+    }
   }
 
   public fetchMedications() {
@@ -212,7 +212,6 @@ export class MedicationComponent implements OnInit {
           res.task = task;
           this.modal.close(res);
         })
-        this.modal.close(res);
       })
     }
 

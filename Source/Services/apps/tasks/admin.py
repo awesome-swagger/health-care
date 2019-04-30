@@ -1,12 +1,15 @@
 from django.contrib import admin
 from apps.tasks.models import (
     PatientTaskTemplate,
+    CarePlanPatientTemplate,
     PatientTask,
     TeamTaskTemplate,
+    CarePlanTeamTemplate,
     TeamTask,
     MedicationTaskTemplate,
     MedicationTask,
     SymptomTaskTemplate,
+    CarePlanSymptomTemplate,
     SymptomTask,
     SymptomRating,
     AssessmentTaskTemplate,
@@ -26,6 +29,10 @@ class PatientTaskTemplateAdmin(admin.ModelAdmin):
         'repeat_amount', 'appear_time', 'due_time', 'is_active', 'is_available', )
 
 
+class CarePlanPatientTemplateAdmin(admin.ModelAdmin):
+    list_display = ('plan', 'patient_task_template', )
+
+
 class PatientTaskAdmin(admin.ModelAdmin):
 
     def is_complete(self):
@@ -41,6 +48,10 @@ class TeamTaskTemplateAdmin(admin.ModelAdmin):
     list_display = (
         'name', 'plan_template', 'start_on_day', 'frequency',
         'repeat_amount', 'appear_time', 'due_time', 'is_active', 'is_available', )
+
+
+class CarePlanTeamTemplateAdmin(admin.ModelAdmin):
+    list_display = ('plan', 'team_task_template', )
 
 
 class TeamTaskAdmin(admin.ModelAdmin):
@@ -76,6 +87,10 @@ class SymptomTaskTemplateAdmin(admin.ModelAdmin):
     list_display = (
         'plan_template', 'start_on_day', 'frequency', 'repeat_amount',
         'appear_time', 'due_time', 'is_active', 'is_available', )
+
+
+class CarePlanSymptomTemplateAdmin(admin.ModelAdmin):
+    list_display = ('plan', 'symptom_task_template', )
 
 
 class SymptomRatingInline(admin.TabularInline):
@@ -147,12 +162,15 @@ class VitalTaskAdmin(admin.ModelAdmin):
 
 
 admin.site.register(PatientTaskTemplate, PatientTaskTemplateAdmin)
+admin.site.register(CarePlanPatientTemplate, CarePlanPatientTemplateAdmin)
 admin.site.register(PatientTask, PatientTaskAdmin)
 admin.site.register(TeamTaskTemplate, TeamTaskTemplateAdmin)
+admin.site.register(CarePlanTeamTemplate, CarePlanTeamTemplateAdmin)
 admin.site.register(TeamTask, TeamTaskAdmin)
 admin.site.register(MedicationTaskTemplate, MedicationTaskTemplateAdmin)
 admin.site.register(MedicationTask, MedicationTaskAdmin)
 admin.site.register(SymptomTaskTemplate, SymptomTaskTemplateAdmin)
+admin.site.register(CarePlanSymptomTemplate, CarePlanSymptomTemplateAdmin)
 admin.site.register(SymptomTask, SymptomTaskAdmin)
 admin.site.register(AssessmentTaskTemplate, AssessmentTaskTemplateAdmin)
 admin.site.register(AssessmentTask, AssessmentTaskAdmin)

@@ -565,8 +565,8 @@ class SymptomTask(AbstractTask):
 
     def __str__(self):
         return '{} {}\'s symptom report due by {}'.format(
-            self.plan.patient.user.first_name,
-            self.plan.patient.user.first_name,
+            self.symptom_template.plan.patient.user.first_name,
+            self.symptom_template.plan.patient.user.last_name,
             self.due_datetime,
         )
 

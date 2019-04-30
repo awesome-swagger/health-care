@@ -528,9 +528,6 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       width: '384px',
     }).subscribe(
       (newTask) => {
-        this.getPatientTasks(this.planTemplateId).then((patientTasks: any) => {
-          this.patientTaskTemplates = patientTasks;
-        });
         if (!newTask) return;
         setTimeout(() => {
           this.editPatientTask(newTask);
@@ -548,14 +545,17 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
     let modalSub = this.modals.open(EditTaskComponent, {
       closeDisabled: false,
       data: {
+        type: 'patient',
         task: task,
         totalPatients: this.totalPatients,
-        type: 'patient',
       },
       overflow: 'visible',
       width: '384px',
     }).subscribe(
       (updatedTask) => {
+        this.getPatientTasks(this.planTemplateId).then((patientTasks: any) => {
+          this.patientTaskTemplates = patientTasks;
+        });
         if (!updatedTask) return;
         this.patientTaskTemplates[taskIndex] = updatedTask;
       },
@@ -716,7 +716,6 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       closeDisabled: false,
       data: {
         type: 'symptom',
-        editingTemplate: true,
         totalPatients: this.totalPatients,
         planTemplateId: this.planTemplateId,
       },

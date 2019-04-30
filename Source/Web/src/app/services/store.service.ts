@@ -63,6 +63,10 @@ export class StoreService {
   public VitalsTaskTemplate = new Store(this.http, 'vital_task_templates');
   public VitalsQuestions = new Store(this.http, 'vital_questions');
   public VitalResponse = new Store(this.http, 'vital_responses');
+  // Ad-hoc Tasks
+  public PlanPatientTemplate = new Store(this.http, 'plan_patient_templates');
+  public PlanTeamTemplate = new Store(this.http, 'plan_team_templates');
+  public PlanSymptomTemplate = new Store(this.http, 'plan_symptom_templates');
 
   constructor(private http: HttpService) { }
 }
