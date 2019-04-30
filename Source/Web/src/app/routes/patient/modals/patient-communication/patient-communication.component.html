@@ -1,29 +1,28 @@
 <h1 class="modal__title">Edit Communication</h1>
 <form>
   <label>Email</label>
-  <input type="email" class="input fullWidth marBottom32" />
+  <input type="email" class="input fullWidth marBottom32" [(ngModel)]="email" name="email"/>
   <div class="flex justifySpaceBetween">
     <div class="modal__inputWrap160 marRight32">
       <label>Phone</label>
-      <input type="tel" class="input fullWidth"  />
+      <input type="tel" class="input fullWidth" [(ngModel)]="phone" name="phone" />
     </div>
     <div class="modal__inputWrap">
       <label>Comm. Preference</label>
       <div class="styledSelect">
-        <select class="styledSelect__select">
-          <option>In-App Message</option>
-          <option>Email</option>
-          <option>Phone</option>
-          <option>Text (SMS)</option>
+        <select class="styledSelect__select" [(ngModel)]="selectedPreference" name="preference">
+          <option value="in_app_messaging">In-App Message</option>
+          <option value="phone">Phone</option>
+          <option value="text_message">Text (SMS)</option>
         </select>
       </div>
     </div>
   </div>
   <div class="modal__buttons">
-    <button class="button button--2nd">
+    <button class="button button--2nd" (click)="close()">
       Cancel
     </button>
-    <button class="button">
+    <button class="button" (click)="submit()">
       Save
     </button>
   </div>

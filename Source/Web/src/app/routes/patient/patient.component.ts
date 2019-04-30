@@ -422,8 +422,15 @@ export class PatientComponent implements OnDestroy, OnInit {
 
   public editPatientCommunication() {
     this.modals.open(PatientCommunicationComponent, {
+      data: {
+        patient: this.patient,
+      },
       width: '448px',
-    }).subscribe(() => {});
+    }).subscribe((res) => {
+      if (res) {
+        this.patient = res;
+      }
+    });
   }
 
   public editPatientAddress() {
