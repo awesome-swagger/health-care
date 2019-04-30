@@ -9,7 +9,7 @@
   <label>Care Plan</label>
   <div class="styledSelect">
     <select class="styledSelect__select" [(ngModel)]="selectedPlan" [compareWith]="compareFn">
-      <option *ngFor="let plan of plans" [value]="plan">{{plan.plan_template.name}}</option>
+      <option *ngFor="let plan of plans" [ngValue]="plan">{{plan.plan_template.name}}</option>
     </select>
   </div>
 </div>

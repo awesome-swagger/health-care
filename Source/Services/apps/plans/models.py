@@ -386,6 +386,7 @@ class TeamMessage(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
         related_name='messages',
         on_delete=models.CASCADE
         )
+    image = models.ImageField(upload_to='team_messages', blank=True, null=True)
 
     class Meta:
         verbose_name = _('Team Message')
