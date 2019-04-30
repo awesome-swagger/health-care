@@ -1,5 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { omit as _omit } from 'lodash';
 import { ModalService, ConfirmModalComponent } from '../../../modules/modals';
 import {
   GoalComponent,
@@ -99,7 +100,7 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
 
   public fetchTeamTasks(planId) {
     let promise = new Promise((resolve, reject) => {
-      let tasksSub = this.store.PlanTeamTemplate.readListPaged({
+      let tasksSub = this.store.TeamTaskTemplate.readListPaged({
         plan: planId
       }).subscribe(
         (teamTasks) => resolve(teamTasks),
@@ -210,7 +211,7 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
     this.fetchPlanGoals(carePlan.plan_template.id).then((planGoals: any) => {
       this.planGoals = planGoals;
     });
-    this.fetchTeamTasks(carePlan.id).then((planTeamTasks: any) => {
+    this.fetchTeamTasks(carePlan.plan_template.id).then((planTeamTasks: any) => {
       this.planTeamTasks = planTeamTasks;
       this.planTeamManagerTasks = planTeamTasks.filter((task) => task.is_manager_task);
       this.planTeamMemberTasks = planTeamTasks.filter((task) => !task.is_manager_task);
@@ -950,42 +951,28 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
       },
       width: '540px',
     }).subscribe((data) => {
-      // if (data.patient_medication && data.task) {
-      //   this.store.PatientMedication.create(data.patient_medication).subscribe(
-      //     (patientMedication) => {
-      //       data.task.patient_medication = patientMedication.id;
-      //       this.store.MedicationTaskTemplate.create(data.task).subscribe(
-      //         (medicationTask) => {
-      //           this.planMedicationTasks.push(medicationTask);
-      //         },
-      //         (err) => {
-      //           console.log('Error creating medication task template', err);
-      //         },
-      //         () => {}
-      //       );
-      //     },
-      //     (err) => {
-      //       console.log('Error creating patient medication', err);
-      //     },
-      //     () => {}
-      //   );
-      // }
+      this.fetchMedicationTasks(this.carePlan.id).then((planMedicationTasks: any) => {
+        this.planMedicationTasks = planMedicationTasks;
+      });
     });
   }
 
   public editMedication(medication) {
+    let patientMedication = Object.assign({}, medication.patient_medication);
+    let excludePatientMedication = _omit(Object.assign({}, medication), 'patient_medication');
+    let modalMedicationData = Object.assign({}, patientMedication, {task: excludePatientMedication});
     this.modals.open(MedicationComponent, {
       width: '576px',
       data: {
         type: 'edit',
         patient: this.patient,
         plans: [this.carePlan],
-        medication: medication,
+        medication: modalMedicationData,
       }
     }).subscribe((res) => {
-      // if (res) {
-      //   this.patientMedications[i] = res;
-      // }
+      this.fetchMedicationTasks(this.carePlan.id).then((planMedicationTasks: any) => {
+        this.planMedicationTasks = planMedicationTasks;
+      });
     });
   }
 
