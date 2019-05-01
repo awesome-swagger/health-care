@@ -1013,8 +1013,8 @@ class AssessmentResponseOverviewSerializer(serializers.ModelSerializer):
     def get_occurrence(self, obj):
         task = obj.assessment_task
         total_tasks = AssessmentTask.objects.filter(
-            plan=task.plan,
-            assessment_task_template=task.assessment_task_template)
+            assessment_template=task.assessment_template
+        )
         obj_occurrence = total_tasks.filter(
             due_datetime__lte=task.due_datetime).count()
         return f'{obj_occurrence} of {total_tasks.count()}'
@@ -1043,7 +1043,9 @@ class AssessmentResultOverviewSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         timestamp = request.GET.get('date', None)
         tasks = AssessmentTask.objects.filter(
-            plan=plan, assessment_task_template=obj)
+            assessment_template__plan=plan,
+            assessment_template__assessment_task_template=obj
+        )
         date_format = "%Y-%m-%d"
         date_object = datetime.datetime.strptime(timestamp, date_format).date() \
             if timestamp else timezone.now().date()

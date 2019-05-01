@@ -327,7 +327,7 @@ care_plan_routes.register(
     r'assessment_results',
     AssessmentResultViewSet,
     base_name='assessment_results',
-    parents_query_lookups=['assessment_tasks__plan'])
+    parents_query_lookups=['plan_assessment_templates__plan'])
 care_plan_routes.register(
     r'symptoms',
     SymptomByPlanViewSet,

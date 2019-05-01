@@ -675,8 +675,8 @@ class AssessmentResponseViewSet(viewsets.ModelViewSet):
     filterset_fields = {
         'assessment_task': ['exact'],
         'assessment_question': ['exact'],
-        'assessment_task__plan__patient': ['exact'],
-        'assessment_task__assessment_task_template__plan_template': ['exact'],
+        'assessment_task__assessment_template__plan__patient': ['exact'],
+        'assessment_task__assessment_template__assessment_task_template__plan_template': ['exact'],
         'modified': ['lte', 'gte'],
         'assessment_task__due_datetime': ['lte', 'gte'],
     }
@@ -689,22 +689,22 @@ class AssessmentResponseViewSet(viewsets.ModelViewSet):
             if employee_profile.organizations_managed.exists():
                 organizations = employee_profile.organizations_managed.all()
                 qs = qs.filter(
-                    assessment_task__plan__patient__facility__organization__in=organizations)
+                    assessment_task__assessment_template__plan__patient__facility__organization__in=organizations)
             elif employee_profile.facilities_managed.exists():
                 facilities = employee_profile.facilities_managed.all()
                 assigned_roles = employee_profile.assigned_roles.all()
                 qs = qs.filter(
-                    Q(assessment_task__plan__patient__facility__in=facilities) |
-                    Q(assessment_task__plan__care_team_members__in=assigned_roles)
+                    Q(assessment_task__assessment_template__plan__patient__facility__in=facilities) |
+                    Q(assessment_task__assessment_template__plan__care_team_members__in=assigned_roles)
                 )
             else:
                 assigned_roles = employee_profile.assigned_roles.all()
                 qs = qs.filter(
-                    assessment_task__plan__care_team_members__in=assigned_roles
+                    assessment_task__assessment_template__plan__care_team_members__in=assigned_roles
                     )
         elif user.is_patient:
             qs = qs.filter(
-                assessment_task__plan__patient=user.patient_profile
+                assessment_task__assessment_template__plan__patient=user.patient_profile
             )
         return qs.distinct()
 
@@ -720,8 +720,8 @@ class AssessmentResponseViewSet(viewsets.ModelViewSet):
             queryset)
 
         query_parameters = self.request.query_params.keys()
-        if 'assessment_task__plan__patient' in query_parameters and \
-           'assessment_task__assessment_task_template__plan_template' in query_parameters and \
+        if 'assessment_task__assessment_template__plan__patient' in query_parameters and \
+           'assessment_task__assessment_template__assessment_task_template__plan_template' in query_parameters and \
            'assessment_task__due_datetime__gte' not in query_parameters and \
            'assessment_task__due_datetime__lte' not in query_parameters:
             today = timezone.now().date()

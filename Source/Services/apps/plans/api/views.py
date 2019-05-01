@@ -1765,10 +1765,10 @@ class AssessmentResultViewSet(ParentViewSetPermissionMixin,
         permissions.IsAuthenticated,
     )
     queryset = AssessmentTaskTemplate.objects.all()
-    parent_field = 'assessment_tasks__plan'
+    parent_field = 'plan_assessment_templates__plan'
     parent_lookup = [
         (
-            'assessment_tasks__plan',
+            'plan_assessment_templates__plan',
             CarePlan,
             CarePlanViewSet
         )
@@ -1790,8 +1790,8 @@ class AssessmentResultViewSet(ParentViewSetPermissionMixin,
                                              tzinfo=pytz.utc)
 
         return queryset.filter(
-            assessment_tasks__due_datetime__range=(date_min, date_max),
-            assessment_tasks__is_complete=True,
+            plan_assessment_templates__assessment_tasks__due_datetime__range=(date_min, date_max),
+            plan_assessment_templates__assessment_tasks__is_complete=True,
         ).distinct()
 
     def get_serializer_context(self):
