@@ -122,3 +122,4 @@ $RECYCLE.BIN/
 foo/*
 **/node_modules
 *.orig
+celerybeat-schedule
