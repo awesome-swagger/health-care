@@ -349,17 +349,19 @@ class TestAssessmentResponseUsingEmployee(TasksMixin, APITestCase):
             employee_profile=employee,
             plan=plan
         )
-        assessment_template = self.create_plan_assessment_template(
-            plan=plan
-        )
 
         for i in range(templates_count):
+            assessment_template = self.create_plan_assessment_template(
+                plan=plan
+            )
             task = self.create_assessment_task(
                 assessment_template=assessment_template,
                 due_datetime=timezone.now()
             )
-            self.create_multiple_assessment_questions(
-                task.assessment_template.assessment_task_template)
+            if not task.assessment_template.assessment_task_template.questions.exists():
+                self.create_multiple_assessment_questions(
+                    task.assessment_template.assessment_task_template)
+
             self.create_responses_to_multiple_questions(
                 task.assessment_template.assessment_task_template,
                 task,
@@ -374,7 +376,7 @@ class TestAssessmentResponseUsingEmployee(TasksMixin, APITestCase):
         response = self.client.get(url)
         self.assertEqual(
             len(response.data['results'][0]['questions']),
-            templates_count
+            5
         )
 
 
