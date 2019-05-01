@@ -696,12 +696,12 @@ class AssessmentTaskTodaySerializer(serializers.ModelSerializer):
         return 'assessment_task'
 
     def get_name(self, obj):
-        return obj.assessment_task_template.name
+        return obj.assessment_template.assessment_task_template.name
 
     def get_occurrence(self, obj):
         total_tasks = AssessmentTask.objects.filter(
-            plan=obj.plan,
-            assessment_task_template=obj.assessment_task_template)
+            assessment_template=obj.assessment_template
+        )
         obj_occurrence = total_tasks.filter(
             due_datetime__lte=obj.due_datetime).count()
         return f'{obj_occurrence} of {total_tasks.count()}'

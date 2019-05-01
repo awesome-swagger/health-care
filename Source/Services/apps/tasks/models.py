@@ -723,8 +723,8 @@ class AssessmentTask(AbstractTask):
 
     def __str__(self):
         return '{} {}\'s assessment report due by {}'.format(
-            self.plan.patient.user.first_name,
-            self.plan.patient.user.first_name,
+            self.assessment_template.plan.patient.user.first_name,
+            self.assessment_template.plan.patient.user.first_name,
             self.due_datetime,
         )
 
