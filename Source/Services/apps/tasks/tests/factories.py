@@ -125,6 +125,7 @@ class AssessmentQuestionFactory(factory.django.DjangoModelFactory):
 
     class Meta:
         model = 'tasks.AssessmentQuestion'
+        django_get_or_create = ('assessment_task_template', )
 
 
 class AssessmentResponseFactory(factory.django.DjangoModelFactory):

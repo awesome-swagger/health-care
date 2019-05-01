@@ -322,7 +322,7 @@ class TasksMixin(PlansMixin):
 
         if assessment_question is None:
             assessment_question = self.create_assessment_question(
-                assessment_task.assessment_task_template
+                assessment_task.assessment_template.assessment_task_template
             )
 
         if 'rating' not in kwargs:

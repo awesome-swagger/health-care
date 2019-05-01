@@ -29,11 +29,15 @@ class TestAssessmentResponse(TasksMixin, APITestCase):
 
         patient = self.create_patient(facility=self.facility)
         self.plan = self.create_care_plan(patient)
+        self.template = self.create_assessment_task_template()
+        self.assessment_template = self.create_plan_assessment_template(
+            plan=self.plan,
+            assessment_task_template=self.template
+        )
         self.assessment_task = self.create_assessment_task(**{
-            'plan': self.plan,
+            'assessment_template': self.assessment_template,
             'due_datetime': timezone.now()
         })
-        self.template = self.assessment_task.assessment_task_template
         self.create_multiple_assessment_questions(self.template)
         self.create_responses_to_multiple_questions(
             self.template,
@@ -67,9 +71,12 @@ class TestAssessmentResponse(TasksMixin, APITestCase):
         # create dummy assessment responses
         other_patient = self.create_patient()
         other_plan = self.create_care_plan(other_patient)
+        assessment_template = self.create_plan_assessment_template(
+            plan=other_plan,
+            assessment_task_template=self.template
+        )
         assessment_task = self.create_assessment_task(**{
-            'plan': other_plan,
-            'assessment_task_template': self.template
+            'assessment_template': assessment_template,
         })
         self.create_responses_to_multiple_questions(
             self.template,
@@ -78,8 +85,8 @@ class TestAssessmentResponse(TasksMixin, APITestCase):
         )
 
         query_params = urllib.parse.urlencode({
-            'assessment_task__plan__patient': patient.id,
-            'assessment_task__assessment_task_template__plan_template': plan_template.id
+            'assessment_task__assessment_template__plan__patient': patient.id,
+            'assessment_task__assessment_template__assessment_task_template__plan_template': plan_template.id
         })
         filter_url = f'{self.url}?{query_params}'
         response = self.client.get(filter_url)
@@ -100,9 +107,12 @@ class TestAssessmentResponse(TasksMixin, APITestCase):
         # create dummy assessment responses
         other_patient = self.create_patient()
         other_plan = self.create_care_plan(other_patient)
+        assessment_template = self.create_plan_assessment_template(
+            plan=other_plan,
+            assessment_task_template=self.template
+        )
         assessment_task = self.create_assessment_task(**{
-            'plan': other_plan,
-            'assessment_task_template': self.template
+            'assessment_template': assessment_template,
         })
         self.create_responses_to_multiple_questions(
             self.template,
@@ -140,11 +150,14 @@ class TestAssessmentResponseUsingEmployee(TasksMixin, APITestCase):
             'employee_profile': self.employee,
             'plan': self.plan
         })
+        self.assessment_template = self.create_plan_assessment_template(
+            plan=self.plan
+        )
         self.assessment_task = self.create_assessment_task(**{
-            'plan': self.plan,
+            'assessment_template': self.assessment_template,
             'due_datetime': timezone.now()
         })
-        self.template = self.assessment_task.assessment_task_template
+        self.template = self.assessment_template.assessment_task_template
         self.create_multiple_assessment_questions(self.template)
         self.create_responses_to_multiple_questions(
             self.template,
@@ -288,25 +301,35 @@ class TestAssessmentResponseUsingEmployee(TasksMixin, APITestCase):
         )
 
         for i in range(templates_count):
+            assessment_template = self.create_plan_assessment_template(
+                plan=plan
+            )
             task = self.create_assessment_task(
-                plan=plan, due_datetime=timezone.now())
+                assessment_template=assessment_template,
+                due_datetime=timezone.now()
+            )
             self.create_multiple_assessment_questions(
-                task.assessment_task_template)
+                task.assessment_template.assessment_task_template)
             self.create_responses_to_multiple_questions(
-                task.assessment_task_template,
+                task.assessment_template.assessment_task_template,
                 task,
-                task.assessment_task_template.questions.all()
+                task.assessment_template.assessment_task_template.questions.all()
             )
 
         # Create dummy template
-        dummy_task = self.create_assessment_task(plan=plan)
+        dummy_template = self.create_plan_assessment_template(
+            plan=plan
+        )
+        dummy_task = self.create_assessment_task(
+            assessment_template=dummy_template
+        )
         self.create_multiple_assessment_questions(
-            dummy_task.assessment_task_template)
+            dummy_task.assessment_template.assessment_task_template)
 
         url = reverse(
             'assessment_results-list',
             kwargs={
-                'parent_lookup_assessment_tasks__plan': plan.id
+                'parent_lookup_plan_assessment_templates__plan': plan.id
             })
         response = self.client.get(url)
         self.assertEqual(response.data['count'], templates_count)
@@ -326,25 +349,33 @@ class TestAssessmentResponseUsingEmployee(TasksMixin, APITestCase):
             employee_profile=employee,
             plan=plan
         )
+        assessment_template = self.create_plan_assessment_template(
+            plan=plan
+        )
 
         for i in range(templates_count):
             task = self.create_assessment_task(
-                plan=plan, due_datetime=timezone.now())
+                assessment_template=assessment_template,
+                due_datetime=timezone.now()
+            )
             self.create_multiple_assessment_questions(
-                task.assessment_task_template)
+                task.assessment_template.assessment_task_template)
             self.create_responses_to_multiple_questions(
-                task.assessment_task_template,
+                task.assessment_template.assessment_task_template,
                 task,
-                task.assessment_task_template.questions.all()
+                task.assessment_template.assessment_task_template.questions.all()
             )
 
         url = reverse(
             'assessment_results-list',
             kwargs={
-                'parent_lookup_assessment_tasks__plan': plan.id
+                'parent_lookup_plan_assessment_templates__plan': plan.id
             })
         response = self.client.get(url)
-        self.assertEqual(len(response.data['results'][0]['questions']), 5)
+        self.assertEqual(
+            len(response.data['results'][0]['questions']),
+            templates_count
+        )
 
 
 class TestAssessmentResponseUsingPatient(TasksMixin, APITestCase):
@@ -359,10 +390,14 @@ class TestAssessmentResponseUsingPatient(TasksMixin, APITestCase):
         self.user = self.patient.user
 
         self.plan = self.create_care_plan(patient=self.patient)
+        self.template = self.create_assessment_task_template()
+        self.assessment_template = self.create_plan_assessment_template(
+            plan=self.plan,
+            assessment_task_template=self.template
+        )
         self.assessment_task = self.create_assessment_task(**{
-            'plan': self.plan
+            'assessment_template': self.assessment_template
         })
-        self.template = self.assessment_task.assessment_task_template
         self.create_multiple_assessment_questions(self.template)
         self.create_responses_to_multiple_questions(
             self.template,
