@@ -416,7 +416,7 @@
         </div>
         <app-popover [visible]="showDate" (visibleChange)="showDate = $event">
           <app-date-picker
-            class="datepicker__picker datepicker__picker--top"
+            class="datepicker__picker datepicker__picker--top isOpen"
             [selected]="planStartDate"
             (selectedChange)="planStartDate = $event"
           ></app-date-picker>
