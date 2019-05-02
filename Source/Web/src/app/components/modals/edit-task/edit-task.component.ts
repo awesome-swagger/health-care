@@ -148,24 +148,31 @@ export class EditTaskComponent implements OnInit {
       return;
     }
     let id = null;
-    if (!this.isAdhoc) {
-      this.task.name = this.nameForm.value['name'];
+    if (this.task.id) {
       id = this.task.id;
-    } else {
-      this.getRelatedModel().name = this.nameForm.value['name'];
+    } else if (this.getRelatedModel() && this.getRelatedModel().id) {
       id = this.getRelatedModel().id;
     }
-    let updateSub = this.getTaskType().dataModel.update(id, {
-      name: this.nameForm.value['name'],
-    }, true).subscribe(
-      (task) => {
-        this.editName = false;
-      },
-      (err) => {},
-      () => {
-        updateSub.unsubscribe();
-      }
-    );
+    if (!this.isAdhoc) {
+      this.task.name = this.nameForm.value['name'];
+    } else {
+      this.getRelatedModel().name = this.nameForm.value['name'];
+    }
+    if (id) {
+      let updateSub = this.getTaskType().dataModel.update(id, {
+        name: this.nameForm.value['name'],
+      }, true).subscribe(
+        (task) => {
+          this.editName = false;
+        },
+        (err) => {},
+        () => {
+          updateSub.unsubscribe();
+        }
+      );
+    } else {
+      this.editName = false;
+    }
   }
 
   public initForm(task) {
