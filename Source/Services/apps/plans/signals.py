@@ -91,6 +91,35 @@ def create_goals_for_new_care_plan(instance):
         )
 
 
+def create_goals_for_existing_care_plans(instance):
+    """
+    Creates a :model:`plans.Goal` for each :model:`plans.CarePlan` from the
+    :model:`plans.GoalTemplate`
+    """
+    Goal = apps.get_model('plans.Goal')
+    plan_template = instance.plan_template
+    plans = plan_template.care_plans.all()
+    for plan in plans:
+        start_on_datetime = plan.created + timedelta(days=instance.start_on_day)
+        Goal.objects.create(
+            plan=plan,
+            goal_template=instance,
+            start_on_datetime=start_on_datetime,
+        )
+
+
+def update_goals_for_existing_care_plans(instance):
+    """
+    Updates all :model:`plans.Goal`s belonging to the :model:`plans.GoalTemplate`.
+    """
+    Goal = apps.get_model('plans.Goal')
+    goals = instance.goals.all()
+    for goal in goals:
+        start_on_datetime = goal.plan.created + timedelta(days=instance.start_on_day)
+        goal.start_on_datetime = start_on_datetime
+        goal.save()
+
+
 def create_tasks_for_new_care_plan(instance):
     """
     Creates the following task instances whenever a :model:`plans.CarePlan`
@@ -158,3 +187,14 @@ def careteammember_post_save(sender, instance, created, **kwargs):
             EmployeeRole.objects.update_or_create(employee=instance.employee_profile,
                                                   facility=instance.plan.patient.facility,
                                                   defaults={ 'role': instance.role })
+
+
+def goaltemplate_post_save(sender, instance, created, **kwargs):
+    """
+    Function to be used as signal (post_save) when saving
+    :model:`plans.GoalTemplate`
+    """
+    if created:
+        create_goals_for_existing_care_plans(instance)
+    else:
+        update_goals_for_existing_care_plans(instance)

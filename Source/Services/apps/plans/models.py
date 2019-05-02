@@ -17,6 +17,7 @@ from .signals import (
     careplan_post_save,
     teammessage_post_save,
     careteammember_post_save,
+    goaltemplate_post_save,
 )
 
 
@@ -406,4 +407,8 @@ models.signals.post_save.connect(
 models.signals.post_save.connect(
     careteammember_post_save,
     sender=CareTeamMember
+)
+models.signals.post_save.connect(
+    goaltemplate_post_save,
+    sender=GoalTemplate,
 )
