@@ -669,7 +669,7 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
         data: {
           patient: this.patient,
           carePlan: this.carePlan,
-          teamTaskId: taskObj.team_task_template,
+          teamTaskId: taskObj.team_template.team_task_template.id,
           taskEditable: false,
           totalMinutes: null,
           with: null,
