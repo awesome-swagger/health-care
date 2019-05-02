@@ -127,8 +127,8 @@
           </thead>
           <tbody>
             <tr *ngFor="let task of planTeamManagerTasks">
-              <td class="taskName left">{{task.name}}</td>
-              <td>{{task.category | titlecase}}</td>
+              <td class="taskName left">{{task.team_task_template.name}}</td>
+              <td>{{task.team_task_template.category | titlecase}}</td>
               <td>{{task.start_on_day}}</td>
               <td class="left">{{task.frequency | frequencyTransform | titlecase}}</td>
               <td class="left">{{task.repeat_amount != -1 ? task.repeat_amount + ' times' :'Until Plan Ends'}}</td>
@@ -196,10 +196,10 @@
           </thead>
           <tbody>
             <tr *ngFor="let task of planTeamMemberTasks">
-              <td class="taskName left">{{task.name}}</td>
+              <td class="taskName left">{{task.team_task_template.name}}</td>
               <td class="left">
-                <span *ngIf="task.roles && task.roles.length > 0">{{formatSelectedRoles(task)}}</span>
-                <span *ngIf="!task.roles || task.roles.length < 1">Not Set</span>
+                <span *ngIf="task.team_task_template.roles && task.team_task_template.roles.length > 0">{{formatSelectedRoles(task)}}</span>
+                <span *ngIf="!task.team_task_template.roles || task.team_task_template.roles.length < 1">Not Set</span>
               </td>
               <td>{{task.start_on_day}}</td>
               <td class="left">{{task.frequency | frequencyTransform | titlecase}}</td>

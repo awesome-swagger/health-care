@@ -92,9 +92,10 @@ export class AddCTTaskComponent implements OnInit {
       }).subscribe(
         (tasks) => {
           this.tasks = tasks;
-          if (this.getTaskType().type === 'manager') {
+          let type = this.getTaskType().type;
+          if (type === 'manager' || type === 'plan-manager') {
             this.tasks = this.tasks.filter((obj) => obj.is_manager_task);
-          } else if (this.getTaskType().type === 'team') {
+          } else if (this.getTaskType().type === 'team' || type === 'plan-team') {
             this.tasks = this.tasks.filter((obj) => !obj.is_manager_task);
           }
           this.tasksShown = _uniqBy(this.tasks, (obj) => this.getTaskName(obj));
@@ -240,6 +241,9 @@ export class AddCTTaskComponent implements OnInit {
       if (this.getTaskType().type === 'team' || this.getTaskType().type === 'manager') {
         task['category'] = 'interaction';
       }
+      if (this.getTaskType().type === 'team') {
+        task['roles'] = [];
+      }
       if (this.getTaskType().type === 'manager') {
         task['is_manager_task'] = true;
       }
@@ -255,6 +259,15 @@ export class AddCTTaskComponent implements OnInit {
         custom_name: taskName,
         plan: this.data.planId,
       };
+      if (this.getTaskType().type === 'plan-team' || this.getTaskType().type === 'plan-manager') {
+        task['category'] = 'interaction';
+      }
+      if (this.getTaskType().type === 'plan-team') {
+        task['roles'] = [];
+      }
+      if (this.getTaskType().type === 'plan-manager') {
+        task['is_manager_task'] = true;
+      }
       this.createTask = false;
       this.modal.close(task);
     }
@@ -285,6 +298,9 @@ export class AddCTTaskComponent implements OnInit {
     }
     if (this.getTaskType().type === 'manager') {
       newTask['is_manager_task'] = true;
+    }
+    if (this.getTaskType().type === 'team') {
+      newTask['roles'] = [];
     }
     this.createTask = false;
     this.modal.close(newTask);
