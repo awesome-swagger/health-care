@@ -808,6 +808,33 @@ class VitalTaskTemplate(AbstractTaskTemplate):
         return self.name
 
 
+class CarePlanVitalTemplate(AbstractPlanTaskTemplate):
+    """
+    This stores the connection between a patient's plan and
+    vital task template.
+
+    This is the solution for implementing ad hoc tasks
+    """
+
+    plan = models.ForeignKey(
+        'plans.CarePlan',
+        related_name='plan_vital_templates',
+        on_delete=models.CASCADE)
+    vital_task_template = models.ForeignKey(
+        'tasks.VitalTaskTemplate',
+        related_name='plan_vital_templates',
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True)
+
+    class Meta:
+        verbose_name = _('Care Plan Vital Template')
+        verbose_name = _('Care Plan Vital Templates')
+
+    def __str__(self):
+        return f'{self.plan}: {self.vital_task_template}'
+
+
 class VitalTask(AbstractTask):
     """
     Stores information about a vital task for a specific care plan.
