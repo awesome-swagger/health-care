@@ -820,12 +820,12 @@ class VitalTaskTodaySerializer(serializers.ModelSerializer):
         return 'vital_task'
 
     def get_name(self, obj):
-        return obj.vital_task_template.name
+        return obj.vital_template.vital_task_template.name
 
     def get_occurrence(self, obj):
         total_tasks = VitalTask.objects.filter(
-            plan=obj.plan,
-            vital_task_template=obj.vital_task_template)
+            vital_template=obj.vital_template
+        )
         obj_occurrence = total_tasks.filter(
             due_datetime__lte=obj.due_datetime).count()
         return f'{obj_occurrence} of {total_tasks.count()}'
@@ -1183,8 +1183,8 @@ class VitalResponseOverviewSerializer(serializers.ModelSerializer):
     def get_occurrence(self, obj):
         task = obj.vital_task
         total_tasks = VitalTask.objects.filter(
-            plan=task.plan,
-            vital_task_template=task.vital_task_template)
+            vital_template=task.vital_template
+        )
         obj_occurrence = total_tasks.filter(
             due_datetime__lte=task.due_datetime).count()
         return f'{obj_occurrence} of {total_tasks.count()}'
@@ -1210,7 +1210,9 @@ class VitalByPlanSerializer(serializers.ModelSerializer):
         plan = self.context.get('plan')
         date_range = self.context.get('date_range')
         tasks = VitalTask.objects.filter(
-            plan=plan, vital_task_template=obj)
+            vital_template__plan=plan,
+            vital_template__vital_task_template=obj
+        )
 
         kwargs = {
             'vital_task__in': tasks,

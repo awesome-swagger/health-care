@@ -1040,8 +1040,8 @@ class VitalResponseViewSet(viewsets.ModelViewSet):
     queryset = VitalResponse.objects.all()
     filter_backends = (DjangoFilterBackend, )
     filterset_fields = {
-        'vital_task__plan__patient': ['exact'],
-        'vital_task__vital_task_template__plan_template': ['exact'],
+        'vital_task__vital_template__plan__patient': ['exact'],
+        'vital_task__vital_template__vital_task_template__plan_template': ['exact'],
         'vital_task__due_datetime': ['lte', 'gte']
     }
 
@@ -1054,20 +1054,20 @@ class VitalResponseViewSet(viewsets.ModelViewSet):
             if employee_profile.organizations_managed.exists():
                 organizations = employee_profile.organizations_managed.all()
                 qs = qs.filter(
-                    vital_task__plan__patient__facility__organization__in=organizations)
+                    vital_task__vital_template__plan__patient__facility__organization__in=organizations)
             elif employee_profile.facilities_managed.exists():
                 facilities = employee_profile.facilities_managed.all()
                 assigned_roles = employee_profile.assigned_roles.all()
                 qs = qs.filter(
-                    Q(vital_task__plan__patient__facility__in=facilities) |
-                    Q(vital_task__plan__care_team_members__in=assigned_roles)
+                    Q(vital_task__vital_template__plan__patient__facility__in=facilities) |
+                    Q(vital_task__vital_template__plan__care_team_members__in=assigned_roles)
                 )
             else:
                 assigned_roles = employee_profile.assigned_roles.all()
-                qs = qs.filter(vital_task__plan__care_team_members__in=assigned_roles)
+                qs = qs.filter(vital_task__vital_template__plan__care_team_members__in=assigned_roles)
         elif user.is_patient:
             qs = qs.filter(
-                vital_task__plan__patient=user.patient_profile
+                vital_task__vital_template__plan__patient=user.patient_profile
             )
         return qs.distinct()
 
@@ -1083,8 +1083,8 @@ class VitalResponseViewSet(viewsets.ModelViewSet):
             queryset)
 
         query_parameters = self.request.query_params.keys()
-        if 'vital_task__plan__patient' in query_parameters and \
-           'vital_task__vital_task_template__plan_template' in query_parameters and \
+        if 'vital_task__vital_template__plan__patient' in query_parameters and \
+           'vital_task__vital_template__vital_task_template__plan_template' in query_parameters and \
            'vital_task__due_datetime__gte' not in query_parameters and \
            'vital_task__due_datetime__lte' not in query_parameters:
             today = timezone.now().date()

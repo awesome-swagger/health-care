@@ -1912,10 +1912,10 @@ class VitalByPlanViewSet(ParentViewSetPermissionMixin,
         permissions.IsAuthenticated,
     )
     queryset = VitalTaskTemplate.objects.all()
-    parent_field = 'vital_tasks__plan'
+    parent_field = 'plan_vital_templates__plan'
     parent_lookup = [
         (
-            'vital_tasks__plan',
+            'plan_vital_templates__plan',
             CarePlan,
             CarePlanViewSet
         )
@@ -1941,8 +1941,8 @@ class VitalByPlanViewSet(ParentViewSetPermissionMixin,
         date_range = self._get_date_range_filter()
 
         return queryset.filter(
-            vital_tasks__due_datetime__range=date_range,
-            vital_tasks__is_complete=True,
+            plan_vital_templates__vital_tasks__due_datetime__range=date_range,
+            plan_vital_templates__vital_tasks__is_complete=True,
         ).distinct()
 
     def get_serializer_context(self):
