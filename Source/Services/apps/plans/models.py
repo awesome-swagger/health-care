@@ -1,5 +1,6 @@
 import datetime
 
+from django.apps import apps
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import Sum
@@ -120,6 +121,13 @@ class CarePlan(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
             self.patient.user.first_name,
             self.patient.user.last_name,
             self.plan_template.name)
+
+    @property
+    def assessment_tasks(self):
+        AssessmentTask = apps.get_model('tasks', 'AssessmentTask')
+        return AssessmentTask.objects.filter(
+            assessment_template__plan=self
+        )
 
     @property
     def total_time_spent(self):

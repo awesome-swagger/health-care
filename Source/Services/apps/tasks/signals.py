@@ -17,8 +17,8 @@ class RiskLevelAssignment(object):
     def calculate_average_outcome(self):
         AssessmentTask = apps.get_model('tasks', 'AssessmentTask')
         tasks = AssessmentTask.objects.filter(
-            plan__patient=self.patient,
-            assessment_task_template__tracks_outcome=True
+            assessment_template__plan__patient=self.patient,
+            assessment_template__assessment_task_template__tracks_outcome=True
         ).aggregate(average=Avg('responses__rating'))
         average = tasks['average'] or 0
         avg = round((average / 5) * 100)
@@ -47,11 +47,15 @@ class RiskLevelAssignment(object):
             'medication_task_template__plan__patient': self.patient,
             'due_datetime__lte': now
         }
+        assessment_kwargs = {
+            'assessment_template__plan__patient': self.patient,
+            'due_datetime__lte': now
+        }
 
         patient_tasks = PatientTask.objects.filter(**patient_kwargs)
         medication_tasks = MedicationTask.objects.filter(**medication_kwargs)
         symptom_tasks = SymptomTask.objects.filter(**symptom_kwargs)
-        assessment_tasks = AssessmentTask.objects.filter(**task_kwargs)
+        assessment_tasks = AssessmentTask.objects.filter(**assessment_kwargs)
         vital_tasks = VitalTask.objects.filter(**task_kwargs)
 
         total_patient_tasks = patient_tasks.count()
@@ -105,7 +109,8 @@ def assign_is_complete_to_assessment_task(instance):
     corresponding response.
     """
     task = instance.assessment_task
-    questions = task.assessment_task_template.questions.values_list(
+    assessment_template = task.assessment_template
+    questions = assessment_template.assessment_task_template.questions.values_list(
         'id', flat=True).distinct()
     responses = task.responses.values_list(
         'assessment_question', flat=True).distinct()
@@ -187,6 +192,7 @@ def create_tasks_for_ongoing_plans(task_template,
     else:
         plan_template = task_template.plan_template
         field_lookup = {
+            'AssessmentTask': 'assessment',
             'PatientTask': 'patient',
             'SymptomTask': 'symptom',
             'TeamTask': 'team'
@@ -219,6 +225,7 @@ def create_tasks_for_ongoing_plans(task_template,
                     duration_weeks -= round(days_past.days / 7)
 
                     model_lookup = {
+                        'AssessmentTask': 'CarePlanAssessmentTemplate',
                         'PatientTask': 'CarePlanPatientTemplate',
                         'SymptomTask': 'CarePlanSymptomTemplate',
                         'TeamTask': 'CarePlanTeamTemplate',
@@ -267,7 +274,7 @@ def assessmentresponse_post_save(sender, instance, created, **kwargs):
     if created:
         assign_is_complete_to_assessment_task(instance)
 
-        patient = instance.assessment_task.plan.patient
+        patient = instance.assessment_task.assessment_template.plan.patient
         assignment = RiskLevelAssignment(patient)
         assignment.assign_risk_level_to_patient()
 
@@ -339,7 +346,7 @@ def assessmentresponse_post_delete(sender, instance, **kwargs):
         task.is_complete = False
         task.save(update_fields=['is_complete'])
 
-        patient = instance.assessment_task.plan.patient
+        patient = instance.assessment_task.assessment_template.plan.patient
         assignment = RiskLevelAssignment(patient)
         assignment.assign_risk_level_to_patient()
 
@@ -671,7 +678,7 @@ def assessmenttask_post_save(sender, instance, created, **kwargs):
     :model:`tasks.AssessmentTask`
     """
     if created:
-        patient = instance.plan.patient
+        patient = instance.assessment_template.plan.patient
         assignment = RiskLevelAssignment(patient)
         assignment.assign_risk_level_to_patient()
 
@@ -731,7 +738,7 @@ def assessmenttask_post_delete(sender, instance, **kwargs):
     Function to be used as signal (post_delete) when deleting
     :model:`tasks.AssessmentTask`
     """
-    patient = instance.plan.patient
+    patient = instance.assessment_template.plan.patient
     assignment = RiskLevelAssignment(patient)
     assignment.assign_risk_level_to_patient()
 
