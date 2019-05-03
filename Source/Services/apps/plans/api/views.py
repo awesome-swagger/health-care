@@ -373,8 +373,8 @@ class CarePlanViewSet(viewsets.ModelViewSet):
 
     def calculate_average_satisfaction(self, queryset):
         tasks = AssessmentTask.objects.filter(
-            plan__in=queryset,
-            assessment_task_template__tracks_satisfaction=True
+            assessment_template__plan__in=queryset,
+            assessment_template__assessment_task_template__tracks_satisfaction=True
         ).aggregate(average=Avg('responses__rating'))
         average = tasks['average'] or 0
         avg = round((average / 5) * 100)
@@ -382,8 +382,8 @@ class CarePlanViewSet(viewsets.ModelViewSet):
 
     def calculate_average_outcome(self, queryset):
         tasks = AssessmentTask.objects.filter(
-            plan__in=queryset,
-            assessment_task_template__tracks_outcome=True
+            assessment_template__plan__in=queryset,
+            assessment_template__assessment_task_template__tracks_outcome=True
         ).aggregate(average=Avg('responses__rating'))
         average = tasks['average'] or 0
         avg = round((average / 5) * 100)
@@ -401,7 +401,7 @@ class CarePlanViewSet(viewsets.ModelViewSet):
             symptom_template__plan__in=queryset,
             due_datetime__lte=now)
         assessment_tasks = AssessmentTask.objects.filter(
-            plan__in=queryset,
+            assessment_template__plan__in=queryset,
             due_datetime__lte=now)
         vital_tasks = VitalTask.objects.filter(
             plan__in=queryset,

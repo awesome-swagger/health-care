@@ -13,6 +13,7 @@ from apps.tasks.models import (
     SymptomTask,
     SymptomRating,
     AssessmentTaskTemplate,
+    CarePlanAssessmentTemplate,
     AssessmentQuestion,
     AssessmentTask,
     AssessmentResponse,
@@ -119,6 +120,10 @@ class AssessmentTaskTemplateAdmin(admin.ModelAdmin):
         'appear_time', 'due_time', 'tracks_outcome', 'tracks_satisfaction', 'is_active', 'is_available',  )
 
 
+class CarePlanAssessmentTemplateAdmin(admin.ModelAdmin):
+    list_display = ('plan', 'assessment_task_template', )
+
+
 class AssessmentResponseInline(admin.TabularInline):
     model = AssessmentResponse
 
@@ -173,6 +178,7 @@ admin.site.register(SymptomTaskTemplate, SymptomTaskTemplateAdmin)
 admin.site.register(CarePlanSymptomTemplate, CarePlanSymptomTemplateAdmin)
 admin.site.register(SymptomTask, SymptomTaskAdmin)
 admin.site.register(AssessmentTaskTemplate, AssessmentTaskTemplateAdmin)
+admin.site.register(CarePlanAssessmentTemplate, CarePlanAssessmentTemplateAdmin)
 admin.site.register(AssessmentTask, AssessmentTaskAdmin)
 admin.site.register(VitalTaskTemplate, VitalTaskTemplateAdmin)
 admin.site.register(VitalTask, VitalTaskAdmin)

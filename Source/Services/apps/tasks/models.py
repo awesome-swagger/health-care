@@ -747,7 +747,7 @@ class AssessmentResponse(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
 
     def __str__(self):
         return '{}: {} (rated: {})'.format(
-            self.assessment_task.assessment_task_template.name,
+            self.assessment_task.assessment_template.assessment_task_template.name,
             self.assessment_question.prompt,
             self.rating,
         )
