@@ -839,6 +839,12 @@ class VitalTask(AbstractTask):
     """
     Stores information about a vital task for a specific care plan.
     """
+    vital_template = models.ForeignKey(
+        'tasks.CarePlanVitalTemplate',
+        on_delete=models.CASCADE,
+        related_name='vital_tasks',
+        blank=True,
+        null=True)
     plan = models.ForeignKey(
         CarePlan,
         related_name='vital_tasks',
