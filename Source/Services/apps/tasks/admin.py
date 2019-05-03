@@ -162,8 +162,7 @@ class VitalTaskAdmin(admin.ModelAdmin):
         VitalResponseInline,
     ]
     list_display = (
-        'plan', 'vital_task_template', 'appear_datetime',
-        'due_datetime', 'is_complete', )
+        'vital_template', 'appear_datetime', 'due_datetime', 'is_complete', )
 
 
 admin.site.register(PatientTaskTemplate, PatientTaskTemplateAdmin)

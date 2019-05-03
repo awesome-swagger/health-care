@@ -843,16 +843,6 @@ class VitalTask(AbstractTask):
         'tasks.CarePlanVitalTemplate',
         on_delete=models.CASCADE,
         related_name='vital_tasks')
-    plan = models.ForeignKey(
-        CarePlan,
-        related_name='vital_tasks',
-        on_delete=models.CASCADE
-    )
-    vital_task_template = models.ForeignKey(
-        VitalTaskTemplate,
-        related_name='vital_tasks',
-        on_delete=models.CASCADE
-    )
     is_complete = models.BooleanField(
         default=False,
         editable=False,
@@ -865,7 +855,7 @@ class VitalTask(AbstractTask):
         ordering = ('appear_datetime', )
 
     def __str__(self):
-        return f"{self.plan.patient.user.get_full_name()}'s vital " + \
+        return f"{self.vital_template.plan.patient.user.get_full_name()}'s vital " + \
             f"report due by {self.due_datetime}"
 
 
