@@ -842,9 +842,7 @@ class VitalTask(AbstractTask):
     vital_template = models.ForeignKey(
         'tasks.CarePlanVitalTemplate',
         on_delete=models.CASCADE,
-        related_name='vital_tasks',
-        blank=True,
-        null=True)
+        related_name='vital_tasks')
     plan = models.ForeignKey(
         CarePlan,
         related_name='vital_tasks',
