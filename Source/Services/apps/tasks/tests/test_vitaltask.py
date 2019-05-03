@@ -19,8 +19,8 @@ class TestVitalTask(TasksMixin, APITestCase):
         self.fake = Faker()
         self.user = AdminUserFactory()
         self.vital_task = self.create_vital_task()
-        self.plan = self.vital_task.plan
-        self.template = self.vital_task.vital_task_template
+        self.plan = self.vital_task.vital_template.plan
+        self.template = self.vital_task.vital_template.vital_task_template
         self.url = reverse('vital_tasks-list')
         self.detail_url = reverse(
             'vital_tasks-detail',
@@ -85,10 +85,14 @@ class TestVitalTaskUsingEmployee(TasksMixin, APITestCase):
             'employee_profile': self.employee,
             'plan': self.plan
         })
+        self.template = self.create_vital_task_template()
+        self.vital_template = self.create_plan_vital_template(
+            plan=self.plan,
+            vital_task_template=self.template
+        )
         self.vital_task = self.create_vital_task(**{
-            'plan': self.plan
+            'vital_template': self.vital_template
         })
-        self.template = self.vital_task.vital_task_template
         self.url = reverse('vital_tasks-list')
         self.detail_url = reverse(
             'vital_tasks-detail',
@@ -107,7 +111,7 @@ class TestVitalTaskUsingEmployee(TasksMixin, APITestCase):
     def test_get_vital_task_detail_with_template_detail(self):
         response = self.client.get(self.detail_url)
         self.assertEqual(
-            response.data['vital_task_template']['name'],
+            response.data['vital_template']['vital_task_template']['name'],
             self.template.name
         )
 
@@ -141,7 +145,9 @@ class TestVitalTaskUsingEmployee(TasksMixin, APITestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_create_vital_task(self):
-        template = self.create_vital_task_template()
+        vital_template = self.create_plan_vital_template(
+            plan=self.plan
+        )
 
         appear_datetime = pytz.utc.localize(
             self.fake.future_datetime(end_date="+5d")
@@ -152,8 +158,7 @@ class TestVitalTaskUsingEmployee(TasksMixin, APITestCase):
         )
 
         payload = {
-            'plan': self.plan.id,
-            'vital_task_template': template.id,
+            'vital_template': vital_template.id,
             'appear_datetime': appear_datetime,
             'due_datetime': due_datetime,
         }
@@ -161,7 +166,9 @@ class TestVitalTaskUsingEmployee(TasksMixin, APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_full_update_vital_task(self):
-        template = self.create_vital_task_template()
+        vital_template = self.create_plan_vital_template(
+            plan=self.plan
+        )
 
         appear_datetime = pytz.utc.localize(
             self.fake.future_datetime(end_date="+5d")
@@ -171,8 +178,7 @@ class TestVitalTaskUsingEmployee(TasksMixin, APITestCase):
             self.fake.future_datetime(end_date="+30d")
         )
         payload = {
-            'plan': self.plan.id,
-            'vital_task_template': template.id,
+            'vital_template': vital_template.id,
             'appear_datetime': appear_datetime,
             'due_datetime': due_datetime,
         }
@@ -180,7 +186,9 @@ class TestVitalTaskUsingEmployee(TasksMixin, APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_full_update_vital_task_not_member(self):
-        template = self.create_vital_task_template()
+        vital_template = self.create_plan_vital_template(
+            plan=self.plan
+        )
 
         appear_datetime = pytz.utc.localize(
             self.fake.future_datetime(end_date="+5d")
@@ -190,8 +198,7 @@ class TestVitalTaskUsingEmployee(TasksMixin, APITestCase):
             self.fake.future_datetime(end_date="+30d")
         )
         payload = {
-            'plan': self.plan.id,
-            'vital_task_template': template.id,
+            'vital_template': vital_template.id,
             'appear_datetime': appear_datetime,
             'due_datetime': due_datetime,
         }
@@ -311,8 +318,11 @@ class TestVitalTaskUsingPatient(TasksMixin, APITestCase):
         self.user = self.patient.user
 
         self.plan = self.create_care_plan(patient=self.patient)
+        self.vital_template = self.create_plan_vital_template(
+            plan=self.plan
+        )
         self.vital_task = self.create_vital_task(**{
-            'plan': self.plan
+            'vital_template': self.vital_template
         })
         self.url = reverse('vital_tasks-list')
         self.detail_url = reverse(
@@ -341,7 +351,9 @@ class TestVitalTaskUsingPatient(TasksMixin, APITestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_create_vital_task(self):
-        template = self.create_vital_task_template()
+        vital_template = self.create_plan_vital_template(
+            plan=self.plan
+        )
 
         appear_datetime = pytz.utc.localize(
             self.fake.future_datetime(end_date="+5d")
@@ -352,8 +364,7 @@ class TestVitalTaskUsingPatient(TasksMixin, APITestCase):
         )
 
         payload = {
-            'plan': self.plan.id,
-            'vital_task_template': template.id,
+            'vital_template': vital_template.id,
             'appear_datetime': appear_datetime,
             'due_datetime': due_datetime,
             'comments': self.fake.sentence(nb_words=10),
@@ -362,7 +373,9 @@ class TestVitalTaskUsingPatient(TasksMixin, APITestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_full_update_vital_task(self):
-        template = self.create_vital_task_template()
+        vital_template = self.create_plan_vital_template(
+            plan=self.plan
+        )
 
         appear_datetime = pytz.utc.localize(
             self.fake.future_datetime(end_date="+5d")
@@ -372,8 +385,7 @@ class TestVitalTaskUsingPatient(TasksMixin, APITestCase):
             self.fake.future_datetime(end_date="+30d")
         )
         payload = {
-            'plan': self.plan.id,
-            'vital_task_template': template.id,
+            'vital_template': vital_template.id,
             'appear_datetime': appear_datetime,
             'due_datetime': due_datetime,
             'comments': self.fake.sentence(nb_words=10),
@@ -382,7 +394,9 @@ class TestVitalTaskUsingPatient(TasksMixin, APITestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_full_update_vital_task_not_owner(self):
-        template = self.create_vital_task_template()
+        vital_template = self.create_plan_vital_template(
+            plan=self.plan
+        )
 
         appear_datetime = pytz.utc.localize(
             self.fake.future_datetime(end_date="+5d")
@@ -392,8 +406,7 @@ class TestVitalTaskUsingPatient(TasksMixin, APITestCase):
             self.fake.future_datetime(end_date="+30d")
         )
         payload = {
-            'plan': self.plan.id,
-            'vital_task_template': template.id,
+            'vital_template': vital_template.id,
             'appear_datetime': appear_datetime,
             'due_datetime': due_datetime,
             'comments': self.fake.sentence(nb_words=10),
