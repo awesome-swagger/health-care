@@ -66,6 +66,7 @@ from apps.plans.api.views import (
     VitalByPlanViewSet,
 )
 from apps.tasks.api.views import (
+    CarePlanAssessmentTemplateViewSet,
     CarePlanPatientTemplateViewSet,
     CarePlanSymptomTemplateViewSet,
     CarePlanTeamTemplateViewSet,
@@ -327,7 +328,7 @@ care_plan_routes.register(
     r'assessment_results',
     AssessmentResultViewSet,
     base_name='assessment_results',
-    parents_query_lookups=['assessment_tasks__plan'])
+    parents_query_lookups=['plan_assessment_templates__plan'])
 care_plan_routes.register(
     r'symptoms',
     SymptomByPlanViewSet,
@@ -409,6 +410,10 @@ router.register(
     r'assessment_task_templates',
     AssessmentTaskTemplateViewSet,
     base_name='assessment_task_templates')
+router.register(
+    r'plan_assessment_templates',
+    CarePlanAssessmentTemplateViewSet,
+    base_name='plan_assessment_templates')
 router.register(
     r'assessment_questions',
     AssessmentQuestionViewSet,

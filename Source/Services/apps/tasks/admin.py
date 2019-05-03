@@ -128,7 +128,7 @@ class AssessmentTaskAdmin(admin.ModelAdmin):
         AssessmentResponseInline,
     ]
     list_display = (
-        'plan', 'assessment_task_template', 'appear_datetime',
+        'assessment_template', 'appear_datetime',
         'due_datetime', 'is_complete', )
 
 
