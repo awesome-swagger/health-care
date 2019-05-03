@@ -14,6 +14,7 @@ from ..models import (
     CarePlanPatientTemplate,
     CarePlanSymptomTemplate,
     CarePlanTeamTemplate,
+    CarePlanVitalTemplate,
     PatientTaskTemplate,
     PatientTask,
     TeamTaskTemplate,
@@ -858,7 +859,7 @@ class VitalResponseSerializer(RepresentationMixin, serializers.ModelSerializer):
         ]
 
     def get_vital_task_name(self, obj):
-        return obj.vital_task.vital_task_template.name
+        return obj.vital_task.vital_template.vital_task_template.name
 
     def format_answer(self, answer_type, response):
         if answer_type == VitalQuestion.BOOLEAN:
@@ -958,6 +959,47 @@ class VitalResponseSerializer(RepresentationMixin, serializers.ModelSerializer):
         return instance
 
 
+class CarePlanVitalTemplateSerializer(RepresentationMixin,
+                                      serializers.ModelSerializer):
+    """
+    Serializer to be used by :model:`tasks.CarePlanVitalTemplate`
+    """
+
+    class Meta:
+        model = CarePlanVitalTemplate
+        fields = (
+            'id',
+            'plan',
+            'vital_task_template',
+            'custom_start_on_day',
+            'custom_frequency',
+            'custom_repeat_amount',
+            'custom_appear_time',
+            'custom_due_time',
+            'start_on_day',
+            'frequency',
+            'repeat_amount',
+            'appear_time',
+            'due_time',
+        )
+        write_only_fields = (
+            'custom_start_on_day',
+            'custom_frequency',
+            'custom_repeat_amount',
+            'custom_appear_time',
+            'custom_due_time',
+        )
+        read_only_fields = (
+            'id',
+        )
+        nested_serializers = [
+            {
+                'field': 'vital_task_template',
+                'serializer_class': VitalTaskTemplateSerializer,
+            }
+        ]
+
+
 class VitalTaskSerializer(RepresentationMixin, serializers.ModelSerializer):
     """
     serializer to be used by :model:`tasks.VitalTask`
@@ -968,8 +1010,7 @@ class VitalTaskSerializer(RepresentationMixin, serializers.ModelSerializer):
         model = VitalTask
         fields = (
             'id',
-            'plan',
-            'vital_task_template',
+            'vital_template',
             'is_complete',
             'responses',
             'appear_datetime',
@@ -981,8 +1022,8 @@ class VitalTaskSerializer(RepresentationMixin, serializers.ModelSerializer):
         )
         nested_serializers = [
             {
-                'field': 'vital_task_template',
-                'serializer_class': VitalTaskTemplateSerializer,
+                'field': 'vital_template',
+                'serializer_class': CarePlanVitalTemplateSerializer,
             }
         ]
 

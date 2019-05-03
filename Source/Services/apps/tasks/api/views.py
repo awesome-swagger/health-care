@@ -939,19 +939,19 @@ class VitalTaskViewSet(viewsets.ModelViewSet):
             if employee_profile.organizations_managed.exists():
                 organizations = employee_profile.organizations_managed.all()
                 qs = qs.filter(
-                    plan__patient__facility__organization__in=organizations)
+                    vital_template__plan__patient__facility__organization__in=organizations)
             elif employee_profile.facilities_managed.exists():
                 facilities = employee_profile.facilities_managed.all()
                 assigned_roles = employee_profile.assigned_roles.all()
                 qs = qs.filter(
-                    Q(plan__patient__facility__in=facilities) |
-                    Q(plan__care_team_members__in=assigned_roles)
+                    Q(vital_template__plan__patient__facility__in=facilities) |
+                    Q(vital_template__plan__care_team_members__in=assigned_roles)
                 )
             else:
                 assigned_roles = employee_profile.assigned_roles.all()
-                qs = qs.filter(plan__care_team_members__in=assigned_roles)
+                qs = qs.filter(vital_template__plan__care_team_members__in=assigned_roles)
         elif user.is_patient:
-            qs = qs.filter(plan__patient=user.patient_profile)
+            qs = qs.filter(vital_template__plan__patient=user.patient_profile)
 
         return qs.distinct()
 

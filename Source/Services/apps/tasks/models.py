@@ -239,6 +239,7 @@ class AbstractPlanTaskTemplate(UUIDPrimaryKeyMixin):
             'CarePlanPatientTemplate': getattr(self, 'patient_task_template', None),
             'CarePlanSymptomTemplate': getattr(self, 'symptom_task_template', None),
             'CarePlanTeamTemplate': getattr(self, 'team_task_template', None),
+            'CarePlanVitalTemplate': getattr(self, 'vital_task_template', None),
         }
         return plan_task_template_lookup[model_name]
 

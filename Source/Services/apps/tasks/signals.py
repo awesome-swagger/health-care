@@ -51,12 +51,16 @@ class RiskLevelAssignment(object):
             'assessment_template__plan__patient': self.patient,
             'due_datetime__lte': now
         }
+        vital_kwargs = {
+            'vital_template__plan__patient': self.patient,
+            'due_datetime__lte': now
+        }
 
         patient_tasks = PatientTask.objects.filter(**patient_kwargs)
         medication_tasks = MedicationTask.objects.filter(**medication_kwargs)
         symptom_tasks = SymptomTask.objects.filter(**symptom_kwargs)
         assessment_tasks = AssessmentTask.objects.filter(**assessment_kwargs)
-        vital_tasks = VitalTask.objects.filter(**task_kwargs)
+        vital_tasks = VitalTask.objects.filter(**vital_kwargs)
 
         total_patient_tasks = patient_tasks.count()
         total_medication_tasks = medication_tasks.count()
@@ -137,7 +141,8 @@ def assign_is_complete_to_vital_task(instance):
     corresponding response.
     """
     task = instance.vital_task
-    questions = task.vital_task_template.questions.values_list(
+    vital_template = task.vital_template
+    questions = vital_template.vital_task_template.questions.values_list(
         'id', flat=True).distinct()
     responses = task.responses.values_list(
         'question', flat=True).distinct()
@@ -195,7 +200,8 @@ def create_tasks_for_ongoing_plans(task_template,
             'AssessmentTask': 'assessment',
             'PatientTask': 'patient',
             'SymptomTask': 'symptom',
-            'TeamTask': 'team'
+            'TeamTask': 'team',
+            'VitalTask': 'vital',
         }
         if task_model_name in field_lookup:
             task_type = field_lookup[task_model_name]
@@ -229,6 +235,7 @@ def create_tasks_for_ongoing_plans(task_template,
                         'PatientTask': 'CarePlanPatientTemplate',
                         'SymptomTask': 'CarePlanSymptomTemplate',
                         'TeamTask': 'CarePlanTeamTemplate',
+                        'VitalTask': 'CarePlanVitalTemplate',
                     }
 
                     if task_model_name in model_lookup:
@@ -287,7 +294,7 @@ def vitalresponse_post_save(sender, instance, created, **kwargs):
     if created:
         assign_is_complete_to_vital_task(instance)
 
-        patient = instance.vital_task.plan.patient
+        patient = instance.vital_task.vital_template.plan.patient
         assignment = RiskLevelAssignment(patient)
         assignment.assign_risk_level_to_patient()
 
@@ -361,7 +368,7 @@ def vitalresponse_post_delete(sender, instance, **kwargs):
         task.is_complete = False
         task.save(update_fields=['is_complete'])
 
-        patient = instance.vital_task.plan.patient
+        patient = instance.vital_task.vital_template.plan.patient
         assignment = RiskLevelAssignment(patient)
         assignment.assign_risk_level_to_patient()
 
@@ -718,7 +725,7 @@ def vitaltask_post_save(sender, instance, created, **kwargs):
     :model:`tasks.VitalTask`
     """
     if created:
-        patient = instance.plan.patient
+        patient = instance.vital_template.plan.patient
         assignment = RiskLevelAssignment(patient)
         assignment.assign_risk_level_to_patient()
 
@@ -748,6 +755,6 @@ def vitaltask_post_delete(sender, instance, **kwargs):
     Function to be used as signal (post_delete) when deleting
     :model:`tasks.VitalTask`
     """
-    patient = instance.plan.patient
+    patient = instance.vital_template.plan.patient
     assignment = RiskLevelAssignment(patient)
     assignment.assign_risk_level_to_patient()
