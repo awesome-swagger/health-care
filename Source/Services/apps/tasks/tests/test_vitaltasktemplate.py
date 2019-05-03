@@ -347,19 +347,21 @@ class TestVitalTaskTemplateUsingEmployee(TasksMixin, APITestCase):
         plan = self.create_care_plan()
         tasks_before = 3
         tasks_after = 5
+        vital_template = self.create_plan_vital_template(
+            plan=plan,
+            vital_task_template=self.template
+        )
 
         for i in range(tasks_before):
             days_ago = 3 - i
             self.create_vital_task(
-                plan=plan,
-                vital_task_template=self.template,
+                vital_template=vital_template,
                 due_datetime=now - relativedelta(days=days_ago)
             )
 
         for i in range(tasks_after):
             self.create_vital_task(
-                plan=plan,
-                vital_task_template=self.template,
+                vital_template=vital_template,
                 due_datetime=now + relativedelta(days=i, hours=1)
             )
 
