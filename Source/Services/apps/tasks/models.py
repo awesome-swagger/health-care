@@ -808,6 +808,12 @@ class VitalTaskTemplate(AbstractTaskTemplate):
     def __str__(self):
         return self.name
 
+    @property
+    def vital_tasks(self):
+        return VitalTask.objects.filter(
+            vital_template__vital_task_template=self
+        )
+
 
 class CarePlanVitalTemplate(AbstractPlanTaskTemplate):
     """
