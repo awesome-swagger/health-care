@@ -215,18 +215,18 @@ class BaseOrganizationPatientSerializer(serializers.ModelSerializer):
         facilities = get_facilities_for_user(request.user, obj.id)
 
         kwargs = {
-            'plan__patient__facility__in': facilities,
-            f'assessment_task_template__{assessment_type}': True
+            'assessment_template__plan__patient__facility__in': facilities,
+            f'assessment_template__assessment_task_template__{assessment_type}': True
         }
 
         if care_team_members.exists() and filter_allowed:
             kwargs.update({
-                'plan__care_team_members__employee_profile__in': care_team_members
+                'assessment_template__plan__care_team_members__employee_profile__in': care_team_members
             })
 
         if 'facility' in request.GET and filter_allowed:
             kwargs.update({
-                'plan__patient__facility__id': request.GET.get('facility')
+                'assessment_template__plan__patient__facility__id': request.GET.get('facility')
             })
 
         tasks = AssessmentTask.objects.filter(**kwargs).aggregate(
@@ -258,6 +258,10 @@ class BaseOrganizationPatientSerializer(serializers.ModelSerializer):
         }
         symptom_kwargs = {
             'symptom_template__plan__patient__facility__in': facilities,
+            'due_datetime__lte': now
+        }
+        assessment_kwargs = {
+            'assessment_template__plan__patient__facility__in': facilities,
             'due_datetime__lte': now
         }
         medication_kwargs = {
@@ -298,7 +302,7 @@ class BaseOrganizationPatientSerializer(serializers.ModelSerializer):
         patient_tasks = PatientTask.objects.filter(**patient_kwargs)
         medication_tasks = MedicationTask.objects.filter(**medication_kwargs)
         symptom_tasks = SymptomTask.objects.filter(**symptom_kwargs)
-        assessment_tasks = AssessmentTask.objects.filter(**kwargs)
+        assessment_tasks = AssessmentTask.objects.filter(**assessment_kwargs)
         vital_tasks = VitalTask.objects.filter(**kwargs)
 
         total_patient_tasks = patient_tasks.count()

@@ -12,6 +12,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from ..models import (
+    CarePlanAssessmentTemplate,
     CarePlanPatientTemplate,
     CarePlanSymptomTemplate,
     CarePlanTeamTemplate,
@@ -41,6 +42,7 @@ from ..permissions import (
 from ..utils import get_all_tasks_for_today
 from .filters import DurationFilter
 from . serializers import (
+    CarePlanAssessmentTemplateSerializer,
     CarePlanPatientTemplateSerializer,
     CarePlanSymptomTemplateSerializer,
     CarePlanTeamTemplateSerializer,
@@ -618,6 +620,82 @@ class AssessmentTaskTemplateViewSet(viewsets.ModelViewSet):
     queryset = AssessmentTaskTemplate.objects.order_by('name')
 
 
+class CarePlanAssessmentTemplateViewSet(viewsets.ModelViewSet):
+    """
+    Viewset for :model:`tasks.CarePlanAssessmentTemplate`
+    ========
+
+    create:
+        Creates :model:`tasks.CarePlanAssessmentTemplate` object.
+        Only admins and employees are allowed to perform this action.
+
+    update:
+        Updates :model:`tasks.CarePlanAssessmentTemplate` object.
+        Only admins and employees who belong to the same care team are allowed
+        to perform this action.
+
+    partial_update:
+        Updates one or more fields of an existing plan assessment template
+        object. Only admins and employees who belong to the same care team are
+        allowed to perform this action.
+
+    retrieve:
+        Retrieves a :model:`tasks.CarePlanAssessmentTemplate` instance.
+        Admins will have access to all plan assessment template objects.
+        Employees will only have access to those plan assessment templates
+        belonging to its own care team. Patients will have access to all plan
+        assessment templates assigned to them.
+
+    list:
+        Returns list of all :model:`tasks.CarePlanAssessmentTemplate` objects.
+        Admins will get all existing plan assessment template objects.
+        Employees will get the plan assessment templates belonging to a certain care
+        team. Patients will get all plan assessment templates belonging to
+        them.
+
+    delete:
+        Deletes a :model:`tasks.CarePlanAssessmentTemplate` instance.
+        Only admins and employees who belong to the same care team are allowed
+        to perform this action.
+    """
+    serializer_class = CarePlanAssessmentTemplateSerializer
+    permission_classes = (
+        permissions.IsAuthenticated,
+        IsEmployeeOrPatientReadOnly,
+    )
+    filter_backends = (DjangoFilterBackend, )
+    filterset_fields = (
+        'plan',
+        'assessment_task_template',
+    )
+    queryset = CarePlanAssessmentTemplate.objects.all()
+
+    def get_queryset(self):
+        qs = super(CarePlanAssessmentTemplateViewSet, self).get_queryset()
+        user = self.request.user
+
+        if user.is_employee:
+            employee_profile = user.employee_profile
+            if employee_profile.organizations_managed.exists():
+                organizations = employee_profile.organizations_managed.all()
+                qs = qs.filter(
+                    plan__patient__facility__organization__in=organizations)
+            elif employee_profile.facilities_managed.exists():
+                facilities = employee_profile.facilities_managed.all()
+                assigned_roles = employee_profile.assigned_roles.all()
+                qs = qs.filter(
+                    Q(plan__patient__facility__in=facilities) |
+                    Q(plan__care_team_members__in=assigned_roles)
+                )
+            else:
+                assigned_roles = employee_profile.assigned_roles.all()
+                qs = qs.filter(plan__care_team_members__in=assigned_roles)
+        elif user.is_patient:
+            qs = qs.filter(plan__patient=user.patient_profile)
+
+        return qs.distinct()
+
+
 class AssessmentQuestionViewSet(viewsets.ModelViewSet):
     serializer_class = AssessmentQuestionSerializer
     permission_classes = (permissions.IsAuthenticated, EmployeeOrReadOnly, )
@@ -633,9 +711,9 @@ class AssessmentTaskViewSet(viewsets.ModelViewSet):
     queryset = AssessmentTask.objects.all()
     filter_backends = (DjangoFilterBackend, DurationFilter)
     filterset_fields = (
-        'plan__id',
-        'assessment_task_template__id',
-        'plan__patient__id',
+        'assessment_template__plan__id',
+        'assessment_template__assessment_task_template__id',
+        'assessment_template__plan__patient__id',
     )
 
     def get_queryset(self):
@@ -643,23 +721,23 @@ class AssessmentTaskViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if user.is_employee:
             employee_profile = user.employee_profile
-            if employee_profile.organizations_managed.count() > 0:
-                organizations_managed = employee_profile.organizations_managed.values_list('id', flat=True)
+            if employee_profile.organizations_managed.exists():
+                organizations = employee_profile.organizations_managed.all()
                 qs = qs.filter(
-                    plan__patient__facility__organization__id__in=organizations_managed)
-            elif employee_profile.facilities_managed.count() > 0:
-                facilities_managed = employee_profile.facilities_managed.values_list('id', flat=True)
-                assigned_roles = employee_profile.assigned_roles.values_list('id', flat=True)
+                    assessment_template__plan__patient__facility__organization__in=organizations)
+            elif employee_profile.facilities_managed.exists():
+                facilities = employee_profile.facilities_managed.all()
+                assigned_roles = employee_profile.assigned_roles.all()
                 qs = qs.filter(
-                    Q(plan__patient__facility__id__in=facilities_managed) |
-                    Q(plan__care_team_members__id__in=assigned_roles)
+                    Q(assessment_template__plan__patient__facility__in=facilities) |
+                    Q(assessment_template__plan__care_team_members__in=assigned_roles)
                 )
             else:
-                assigned_roles = employee_profile.assigned_roles.values_list('id', flat=True)
-                qs = qs.filter(plan__care_team_members__id__in=assigned_roles)
+                assigned_roles = employee_profile.assigned_roles.all()
+                qs = qs.filter(assessment_template__plan__care_team_members__in=assigned_roles)
         elif user.is_patient:
             qs = qs.filter(
-                plan__patient=user.patient_profile
+                assessment_template__plan__patient=user.patient_profile
             )
         return qs.distinct()
 
@@ -675,8 +753,8 @@ class AssessmentResponseViewSet(viewsets.ModelViewSet):
     filterset_fields = {
         'assessment_task': ['exact'],
         'assessment_question': ['exact'],
-        'assessment_task__plan__patient': ['exact'],
-        'assessment_task__assessment_task_template__plan_template': ['exact'],
+        'assessment_task__assessment_template__plan__patient': ['exact'],
+        'assessment_task__assessment_template__assessment_task_template__plan_template': ['exact'],
         'modified': ['lte', 'gte'],
         'assessment_task__due_datetime': ['lte', 'gte'],
     }
@@ -689,22 +767,22 @@ class AssessmentResponseViewSet(viewsets.ModelViewSet):
             if employee_profile.organizations_managed.exists():
                 organizations = employee_profile.organizations_managed.all()
                 qs = qs.filter(
-                    assessment_task__plan__patient__facility__organization__in=organizations)
+                    assessment_task__assessment_template__plan__patient__facility__organization__in=organizations)
             elif employee_profile.facilities_managed.exists():
                 facilities = employee_profile.facilities_managed.all()
                 assigned_roles = employee_profile.assigned_roles.all()
                 qs = qs.filter(
-                    Q(assessment_task__plan__patient__facility__in=facilities) |
-                    Q(assessment_task__plan__care_team_members__in=assigned_roles)
+                    Q(assessment_task__assessment_template__plan__patient__facility__in=facilities) |
+                    Q(assessment_task__assessment_template__plan__care_team_members__in=assigned_roles)
                 )
             else:
                 assigned_roles = employee_profile.assigned_roles.all()
                 qs = qs.filter(
-                    assessment_task__plan__care_team_members__in=assigned_roles
+                    assessment_task__assessment_template__plan__care_team_members__in=assigned_roles
                     )
         elif user.is_patient:
             qs = qs.filter(
-                assessment_task__plan__patient=user.patient_profile
+                assessment_task__assessment_template__plan__patient=user.patient_profile
             )
         return qs.distinct()
 
@@ -720,8 +798,8 @@ class AssessmentResponseViewSet(viewsets.ModelViewSet):
             queryset)
 
         query_parameters = self.request.query_params.keys()
-        if 'assessment_task__plan__patient' in query_parameters and \
-           'assessment_task__assessment_task_template__plan_template' in query_parameters and \
+        if 'assessment_task__assessment_template__plan__patient' in query_parameters and \
+           'assessment_task__assessment_template__assessment_task_template__plan_template' in query_parameters and \
            'assessment_task__due_datetime__gte' not in query_parameters and \
            'assessment_task__due_datetime__lte' not in query_parameters:
             today = timezone.now().date()

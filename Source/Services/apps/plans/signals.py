@@ -32,11 +32,13 @@ def create_scheduled_tasks(plan,
 
     for template in task_templates:
         model_lookup = {
+            'assessment_task_template': 'CarePlanAssessmentTemplate',
             'patient_task_template': 'CarePlanPatientTemplate',
             'symptom_task_template': 'CarePlanSymptomTemplate',
             'team_task_template': 'CareplanTeamTemplate',
         }
         field_lookup = {
+            'assessment_task_template': 'assessment_template',
             'patient_task_template': 'patient_template',
             'symptom_task_template': 'symptom_template',
             'team_task_template': 'team_template',

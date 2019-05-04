@@ -358,18 +358,21 @@ class TestAssessmentTaskTemplateUsingEmployee(TasksMixin, APITestCase):
         tasks_before = 3
         tasks_after = 5
 
+        assessment_template = self.create_plan_assessment_template(
+            plan=plan,
+            assessment_task_template=self.template
+        )
+
         for i in range(tasks_before):
             days_ago = 3 - i
             self.create_assessment_task(
-                plan=plan,
-                assessment_task_template=self.template,
+                assessment_template=assessment_template,
                 due_datetime=now - relativedelta(days=days_ago)
             )
 
         for i in range(tasks_after):
             self.create_assessment_task(
-                plan=plan,
-                assessment_task_template=self.template,
+                assessment_template=assessment_template,
                 due_datetime=now + relativedelta(days=i, hours=1)
             )
 
