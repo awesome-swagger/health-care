@@ -22,12 +22,11 @@ from apps.tasks.models import (
 )
 
 
-class DailyInfoMessage(PeriodicTask):
+class CarePlanResultOverTimeTask(PeriodicTask):
     """
-    This periodic task will set an info message object into the
-    `message_for_day` field of all :model:`patients.PatientProfile`
-    on a daily basis. The info messages will be dependent on the
-    patients' care plan templates.
+    This periodic task will set an result over time object into the
+    model:`CarePlanResultOverTime`
+    on a weekly basis.
     """
 
     # Runs every Monday
