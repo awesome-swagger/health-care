@@ -7,7 +7,10 @@ from django.utils import timezone
 from celery.task import PeriodicTask
 from celery.schedules import crontab
 
-from .models import CarePlanResultOverTime
+from .models import (
+    CarePlan, 
+    CarePlanResultOverTime
+)
 
 from apps.tasks.models import (
     TeamTask,
@@ -34,8 +37,8 @@ class DailyInfoMessage(PeriodicTask):
         now = timezone.now()
         date = now.date() - timedelta(days=7)
         tasks = AssessmentTask.objects.filter(
-            plan=obj,
-            assessment_task_template__tracks_outcome=True,
+            assessment_template__plan=plan,
+            assessment_template__assessment_task_template__tracks_outcome=True,
             due_datetime__range=[date, now]
         ).aggregate(average=Avg('responses__rating'))
         average = tasks['average'] or 0
@@ -45,19 +48,19 @@ class DailyInfoMessage(PeriodicTask):
         now = timezone.now()
         date = now.date() - timedelta(days=7)
         patient_tasks = PatientTask.objects.filter(
-            patient_template__plan=obj,
+            patient_template__plan=plan,
             due_datetime__range=[date, now])
         medication_tasks = MedicationTask.objects.filter(
-            medication_task_template__plan=obj,
+            medication_task_template__plan=plan,
             due_datetime__range=[date, now])
         symptom_tasks = SymptomTask.objects.filter(
-            symptom_template__plan=obj,
+            symptom_template__plan=plan,
             due_datetime__range=[date, now])
         assessment_tasks = AssessmentTask.objects.filter(
-            plan=obj,
+            assessment_template__plan=plan,
             due_datetime__range=[date, now])
         vital_tasks = VitalTask.objects.filter(
-            plan=obj,
+            plan=plan,
             due_datetime__range=[date, now])
 
         total_patient_tasks = patient_tasks.count()

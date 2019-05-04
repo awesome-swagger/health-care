@@ -373,8 +373,8 @@ class CarePlanViewSet(viewsets.ModelViewSet):
 
     def calculate_average_satisfaction(self, queryset):
         tasks = AssessmentTask.objects.filter(
-            assessment_template__plan__in=queryset,
-            assessment_template__assessment_task_template__tracks_satisfaction=True
+            plan__in=queryset,
+            assessment_task_template__tracks_satisfaction=True
         ).aggregate(average=Avg('responses__rating'))
         average = tasks['average'] or 0
         avg = round((average / 5) * 100)
@@ -382,8 +382,8 @@ class CarePlanViewSet(viewsets.ModelViewSet):
 
     def calculate_average_outcome(self, queryset):
         tasks = AssessmentTask.objects.filter(
-            assessment_template__plan__in=queryset,
-            assessment_template__assessment_task_template__tracks_outcome=True
+            plan__in=queryset,
+            assessment_task_template__tracks_outcome=True
         ).aggregate(average=Avg('responses__rating'))
         average = tasks['average'] or 0
         avg = round((average / 5) * 100)
@@ -401,7 +401,7 @@ class CarePlanViewSet(viewsets.ModelViewSet):
             symptom_template__plan__in=queryset,
             due_datetime__lte=now)
         assessment_tasks = AssessmentTask.objects.filter(
-            assessment_template__plan__in=queryset,
+            plan__in=queryset,
             due_datetime__lte=now)
         vital_tasks = VitalTask.objects.filter(
             plan__in=queryset,
@@ -537,8 +537,15 @@ class CarePlanViewSet(viewsets.ModelViewSet):
         plan = self.get_object()
         weeks = int(request.GET.get('weeks', 0))
         data = []
-        for ii in plan.results_over_time.all().order_by('-created')[weeks]:
-            data = [{ 'outcome': ii.outcome, 'engagement': ii.engagement }] + data
+        queryset = plan.results_over_time.all().order_by('-created')
+        if queryset.count() > 0 and weeks:            
+            for ii in queryset[:weeks]:
+                item = { 
+                    'outcome': ii.outcome, 
+                    'engagement': ii.engagement,
+                    'date': ii.created.date() 
+                }
+                data = [item] + data
 
         return Response(data)
 
@@ -1824,10 +1831,10 @@ class AssessmentResultViewSet(ParentViewSetPermissionMixin,
         permissions.IsAuthenticated,
     )
     queryset = AssessmentTaskTemplate.objects.all()
-    parent_field = 'plan_assessment_templates__plan'
+    parent_field = 'assessment_tasks__plan'
     parent_lookup = [
         (
-            'plan_assessment_templates__plan',
+            'assessment_tasks__plan',
             CarePlan,
             CarePlanViewSet
         )
@@ -1849,8 +1856,8 @@ class AssessmentResultViewSet(ParentViewSetPermissionMixin,
                                              tzinfo=pytz.utc)
 
         return queryset.filter(
-            plan_assessment_templates__assessment_tasks__due_datetime__range=(date_min, date_max),
-            plan_assessment_templates__assessment_tasks__is_complete=True,
+            assessment_tasks__due_datetime__range=(date_min, date_max),
+            assessment_tasks__is_complete=True,
         ).distinct()
 
     def get_serializer_context(self):
