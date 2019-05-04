@@ -530,6 +530,19 @@ class CarePlanViewSet(viewsets.ModelViewSet):
         return Response(data)
 
     @action(methods=['get'],
+            detail=True,
+            permission_classes=(permissions.IsAuthenticated,
+                                IsAdminOrEmployee))
+    def results_over_time(self, request, pk=None):
+        plan = self.get_object()
+        weeks = int(request.GET.get('weeks', 0))
+        data = []
+        for ii in plan.results_over_time.all().order_by('-created')[weeks]:
+            data = [{ 'outcome': ii.outcome, 'engagement': ii.engagement }] + data
+
+        return Response(data)
+
+    @action(methods=['get'],
             detail=False,
             permission_classes=(permissions.IsAuthenticated,
                                 IsAdminOrEmployee))
