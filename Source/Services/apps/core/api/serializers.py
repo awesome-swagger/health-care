@@ -977,8 +977,6 @@ class EmployeeAssignmentSerializer(serializers.ModelSerializer):
         medication_kwargs = task_kwargs.pop('medication_kwargs')
         medication_tasks = MedicationTask.objects.filter(
             **medication_kwargs)
-        assessment_tasks = AssessmentTask.objects.filter(**kwargs)
-        vital_tasks = VitalTask.objects.filter(**kwargs)
 
         plans = kwargs.pop('plan__in')
         base_patient_kwargs = {
@@ -1049,7 +1047,7 @@ class EmployeeAssignmentSerializer(serializers.ModelSerializer):
         outcome = self.get_average_assessment(outcome_kwargs)
 
         kwargs = {
-            'assessment_template__plan__in': plans,
+            'plan__in': plans,
             'due_datetime__gte': due_datetime
         }
         medication_kwargs = {
