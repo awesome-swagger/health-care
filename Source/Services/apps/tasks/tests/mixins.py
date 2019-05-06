@@ -583,9 +583,13 @@ class TasksMixin(PlansMixin):
 
     def generate_assessment_tasks(self, plan, due_datetime):
         template = self.create_assessment_task_template()
+        assessment_template = self.create_plan_assessment_template(
+            plan=plan,
+            assessment_task_template=template
+        )
+
         task = self.create_assessment_task(**{
-            'plan': plan,
-            'assessment_task_template': template,
+            'assessment_template': assessment_template,
             'due_datetime': due_datetime
         })
         questions = template.questions.all()
@@ -595,17 +599,24 @@ class TasksMixin(PlansMixin):
 
         # create incomplete assessment tasks
         incomplete_template = self.create_assessment_task_template()
+        incomplete_assessment_template = self.create_plan_assessment_template(
+            plan=plan,
+            assessment_task_template=incomplete_template
+        )
         self.create_assessment_task(**{
-            'plan': plan,
-            'assessment_task_template': incomplete_template,
+            'assessment_template': incomplete_assessment_template,
             'due_datetime': due_datetime
         })
 
     def generate_vital_tasks(self, plan, due_datetime, with_incomplete=True):
         template = self.create_vital_task_template()
+        vital_template = self.create_plan_vital_template(
+            plan=plan,
+            vital_task_template=template
+        )
+
         task = self.create_vital_task(**{
-            'plan': plan,
-            'vital_task_template': template,
+            'vital_template': vital_template,
             'due_datetime': due_datetime
         })
         self.create_responses_to_multiple_vital_questions(template,
@@ -614,9 +625,12 @@ class TasksMixin(PlansMixin):
         if with_incomplete:
             # create incomplete vital tasks
             incomplete_template = self.create_vital_task_template()
+            incomplete_vital_template = self.create_plan_vital_template(
+                plan=plan,
+                vital_task_template=incomplete_template
+            )
             self.create_vital_task(**{
-                'plan': plan,
-                'vital_task_template': incomplete_template,
+                'vital_template': incomplete_vital_template,
                 'due_datetime': due_datetime
             })
 
