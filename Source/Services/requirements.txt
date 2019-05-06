@@ -18,6 +18,7 @@ drf-haystack==1.8.4
 celery[redis]==4.2.1
 django-rest-auth==0.9.3
 django-allauth
+python-dateutil==2.7.5
 
 # Dev tools
 django-extensions

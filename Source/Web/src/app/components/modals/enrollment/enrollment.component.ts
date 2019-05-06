@@ -23,6 +23,9 @@ export class EnrollmentComponent implements OnInit {
   public dob = '';
   public communicationPreference = 'In-App Messaging';
 
+  public showDate = false;
+  public planStartDate = null;
+
   public showEPStep2;
 
   constructor(

@@ -13,7 +13,8 @@ from .models import (
     InfoMessageQueue,
     InfoMessage,
     TeamMessage,
-    MessageRecipient
+    MessageRecipient,
+    CarePlanResultOverTime
 )
 
 
@@ -83,3 +84,4 @@ admin.site.register(InfoMessageQueue, InfoMessageQueueAdmin)
 admin.site.register(InfoMessage)
 admin.site.register(TeamMessage)
 admin.site.register(MessageRecipient)
+admin.site.register(CarePlanResultOverTime)

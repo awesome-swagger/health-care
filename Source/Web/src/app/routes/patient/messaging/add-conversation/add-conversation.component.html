@@ -6,6 +6,11 @@
     {{member.user.first_name}} {{member.user.last_name}}
   </label>
 </ng-container>
+<label class="styledInput">
+  <input type="checkbox" class="styledInput__input" [(ngModel)]="patientChecked" />
+  <span class="styledInput__box"></span>
+  {{data?.patient?.user.first_name}} {{data?.patient?.user.last_name}}
+</label>
 <div class="modal__buttons">
   <button class="button button--2nd" (click)="close()">
     Cancel

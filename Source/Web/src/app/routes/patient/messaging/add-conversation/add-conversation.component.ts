@@ -11,6 +11,7 @@ export class AddConversationComponent implements OnInit {
 
   public data = null;
   public userChecked = {};
+  public patientChecked = false;
 
   constructor(
     private modals: ModalService,
@@ -50,6 +51,9 @@ export class AddConversationComponent implements OnInit {
       }
     })
     members.push(this.data.userId);
+    if (this.patientChecked) {
+      members.push(this.data.patient.user.id)
+    }
     this.store.CarePlan.detailRoute('POST', this.data.planId, 'message_recipients', {
       members
     }).subscribe(res => {
