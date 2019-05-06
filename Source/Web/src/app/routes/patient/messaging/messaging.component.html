@@ -20,7 +20,7 @@
                 <img class="picName__img" src="../../../../assets/img/profile.svg" />
                 <h5 class="noMargin">{{getParticipants(stream)}}</h5>
               </div>
-              <h5 class="noMargin">{{getLastMessageTime(stream)}}</h5>
+              <h5 class="noMargin lastMessageTime">{{getLastMessageTime(stream)}}</h5>
             </div>
             <p class="chat__preview">
               {{stream?.messages?.length ? stream?.messages[stream?.messages?.length - 1].text : 'No messages'}}
@@ -55,10 +55,15 @@
                   <div class="chat__picBubble">
                     <img class="chat__img" [src]="careTeam[getUser(currentStream, message).id]?.user?.image_url" />
                     <div class="chat__bubble">
-                      <span *ngFor="let messageLine of message.text.split('\n')">{{messageLine}}<br></span>
+                      <ng-container *ngIf="!message?.image">
+                        <span *ngFor="let messageLine of message.text.split('\n')">{{messageLine}}<br></span>
+                      </ng-container>
+                      <a *ngIf="message.image" [href]="message.image" target="_blank" style="display: inline-block">
+                        <img [src]="message.image" />
+                      </a>
                     </div>
                   </div>
-                  <h5 class="chat__info">{{getNameAndTitle(getUser(currentStream, message))}}&emsp;{{getDay(message)}} at {{getTime(message)}}</h5>
+                  <h5 class="chat__info">{{getNameAndTitle(getUser(currentStream, message))}}&emsp;<span class="lastMessageTime">{{getDay(message)}} at {{getTime(message)}}</span></h5>
                 </div> <!--/.chat__message-->
 
               </ng-container>
@@ -76,7 +81,7 @@
           ></textarea>
           <div class="flex justifySpaceBetween">
             <label class="styledInput">
-              <input type="file" class="styledInput__input" />
+              <input #imageUpload accept="image/*" type="file" class="styledInput__input" (change)="processUpload()" />
               <div class="button button--iconText">
                 <i class="ss-picture"></i> Attach Image
               </div>

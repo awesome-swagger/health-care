@@ -70,8 +70,10 @@ export class NavComponent implements OnDestroy, OnInit {
   private organizationSub: Subscription = null;
   private routeParams = null;
 
+  public analyticsOpen = false;
+
   public notifications = [];
-  public tasksData = [];
+  public tasksData = null;
   public tasks = [];
 
   constructor(

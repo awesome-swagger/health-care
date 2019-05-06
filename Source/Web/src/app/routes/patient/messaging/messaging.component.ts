@@ -1,4 +1,4 @@
-import { AfterViewChecked, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { AfterViewChecked, AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService, NavbarService, StoreService, TimeTrackerService } from '../../../services';
 import { AddConversationComponent } from './add-conversation/add-conversation.component';
@@ -17,7 +17,7 @@ import { ModalService } from '../../../modules/modals';
   templateUrl: './messaging.component.html',
   styleUrls: ['./messaging.component.scss'],
 })
-export class PatientMessagingComponent implements AfterViewChecked, OnDestroy, OnInit {
+export class PatientMessagingComponent implements AfterViewChecked, OnDestroy, OnInit, AfterViewInit {
 
   public user = null;
   public patient = null;
@@ -32,8 +32,10 @@ export class PatientMessagingComponent implements AfterViewChecked, OnDestroy, O
   public newMessageText:string = '';
   public userId:string = '';
   public planId:string = '';
+  public scrolled = false;
 
   @ViewChild('chatBox') private chatBox: ElementRef;
+  @ViewChild('imageUpload') private imageUpload: ElementRef;
 
   constructor(
     private auth: AuthService,
@@ -114,17 +116,28 @@ export class PatientMessagingComponent implements AfterViewChecked, OnDestroy, O
         console.log(`stream ${i}`, m)
         this.messageStreams[i] = { id: m.id, participants: [], messages: [] };
         this.messageStreams[i].participants = _map(m.members, id => {
-          return {
-            id,
-            firstName: this.careTeam[id] ? this.careTeam[id].user.first_name : '',
-            lastName: this.careTeam[id] ? this.careTeam[id].user.last_name : '',
-            title: this.careTeam[id] ? this.careTeam[id].title.abbreviation: '',
-            isCurrentUser: id === this.userId,
+          if (this.careTeam[id]){
+            return {
+              id,
+              firstName: this.careTeam[id] ? this.careTeam[id].user.first_name : '',
+              lastName: this.careTeam[id] ? this.careTeam[id].user.last_name : '',
+              title: this.careTeam[id] ? this.careTeam[id].title.abbreviation: '',
+              isCurrentUser: id === this.userId,
+            }
+          } else if (id === this.patient.user.id) {
+            return {
+              id,
+              firstName: this.patient.user.first_name,
+              lastName: this.patient.user.last_name,
+              title: 'Patient',
+              isCurrentUser: false,
+            }
           }
         })
         this.messageStreams[i].messages = _map(res.results, message => {
           return {
             text: message.content,
+            image: message.image,
             userId: message.sender.id,
             date: message.created,
           }
@@ -132,6 +145,9 @@ export class PatientMessagingComponent implements AfterViewChecked, OnDestroy, O
         if (i === 0) {
           this.currentStream = this.messageStreams[i];
         }
+        setTimeout(() => {
+          this.scrollBottom();
+        }, 1000);
       }
     )
 
@@ -160,8 +176,12 @@ export class PatientMessagingComponent implements AfterViewChecked, OnDestroy, O
     // }, 5000)
   }
 
-  public ngAfterViewChecked() {
+  public ngAfterViewInit() {
     this.scrollBottom();
+  }
+
+  public ngAfterViewChecked() {
+//    this.scrollBottom('ngAfterViewChecked');
   }
 
 
@@ -182,14 +202,8 @@ export class PatientMessagingComponent implements AfterViewChecked, OnDestroy, O
 
   public getLastMessageTime(stream) {
     if (stream && stream.messages && stream.messages.length > 0) {
-      const time = moment(stream.messages[stream.messages.length - 1].date);
-      if (moment().diff(time, 'days') === 0) {
-        return time.format('h:mm');
-      } else if (moment().diff(time, 'days') <= 6) {
-        return time.format('dddd');
-      } else {
-        return time.format('MM/DD/YY');
-      }
+      const lastMessage = stream.messages[stream.messages.length - 1];
+      return `${this.getDay(lastMessage)} at ${this.getTime(lastMessage)}`
     }
   }
 
@@ -250,6 +264,7 @@ export class PatientMessagingComponent implements AfterViewChecked, OnDestroy, O
           userId: res.sender.id,
           date: res.created,
         })
+        this.scrollBottom();
       }
     )
 
@@ -264,6 +279,7 @@ export class PatientMessagingComponent implements AfterViewChecked, OnDestroy, O
         planId: this.planId,
         userId: this.userId,
         careTeam: this.careTeam,
+        patient: this.patient,
       }
     }).subscribe(res => {
       this.messageStreams.push({
@@ -283,4 +299,23 @@ export class PatientMessagingComponent implements AfterViewChecked, OnDestroy, O
     })
   }
 
+  public processUpload() {
+    const file : File = this.imageUpload.nativeElement.files[0];
+    const reader = new FileReader;
+    reader.readAsDataURL(file);
+    reader.addEventListener('load', (event:any) => {
+      this.store.CarePlan.detailRoute('POST', this.planId, `message_recipients/${this.currentStream.id}/team_messages`, {
+        content: file.name,
+        image: reader.result,
+      }).subscribe((res:any) => {
+        this.currentStream.messages.push({
+          text: res.content,
+          userId: res.sender.id,
+          date: res.created,
+          image: res.image,
+        })
+        this.scrollBottom();
+      })
+    })
+  }
 }

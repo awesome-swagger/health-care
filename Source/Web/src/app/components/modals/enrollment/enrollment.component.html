@@ -62,6 +62,22 @@
     <span class="styledInput__box"></span>
     Complete daily tasks.
   </label>
+
+  <div class="modal__inputWrap0 marTop32">
+  <label>Plan Start Date</label>
+  <div class="datepicker">
+    <div class="datepicker__date" (click)="showDate=!showDate">
+      <span *ngIf="!planStartDate">Select Date</span>
+      <span *ngIf="planStartDate">{{planStartDate.format('MMM D, YYYY')}}</span>
+    </div>
+    <app-popover [visible]="showDate" (visibleChange)="showDate = $event">
+      <app-date-picker
+        class="datepicker__picker datepicker__picker--top isOpen"
+        [selected]="planStartDate"
+        (selectedChange)="planStartDate = $event"
+      ></app-date-picker>
+    </app-popover>
+  </div>
 </div>
 
 <!--TODO: show if enroll patient step 2-->
