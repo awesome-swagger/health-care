@@ -724,6 +724,40 @@ def assessmenttask_post_save(sender, instance, created, **kwargs):
         assignment.assign_risk_level_to_patient()
 
 
+def careplanvitaltemplate_post_init(sender, instance, **kwargs):
+    """
+    Function to be used as signal (post_init) when initializing
+    :model:`tasks.CarePlanVitalTemplate`
+    """
+    instance.assign_previous_fields()
+
+
+def careplanvitaltemplate_post_save(sender, instance, created, **kwargs):
+    """
+    Function to be used as signal (post_save) when saving
+    :model:`tasks.CarePlanVitalTemplate`
+    """
+    if created and instance.has_custom_values:
+        create_tasks_for_ongoing_plans(
+            instance.vital_task_template,
+            'vital_task_template',
+            'VitalTask',
+            plan_task_template=instance
+        )
+    elif instance.is_schedule_fields_changed:
+        now = timezone.now()
+        VitalTask = apps.get_model('tasks', 'VitalTask')
+        VitalTask.objects.filter(
+            vital_template=instance,
+            due_datetime__gte=now).delete()
+        create_tasks_for_ongoing_plans(
+            instance.vital_task_template,
+            'vital_task_template',
+            'VitalTask',
+            plan_task_template=instance
+        )
+
+
 def vitaltasktemplate_post_init(sender, instance, **kwargs):
     """
     Function to be used as signal (post_init) when initializing
