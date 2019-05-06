@@ -63,7 +63,7 @@ def calculate_task_percentage(patient):
 
     # Assessment tasks
     assessment_tasks = AssessmentTask.objects.filter(
-        plan__patient=patient,
+        assessment_template__plan__patient=patient,
         **kwargs
     )
     completed_assessment_tasks = assessment_tasks.filter(is_complete=True)
@@ -105,10 +105,10 @@ def get_all_tasks_of_patient_today(patient):
         symptom_template__plan__patient__id=patient.id,
         due_datetime__range=(today_min, today_max))
     assessment_tasks = AssessmentTask.objects.filter(
-        plan__patient__id=patient.id,
+        assessment_template__plan__patient__id=patient.id,
         due_datetime__range=(today_min, today_max))
     vital_tasks = VitalTask.objects.filter(
-        plan__patient__id=patient.id,
+        vital_template__plan__patient__id=patient.id,
         due_datetime__range=(today_min, today_max))
 
     if patient_tasks.exists():
