@@ -409,6 +409,22 @@ class TeamMessage(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
         ordering = ('created', )
 
 
+class CarePlanResultOverTime(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
+    plan = models.ForeignKey(
+        'plans.CarePlan',
+        related_name='results_over_time',
+        on_delete=models.CASCADE
+        )
+    outcome = models.IntegerField()
+    engagement = models.IntegerField()
+
+    def __str__(self):
+        return '{}: {}'.format(str(self.plan), self.created) 
+
+    class Meta:
+        ordering = ('-created', )
+
+
 # Signals
 models.signals.post_save.connect(
     careplan_post_save,

@@ -1,5 +1,5 @@
 import datetime
-
+import calendar
 import pytz
 
 from dateutil.relativedelta import relativedelta
@@ -11,7 +11,7 @@ from rest_framework.generics import RetrieveAPIView
 from rest_framework.response import Response
 from rest_framework_extensions.mixins import NestedViewSetMixin
 
-from django.db.models import Avg, Q
+from django.db.models import Q, Avg, Sum
 from django.shortcuts import get_object_or_404
 from django.utils.translation import ugettext_lazy as _
 
@@ -373,8 +373,8 @@ class CarePlanViewSet(viewsets.ModelViewSet):
 
     def calculate_average_satisfaction(self, queryset):
         tasks = AssessmentTask.objects.filter(
-            assessment_template__plan__in=queryset,
-            assessment_template__assessment_task_template__tracks_satisfaction=True
+            plan__in=queryset,
+            assessment_task_template__tracks_satisfaction=True
         ).aggregate(average=Avg('responses__rating'))
         average = tasks['average'] or 0
         avg = round((average / 5) * 100)
@@ -382,8 +382,8 @@ class CarePlanViewSet(viewsets.ModelViewSet):
 
     def calculate_average_outcome(self, queryset):
         tasks = AssessmentTask.objects.filter(
-            assessment_template__plan__in=queryset,
-            assessment_template__assessment_task_template__tracks_outcome=True
+            plan__in=queryset,
+            assessment_task_template__tracks_outcome=True
         ).aggregate(average=Avg('responses__rating'))
         average = tasks['average'] or 0
         avg = round((average / 5) * 100)
@@ -401,7 +401,7 @@ class CarePlanViewSet(viewsets.ModelViewSet):
             symptom_template__plan__in=queryset,
             due_datetime__lte=now)
         assessment_tasks = AssessmentTask.objects.filter(
-            assessment_template__plan__in=queryset,
+            plan__in=queryset,
             due_datetime__lte=now)
         vital_tasks = VitalTask.objects.filter(
             vital_template__plan__in=queryset,
@@ -461,7 +461,7 @@ class CarePlanViewSet(viewsets.ModelViewSet):
         ```
         """
         now = timezone.now()
-        last_30 = now - relativedelta(days=230)
+        last_30 = now - relativedelta(days=30)
 
         base_queryset = self.get_queryset().filter(created__gte=last_30)
         queryset = self.filter_queryset(base_queryset)
@@ -481,6 +481,72 @@ class CarePlanViewSet(viewsets.ModelViewSet):
             'average_engagement': average_engagement,
             'risk_level': risk_level
         }
+        return Response(data)
+
+    @action(methods=['get'],
+            detail=True,
+            permission_classes=(permissions.IsAuthenticated,
+                                IsAdminOrEmployee))
+    def billing_info(self, request, pk=None):
+        plan = self.get_object()
+        start_date = request.GET.get('start_date')
+        end_date = request.GET.get('end_date')
+        queryset = plan.activities.filter(activity_datetime__range=[start_date, end_date])
+        time_spent = queryset.aggregate(total=Sum('time_spent'))
+        total_time_spent = time_spent['total'] or 0
+
+        cur_date = start = datetime.datetime.strptime(start_date, '%Y-%m-%d').date()
+        end = datetime.datetime.strptime(end_date, '%Y-%m-%d').date()
+
+        total_billable = 0
+
+        while cur_date <= end:
+            days_in_month = calendar.monthrange(cur_date.year, cur_date.month)[1]
+            if (cur_date == start):
+                total_billable += (days_in_month - start.day) / days_in_month
+            elif (cur_date.year == end.year and cur_date.month == end.month):
+                total_billable += end.day / days_in_month
+            else:
+                total_billable += 1
+
+            cur_date += relativedelta(months=1)
+
+        if (cur_date.month == end.month):
+            days_in_month = calendar.monthrange(end.year, end.month)[1]
+            total_billable += end.day / days_in_month
+
+        if plan.billing_type:
+            total_billable *= plan.billing_type.billable_minutes
+        else:
+            total_billable = 0
+
+        max_billable = int(total_billable)
+        data = {
+            'total_time': total_time_spent,
+            'billable_time': total_time_spent if total_time_spent < max_billable else max_billable,
+            'total_billed': 0
+        }
+
+        return Response(data)
+
+    @action(methods=['get'],
+            detail=True,
+            permission_classes=(permissions.IsAuthenticated,
+                                IsAdminOrEmployee))
+    def results_over_time(self, request, pk=None):
+        plan = self.get_object()
+        weeks = int(request.GET.get('weeks', 0))
+        data = []
+        queryset = plan.results_over_time.all().order_by('-created')
+        if queryset.count() > 0 and weeks:            
+            for ii in queryset[:weeks]:
+                item = { 
+                    'outcome': ii.outcome, 
+                    'engagement': ii.engagement,
+                    'date': ii.created.date() 
+                }
+                data = [item] + data
+
         return Response(data)
 
     @action(methods=['get'],
@@ -1765,10 +1831,10 @@ class AssessmentResultViewSet(ParentViewSetPermissionMixin,
         permissions.IsAuthenticated,
     )
     queryset = AssessmentTaskTemplate.objects.all()
-    parent_field = 'plan_assessment_templates__plan'
+    parent_field = 'assessment_tasks__plan'
     parent_lookup = [
         (
-            'plan_assessment_templates__plan',
+            'assessment_tasks__plan',
             CarePlan,
             CarePlanViewSet
         )
@@ -1790,8 +1856,8 @@ class AssessmentResultViewSet(ParentViewSetPermissionMixin,
                                              tzinfo=pytz.utc)
 
         return queryset.filter(
-            plan_assessment_templates__assessment_tasks__due_datetime__range=(date_min, date_max),
-            plan_assessment_templates__assessment_tasks__is_complete=True,
+            assessment_tasks__due_datetime__range=(date_min, date_max),
+            assessment_tasks__is_complete=True,
         ).distinct()
 
     def get_serializer_context(self):
@@ -1954,3 +2020,5 @@ class VitalByPlanViewSet(ParentViewSetPermissionMixin,
             'date_range': self._get_date_range_filter()
         })
         return context
+
+
