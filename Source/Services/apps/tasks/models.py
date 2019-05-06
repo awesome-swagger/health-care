@@ -6,12 +6,16 @@ from django.utils.translation import ugettext_lazy as _
 
 from .signals import (
     assessmentresponse_post_save,
+    careplanassessmenttemplate_post_init,
+    careplanassessmenttemplate_post_save,
     careplanpatienttemplate_post_init,
     careplanpatienttemplate_post_save,
     careplansymptomtemplate_post_init,
     careplansymptomtemplate_post_save,
     careplanteamtemplate_post_init,
     careplanteamtemplate_post_save,
+    careplanvitaltemplate_post_init,
+    careplanvitaltemplate_post_save,
     symptomrating_post_save,
     vitalresponse_post_save,
     symptomrating_post_delete,
@@ -1080,6 +1084,14 @@ models.signals.post_init.connect(
     assessmenttasktemplate_post_init,
     sender=AssessmentTaskTemplate
 )
+models.signals.post_init.connect(
+    careplanassessmenttemplate_post_init,
+    sender=CarePlanAssessmentTemplate
+)
+models.signals.post_save.connect(
+    careplanassessmenttemplate_post_save,
+    sender=CarePlanAssessmentTemplate
+)
 models.signals.post_save.connect(
     assessmenttasktemplate_post_save,
     sender=AssessmentTaskTemplate
@@ -1091,6 +1103,14 @@ models.signals.post_save.connect(
 models.signals.post_delete.connect(
     assessmenttask_post_delete,
     sender=AssessmentTask
+)
+models.signals.post_init.connect(
+    careplanvitaltemplate_post_init,
+    sender=CarePlanVitalTemplate
+)
+models.signals.post_save.connect(
+    careplanvitaltemplate_post_save,
+    sender=CarePlanVitalTemplate
 )
 models.signals.post_init.connect(
     vitaltasktemplate_post_init,
