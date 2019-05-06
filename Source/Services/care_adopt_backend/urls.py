@@ -70,6 +70,7 @@ from apps.tasks.api.views import (
     CarePlanPatientTemplateViewSet,
     CarePlanSymptomTemplateViewSet,
     CarePlanTeamTemplateViewSet,
+    CarePlanVitalTemplateViewSet,
     PatientTaskTemplateViewSet,
     PatientTaskViewSet,
     TeamTaskTemplateViewSet,
@@ -338,7 +339,7 @@ care_plan_routes.register(
     r'vitals',
     VitalByPlanViewSet,
     base_name='vitals',
-    parents_query_lookups=['vital_tasks__plan'])
+    parents_query_lookups=['plan_vital_templates__plan'])
 message_recipient_routes = care_plan_routes.register(
     r'message_recipients',
     MessageRecipientViewSet,
@@ -433,6 +434,10 @@ router.register(
     r'vital_task_templates',
     VitalTaskTemplateViewSet,
     base_name='vital_task_templates')
+router.register(
+    r'plan_vital_templates',
+    CarePlanVitalTemplateViewSet,
+    base_name='plan_vital_templates')
 router.register(r'vital_tasks', VitalTaskViewSet, base_name='vital_tasks')
 router.register(
     r'vital_questions',
