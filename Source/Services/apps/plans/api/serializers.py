@@ -901,7 +901,7 @@ class CarePlanTemplateAverageSerializer(serializers.ModelSerializer):
         medication_tasks = MedicationTask.objects.filter(**medication_kwargs)
         symptom_tasks = SymptomTask.objects.filter(**symptom_kwargs)
         assessment_tasks = AssessmentTask.objects.filter(**assessment_kwargs)
-        vital_tasks = VitalTask.objects.filter(**task_kwargs)
+        vital_tasks = VitalTask.objects.filter(**vital_kwargs)
 
         total_patient_tasks = patient_tasks.count()
         total_medication_tasks = medication_tasks.count()
