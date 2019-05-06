@@ -83,8 +83,22 @@ export class EditTaskComponent implements OnInit {
       relatedModel: this.store.PlanSymptomTemplate,
       relatedField: 'symptom_task_template',
     },
+    {
+      type: 'plan-manager',
+      title: 'Edit CM Task',
+      dataModel: this.store.TeamTaskTemplate,
+      relatedModel: this.store.PlanTeamTemplate,
+      relatedField: 'team_task_template',
+    },
+    {
+      type: 'plan-team',
+      title: 'Edit CT Task',
+      dataModel: this.store.TeamTaskTemplate,
+      relatedModel: this.store.PlanTeamTemplate,
+      relatedField: 'team_task_template',
+    },
   ];
-  public adhocTypes = ['plan-patient', 'plan-symptom'];
+  public adhocTypes = ['plan-patient', 'plan-symptom', 'plan-manager', 'plan-team'];
   public appearTimeHelpOpen = false;
   public dueTimeHelpOpen = false;
   public categoryHelpOpen = false;
@@ -134,24 +148,31 @@ export class EditTaskComponent implements OnInit {
       return;
     }
     let id = null;
-    if (!this.isAdhoc) {
-      this.task.name = this.nameForm.value['name'];
+    if (this.task.id) {
       id = this.task.id;
-    } else {
-      this.getRelatedModel().name = this.nameForm.value['name'];
+    } else if (this.getRelatedModel() && this.getRelatedModel().id) {
       id = this.getRelatedModel().id;
     }
-    let updateSub = this.getTaskType().dataModel.update(id, {
-      name: this.nameForm.value['name'],
-    }, true).subscribe(
-      (task) => {
-        this.editName = false;
-      },
-      (err) => {},
-      () => {
-        updateSub.unsubscribe();
-      }
-    );
+    if (!this.isAdhoc) {
+      this.task.name = this.nameForm.value['name'];
+    } else {
+      this.getRelatedModel().name = this.nameForm.value['name'];
+    }
+    if (id) {
+      let updateSub = this.getTaskType().dataModel.update(id, {
+        name: this.nameForm.value['name'],
+      }, true).subscribe(
+        (task) => {
+          this.editName = false;
+        },
+        (err) => {},
+        () => {
+          updateSub.unsubscribe();
+        }
+      );
+    } else {
+      this.editName = false;
+    }
   }
 
   public initForm(task) {
@@ -192,15 +213,33 @@ export class EditTaskComponent implements OnInit {
         }
       });
     }
-    if (this.getTaskType().type === 'manager' || this.getTaskType().type === 'team') {
-      this.taskForm.addControl('category', new FormControl(task.category));
+    if (this.isTeamTask()) {
+      let categoryValue = null;
+      if (task.category) {
+        categoryValue = task.category;
+      } else if (task.team_task_template && task.team_task_template.category) {
+        categoryValue = task.team_task_template.category;
+      }
+      this.taskForm.addControl('category', new FormControl(categoryValue));
     }
-    if (this.getTaskType().type === 'team') {
-      let roleIds = task.roles.map((obj) => obj.id);
+    if (this.getTaskType().type === 'team' || this.getTaskType().type === 'plan-team') {
+      let roleIds = [];
+      if (task.roles) {
+        roleIds = task.roles.map((obj) => obj.id);
+      } else if (task.team_task_template && task.team_task_template.roles) {
+        roleIds = task.team_task_template.roles.map((obj) => obj.id);
+      } else {
+        roleIds = [];
+        task.roles = [];
+      }
       this.taskForm.addControl('roles', new FormControl(roleIds));
       this.fetchRoles().then((roles: any) => {
         this.rolesChoices = roles;
-        this.rolesSelected = task.roles;
+        if (task.roles) {
+          this.rolesSelected = task.roles;
+        } else if (task.team_task_template && task.team_task_template.roles) {
+          this.rolesSelected = task.team_task_template.roles;
+        }
       });
     }
   }
@@ -303,6 +342,11 @@ export class EditTaskComponent implements OnInit {
     } else {
       return this.rolesSelected[0].name;
     }
+  }
+
+  public isTeamTask() {
+    let teamTaskTypes = ['manager', 'team', 'plan-manager', 'plan-team'];
+    return teamTaskTypes.includes(this.getTaskType().type);
   }
 
   public createTask() {

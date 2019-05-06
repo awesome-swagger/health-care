@@ -669,7 +669,7 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
         data: {
           patient: this.patient,
           carePlan: this.carePlan,
-          teamTaskId: taskObj.team_task_template,
+          teamTaskId: taskObj.team_template.team_task_template.id,
           taskEditable: false,
           totalMinutes: null,
           with: null,
@@ -709,26 +709,13 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
     let modalSub = this.modals.open(AddCTTaskComponent, {
       closeDisabled: false,
       data: {
-        type: 'team',
-        planTemplateId: this.carePlan.plan_template.id,
-        totalPatients: 0,
+        type: 'plan-team',
+        planId: this.carePlan.id,
       },
       overflow: 'visible',
       width: '384px',
     }).subscribe(
       (newTask) => {
-        // let formattedDate = this.selectedDate.utc().format('YYYY-MM-DD');
-        // // Refetch team tasks since they might have changed in the add modal
-        // let userTasksPromise = this.getUserTasks(this.carePlan.plan_template.id, formattedDate).then((tasks: any) => {
-        //   this.userTasks = tasks.tasks.filter((obj) => obj.patient && obj.patient.id === this.patient.id);
-        // });
-        // this.teamTasks = [];
-        // let teamTasksPromise = this.getAllTeamMemberTasks(this.carePlan.plan_template.id, formattedDate).then((teamMemberTasks: any) => {
-        //   teamMemberTasks.forEach((tasks) => {
-        //     this.teamTasks = this.teamTasks.concat(tasks.tasks.filter((obj) => obj.patient && obj.patient.id === this.patient.id));
-        //   });
-        // });
-        // // If a new task has been created, open the edit modal
         if (!newTask) return;
         setTimeout(() => {
           this.editTeamTask(newTask);
@@ -745,14 +732,23 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
     let modalSub = this.modals.open(EditTaskComponent, {
       closeDisabled: false,
       data: {
+        type: 'plan-team',
         task: task,
-        totalPatients: 0,
-        type: 'team',
       },
       overflow: 'visible',
       width: '384px',
     }).subscribe(
       (updatedTask) => {
+        let formattedDate = this.selectedDate.utc().format('YYYY-MM-DD');
+        let userTasksPromise = this.getUserTasks(this.carePlan.plan_template.id, formattedDate).then((tasks: any) => {
+          this.userTasks = tasks.tasks.filter((obj) => obj.patient && obj.patient.id === this.patient.id);
+        });
+        this.teamTasks = [];
+        let teamTasksPromise = this.getAllTeamMemberTasks(this.carePlan.plan_template.id, formattedDate).then((teamMemberTasks: any) => {
+          teamMemberTasks.forEach((tasks) => {
+            this.teamTasks = this.teamTasks.concat(tasks.tasks.filter((obj) => obj.patient && obj.patient.id === this.patient.id));
+          });
+        });
         if (!updatedTask) return;
       },
       (err) => {},

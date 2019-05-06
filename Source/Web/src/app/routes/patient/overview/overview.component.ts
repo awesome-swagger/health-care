@@ -100,7 +100,7 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
 
   public fetchTeamTasks(planId) {
     let promise = new Promise((resolve, reject) => {
-      let tasksSub = this.store.TeamTaskTemplate.readListPaged({
+      let tasksSub = this.store.PlanTeamTemplate.readListPaged({
         plan: planId
       }).subscribe(
         (teamTasks) => resolve(teamTasks),
@@ -211,10 +211,10 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
     this.fetchPlanGoals(carePlan.plan_template.id).then((planGoals: any) => {
       this.planGoals = planGoals;
     });
-    this.fetchTeamTasks(carePlan.plan_template.id).then((planTeamTasks: any) => {
+    this.fetchTeamTasks(carePlan.id).then((planTeamTasks: any) => {
       this.planTeamTasks = planTeamTasks;
-      this.planTeamManagerTasks = planTeamTasks.filter((task) => task.is_manager_task);
-      this.planTeamMemberTasks = planTeamTasks.filter((task) => !task.is_manager_task);
+      this.planTeamManagerTasks = planTeamTasks.filter((task) => task.team_task_template.is_manager_task);
+      this.planTeamMemberTasks = planTeamTasks.filter((task) => !task.team_task_template.is_manager_task);
     });
     this.fetchPatientTasks(carePlan.id).then((planPatientTasks: any) => {
       this.planPatientTasks = planPatientTasks;
@@ -335,7 +335,7 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
      closeDisabled: false,
      data: {
        title: 'Delete Goal?',
-       body: `Are you sure you want to delete this care plan goal? This will affect all patients currently assigned to this care plan.`,
+       body: `Are you sure you want to delete this care plan goal?`,
        cancelText: 'Cancel',
        okText: 'Confirm',
       },
@@ -366,19 +366,12 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
     let modalSub = this.modals.open(AddCTTaskComponent, {
       closeDisabled: false,
       data: {
-        type: 'manager',
-        planTemplateId: this.carePlan.plan_template.id,
-        totalPatients: 0,
+        type: 'plan-manager',
+        planId: this.carePlan.id,
       },
       width: '384px',
     }).subscribe(
       (newTask) => {
-        // Refetch team tasks since they might have changed in the add modal
-        this.fetchTeamTasks(this.carePlan.plan_template.id).then((planTeamTasks: any) => {
-          this.planTeamTasks = planTeamTasks;
-          this.planTeamManagerTasks = planTeamTasks.filter((task) => task.is_manager_task);
-          this.planTeamMemberTasks = planTeamTasks.filter((task) => !task.is_manager_task);
-        });
         // If a new task has been created, open the edit modal
         if (!newTask) return;
         setTimeout(() => {
@@ -397,16 +390,19 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
     let modalSub = this.modals.open(EditTaskComponent, {
       closeDisabled: false,
       data: {
+        type: 'plan-manager',
         task: task,
-        totalPatients: 0,
-        type: 'manager',
       },
       overflow: 'visible',
       width: '384px',
     }).subscribe(
       (updatedTask) => {
+        this.fetchTeamTasks(this.carePlan.id).then((planTeamTasks: any) => {
+          this.planTeamTasks = planTeamTasks;
+          this.planTeamManagerTasks = planTeamTasks.filter((task) => task.team_task_template.is_manager_task);
+          this.planTeamMemberTasks = planTeamTasks.filter((task) => !task.team_task_template.is_manager_task);
+        });
         if (!updatedTask) return;
-        this.planTeamManagerTasks[taskIndex] = updatedTask;
       },
       (err) => {},
       () => {
@@ -416,13 +412,13 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
   }
 
   public formatSelectedRoles(task) {
-    if (!task.roles || task.roles.length < 1) {
+    if (!task.team_task_template.roles || task.team_task_template.roles.length < 1) {
       return '';
     }
-    if (task.roles.length > 1) {
-      return `${task.roles[0].name}, +${task.roles.length - 1}`
+    if (task.team_task_template.roles.length > 1) {
+      return `${task.team_task_template.roles[0].name}, +${task.team_task_template.roles.length - 1}`
     } else {
-      return task.roles[0].name;
+      return task.team_task_template.roles[0].name;
     }
   }
 
@@ -430,21 +426,13 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
     let modalSub = this.modals.open(AddCTTaskComponent, {
       closeDisabled: false,
       data: {
-        type: 'team',
-        planTemplateId: this.carePlan.plan_template.id,
-        totalPatients: 0,
+        type: 'plan-team',
+        planId: this.carePlan.id,
       },
       overflow: 'visible',
       width: '384px',
     }).subscribe(
       (newTask) => {
-        // Refetch team tasks since they might have changed in the add modal
-        this.fetchTeamTasks(this.carePlan.plan_template.id).then((planTeamTasks: any) => {
-          this.planTeamTasks = planTeamTasks;
-          this.planTeamManagerTasks = planTeamTasks.filter((task) => task.is_manager_task);
-          this.planTeamMemberTasks = planTeamTasks.filter((task) => !task.is_manager_task);
-        });
-        // If a new task has been created, open the edit modal
         if (!newTask) return;
         setTimeout(() => {
           this.editTeamTask(newTask);
@@ -462,16 +450,19 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
     let modalSub = this.modals.open(EditTaskComponent, {
       closeDisabled: false,
       data: {
+        type: 'plan-team',
         task: task,
-        totalPatients: 0,
-        type: 'team',
       },
       overflow: 'visible',
       width: '384px',
     }).subscribe(
       (updatedTask) => {
+        this.fetchTeamTasks(this.carePlan.id).then((planTeamTasks: any) => {
+          this.planTeamTasks = planTeamTasks;
+          this.planTeamManagerTasks = planTeamTasks.filter((task) => task.team_task_template.is_manager_task);
+          this.planTeamMemberTasks = planTeamTasks.filter((task) => !task.team_task_template.is_manager_task);
+        });
         if (!updatedTask) return;
-        this.planTeamMemberTasks[taskIndex] = updatedTask;
       },
       (err) => {},
       () => {
@@ -498,7 +489,7 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
      closeDisabled: false,
      data: {
        title: 'Delete Task?',
-       body: `Are you sure you want to remove this task? This will affect all patients currently assigned to this care plan.`,
+       body: `Are you sure you want to remove this task from this patient's care plan?`,
        cancelText: 'Cancel',
        okText: 'confirm',
       },
@@ -507,9 +498,7 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
       (data) => {
         if (!data) return;
         if (data.toLowerCase() === 'confirm') {
-          let destroySub = this.store.TeamTaskTemplate.update(task.id, {
-            is_active: false,
-          }, true).subscribe(
+          let destroySub = this.store.PlanTeamTemplate.destroy(task.id).subscribe(
             (resp) => {
               this.planTeamTasks.splice(tasksIndex, 1);
               if (is_manager_task) {
@@ -588,7 +577,7 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
      closeDisabled: false,
      data: {
        title: 'Delete Task?',
-       body: `Are you sure you want to remove this task? This will affect all patients currently assigned to this care plan.`,
+       body: `Are you sure you want to remove this task from this patient's care plan?`,
        cancelText: 'Cancel',
        okText: 'confirm',
       },
@@ -698,7 +687,7 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
      closeDisabled: false,
      data: {
        title: 'Delete Assessment?',
-       body: `Are you sure you want to remove this assessment? This will affect all patients currently assigned to this care plan.`,
+       body: `Are you sure you want to remove this assessment from this patient's care plan?`,
        cancelText: 'Cancel',
        okText: 'Confirm',
       },
@@ -771,7 +760,7 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
      closeDisabled: false,
      data: {
        title: 'Delete Symptom Report?',
-       body: `Are you sure you want to remove this symptom report? This will affect all patients currently assigned to this care plan.`,
+       body: `Are you sure you want to remove this symptom report from this patient's care plan?`,
        cancelText: 'Cancel',
        okText: 'Confirm',
       },
@@ -912,7 +901,7 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
      closeDisabled: true,
      data: {
        title: 'Delete Vital?',
-       body: `Are you sure you want to remove this vital report? This will affect all patients currently assigned to this care plan.`,
+       body: `Are you sure you want to remove this vital report from this patient's care plan?`,
        cancelText: 'Cancel',
        okText: 'Confirm',
       },
@@ -981,7 +970,7 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
      closeDisabled: false,
      data: {
        title: 'Delete Task?',
-       body: 'Are you sure you want to remove this medication task?',
+       body: 'Are you sure you want to remove this medication task from this patient\'s care plan?',
        cancelText: 'Cancel',
        okText: 'Continue',
       },
@@ -1046,7 +1035,7 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
      closeDisabled: false,
      data: {
        title: 'Delete Care Message?',
-       body: `Are you sure you want to remove this message stream? This will affect all patients currently assigned to this care plan.`,
+       body: `Are you sure you want to remove this care message from this patient's care plan?`,
        cancelText: 'Cancel',
        okText: 'Confirm',
       },

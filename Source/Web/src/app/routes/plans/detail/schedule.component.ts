@@ -360,12 +360,6 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       width: '384px',
     }).subscribe(
       (newTask) => {
-        // Refetch team tasks since they might have changed in the add modal
-        this.getTeamTasks(this.planTemplateId).then((teamTaskTemplates: any) => {
-          this.teamTaskTemplates = teamTaskTemplates;
-          this.teamManagerTemplates = teamTaskTemplates.filter((task) => task.is_manager_task);
-          this.teamMemberTemplates = teamTaskTemplates.filter((task) => !task.is_manager_task);
-        });
         // If a new task has been created, open the edit modal
         if (!newTask) return;
         setTimeout(() => {
@@ -392,8 +386,13 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       width: '384px',
     }).subscribe(
       (updatedTask) => {
+        // Refetch team tasks since they might have changed in the add modal
+        this.getTeamTasks(this.planTemplateId).then((teamTaskTemplates: any) => {
+          this.teamTaskTemplates = teamTaskTemplates;
+          this.teamManagerTemplates = teamTaskTemplates.filter((task) => task.is_manager_task);
+          this.teamMemberTemplates = teamTaskTemplates.filter((task) => !task.is_manager_task);
+        });
         if (!updatedTask) return;
-        this.teamManagerTemplates[taskIndex] = updatedTask;
       },
       (err) => {},
       () => {
@@ -425,12 +424,6 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       width: '384px',
     }).subscribe(
       (newTask) => {
-        // Refetch team tasks since they might have changed in the add modal
-        this.getTeamTasks(this.planTemplateId).then((teamTaskTemplates: any) => {
-          this.teamTaskTemplates = teamTaskTemplates;
-          this.teamManagerTemplates = teamTaskTemplates.filter((task) => task.is_manager_task);
-          this.teamMemberTemplates = teamTaskTemplates.filter((task) => !task.is_manager_task);
-        });
         // If a new task has been created, open the edit modal
         if (!newTask) return;
         setTimeout(() => {
@@ -457,8 +450,13 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       width: '384px',
     }).subscribe(
       (updatedTask) => {
+        // Refetch team tasks since they might have changed in the add modal
+        this.getTeamTasks(this.planTemplateId).then((teamTaskTemplates: any) => {
+          this.teamTaskTemplates = teamTaskTemplates;
+          this.teamManagerTemplates = teamTaskTemplates.filter((task) => task.is_manager_task);
+          this.teamMemberTemplates = teamTaskTemplates.filter((task) => !task.is_manager_task);
+        });
         if (!updatedTask) return;
-        this.teamMemberTemplates[taskIndex] = updatedTask;
       },
       (err) => {},
       () => {
@@ -722,9 +720,6 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       overflow: 'visible',
       width: '384px',
     }).subscribe((symptom) => {
-      this.getSymptomTasks(this.planTemplateId).then((symptoms: any) => {
-        this.symptomTemplates = symptoms;
-      });
       if (!symptom) return;
       setTimeout(() => {
         this.editSymptom(symptom);
@@ -743,13 +738,10 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       overflow: 'visible',
       width: '384px',
     }).subscribe((res) => {
-      if (!res) return;
-      let index = this.symptomTemplates.findIndex((obj) => {
-        return obj.id === res.id;
+      this.getSymptomTasks(this.planTemplateId).then((symptoms: any) => {
+        this.symptomTemplates = symptoms;
       });
-      if (index >= 0) {
-        this.symptomTemplates[index] = res;
-      }
+      if (!res) return;
     });
   }
 
