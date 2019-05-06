@@ -63,7 +63,7 @@ def calculate_task_percentage(patient):
 
     # Assessment tasks
     assessment_tasks = AssessmentTask.objects.filter(
-        plan__patient=patient,
+        assessment_template__plan__patient=patient,
         **kwargs
     )
     completed_assessment_tasks = assessment_tasks.filter(is_complete=True)
@@ -105,10 +105,10 @@ def get_all_tasks_of_patient_today(patient):
         symptom_template__plan__patient__id=patient.id,
         due_datetime__range=(today_min, today_max))
     assessment_tasks = AssessmentTask.objects.filter(
-        plan__patient__id=patient.id,
+        assessment_template__plan__patient__id=patient.id,
         due_datetime__range=(today_min, today_max))
     vital_tasks = VitalTask.objects.filter(
-        plan__patient__id=patient.id,
+        vital_template__plan__patient__id=patient.id,
         due_datetime__range=(today_min, today_max))
 
     if patient_tasks.exists():
@@ -211,7 +211,7 @@ def get_all_tasks_for_today(user, **kwargs):
             assessment_template__plan__patient__id=patient.id,
             due_datetime__range=(today_min, today_max))
         vital_tasks = VitalTask.objects.filter(
-            plan__patient__id=patient.id,
+            vital_template__plan__patient__id=patient.id,
             due_datetime__range=(today_min, today_max))
         if exclude_done:
             patient_tasks = patient_tasks.exclude(status='done')
@@ -230,7 +230,7 @@ def get_all_tasks_for_today(user, **kwargs):
             assessment_tasks = assessment_tasks.filter(
                 assessment_template__assessment_task_template__plan_template=plan_template)
             vital_tasks = vital_tasks.filter(
-                vital_task_template__plan_template=plan_template)
+                vital_template__vital_task_template__plan_template=plan_template)
 
         if patient_tasks.exists():
             serializer = PatientTaskTodaySerializer(

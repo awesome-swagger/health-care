@@ -94,9 +94,12 @@ class BaseOrganizationTestMixin(TasksMixin):
                         template = self.create_assessment_task_template(**{
                             'tracks_outcome': True
                         })
+                        assessment_template = self.create_plan_assessment_template(
+                            plan=plan,
+                            assessment_task_template=template
+                        )
                         task = self.create_assessment_task(**{
-                            'plan': plan,
-                            'assessment_task_template': template
+                            'assessment_template': assessment_template,
                         })
                         questions = template.questions.all()
                         self.create_responses_to_multiple_questions(template,
@@ -104,8 +107,8 @@ class BaseOrganizationTestMixin(TasksMixin):
                                                                     questions)
 
         outcome_tasks = AssessmentTask.objects.filter(
-            plan__in=plans,
-            assessment_task_template__tracks_outcome=True
+            assessment_template__plan__in=plans,
+            assessment_template__assessment_task_template__tracks_outcome=True
         ).aggregate(outcome_average=Avg('responses__rating'))
         average = outcome_tasks['outcome_average'] or 0
         average_outcome = round((average / 5) * 100)
@@ -115,8 +118,11 @@ class BaseOrganizationTestMixin(TasksMixin):
             template = self.create_assessment_task_template(**{
                 'tracks_outcome': True
             })
+            assessment_template = self.create_plan_assessment_template(
+                assessment_task_template=template
+            )
             task = self.create_assessment_task(**{
-                'assessment_task_template': template
+                'assessment_template': assessment_template
             })
             self.create_multiple_assessment_questions(template)
             questions = template.questions.all()
@@ -127,9 +133,12 @@ class BaseOrganizationTestMixin(TasksMixin):
 
     def generate_assessment_tasks(self, plan, due_datetime):
         template = self.create_assessment_task_template()
+        assessment_template = self.create_plan_assessment_template(
+            plan=plan,
+            assessment_task_template=template
+        )
         task = self.create_assessment_task(**{
-            'plan': plan,
-            'assessment_task_template': template,
+            'assessment_template': assessment_template,
             'due_datetime': due_datetime
         })
         questions = template.questions.all()
@@ -139,17 +148,23 @@ class BaseOrganizationTestMixin(TasksMixin):
 
         # create incomplete assessment tasks
         incomplete_template = self.create_assessment_task_template()
+        incomplete_assessment_template = self.create_plan_assessment_template(
+            plan=plan,
+            assessment_task_template=incomplete_template
+        )
         self.create_assessment_task(**{
-            'plan': plan,
-            'assessment_task_template': incomplete_template,
+            'assessment_template': incomplete_assessment_template,
             'due_datetime': due_datetime
         })
 
     def generate_vital_tasks(self, plan, due_datetime):
         template = self.create_vital_task_template()
+        vital_template = self.create_plan_vital_template(
+            plan=plan,
+            vital_task_template=template
+        )
         task = self.create_vital_task(**{
-            'plan': plan,
-            'vital_task_template': template,
+            'vital_template': vital_template,
             'due_datetime': due_datetime
         })
         self.create_responses_to_multiple_vital_questions(template,
@@ -157,9 +172,12 @@ class BaseOrganizationTestMixin(TasksMixin):
 
         # create incomplete vital tasks
         incomplete_template = self.create_vital_task_template()
+        incomplete_vital_template = self.create_plan_vital_template(
+            plan=plan,
+            vital_task_template=incomplete_template
+        )
         self.create_vital_task(**{
-            'plan': plan,
-            'vital_task_template': incomplete_template,
+            'vital_template': incomplete_vital_template,
             'due_datetime': due_datetime
         })
 
@@ -259,7 +277,7 @@ class BaseOrganizationTestMixin(TasksMixin):
                 self.generate_vital_tasks(plan, due_datetime)
 
         assessment_tasks = AssessmentTask.objects.filter(
-            plan__in=plans,
+            assessment_template__plan__in=plans,
             due_datetime__lte=now
         )
         patient_tasks = PatientTask.objects.filter(
@@ -275,7 +293,7 @@ class BaseOrganizationTestMixin(TasksMixin):
             due_datetime__lte=now
         )
         vital_tasks = VitalTask.objects.filter(
-            plan__in=plans,
+            vital_template__plan__in=plans,
             due_datetime__lte=now
         )
         total_patient_tasks = patient_tasks.count()
@@ -785,9 +803,12 @@ class TestOrganizationPatientRiskLevel(TasksMixin, APITestCase):
                 template = self.create_assessment_task_template(**{
                     'tracks_outcome': True
                 })
+                assessment_template = self.create_plan_assessment_template(
+                    plan=plan,
+                    assessment_task_template=template
+                )
                 task = self.create_assessment_task(**{
-                    'plan': plan,
-                    'assessment_task_template': template
+                    'assessment_template': assessment_template,
                 })
                 self.create_multiple_assessment_questions(template)
                 questions = template.questions.all()
@@ -819,9 +840,12 @@ class TestOrganizationPatientRiskLevel(TasksMixin, APITestCase):
                 template = self.create_assessment_task_template(**{
                     'tracks_outcome': True
                 })
+                assessment_template = self.create_plan_assessment_template(
+                    plan=plan,
+                    assessment_task_template=template
+                )
                 task = self.create_assessment_task(**{
-                    'plan': plan,
-                    'assessment_task_template': template
+                    'assessment_template': assessment_template,
                 })
                 self.create_multiple_assessment_questions(template)
                 questions = template.questions.all()
@@ -853,9 +877,12 @@ class TestOrganizationPatientRiskLevel(TasksMixin, APITestCase):
                 template = self.create_assessment_task_template(**{
                     'tracks_outcome': True
                 })
+                assessment_template = self.create_plan_assessment_template(
+                    plan=plan,
+                    assessment_task_template=template
+                )
                 task = self.create_assessment_task(**{
-                    'plan': plan,
-                    'assessment_task_template': template
+                    'assessment_template': assessment_template,
                 })
                 self.create_multiple_assessment_questions(template)
                 questions = template.questions.all()
@@ -896,9 +923,12 @@ class TestOrganizationPatientRiskLevel(TasksMixin, APITestCase):
                 template = self.create_assessment_task_template(**{
                     'tracks_outcome': True
                 })
+                assessment_template = self.create_plan_assessment_template(
+                    plan=plan,
+                    assessment_task_template=template
+                )
                 task = self.create_assessment_task(**{
-                    'plan': plan,
-                    'assessment_task_template': template
+                    'assessment_template': assessment_template,
                 })
                 self.create_multiple_assessment_questions(template)
                 questions = template.questions.all()

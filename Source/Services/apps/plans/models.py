@@ -130,6 +130,13 @@ class CarePlan(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
         )
 
     @property
+    def vital_tasks(self):
+        VitalTask = apps.get_model('tasks', 'VitalTask')
+        return VitalTask.objects.filter(
+            vital_template__plan=self
+        )
+
+    @property
     def total_time_spent(self):
         time_spent = self.activities.aggregate(total=Sum('time_spent'))
         total = time_spent['total'] or 0

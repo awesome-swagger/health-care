@@ -6,12 +6,16 @@ from django.utils.translation import ugettext_lazy as _
 
 from .signals import (
     assessmentresponse_post_save,
+    careplanassessmenttemplate_post_init,
+    careplanassessmenttemplate_post_save,
     careplanpatienttemplate_post_init,
     careplanpatienttemplate_post_save,
     careplansymptomtemplate_post_init,
     careplansymptomtemplate_post_save,
     careplanteamtemplate_post_init,
     careplanteamtemplate_post_save,
+    careplanvitaltemplate_post_init,
+    careplanvitaltemplate_post_save,
     symptomrating_post_save,
     vitalresponse_post_save,
     symptomrating_post_delete,
@@ -239,6 +243,7 @@ class AbstractPlanTaskTemplate(UUIDPrimaryKeyMixin):
             'CarePlanPatientTemplate': getattr(self, 'patient_task_template', None),
             'CarePlanSymptomTemplate': getattr(self, 'symptom_task_template', None),
             'CarePlanTeamTemplate': getattr(self, 'team_task_template', None),
+            'CarePlanVitalTemplate': getattr(self, 'vital_task_template', None),
         }
         return plan_task_template_lookup[model_name]
 
@@ -807,21 +812,48 @@ class VitalTaskTemplate(AbstractTaskTemplate):
     def __str__(self):
         return self.name
 
+    @property
+    def vital_tasks(self):
+        return VitalTask.objects.filter(
+            vital_template__vital_task_template=self
+        )
+
+
+class CarePlanVitalTemplate(AbstractPlanTaskTemplate):
+    """
+    This stores the connection between a patient's plan and
+    vital task template.
+
+    This is the solution for implementing ad hoc tasks
+    """
+
+    plan = models.ForeignKey(
+        'plans.CarePlan',
+        related_name='plan_vital_templates',
+        on_delete=models.CASCADE)
+    vital_task_template = models.ForeignKey(
+        'tasks.VitalTaskTemplate',
+        related_name='plan_vital_templates',
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True)
+
+    class Meta:
+        verbose_name = _('Care Plan Vital Template')
+        verbose_name = _('Care Plan Vital Templates')
+
+    def __str__(self):
+        return f'{self.plan}: {self.vital_task_template}'
+
 
 class VitalTask(AbstractTask):
     """
     Stores information about a vital task for a specific care plan.
     """
-    plan = models.ForeignKey(
-        CarePlan,
-        related_name='vital_tasks',
-        on_delete=models.CASCADE
-    )
-    vital_task_template = models.ForeignKey(
-        VitalTaskTemplate,
-        related_name='vital_tasks',
-        on_delete=models.CASCADE
-    )
+    vital_template = models.ForeignKey(
+        'tasks.CarePlanVitalTemplate',
+        on_delete=models.CASCADE,
+        related_name='vital_tasks')
     is_complete = models.BooleanField(
         default=False,
         editable=False,
@@ -834,7 +866,7 @@ class VitalTask(AbstractTask):
         ordering = ('appear_datetime', )
 
     def __str__(self):
-        return f"{self.plan.patient.user.get_full_name()}'s vital " + \
+        return f"{self.vital_template.plan.patient.user.get_full_name()}'s vital " + \
             f"report due by {self.due_datetime}"
 
 
@@ -1052,6 +1084,14 @@ models.signals.post_init.connect(
     assessmenttasktemplate_post_init,
     sender=AssessmentTaskTemplate
 )
+models.signals.post_init.connect(
+    careplanassessmenttemplate_post_init,
+    sender=CarePlanAssessmentTemplate
+)
+models.signals.post_save.connect(
+    careplanassessmenttemplate_post_save,
+    sender=CarePlanAssessmentTemplate
+)
 models.signals.post_save.connect(
     assessmenttasktemplate_post_save,
     sender=AssessmentTaskTemplate
@@ -1063,6 +1103,14 @@ models.signals.post_save.connect(
 models.signals.post_delete.connect(
     assessmenttask_post_delete,
     sender=AssessmentTask
+)
+models.signals.post_init.connect(
+    careplanvitaltemplate_post_init,
+    sender=CarePlanVitalTemplate
+)
+models.signals.post_save.connect(
+    careplanvitaltemplate_post_save,
+    sender=CarePlanVitalTemplate
 )
 models.signals.post_init.connect(
     vitaltasktemplate_post_init,

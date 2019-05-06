@@ -166,9 +166,12 @@ class TestCarePlanUsingEmployee(BillingsMixin, APITestCase):
                             template = self.create_assessment_task_template(**{
                                 'tracks_outcome': True
                             })
+                            assessment_template = self.create_plan_assessment_template(
+                                plan=plan,
+                                assessment_task_template=template
+                            )
                             task = self.create_assessment_task(**{
-                                'plan': plan,
-                                'assessment_task_template': template
+                                'assessment_template': assessment_template,
                             })
                             questions = template.questions.all()
                             self.create_responses_to_multiple_questions(
@@ -187,9 +190,12 @@ class TestCarePlanUsingEmployee(BillingsMixin, APITestCase):
                     template = self.create_assessment_task_template(**{
                         'tracks_outcome': True
                     })
+                    assessment_template = self.create_plan_assessment_template(
+                        plan=plan,
+                        assessment_task_template=template
+                    )
                     task = self.create_assessment_task(**{
-                        'plan': plan,
-                        'assessment_task_template': template
+                        'assessment_template': assessment_template,
                     })
                     questions = template.questions.all()
                     self.create_responses_to_multiple_questions(
@@ -204,9 +210,12 @@ class TestCarePlanUsingEmployee(BillingsMixin, APITestCase):
                 template = self.create_assessment_task_template(**{
                     'tracks_outcome': True
                 })
+                assessment_template = self.create_plan_assessment_template(
+                    plan=plan,
+                    assessment_task_template=template
+                )
                 task = self.create_assessment_task(**{
-                    'plan': plan,
-                    'assessment_task_template': template
+                    'assessment_template': assessment_template,
                 })
                 questions = template.questions.all()
                 self.create_responses_to_multiple_questions(
@@ -216,8 +225,8 @@ class TestCarePlanUsingEmployee(BillingsMixin, APITestCase):
                 )
 
         outcome_tasks = AssessmentTask.objects.filter(
-            plan__in=plans,
-            assessment_task_template__tracks_outcome=True
+            assessment_template__plan__in=plans,
+            assessment_template__assessment_task_template__tracks_outcome=True
         ).aggregate(outcome_average=Avg('responses__rating'))
         average = outcome_tasks['outcome_average'] or 0
         average_outcome = round((average / 5) * 100)
@@ -227,8 +236,11 @@ class TestCarePlanUsingEmployee(BillingsMixin, APITestCase):
             template = self.create_assessment_task_template(**{
                 'tracks_outcome': True
             })
+            assessment_template = self.create_plan_assessment_template(
+                assessment_task_template=template
+            )
             task = self.create_assessment_task(**{
-                'assessment_task_template': template
+                'assessment_template': assessment_template
             })
             self.create_multiple_assessment_questions(template)
             questions = template.questions.all()
@@ -263,9 +275,12 @@ class TestCarePlanUsingEmployee(BillingsMixin, APITestCase):
                             template = self.create_assessment_task_template(**{
                                 'tracks_satisfaction': True
                             })
+                            assessment_template = self.create_plan_assessment_template(
+                                plan=plan,
+                                assessment_task_template=template
+                            )
                             task = self.create_assessment_task(**{
-                                'plan': plan,
-                                'assessment_task_template': template
+                                'assessment_template': assessment_template,
                             })
                             questions = template.questions.all()
                             self.create_responses_to_multiple_questions(
@@ -284,9 +299,12 @@ class TestCarePlanUsingEmployee(BillingsMixin, APITestCase):
                     template = self.create_assessment_task_template(**{
                         'tracks_satisfaction': True
                     })
+                    assessment_template = self.create_plan_assessment_template(
+                        plan=plan,
+                        assessment_task_template=template
+                    )
                     task = self.create_assessment_task(**{
-                        'plan': plan,
-                        'assessment_task_template': template
+                        'assessment_template': assessment_template,
                     })
                     questions = template.questions.all()
                     self.create_responses_to_multiple_questions(
@@ -301,9 +319,12 @@ class TestCarePlanUsingEmployee(BillingsMixin, APITestCase):
                 template = self.create_assessment_task_template(**{
                     'tracks_satisfaction': True
                 })
+                assessment_template = self.create_plan_assessment_template(
+                    plan=plan,
+                    assessment_task_template=template
+                )
                 task = self.create_assessment_task(**{
-                    'plan': plan,
-                    'assessment_task_template': template
+                    'assessment_template': assessment_template,
                 })
                 questions = template.questions.all()
                 self.create_responses_to_multiple_questions(
@@ -313,8 +334,8 @@ class TestCarePlanUsingEmployee(BillingsMixin, APITestCase):
                 )
 
         satisfaction_tasks = AssessmentTask.objects.filter(
-            plan__in=plans,
-            assessment_task_template__tracks_satisfaction=True
+            assessment_template__plan__in=plans,
+            assessment_template__assessment_task_template__tracks_satisfaction=True
         ).aggregate(satisfaction_average=Avg('responses__rating'))
         average = satisfaction_tasks['satisfaction_average'] or 0
         average_satisfaction = round((average / 5) * 100)
@@ -324,8 +345,11 @@ class TestCarePlanUsingEmployee(BillingsMixin, APITestCase):
             template = self.create_assessment_task_template(**{
                 'tracks_satisfaction': True
             })
+            assessment_template = self.create_plan_assessment_template(
+                assessment_task_template=template
+            )
             task = self.create_assessment_task(**{
-                'assessment_task_template': template
+                'assessment_template': assessment_template
             })
             self.create_multiple_assessment_questions(template)
             questions = template.questions.all()
@@ -384,7 +408,7 @@ class TestCarePlanUsingEmployee(BillingsMixin, APITestCase):
             self.generate_vital_tasks(plan, due_datetime)
 
         assessment_tasks = AssessmentTask.objects.filter(
-            plan__in=plans,
+            assessment_template__plan__in=plans,
             due_datetime__lte=now
         )
         patient_tasks = PatientTask.objects.filter(
@@ -400,7 +424,7 @@ class TestCarePlanUsingEmployee(BillingsMixin, APITestCase):
             due_datetime__lte=now
         )
         vital_tasks = VitalTask.objects.filter(
-            plan__in=plans,
+            vital_template__plan__in=plans,
             due_datetime__lte=now
         )
         total_patient_tasks = patient_tasks.count()
@@ -1068,7 +1092,7 @@ class TestCarePlanPostSaveSignalFrequencyOnce(TasksMixin, APITestCase):
 
         response = self.client.post(self.url, payload)
         count = AssessmentTask.objects.filter(
-            plan__id=response.data['id']).count()
+            assessment_template__plan__id=response.data['id']).count()
         self.assertEqual(count, 1)
 
     def test_create_care_plan_vital_task(self):
@@ -1083,7 +1107,7 @@ class TestCarePlanPostSaveSignalFrequencyOnce(TasksMixin, APITestCase):
 
         response = self.client.post(self.url, payload)
         count = VitalTask.objects.filter(
-            plan__id=response.data['id']).count()
+            vital_template__plan__id=response.data['id']).count()
         self.assertEqual(count, 1)
 
 
@@ -1174,7 +1198,7 @@ class TestCarePlanPostSaveSignalDailyWithRepeat(TasksMixin, APITestCase):
 
         response = self.client.post(self.url, payload)
         count = AssessmentTask.objects.filter(
-            plan__id=response.data['id']).count()
+            assessment_template__plan__id=response.data['id']).count()
         self.assertEqual(count, repeat_amount)
 
     def test_create_care_plan_vital_task_with_repeat(self):
@@ -1191,7 +1215,7 @@ class TestCarePlanPostSaveSignalDailyWithRepeat(TasksMixin, APITestCase):
 
         response = self.client.post(self.url, payload)
         count = VitalTask.objects.filter(
-            plan__id=response.data['id']).count()
+            vital_template__plan__id=response.data['id']).count()
         self.assertEqual(count, repeat_amount)
 
 
@@ -1318,7 +1342,7 @@ class TestCarePlanPostSaveSignalDailyWithoutRepeat(TasksMixin, APITestCase):
 
         response = self.client.post(self.url, payload)
         count = AssessmentTask.objects.filter(
-            plan__id=response.data['id']).count()
+            assessment_template__plan__id=response.data['id']).count()
         self.assertEqual(count, days.count())
 
     def test_create_care_plan_vital_task_without_repeat(self):
@@ -1343,7 +1367,7 @@ class TestCarePlanPostSaveSignalDailyWithoutRepeat(TasksMixin, APITestCase):
 
         response = self.client.post(self.url, payload)
         count = VitalTask.objects.filter(
-            plan__id=response.data['id']).count()
+            vital_template__plan__id=response.data['id']).count()
         self.assertEqual(count, days.count())
 
 
@@ -1434,7 +1458,7 @@ class TestCarePlanPostSaveSignalWeeklyWithRepeat(TasksMixin, APITestCase):
 
         response = self.client.post(self.url, payload)
         count = AssessmentTask.objects.filter(
-            plan__id=response.data['id']).count()
+            assessment_template__plan__id=response.data['id']).count()
         self.assertEqual(count, repeat_amount)
 
     def test_create_care_plan_vital_task_with_repeat(self):
@@ -1451,7 +1475,7 @@ class TestCarePlanPostSaveSignalWeeklyWithRepeat(TasksMixin, APITestCase):
 
         response = self.client.post(self.url, payload)
         count = VitalTask.objects.filter(
-            plan__id=response.data['id']).count()
+            vital_template__plan__id=response.data['id']).count()
         self.assertEqual(count, repeat_amount)
 
 
@@ -1546,7 +1570,7 @@ class TestCarePlanPostSaveSignalWeeklyWithoutRepeat(TasksMixin, APITestCase):
 
         response = self.client.post(self.url, payload)
         count = AssessmentTask.objects.filter(
-            plan__id=response.data['id']).count()
+            assessment_template__plan__id=response.data['id']).count()
         self.assertEqual(count, self.duration_weeks)
 
     def test_create_care_plan_vital_task_without_repeat(self):
@@ -1563,7 +1587,7 @@ class TestCarePlanPostSaveSignalWeeklyWithoutRepeat(TasksMixin, APITestCase):
 
         response = self.client.post(self.url, payload)
         count = VitalTask.objects.filter(
-            plan__id=response.data['id']).count()
+            vital_template__plan__id=response.data['id']).count()
         self.assertEqual(count, self.duration_weeks)
 
 
@@ -1654,7 +1678,7 @@ class TestCarePlanPostSaveSignalOtherDayWithRepeat(TasksMixin, APITestCase):
 
         response = self.client.post(self.url, payload)
         count = AssessmentTask.objects.filter(
-            plan__id=response.data['id']).count()
+            assessment_template__plan__id=response.data['id']).count()
         self.assertEqual(count, repeat_amount)
 
     def test_create_care_plan_vital_task_with_repeat(self):
@@ -1671,7 +1695,7 @@ class TestCarePlanPostSaveSignalOtherDayWithRepeat(TasksMixin, APITestCase):
 
         response = self.client.post(self.url, payload)
         count = VitalTask.objects.filter(
-            plan__id=response.data['id']).count()
+            vital_template__plan__id=response.data['id']).count()
         self.assertEqual(count, repeat_amount)
 
 
@@ -1806,7 +1830,7 @@ class TestCarePlanPostSaveSignalOtherDayWithoutRepeat(TasksMixin, APITestCase):
 
         response = self.client.post(self.url, payload)
         count = AssessmentTask.objects.filter(
-            plan__id=response.data['id']).count()
+            assessment_template__plan__id=response.data['id']).count()
         self.assertEqual(count, days.count())
 
     def test_create_care_plan_vital_task_without_repeat(self):
@@ -1833,7 +1857,7 @@ class TestCarePlanPostSaveSignalOtherDayWithoutRepeat(TasksMixin, APITestCase):
 
         response = self.client.post(self.url, payload)
         count = VitalTask.objects.filter(
-            plan__id=response.data['id']).count()
+            vital_template__plan__id=response.data['id']).count()
         self.assertEqual(count, days.count())
 
 
@@ -1924,7 +1948,7 @@ class TestCarePlanPostSaveSignalWeekdaysWithRepeat(TasksMixin, APITestCase):
 
         response = self.client.post(self.url, payload)
         count = AssessmentTask.objects.filter(
-            plan__id=response.data['id']).count()
+            assessment_template__plan__id=response.data['id']).count()
         self.assertEqual(count, repeat_amount)
 
     def test_create_care_plan_vital_task_with_repeat(self):
@@ -1941,7 +1965,7 @@ class TestCarePlanPostSaveSignalWeekdaysWithRepeat(TasksMixin, APITestCase):
 
         response = self.client.post(self.url, payload)
         count = VitalTask.objects.filter(
-            plan__id=response.data['id']).count()
+            vital_template__plan__id=response.data['id']).count()
         self.assertEqual(count, repeat_amount)
 
 
@@ -2081,7 +2105,7 @@ class TestCarePlanPostSaveSignalWeekdaysWithoutRepeat(TasksMixin, APITestCase):
 
         response = self.client.post(self.url, payload)
         count = AssessmentTask.objects.filter(
-            plan__id=response.data['id']).count()
+            assessment_template__plan__id=response.data['id']).count()
         self.assertEqual(count, days.count())
 
     def test_create_care_plan_vital_task_without_repeat(self):
@@ -2109,7 +2133,7 @@ class TestCarePlanPostSaveSignalWeekdaysWithoutRepeat(TasksMixin, APITestCase):
 
         response = self.client.post(self.url, payload)
         count = VitalTask.objects.filter(
-            plan__id=response.data['id']).count()
+            vital_template__plan__id=response.data['id']).count()
         self.assertEqual(count, days.count())
 
 
@@ -2200,7 +2224,7 @@ class TestCarePlanPostSaveSignalWeekendsWithRepeat(TasksMixin, APITestCase):
 
         response = self.client.post(self.url, payload)
         count = AssessmentTask.objects.filter(
-            plan__id=response.data['id']).count()
+            assessment_template__plan__id=response.data['id']).count()
         self.assertEqual(count, repeat_amount)
 
     def test_create_care_plan_vital_task_with_repeat(self):
@@ -2217,5 +2241,5 @@ class TestCarePlanPostSaveSignalWeekendsWithRepeat(TasksMixin, APITestCase):
 
         response = self.client.post(self.url, payload)
         count = VitalTask.objects.filter(
-            plan__id=response.data['id']).count()
+            vital_template__plan__id=response.data['id']).count()
         self.assertEqual(count, repeat_amount)
