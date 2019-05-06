@@ -404,7 +404,7 @@ class CarePlanViewSet(viewsets.ModelViewSet):
             assessment_template__plan__in=queryset,
             due_datetime__lte=now)
         vital_tasks = VitalTask.objects.filter(
-            plan__in=queryset,
+            vital_template__plan__in=queryset,
             due_datetime__lte=now)
 
         total_patient_tasks = patient_tasks.count()
