@@ -1159,6 +1159,46 @@ class CarePlanVitalTemplateSerializer(RepresentationMixin,
             }
         ]
 
+    def validate(self, data):
+        vital_task_template = data.get('vital_task_template')
+
+        if self.instance is not None and vital_task_template is None:
+            vital_task_template = self.instance.vital_task_template
+
+        if vital_task_template is None:
+            custom_start_on_day = data.get('custom_start_on_day')
+            custom_frequency = data.get('custom_frequency')
+            custom_repeat_amount = data.get('custom_repeat_amount')
+            custom_appear_time = data.get('custom_appear_time')
+            custom_due_time = data.get('custom_due_time')
+
+            if custom_start_on_day is None:
+                raise serializers.ValidationError({
+                    'custom_start_on_day': _('This field is required.')
+                })
+
+            if custom_frequency is None:
+                raise serializers.ValidationError({
+                    'custom_frequency': _('This field is required.')
+                })
+
+            if custom_repeat_amount is None:
+                raise serializers.ValidationError({
+                    'custom_repeat_amount': _('This field is required.')
+                })
+
+            if custom_appear_time is None:
+                raise serializers.ValidationError({
+                    'custom_appear_time': _('This field is required.')
+                })
+
+            if custom_due_time is None:
+                raise serializers.ValidationError({
+                    'custom_due_time': _('This field is required.')
+                })
+
+        return data
+
 
 class VitalTaskSerializer(RepresentationMixin, serializers.ModelSerializer):
     """
