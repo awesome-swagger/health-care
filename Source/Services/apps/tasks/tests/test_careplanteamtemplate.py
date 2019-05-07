@@ -89,6 +89,66 @@ class TestCarePlanTeamTemplateUsingEmployee(TasksMixin, APITestCase):
         response = self.client.post(self.url, payload)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
+    def test_create_team_template_without_task_template_start_on_day(self):
+        payload = {
+            'plan': self.plan.id,
+            'custom_frequency': 'once',
+            'custom_repeat_amount': -1,
+            'custom_appear_time': datetime.time(8, 0, 0),
+            'custom_due_time': datetime.time(17, 0, 0)
+        }
+        response = self.client.post(self.url, payload)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertTrue('custom_start_on_day' in response.data.keys())
+
+    def test_create_team_template_without_task_template_frequency(self):
+        payload = {
+            'plan': self.plan.id,
+            'custom_start_on_day': random.randint(1, 5),
+            'custom_repeat_amount': -1,
+            'custom_appear_time': datetime.time(8, 0, 0),
+            'custom_due_time': datetime.time(17, 0, 0)
+        }
+        response = self.client.post(self.url, payload)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertTrue('custom_frequency' in response.data.keys())
+
+    def test_create_team_template_without_task_template_repeat_amount(self):
+        payload = {
+            'plan': self.plan.id,
+            'custom_start_on_day': random.randint(1, 5),
+            'custom_frequency': 'once',
+            'custom_appear_time': datetime.time(8, 0, 0),
+            'custom_due_time': datetime.time(17, 0, 0)
+        }
+        response = self.client.post(self.url, payload)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertTrue('custom_repeat_amount' in response.data.keys())
+
+    def test_create_team_template_without_task_template_appear_time(self):
+        payload = {
+            'plan': self.plan.id,
+            'custom_start_on_day': random.randint(1, 5),
+            'custom_frequency': 'once',
+            'custom_repeat_amount': -1,
+            'custom_due_time': datetime.time(17, 0, 0)
+        }
+        response = self.client.post(self.url, payload)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertTrue('custom_appear_time' in response.data.keys())
+
+    def test_create_team_template_without_task_template_due_time(self):
+        payload = {
+            'plan': self.plan.id,
+            'custom_start_on_day': random.randint(1, 5),
+            'custom_frequency': 'once',
+            'custom_repeat_amount': -1,
+            'custom_appear_time': datetime.time(8, 0, 0),
+        }
+        response = self.client.post(self.url, payload)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertTrue('custom_due_time' in response.data.keys())
+
     def test_full_update_team_template(self):
         patient = self.create_patient(facility=self.facility)
         plan = self.create_care_plan(patient)
