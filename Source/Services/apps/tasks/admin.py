@@ -18,6 +18,7 @@ from apps.tasks.models import (
     AssessmentTask,
     AssessmentResponse,
     VitalTaskTemplate,
+    CarePlanVitalTemplate,
     VitalTask,
     VitalQuestion,
     VitalResponse,
@@ -154,6 +155,10 @@ class VitalTaskTemplateAdmin(admin.ModelAdmin):
         'appear_time', 'due_time', 'is_active', 'is_available',  )
 
 
+class CarePlanVitalTemplateAdmin(admin.ModelAdmin):
+    list_display = ('plan', 'vital_task_template', )
+
+
 class VitalTaskAdmin(admin.ModelAdmin):
     """
     Admin view for :model:`tasks.VitalTask`
@@ -180,4 +185,5 @@ admin.site.register(AssessmentTaskTemplate, AssessmentTaskTemplateAdmin)
 admin.site.register(CarePlanAssessmentTemplate, CarePlanAssessmentTemplateAdmin)
 admin.site.register(AssessmentTask, AssessmentTaskAdmin)
 admin.site.register(VitalTaskTemplate, VitalTaskTemplateAdmin)
+admin.site.register(CarePlanVitalTemplate, CarePlanVitalTemplateAdmin)
 admin.site.register(VitalTask, VitalTaskAdmin)
