@@ -19,7 +19,8 @@ from ..models import (PatientDiagnosis,
                       ProblemArea,
                       PotentialPatient,
                       PatientStat,
-                      EmergencyContact,)
+                      EmergencyContact,
+                      ProspectivePatient)
 from ..permissions import (
     PatientProfilePermissions,
     PatientSearchPermissions,
@@ -41,7 +42,8 @@ from .serializers import (PatientDashboardSerializer,
                           PotentialPatientSerializer,
                           FacilityInactivePatientSerializer,
                           LatestPatientSymptomSerializer,
-                          EmergencyContactSerializer,)
+                          EmergencyContactSerializer,
+                          ProspectivePatientSerializer,)
 from apps.core.api.views import FacilityViewSet
 from apps.core.api.mixins import ParentViewSetPermissionMixin
 from apps.core.api.pagination import OrganizationEmployeePagination
@@ -272,6 +274,12 @@ class PatientDiagnosisViewSet(viewsets.ModelViewSet):
             return qs.filter(patient__id=patient_profile.id)
         else:
             return qs.none()
+
+
+class ProspectivePatientViewSet(viewsets.ModelViewSet):
+    serializer_class = ProspectivePatientSerializer
+    permission_classes = (permissions.IsAuthenticated,)
+    queryset = ProspectivePatient.objects.all()
 
 
 class PatientStatViewSet(viewsets.ModelViewSet):

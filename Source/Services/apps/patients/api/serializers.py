@@ -29,7 +29,8 @@ from apps.patients.models import (PatientDiagnosis, PatientMedication,
                                   PatientProcedure, PatientProfile,
                                   ProblemArea, PatientVerificationCode,
                                   ReminderEmail, PotentialPatient,
-                                  PatientStat, EmergencyContact)
+                                  PatientStat, EmergencyContact,
+                                  ProspectivePatient)
 from apps.plans.api.serializers import (InfoMessageSerializer,
                                         CarePlanTemplateSerializer,
                                         CarePlanSerializer)
@@ -211,6 +212,12 @@ class AddPatientToPlanSerializer(ReferenceCheckMixin,
 class PatientDiagnosisSerializer(serializers.ModelSerializer):
     class Meta:
         model = PatientDiagnosis
+        fields = '__all__'
+
+
+class ProspectivePatientSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProspectivePatient
         fields = '__all__'
 
 
