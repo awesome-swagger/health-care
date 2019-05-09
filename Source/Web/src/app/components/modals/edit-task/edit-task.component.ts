@@ -53,6 +53,8 @@ export class EditTaskComponent implements OnInit {
       type: 'assessment',
       title: 'Edit Assessment',
       dataModel: this.store.AssessmentTaskTemplate,
+      questionModel: this.store.AssessmentQuestion,
+      questionRelatedField: 'assessment_task_template',
     },
     {
       type: 'symptom',
@@ -63,25 +65,13 @@ export class EditTaskComponent implements OnInit {
       type: 'vital',
       title: 'Edit Vital',
       dataModel: this.store.VitalsTaskTemplate,
+      questionModel: this.store.VitalsQuestions,
+      questionRelatedField: 'vital_task_template',
     },
     {
       type: 'medication',
       title: 'Edit Medication Task',
       dataModel: this.store.MedicationTaskTemplate,
-    },
-    {
-      type: 'plan-patient',
-      title: 'Edit Patient Task',
-      dataModel: this.store.PatientTaskTemplate,
-      relatedModel: this.store.PlanPatientTemplate,
-      relatedField: 'patient_task_template',
-    },
-    {
-      type: 'plan-symptom',
-      title: 'Edit Symptom',
-      dataModel: this.store.SymptomTaskTemplate,
-      relatedModel: this.store.PlanSymptomTemplate,
-      relatedField: 'symptom_task_template',
     },
     {
       type: 'plan-manager',
@@ -97,8 +87,40 @@ export class EditTaskComponent implements OnInit {
       relatedModel: this.store.PlanTeamTemplate,
       relatedField: 'team_task_template',
     },
+    {
+      type: 'plan-patient',
+      title: 'Edit Patient Task',
+      dataModel: this.store.PatientTaskTemplate,
+      relatedModel: this.store.PlanPatientTemplate,
+      relatedField: 'patient_task_template',
+    },
+    {
+      type: 'plan-assessment',
+      title: 'Edit Assessment',
+      dataModel: this.store.AssessmentTaskTemplate,
+      relatedModel: this.store.PlanAssessmentTemplate,
+      relatedField: 'assessment_task_template',
+      questionModel: this.store.AssessmentQuestion,
+      questionRelatedField: 'assessment_task_template',
+    },
+    {
+      type: 'plan-symptom',
+      title: 'Edit Symptom',
+      dataModel: this.store.SymptomTaskTemplate,
+      relatedModel: this.store.PlanSymptomTemplate,
+      relatedField: 'symptom_task_template',
+    },
+    {
+      type: 'plan-vital',
+      title: 'Edit Vital',
+      dataModel: this.store.VitalsTaskTemplate,
+      relatedModel: this.store.PlanVitalTemplate,
+      relatedField: 'vital_task_template',
+      questionModel: this.store.VitalsQuestions,
+      questionRelatedField: 'vital_task_template',
+    },
   ];
-  public adhocTypes = ['plan-patient', 'plan-symptom', 'plan-manager', 'plan-team'];
+  public adhocTypes = ['plan-manager', 'plan-team', 'plan-patient', 'plan-assessment', 'plan-symptom', 'plan-vital'];
   public appearTimeHelpOpen = false;
   public dueTimeHelpOpen = false;
   public categoryHelpOpen = false;
@@ -349,64 +371,119 @@ export class EditTaskComponent implements OnInit {
     return teamTaskTypes.includes(this.getTaskType().type);
   }
 
-  public createTask() {
-    let postData = Object.assign({}, this.task);
-    if (!this.isAdhoc) {
-      let createSub = this.getTaskType().dataModel.create(postData).subscribe(
-        (task) => {
-          this.task = task;
-          this.modal.close(task);
+  public createQuestion(question) {
+    let promise = new Promise((resolve, reject) => {
+      let createSub = this.getTaskType().questionModel.create(question).subscribe(
+        (res) => {
+          question.id = res.id;
+          resolve(res);
         },
-        (err) => {},
+        (err) => reject(err),
         () => {
           createSub.unsubscribe();
         },
       );
-    } else {
-      postData[this.getTaskType().relatedField] = this.task[this.getTaskType().relatedField].id;
-      let createSub = this.getTaskType().relatedModel.create(postData).subscribe(
-        (task) => {
-          this.task = task;
-          this.modal.close(task);
-        },
-        (err) => {},
+    });
+    return promise;
+  }
+
+  public updateQuestion(question) {
+    let promise = new Promise((resolve, reject) => {
+      let updateSub = this.getTaskType().questionModel.update(question.id, _omit(question, 'id'), true).subscribe(
+        (res) => resolve(res),
+        (err) => reject(err),
         () => {
-          createSub.unsubscribe();
-        }
+          updateSub.unsubscribe();
+        },
       );
+    });
+    return promise;
+  }
+
+  public createOrUpdateAllQuestions() {
+    if (!this.task.questions) {
+      return;
     }
+    let promises = [];
+    this.task.questions.forEach((question, i) => {
+      question[this.getTaskType().questionRelatedField] = this.task.id;
+      if (!question.id) {
+        promises.push(this.createQuestion(question));
+      } else {
+        promises.push(this.updateQuestion(question));
+      }
+    });
+    return Promise.all(promises);
+  }
+
+  public createTask() {
+    let promise = new Promise((resolve, reject) => {
+      let postData = Object.assign({}, this.task);
+      let questions = this.task.questions;
+      postData = _omit(postData, 'questions');
+      if (!this.isAdhoc) {
+        let createSub = this.getTaskType().dataModel.create(postData).subscribe(
+          (task) => {
+            this.task = Object.assign({}, task, {questions: questions});
+            resolve(this.task);
+          },
+          (err) => reject(err),
+          () => {
+            createSub.unsubscribe();
+          },
+        );
+      } else {
+        postData[this.getTaskType().relatedField] = this.task[this.getTaskType().relatedField].id;
+        let createSub = this.getTaskType().relatedModel.create(postData).subscribe(
+          (task) => {
+            this.task = Object.assign({}, task, {questions: questions});
+            resolve(this.task);
+          },
+          (err) => reject(err),
+          () => {
+            createSub.unsubscribe();
+          }
+        );
+      }
+    });
+    return promise;
   }
 
   public updateTask() {
-    let postData = Object.assign({}, this.task);
-    if (this.getTaskType().type === 'medication') {
-      postData = _omit(postData, 'patient_medication');
-    }
-    postData = _omit(postData, 'id');
-    if (!this.isAdhoc) {
-      let updateSub = this.getTaskType().dataModel.update(this.task.id, postData, true).subscribe(
-        (task) => {
-          this.task = task;
-          this.modal.close(task);
-        },
-        (err) => {},
-        () => {
-          updateSub.unsubscribe();
-        },
-      );
-    } else {
-      postData = _omit(postData, this.getTaskType().relatedField);
-      let updateSub = this.getTaskType().relatedModel.update(this.task.id, postData, true).subscribe(
-        (task) => {
-          this.task = task;
-          this.modal.close(task);
-        },
-        (err) => {},
-        () => {
-          updateSub.unsubscribe();
-        },
-      );
-    }
+    let promise = new Promise((resolve, reject) => {
+      let postData = Object.assign({}, this.task);
+      let questions = this.task.questions;
+      postData = _omit(postData, 'questions');
+      if (this.getTaskType().type === 'medication') {
+        postData = _omit(postData, 'patient_medication');
+      }
+      postData = _omit(postData, 'id');
+      if (!this.isAdhoc) {
+        let updateSub = this.getTaskType().dataModel.update(this.task.id, postData, true).subscribe(
+          (task) => {
+            this.task = Object.assign({}, task, {questions: questions});
+            resolve(this.task);
+          },
+          (err) => reject(err),
+          () => {
+            updateSub.unsubscribe();
+          },
+        );
+      } else {
+        postData = _omit(postData, this.getTaskType().relatedField);
+        let updateSub = this.getTaskType().relatedModel.update(this.task.id, postData, true).subscribe(
+          (task) => {
+            this.task = Object.assign({}, task, {questions: questions});
+            resolve(this.task);
+          },
+          (err) => reject(err),
+          () => {
+            updateSub.unsubscribe();
+          },
+        );
+      }
+    });
+    return promise;
   }
 
   public submitTask() {
@@ -414,11 +491,26 @@ export class EditTaskComponent implements OnInit {
     if (this.getTaskType().type === 'manager') {
       this.task.is_manager_task = true;
     }
-    console.log(this.task);
     if (!this.task.id) {
-      this.createTask();
+      this.createTask().then((task) => {
+        if (this.getTaskType().type === 'assessment' || this.getTaskType().type === 'vital') {
+          this.createOrUpdateAllQuestions().then(() => {
+            this.modal.close(this.task);
+          });
+        } else {
+          this.modal.close(task);
+        }
+      });
     } else {
-      this.updateTask();
+      this.updateTask().then((task) => {
+        if (this.getTaskType().type === 'assessment' || this.getTaskType().type === 'vital') {
+          this.createOrUpdateAllQuestions().then(() => {
+            this.modal.close(this.task);
+          });
+        } else {
+          this.modal.close(task);
+        }
+      });
     }
   }
 

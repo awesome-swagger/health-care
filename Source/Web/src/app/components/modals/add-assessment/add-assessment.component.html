@@ -1,5 +1,5 @@
 <h1 class="modal__title">Add Assessment</h1>
-<div *ngIf="editingTemplate && totalPatients > 0" class="marCenter marCenter--twoThirds">
+<div *ngIf="!isAdhoc" class="marCenter marCenter--twoThirds">
   <div class="iconText iconText--wrap iconText--autoHeight error marBottom32">
     <i class="iconText__icon ss-alert"></i>
     <span class="error__text">
@@ -7,7 +7,7 @@
     </span>
   </div>
 </div>
-<h5 *ngIf="!editingTemplate">NOTE: You are adding an assessment to one patient's care plan. To add an assessment for everyone, go to care&nbsp;plans.</h5>
+<h5 *ngIf="isAdhoc">NOTE: You are adding an assessment to one patient's care plan. To add an assessment for everyone, go to care&nbsp;plans.</h5>
 <div class="grid2col">
   <div class="gridCell--11 marRight32">
     <input type="text" class="input input--search fullWidth marBottom32" placeholder="Search Assessments" [(ngModel)]="searchInput" (ngModelChange)="filterAssessments()" />

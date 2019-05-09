@@ -29,17 +29,33 @@ export class CreateAssessmentComponent implements OnInit {
       this.assessment = this.data.assessment ? this.data.assessment : {};
       this.isEditing = this.data.isEditing ? this.data.isEditing : false;
       if (this.assessment) {
-        this.nameInput = this.assessment.name;
-        if (this.assessment.tracks_outcome) {
-          this.assessmentTracking = 'outcome';
-        } else if (this.assessment.tracks_satisfaction) {
-          this.assessmentTracking = 'satisfaction';
-        }
-        if (this.assessment.questions) {
-          let sortedQuestions = this.sortQuestions(this.assessment.questions);
-          sortedQuestions.forEach((obj, index) => {
-            obj.order = index;
-          });
+        if (!this.assessment.assessment_task_template) {
+          this.nameInput = this.assessment.name;
+          if (this.assessment.tracks_outcome) {
+            this.assessmentTracking = 'outcome';
+          } else if (this.assessment.tracks_satisfaction) {
+            this.assessmentTracking = 'satisfaction';
+          }
+          if (this.assessment.questions) {
+            let sortedQuestions = this.sortQuestions(this.assessment.questions);
+            sortedQuestions.forEach((obj, index) => {
+              obj.order = index;
+            });
+          }
+        } else {
+          this.nameInput = this.assessment.assessment_task_template.name;
+          this.assessment.questions = this.assessment.assessment_task_template.questions;
+          if (this.assessment.assessment_task_template.tracks_outcome) {
+            this.assessmentTracking = 'outcome';
+          } else if (this.assessment.assessment_task_template.tracks_satisfaction) {
+            this.assessmentTracking = 'satisfaction';
+          }
+          if (this.assessment.questions) {
+            let sortedQuestions = this.sortQuestions(this.assessment.questions);
+            sortedQuestions.forEach((obj, index) => {
+              obj.order = index;
+            });
+          }
         }
       }
     }
@@ -84,69 +100,21 @@ export class CreateAssessmentComponent implements OnInit {
     return questions.sort((a, b) => -(b.order - a.order));
   }
 
-  public createQuestion(question) {
-    let promise = new Promise((resolve, reject) => {
-      let createSub = this.store.AssessmentQuestion.create(question).subscribe(
-        (res) => {
-          question.id = res.id;
-          resolve(res);
-        },
-        (err) => reject(err),
-        () => {
-          createSub.unsubscribe();
-        },
-      );
-    });
-    return promise;
-  }
-
-  public updateQuestion(question) {
-    let promise = new Promise((resolve, reject) => {
-      let updateSub = this.store.AssessmentQuestion.update(question.id, _omit(question, 'id'), true).subscribe(
-        (res) => resolve(res),
-        (err) => reject(err),
-        () => {
-          updateSub.unsubscribe();
-        },
-      );
-    });
-    return promise;
-  }
-
-  public createOrUpdateAllQuestions() {
-    if (!this.assessment.questions) {
-      return;
-    }
-    let promises = [];
-    this.assessment.questions.forEach((question, i) => {
-      question.assessment_task_template = this.assessment.id;
-      if (!question.id) {
-        promises.push(this.createQuestion(question));
-      } else {
-        promises.push(this.updateQuestion(question));
-      }
-    });
-    return Promise.all(promises);
-  }
-
   public updateAssessment() {
     let promise = new Promise((resolve, reject) => {
       let tracksOutcome = this.assessmentTracking === 'outcome';
       let tracksSatisfaction = this.assessmentTracking === 'satisfaction';
-      this.assessment = Object.assign({}, this.assessment, {
+      let updateSub = this.store.AssessmentTaskTemplate.update(this.assessment.id, {
         name: this.nameInput,
         tracks_outcome: tracksOutcome,
         tracks_satisfaction: tracksSatisfaction,
-      });
-      let assessmentWithoutQuestions = _omit(this.assessment, 'questions');
-      let updateSub = this.store.AssessmentTaskTemplate.update(assessmentWithoutQuestions.id, _omit(assessmentWithoutQuestions, 'id'), true)
-        .subscribe(
-          (res) => resolve(res),
-          (err) => reject(err),
-          () => {
-            updateSub.unsubscribe();
-          }
-        );
+      }, true).subscribe(
+        (res) => resolve(res),
+        (err) => reject(err),
+        () => {
+          updateSub.unsubscribe();
+        }
+      );
     });
     return promise;
   }
@@ -177,11 +145,17 @@ export class CreateAssessmentComponent implements OnInit {
     if (!this.assessment.questions || !this.nameInput) {
       return;
     }
-    this.updateAssessment().then((assessment: any) => {
-      this.createOrUpdateAllQuestions().then(() => {
-        this.modal.close(this.assessment);
-      });
-    });
+    let tracksOutcome = this.assessmentTracking === 'outcome';
+    let tracksSatisfaction = this.assessmentTracking === 'satisfaction';
+    this.assessment.name = this.nameInput;
+    this.assessment.tracks_outcome = tracksOutcome;
+    this.assessment.tracks_satisfaction = tracksSatisfaction;
+    this.modal.close(this.assessment);
+    // this.updateAssessment().then((assessment: any) => {
+    //   this.createOrUpdateAllQuestions().then(() => {
+    //     this.modal.close(this.assessment);
+    //   });
+    // });
   }
 
   public clickCancel() {

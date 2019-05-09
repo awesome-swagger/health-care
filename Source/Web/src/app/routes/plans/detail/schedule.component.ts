@@ -555,7 +555,6 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
           this.patientTaskTemplates = patientTasks;
         });
         if (!updatedTask) return;
-        this.patientTaskTemplates[taskIndex] = updatedTask;
       },
       (err) => {},
       () => {
@@ -610,9 +609,6 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       width: '768px',
     }).subscribe(
       (res) => {
-        this.getAssessmentTasks(this.planTemplateId).then((assessments: any) => {
-          this.assessmentTemplates = assessments;
-        });
         if (!res) return;
         setTimeout(() => {
           this.editAssessment(res, false);
@@ -638,12 +634,6 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
     }).subscribe(
       (res) => {
         if (!res) return;
-        let index = this.assessmentTemplates.findIndex((obj) => {
-          return obj.id === res.id;
-        });
-        if (index >= 0) {
-          this.assessmentTemplates[index] = res;
-        }
         setTimeout(() => {
           this.editAssessmentTime(res);
         }, 10);
@@ -666,7 +656,11 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       overflow: 'visible',
       width: '384px'
     }).subscribe(
-      () => {},
+      () => {
+        this.getAssessmentTasks(this.planTemplateId).then((assessments: any) => {
+          this.assessmentTemplates = assessments;
+        });
+      },
       () => {},
       () => {
         modalSub.unsubscribe();
@@ -790,9 +784,6 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
         planTemplateId: this.planTemplateId,
       },
     }).subscribe((data) => {
-      this.getVitalTasks(this.planTemplateId).then((vitals: any) => {
-        this.vitalTemplates = vitals;
-      });
       if (!data || !data.nextAction) {
         return;
       }
@@ -832,12 +823,6 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
         }, 10);
         return;
       }
-      let index = this.vitalTemplates.findIndex((obj) => {
-        return obj.id === res.id;
-      });
-      if (index >= 0) {
-        this.vitalTemplates[index] = res;
-      }
       setTimeout(() => {
         this.editVitalTime(res);
       }, 10);
@@ -855,7 +840,11 @@ export class PlanScheduleComponent implements OnDestroy, OnInit {
       overflow: 'visible',
       width: '384px',
     }).subscribe(
-      (data) => {},
+      (data) => {
+        this.getVitalTasks(this.planTemplateId).then((vitals: any) => {
+          this.vitalTemplates = vitals;
+        });
+      },
       (err) => {},
       () => {
         modalSub.unsubscribe();
