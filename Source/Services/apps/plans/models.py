@@ -1,5 +1,6 @@
 import datetime
 
+from django.apps import apps
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import Sum
@@ -17,6 +18,7 @@ from .signals import (
     careplan_post_save,
     teammessage_post_save,
     careteammember_post_save,
+    goaltemplate_post_save,
 )
 
 
@@ -119,6 +121,20 @@ class CarePlan(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
             self.patient.user.first_name,
             self.patient.user.last_name,
             self.plan_template.name)
+
+    @property
+    def assessment_tasks(self):
+        AssessmentTask = apps.get_model('tasks', 'AssessmentTask')
+        return AssessmentTask.objects.filter(
+            assessment_template__plan=self
+        )
+
+    @property
+    def vital_tasks(self):
+        VitalTask = apps.get_model('tasks', 'VitalTask')
+        return VitalTask.objects.filter(
+            vital_template__plan=self
+        )
 
     @property
     def total_time_spent(self):
@@ -394,6 +410,22 @@ class TeamMessage(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
         ordering = ('created', )
 
 
+class CarePlanResultOverTime(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
+    plan = models.ForeignKey(
+        'plans.CarePlan',
+        related_name='results_over_time',
+        on_delete=models.CASCADE
+        )
+    outcome = models.IntegerField()
+    engagement = models.IntegerField()
+
+    def __str__(self):
+        return '{}: {}'.format(str(self.plan), self.created) 
+
+    class Meta:
+        ordering = ('-created', )
+
+
 # Signals
 models.signals.post_save.connect(
     careplan_post_save,
@@ -406,4 +438,8 @@ models.signals.post_save.connect(
 models.signals.post_save.connect(
     careteammember_post_save,
     sender=CareTeamMember
+)
+models.signals.post_save.connect(
+    goaltemplate_post_save,
+    sender=GoalTemplate,
 )

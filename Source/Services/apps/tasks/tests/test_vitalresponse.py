@@ -35,11 +35,14 @@ class TestVitalResponseUsingEmployee(TasksMixin, APITestCase):
             'employee_profile': self.employee,
             'plan': self.plan
         })
+        self.vital_template = self.create_plan_vital_template(
+            plan=self.plan
+        )
         self.vital_task = self.create_vital_task(**{
-            'plan': self.plan,
+            'vital_template': self.vital_template,
             'due_datetime': timezone.now()
         })
-        self.template = self.vital_task.vital_task_template
+        self.template = self.vital_task.vital_template.vital_task_template
         self.create_multiple_vital_questions(self.template)
         self.create_responses_to_multiple_vital_questions(
             self.template,
@@ -61,9 +64,12 @@ class TestVitalResponseUsingEmployee(TasksMixin, APITestCase):
         # create dummy vital responses
         other_patient = self.create_patient()
         other_plan = self.create_care_plan(other_patient)
+        other_vital_template = self.create_plan_vital_template(
+            plan=other_plan,
+            vital_task_template=self.template
+        )
         vital_task = self.create_vital_task(**{
-            'plan': other_plan,
-            'vital_task_template': self.template
+            'vital_template': other_vital_template,
         })
         self.create_responses_to_multiple_vital_questions(
             self.template,
@@ -93,9 +99,12 @@ class TestVitalResponseUsingEmployee(TasksMixin, APITestCase):
         # create dummy vital responses
         other_patient = self.create_patient()
         other_plan = self.create_care_plan(other_patient)
+        other_vital_template = self.create_plan_vital_template(
+            plan=other_plan,
+            vital_task_template=self.template
+        )
         vital_task = self.create_vital_task(**{
-            'plan': other_plan,
-            'vital_task_template': self.template
+            'vital_template': other_vital_template
         })
         self.create_responses_to_multiple_vital_questions(
             self.template,
@@ -256,23 +265,34 @@ class TestVitalResponseUsingEmployee(TasksMixin, APITestCase):
 
         now = timezone.now()
         for i in range(templates_count):
-            task = self.create_vital_task(plan=plan, due_datetime=now)
+            vital_template = self.create_plan_vital_template(
+                plan=plan
+            )
+            task = self.create_vital_task(
+                vital_template=vital_template,
+                due_datetime=now
+            )
             self.create_multiple_vital_questions(
-                task.vital_task_template)
+                task.vital_template.vital_task_template)
             self.create_responses_to_multiple_vital_questions(
-                task.vital_task_template,
+                task.vital_template.vital_task_template,
                 task
             )
 
         # Create dummy template
-        dummy_task = self.create_vital_task(plan=plan)
+        dummy_vital_template = self.create_plan_vital_template(
+            plan=plan
+        )
+        dummy_task = self.create_vital_task(
+            vital_template=dummy_vital_template
+        )
         self.create_multiple_vital_questions(
-            dummy_task.vital_task_template)
+            dummy_task.vital_template.vital_task_template)
 
         url = reverse(
             'vitals-list',
             kwargs={
-                'parent_lookup_vital_tasks__plan': plan.id
+                'parent_lookup_plan_vital_templates__plan': plan.id
             })
         response = self.client.get(url)
         self.assertEqual(response.data['count'], templates_count)
@@ -295,18 +315,24 @@ class TestVitalResponseUsingEmployee(TasksMixin, APITestCase):
 
         now = timezone.now()
         for i in range(templates_count):
-            task = self.create_vital_task(plan=plan, due_datetime=now)
+            vital_template = self.create_plan_vital_template(
+                plan=plan
+            )
+            task = self.create_vital_task(
+                vital_template=vital_template,
+                due_datetime=now
+            )
             self.create_multiple_vital_questions(
-                task.vital_task_template)
+                task.vital_template.vital_task_template)
             self.create_responses_to_multiple_vital_questions(
-                task.vital_task_template,
+                task.vital_template.vital_task_template,
                 task
             )
 
         url = reverse(
             'vitals-list',
             kwargs={
-                'parent_lookup_vital_tasks__plan': plan.id
+                'parent_lookup_plan_vital_templates__plan': plan.id
             })
         response = self.client.get(url)
         self.assertEqual(len(response.data['results'][0]['questions']), 5)
@@ -324,10 +350,15 @@ class TestVitalResponseUsingPatient(TasksMixin, APITestCase):
         self.user = self.patient.user
 
         self.plan = self.create_care_plan(patient=self.patient)
+        self.template = self.create_vital_task_template()
+        self.vital_template = self.create_plan_vital_template(
+            plan=self.plan,
+            vital_task_template=self.template
+        )
         self.vital_task = self.create_vital_task(**{
-            'plan': self.plan
+            'vital_template': self.vital_template
         })
-        self.template = self.vital_task.vital_task_template
+
         self.create_multiple_vital_questions(self.template)
         self.create_responses_to_multiple_vital_questions(
             self.template,

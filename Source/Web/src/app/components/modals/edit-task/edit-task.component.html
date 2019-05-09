@@ -162,7 +162,7 @@
 		</ng-container>
 	</div>
 
-	<div *ngIf="getTaskType().type === 'team' || getTaskType().type === 'manager'">
+	<div *ngIf="isTeamTask()">
 		<div class="tool">
 			<label class="noMargin">Category</label>
 			<div class="tool__anchor">
@@ -182,7 +182,7 @@
 				<option [value]="category" *ngFor="let category of categoriesChoices">{{category | titlecase}}</option>
 			</select>
 		</div>
-		<ng-container *ngIf="getTaskType().type !== 'manager'">
+		<ng-container *ngIf="getTaskType().type !== 'manager' && getTaskType().type !== 'plan-manager'">
 			<div class="tool">
 				<label class="noMargin">Roles</label>
 				<div class="tool__anchor">

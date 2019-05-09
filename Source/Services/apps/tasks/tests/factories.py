@@ -1,6 +1,15 @@
 import factory
 
 
+class CarePlanAssessmentTemplateFactory(factory.django.DjangoModelFactory):
+    """
+    Factory for :model:`tasks.CarePlanAssessmentTemplate`
+    """
+
+    class Meta:
+        model = 'tasks.CarePlanAssessmentTemplate'
+
+
 class CarePlanPatientTemplateFactory(factory.django.DjangoModelFactory):
     """
     Factory for :model:`tasks.PatientTaskTemplate`
@@ -26,6 +35,15 @@ class CarePlanTeamTemplateFactory(factory.django.DjangoModelFactory):
 
     class Meta:
         model = 'tasks.CarePlanTeamTemplate'
+
+
+class CarePlanVitalTemplateFactory(factory.django.DjangoModelFactory):
+    """
+    Factory for :model:`tasks.VitalTaskTemplate`
+    """
+
+    class Meta:
+        model = 'tasks.CarePlanVitalTemplate'
 
 
 class PatientTaskTemplateFactory(factory.django.DjangoModelFactory):

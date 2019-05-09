@@ -17,8 +17,8 @@ class RiskLevelAssignment(object):
     def calculate_average_outcome(self):
         AssessmentTask = apps.get_model('tasks', 'AssessmentTask')
         tasks = AssessmentTask.objects.filter(
-            plan__patient=self.patient,
-            assessment_task_template__tracks_outcome=True
+            assessment_template__plan__patient=self.patient,
+            assessment_template__assessment_task_template__tracks_outcome=True
         ).aggregate(average=Avg('responses__rating'))
         average = tasks['average'] or 0
         avg = round((average / 5) * 100)
@@ -47,12 +47,20 @@ class RiskLevelAssignment(object):
             'medication_task_template__plan__patient': self.patient,
             'due_datetime__lte': now
         }
+        assessment_kwargs = {
+            'assessment_template__plan__patient': self.patient,
+            'due_datetime__lte': now
+        }
+        vital_kwargs = {
+            'vital_template__plan__patient': self.patient,
+            'due_datetime__lte': now
+        }
 
         patient_tasks = PatientTask.objects.filter(**patient_kwargs)
         medication_tasks = MedicationTask.objects.filter(**medication_kwargs)
         symptom_tasks = SymptomTask.objects.filter(**symptom_kwargs)
-        assessment_tasks = AssessmentTask.objects.filter(**task_kwargs)
-        vital_tasks = VitalTask.objects.filter(**task_kwargs)
+        assessment_tasks = AssessmentTask.objects.filter(**assessment_kwargs)
+        vital_tasks = VitalTask.objects.filter(**vital_kwargs)
 
         total_patient_tasks = patient_tasks.count()
         total_medication_tasks = medication_tasks.count()
@@ -105,7 +113,8 @@ def assign_is_complete_to_assessment_task(instance):
     corresponding response.
     """
     task = instance.assessment_task
-    questions = task.assessment_task_template.questions.values_list(
+    assessment_template = task.assessment_template
+    questions = assessment_template.assessment_task_template.questions.values_list(
         'id', flat=True).distinct()
     responses = task.responses.values_list(
         'assessment_question', flat=True).distinct()
@@ -132,7 +141,8 @@ def assign_is_complete_to_vital_task(instance):
     corresponding response.
     """
     task = instance.vital_task
-    questions = task.vital_task_template.questions.values_list(
+    vital_template = task.vital_template
+    questions = vital_template.vital_task_template.questions.values_list(
         'id', flat=True).distinct()
     responses = task.responses.values_list(
         'question', flat=True).distinct()
@@ -187,9 +197,11 @@ def create_tasks_for_ongoing_plans(task_template,
     else:
         plan_template = task_template.plan_template
         field_lookup = {
+            'AssessmentTask': 'assessment',
             'PatientTask': 'patient',
             'SymptomTask': 'symptom',
-            'TeamTask': 'team'
+            'TeamTask': 'team',
+            'VitalTask': 'vital',
         }
         if task_model_name in field_lookup:
             task_type = field_lookup[task_model_name]
@@ -219,9 +231,11 @@ def create_tasks_for_ongoing_plans(task_template,
                     duration_weeks -= round(days_past.days / 7)
 
                     model_lookup = {
+                        'AssessmentTask': 'CarePlanAssessmentTemplate',
                         'PatientTask': 'CarePlanPatientTemplate',
                         'SymptomTask': 'CarePlanSymptomTemplate',
                         'TeamTask': 'CarePlanTeamTemplate',
+                        'VitalTask': 'CarePlanVitalTemplate',
                     }
 
                     if task_model_name in model_lookup:
@@ -267,7 +281,7 @@ def assessmentresponse_post_save(sender, instance, created, **kwargs):
     if created:
         assign_is_complete_to_assessment_task(instance)
 
-        patient = instance.assessment_task.plan.patient
+        patient = instance.assessment_task.assessment_template.plan.patient
         assignment = RiskLevelAssignment(patient)
         assignment.assign_risk_level_to_patient()
 
@@ -280,7 +294,7 @@ def vitalresponse_post_save(sender, instance, created, **kwargs):
     if created:
         assign_is_complete_to_vital_task(instance)
 
-        patient = instance.vital_task.plan.patient
+        patient = instance.vital_task.vital_template.plan.patient
         assignment = RiskLevelAssignment(patient)
         assignment.assign_risk_level_to_patient()
 
@@ -339,7 +353,7 @@ def assessmentresponse_post_delete(sender, instance, **kwargs):
         task.is_complete = False
         task.save(update_fields=['is_complete'])
 
-        patient = instance.assessment_task.plan.patient
+        patient = instance.assessment_task.assessment_template.plan.patient
         assignment = RiskLevelAssignment(patient)
         assignment.assign_risk_level_to_patient()
 
@@ -354,7 +368,7 @@ def vitalresponse_post_delete(sender, instance, **kwargs):
         task.is_complete = False
         task.save(update_fields=['is_complete'])
 
-        patient = instance.vital_task.plan.patient
+        patient = instance.vital_task.vital_template.plan.patient
         assignment = RiskLevelAssignment(patient)
         assignment.assign_risk_level_to_patient()
 
@@ -636,6 +650,40 @@ def symptomtask_post_save(sender, instance, created, **kwargs):
         assignment.assign_risk_level_to_patient()
 
 
+def careplanassessmenttemplate_post_init(sender, instance, **kwargs):
+    """
+    Function to be used as signal (post_init) when initializing
+    :model:`tasks.CarePlanAssessmentTemplate`
+    """
+    instance.assign_previous_fields()
+
+
+def careplanassessmenttemplate_post_save(sender, instance, created, **kwargs):
+    """
+    Function to be used as signal (post_save) when saving
+    :model:`tasks.CarePlanAssessmentTemplate`
+    """
+    if created and instance.has_custom_values:
+        create_tasks_for_ongoing_plans(
+            instance.assessment_task_template,
+            'assessment_task_template',
+            'AssessmentTask',
+            plan_task_template=instance
+        )
+    elif instance.is_schedule_fields_changed:
+        now = timezone.now()
+        AssessmentTask = apps.get_model('tasks', 'AssessmentTask')
+        AssessmentTask.objects.filter(
+            assessment_template=instance,
+            due_datetime__gte=now).delete()
+        create_tasks_for_ongoing_plans(
+            instance.assessment_task_template,
+            'assessment_task_template',
+            'AssessmentTask',
+            plan_task_template=instance
+        )
+
+
 def assessmenttasktemplate_post_init(sender, instance, **kwargs):
     """
     Function to be used as signal (post_init) when initializing
@@ -671,9 +719,43 @@ def assessmenttask_post_save(sender, instance, created, **kwargs):
     :model:`tasks.AssessmentTask`
     """
     if created:
-        patient = instance.plan.patient
+        patient = instance.assessment_template.plan.patient
         assignment = RiskLevelAssignment(patient)
         assignment.assign_risk_level_to_patient()
+
+
+def careplanvitaltemplate_post_init(sender, instance, **kwargs):
+    """
+    Function to be used as signal (post_init) when initializing
+    :model:`tasks.CarePlanVitalTemplate`
+    """
+    instance.assign_previous_fields()
+
+
+def careplanvitaltemplate_post_save(sender, instance, created, **kwargs):
+    """
+    Function to be used as signal (post_save) when saving
+    :model:`tasks.CarePlanVitalTemplate`
+    """
+    if created and instance.has_custom_values:
+        create_tasks_for_ongoing_plans(
+            instance.vital_task_template,
+            'vital_task_template',
+            'VitalTask',
+            plan_task_template=instance
+        )
+    elif instance.is_schedule_fields_changed:
+        now = timezone.now()
+        VitalTask = apps.get_model('tasks', 'VitalTask')
+        VitalTask.objects.filter(
+            vital_template=instance,
+            due_datetime__gte=now).delete()
+        create_tasks_for_ongoing_plans(
+            instance.vital_task_template,
+            'vital_task_template',
+            'VitalTask',
+            plan_task_template=instance
+        )
 
 
 def vitaltasktemplate_post_init(sender, instance, **kwargs):
@@ -711,7 +793,7 @@ def vitaltask_post_save(sender, instance, created, **kwargs):
     :model:`tasks.VitalTask`
     """
     if created:
-        patient = instance.plan.patient
+        patient = instance.vital_template.plan.patient
         assignment = RiskLevelAssignment(patient)
         assignment.assign_risk_level_to_patient()
 
@@ -731,7 +813,7 @@ def assessmenttask_post_delete(sender, instance, **kwargs):
     Function to be used as signal (post_delete) when deleting
     :model:`tasks.AssessmentTask`
     """
-    patient = instance.plan.patient
+    patient = instance.assessment_template.plan.patient
     assignment = RiskLevelAssignment(patient)
     assignment.assign_risk_level_to_patient()
 
@@ -741,6 +823,6 @@ def vitaltask_post_delete(sender, instance, **kwargs):
     Function to be used as signal (post_delete) when deleting
     :model:`tasks.VitalTask`
     """
-    patient = instance.plan.patient
+    patient = instance.vital_template.plan.patient
     assignment = RiskLevelAssignment(patient)
     assignment.assign_risk_level_to_patient()

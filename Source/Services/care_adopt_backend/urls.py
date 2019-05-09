@@ -66,9 +66,11 @@ from apps.plans.api.views import (
     VitalByPlanViewSet,
 )
 from apps.tasks.api.views import (
+    CarePlanAssessmentTemplateViewSet,
     CarePlanPatientTemplateViewSet,
     CarePlanSymptomTemplateViewSet,
     CarePlanTeamTemplateViewSet,
+    CarePlanVitalTemplateViewSet,
     PatientTaskTemplateViewSet,
     PatientTaskViewSet,
     TeamTaskTemplateViewSet,
@@ -327,7 +329,7 @@ care_plan_routes.register(
     r'assessment_results',
     AssessmentResultViewSet,
     base_name='assessment_results',
-    parents_query_lookups=['assessment_tasks__plan'])
+    parents_query_lookups=['plan_assessment_templates__plan'])
 care_plan_routes.register(
     r'symptoms',
     SymptomByPlanViewSet,
@@ -337,7 +339,7 @@ care_plan_routes.register(
     r'vitals',
     VitalByPlanViewSet,
     base_name='vitals',
-    parents_query_lookups=['vital_tasks__plan'])
+    parents_query_lookups=['plan_vital_templates__plan'])
 message_recipient_routes = care_plan_routes.register(
     r'message_recipients',
     MessageRecipientViewSet,
@@ -410,6 +412,10 @@ router.register(
     AssessmentTaskTemplateViewSet,
     base_name='assessment_task_templates')
 router.register(
+    r'plan_assessment_templates',
+    CarePlanAssessmentTemplateViewSet,
+    base_name='plan_assessment_templates')
+router.register(
     r'assessment_questions',
     AssessmentQuestionViewSet,
     base_name='assessment_questions')
@@ -428,6 +434,10 @@ router.register(
     r'vital_task_templates',
     VitalTaskTemplateViewSet,
     base_name='vital_task_templates')
+router.register(
+    r'plan_vital_templates',
+    CarePlanVitalTemplateViewSet,
+    base_name='plan_vital_templates')
 router.register(r'vital_tasks', VitalTaskViewSet, base_name='vital_tasks')
 router.register(
     r'vital_questions',

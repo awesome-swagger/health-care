@@ -13,6 +13,11 @@ pip install -r requirements.txt
 
 echo Running server on port 8000
 python manage.py migrate --noinput
+
+echo Running celery
+celery worker -A care_adopt_backend -D -l info
+celery beat -A care_adopt_backend --detach -l info
+
 echo Start rebuild
 echo "y" | python manage.py rebuild_index
 

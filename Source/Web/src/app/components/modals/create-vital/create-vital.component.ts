@@ -30,22 +30,29 @@ export class CreateVitalComponent implements OnInit {
     if (this.data) {
       this.vital = this.data.vital ? this.data.vital : {};
       this.isEditing = this.data.isEditing ? this.data.isEditing : false;
-      if (this.vital.questions) {
-        this.vital.questions.forEach((obj) => {
-          if (obj.answer_type === 'float') {
-            obj.answer_type = 'number';
-            obj.number_type = 'float';
-          } else if (obj.answer_type === 'integer') {
-            obj.answer_type = 'number';
-            obj.number_type = 'integer';
-          }
-        });
-        let sortedQuestions = this.sortQuestions(this.vital.questions);
-        sortedQuestions.forEach((obj, index) => {
-          obj.order = index;
-        });
+      if (this.vital) {
+        if (this.vital.vital_task_template) {
+          this.vital.name = this.vital.vital_task_template.name;
+          this.vital.instructions = this.vital.vital_task_template.instructions;
+          this.vital.questions = this.vital.vital_task_template.questions;
+        }
+        if (this.vital.questions) {
+          this.vital.questions.forEach((obj) => {
+            if (obj.answer_type === 'float') {
+              obj.answer_type = 'number';
+              obj.number_type = 'float';
+            } else if (obj.answer_type === 'integer') {
+              obj.answer_type = 'number';
+              obj.number_type = 'integer';
+            }
+          });
+          let sortedQuestions = this.sortQuestions(this.vital.questions);
+          sortedQuestions.forEach((obj, index) => {
+            obj.order = index;
+          });
+        }
+        this.initForm(this.vital);
       }
-      this.initForm(this.vital);
     }
   }
 
@@ -106,73 +113,18 @@ export class CreateVitalComponent implements OnInit {
     return questions.sort((a, b) => -(b.order - a.order));
   }
 
-  public createQuestion(question) {
-    let promise = new Promise((resolve, reject) => {
-      let createSub = this.store.VitalsQuestions.create(question).subscribe(
-        (res) => {
-          question.id = res.id;
-          resolve(res);
-        },
-        (err) => reject(err),
-        () => {
-          createSub.unsubscribe();
-        },
-      );
-    });
-    return promise;
-  }
-
-  public updateQuestion(question) {
-    let promise = new Promise((resolve, reject) => {
-      let updateSub = this.store.VitalsQuestions.update(question.id, _omit(question, 'id'), true).subscribe(
-        (res) => resolve(res),
-        (err) => reject(err),
-        () => {
-          updateSub.unsubscribe();
-        },
-      );
-    });
-    return promise;
-  }
-
-  public createOrUpdateAllQuestions() {
-    if (!this.vital.questions) {
-      return;
-    }
-    let promises = [];
-    this.vital.questions.forEach((question, i) => {
-      question.vital_task_template = this.vital.id;
-      if (question.answer_type === 'number') {
-        question.answer_type = question.number_type;
-      }
-      if (!question.id) {
-        promises.push(this.createQuestion(question));
-      } else {
-        promises.push(this.updateQuestion(question));
-      }
-    });
-    return Promise.all(promises);
-  }
-
   public updateVital() {
     let keys = Object.keys(this.vital);
     keys.forEach((key) => {
-     if (this.vitalForm.value[key] != undefined) {
+      if (this.vitalForm.value[key] != undefined) {
         this.vital[key] = this.vitalForm.value[key];
       }
     });
-    let promise = new Promise((resolve, reject) => {
-    let vitalWithoutQuestions = _omit(this.vital, 'questions');
-    let updateSub = this.store.VitalsTaskTemplate.update(vitalWithoutQuestions.id, _omit(vitalWithoutQuestions, 'id'), true)
-      .subscribe(
-        (res) => resolve(res),
-        (err) => reject(err),
-        () => {
-          updateSub.unsubscribe();
-        }
-      );
+    this.vital.questions.forEach((question, i) => {
+      if (question.answer_type === 'number') {
+        question.answer_type = question.number_type;
+      }
     });
-    return promise;
   }
 
   public clickDeleteQuestion(question) {
@@ -201,11 +153,8 @@ export class CreateVitalComponent implements OnInit {
     if (!this.vital.questions || !this.vital.name) {
       return;
     }
-    this.updateVital().then((vital: any) => {
-      this.createOrUpdateAllQuestions().then(() => {
-        this.modal.close(this.vital);
-      });
-    });
+    this.updateVital();
+    this.modal.close(this.vital);
   }
 
   public clickCancel() {

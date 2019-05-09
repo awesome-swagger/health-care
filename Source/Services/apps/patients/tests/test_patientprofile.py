@@ -475,15 +475,18 @@ class TestPatientProfileDashboard(TasksMixin, APITestCase):
             template = self.create_assessment_task_template(**{
                 'tracks_outcome': True
             })
+            assessment_template = self.create_plan_assessment_template(
+                plan=self.plan,
+                assessment_task_template=template
+            )
             task = self.create_assessment_task(**{
-                'plan': self.plan,
-                'assessment_task_template': template
+                'assessment_template': assessment_template,
             })
 
             # Create questions and responses
             for q in range(6):
                 question = self.create_assessment_question(
-                    task.assessment_task_template
+                    task.assessment_template.assessment_task_template
                 )
 
                 if i < 4:
@@ -502,8 +505,8 @@ class TestPatientProfileDashboard(TasksMixin, APITestCase):
         now = timezone.now()
         responses = AssessmentResponse.objects.filter(
             assessment_task__appear_datetime__lte=now,
-            assessment_task__plan__patient=self.patient,
-            assessment_task__assessment_task_template__tracks_outcome=True
+            assessment_task__assessment_template__plan__patient=self.patient,
+            assessment_task__assessment_template__assessment_task_template__tracks_outcome=True
         )
         average = responses.aggregate(score=Avg('rating'))
         score = round(average['score']) if average['score'] else 0

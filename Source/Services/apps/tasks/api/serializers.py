@@ -10,9 +10,11 @@ from drf_haystack.serializers import HaystackSerializerMixin
 from rest_framework import serializers
 
 from ..models import (
+    CarePlanAssessmentTemplate,
     CarePlanPatientTemplate,
     CarePlanSymptomTemplate,
     CarePlanTeamTemplate,
+    CarePlanVitalTemplate,
     PatientTaskTemplate,
     PatientTask,
     TeamTaskTemplate,
@@ -601,6 +603,47 @@ class AssessmentResponseSerializer(RepresentationMixin,
         return obj.assessment_question.assessment_task_template.tracks_satisfaction
 
 
+class CarePlanAssessmentTemplateSerializer(RepresentationMixin,
+                                           serializers.ModelSerializer):
+    """
+    Serializer to be used by :model:`tasks.CarePlanAssessmentTemplate`
+    """
+
+    class Meta:
+        model = CarePlanAssessmentTemplate
+        fields = (
+            'id',
+            'plan',
+            'assessment_task_template',
+            'custom_start_on_day',
+            'custom_frequency',
+            'custom_repeat_amount',
+            'custom_appear_time',
+            'custom_due_time',
+            'start_on_day',
+            'frequency',
+            'repeat_amount',
+            'appear_time',
+            'due_time',
+        )
+        write_only_fields = (
+            'custom_start_on_day',
+            'custom_frequency',
+            'custom_repeat_amount',
+            'custom_appear_time',
+            'custom_due_time',
+        )
+        read_only_fields = (
+            'id',
+        )
+        nested_serializers = [
+            {
+                'field': 'assessment_task_template',
+                'serializer_class': AssessmentTaskTemplateSerializer,
+            }
+        ]
+
+
 class AssessmentTaskSerializer(RepresentationMixin,
                                serializers.ModelSerializer):
 
@@ -610,8 +653,7 @@ class AssessmentTaskSerializer(RepresentationMixin,
         model = AssessmentTask
         fields = (
             'id',
-            'plan',
-            'assessment_task_template',
+            'assessment_template',
             'appear_datetime',
             'due_datetime',
             'comments',
@@ -624,8 +666,8 @@ class AssessmentTaskSerializer(RepresentationMixin,
         )
         nested_serializers = [
             {
-                'field': 'assessment_task_template',
-                'serializer_class': AssessmentTaskTemplateSerializer,
+                'field': 'assessment_template',
+                'serializer_class': CarePlanAssessmentTemplateSerializer,
             }
         ]
 
@@ -655,12 +697,12 @@ class AssessmentTaskTodaySerializer(serializers.ModelSerializer):
         return 'assessment_task'
 
     def get_name(self, obj):
-        return obj.assessment_task_template.name
+        return obj.assessment_template.assessment_task_template.name
 
     def get_occurrence(self, obj):
         total_tasks = AssessmentTask.objects.filter(
-            plan=obj.plan,
-            assessment_task_template=obj.assessment_task_template)
+            assessment_template=obj.assessment_template
+        )
         obj_occurrence = total_tasks.filter(
             due_datetime__lte=obj.due_datetime).count()
         return f'{obj_occurrence} of {total_tasks.count()}'
@@ -778,12 +820,12 @@ class VitalTaskTodaySerializer(serializers.ModelSerializer):
         return 'vital_task'
 
     def get_name(self, obj):
-        return obj.vital_task_template.name
+        return obj.vital_template.vital_task_template.name
 
     def get_occurrence(self, obj):
         total_tasks = VitalTask.objects.filter(
-            plan=obj.plan,
-            vital_task_template=obj.vital_task_template)
+            vital_template=obj.vital_template
+        )
         obj_occurrence = total_tasks.filter(
             due_datetime__lte=obj.due_datetime).count()
         return f'{obj_occurrence} of {total_tasks.count()}'
@@ -817,7 +859,7 @@ class VitalResponseSerializer(RepresentationMixin, serializers.ModelSerializer):
         ]
 
     def get_vital_task_name(self, obj):
-        return obj.vital_task.vital_task_template.name
+        return obj.vital_task.vital_template.vital_task_template.name
 
     def format_answer(self, answer_type, response):
         if answer_type == VitalQuestion.BOOLEAN:
@@ -917,6 +959,47 @@ class VitalResponseSerializer(RepresentationMixin, serializers.ModelSerializer):
         return instance
 
 
+class CarePlanVitalTemplateSerializer(RepresentationMixin,
+                                      serializers.ModelSerializer):
+    """
+    Serializer to be used by :model:`tasks.CarePlanVitalTemplate`
+    """
+
+    class Meta:
+        model = CarePlanVitalTemplate
+        fields = (
+            'id',
+            'plan',
+            'vital_task_template',
+            'custom_start_on_day',
+            'custom_frequency',
+            'custom_repeat_amount',
+            'custom_appear_time',
+            'custom_due_time',
+            'start_on_day',
+            'frequency',
+            'repeat_amount',
+            'appear_time',
+            'due_time',
+        )
+        write_only_fields = (
+            'custom_start_on_day',
+            'custom_frequency',
+            'custom_repeat_amount',
+            'custom_appear_time',
+            'custom_due_time',
+        )
+        read_only_fields = (
+            'id',
+        )
+        nested_serializers = [
+            {
+                'field': 'vital_task_template',
+                'serializer_class': VitalTaskTemplateSerializer,
+            }
+        ]
+
+
 class VitalTaskSerializer(RepresentationMixin, serializers.ModelSerializer):
     """
     serializer to be used by :model:`tasks.VitalTask`
@@ -927,8 +1010,7 @@ class VitalTaskSerializer(RepresentationMixin, serializers.ModelSerializer):
         model = VitalTask
         fields = (
             'id',
-            'plan',
-            'vital_task_template',
+            'vital_template',
             'is_complete',
             'responses',
             'appear_datetime',
@@ -940,8 +1022,8 @@ class VitalTaskSerializer(RepresentationMixin, serializers.ModelSerializer):
         )
         nested_serializers = [
             {
-                'field': 'vital_task_template',
-                'serializer_class': VitalTaskTemplateSerializer,
+                'field': 'vital_template',
+                'serializer_class': CarePlanVitalTemplateSerializer,
             }
         ]
 
@@ -972,8 +1054,8 @@ class AssessmentResponseOverviewSerializer(serializers.ModelSerializer):
     def get_occurrence(self, obj):
         task = obj.assessment_task
         total_tasks = AssessmentTask.objects.filter(
-            plan=task.plan,
-            assessment_task_template=task.assessment_task_template)
+            assessment_template=task.assessment_template
+        )
         obj_occurrence = total_tasks.filter(
             due_datetime__lte=task.due_datetime).count()
         return f'{obj_occurrence} of {total_tasks.count()}'
@@ -1002,7 +1084,9 @@ class AssessmentResultOverviewSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         timestamp = request.GET.get('date', None)
         tasks = AssessmentTask.objects.filter(
-            plan=plan, assessment_task_template=obj)
+            assessment_template__plan=plan,
+            assessment_template__assessment_task_template=obj
+        )
         date_format = "%Y-%m-%d"
         date_object = datetime.datetime.strptime(timestamp, date_format).date() \
             if timestamp else timezone.now().date()
@@ -1099,8 +1183,8 @@ class VitalResponseOverviewSerializer(serializers.ModelSerializer):
     def get_occurrence(self, obj):
         task = obj.vital_task
         total_tasks = VitalTask.objects.filter(
-            plan=task.plan,
-            vital_task_template=task.vital_task_template)
+            vital_template=task.vital_template
+        )
         obj_occurrence = total_tasks.filter(
             due_datetime__lte=task.due_datetime).count()
         return f'{obj_occurrence} of {total_tasks.count()}'
@@ -1126,7 +1210,9 @@ class VitalByPlanSerializer(serializers.ModelSerializer):
         plan = self.context.get('plan')
         date_range = self.context.get('date_range')
         tasks = VitalTask.objects.filter(
-            plan=plan, vital_task_template=obj)
+            vital_template__plan=plan,
+            vital_template__vital_task_template=obj
+        )
 
         kwargs = {
             'vital_task__in': tasks,

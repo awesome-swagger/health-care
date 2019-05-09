@@ -77,20 +77,26 @@ class TestUserTask(TasksMixin, APITestCase):
             'symptom_template': symptom_template,
             'due_datetime': date_object
         })
-        assessment_template = self.create_assessment_task_template(**{
+        assessment_task_template = self.create_assessment_task_template(**{
             'plan_template': plan.plan_template
         })
+        assessment_template = self.create_plan_assessment_template(
+            plan=plan,
+            assessment_task_template=assessment_task_template
+        )
         self.create_assessment_task(**{
-            'assessment_task_template': assessment_template,
-            'plan': plan,
+            'assessment_template': assessment_template,
             'due_datetime': date_object
         })
-        vital_template = self.create_vital_task_template(**{
+        vital_task_template = self.create_vital_task_template(**{
             'plan_template': plan.plan_template
         })
+        vital_template = self.create_plan_vital_template(
+            plan=plan,
+            vital_task_template=vital_task_template
+        )
         self.create_vital_task(**{
-            'vital_task_template': vital_template,
-            'plan': plan,
+            'vital_template': vital_template,
             'due_datetime': date_object
         })
 
@@ -277,8 +283,11 @@ class TestTodaysTaskForPatient(TasksMixin, APITestCase):
         appear_datetime = pytz.utc.localize(
             self.fake.past_datetime(start_date="-1d")
         )
+        assessment_template = self.create_plan_assessment_template(
+            plan=self.plan
+        )
         kwargs.update({
-            'plan': self.plan,
+            'assessment_template': assessment_template,
             'appear_datetime': appear_datetime,
             'due_datetime': timezone.now()
         })
@@ -288,8 +297,11 @@ class TestTodaysTaskForPatient(TasksMixin, APITestCase):
         appear_datetime = pytz.utc.localize(
             self.fake.past_datetime(start_date="-1d")
         )
+        vital_template = self.create_plan_vital_template(
+            plan=self.plan
+        )
         kwargs.update({
-            'plan': self.plan,
+            'vital_template': vital_template,
             'appear_datetime': appear_datetime,
             'due_datetime': timezone.now()
         })
