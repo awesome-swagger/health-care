@@ -281,6 +281,24 @@ class ProspectivePatientViewSet(viewsets.ModelViewSet):
     permission_classes = (permissions.IsAuthenticated,)
     queryset = ProspectivePatient.objects.all()
 
+    @action(methods=['post'], detail=False,
+            permission_classes=(permissions.IsAuthenticated, ))
+    def bulk_import(self, request, *args, **kwargs):
+        """
+        import prospective users in bulk
+        """
+        for ii in request.data:
+            try:
+                serializer = self.get_serializer(data=ii)
+                serializer.is_valid(raise_exception=True)
+                serializer.save()
+            except:
+                pass
+
+        return Response(
+            {"detail": _("Successfully imported prospective patients.")}
+        )
+
 
 class PatientStatViewSet(viewsets.ModelViewSet):
     serializer_class = PatientStatSerializer
