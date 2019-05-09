@@ -17,11 +17,11 @@ export class AddAssessmentComponent implements OnInit {
 
   public data = null;
   public totalPatients = 0;
+  public isAdhoc = false;
   public assessments = [];
   public searchInput = '';
   public assessmentsShown = [];
   public selectedAssessment = null;
-  public editingTemplate = false;
   public createAssessment = false;
   public newAssessmentName = '';
 
@@ -35,8 +35,12 @@ export class AddAssessmentComponent implements OnInit {
   public ngOnInit() {
     console.log(this.data);
     if (this.data) {
-      this.editingTemplate = this.data.editingTemplate;
       this.totalPatients = this.data.totalPatients ? this.data.totalPatients : 0;
+      if (this.data.planTemplateId) {
+        this.isAdhoc = false;
+      } else if (this.data.planId) {
+        this.isAdhoc = true;
+      }
       this.store.AssessmentTaskTemplate.readListPaged({
         is_available: true,
       }).subscribe(
@@ -66,13 +70,13 @@ export class AddAssessmentComponent implements OnInit {
     this.selectedAssessment = assessment;
   }
 
-  public uniqByNameCount(assessments) {
-    let assessmentss = this.assessments.filter(
-      (obj) => obj.name === assessments.name
+  public uniqByNameCount(assessment) {
+    let uniqueAssessments = this.assessments.filter(
+      (obj) => obj.name === assessment.name
     ).filter(
       (obj) => obj.is_active === true
     );
-    return assessmentss.length;
+    return uniqueAssessments.length;
   }
 
   public clickEditAssessment(assessment, e) {
@@ -144,54 +148,63 @@ export class AddAssessmentComponent implements OnInit {
     if (assessmentName.length <= 0) {
       return;
     }
-    let newAssessment = {
-      start_on_day: 0,
-      appear_time: '00:00:00',
-      due_time: '00:00:00',
-      name: assessmentName,
-      plan_template: this.data.planTemplateId,
-    }
-    let createSub = this.store.AssessmentTaskTemplate.create(newAssessment).subscribe(
-      (resp) => {
-        this.assessments.push(resp);
-        this.createAssessment = false;
-        this.modal.close(resp);
-      },
-      (err) => {},
-      () => {
-        createSub.unsubscribe();
+    let assessment = {};
+    if (!this.isAdhoc) {
+      assessment = {
+        start_on_day: 0,
+        frequency: 'once',
+        repeat_amount: -1,
+        appear_time: '00:00:00',
+        due_time: '00:00:00',
+        is_active: true,
+        is_available: true,
+        name: assessmentName,
+        plan_template: this.data.planTemplateId,
+        tracks_outcome: false,
+        tracks_satisfaction: false,
       }
-    );
+      this.createAssessment = false;
+      this.modal.close(assessment);
+    } else {
+      assessment = {
+        custom_start_on_day: 0,
+        custom_frequency: 'once',
+        custom_repeat_amount: -1,
+        custom_appear_time: '00:00:00',
+        custom_due_time: '00:00:00',
+        custom_name: assessmentName,
+        plan: this.data.planId,
+      };
+      this.createAssessment = false;
+      this.modal.close(assessment);
+    }
   }
 
   public clickNext() {
-    let newAssessment = {
-      start_on_day: 0,
-      appear_time: '00:00:00',
-      due_time: '00:00:00',
+    let newAssessment: any = {};
+    newAssessment = {
+      start_on_day: this.selectedAssessment.start_on_day,
+      frequency: this.selectedAssessment.frequency,
+      repeat_amount: this.selectedAssessment.repeat_amount,
+      appear_time: this.selectedAssessment.appear_time,
+      due_time: this.selectedAssessment.due_time,
       name: this.selectedAssessment.name,
-      plan_template: this.data.planTemplateId,
+      is_active: true,
+      is_available: true,
+      tracks_outcome: this.selectedAssessment.tracks_outcome,
+      tracks_satisfaction: this.selectedAssessment.tracks_satisfaction,
     };
-    let createSub = this.store.AssessmentTaskTemplate.create(newAssessment).subscribe(
-      (resp) => {
-        this.assessments.push(resp);
-        this.createAssessment = false;
-        this.selectedAssessment.questions.forEach((question, i, array) => {
-          let updatedQuestion = _omit(question, 'id');
-          updatedQuestion.assessment_task_template = resp.id;
-          this.store.AssessmentQuestion.create(updatedQuestion).subscribe((newQuestion) => {
-            resp.questions.push(newQuestion);
-            if (i === array.length - 1) {
-              this.modal.close(resp);
-            }
-          });
-        });
-      },
-      (err) => {},
-      () => {
-        createSub.unsubscribe();
-      }
-    );
+    if (!this.isAdhoc) {
+      newAssessment['plan_template'] = this.data.planTemplateId;
+    } else {
+      newAssessment['plan'] = this.data.planId;
+      newAssessment['assessment_task_template'] = this.selectedAssessment;
+    }
+    newAssessment['questions'] = this.selectedAssessment.questions.map((obj) => {
+      return _omit(_omit(obj, 'id'), 'assessment_task_template');
+    });
+    this.createAssessment = false;
+    this.modal.close(newAssessment);
   }
 
   public clickCancel() {

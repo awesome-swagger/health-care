@@ -15,11 +15,11 @@ export class AddVitalComponent implements OnInit {
 
   public data = null;
   public totalPatients = 0;
+  public isAdhoc = false;
   public vitals = [];
   public searchInput = '';
   public vitalsShown = [];
   public selectedVital = null;
-  public editingTemplate = false;
   public createVital = false;
   public newVitalName = '';
   private modalRespData = {
@@ -36,8 +36,12 @@ export class AddVitalComponent implements OnInit {
   public ngOnInit() {
     console.log(this.data);
     if (this.data) {
-      this.editingTemplate = this.data.editingTemplate;
       this.totalPatients = this.data.totalPatients ? this.data.totalPatients : 0;
+      if (this.data.planTemplateId) {
+        this.isAdhoc = false;
+      } else if (this.data.planId) {
+        this.isAdhoc = true;
+      }
       this.store.VitalsTaskTemplate.readListPaged({
         is_available: true,
       }).subscribe(
@@ -65,12 +69,12 @@ export class AddVitalComponent implements OnInit {
   }
 
   public uniqByNameCount(vital) {
-    let filtered = this.vitals.filter(
+    let uniqueVitals = this.vitals.filter(
       (obj) => obj.name === vital.name
     ).filter(
       (obj) => obj.is_active === true
     );
-    return filtered.length;
+    return uniqueVitals.length;
   }
 
   public clickEditVital(vital, e) {
@@ -138,24 +142,46 @@ export class AddVitalComponent implements OnInit {
     });
   }
 
-  public createNewVital() {
-    this.store.VitalsTaskTemplate.create({
-      plan_template: this.data.planTemplateId,
-      start_on_day: 0,
-      appear_time: '00:00:00',
-      due_time: '00:00:00',
-      name: this.newVitalName,
-    }).subscribe(
-      (vitalTemplate) => {
-        this.vitals.push(vitalTemplate);
-        this.createVital = false;
-        this.modalRespData.nextAction = 'createVital';
-        this.modalRespData.data = vitalTemplate;
-        this.modal.close(this.modalRespData);
-      },
-      (err) => {},
-      () => {}
-    );
+  public createNewVital(vitalName) {
+    if (vitalName.length <= 0) {
+      return;
+    }
+    let newVital = {};
+    if (!this.isAdhoc) {
+      newVital = {
+        start_on_day: 0,
+        frequency: 'once',
+        repeat_amount: -1,
+        appear_time: '00:00:00',
+        due_time: '00:00:00',
+        is_active: true,
+        is_available: true,
+        name: vitalName,
+        plan_template: this.data.planTemplateId,
+        tracks_outcome: false,
+        tracks_satisfaction: false,
+      }
+      this.createVital = false;
+      this.modal.close({
+        nextAction: 'createVital',
+        data: newVital
+      });
+    } else {
+      newVital = {
+        custom_start_on_day: 0,
+        custom_frequency: 'once',
+        custom_repeat_amount: -1,
+        custom_appear_time: '00:00:00',
+        custom_due_time: '00:00:00',
+        custom_name: vitalName,
+        plan: this.data.planId,
+      };
+      this.createVital = false;
+      this.modal.close({
+        nextAction: 'createVital',
+        data: newVital
+      });
+    }
   }
 
   public openFullPreview(vital) {
@@ -165,36 +191,32 @@ export class AddVitalComponent implements OnInit {
   }
 
   public clickNext() {
-    let newVital = {
-      start_on_day: 0,
-      appear_time: '00:00:00',
-      due_time: '00:00:00',
+    let newVital: any = {};
+    newVital = {
+      start_on_day: this.selectedVital.start_on_day,
+      frequency: this.selectedVital.frequency,
+      repeat_amount: this.selectedVital.repeat_amount,
+      appear_time: this.selectedVital.appear_time,
+      due_time: this.selectedVital.due_time,
       name: this.selectedVital.name,
+      is_active: true,
+      is_available: true,
       instructions: this.selectedVital.instructions,
-      plan_template: this.data.planTemplateId,
     };
-    let createSub = this.store.VitalsTaskTemplate.create(newVital).subscribe(
-      (resp) => {
-        this.vitals.push(resp);
-        this.createVital = false;
-        this.selectedVital.questions.forEach((question, i, array) => {
-          let updatedQuestion = _omit(question, 'id');
-          updatedQuestion.vital_task_template = resp.id;
-          this.store.VitalsQuestions.create(updatedQuestion).subscribe((newQuestion) => {
-            resp.questions.push(newQuestion);
-            if (i === array.length - 1) {
-              this.modalRespData.nextAction = 'createVital';
-              this.modalRespData.data = resp;
-              this.modal.close(this.modalRespData);
-            }
-          });
-        });
-      },
-      (err) => {},
-      () => {
-        createSub.unsubscribe();
-      }
-    );
+    if (!this.isAdhoc) {
+      newVital['plan_template'] = this.data.planTemplateId;
+    } else {
+      newVital['plan'] = this.data.planId;
+      newVital['vital_task_template'] = this.selectedVital;
+    }
+    newVital['questions'] = this.selectedVital.questions.map((obj) => {
+      return _omit(_omit(obj, 'id'), 'vital_task_template');
+    });
+    this.createVital = false;
+    this.modal.close({
+      nextAction: 'createVital',
+      data: newVital,
+    });
   }
 
   public clickClose() {

@@ -67,6 +67,8 @@ export class StoreService {
   public PlanPatientTemplate = new Store(this.http, 'plan_patient_templates');
   public PlanTeamTemplate = new Store(this.http, 'plan_team_templates');
   public PlanSymptomTemplate = new Store(this.http, 'plan_symptom_templates');
+  public PlanAssessmentTemplate = new Store(this.http, 'plan_assessment_templates');
+  public PlanVitalTemplate = new Store(this.http, 'plan_vital_templates');
 
   constructor(private http: HttpService) { }
 }
