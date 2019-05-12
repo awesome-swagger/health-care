@@ -34,6 +34,7 @@ from ..models import (
     VitalResponse,
 )
 from ..search_indexes import VitalTaskTemplateIndex
+from .mixins import ValidateTaskTemplateAndCustomFields
 from apps.core.api.mixins import RepresentationMixin
 from apps.core.api.serializers import SymptomSerializer, ProviderRoleSerializer
 from apps.core.models import Symptom
@@ -50,7 +51,8 @@ class PatientTaskTemplateSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class CarePlanPatientTemplateSerializer(RepresentationMixin,
+class CarePlanPatientTemplateSerializer(ValidateTaskTemplateAndCustomFields,
+                                        RepresentationMixin,
                                         serializers.ModelSerializer):
     """
     Serializer to be used by :model:`tasks.CarePlanPatientTemplate`
@@ -89,37 +91,7 @@ class CarePlanPatientTemplateSerializer(RepresentationMixin,
                 'serializer_class': PatientTaskTemplateSerializer,
             }
         ]
-
-    def _validate_custom_fields(self, data, regular_edit=False):
-
-        for custom_field in self.Meta.write_only_fields:
-            value = data.get(custom_field)
-
-            if regular_edit:
-                value = getattr(self.instance, custom_field) \
-                    if custom_field not in data.keys() \
-                    else data.get(custom_field)
-
-            if value is None:
-                raise serializers.ValidationError({
-                    custom_field: _('This field is required.')
-                })
-
-    def validate(self, data):
-
-        if 'patient_task_template' not in data.keys() and \
-           self.instance is None:
-            self._validate_custom_fields(data)
-        elif 'patient_task_template' in data.keys() and \
-             not data.get('patient_task_template') and \
-             self.instance is not None:
-            self._validate_custom_fields(data)
-        elif 'patient_task_template' not in data.keys() and \
-             self.instance is not None and \
-             self.instance.patient_task_template is None:
-            self._validate_custom_fields(data, regular_edit=True)
-
-        return data
+        task_template_field = 'patient_task_template'
 
 
 class PatientTaskSerializer(RepresentationMixin, serializers.ModelSerializer):
