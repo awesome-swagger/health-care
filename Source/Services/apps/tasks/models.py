@@ -572,9 +572,9 @@ class CarePlanSymptomTemplate(AbstractPlanTaskTemplate):
 
     @property
     def default_symptoms(self):
-        return self.custom_default_symptoms \
+        return self.custom_default_symptoms.all() \
             if self.custom_default_symptoms.exists() \
-            else self.symptom_task_template.default_symptoms
+            else self.symptom_task_template.default_symptoms.all()
 
 
 class SymptomTask(AbstractTask):
