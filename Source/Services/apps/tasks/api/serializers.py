@@ -610,7 +610,8 @@ class AssessmentResponseSerializer(RepresentationMixin,
         return obj.assessment_question.assessment_task_template.tracks_satisfaction
 
 
-class CarePlanAssessmentTemplateSerializer(RepresentationMixin,
+class CarePlanAssessmentTemplateSerializer(ValidateTaskTemplateAndCustomFields,
+                                           RepresentationMixin,
                                            serializers.ModelSerializer):
     """
     Serializer to be used by :model:`tasks.CarePlanAssessmentTemplate`
@@ -649,46 +650,7 @@ class CarePlanAssessmentTemplateSerializer(RepresentationMixin,
                 'serializer_class': AssessmentTaskTemplateSerializer,
             }
         ]
-
-    def validate(self, data):
-        assessment_task_template = data.get('assessment_task_template')
-
-        if self.instance is not None and assessment_task_template is None:
-            assessment_task_template = self.instance.assessment_task_template
-
-        if assessment_task_template is None:
-            custom_start_on_day = data.get('custom_start_on_day')
-            custom_frequency = data.get('custom_frequency')
-            custom_repeat_amount = data.get('custom_repeat_amount')
-            custom_appear_time = data.get('custom_appear_time')
-            custom_due_time = data.get('custom_due_time')
-
-            if custom_start_on_day is None:
-                raise serializers.ValidationError({
-                    'custom_start_on_day': _('This field is required.')
-                })
-
-            if custom_frequency is None:
-                raise serializers.ValidationError({
-                    'custom_frequency': _('This field is required.')
-                })
-
-            if custom_repeat_amount is None:
-                raise serializers.ValidationError({
-                    'custom_repeat_amount': _('This field is required.')
-                })
-
-            if custom_appear_time is None:
-                raise serializers.ValidationError({
-                    'custom_appear_time': _('This field is required.')
-                })
-
-            if custom_due_time is None:
-                raise serializers.ValidationError({
-                    'custom_due_time': _('This field is required.')
-                })
-
-        return data
+        task_template_field = 'assessment_task_template'
 
 
 class AssessmentTaskSerializer(RepresentationMixin,
