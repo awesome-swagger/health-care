@@ -89,9 +89,23 @@ class TestCarePlanSymptomTemplateUsingEmployee(TasksMixin, APITestCase):
         response = self.client.post(self.url, payload)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
+    def test_create_symptom_template_without_task_template_name(self):
+        payload = {
+            'plan': self.plan.id,
+            'custom_start_on_day': random.randint(1, 5),
+            'custom_frequency': 'once',
+            'custom_repeat_amount': -1,
+            'custom_appear_time': datetime.time(8, 0, 0),
+            'custom_due_time': datetime.time(17, 0, 0)
+        }
+        response = self.client.post(self.url, payload)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertTrue('custom_name' in response.data.keys())
+
     def test_create_symptom_template_without_task_template_start_on_day(self):
         payload = {
             'plan': self.plan.id,
+            'custom_name': self.fake.name(),
             'custom_frequency': 'once',
             'custom_repeat_amount': -1,
             'custom_appear_time': datetime.time(8, 0, 0),
@@ -104,6 +118,7 @@ class TestCarePlanSymptomTemplateUsingEmployee(TasksMixin, APITestCase):
     def test_create_symptom_template_without_task_template_frequency(self):
         payload = {
             'plan': self.plan.id,
+            'custom_name': self.fake.name(),
             'custom_start_on_day': random.randint(1, 5),
             'custom_repeat_amount': -1,
             'custom_appear_time': datetime.time(8, 0, 0),
@@ -116,6 +131,7 @@ class TestCarePlanSymptomTemplateUsingEmployee(TasksMixin, APITestCase):
     def test_create_symptom_template_without_task_template_repeat_amount(self):
         payload = {
             'plan': self.plan.id,
+            'custom_name': self.fake.name(),
             'custom_start_on_day': random.randint(1, 5),
             'custom_frequency': 'once',
             'custom_appear_time': datetime.time(8, 0, 0),
@@ -128,6 +144,7 @@ class TestCarePlanSymptomTemplateUsingEmployee(TasksMixin, APITestCase):
     def test_create_symptom_template_without_task_template_appear_time(self):
         payload = {
             'plan': self.plan.id,
+            'custom_name': self.fake.name(),
             'custom_start_on_day': random.randint(1, 5),
             'custom_frequency': 'once',
             'custom_repeat_amount': -1,
@@ -140,6 +157,7 @@ class TestCarePlanSymptomTemplateUsingEmployee(TasksMixin, APITestCase):
     def test_create_symptom_template_without_task_template_due_time(self):
         payload = {
             'plan': self.plan.id,
+            'custom_name': self.fake.name(),
             'custom_start_on_day': random.randint(1, 5),
             'custom_frequency': 'once',
             'custom_repeat_amount': -1,
@@ -257,6 +275,7 @@ class TestCarePlanSymptomTemplateUsingEmployee(TasksMixin, APITestCase):
         symptom_template = self.create_plan_symptom_template(
             plan=plan,
             symptom_task_template=None,
+            custom_name=self.fake.name(),
             custom_start_on_day=random.randint(1, 5),
             custom_frequency='once',
             custom_repeat_amount=-1,
@@ -285,6 +304,7 @@ class TestCarePlanSymptomTemplateUsingEmployee(TasksMixin, APITestCase):
         symptom_template = self.create_plan_symptom_template(
             plan=plan,
             symptom_task_template=None,
+            custom_name=self.fake.name(),
             custom_start_on_day=random.randint(1, 5),
             custom_frequency='once',
             custom_repeat_amount=-1,
