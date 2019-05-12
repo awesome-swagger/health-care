@@ -858,6 +858,9 @@ class CarePlanVitalTemplate(AbstractPlanTaskTemplate):
         on_delete=models.CASCADE,
         blank=True,
         null=True)
+    custom_instructions = models.CharField(
+        max_length=240,
+        blank=True)
 
     class Meta:
         verbose_name = _('Care Plan Vital Template')
@@ -865,6 +868,12 @@ class CarePlanVitalTemplate(AbstractPlanTaskTemplate):
 
     def __str__(self):
         return f'{self.plan}: {self.vital_task_template}'
+
+    @property
+    def instructions(self):
+        task_template = self.get_task_template_field()
+        return self.custom_instructions \
+            if self.custom_instructions else task_template.instructions
 
 
 class VitalTask(AbstractTask):
