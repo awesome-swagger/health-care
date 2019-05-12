@@ -292,7 +292,8 @@ class AbstractPlanTaskTemplate(UUIDPrimaryKeyMixin):
 
     @property
     def has_custom_values(self):
-        return self.custom_start_on_day is not None or \
+        return self.custom_name != '' or \
+            self.custom_start_on_day is not None or \
             self.custom_frequency or \
             self.custom_repeat_amount is not None or \
             self.custom_appear_time is not None or \
@@ -556,6 +557,11 @@ class CarePlanSymptomTemplate(AbstractPlanTaskTemplate):
         on_delete=models.CASCADE,
         blank=True,
         null=True)
+    custom_default_symptoms = models.ManyToManyField(
+        'core.Symptom',
+        related_name='plan_task_templates',
+        blank=True,
+        )
 
     class Meta:
         verbose_name = _('Care Plan Symptom Template')
@@ -563,6 +569,12 @@ class CarePlanSymptomTemplate(AbstractPlanTaskTemplate):
 
     def __str__(self):
         return f'{self.plan}: {self.symptom_task_template}'
+
+    @property
+    def default_symptoms(self):
+        return self.custom_default_symptoms \
+            if self.custom_default_symptoms.exists() \
+            else self.symptom_task_template.default_symptoms
 
 
 class SymptomTask(AbstractTask):
