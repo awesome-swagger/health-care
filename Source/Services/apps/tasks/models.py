@@ -209,6 +209,9 @@ class AbstractPlanTaskTemplate(UUIDPrimaryKeyMixin):
     plan task template implementation
     """
 
+    custom_name = models.CharField(
+        max_length=100,
+        blank=True)
     custom_start_on_day = models.IntegerField(
         blank=True,
         null=True)
