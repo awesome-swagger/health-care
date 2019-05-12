@@ -1007,12 +1007,14 @@ class CarePlanVitalTemplateSerializer(ValidateTaskTemplateAndCustomFields,
             'custom_repeat_amount',
             'custom_appear_time',
             'custom_due_time',
+            'custom_instructions',
             'name',
             'start_on_day',
             'frequency',
             'repeat_amount',
             'appear_time',
             'due_time',
+            'instructions',
         )
         write_only_fields = (
             'custom_name',
@@ -1021,6 +1023,7 @@ class CarePlanVitalTemplateSerializer(ValidateTaskTemplateAndCustomFields,
             'custom_repeat_amount',
             'custom_appear_time',
             'custom_due_time',
+            'custom_instructions',
         )
         read_only_fields = (
             'id',
