@@ -91,53 +91,19 @@ class CarePlanPatientTemplateSerializer(RepresentationMixin,
         ]
 
     def _validate_custom_fields(self, data, regular_edit=False):
-        custom_start_on_day = data.get('custom_start_on_day')
-        custom_frequency = data.get('custom_frequency')
-        custom_repeat_amount = data.get('custom_repeat_amount')
-        custom_appear_time = data.get('custom_appear_time')
-        custom_due_time = data.get('custom_due_time')
 
-        if regular_edit:
-            custom_start_on_day = self.instance.custom_start_on_day \
-                if 'custom_start_on_day' not in data.keys() \
-                else data.get('custom_start_on_day')
-            custom_frequency = self.instance.custom_frequency \
-                if 'custom_frequency' not in data.keys() \
-                else data.get('custom_frequency')
-            custom_repeat_amount = self.instance.custom_repeat_amount \
-                if 'custom_repeat_amount' not in data.keys() \
-                else data.get('custom_repeat_amount')
-            custom_appear_time = self.instance.custom_appear_time \
-                if 'custom_appear_time' not in data.keys() \
-                else data.get('custom_appear_time')
-            custom_due_time = self.instance.custom_due_time \
-                if 'custom_due_time' not in data.keys() \
-                else data.get('custom_due_time')
+        for custom_field in self.Meta.write_only_fields:
+            value = data.get(custom_field)
 
-        if custom_start_on_day is None:
-            raise serializers.ValidationError({
-                'custom_start_on_day': _('This field is required.')
-            })
+            if regular_edit:
+                value = getattr(self.instance, custom_field) \
+                    if custom_field not in data.keys() \
+                    else data.get(custom_field)
 
-        if custom_frequency is None:
-            raise serializers.ValidationError({
-                'custom_frequency': _('This field is required.')
-            })
-
-        if custom_repeat_amount is None:
-            raise serializers.ValidationError({
-                'custom_repeat_amount': _('This field is required.')
-            })
-
-        if custom_appear_time is None:
-            raise serializers.ValidationError({
-                'custom_appear_time': _('This field is required.')
-            })
-
-        if custom_due_time is None:
-            raise serializers.ValidationError({
-                'custom_due_time': _('This field is required.')
-            })
+            if value is None:
+                raise serializers.ValidationError({
+                    custom_field: _('This field is required.')
+                })
 
     def validate(self, data):
 
