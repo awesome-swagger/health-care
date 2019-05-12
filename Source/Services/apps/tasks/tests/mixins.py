@@ -191,7 +191,13 @@ class TasksMixin(PlansMixin):
             kwargs.update({
                 'symptom_task_template': self.create_symptom_task_template()
             })
-        return CarePlanSymptomTemplateFactory(**kwargs)
+
+        default_symptoms = kwargs.pop('custom_default_symptoms', [])
+
+        template = CarePlanSymptomTemplateFactory(**kwargs)
+        template.custom_default_symptoms.add(*default_symptoms)
+
+        return template
 
     def create_symptom_task(self, **kwargs):
         now = timezone.now()
