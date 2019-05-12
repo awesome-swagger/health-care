@@ -251,6 +251,12 @@ class AbstractPlanTaskTemplate(UUIDPrimaryKeyMixin):
         return plan_task_template_lookup[model_name]
 
     @property
+    def name(self):
+        task_template = self.get_task_template_field()
+        return self.custom_name \
+            if self.custom_name else task_template.name
+
+    @property
     def start_on_day(self):
         task_template = self.get_task_template_field()
         return self.custom_start_on_day \
