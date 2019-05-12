@@ -429,12 +429,14 @@ class CarePlanSymptomTemplateSerializer(ValidateTaskTemplateAndCustomFields,
             'custom_repeat_amount',
             'custom_appear_time',
             'custom_due_time',
+            'custom_default_symptoms',
             'name',
             'start_on_day',
             'frequency',
             'repeat_amount',
             'appear_time',
             'due_time',
+            'default_symptoms',
         )
         write_only_fields = (
             'custom_name',
@@ -443,6 +445,7 @@ class CarePlanSymptomTemplateSerializer(ValidateTaskTemplateAndCustomFields,
             'custom_repeat_amount',
             'custom_appear_time',
             'custom_due_time',
+            'custom_default_symptoms',
         )
         read_only_fields = (
             'id',
@@ -451,6 +454,11 @@ class CarePlanSymptomTemplateSerializer(ValidateTaskTemplateAndCustomFields,
             {
                 'field': 'symptom_task_template',
                 'serializer_class': SymptomTaskTemplateSerializer,
+            },
+            {
+                'field': 'default_symptoms',
+                'serializer_class': SymptomSerializer,
+                'many': True
             }
         ]
         task_template_field = 'symptom_task_template'
