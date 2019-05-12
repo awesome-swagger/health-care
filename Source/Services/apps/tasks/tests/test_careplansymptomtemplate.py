@@ -325,6 +325,41 @@ class TestCarePlanSymptomTemplateUsingEmployee(TasksMixin, APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertTrue('custom_start_on_day' in response.data)
 
+    def test_partial_update_symptom_template_default_symptoms(self):
+        plan = self.create_care_plan(
+            self.patient,
+            plan_template=self.plan_template
+        )
+        symptom = self.create_symptom()
+
+        symptom_template = self.create_plan_symptom_template(
+            plan=plan,
+            symptom_task_template=None,
+            custom_name=self.fake.name(),
+            custom_start_on_day=random.randint(1, 5),
+            custom_frequency='once',
+            custom_repeat_amount=-1,
+            custom_appear_time=datetime.time(8, 0, 0),
+            custom_due_time=datetime.time(17, 0, 0),
+        )
+
+        payload = {
+            'custom_start_on_day': random.randint(1, 5),
+            'custom_default_symptoms': [symptom.id]
+        }
+        detail_url = reverse(
+            'plan_symptom_templates-detail',
+            kwargs={
+                'pk': symptom_template.id
+            }
+        )
+        response = self.client.patch(detail_url, payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.data['default_symptoms'][0]['id'],
+            str(symptom.id)
+        )
+
     def test_partial_update_symptom_template_not_member(self):
         payload = {
             'custom_start_on_day': random.randint(1, 5),
