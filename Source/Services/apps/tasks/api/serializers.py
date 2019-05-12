@@ -34,6 +34,7 @@ from ..models import (
     VitalResponse,
 )
 from ..search_indexes import VitalTaskTemplateIndex
+from .mixins import ValidateTaskTemplateAndCustomFields
 from apps.core.api.mixins import RepresentationMixin
 from apps.core.api.serializers import SymptomSerializer, ProviderRoleSerializer
 from apps.core.models import Symptom
@@ -50,7 +51,8 @@ class PatientTaskTemplateSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class CarePlanPatientTemplateSerializer(RepresentationMixin,
+class CarePlanPatientTemplateSerializer(ValidateTaskTemplateAndCustomFields,
+                                        RepresentationMixin,
                                         serializers.ModelSerializer):
     """
     Serializer to be used by :model:`tasks.CarePlanPatientTemplate`
@@ -89,6 +91,7 @@ class CarePlanPatientTemplateSerializer(RepresentationMixin,
                 'serializer_class': PatientTaskTemplateSerializer,
             }
         ]
+        task_template_field = 'patient_task_template'
 
 
 class PatientTaskSerializer(RepresentationMixin, serializers.ModelSerializer):
@@ -223,7 +226,8 @@ class TeamTaskTemplateSerializer(RepresentationMixin,
         ]
 
 
-class CarePlanTeamTemplateSerializer(RepresentationMixin,
+class CarePlanTeamTemplateSerializer(ValidateTaskTemplateAndCustomFields,
+                                     RepresentationMixin,
                                      serializers.ModelSerializer):
     """
     Serializer to be used by :model:`tasks.CarePlanTeamTemplate`
@@ -262,6 +266,7 @@ class CarePlanTeamTemplateSerializer(RepresentationMixin,
                 'serializer_class': TeamTaskTemplateSerializer,
             }
         ]
+        task_template_field = 'team_task_template'
 
 
 class TeamTaskSerializer(RepresentationMixin,
@@ -399,7 +404,8 @@ class SymptomTaskTemplateSerializer(RepresentationMixin,
         ]
 
 
-class CarePlanSymptomTemplateSerializer(RepresentationMixin,
+class CarePlanSymptomTemplateSerializer(ValidateTaskTemplateAndCustomFields,
+                                        RepresentationMixin,
                                         serializers.ModelSerializer):
     """
     Serializer to be used by :model:`tasks.CarePlanSymptomTemplate`
@@ -438,6 +444,7 @@ class CarePlanSymptomTemplateSerializer(RepresentationMixin,
                 'serializer_class': SymptomTaskTemplateSerializer,
             }
         ]
+        task_template_field = 'symptom_task_template'
 
 
 class SymptomRatingSerializer(RepresentationMixin,
@@ -603,7 +610,8 @@ class AssessmentResponseSerializer(RepresentationMixin,
         return obj.assessment_question.assessment_task_template.tracks_satisfaction
 
 
-class CarePlanAssessmentTemplateSerializer(RepresentationMixin,
+class CarePlanAssessmentTemplateSerializer(ValidateTaskTemplateAndCustomFields,
+                                           RepresentationMixin,
                                            serializers.ModelSerializer):
     """
     Serializer to be used by :model:`tasks.CarePlanAssessmentTemplate`
@@ -642,6 +650,7 @@ class CarePlanAssessmentTemplateSerializer(RepresentationMixin,
                 'serializer_class': AssessmentTaskTemplateSerializer,
             }
         ]
+        task_template_field = 'assessment_task_template'
 
 
 class AssessmentTaskSerializer(RepresentationMixin,
@@ -959,7 +968,8 @@ class VitalResponseSerializer(RepresentationMixin, serializers.ModelSerializer):
         return instance
 
 
-class CarePlanVitalTemplateSerializer(RepresentationMixin,
+class CarePlanVitalTemplateSerializer(ValidateTaskTemplateAndCustomFields,
+                                      RepresentationMixin,
                                       serializers.ModelSerializer):
     """
     Serializer to be used by :model:`tasks.CarePlanVitalTemplate`
@@ -998,6 +1008,7 @@ class CarePlanVitalTemplateSerializer(RepresentationMixin,
                 'serializer_class': VitalTaskTemplateSerializer,
             }
         ]
+        task_template_field = 'vital_task_template'
 
 
 class VitalTaskSerializer(RepresentationMixin, serializers.ModelSerializer):

@@ -89,6 +89,66 @@ class TestCarePlanSymptomTemplateUsingEmployee(TasksMixin, APITestCase):
         response = self.client.post(self.url, payload)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
+    def test_create_symptom_template_without_task_template_start_on_day(self):
+        payload = {
+            'plan': self.plan.id,
+            'custom_frequency': 'once',
+            'custom_repeat_amount': -1,
+            'custom_appear_time': datetime.time(8, 0, 0),
+            'custom_due_time': datetime.time(17, 0, 0)
+        }
+        response = self.client.post(self.url, payload)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertTrue('custom_start_on_day' in response.data.keys())
+
+    def test_create_symptom_template_without_task_template_frequency(self):
+        payload = {
+            'plan': self.plan.id,
+            'custom_start_on_day': random.randint(1, 5),
+            'custom_repeat_amount': -1,
+            'custom_appear_time': datetime.time(8, 0, 0),
+            'custom_due_time': datetime.time(17, 0, 0)
+        }
+        response = self.client.post(self.url, payload)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertTrue('custom_frequency' in response.data.keys())
+
+    def test_create_symptom_template_without_task_template_repeat_amount(self):
+        payload = {
+            'plan': self.plan.id,
+            'custom_start_on_day': random.randint(1, 5),
+            'custom_frequency': 'once',
+            'custom_appear_time': datetime.time(8, 0, 0),
+            'custom_due_time': datetime.time(17, 0, 0)
+        }
+        response = self.client.post(self.url, payload)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertTrue('custom_repeat_amount' in response.data.keys())
+
+    def test_create_symptom_template_without_task_template_appear_time(self):
+        payload = {
+            'plan': self.plan.id,
+            'custom_start_on_day': random.randint(1, 5),
+            'custom_frequency': 'once',
+            'custom_repeat_amount': -1,
+            'custom_due_time': datetime.time(17, 0, 0)
+        }
+        response = self.client.post(self.url, payload)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertTrue('custom_appear_time' in response.data.keys())
+
+    def test_create_symptom_template_without_task_template_due_time(self):
+        payload = {
+            'plan': self.plan.id,
+            'custom_start_on_day': random.randint(1, 5),
+            'custom_frequency': 'once',
+            'custom_repeat_amount': -1,
+            'custom_appear_time': datetime.time(8, 0, 0),
+        }
+        response = self.client.post(self.url, payload)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertTrue('custom_due_time' in response.data.keys())
+
     def test_full_update_symptom_template(self):
         patient = self.create_patient(facility=self.facility)
         plan = self.create_care_plan(patient)
@@ -137,6 +197,113 @@ class TestCarePlanSymptomTemplateUsingEmployee(TasksMixin, APITestCase):
         }
         response = self.client.patch(self.detail_url, payload)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_partial_update_symptom_template_remove_template(self):
+        plan = self.create_care_plan(
+            self.patient,
+            plan_template=self.plan_template
+        )
+        symptom_task_template = self.create_symptom_task_template(
+            plan_template=self.plan_template
+        )
+        symptom_template = self.create_plan_symptom_template(
+            plan=plan,
+            symptom_task_template=symptom_task_template
+        )
+
+        payload = {
+            'symptom_task_template': '',
+        }
+        detail_url = reverse(
+            'plan_symptom_templates-detail',
+            kwargs={
+                'pk': symptom_template.id
+            }
+        )
+        response = self.client.patch(detail_url, payload)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_partial_update_symptom_template_add_template(self):
+        plan = self.create_care_plan(
+            self.patient,
+            plan_template=self.plan_template
+        )
+        symptom_task_template = self.create_symptom_task_template(
+            plan_template=self.plan_template
+        )
+        symptom_template = self.create_plan_symptom_template(
+            plan=plan,
+            symptom_task_template=None
+        )
+
+        payload = {
+            'symptom_task_template': symptom_task_template.id,
+        }
+        detail_url = reverse(
+            'plan_symptom_templates-detail',
+            kwargs={
+                'pk': symptom_template.id
+            }
+        )
+        response = self.client.patch(detail_url, payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_partial_update_symptom_template_without_template(self):
+        plan = self.create_care_plan(
+            self.patient,
+            plan_template=self.plan_template
+        )
+
+        symptom_template = self.create_plan_symptom_template(
+            plan=plan,
+            symptom_task_template=None,
+            custom_start_on_day=random.randint(1, 5),
+            custom_frequency='once',
+            custom_repeat_amount=-1,
+            custom_appear_time=datetime.time(8, 0, 0),
+            custom_due_time=datetime.time(17, 0, 0)
+        )
+
+        payload = {
+            'custom_start_on_day': random.randint(1, 5),
+        }
+        detail_url = reverse(
+            'plan_symptom_templates-detail',
+            kwargs={
+                'pk': symptom_template.id
+            }
+        )
+        response = self.client.patch(detail_url, payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_partial_update_symptom_template_without_template_remove(self):
+        plan = self.create_care_plan(
+            self.patient,
+            plan_template=self.plan_template
+        )
+
+        symptom_template = self.create_plan_symptom_template(
+            plan=plan,
+            symptom_task_template=None,
+            custom_start_on_day=random.randint(1, 5),
+            custom_frequency='once',
+            custom_repeat_amount=-1,
+            custom_appear_time=datetime.time(8, 0, 0),
+            custom_due_time=datetime.time(17, 0, 0)
+        )
+
+        payload = {
+            'custom_start_on_day': '',
+        }
+        detail_url = reverse(
+            'plan_symptom_templates-detail',
+            kwargs={
+                'pk': symptom_template.id
+            }
+        )
+        response = self.client.patch(detail_url, payload)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertTrue('custom_start_on_day' in response.data)
 
     def test_partial_update_symptom_template_not_member(self):
         payload = {

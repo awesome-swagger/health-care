@@ -195,7 +195,6 @@ def create_tasks_for_ongoing_plans(task_template,
             template_config
         )
     else:
-        plan_template = task_template.plan_template
         field_lookup = {
             'AssessmentTask': 'assessment',
             'PatientTask': 'patient',
@@ -207,6 +206,7 @@ def create_tasks_for_ongoing_plans(task_template,
             task_type = field_lookup[task_model_name]
 
         if plan_task_template:
+            plan_template = plan_task_template.plan.plan_template
             duration_weeks = plan_template.duration_weeks
             template_config = {
                 f'{task_type}_template': plan_task_template
@@ -219,6 +219,7 @@ def create_tasks_for_ongoing_plans(task_template,
                 plan_task_template
             )
         else:
+            plan_template = task_template.plan_template
             plans = plan_template.care_plans.filter(is_active=True)
             for plan in plans:
                 if plan.is_ongoing:
