@@ -188,6 +188,36 @@ class TestSymptomTask(StateTestMixin, TasksMixin, APITestCase):
         response = self.client.get(self.detail_url)
         self.assertEqual(response.data['is_complete'], True)
 
+    def test_mark_symptom_task_complete_using_custom_default_symptoms(self):
+        """
+        Creating a SymptomRating for each symptoms in the symptom task template
+        will mark the SymptomTask as complete
+        """
+        default_symptom = self.create_symptom()
+        symptom_template = self.create_plan_symptom_template(
+            plan=self.plan,
+            custom_default_symptoms=[default_symptom]
+        )
+        symptom_task = self.create_symptom_task(
+            symptom_template=symptom_template
+        )
+
+        symptoms = [default_symptom, self.create_symptom()]
+
+        for symptom in symptoms:
+            self.create_symptom_rating(**{
+                'symptom_task': symptom_task,
+                'symptom': symptom
+            })
+
+        detail_url = reverse(
+            'symptom_tasks-detail',
+            kwargs={'pk': symptom_task.id}
+        )
+
+        response = self.client.get(detail_url)
+        self.assertEqual(response.data['is_complete'], True)
+
 
 class TestSymptomTaskUsingEmployee(TasksMixin, APITestCase):
     """

@@ -306,7 +306,7 @@ def symptomrating_post_save(sender, instance, created, **kwargs):
     :model:`tasks.SymptomRating`
     """
     if created:
-        template = instance.symptom_task.symptom_template.symptom_task_template
+        template = instance.symptom_task.symptom_template
         default_symptoms = template.default_symptoms.values_list(
             'id', flat=True)
         rated_symptoms = instance.symptom_task.ratings.values_list(
@@ -327,7 +327,7 @@ def symptomrating_post_delete(sender, instance, **kwargs):
     :model:`tasks.SymptomRating`
     """
     task = instance.symptom_task
-    template = task.symptom_template.symptom_task_template
+    template = task.symptom_template
     if task.is_complete:
         default_symptoms = template.default_symptoms.values_list(
             'id', flat=True)

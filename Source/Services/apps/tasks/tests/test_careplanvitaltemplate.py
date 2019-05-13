@@ -89,9 +89,23 @@ class TestCarePlanVitalTemplateUsingEmployee(TasksMixin, APITestCase):
         response = self.client.post(self.url, payload)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
+    def test_create_vital_template_without_task_template_name(self):
+        payload = {
+            'plan': self.plan.id,
+            'custom_start_on_day': random.randint(1, 5),
+            'custom_frequency': 'once',
+            'custom_repeat_amount': -1,
+            'custom_appear_time': datetime.time(8, 0, 0),
+            'custom_due_time': datetime.time(17, 0, 0)
+        }
+        response = self.client.post(self.url, payload)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertTrue('custom_name' in response.data.keys())
+
     def test_create_vital_template_without_task_template_start_on_day(self):
         payload = {
             'plan': self.plan.id,
+            'custom_name': self.fake.name(),
             'custom_frequency': 'once',
             'custom_repeat_amount': -1,
             'custom_appear_time': datetime.time(8, 0, 0),
@@ -104,6 +118,7 @@ class TestCarePlanVitalTemplateUsingEmployee(TasksMixin, APITestCase):
     def test_create_vital_template_without_task_template_frequency(self):
         payload = {
             'plan': self.plan.id,
+            'custom_name': self.fake.name(),
             'custom_start_on_day': random.randint(1, 5),
             'custom_repeat_amount': -1,
             'custom_appear_time': datetime.time(8, 0, 0),
@@ -116,6 +131,7 @@ class TestCarePlanVitalTemplateUsingEmployee(TasksMixin, APITestCase):
     def test_create_vital_template_without_task_template_repeat_amount(self):
         payload = {
             'plan': self.plan.id,
+            'custom_name': self.fake.name(),
             'custom_start_on_day': random.randint(1, 5),
             'custom_frequency': 'once',
             'custom_appear_time': datetime.time(8, 0, 0),
@@ -128,6 +144,7 @@ class TestCarePlanVitalTemplateUsingEmployee(TasksMixin, APITestCase):
     def test_create_vital_template_without_task_template_appear_time(self):
         payload = {
             'plan': self.plan.id,
+            'custom_name': self.fake.name(),
             'custom_start_on_day': random.randint(1, 5),
             'custom_frequency': 'once',
             'custom_repeat_amount': -1,
@@ -140,6 +157,7 @@ class TestCarePlanVitalTemplateUsingEmployee(TasksMixin, APITestCase):
     def test_create_vital_template_without_task_template_due_time(self):
         payload = {
             'plan': self.plan.id,
+            'custom_name': self.fake.name(),
             'custom_start_on_day': random.randint(1, 5),
             'custom_frequency': 'once',
             'custom_repeat_amount': -1,
@@ -257,6 +275,7 @@ class TestCarePlanVitalTemplateUsingEmployee(TasksMixin, APITestCase):
         vital_template = self.create_plan_vital_template(
             plan=plan,
             vital_task_template=None,
+            custom_name=self.fake.name(),
             custom_start_on_day=random.randint(1, 5),
             custom_frequency='once',
             custom_repeat_amount=-1,
@@ -285,6 +304,7 @@ class TestCarePlanVitalTemplateUsingEmployee(TasksMixin, APITestCase):
         vital_template = self.create_plan_vital_template(
             plan=plan,
             vital_task_template=None,
+            custom_name=self.fake.name(),
             custom_start_on_day=random.randint(1, 5),
             custom_frequency='once',
             custom_repeat_amount=-1,
@@ -304,6 +324,38 @@ class TestCarePlanVitalTemplateUsingEmployee(TasksMixin, APITestCase):
         response = self.client.patch(detail_url, payload)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertTrue('custom_start_on_day' in response.data)
+
+    def test_partial_update_vital_template_instructions(self):
+        plan = self.create_care_plan(
+            self.patient,
+            plan_template=self.plan_template
+        )
+        instructions = self.fake.sentence(nb_words=10)
+
+        vital_template = self.create_plan_vital_template(
+            plan=plan,
+            vital_task_template=None,
+            custom_name=self.fake.name(),
+            custom_start_on_day=random.randint(1, 5),
+            custom_frequency='once',
+            custom_repeat_amount=-1,
+            custom_appear_time=datetime.time(8, 0, 0),
+            custom_due_time=datetime.time(17, 0, 0),
+        )
+
+        payload = {
+            'custom_start_on_day': random.randint(1, 5),
+            'custom_instructions': instructions
+        }
+        detail_url = reverse(
+            'plan_vital_templates-detail',
+            kwargs={
+                'pk': vital_template.id
+            }
+        )
+        response = self.client.patch(detail_url, payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['instructions'], instructions)
 
     def test_partial_update_vital_template_not_member(self):
         payload = {
