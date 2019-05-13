@@ -209,6 +209,9 @@ class AbstractPlanTaskTemplate(UUIDPrimaryKeyMixin):
     plan task template implementation
     """
 
+    custom_name = models.CharField(
+        max_length=100,
+        blank=True)
     custom_start_on_day = models.IntegerField(
         blank=True,
         null=True)
@@ -248,6 +251,12 @@ class AbstractPlanTaskTemplate(UUIDPrimaryKeyMixin):
         return plan_task_template_lookup[model_name]
 
     @property
+    def name(self):
+        task_template = self.get_task_template_field()
+        return self.custom_name \
+            if self.custom_name else task_template.name
+
+    @property
     def start_on_day(self):
         task_template = self.get_task_template_field()
         return self.custom_start_on_day \
@@ -283,7 +292,8 @@ class AbstractPlanTaskTemplate(UUIDPrimaryKeyMixin):
 
     @property
     def has_custom_values(self):
-        return self.custom_start_on_day is not None or \
+        return self.custom_name != '' or \
+            self.custom_start_on_day is not None or \
             self.custom_frequency or \
             self.custom_repeat_amount is not None or \
             self.custom_appear_time is not None or \
@@ -547,6 +557,11 @@ class CarePlanSymptomTemplate(AbstractPlanTaskTemplate):
         on_delete=models.CASCADE,
         blank=True,
         null=True)
+    custom_default_symptoms = models.ManyToManyField(
+        'core.Symptom',
+        related_name='plan_task_templates',
+        blank=True,
+        )
 
     class Meta:
         verbose_name = _('Care Plan Symptom Template')
@@ -554,6 +569,12 @@ class CarePlanSymptomTemplate(AbstractPlanTaskTemplate):
 
     def __str__(self):
         return f'{self.plan}: {self.symptom_task_template}'
+
+    @property
+    def default_symptoms(self):
+        return self.custom_default_symptoms.all() \
+            if self.custom_default_symptoms.exists() \
+            else self.symptom_task_template.default_symptoms.all()
 
 
 class SymptomTask(AbstractTask):
@@ -837,6 +858,9 @@ class CarePlanVitalTemplate(AbstractPlanTaskTemplate):
         on_delete=models.CASCADE,
         blank=True,
         null=True)
+    custom_instructions = models.CharField(
+        max_length=240,
+        blank=True)
 
     class Meta:
         verbose_name = _('Care Plan Vital Template')
@@ -844,6 +868,12 @@ class CarePlanVitalTemplate(AbstractPlanTaskTemplate):
 
     def __str__(self):
         return f'{self.plan}: {self.vital_task_template}'
+
+    @property
+    def instructions(self):
+        task_template = self.get_task_template_field()
+        return self.custom_instructions \
+            if self.custom_instructions else task_template.instructions
 
 
 class VitalTask(AbstractTask):

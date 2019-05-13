@@ -195,7 +195,6 @@ def create_tasks_for_ongoing_plans(task_template,
             template_config
         )
     else:
-        plan_template = task_template.plan_template
         field_lookup = {
             'AssessmentTask': 'assessment',
             'PatientTask': 'patient',
@@ -207,6 +206,7 @@ def create_tasks_for_ongoing_plans(task_template,
             task_type = field_lookup[task_model_name]
 
         if plan_task_template:
+            plan_template = plan_task_template.plan.plan_template
             duration_weeks = plan_template.duration_weeks
             template_config = {
                 f'{task_type}_template': plan_task_template
@@ -219,6 +219,7 @@ def create_tasks_for_ongoing_plans(task_template,
                 plan_task_template
             )
         else:
+            plan_template = task_template.plan_template
             plans = plan_template.care_plans.filter(is_active=True)
             for plan in plans:
                 if plan.is_ongoing:
@@ -305,7 +306,7 @@ def symptomrating_post_save(sender, instance, created, **kwargs):
     :model:`tasks.SymptomRating`
     """
     if created:
-        template = instance.symptom_task.symptom_template.symptom_task_template
+        template = instance.symptom_task.symptom_template
         default_symptoms = template.default_symptoms.values_list(
             'id', flat=True)
         rated_symptoms = instance.symptom_task.ratings.values_list(
@@ -326,7 +327,7 @@ def symptomrating_post_delete(sender, instance, **kwargs):
     :model:`tasks.SymptomRating`
     """
     task = instance.symptom_task
-    template = task.symptom_template.symptom_task_template
+    template = task.symptom_template
     if task.is_complete:
         default_symptoms = template.default_symptoms.values_list(
             'id', flat=True)
