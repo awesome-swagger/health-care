@@ -196,10 +196,9 @@
           </thead>
           <tbody>
             <tr *ngFor="let task of planTeamMemberTasks">
-              <td class="taskName left">{{task.team_task_template.name}}</td>
+              <td class="taskName left">{{task.name}}</td>
               <td class="left">
-                <span *ngIf="task.team_task_template.roles && task.team_task_template.roles.length > 0">{{formatSelectedRoles(task)}}</span>
-                <span *ngIf="!task.team_task_template.roles || task.team_task_template.roles.length < 1">Not Set</span>
+                {{formatSelectedRoles(task)}}
               </td>
               <td>{{task.start_on_day}}</td>
               <td class="left">{{task.frequency | frequencyTransform | titlecase}}</td>
@@ -455,14 +454,14 @@
           </thead>
           <tbody>
             <tr *ngFor="let assessmentTask of planAssessmentTasks">
-              <td class="taskName left">{{assessmentTask.assessment_task_template.name}}</td>
+              <td class="taskName left">{{assessmentTask.name}}</td>
               <td>{{assessmentTask.start_on_day}}</td>
               <td class="left">{{assessmentTask.frequency | frequencyTransform | titlecase}}</td>
               <td class="left">{{assessmentTask.repeat_amount != -1 ? assessmentTask.repeat_amount :'Until Plan Ends'}}</td>
               <td>{{assessmentTask.appear_time | timeTransform | date: 'shortTime'}}</td>
               <td>{{assessmentTask.due_time | timeTransform | date: 'shortTime'}}</td>
-              <td><i *ngIf="assessmentTask.assessment_task_template.tracks_outcome" class="ss-standard ss-check iconSmall"></i></td>
-              <td><i *ngIf="assessmentTask.assessment_task_template.tracks_satisfaction" class="ss-standard ss-check iconSmall"></i></td>
+              <td><i *ngIf="assessmentTracksOutcome(assessmentTask)" class="ss-standard ss-check iconSmall"></i></td>
+              <td><i *ngIf="assessmentTracksSatisfaction(assessmentTask)" class="ss-standard ss-check iconSmall"></i></td>
               <td class="noPad" width="48px">
                 <button class="button button--icon button--icon--small" (click)="editAssessment(assessmentTask, true)">
                   <i class="ss-write"></i>
@@ -587,7 +586,7 @@
           </thead>
           <tbody>
             <tr *ngFor="let vitalTask of planVitalTasks">
-              <td class="taskName left">{{vitalTask.vital_task_template.name}}</td>
+              <td class="taskName left">{{vitalTask.name}}</td>
               <td>{{vitalTask.start_on_day}}</td>
               <td class="left">{{vitalTask.frequency | frequencyTransform | titlecase}}</td>
               <td class="left">{{vitalTask.repeat_amount != -1 ? vitalTask.repeat_amount :'Until Plan Ends'}}</td>
