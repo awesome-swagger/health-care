@@ -146,7 +146,7 @@ class PatientTaskTodaySerializer(serializers.ModelSerializer):
         return 'patient_task'
 
     def get_name(self, obj):
-        return obj.patient_template.patient_task_template.name
+        return obj.patient_template.name
 
     def get_occurrence(self, obj):
         total_tasks = PatientTask.objects.filter(

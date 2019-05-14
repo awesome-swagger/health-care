@@ -61,5 +61,10 @@ export class TimeTrackerService {
   public stopTimer() {
     if (!this.timer) return;
     clearInterval(this.timer);
+    this.timer = null;
+  }
+
+  public resetTimers() {
+    this.planTimers = {};
   }
 }
