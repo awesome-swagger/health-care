@@ -265,7 +265,9 @@ export class EditTaskComponent implements OnInit {
 
   public updateFormFields() {
     let keys = Object.keys(this.task);
-    let customFields = ['name', 'start_on_day', 'frequency', 'repeat_amount', 'appear_time', 'due_time', 'default_symptoms'];
+    let customFields = [
+      'name', 'start_on_day', 'frequency', 'repeat_amount', 'appear_time',
+      'due_time', 'default_symptoms', 'instructions'];
     keys.forEach((key) => {
      if (this.taskForm.value[key] != undefined) {
         if (key === 'repeat_amount' && this.taskForm.value['repeat_amount'] != -1) {
