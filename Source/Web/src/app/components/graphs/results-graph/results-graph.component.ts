@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, ElementRef, Input, OnInit, ViewChild} from '@angular/core';
 import * as d3 from 'd3';
 import { get as _get } from 'lodash';
 
@@ -9,10 +9,29 @@ import { get as _get } from 'lodash';
 })
 export class ResultsGraphComponent implements OnInit {
 
+
+  @ViewChild('chart') private chartContainer: ElementRef;
+
   constructor() { }
 
-  ngOnInit() {
+  private _data = null;
 
+  @Input()
+  public get data() {
+    return this._data;
+  }
+
+  public set data(percent) {
+    this._data = percent;
+    this.drawChart();
+  }
+
+  ngOnInit() {
+    this.drawChart();
+  }
+
+  private drawChart() {
+    if (!this.data) return;
     interface WeekData {
       engagement: number,
       outcome: number
@@ -40,20 +59,22 @@ export class ResultsGraphComponent implements OnInit {
     ]
 
     const margin = {top: 30, right: 20, bottom: 30, left: 50};
-    const width = 1000 - margin.left - margin.right;
+    const width = 1300 - margin.left - margin.right;
     const height = 500 - margin.top - margin.bottom;
 
-    const wrapper = d3.select('#results-graph-wrapper');
+    let element = this.chartContainer.nativeElement;
+    element.innerHTML = '';
+    const wrapper = d3.select(element);
 
     const x = d3.scaleLinear()
       .range([0, width])
-      .domain([.8, weeks.length + .2]);
+      .domain([.8, this.data.length + .2]);
     const y = d3.scaleLinear()
       .range([height, 0])
       .domain([-5, 105]);
 
     const xAxis = d3.axisBottom(x)
-      .ticks(weeks.length)
+      .ticks(this.data.length)
       .tickSize(0)
       .tickFormat(t => `Week ${t}`)
 
@@ -64,7 +85,7 @@ export class ResultsGraphComponent implements OnInit {
 
     const svg = wrapper.append('svg')
       .attr('height', 500)
-      .attr('width', 1000)
+      .attr('width', 1300)
       .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
@@ -125,7 +146,7 @@ export class ResultsGraphComponent implements OnInit {
 
     svg.append('path')
       .attr('class', 'line')
-      .attr('d', engagementValueLine(weeks))
+      .attr('d', engagementValueLine(this.data))
       .attr('stroke-opacity', .75)
       .style('stroke', '#ffffff')
       .style('fill', 'none')
@@ -133,13 +154,13 @@ export class ResultsGraphComponent implements OnInit {
       .style('stroke-dasharray', '3, 3')
 
     svg.selectAll('dot')
-      .data(weeks)
+      .data(this.data)
       .enter().append('circle')
         .attr('r', 5)
         .attr('cx', (d, i) => x(i + 1))
-        .attr('cy', (d) => y(d.engagement))
+        .attr('cy', (d:WeekData) => y(d.engagement))
         .attr('fill', '#ffffff')
-        .on('mouseover', (d, i) => {
+        .on('mouseover', (d:WeekData, i) => {
           tooltip.transition()
             .duration(200)
             .style('opacity', 1)
@@ -156,20 +177,20 @@ export class ResultsGraphComponent implements OnInit {
         })
 
     svg.append('path')
-      .attr('d', outcomeValueLine(weeks))
+      .attr('d', outcomeValueLine(this.data))
       .attr('stroke-opacity', .5)
       .style('stroke', '#ffffff')
       .style('fill', 'none')
       .style('stroke-width', 3)
 
     svg.selectAll('dot')
-      .data(weeks)
+      .data(this.data)
       .enter().append('circle')
         .attr('r', 5)
         .attr('cx', (d, i) => x(i + 1))
-        .attr('cy', (d) => y(d.outcome))
+        .attr('cy', (d:WeekData) => y(d.outcome))
         .attr('fill', '#ffffff')
-        .on('mouseover', (d, i) => {
+        .on('mouseover', (d:WeekData, i) => {
           tooltip.transition()
             .duration(200)
             .style('opacity', 1)

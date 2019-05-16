@@ -49,11 +49,8 @@
         <div class="flex alignCenter">
           <label class="noMargin marRight8">Viewing</label>
           <div class="styledSelect timeChart__weekSelect marRight32">
-            <select class="styledSelect__select">
-              <option>All Weeks</option>
-              <option>Week 1</option>
-              <option>Week 2</option>
-              <option>Week 3</option>
+            <select class="styledSelect__select" [(ngModel)]="displayWeeks">
+              <option *ngFor="let week of resultsOverTime; let i = index" [value]="i + 1">{{i + 1}} Weeks</option>
             </select>
           </div>
           <p class="timeChart__key timeChart__key--dotted">
@@ -66,14 +63,20 @@
 
       </div> <!--/.timeChart__header-->
 
-      <app-results-graph></app-results-graph>
+      <app-results-graph [data]="graphedResults"></app-results-graph>
 
     </div> <!--/.timeChart-->
 
     <div class="dashDivider"></div>
 
     <div class="flex justifySpaceBetween">
-      <app-date-range [datePickerOverrides]="datepickerOptions"></app-date-range>
+      <app-date-range
+        [datePickerOverrides]="datepickerOptions"
+        [startDate]="topBillingStart"
+        (startDateChange)="topBillingStart = $event; onRangeChange('top')"
+        [endDate]="topBillingEnd"
+        (endDateChange)="topBillingEnd = $event; onRangeChange('top')"
+      ></app-date-range>
       <a [routerLink]="['/billing']" class="button button--iconText">
         <i class="ss-standard ss-view"></i> View Billing Details
       </a>
@@ -81,20 +84,26 @@
     <div class="info info--dk info--horiz">
       <div class="info__cell">
         <label>Total Hours</label>
-        <h1 class="info__bigNumber">1:16</h1>
+        <h1 class="info__bigNumber">{{formatTime(billingInfo?.top?.total_time)}}</h1>
       </div>
       <div class="info__cell">
         <label>Billable Hours</label>
-        <h1 class="info__bigNumber">:57</h1>
+        <h1 class="info__bigNumber">{{formatTime(billingInfo?.top?.billable_time)}}</h1>
       </div>
       <div class="info__cell">
         <label>Est. Month Total</label>
-        <h1 class="info__bigNumber">$145.00</h1>
+        <h1 class="info__bigNumber">{{formatMoney(billingInfo?.top?.total_billed)}}</h1>
       </div>
     </div> <!--/.info (for current month to date)-->
 
     <div class="flex justifySpaceBetween">
-      <app-date-range [datePickerOverrides]="datepickerOptions"></app-date-range>
+      <app-date-range
+        [datePickerOverrides]="datepickerOptions"
+        [startDate]="bottomBillingStart"
+        (startDateChange)="bottomBillingStart = $event; onRangeChange('bottom')"
+        [endDate]="bottomBillingEnd"
+        (endDateChange)="bottomBillingEnd = $event; onRangeChange('bottom')"
+      ></app-date-range>
       <a [routerLink]="['/billing']" class="button button--iconText">
         <i class="ss-standard ss-view"></i> View Billing Details
       </a>
@@ -102,15 +111,15 @@
     <div class="info info--dk info--horiz">
       <div class="info__cell">
         <label>Total Hours</label>
-        <h1 class="info__bigNumber">1:19</h1>
+        <h1 class="info__bigNumber">{{formatTime(billingInfo?.bottom?.total_time)}}</h1>
       </div>
       <div class="info__cell">
         <label>Billable Hours</label>
-        <h1 class="info__bigNumber">1:07</h1>
+        <h1 class="info__bigNumber">{{formatTime(billingInfo?.bottom?.billable_time)}}</h1>
       </div>
       <div class="info__cell">
         <label>Est. Month Total</label>
-        <h1 class="info__bigNumber">$98.00</h1>
+        <h1 class="info__bigNumber">{{formatMoney(billingInfo?.bottom?.total_billed)}}</h1>
       </div>
     </div> <!--/.info (for past month)-->
   </div> <!--/.ssContainer (for patient dashboard section)-->
