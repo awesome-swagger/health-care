@@ -167,6 +167,20 @@ class TestCarePlanTeamTemplateUsingEmployee(TasksMixin, APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertTrue('custom_due_time' in response.data.keys())
 
+    def test_create_team_template_without_task_template_is_manager_task(self):
+        payload = {
+            'plan': self.plan.id,
+            'custom_name': self.fake.name(),
+            'custom_start_on_day': random.randint(1, 5),
+            'custom_frequency': 'once',
+            'custom_repeat_amount': -1,
+            'custom_appear_time': datetime.time(8, 0, 0),
+            'custom_due_time': datetime.time(17, 0, 0)
+        }
+        response = self.client.post(self.url, payload)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertTrue('custom_is_manager_task' in response.data.keys())
+
     def test_full_update_team_template(self):
         patient = self.create_patient(facility=self.facility)
         plan = self.create_care_plan(patient)
@@ -280,7 +294,8 @@ class TestCarePlanTeamTemplateUsingEmployee(TasksMixin, APITestCase):
             custom_frequency='once',
             custom_repeat_amount=-1,
             custom_appear_time=datetime.time(8, 0, 0),
-            custom_due_time=datetime.time(17, 0, 0)
+            custom_due_time=datetime.time(17, 0, 0),
+            custom_is_manager_task=True
         )
 
         payload = {
@@ -309,7 +324,8 @@ class TestCarePlanTeamTemplateUsingEmployee(TasksMixin, APITestCase):
             custom_frequency='once',
             custom_repeat_amount=-1,
             custom_appear_time=datetime.time(8, 0, 0),
-            custom_due_time=datetime.time(17, 0, 0)
+            custom_due_time=datetime.time(17, 0, 0),
+            custom_is_manager_task=True
         )
 
         payload = {
