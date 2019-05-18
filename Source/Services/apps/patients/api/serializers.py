@@ -1,6 +1,6 @@
 import logging
 
-from django.db.models import Avg
+from django.db.models import Avg, Q
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth import get_user_model
@@ -360,9 +360,13 @@ class PatientDashboardSerializer(serializers.ModelSerializer):
         now = timezone.now()
         past_30_days = now - relativedelta(days=30)
         responses = AssessmentResponse.objects.filter(
+            Q(assessment_task__assessment_template__custom_tracks_outcome=True) |
+            (
+                Q(assessment_task__assessment_template__custom_tracks_outcome__isnull=True) &
+                Q(assessment_task__assessment_template__assessment_task_template__tracks_outcome=True)
+            ),
             assessment_task__appear_datetime__range=(past_30_days, now),
             assessment_task__assessment_template__plan__patient=obj,
-            assessment_task__assessment_template__assessment_task_template__tracks_outcome=True
         )
         average = responses.aggregate(score=Avg('rating'))
         return round(average['score']) if average['score'] else 0

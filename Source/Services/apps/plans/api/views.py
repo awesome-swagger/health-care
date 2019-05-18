@@ -382,8 +382,12 @@ class CarePlanViewSet(viewsets.ModelViewSet):
 
     def calculate_average_outcome(self, queryset):
         tasks = AssessmentTask.objects.filter(
+            Q(assessment_template__custom_tracks_outcome=True) |
+            (
+                Q(assessment_template__custom_tracks_outcome__isnull=True) &
+                Q(assessment_template__assessment_task_template__tracks_outcome=True)
+            ),
             assessment_template__plan__in=queryset,
-            assessment_template__assessment_task_template__tracks_outcome=True
         ).aggregate(average=Avg('responses__rating'))
         average = tasks['average'] or 0
         avg = round((average / 5) * 100)

@@ -618,13 +618,13 @@ class AssessmentResponseSerializer(RepresentationMixin,
         ]
 
     def get_assessment_task_name(self, obj):
-        return obj.assessment_question.assessment_task_template.name
+        return obj.assessment_task.assessment_template.name
 
     def get_tracks_outcome(self, obj):
-        return obj.assessment_question.assessment_task_template.tracks_outcome
+        return obj.assessment_task.assessment_template.tracks_outcome
 
     def get_tracks_satisfaction(self, obj):
-        return obj.assessment_question.assessment_task_template.tracks_satisfaction
+        return obj.assessment_task.assessment_template.tracks_satisfaction
 
 
 class CarePlanAssessmentTemplateSerializer(ValidateTaskTemplateAndCustomFields,

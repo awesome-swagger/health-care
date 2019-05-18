@@ -965,8 +965,8 @@ class EmployeeAssignmentSerializer(serializers.ModelSerializer):
         total = time_spent['total'] or 0
         return str(datetime.timedelta(minutes=total))[:-3]
 
-    def get_average_assessment(self, kwargs):
-        tasks = AssessmentTask.objects.filter(**kwargs).aggregate(
+    def get_average_assessment(self, args, kwargs):
+        tasks = AssessmentTask.objects.filter(*args, **kwargs).aggregate(
             average=Avg('responses__rating'))
         average = tasks['average'] or 0
         avg = round((average / 5) * 100)
@@ -1040,11 +1040,18 @@ class EmployeeAssignmentSerializer(serializers.ModelSerializer):
                                                  datetime.time.min,
                                                  tzinfo=pytz.utc)
         plans = obj.assigned_roles.values_list('plan', flat=True).distinct()
+        outcome_args = (
+            Q(assessment_template__custom_tracks_outcome=True) |
+            (
+                Q(assessment_template__custom_tracks_outcome__isnull=True) &
+                Q(assessment_template__assessment_task_template__tracks_outcome=True)
+            )
+        )
         outcome_kwargs = {
             'assessment_template__plan__in': plans,
             'assessment_template__assessment_task_template__tracks_outcome': True
         }
-        outcome = self.get_average_assessment(outcome_kwargs)
+        outcome = self.get_average_assessment(outcome_args, outcome_kwargs)
 
         kwargs = {
             'plan__in': plans,

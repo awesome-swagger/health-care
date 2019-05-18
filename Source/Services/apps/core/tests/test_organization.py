@@ -2,7 +2,7 @@ import random
 
 from urllib.parse import urlencode
 
-from django.db.models import Avg
+from django.db.models import Avg, Q
 from django.urls import reverse
 from django.utils import timezone
 
@@ -107,8 +107,12 @@ class BaseOrganizationTestMixin(TasksMixin):
                                                                     questions)
 
         outcome_tasks = AssessmentTask.objects.filter(
+            Q(assessment_template__custom_tracks_outcome=True) |
+            (
+                Q(assessment_template__custom_tracks_outcome__isnull=True) &
+                Q(assessment_template__assessment_task_template__tracks_outcome=True)
+            ),
             assessment_template__plan__in=plans,
-            assessment_template__assessment_task_template__tracks_outcome=True
         ).aggregate(outcome_average=Avg('responses__rating'))
         average = outcome_tasks['outcome_average'] or 0
         average_outcome = round((average / 5) * 100)

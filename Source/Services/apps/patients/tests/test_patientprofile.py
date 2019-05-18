@@ -6,7 +6,7 @@ from PIL import Image
 from unittest import mock
 
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.db.models import Avg
+from django.db.models import Avg, Q
 from django.urls import reverse
 from django.utils import timezone
 
@@ -504,9 +504,13 @@ class TestPatientProfileDashboard(TasksMixin, APITestCase):
     def test_get_assessment_score(self):
         now = timezone.now()
         responses = AssessmentResponse.objects.filter(
+            Q(assessment_task__assessment_template__custom_tracks_outcome=True) |
+            (
+                Q(assessment_task__assessment_template__custom_tracks_outcome__isnull=True) &
+                Q(assessment_task__assessment_template__assessment_task_template__tracks_outcome=True)
+            ),
             assessment_task__appear_datetime__lte=now,
             assessment_task__assessment_template__plan__patient=self.patient,
-            assessment_task__assessment_template__assessment_task_template__tracks_outcome=True
         )
         average = responses.aggregate(score=Avg('rating'))
         score = round(average['score']) if average['score'] else 0
