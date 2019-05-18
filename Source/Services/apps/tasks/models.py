@@ -440,6 +440,12 @@ class CarePlanTeamTemplate(AbstractPlanTaskTemplate):
     def __str__(self):
         return f'{self.plan}: {self.team_task_template}'
 
+    @property
+    def is_manager_task(self):
+        return self.custom_is_manager_task \
+            if self.custom_is_manager_task is not None \
+            else self.team_task_template.is_manager_task
+
 
 class TeamTask(AbstractTask):
     STATUS_CHOICES = (
