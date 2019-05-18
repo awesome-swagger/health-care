@@ -431,6 +431,7 @@ class CarePlanTeamTemplate(AbstractPlanTaskTemplate):
         on_delete=models.CASCADE,
         blank=True,
         null=True)
+    custom_is_manager_task = models.NullBooleanField()
 
     class Meta:
         verbose_name = _('Care Plan Team Template')
