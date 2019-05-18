@@ -209,6 +209,24 @@ class BaseOrganizationPatientSerializer(serializers.ModelSerializer):
         if assessment_type not in ['tracks_outcome', 'tracks_satisfaction']:
             raise serializers.ValidationError(_('Invalid assessment type.'))
 
+        args = ()
+        if assessment_type == 'tracks_outcome':
+            args = (
+                Q(assessment_template__custom_tracks_outcome=True) |
+                (
+                    Q(assessment_template__custom_tracks_outcome__isnull=True) &
+                    Q(assessment_template__assessment_task_template__tracks_outcome=True)
+                ),
+            )
+        elif assessment_type == 'tracks_satisfaction':
+            args = (
+                Q(assessment_template__custom_tracks_satisfaction=True) |
+                (
+                    Q(assessment_template__custom_tracks_satisfaction__isnull=True) &
+                    Q(assessment_template__assessment_task_template__tracks_satisfaction=True)
+                ),
+            )
+
         request = self.context['request']
         care_team_members = self._get_care_team_members(request)
         filter_allowed = self.context.get('filter_allowed', False)
@@ -216,7 +234,6 @@ class BaseOrganizationPatientSerializer(serializers.ModelSerializer):
 
         kwargs = {
             'assessment_template__plan__patient__facility__in': facilities,
-            f'assessment_template__assessment_task_template__{assessment_type}': True
         }
 
         if care_team_members.exists() and filter_allowed:
@@ -229,7 +246,7 @@ class BaseOrganizationPatientSerializer(serializers.ModelSerializer):
                 'assessment_template__plan__patient__facility__id': request.GET.get('facility')
             })
 
-        tasks = AssessmentTask.objects.filter(**kwargs).aggregate(
+        tasks = AssessmentTask.objects.filter(*args, **kwargs).aggregate(
             average=Avg('responses__rating'))
         average = tasks['average'] or 0
         avg = round((average / 5) * 100)
