@@ -700,6 +700,8 @@ class CarePlanAssessmentTemplate(AbstractPlanTaskTemplate):
         on_delete=models.CASCADE,
         blank=True,
         null=True)
+    custom_tracks_outcome = models.NullBooleanField()
+    custom_tracks_satisfaction = models.NullBooleanField()
 
     class Meta:
         verbose_name = _('Care Plan Assessment Template')
