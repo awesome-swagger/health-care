@@ -710,6 +710,18 @@ class CarePlanAssessmentTemplate(AbstractPlanTaskTemplate):
     def __str__(self):
         return f'{self.plan}: {self.assessment_task_template}'
 
+    @property
+    def tracks_outcome(self):
+        return self.custom_tracks_outcome \
+            if self.custom_tracks_outcome is not None \
+            else self.assessment_task_template.tracks_outcome
+
+    @property
+    def tracks_satisfaction(self):
+        return self.custom_tracks_satisfaction \
+            if self.custom_tracks_satisfaction is not None \
+            else self.assessment_task_template.tracks_satisfaction
+
 
 class AssessmentQuestion(UUIDPrimaryKeyMixin):
     assessment_task_template = models.ForeignKey(
