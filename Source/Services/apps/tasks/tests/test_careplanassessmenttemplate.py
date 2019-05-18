@@ -167,6 +167,36 @@ class TestCarePlanAssessmentTemplateUsingEmployee(TasksMixin, APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertTrue('custom_due_time' in response.data.keys())
 
+    def test_create_assessment_template_without_task_template_tracks_outcome(self):
+        payload = {
+            'plan': self.plan.id,
+            'custom_name': self.fake.name(),
+            'custom_start_on_day': random.randint(1, 5),
+            'custom_frequency': 'once',
+            'custom_repeat_amount': -1,
+            'custom_appear_time': datetime.time(8, 0, 0),
+            'custom_due_time': datetime.time(17, 0, 0),
+            'custom_tracks_satisfaction': True
+        }
+        response = self.client.post(self.url, payload)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertTrue('custom_tracks_outcome' in response.data.keys())
+
+    def test_create_assessment_template_without_task_template_tracks_satisfaction(self):
+        payload = {
+            'plan': self.plan.id,
+            'custom_name': self.fake.name(),
+            'custom_start_on_day': random.randint(1, 5),
+            'custom_frequency': 'once',
+            'custom_repeat_amount': -1,
+            'custom_appear_time': datetime.time(8, 0, 0),
+            'custom_due_time': datetime.time(17, 0, 0),
+            'custom_tracks_outcome': True
+        }
+        response = self.client.post(self.url, payload)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertTrue('custom_tracks_satisfaction' in response.data.keys())
+
     def test_full_update_assessment_template(self):
         patient = self.create_patient(facility=self.facility)
         plan = self.create_care_plan(patient)
