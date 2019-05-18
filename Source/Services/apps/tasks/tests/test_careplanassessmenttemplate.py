@@ -280,7 +280,9 @@ class TestCarePlanAssessmentTemplateUsingEmployee(TasksMixin, APITestCase):
             custom_frequency='once',
             custom_repeat_amount=-1,
             custom_appear_time=datetime.time(8, 0, 0),
-            custom_due_time=datetime.time(17, 0, 0)
+            custom_due_time=datetime.time(17, 0, 0),
+            custom_tracks_outcome=False,
+            custom_tracks_satisfaction=False,
         )
 
         payload = {
@@ -309,7 +311,9 @@ class TestCarePlanAssessmentTemplateUsingEmployee(TasksMixin, APITestCase):
             custom_frequency='once',
             custom_repeat_amount=-1,
             custom_appear_time=datetime.time(8, 0, 0),
-            custom_due_time=datetime.time(17, 0, 0)
+            custom_due_time=datetime.time(17, 0, 0),
+            custom_tracks_outcome=False,
+            custom_tracks_satisfaction=False,
         )
 
         payload = {
