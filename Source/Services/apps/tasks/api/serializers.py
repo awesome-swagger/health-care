@@ -248,12 +248,14 @@ class CarePlanTeamTemplateSerializer(ValidateTaskTemplateAndCustomFields,
             'custom_repeat_amount',
             'custom_appear_time',
             'custom_due_time',
+            'custom_is_manager_task',
             'name',
             'start_on_day',
             'frequency',
             'repeat_amount',
             'appear_time',
             'due_time',
+            'is_manager_task',
         )
         write_only_fields = (
             'custom_name',
@@ -262,6 +264,7 @@ class CarePlanTeamTemplateSerializer(ValidateTaskTemplateAndCustomFields,
             'custom_repeat_amount',
             'custom_appear_time',
             'custom_due_time',
+            'custom_is_manager_task',
         )
         read_only_fields = (
             'id',
