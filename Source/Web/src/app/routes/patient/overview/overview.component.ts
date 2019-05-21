@@ -212,8 +212,8 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
     });
     this.fetchTeamTasks(carePlan.id).then((planTeamTasks: any) => {
       this.planTeamTasks = planTeamTasks;
-      this.planTeamManagerTasks = planTeamTasks.filter((task) => task.team_task_template.is_manager_task);
-      this.planTeamMemberTasks = planTeamTasks.filter((task) => !task.team_task_template.is_manager_task);
+      this.planTeamManagerTasks = planTeamTasks.filter((task) => this.taskIsManager(task));
+      this.planTeamMemberTasks = planTeamTasks.filter((task) => !this.taskIsManager(task));
     });
     this.fetchPatientTasks(carePlan.id).then((planPatientTasks: any) => {
       this.planPatientTasks = planPatientTasks;
@@ -256,6 +256,21 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
 
   public patientTasksCount() {
     return this.planSymptomTasks.length + this.planVitalTasks.length + this.planPatientTasks.length + this.planAssessmentTasks.length;
+  }
+
+  public taskIsManager(teamTask) {
+    let task_template = teamTask.team_task_template;
+    return task_template && task_template.is_manager_task;
+  }
+
+  public assessmentTracksOutcome(assessment) {
+    let task_template = assessment.assessment_task_template;
+    return task_template && task_template.tracks_outcome;
+  }
+
+  public assessmentTracksSatisfaction(assessment) {
+    let task_template = assessment.assessment_task_template;
+    return task_template && task_template.tracks_satisfaction;
   }
 
   public openGoal() {
@@ -399,8 +414,8 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
       (updatedTask) => {
         this.fetchTeamTasks(this.carePlan.id).then((planTeamTasks: any) => {
           this.planTeamTasks = planTeamTasks;
-          this.planTeamManagerTasks = planTeamTasks.filter((task) => task.team_task_template.is_manager_task);
-          this.planTeamMemberTasks = planTeamTasks.filter((task) => !task.team_task_template.is_manager_task);
+          this.planTeamManagerTasks = planTeamTasks.filter((task) => this.taskIsManager(task));
+          this.planTeamMemberTasks = planTeamTasks.filter((task) => !this.taskIsManager(task));
         });
         if (!updatedTask) return;
       },
@@ -412,13 +427,14 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
   }
 
   public formatSelectedRoles(task) {
-    if (!task.team_task_template.roles || task.team_task_template.roles.length < 1) {
-      return '';
+    let taskTemplate = task.team_task_template;
+    if (!taskTemplate || !taskTemplate.roles || taskTemplate.roles.length < 1) {
+      return 'Not set';
     }
-    if (task.team_task_template.roles.length > 1) {
-      return `${task.team_task_template.roles[0].name}, +${task.team_task_template.roles.length - 1}`
-    } else {
-      return task.team_task_template.roles[0].name;
+    if (taskTemplate.roles.length > 1) {
+      return `${taskTemplate.roles[0].name}, +${taskTemplate.roles.length - 1}`
+    } else if (taskTemplate.roles.length > 0) {
+      return taskTemplate.roles[0].name;
     }
   }
 
@@ -459,8 +475,8 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
       (updatedTask) => {
         this.fetchTeamTasks(this.carePlan.id).then((planTeamTasks: any) => {
           this.planTeamTasks = planTeamTasks;
-          this.planTeamManagerTasks = planTeamTasks.filter((task) => task.team_task_template.is_manager_task);
-          this.planTeamMemberTasks = planTeamTasks.filter((task) => !task.team_task_template.is_manager_task);
+          this.planTeamManagerTasks = planTeamTasks.filter((task) => this.taskIsManager(task));
+          this.planTeamMemberTasks = planTeamTasks.filter((task) => !this.taskIsManager(task));
         });
         if (!updatedTask) return;
       },

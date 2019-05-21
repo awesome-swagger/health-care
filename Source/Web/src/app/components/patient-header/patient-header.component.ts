@@ -306,7 +306,7 @@ export class PatientHeaderComponent implements OnInit, OnDestroy {
     if (!this.myCheckinDate) {
       this.myCheckinDate = moment().add(1, 'd');
       this.myCheckinDate.set({
-        hour: 0,
+        hour: 12,
         minute: 0,
         second: 0,
       });
@@ -335,13 +335,56 @@ export class PatientHeaderComponent implements OnInit, OnDestroy {
     this.checkinRevertValue = null;
   }
 
+  public checkExistingCheckinId() {
+    return new Promise((resolve, reject) => {
+      let planDay = moment(this.selectedPlan.created).diff(moment(), 'days');
+      this.store.PlanTeamTemplate.readListPaged({
+        plan: this.selectedPlan.id,
+      }).subscribe(
+        (tasks) => {
+          // return true if plan has a checkin task that isn't past the current due time
+          for (let i = 0; i < tasks.length; i++) {
+            if (tasks[i].name === 'Patient Check-in') {
+              let isAfterNow = moment(this.selectedPlan.created).add(tasks[i].start_on_day, 'days').isAfter(moment());
+              if (isAfterNow) {
+                resolve(tasks[i].id);
+              }
+            }
+          }
+          resolve(null);
+        },
+      );
+    });
+  }
+
   public saveCheckin() {
     if (!this.myCheckinDate) {
       return;
     }
     this.editCheckin = null;
     this.checkinRevertValue = null;
-    // Updates checkin date of all care team roles
+    this.checkExistingCheckinId().then((checkinId: any) => {
+      let startOnDay = this.myCheckinDate.diff(moment(this.selectedPlan.created), 'days');
+      let appearTime = this.myCheckinDate.format('HH:mm') + ':00';
+      let dueTime = this.myCheckinDate.clone().add(4, 'hours').format('HH:mm') + ':00';
+      if (checkinId) {
+        this.store.PlanTeamTemplate.update(checkinId, {
+          custom_start_on_day: startOnDay,
+          custom_appear_time: appearTime,
+          custom_due_time: dueTime,
+        }, true).subscribe();
+      } else {
+        this.store.PlanTeamTemplate.create({
+          custom_name: 'Patient Check-in',
+          custom_start_on_day: startOnDay,
+          custom_frequency: 'once',
+          custom_repeat_amount: 1,
+          custom_appear_time: appearTime,
+          custom_due_time: dueTime,
+          plan: this.selectedPlan.id,
+        }).subscribe();
+      }
+    });
     this.employeeCTRoles.forEach((obj) => {
       let updateSub = this.store.CareTeamMember.update(obj.id, {
         next_checkin: this.myCheckinDate.toISOString()

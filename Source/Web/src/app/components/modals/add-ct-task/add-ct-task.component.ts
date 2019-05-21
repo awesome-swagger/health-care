@@ -98,7 +98,7 @@ export class AddCTTaskComponent implements OnInit {
           } else if (this.getTaskType().type === 'team' || type === 'plan-team') {
             this.tasks = this.tasks.filter((obj) => !obj.is_manager_task);
           }
-          this.tasksShown = _uniqBy(this.tasks, (obj) => this.getTaskName(obj));
+          this.tasksShown = _uniqBy(this.tasks, (obj) => obj.name);
         },
         (err) => {},
         () => {}
@@ -114,14 +114,6 @@ export class AddCTTaskComponent implements OnInit {
     }
   }
 
-  public getTaskName(task) {
-    return task.name;
-  }
-
-  public getTaskNameRelated(task) {
-    return task[this.getTaskType().relatedField].name;
-  }
-
   public isTeamTask() {
     let teamTaskTypes = ['manager', 'team', 'plan-manager', 'plan-team'];
     return teamTaskTypes.includes(this.getTaskType().type);
@@ -129,10 +121,10 @@ export class AddCTTaskComponent implements OnInit {
 
   public filterTasks() {
     let taskMatches = this.tasks.filter((obj) => {
-      return this.getTaskName(obj).toLowerCase().indexOf(this.searchInput.toLowerCase()) >= 0;
+      return obj.name.toLowerCase().indexOf(this.searchInput.toLowerCase()) >= 0;
     });
     this.tasksShown = _uniqBy(taskMatches, (obj) => {
-      return this.getTaskName(obj);
+      return obj.name;
     });
   }
 
@@ -146,7 +138,7 @@ export class AddCTTaskComponent implements OnInit {
   public uniqByNameCount(task) {
     let tasks = this.tasks.filter(
       (obj) => {
-        return this.getTaskName(obj) === this.getTaskName(task);
+        return obj.name === task.name;
       }
     ).filter((obj) => obj.is_active === true);
     return tasks.length;
@@ -251,12 +243,12 @@ export class AddCTTaskComponent implements OnInit {
       this.modal.close(task);
     } else {
       task = {
-        custom_start_on_day: 0,
-        custom_frequency: 'once',
-        custom_repeat_amount: -1,
-        custom_appear_time: '00:00:00',
-        custom_due_time: '00:00:00',
-        custom_name: taskName,
+        start_on_day: 0,
+        frequency: 'once',
+        repeat_amount: -1,
+        appear_time: '00:00:00',
+        due_time: '00:00:00',
+        name: taskName,
         plan: this.data.planId,
       };
       if (this.getTaskType().type === 'plan-team' || this.getTaskType().type === 'plan-manager') {
@@ -290,7 +282,7 @@ export class AddCTTaskComponent implements OnInit {
       newTask['plan'] = this.data.planId;
       newTask[this.getTaskType().relatedField] = task;
     }
-    if (this.getTaskType().type === 'symptom') {
+    if (this.getTaskType().type === 'symptom' || this.getTaskType().type === 'plan-symptom') {
       newTask['default_symptoms'] = task.default_symptoms;
     }
     if (this.isTeamTask()) {

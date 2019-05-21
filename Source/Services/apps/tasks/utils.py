@@ -222,7 +222,7 @@ def get_all_tasks_for_today(user, **kwargs):
 
         if plan_template:
             patient_tasks = patient_tasks.filter(
-                patient_template__patient_task_template__plan_template=plan_template)
+                patient_template__plan__plan_template=plan_template)
             medication_tasks = medication_tasks.filter(
                 medication_task_template__plan__plan_template=plan_template)
             symptom_tasks = symptom_tasks.filter(

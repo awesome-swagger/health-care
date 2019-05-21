@@ -123,7 +123,7 @@
   				<li class="drop__option" *ngFor="let employee of employees" (click)="setSelectedEmployee(employee)">
   					<a class="drop__link">
   						<div class="picName">
-  							<img class="picName__img" src="../../../assets/img/profile.svg" />{{employee.first_name}} {{employee.last_name}}, {{employee.title}}
+  							<img class="picName__img" src="../../../assets/img/profile.svg" />{{employee.user.first_name}} {{employee.user.last_name}}<span *ngIf="employee.title">, {{employee.title.abbreviation}}</span>
   						</div>
   					</a>
   				</li>
@@ -174,135 +174,143 @@
       </div>
     </div>
   </div>
-  <ng-container *ngFor="let facility of getUniqueFacilities()">
-    <h2 class="marBottom16 marTop48">{{facility.name}}: Billing Practitioners ({{getFacilityPractitioners(facility.id).length}}) Billable Patients ({{facilityBillablePatientsCount(facility.id)}})</h2>
-    <div class="accordion" *ngFor="let bp of getFacilityPractitioners(facility.id)" [ngClass]="{ 'isOpen' : practitionerDropdownOpen[bp.id] }">
-      <div class="accordion__head" (click)="practitionerDropdownOpen[bp.id]=!practitionerDropdownOpen[bp.id]">
-        <span class="accordion__title">Billing Practitioner: {{bp.first_name}} {{bp.last_name}}<span *ngIf="bp.title">, {{bp.title}}</span> ({{getPractitionerPlansAtFacility(bp.id, facility.id).length}})</span>
-        <div class="accordion__right">
-          <div class="pill" [ngClass]="utils.percentPillClass(getBilledPercent(bp.id, facility.id))">
-            Billed {{plansBilledCount(getPractitionerPlansAtFacility(bp.id, facility.id))}} / {{getPractitionerPlansAtFacility(bp.id, facility.id).length}}
+  <ng-container *ngIf="loadingBillingData">
+    <div class="center ssSpinner"></div>
+  </ng-container>
+  <ng-container *ngIf="!loadingBillingData && getUniqueFacilities().length < 1">
+    <h2>No billing data matches criteria.</h2>
+  </ng-container>
+  <ng-container *ngIf="!loadingBillingData && getUniqueFacilities().length > 0">
+    <ng-container *ngFor="let facility of getUniqueFacilities()">
+      <h2 class="marBottom16 marTop48">{{facility.name}}: Billing Practitioners ({{getFacilityPractitioners(facility.id).length}}) Billable Patients ({{facilityBillablePatientsCount(facility.id)}})</h2>
+      <div class="accordion" *ngFor="let bp of getFacilityPractitioners(facility.id)" [ngClass]="{ 'isOpen' : practitionerDropdownOpen[bp.id] }">
+        <div class="accordion__head" (click)="practitionerDropdownOpen[bp.id]=!practitionerDropdownOpen[bp.id]">
+          <span class="accordion__title">Billing Practitioner: {{bp.first_name}} {{bp.last_name}}<span *ngIf="bp.title">, {{bp.title}}</span> ({{getPractitionerPlansAtFacility(bp.id, facility.id).length}})</span>
+          <div class="accordion__right">
+            <div class="pill" [ngClass]="utils.percentPillClass(getBilledPercent(bp.id, facility.id))">
+              Billed {{plansBilledCount(getPractitionerPlansAtFacility(bp.id, facility.id))}} / {{getPractitionerPlansAtFacility(bp.id, facility.id).length}}
+            </div>
+            <div class="accordion__arrow">
+              <i class="ss-standard ss-navigateright"></i>
+            </div>
           </div>
-          <div class="accordion__arrow">
-            <i class="ss-standard ss-navigateright"></i>
-          </div>
-        </div>
-      </div> <!--/.accordion__head-->
-      <div class="accordion__body">
-        <div class="accordion__contents">
-          <div class="info" [ngClass]="{ 'info--green' : plan.is_billed }" *ngFor="let plan of getPractitionerPlansAtFacility(bp.id, facility.id)">
-            <div class="flex justifySpaceBetween marBottom24">
-              <div>
-                <a (click)="routeToPatient(plan.patient.id)" class="picName">
-                  <img class="picName__img" [src]="plan.patient.image_url" />
-                  {{plan.patient.first_name}} {{plan.patient.last_name}}
-                </a>
-              </div>
-              <div class="flex alignCenter">
-                <div class="bold marRight16">
-                  Billing Coordinator
-                </div>
+        </div> <!--/.accordion__head-->
+        <div class="accordion__body">
+          <div class="accordion__contents">
+            <div class="info" [ngClass]="{ 'info--green' : plan.is_billed }" *ngFor="let plan of getPractitionerPlansAtFacility(bp.id, facility.id)">
+              <div class="flex justifySpaceBetween marBottom24">
                 <div>
-                  <a class="picName" [routerLink]="['/user/asdf']">
-                    <img class="picName__img" src="../../../assets/img/profile.svg" />
-                    N/A
+                  <a (click)="routeToPatient(plan.patient.id)" class="picName">
+                    <img class="picName__img" [src]="plan.patient.image_url" />
+                    {{plan.patient.first_name}} {{plan.patient.last_name}}
                   </a>
-                </div>
-              </div>
-              <div>
-                <label class="styledInput">
-                  <input type="checkbox" class="styledInput__input" [disabled]="plan.is_billed" [checked]="plan.is_billed" (click)="markPlanBilled(plan)" />
-                  <span class="styledInput__box"></span>
-                  Billed
-                </label>
-              </div>
-              <div class="flex alignCenter ">
-                <div class="bold marRight16">
-                  Total
-                </div>
-                <div>
-                  <h1 class="noMargin">N/A</h1>
-                </div>
-              </div>
-            </div> <!--/ top row of billing info-->
-
-            <table class="fullWidth">
-              <thead>
-                <tr>
-                  <th class="left">Name</th>
-                  <th>Type</th>
-                  <th>CPT Code</th>
-                  <th>Time</th>
-                  <th>Date Achieved</th>
-                  <th>Description</th>
-                  <th>Subtotal</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let activity of plan.billed_activities">
-                  <td class="left">Name</td>
-                  <td>Type</td>
-                  <td>CPT Code</td>
-                  <td>Time</td>
-                  <td>Date Achieved</td>
-                  <td>Description</td>
-                  <td>Subtotal</td>
-                </tr>
-              </tbody>
-            </table>
-
-            <div class="accordion" [ngClass]="{ 'isOpen' : detailsOpen[plan.id] }">
-              <div class="flex justifySpaceBetween alignCenter" (click)="detailsOpen[plan.id]=!detailsOpen[plan.id]">
-                <div class="flex alignCenter">
-                  <label class="accordion__label">Details of Service</label>
-                  <div class="accordion__arrow accordion__arrow--lt">
-                    <i class="ss-standard ss-navigateright"></i>
-                  </div>
                 </div>
                 <div class="flex alignCenter">
                   <div class="bold marRight16">
-                    Care Manager
+                    Billing Coordinator
                   </div>
                   <div>
-                    <a class="picName" (click)="routeToUser(plan.care_manager[0].id)">
-                      <img class="picName__img" [src]="plan.care_manager[0].user.image_url" />
-                      {{plan.care_manager[0].user.first_name}} {{plan.care_manager[0].user.last_name}}
+                    <a class="picName" [routerLink]="['/user/asdf']">
+                      <img class="picName__img" src="../../../assets/img/profile.svg" />
+                      N/A
                     </a>
                   </div>
                 </div>
-              </div> <!--/.accordion__head-->
-              <div class="accordion__body">
-                <div class="accordion__contents accordion__contents--lt">
-                  <table class="fullWidth">
-                    <thead>
-                      <tr>
-                        <th class="left">Action</th>
-                        <th class="left">Provider</th>
-                        <th class="left">Date & Time</th>
-                        <th>Duration</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr *ngFor="let details of plan.details_of_service">
-                        <td class="left">{{details.get_activity_type_display}}</td>
-                        <td class="left">
-                          <a (click)="routeToUser(details.added_by.id)" class="picName">
-                            <img class="picName__img" [src]="details.added_by.user.image_url" />
-                            {{details.added_by.user.first_name}} {{details.added_by.user.last_name}}
-                          </a>
-                        </td>
-                        <td class="left">{{moment(details.activity_date).format('MMMM D, YYYY')}}</td>
-                        <td>{{details.time_spent}} minutes</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div> <!--/.accordion__contents (details of service)-->
-              </div> <!--/.accordion__body (details of service)-->
-            </div> <!--/.accordion (details of service)-->
-          </div> <!--/.info-->
+                <div>
+                  <label class="styledInput">
+                    <input type="checkbox" class="styledInput__input" [disabled]="plan.is_billed" [checked]="plan.is_billed" (click)="markPlanBilled(plan)" />
+                    <span class="styledInput__box"></span>
+                    Billed
+                  </label>
+                </div>
+                <div class="flex alignCenter ">
+                  <div class="bold marRight16">
+                    Total
+                  </div>
+                  <div>
+                    <h1 class="noMargin">N/A</h1>
+                  </div>
+                </div>
+              </div> <!--/ top row of billing info-->
 
-        </div> <!--/.accordion__contents (for BP)-->
-      </div> <!--/.accordion__body (for BP)-->
-    </div> <!--/.accordion (for BP)-->
+              <table class="fullWidth">
+                <thead>
+                  <tr>
+                    <th class="left">Name</th>
+                    <th>Type</th>
+                    <th>CPT Code</th>
+                    <th>Time</th>
+                    <th>Date Achieved</th>
+                    <th>Description</th>
+                    <th>Subtotal</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let activity of plan.billed_activities">
+                    <td class="left">Name</td>
+                    <td>Type</td>
+                    <td>CPT Code</td>
+                    <td>Time</td>
+                    <td>Date Achieved</td>
+                    <td>Description</td>
+                    <td>Subtotal</td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <div class="accordion" [ngClass]="{ 'isOpen' : detailsOpen[plan.id] }">
+                <div class="flex justifySpaceBetween alignCenter" (click)="detailsOpen[plan.id]=!detailsOpen[plan.id]">
+                  <div class="flex alignCenter">
+                    <label class="accordion__label">Details of Service</label>
+                    <div class="accordion__arrow accordion__arrow--lt">
+                      <i class="ss-standard ss-navigateright"></i>
+                    </div>
+                  </div>
+                  <div class="flex alignCenter">
+                    <div class="bold marRight16">
+                      Care Manager
+                    </div>
+                    <div>
+                      <a class="picName" (click)="routeToUser(plan.care_manager[0].id)">
+                        <img class="picName__img" [src]="plan.care_manager[0].user.image_url" />
+                        {{plan.care_manager[0].user.first_name}} {{plan.care_manager[0].user.last_name}}
+                      </a>
+                    </div>
+                  </div>
+                </div> <!--/.accordion__head-->
+                <div class="accordion__body">
+                  <div class="accordion__contents accordion__contents--lt">
+                    <table class="fullWidth">
+                      <thead>
+                        <tr>
+                          <th class="left">Action</th>
+                          <th class="left">Provider</th>
+                          <th class="left">Date & Time</th>
+                          <th>Duration</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr *ngFor="let details of plan.details_of_service">
+                          <td class="left">{{getActionType(details)}}</td>
+                          <td class="left">
+                            <a (click)="routeToUser(details.added_by.id)" class="picName">
+                              <img class="picName__img" [src]="details.added_by.user.image_url" />
+                              {{details.added_by.user.first_name}} {{details.added_by.user.last_name}}
+                            </a>
+                          </td>
+                          <td class="left">{{moment(details.activity_datetime).format('MMMM D, YYYY')}}</td>
+                          <td>{{details.time_spent}} minutes</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div> <!--/.accordion__contents (details of service)-->
+                </div> <!--/.accordion__body (details of service)-->
+              </div> <!--/.accordion (details of service)-->
+            </div> <!--/.info-->
+
+          </div> <!--/.accordion__contents (for BP)-->
+        </div> <!--/.accordion__body (for BP)-->
+      </div> <!--/.accordion (for BP)-->
+    </ng-container>
   </ng-container>
 </div> <!--/.ssContainer-->
