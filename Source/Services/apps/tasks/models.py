@@ -453,6 +453,12 @@ class CarePlanTeamTemplate(AbstractPlanTaskTemplate):
             if self.custom_is_manager_task is not None \
             else self.team_task_template.is_manager_task
 
+    @property
+    def category(self):
+        return self.custom_category \
+            if self.custom_category \
+            else self.team_task_template.category
+
 
 class TeamTask(AbstractTask):
     STATUS_CHOICES = (
