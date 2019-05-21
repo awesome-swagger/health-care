@@ -209,9 +209,9 @@ class BaseOrganizationPatientSerializer(serializers.ModelSerializer):
         if assessment_type not in ['tracks_outcome', 'tracks_satisfaction']:
             raise serializers.ValidationError(_('Invalid assessment type.'))
 
-        args = ()
+        query_filter = ()
         if assessment_type == 'tracks_outcome':
-            args = (
+            query_filter = (
                 Q(assessment_template__custom_tracks_outcome=True) |
                 (
                     Q(assessment_template__custom_tracks_outcome__isnull=True) &
@@ -219,7 +219,7 @@ class BaseOrganizationPatientSerializer(serializers.ModelSerializer):
                 ),
             )
         elif assessment_type == 'tracks_satisfaction':
-            args = (
+            query_filter = (
                 Q(assessment_template__custom_tracks_satisfaction=True) |
                 (
                     Q(assessment_template__custom_tracks_satisfaction__isnull=True) &
@@ -246,7 +246,7 @@ class BaseOrganizationPatientSerializer(serializers.ModelSerializer):
                 'assessment_template__plan__patient__facility__id': request.GET.get('facility')
             })
 
-        tasks = AssessmentTask.objects.filter(args, **kwargs).aggregate(
+        tasks = AssessmentTask.objects.filter(*query_filter, **kwargs).aggregate(
             average=Avg('responses__rating'))
         average = tasks['average'] or 0
         avg = round((average / 5) * 100)
