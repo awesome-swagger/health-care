@@ -246,7 +246,7 @@ class BaseOrganizationPatientSerializer(serializers.ModelSerializer):
                 'assessment_template__plan__patient__facility__id': request.GET.get('facility')
             })
 
-        tasks = AssessmentTask.objects.filter(*args, **kwargs).aggregate(
+        tasks = AssessmentTask.objects.filter(args, **kwargs).aggregate(
             average=Avg('responses__rating'))
         average = tasks['average'] or 0
         avg = round((average / 5) * 100)
@@ -983,7 +983,7 @@ class EmployeeAssignmentSerializer(serializers.ModelSerializer):
         return str(datetime.timedelta(minutes=total))[:-3]
 
     def get_average_assessment(self, args, kwargs):
-        tasks = AssessmentTask.objects.filter(*args, **kwargs).aggregate(
+        tasks = AssessmentTask.objects.filter(args, **kwargs).aggregate(
             average=Avg('responses__rating'))
         average = tasks['average'] or 0
         avg = round((average / 5) * 100)
