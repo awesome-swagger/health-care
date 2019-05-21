@@ -4,6 +4,8 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
+from model_utils import Choices
+
 from .signals import (
     assessmentresponse_post_save,
     careplanassessmenttemplate_post_init,
@@ -57,6 +59,12 @@ FREQUENCY_CHOICES = (
     ('weekly', 'Weekly'),
     ('weekdays', 'Weekdays'),
     ('weekends', 'Weekends'),
+)
+
+CATEGORY_CHOICES = Choices(
+    ('notes', 'Notes'),
+    ('interaction', 'Patient Interaction'),
+    ('coordination', 'Care Team Coordination'),
 )
 
 
@@ -392,11 +400,6 @@ class TeamTaskTemplate(AbstractTaskTemplate):
         on_delete=models.CASCADE)
     name = models.CharField(max_length=140, null=False, blank=False)
     is_manager_task = models.BooleanField(default=False)
-    CATEGORY_CHOICES = (
-        ('notes', 'Notes'),
-        ('interaction', 'Patient Interaction'),
-        ('coordination', 'Care Team Coordination'),
-    )
     category = models.CharField(max_length=120, choices=CATEGORY_CHOICES)
     roles = models.ManyToManyField(
         'core.ProviderRole',
@@ -432,6 +435,10 @@ class CarePlanTeamTemplate(AbstractPlanTaskTemplate):
         blank=True,
         null=True)
     custom_is_manager_task = models.NullBooleanField()
+    custom_category = models.CharField(
+        max_length=120,
+        blank=True,
+        choices=CATEGORY_CHOICES)
 
     class Meta:
         verbose_name = _('Care Plan Team Template')
