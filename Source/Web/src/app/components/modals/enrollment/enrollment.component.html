@@ -46,7 +46,7 @@
     <span class="styledInput__box"></span>
     Use the mobile app.
   </label>
-  <div class="iconText iconText--wrap iconText--autoHeight error marBottom8" *ngIf="patient?.care_plan?.type?.acronym === 'RPM'">
+  <div class="iconText iconText--wrap iconText--autoHeight error marBottom8" *ngIf="data?.patient?.care_plan?.type?.acronym === 'RPM'">
     <i class="iconText__icon ss-alert"></i>
     <span class="error__text">
     For RPM plans, the patient must agree to use the mobile app.
@@ -64,19 +64,20 @@
   </label>
 
   <div class="modal__inputWrap0 marTop32">
-  <label>Plan Start Date</label>
-  <div class="datepicker">
-    <div class="datepicker__date" (click)="showDate=!showDate">
-      <span *ngIf="!planStartDate">Select Date</span>
-      <span *ngIf="planStartDate">{{planStartDate.format('MMM D, YYYY')}}</span>
+    <label>Plan Start Date</label>
+    <div class="datepicker">
+      <div class="datepicker__date" (click)="showDate=!showDate">
+        <span *ngIf="!planStartDate">Select Date</span>
+        <span *ngIf="planStartDate">{{planStartDate.format('MMM D, YYYY')}}</span>
+      </div>
+      <app-popover [visible]="showDate" (visibleChange)="showDate = $event">
+        <app-date-picker
+          class="datepicker__picker datepicker__picker--top isOpen"
+          [selected]="planStartDate"
+          (selectedChange)="planStartDate = $event"
+        ></app-date-picker>
+      </app-popover>
     </div>
-    <app-popover [visible]="showDate" (visibleChange)="showDate = $event">
-      <app-date-picker
-        class="datepicker__picker datepicker__picker--top isOpen"
-        [selected]="planStartDate"
-        (selectedChange)="planStartDate = $event"
-      ></app-date-picker>
-    </app-popover>
   </div>
 </div>
 

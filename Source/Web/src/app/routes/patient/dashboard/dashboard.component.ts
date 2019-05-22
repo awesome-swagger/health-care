@@ -1,8 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService, StoreService, NavbarService, TimeTrackerService } from '../../../services';
-import { PercentageGaugeComponent } from '../../../components/graphs/percentage-gauge/percentage-gauge.component'
-import { ResultsGraphComponent } from '../../../components/graphs/results-graph/results-graph.component';
+import * as moment from 'moment';
 
 @Component({
   selector: 'app-patient-dashboard',
@@ -15,6 +14,30 @@ export class PatientDashboardComponent implements OnDestroy, OnInit {
   public patient = null;
   public carePlans = null;
   public patientAverage = null;
+  public resultsOverTime = [];
+
+  public weeksOnPlan = 0;
+  public displayWeeks = 4;
+
+  public billingInfo = {
+    top: {
+      total_time: 0,
+      billable_time: 0,
+      total_billed: 0,
+    },
+    bottom: {
+      total_time: 0,
+      billable_time: 0,
+      total_billed: 0,
+    },
+  }
+
+  public topBillingStart:moment.Moment = moment().subtract('1', 'M').startOf('M');
+  public topBillingEnd:moment.Moment = moment().subtract('1', 'M').endOf('M');
+
+  public bottomBillingStart:moment.Moment = moment().subtract('2', 'M').startOf('M');
+  public bottomBillingEnd:moment.Moment = moment().subtract('2', 'M').endOf('M');
+
 
   public datepickerOptions = {
      relativeTop: '-368px',
@@ -39,6 +62,9 @@ export class PatientDashboardComponent implements OnDestroy, OnInit {
         this.user = user;
         this.getCarePlan(params.planId).then((plan: any) => {
           this.timer.startTimer(this.user, plan);
+
+          console.log(plan);
+          this.weeksOnPlan = moment(plan.created).diff('weeks');
         });
         this.getPatient(params.patientId).then((patient) => {
           this.patient = patient;
@@ -55,6 +81,24 @@ export class PatientDashboardComponent implements OnDestroy, OnInit {
           this.patientAverage = res;
         })
       });
+
+      this.store.CarePlan.detailRoute('GET', params.planId, 'results_over_time', {}, { weeks: 4 }).subscribe((res: any) => {
+        const results = res;
+        for (let i = 0; i < 4; i++) {
+          if (!results[i]) {
+            results[i] = {
+              outcome: 0,
+              engagement: 0,
+            }
+          }
+        }
+        this.resultsOverTime = results;
+        this.displayWeeks = results.length;
+      })
+
+      this.onRangeChange('top');
+      this.onRangeChange('bottom');
+
     });
   }
 
@@ -93,5 +137,62 @@ export class PatientDashboardComponent implements OnDestroy, OnInit {
 
   public ngOnDestroy() {
     this.timer.stopTimer();
+  }
+
+  public get graphedResults() {
+    return this.resultsOverTime.filter((r, i) => i < this.displayWeeks);
+  }
+
+  public onRangeChange(which) {
+    let startDate: moment.Moment;
+    let endDate: moment.Moment;
+    if (which === 'top') {
+      startDate = this.topBillingStart;
+      endDate = this.topBillingEnd;
+    } else if (which === 'bottom') {
+      startDate = this.bottomBillingStart;
+      endDate = this.bottomBillingEnd;
+    }
+
+    const range = {
+      start_date: `${startDate.format('YYYY-M-D')}`,
+      end_date: `${endDate.format('YYYY-M-D')}`,
+    }
+
+    this.getBillingInfo(range, which)
+  }
+
+  public getBillingInfo(range, which) {
+     this.route.params.subscribe((params: any) => {
+      this.store.CarePlan.detailRoute(
+        'GET',
+        params.planId,
+        'billing_info',
+        {},
+        range
+      ).subscribe((res: any) => {
+        this.billingInfo[which] = res;
+      })
+    })
+  }
+
+  public formatTime(minutes) {
+    if (!minutes) return '0:00';
+    const h = `${Math.floor(minutes / 60)}`;
+    const m = `${minutes % 60}`;
+    return `${h}:${m.length === 1 ? '0' : ''}${minutes % 60}`
+  }
+
+  public formatMoney(amount) {
+    let decimal;
+
+    if (amount - Math.floor(amount) === 0) {
+      decimal = '00';
+    } else {
+      decimal = `${amount - Math.floor(amount)}`.split('.')[1];
+      if (decimal.length === 1) {decimal += '0'}
+    }
+
+    return `$${Math.floor(amount)}.${decimal}`;
   }
 }

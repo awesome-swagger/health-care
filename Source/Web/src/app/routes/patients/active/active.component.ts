@@ -42,6 +42,7 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
   public employees = [];
   public employeeChecked = {};
   public employee = null;
+  public activePatientsCount = 0;
 
   public openAlsoTip = {};
   public activeServiceAreas = {};
@@ -113,6 +114,11 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
             });
           });
         });
+
+        this.getPatientsOverview(organization.id).then((overview:any) => {
+          this.activePatientsCount = overview.active;
+        })
+
       });
     });
     this.store.ServiceArea.readListPaged().subscribe((serviceAreas) => {
@@ -152,6 +158,25 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
         () => averageSub.unsubscribe()
       );
     });
+  }
+
+  public getPatientsOverview(organizationId) {
+    let promise = new Promise((resolve, reject) => {
+      let patientsSub = this.store.PatientProfile.listRoute('GET', 'overview', {}, {
+        'facility__organization__id': organizationId,
+      }).subscribe(
+        (patients) => {
+          resolve(patients);
+        },
+        (err) => {
+          reject(err);
+        },
+        () => {
+          patientsSub.unsubscribe();
+        }
+      );
+    });
+    return promise;
   }
 
   public getFacilitiesForOrganization(organizationId) {
