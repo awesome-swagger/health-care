@@ -5,9 +5,11 @@ import * as moment from 'moment';
 import {
   sumBy as _sumBy,
   uniqBy as _uniqBy,
+  uniq as _uniq,
   groupBy as _groupBy,
   flattenDeep as _flattenDeep,
 } from 'lodash';
+import { PopoverOptions } from '../../modules/popover';
 import { AuthService, StoreService, UtilsService, } from '../../services';
 
 @Component({
@@ -40,9 +42,9 @@ export class BillingComponent implements OnDestroy, OnInit {
   public serviceSearch = '';
   public selectedStatus = 'all';
   public employees = [];
-  public employeesShown = [];
+  public loadingEmployees = true;
   public employeeSearch = '';
-  public selectedEmployee = null;
+  public selectedEmployees = [];
   public planTypes = [];
 
   public syncTooltipOpen = false;
@@ -50,6 +52,10 @@ export class BillingComponent implements OnDestroy, OnInit {
   public filterServiceOpen = false;
   public filterStatusOpen = false;
   public employeeSearchOpen = false;
+  public employeesDropOptions: PopoverOptions = {
+    relativeTop: '80px',
+    relativeRight: '0px',
+  };
   public billablePatientsHelpOpen = false;
   public practitionerDropdownOpen = {};
   public detailsOpen = {};
@@ -80,7 +86,7 @@ export class BillingComponent implements OnDestroy, OnInit {
       this.isManager = this.organization.is_manager;
       this.getEmployees(this.organization.id).then((employees: any) => {
         this.employees = employees;
-        this.employeesShown = this.employees;
+        this.checkAllEmployees();
       });
       this.getBillingData();
     });
@@ -116,11 +122,15 @@ export class BillingComponent implements OnDestroy, OnInit {
   }
 
   public getEmployees(organizationId) {
+    this.loadingEmployees = true;
     return new Promise((resolve, reject) => {
       let employeesSub = this.store.EmployeeProfile.readListPaged({
         organization: organizationId
       }).subscribe(
-        (employees) => resolve(employees),
+        (employees) => {
+          this.loadingEmployees = false;
+          resolve(employees);
+        },
         (err) => reject(err),
         () => {
           employeesSub.unsubscribe();
@@ -244,16 +254,50 @@ export class BillingComponent implements OnDestroy, OnInit {
     this.getBillingData();
   }
 
-  public filterEmployee() {
-    this.employeesShown = this.employees.filter((obj) => {
-      let fullNameWithTitle = `${obj.first_name} ${obj.last_name}, ${obj.title}`;
-      return fullNameWithTitle.toLowerCase().includes(this.employeeSearch.toLowerCase());
+  public filterEmployees() {
+    return this.employees.concat().filter((obj) => {
+      let fullName = `${obj.user.first_name} ${obj.user.last_name}`;
+      return fullName.toLowerCase().includes(this.employeeSearch.toLowerCase());
     });
   }
 
-  public setSelectedEmployee(employee) {
-    this.selectedEmployee = employee;
-    this.employeeSearch = `${employee.first_name} ${employee.last_name}, ${employee.title}`;
+  public employeesShown() {
+    if (this.employeeSearch && this.employeeSearch.length > 0) {
+      return this.filterEmployees();
+    } else {
+      return this.employees.concat();
+    }
+  }
+
+  public toggleEmployeeSelected(employee) {
+    if (this.isEmployeeSelected(employee)) {
+      let index = this.selectedEmployees.indexOf(employee.id);
+      this.selectedEmployees.splice(index, 1);
+    } else {
+      this.selectedEmployees.push(employee.id);
+    }
+  }
+
+  public checkAllEmployees() {
+    this.selectedEmployees = this.employees.map((emp) => emp.id);
+  }
+
+  public uncheckAllEmployees() {
+    this.selectedEmployees = [];
+  }
+
+  public isEmployeeSelected(employee) {
+    return this.selectedEmployees.includes(employee.id);
+  }
+
+  public formatSelectedUsers() {
+    if (this.selectedEmployees.length === 0) {
+      return 'None';
+    } else if (this.selectedEmployees.length === this.employees.length) {
+      return 'All';
+    } else {
+      return this.selectedEmployees.length + ' Users';
+    }
   }
 
   public getUniqueFacilities() {
@@ -262,6 +306,15 @@ export class BillingComponent implements OnDestroy, OnInit {
     });
     facilities = _uniqBy(_flattenDeep(facilities), (obj) => obj.id);
     return facilities;
+  }
+
+  public planContainsSelectedEmployees(plan) {
+    let planUserIds = [plan.care_manager.id];
+    let uniqueDetailsUsers = _uniq(plan.details_of_service.map((details) => {
+      return details.added_by.id;
+    }));
+    planUserIds = planUserIds.concat(uniqueDetailsUsers);
+    return this.selectedEmployees.filter((emp) => -1 !== planUserIds.indexOf(emp)).length > 0;
   }
 
   public getFacilityPractitioners(facilityId) {
@@ -278,7 +331,7 @@ export class BillingComponent implements OnDestroy, OnInit {
       return [];
     }
     return practitioner.plans.filter((obj) => {
-      return obj.patient.facility.id === facilityId;
+      return obj.patient.facility.id === facilityId && this.planContainsSelectedEmployees(obj);
     });
   }
 

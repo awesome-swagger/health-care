@@ -76,8 +76,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
         if (!org) return;
         this.org = org;
-        this.store.EmployeeProfile.readList().subscribe((res) => {
-          this.employees = res.results;
+        this.store.EmployeeProfile.readListPaged({
+          organization: this.org.id,
+        }).subscribe((res) => {
+          this.employees = res;
           this.employees.forEach(employee => {
             this.employeeChecked[employee.id] = false;
           })
@@ -225,20 +227,21 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   public showUserInFilter(user) {
-    if (this.user) {
-      return this.user.facilities.find(f => {
-        let result = false;
-        user.facilities.forEach(uf => {
-          if (uf.id === f.id) {
-            result = true;
-          }
-        })
-        return result;
-      })
-    }
-    else {
-      return false;
-    }
+    return true;
+    // if (this.user) {
+    //   return this.user.facilities.find(f => {
+    //     let result = false;
+    //     user.facilities.forEach(uf => {
+    //       if (uf.id === f.id) {
+    //         result = true;
+    //       }
+    //     })
+    //     return result;
+    //   })
+    // }
+    // else {
+    //   return false;
+    // }
   }
 
   public get userIsAdmin() {

@@ -316,8 +316,13 @@ class CarePlanViewSet(viewsets.ModelViewSet):
         if employee_profile is not None:
             if employee_profile.organizations_managed.count() > 0:
                 organizations_managed = employee_profile.organizations_managed.values_list('id', flat=True)
+                facilities_managed = employee_profile.facilities_managed.values_list('id', flat=True)
+                assigned_roles = employee_profile.assigned_roles.values_list('id', flat=True)
                 qs = qs.filter(
-                    patient__facility__organization__id__in=organizations_managed)
+                    Q(patient__facility__organization__id__in=organizations_managed) |
+                    Q(patient__facility__id__in=facilities_managed) |
+                    Q(care_team_members__id__in=assigned_roles)
+                )
             elif employee_profile.facilities_managed.count() > 0:
                 facilities_managed = employee_profile.facilities_managed.values_list('id', flat=True)
                 assigned_roles = employee_profile.assigned_roles.values_list('id', flat=True)
@@ -1227,8 +1232,13 @@ class CarePlanByFacility(ParentViewSetPermissionMixin,
             employee = user.employee_profile
             if employee.organizations_managed.exists():
                 organizations = employee.organizations_managed.all()
+                facilities = employee.facilities_managed.all()
+                assigned_roles = employee.assigned_roles.all()
                 qs = qs.filter(
-                    patient__facility__organization__in=organizations)
+                    Q(patient__facility__organization__in=organizations) |
+                    Q(patient__facility__in=facilities) |
+                    Q(care_team_members__in=assigned_roles)
+                )
             elif employee.facilities_managed.exists():
                 facilities = employee.facilities_managed.all()
                 assigned_roles = employee.assigned_roles.all()
@@ -1279,8 +1289,13 @@ class CarePlanByTemplateFacility(ParentViewSetPermissionMixin,
             employee = user.employee_profile
             if employee.organizations_managed.exists():
                 organizations = employee.organizations_managed.all()
+                facilities = employee.facilities_managed.all()
+                assigned_roles = employee.assigned_roles.all()
                 qs = qs.filter(
-                    patient__facility__organization__in=organizations)
+                    Q(patient__facility__organization__in=organizations) |
+                    Q(patient__facility__in=facilities) |
+                    Q(care_team_members__in=assigned_roles)
+                )
             elif employee.facilities_managed.exists():
                 facilities = employee.facilities_managed.all()
                 assigned_roles = employee.assigned_roles.all()
@@ -1580,8 +1595,13 @@ class PatientCarePlanOverview(ParentViewSetPermissionMixin,
             employee = user.employee_profile
             if employee.organizations_managed.exists():
                 organizations = employee.organizations_managed.all()
+                facilities = employee.facilities_managed.all()
+                assigned_roles = employee.assigned_roles.all()
                 queryset = queryset.filter(
-                    patient__facility__organization__in=organizations)
+                    Q(patient__facility__organization__in=organizations) |
+                    Q(patient__facility__in=facilities) |
+                    Q(care_team_members__in=assigned_roles)
+                )
             elif employee.facilities_managed.exists():
                 facilities = employee.facilities_managed.all()
                 assigned_roles = employee.assigned_roles.all()

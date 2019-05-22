@@ -83,8 +83,13 @@ class BilledActivityViewSet(viewsets.ModelViewSet):
             employee = user.employee_profile
             if employee.organizations_managed.exists():
                 organizations = employee.organizations_managed.all()
+                facilities = employee.facilities_managed.all()
+                assigned_roles = employee.assigned_roles.all()
                 qs = qs.filter(
-                    plan__patient__facility__organization__in=organizations)
+                    Q(plan__patient__facility__organization__in=organizations) |
+                    Q(plan__patient__facility__in=facilities) |
+                    Q(plan__care_team_members__in=assigned_roles)
+                )
             elif employee.facilities_managed.exists():
                 facilities = employee.facilities_managed.all()
                 assigned_roles = employee.assigned_roles.all()
@@ -193,8 +198,13 @@ class OrganizationBilledActivity(ParentViewSetPermissionMixin,
             employee = user.employee_profile
             if employee.organizations_managed.exists():
                 organizations = employee.organizations_managed.all()
+                facilities = employee.facilities_managed.all()
+                assigned_roles = employee.assigned_roles.all()
                 queryset = queryset.filter(
-                    plan__patient__facility__organization__in=organizations)
+                    Q(plan__patient__facility__organization__in=organizations) |
+                    Q(plan__patient__facility__in=facilities) |
+                    Q(plan__care_team_members__in=assigned_roles)
+                )
             elif employee.facilities_managed.exists():
                 facilities = employee.facilities_managed.all()
                 assigned_roles = employee.assigned_roles.all()

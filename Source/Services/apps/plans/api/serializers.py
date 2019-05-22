@@ -3,7 +3,7 @@ import datetime
 import pytz
 
 from django.contrib.auth import get_user_model
-from django.db.models import Avg, Sum
+from django.db.models import Q, Avg, Sum
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
@@ -643,8 +643,13 @@ class CarePlanTemplateAverageSerializer(serializers.ModelSerializer):
         qs = obj.care_plans.filter(patient__facility__is_affiliate=False).distinct()
         if employee.organizations_managed.count() > 0:
             organizations_managed = employee.organizations_managed.values_list('id', flat=True)
+            facilities_managed = employee.facilities_managed.values_list('id', flat=True)
+            assigned_roles = employee.assigned_roles.values_list('id', flat=True)
             qs = qs.filter(
-                patient__facility__organization__id__in=organizations_managed)
+                Q(patient__facility__organization__id__in=organizations_managed) |
+                Q(patient__facility__id__in=facilities_managed) |
+                Q(care_team_members__id__in=assigned_roles)
+            )
         elif employee.facilities_managed.count() > 0:
             facilities_managed = employee.facilities_managed.values_list('id', flat=True)
             assigned_roles = employee.assigned_roles.values_list('id', flat=True)
