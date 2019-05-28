@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { StoreService, AuthService } from '../../services';
+import { StoreService, AuthService, SessionStorageService } from '../../services';
 import * as moment from 'moment';
 import { Subscription } from 'rxjs';
 import patientsEnrolledData from './patientsEnrolledData';
@@ -10,6 +10,7 @@ import {
 } from 'lodash';
 import { map } from 'd3';
 import {Router} from '@angular/router';
+import { PopoverOptions } from '../../modules/popover';
 
 @Component({
   selector: 'app-dashboard',
@@ -43,6 +44,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
   public patientsEnrolledData = [];
   public filteredPatientsEnrolledData = patientsEnrolledData;
 
+  public employeesDropOptions: PopoverOptions = {
+    relativeTop: '48px',
+    relativeRight: '0px',
+  };
+
   public multiOpen;
   public dashTip1;
   public multi2Open;
@@ -65,11 +71,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private auth: AuthService,
     private router: Router,
     private store: StoreService,
+    private session: SessionStorageService,
   ) { }
 
   private organizationSub:Subscription = null;
 
   public ngOnInit() {
+    this.session.setObj('dashboardEmployeesSelected', []);
 
     this.organizationSub = this.auth.organization$.subscribe(
       (org) => {
@@ -82,7 +90,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
           this.employees = res;
           this.employees.forEach(employee => {
             this.employeeChecked[employee.id] = false;
-          })
+          });
           this.refreshRiskLevels()
         })
 
@@ -226,24 +234,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
   }
 
-  public showUserInFilter(user) {
-    return true;
-    // if (this.user) {
-    //   return this.user.facilities.find(f => {
-    //     let result = false;
-    //     user.facilities.forEach(uf => {
-    //       if (uf.id === f.id) {
-    //         result = true;
-    //       }
-    //     })
-    //     return result;
-    //   })
-    // }
-    // else {
-    //   return false;
-    // }
-  }
-
   public get userIsAdmin() {
     if (this.user) {
       return this.user.facilities_managed.length > 0 || this.user.organizations_managed.length > 0;
@@ -255,6 +245,25 @@ export class DashboardComponent implements OnInit, OnDestroy {
     Object.keys(this.riskLevelChecked).forEach(r => {
       this.riskLevelChecked[r] = status;
     })
+  }
+
+  public storeEmployeesSelected() {
+    let selectedEmployeeIds = _filter(Object.keys(this.employeeChecked), id => this.employeeChecked[id]);
+    this.session.setObj('dashboardEmployeesSelected', selectedEmployeeIds);
+  }
+
+  public toggleEmployeeChecked(employee, e) {
+    this.employeeChecked[employee] = !this.employeeChecked[employee];
+    this.storeEmployeesSelected();
+    this.refreshAll();
+  }
+
+  public routeToBillingView() {
+    this.router.navigate(['/billing'], {
+      queryParams: {
+        from_dashboard: true,
+      }
+    });
   }
 
 }

@@ -195,4 +195,13 @@ export class PatientDashboardComponent implements OnDestroy, OnInit {
 
     return `$${Math.floor(amount)}.${decimal}`;
   }
+
+  public routeToBillingView() {
+    this.router.navigate(['/billing'], {
+      queryParams: {
+        from_patient_dashboard: true,
+        patient_id: this.patient.id,
+      }
+    });
+  }
 }

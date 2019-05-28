@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import  { Subscription } from 'rxjs';
 import * as moment from 'moment';
 import {
@@ -10,7 +10,7 @@ import {
   flattenDeep as _flattenDeep,
 } from 'lodash';
 import { PopoverOptions } from '../../modules/popover';
-import { AuthService, StoreService, UtilsService, } from '../../services';
+import { AuthService, StoreService, SessionStorageService, UtilsService, } from '../../services';
 
 @Component({
   selector: 'app-billing',
@@ -66,47 +66,60 @@ export class BillingComponent implements OnDestroy, OnInit {
 
   constructor(
     private router: Router,
+    private route: ActivatedRoute,
     private auth: AuthService,
     private store: StoreService,
+    private session: SessionStorageService,
     public utils: UtilsService,
   ) { }
 
   public ngOnInit() {
-    this.authSub = this.auth.user$.subscribe((user) => {
-      if (!user) {
-        return;
+    this.route.queryParams.subscribe((qparams) => {
+      if (qparams.from_dashboard) {
+        this.selectedEmployees = [];
+        let dashboardEmployeesSelected = this.session.getObj('dashboardEmployeesSelected');
+        if (dashboardEmployeesSelected && dashboardEmployeesSelected.length > 0) {
+          this.selectedEmployees = dashboardEmployeesSelected;
+        }
       }
-      this.user = user;
-    });
-    this.orgSub = this.auth.organization$.subscribe((organization) => {
-      if (!organization) {
-        return;
-      }
-      this.organization = organization;
-      this.isManager = this.organization.is_manager;
-      this.getEmployees(this.organization.id).then((employees: any) => {
-        this.employees = employees;
-        this.checkAllEmployees();
+      this.authSub = this.auth.user$.subscribe((user) => {
+        if (!user) {
+          return;
+        }
+        this.user = user;
+        if (qparams.from_patient_dashboard) {
+          this.selectedEmployees = [this.user.id];
+        }
       });
-      this.getBillingData();
+      this.orgSub = this.auth.organization$.subscribe((organization) => {
+        if (!organization) {
+          return;
+        }
+        this.organization = organization;
+        this.isManager = this.organization.is_manager;
+        this.getEmployees(this.organization.id).then((employees: any) => {
+          this.employees = employees;
+        });
+        this.getBillingData();
+      });
+      this.facilitiesSub = this.auth.facilities$.subscribe((facilities) => {
+        if (!facilities) {
+          return;
+        }
+        this.facilities = facilities;
+        this.facilitiesShown = this.facilities.concat();
+      });
+      let serviceAreasSub = this.store.ServiceArea.readListPaged().subscribe(
+        (serviceAreas) => {
+          this.serviceAreas = serviceAreas;
+          this.serviceAreasShown = this.serviceAreas.concat();
+        },
+        (err) => {},
+        () => {
+          serviceAreasSub.unsubscribe();
+        }
+      );
     });
-    this.facilitiesSub = this.auth.facilities$.subscribe((facilities) => {
-      if (!facilities) {
-        return;
-      }
-      this.facilities = facilities;
-      this.facilitiesShown = this.facilities.concat();
-    });
-    let serviceAreasSub = this.store.ServiceArea.readListPaged().subscribe(
-      (serviceAreas) => {
-        this.serviceAreas = serviceAreas;
-        this.serviceAreasShown = this.serviceAreas.concat();
-      },
-      (err) => {},
-      () => {
-        serviceAreasSub.unsubscribe();
-      }
-    );
   }
 
   public ngOnDestroy() {
@@ -291,9 +304,7 @@ export class BillingComponent implements OnDestroy, OnInit {
   }
 
   public formatSelectedUsers() {
-    if (this.selectedEmployees.length === 0) {
-      return 'None';
-    } else if (this.selectedEmployees.length === this.employees.length) {
+    if (this.selectedEmployees.length === 0 || this.selectedEmployees.length === this.employees.length) {
       return 'All';
     } else {
       return this.selectedEmployees.length + ' Users';
@@ -309,6 +320,9 @@ export class BillingComponent implements OnDestroy, OnInit {
   }
 
   public planContainsSelectedEmployees(plan) {
+    if (!this.selectedEmployees || this.selectedEmployees.length === 0) {
+      return true;
+    }
     let planUserIds = [plan.care_manager.id];
     let uniqueDetailsUsers = _uniq(plan.details_of_service.map((details) => {
       return details.added_by.id;

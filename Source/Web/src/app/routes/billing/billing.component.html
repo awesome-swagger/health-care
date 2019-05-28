@@ -132,7 +132,7 @@
             </ng-container>
             <ng-container *ngIf="!loadingEmployees">
               <label class="drop__checkbox styledInput" *ngFor="let employee of employeesShown()">
-                <input type="checkbox" class="styledInput__input" [checked]="isEmployeeSelected(employee)" (change)="toggleEmployeeSelected(employee)" />
+                <input type="checkbox" class="styledInput__input" [checked]="isEmployeeSelected(employee)" (change)="toggleEmployeeSelected(employee, $event)" />
                 <span class="styledInput__box"></span>
                 <div class="picName">
                   <img class="picName__img" src="../../../assets/img/profile.svg" />{{employee.user.first_name}} {{employee.user.last_name}}
