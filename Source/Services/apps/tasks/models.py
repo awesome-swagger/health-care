@@ -4,6 +4,8 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
+from model_utils import Choices
+
 from .signals import (
     assessmentresponse_post_save,
     careplanassessmenttemplate_post_init,
@@ -57,6 +59,12 @@ FREQUENCY_CHOICES = (
     ('weekly', 'Weekly'),
     ('weekdays', 'Weekdays'),
     ('weekends', 'Weekends'),
+)
+
+CATEGORY_CHOICES = Choices(
+    ('notes', 'Notes'),
+    ('interaction', 'Patient Interaction'),
+    ('coordination', 'Care Team Coordination'),
 )
 
 
@@ -392,11 +400,6 @@ class TeamTaskTemplate(AbstractTaskTemplate):
         on_delete=models.CASCADE)
     name = models.CharField(max_length=140, null=False, blank=False)
     is_manager_task = models.BooleanField(default=False)
-    CATEGORY_CHOICES = (
-        ('notes', 'Notes'),
-        ('interaction', 'Patient Interaction'),
-        ('coordination', 'Care Team Coordination'),
-    )
     category = models.CharField(max_length=120, choices=CATEGORY_CHOICES)
     roles = models.ManyToManyField(
         'core.ProviderRole',
@@ -431,6 +434,11 @@ class CarePlanTeamTemplate(AbstractPlanTaskTemplate):
         on_delete=models.CASCADE,
         blank=True,
         null=True)
+    custom_is_manager_task = models.NullBooleanField()
+    custom_category = models.CharField(
+        max_length=120,
+        blank=True,
+        choices=CATEGORY_CHOICES)
 
     class Meta:
         verbose_name = _('Care Plan Team Template')
@@ -438,6 +446,18 @@ class CarePlanTeamTemplate(AbstractPlanTaskTemplate):
 
     def __str__(self):
         return f'{self.plan}: {self.team_task_template}'
+
+    @property
+    def is_manager_task(self):
+        return self.custom_is_manager_task \
+            if self.custom_is_manager_task is not None \
+            else self.team_task_template.is_manager_task
+
+    @property
+    def category(self):
+        return self.custom_category \
+            if self.custom_category \
+            else self.team_task_template.category
 
 
 class TeamTask(AbstractTask):
@@ -700,6 +720,8 @@ class CarePlanAssessmentTemplate(AbstractPlanTaskTemplate):
         on_delete=models.CASCADE,
         blank=True,
         null=True)
+    custom_tracks_outcome = models.NullBooleanField()
+    custom_tracks_satisfaction = models.NullBooleanField()
 
     class Meta:
         verbose_name = _('Care Plan Assessment Template')
@@ -707,6 +729,18 @@ class CarePlanAssessmentTemplate(AbstractPlanTaskTemplate):
 
     def __str__(self):
         return f'{self.plan}: {self.assessment_task_template}'
+
+    @property
+    def tracks_outcome(self):
+        return self.custom_tracks_outcome \
+            if self.custom_tracks_outcome is not None \
+            else self.assessment_task_template.tracks_outcome
+
+    @property
+    def tracks_satisfaction(self):
+        return self.custom_tracks_satisfaction \
+            if self.custom_tracks_satisfaction is not None \
+            else self.assessment_task_template.tracks_satisfaction
 
 
 class AssessmentQuestion(UUIDPrimaryKeyMixin):
