@@ -2,7 +2,7 @@ import datetime
 import random
 import urllib
 
-from django.db.models import Avg
+from django.db.models import Avg, Q
 from django.urls import reverse
 from django.utils import timezone
 
@@ -30,7 +30,10 @@ class TestCarePlanTemplateUsingEmployee(TasksMixin, APITestCase):
 
     def setUp(self):
         self.fake = Faker()
-        self.employee = self.create_employee()
+        self.facility = self.create_facility()
+        self.employee = self.create_employee(
+            organizations_managed=[self.facility.organization]
+        )
         self.user = self.employee.user
 
         self.template = self.create_care_plan_template()
@@ -218,6 +221,90 @@ class TestCarePlanTemplateUsingEmployee(TasksMixin, APITestCase):
         )
         response = self.client.get(url)
         self.assertEqual(response.data['count'], 5)
+
+    def test_get_manager_templates(self):
+        adhoc_count = 5
+        team_task_template_count = 3
+        total_count = adhoc_count + team_task_template_count
+
+        patient = self.create_patient(facility=self.facility)
+        plan = self.create_care_plan(
+            patient=patient,
+            plan_template=self.template
+        )
+        for i in range(team_task_template_count):
+            self.create_team_task_template(**{
+                'plan_template': self.template,
+                'is_manager_task': True
+            })
+
+        for i in range(adhoc_count):
+            self.create_plan_team_template(
+                plan=plan,
+                team_task_template=None,
+                custom_name=self.fake.name(),
+                custom_start_on_day=random.randint(1, 5),
+                custom_frequency='once',
+                custom_repeat_amount=-1,
+                custom_appear_time=datetime.time(8, 0, 0),
+                custom_due_time=datetime.time(17, 0, 0),
+                custom_is_manager_task=True
+            )
+
+        # create dummy records
+        for i in range(team_task_template_count):
+            self.create_team_task_template(**{
+                'is_manager_task': True
+            })
+
+        url = reverse(
+            'manager-templates-by-care-plan-templates-list',
+            kwargs={'parent_lookup_plan__plan_template': self.template.id}
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.data['count'], total_count)
+
+    def test_get_care_team_templates(self):
+        adhoc_count = 5
+        team_task_template_count = 3
+        total_count = adhoc_count + team_task_template_count
+
+        patient = self.create_patient(facility=self.facility)
+        plan = self.create_care_plan(
+            patient=patient,
+            plan_template=self.template
+        )
+        for i in range(team_task_template_count):
+            self.create_team_task_template(**{
+                'plan_template': self.template,
+                'is_manager_task': False
+            })
+
+        for i in range(adhoc_count):
+            self.create_plan_team_template(
+                plan=plan,
+                team_task_template=None,
+                custom_name=self.fake.name(),
+                custom_start_on_day=random.randint(1, 5),
+                custom_frequency='once',
+                custom_repeat_amount=-1,
+                custom_appear_time=datetime.time(8, 0, 0),
+                custom_due_time=datetime.time(17, 0, 0),
+                custom_is_manager_task=False
+            )
+
+        # create dummy records
+        for i in range(team_task_template_count):
+            self.create_team_task_template(**{
+                'is_manager_task': False
+            })
+
+        url = reverse(
+            'care-team-templates-by-care-plan-templates-list',
+            kwargs={'parent_lookup_plan__plan_template': self.template.id}
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.data['count'], total_count)
 
     def test_get_info_message_queues(self):
         for i in range(5):
@@ -531,8 +618,12 @@ class TestCarePlanTemplateAverage(BillingsMixin, APITestCase):
                                                                     questions)
 
         outcome_tasks = AssessmentTask.objects.filter(
+            Q(assessment_template__custom_tracks_outcome=True) |
+            (
+                Q(assessment_template__custom_tracks_outcome__isnull=True) &
+                Q(assessment_template__assessment_task_template__tracks_outcome=True)
+            ),
             assessment_template__plan__in=plans,
-            assessment_template__assessment_task_template__tracks_outcome=True
         ).aggregate(outcome_average=Avg('responses__rating'))
         average = outcome_tasks['outcome_average'] or 0
         average_outcome = round((average / 5) * 100)

@@ -66,6 +66,7 @@ from apps.patients.api.serializers import PatientProfileSerializer
 from apps.patients.api.views import PatientProfileViewSet
 from apps.patients.models import PatientProfile
 from apps.tasks.api.serializers import (
+    CarePlanTeamTemplateSerializer,
     PatientTaskTemplateSerializer,
     AssessmentTaskTemplateSerializer,
     SymptomTaskTemplateSerializer,
@@ -78,6 +79,7 @@ from apps.tasks.api.serializers import (
 from apps.tasks.models import (
     AssessmentTask,
     AssessmentTaskTemplate,
+    CarePlanTeamTemplate,
     PatientTask,
     PatientTaskTemplate,
     MedicationTask,
@@ -373,8 +375,12 @@ class CarePlanViewSet(viewsets.ModelViewSet):
 
     def calculate_average_satisfaction(self, queryset):
         tasks = AssessmentTask.objects.filter(
+            Q(assessment_template__custom_tracks_satisfaction=True) |
+            (
+                Q(assessment_template__custom_tracks_satisfaction__isnull=True) &
+                Q(assessment_template__assessment_task_template__tracks_satisfaction=True)
+            ),
             assessment_template__plan__in=queryset,
-            assessment_template__assessment_task_template__tracks_satisfaction=True
         ).aggregate(average=Avg('responses__rating'))
         average = tasks['average'] or 0
         avg = round((average / 5) * 100)
@@ -382,8 +388,12 @@ class CarePlanViewSet(viewsets.ModelViewSet):
 
     def calculate_average_outcome(self, queryset):
         tasks = AssessmentTask.objects.filter(
+            Q(assessment_template__custom_tracks_outcome=True) |
+            (
+                Q(assessment_template__custom_tracks_outcome__isnull=True) &
+                Q(assessment_template__assessment_task_template__tracks_outcome=True)
+            ),
             assessment_template__plan__in=queryset,
-            assessment_template__assessment_task_template__tracks_outcome=True
         ).aggregate(average=Avg('responses__rating'))
         average = tasks['average'] or 0
         avg = round((average / 5) * 100)
@@ -1459,6 +1469,64 @@ class CareTeamTaskTemplateByCarePlanTemplate(ParentViewSetPermissionMixin,
     parent_lookup = [
         (
             'plan_template',
+            CarePlanTemplate,
+            CarePlanTemplateViewSet
+        )
+    ]
+
+
+class ManagerTemplateByCarePlanTemplate(ParentViewSetPermissionMixin,
+                                        NestedViewSetMixin,
+                                        mixins.ListModelMixin,
+                                        viewsets.GenericViewSet):
+    """
+    Returns list of :model:`tasks.CarePlanTeamTemplate` having
+    `is_manager_task` as True and related to the given care plan template.
+    """
+    serializer_class = CarePlanTeamTemplateSerializer
+    queryset = CarePlanTeamTemplate.objects.filter(
+        Q(custom_is_manager_task=True) |
+        (
+            Q(custom_is_manager_task__isnull=True) &
+            Q(team_task_template__is_manager_task=True)
+        )
+    )
+    permission_classes = (
+        permissions.IsAuthenticated,
+        IsAdminOrEmployee,
+    )
+    parent_lookup = [
+        (
+            'plan__plan_template',
+            CarePlanTemplate,
+            CarePlanTemplateViewSet
+        )
+    ]
+
+
+class CareTeamTemplateByCarePlanTemplate(ParentViewSetPermissionMixin,
+                                         NestedViewSetMixin,
+                                         mixins.ListModelMixin,
+                                         viewsets.GenericViewSet):
+    """
+    Returns list of :model:`tasks.CarePlanTeamTemplate` having
+    `is_manager_task` as False and related to the given care plan template.
+    """
+    serializer_class = CarePlanTeamTemplateSerializer
+    queryset = CarePlanTeamTemplate.objects.filter(
+        Q(custom_is_manager_task=False) |
+        (
+            Q(custom_is_manager_task__isnull=True) &
+            Q(team_task_template__is_manager_task=False)
+        )
+    )
+    permission_classes = (
+        permissions.IsAuthenticated,
+        IsAdminOrEmployee,
+    )
+    parent_lookup = [
+        (
+            'plan__plan_template',
             CarePlanTemplate,
             CarePlanTemplateViewSet
         )

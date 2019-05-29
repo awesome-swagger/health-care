@@ -248,12 +248,16 @@ class CarePlanTeamTemplateSerializer(ValidateTaskTemplateAndCustomFields,
             'custom_repeat_amount',
             'custom_appear_time',
             'custom_due_time',
+            'custom_is_manager_task',
+            'custom_category',
             'name',
             'start_on_day',
             'frequency',
             'repeat_amount',
             'appear_time',
             'due_time',
+            'is_manager_task',
+            'category',
         )
         write_only_fields = (
             'custom_name',
@@ -262,6 +266,8 @@ class CarePlanTeamTemplateSerializer(ValidateTaskTemplateAndCustomFields,
             'custom_repeat_amount',
             'custom_appear_time',
             'custom_due_time',
+            'custom_is_manager_task',
+            'custom_category',
         )
         read_only_fields = (
             'id',
@@ -618,13 +624,13 @@ class AssessmentResponseSerializer(RepresentationMixin,
         ]
 
     def get_assessment_task_name(self, obj):
-        return obj.assessment_question.assessment_task_template.name
+        return obj.assessment_task.assessment_template.name
 
     def get_tracks_outcome(self, obj):
-        return obj.assessment_question.assessment_task_template.tracks_outcome
+        return obj.assessment_task.assessment_template.tracks_outcome
 
     def get_tracks_satisfaction(self, obj):
-        return obj.assessment_question.assessment_task_template.tracks_satisfaction
+        return obj.assessment_task.assessment_template.tracks_satisfaction
 
 
 class CarePlanAssessmentTemplateSerializer(ValidateTaskTemplateAndCustomFields,
@@ -646,12 +652,16 @@ class CarePlanAssessmentTemplateSerializer(ValidateTaskTemplateAndCustomFields,
             'custom_repeat_amount',
             'custom_appear_time',
             'custom_due_time',
+            'custom_tracks_outcome',
+            'custom_tracks_satisfaction',
             'name',
             'start_on_day',
             'frequency',
             'repeat_amount',
             'appear_time',
             'due_time',
+            'tracks_outcome',
+            'tracks_satisfaction',
         )
         write_only_fields = (
             'custom_name',
@@ -660,6 +670,8 @@ class CarePlanAssessmentTemplateSerializer(ValidateTaskTemplateAndCustomFields,
             'custom_repeat_amount',
             'custom_appear_time',
             'custom_due_time',
+            'custom_tracks_outcome',
+            'custom_tracks_satisfaction',
         )
         read_only_fields = (
             'id',

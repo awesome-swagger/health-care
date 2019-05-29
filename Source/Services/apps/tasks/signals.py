@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.apps import apps
-from django.db.models import Avg
+from django.db.models import Avg, Q
 from django.utils import timezone
 
 from apps.plans.utils import create_tasks_from_template
@@ -17,8 +17,12 @@ class RiskLevelAssignment(object):
     def calculate_average_outcome(self):
         AssessmentTask = apps.get_model('tasks', 'AssessmentTask')
         tasks = AssessmentTask.objects.filter(
-            assessment_template__plan__patient=self.patient,
-            assessment_template__assessment_task_template__tracks_outcome=True
+            Q(assessment_template__custom_tracks_outcome=True) |
+            (
+                Q(assessment_template__custom_tracks_outcome__isnull=True) &
+                Q(assessment_template__assessment_task_template__tracks_outcome=True)
+            ),
+            assessment_template__plan__patient=self.patient
         ).aggregate(average=Avg('responses__rating'))
         average = tasks['average'] or 0
         avg = round((average / 5) * 100)
@@ -31,10 +35,7 @@ class RiskLevelAssignment(object):
         AssessmentTask = apps.get_model('tasks', 'AssessmentTask')
         VitalTask = apps.get_model('tasks', 'VitalTask')
         now = timezone.now()
-        task_kwargs = {
-            'plan__patient': self.patient,
-            'due_datetime__lte': now
-        }
+
         patient_kwargs = {
             'patient_template__plan__patient': self.patient,
             'due_datetime__lte': now
