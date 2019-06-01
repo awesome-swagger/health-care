@@ -279,6 +279,11 @@ class CarePlanTeamTemplateSerializer(ValidateTaskTemplateAndCustomFields,
             {
                 'field': 'team_task_template',
                 'serializer_class': TeamTaskTemplateSerializer,
+            },
+            {
+                'field': 'roles',
+                'serializer_class': ProviderRoleSerializer,
+                'many': True
             }
         ]
         task_template_field = 'team_task_template'
