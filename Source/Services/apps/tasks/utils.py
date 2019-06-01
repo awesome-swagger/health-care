@@ -4,6 +4,7 @@ import pytz
 
 from dateutil.relativedelta import relativedelta
 
+from django.db.models import Q
 from django.utils import timezone
 
 from .models import (
@@ -173,6 +174,11 @@ def get_all_tasks_for_today(user, **kwargs):
 
         roles = assigned_roles.values_list('role', flat=True).distinct()
         team_tasks = TeamTask.objects.filter(
+            Q(team_template__custom_roles__id__in=roles) |
+            (
+                Q(team_template__custom_roles__isnull=True) &
+                Q(team_template__team_task_template__roles__id__in=roles)
+            ),
             team_template__plan__care_team_members__in=assigned_roles,
             team_template__team_task_template__roles__id__in=roles,
             due_datetime__range=(today_min, today_max)
