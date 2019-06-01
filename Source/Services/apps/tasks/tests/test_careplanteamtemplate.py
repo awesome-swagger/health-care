@@ -90,6 +90,7 @@ class TestCarePlanTeamTemplateUsingEmployee(TasksMixin, APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_create_team_template_without_task_template_name(self):
+        role = self.create_provider_role()
         payload = {
             'plan': self.plan.id,
             'custom_start_on_day': random.randint(1, 5),
@@ -99,12 +100,14 @@ class TestCarePlanTeamTemplateUsingEmployee(TasksMixin, APITestCase):
             'custom_due_time': datetime.time(17, 0, 0),
             'custom_is_manager_task': False,
             'custom_category': 'notes',
+            'custom_roles': [role.id]
         }
         response = self.client.post(self.url, payload)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertTrue('custom_name' in response.data.keys())
 
     def test_create_team_template_without_task_template_start_on_day(self):
+        role = self.create_provider_role()
         payload = {
             'plan': self.plan.id,
             'custom_name': self.fake.name(),
@@ -114,12 +117,14 @@ class TestCarePlanTeamTemplateUsingEmployee(TasksMixin, APITestCase):
             'custom_due_time': datetime.time(17, 0, 0),
             'custom_is_manager_task': False,
             'custom_category': 'notes',
+            'custom_roles': [role.id]
         }
         response = self.client.post(self.url, payload)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertTrue('custom_start_on_day' in response.data.keys())
 
     def test_create_team_template_without_task_template_frequency(self):
+        role = self.create_provider_role()
         payload = {
             'plan': self.plan.id,
             'custom_name': self.fake.name(),
@@ -129,12 +134,14 @@ class TestCarePlanTeamTemplateUsingEmployee(TasksMixin, APITestCase):
             'custom_due_time': datetime.time(17, 0, 0),
             'custom_is_manager_task': False,
             'custom_category': 'notes',
+            'custom_roles': [role.id]
         }
         response = self.client.post(self.url, payload)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertTrue('custom_frequency' in response.data.keys())
 
     def test_create_team_template_without_task_template_repeat_amount(self):
+        role = self.create_provider_role()
         payload = {
             'plan': self.plan.id,
             'custom_name': self.fake.name(),
@@ -144,12 +151,14 @@ class TestCarePlanTeamTemplateUsingEmployee(TasksMixin, APITestCase):
             'custom_due_time': datetime.time(17, 0, 0),
             'custom_is_manager_task': False,
             'custom_category': 'notes',
+            'custom_roles': [role.id]
         }
         response = self.client.post(self.url, payload)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertTrue('custom_repeat_amount' in response.data.keys())
 
     def test_create_team_template_without_task_template_appear_time(self):
+        role = self.create_provider_role()
         payload = {
             'plan': self.plan.id,
             'custom_name': self.fake.name(),
@@ -159,12 +168,14 @@ class TestCarePlanTeamTemplateUsingEmployee(TasksMixin, APITestCase):
             'custom_due_time': datetime.time(17, 0, 0),
             'custom_is_manager_task': False,
             'custom_category': 'notes',
+            'custom_roles': [role.id]
         }
         response = self.client.post(self.url, payload)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertTrue('custom_appear_time' in response.data.keys())
 
     def test_create_team_template_without_task_template_due_time(self):
+        role = self.create_provider_role()
         payload = {
             'plan': self.plan.id,
             'custom_name': self.fake.name(),
@@ -174,12 +185,14 @@ class TestCarePlanTeamTemplateUsingEmployee(TasksMixin, APITestCase):
             'custom_appear_time': datetime.time(8, 0, 0),
             'custom_is_manager_task': False,
             'custom_category': 'notes',
+            'custom_roles': [role.id]
         }
         response = self.client.post(self.url, payload)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertTrue('custom_due_time' in response.data.keys())
 
     def test_create_team_template_without_task_template_is_manager_task(self):
+        role = self.create_provider_role()
         payload = {
             'plan': self.plan.id,
             'custom_name': self.fake.name(),
@@ -189,12 +202,14 @@ class TestCarePlanTeamTemplateUsingEmployee(TasksMixin, APITestCase):
             'custom_appear_time': datetime.time(8, 0, 0),
             'custom_due_time': datetime.time(17, 0, 0),
             'custom_category': 'notes',
+            'custom_roles': [role.id]
         }
         response = self.client.post(self.url, payload)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertTrue('custom_is_manager_task' in response.data.keys())
 
     def test_create_team_template_without_task_template_category(self):
+        role = self.create_provider_role()
         payload = {
             'plan': self.plan.id,
             'custom_name': self.fake.name(),
@@ -204,6 +219,7 @@ class TestCarePlanTeamTemplateUsingEmployee(TasksMixin, APITestCase):
             'custom_appear_time': datetime.time(8, 0, 0),
             'custom_due_time': datetime.time(17, 0, 0),
             'custom_is_manager_task': False,
+            'custom_roles': [role.id]
         }
         response = self.client.post(self.url, payload)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -313,7 +329,8 @@ class TestCarePlanTeamTemplateUsingEmployee(TasksMixin, APITestCase):
             self.patient,
             plan_template=self.plan_template
         )
-
+        role = self.create_provider_role()
+        import pdb; pdb.set_trace()
         team_template = self.create_plan_team_template(
             plan=plan,
             team_task_template=None,
@@ -325,6 +342,7 @@ class TestCarePlanTeamTemplateUsingEmployee(TasksMixin, APITestCase):
             custom_due_time=datetime.time(17, 0, 0),
             custom_is_manager_task=True,
             custom_category='notes',
+            custom_roles=[role]
         )
 
         payload = {
@@ -344,6 +362,7 @@ class TestCarePlanTeamTemplateUsingEmployee(TasksMixin, APITestCase):
             self.patient,
             plan_template=self.plan_template
         )
+        role = self.create_provider_role()
 
         team_template = self.create_plan_team_template(
             plan=plan,
@@ -356,6 +375,7 @@ class TestCarePlanTeamTemplateUsingEmployee(TasksMixin, APITestCase):
             custom_due_time=datetime.time(17, 0, 0),
             custom_is_manager_task=True,
             custom_category='notes',
+            custom_roles=[role]
         )
 
         payload = {
