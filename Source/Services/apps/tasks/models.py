@@ -439,6 +439,10 @@ class CarePlanTeamTemplate(AbstractPlanTaskTemplate):
         max_length=120,
         blank=True,
         choices=CATEGORY_CHOICES)
+    custom_roles = models.ManyToManyField(
+        'core.ProviderRole',
+        related_name='plan_team_templates',
+        blank=True)
 
     class Meta:
         verbose_name = _('Care Plan Team Template')
@@ -458,6 +462,12 @@ class CarePlanTeamTemplate(AbstractPlanTaskTemplate):
         return self.custom_category \
             if self.custom_category \
             else self.team_task_template.category
+
+    @property
+    def roles(self):
+        return self.custom_roles.all() \
+            if self.custom_roles.exists() \
+            else self.team_task_template.roles.all()
 
 
 class TeamTask(AbstractTask):
