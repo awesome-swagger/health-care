@@ -15,7 +15,10 @@ class TestVitalQuestionUsingEmployee(TasksMixin, APITestCase):
 
     def setUp(self):
         self.fake = Faker()
-        self.employee = self.create_employee()
+        self.facility = self.create_facility()
+        self.employee = self.create_employee(
+            organizations_managed=[self.facility.organization]
+        )
         self.user = self.employee.user
 
         self.template = self.create_vital_task_template()
@@ -49,6 +52,18 @@ class TestVitalQuestionUsingEmployee(TasksMixin, APITestCase):
     def test_create_vital_question(self):
         payload = {
             'vital_task_template': self.template.id,
+            'prompt': self.fake.sentence(nb_words=10),
+            'answer_type': self.get_random_vital_answer_type(),
+        }
+        response = self.client.post(self.url, payload)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_create_vital_question_for_ad_hoc_tasks(self):
+        patient = self.create_patient(facility=self.facility)
+        plan = self.create_care_plan(patient)
+        payload = {
+            'vital_task_template': self.template.id,
+            'plan': plan.id,
             'prompt': self.fake.sentence(nb_words=10),
             'answer_type': self.get_random_vital_answer_type(),
         }
