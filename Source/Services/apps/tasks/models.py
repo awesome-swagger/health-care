@@ -759,6 +759,14 @@ class AssessmentQuestion(UUIDPrimaryKeyMixin):
         related_name='questions',
         on_delete=models.CASCADE
     )
+    plan = models.ForeignKey(
+        'plans.CarePlan',
+        related_name='assessment_questions',
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+        help_text=_('This will be used for ad hoc tasks.')
+    )
     prompt = models.CharField(max_length=240, null=False, blank=False)
     worst_label = models.CharField(max_length=40, null=False, blank=False)
     best_label = models.CharField(max_length=40, null=False, blank=False)
