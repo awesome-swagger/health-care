@@ -702,6 +702,11 @@ class AssessmentQuestionViewSet(viewsets.ModelViewSet):
     serializer_class = AssessmentQuestionSerializer
     permission_classes = (permissions.IsAuthenticated, EmployeeOrReadOnly, )
     queryset = AssessmentQuestion.objects.all()
+    filter_backends = (DjangoFilterBackend, )
+    filterset_fields = (
+        'assessment_task_template',
+        'plan',
+    )
 
 
 class AssessmentTaskViewSet(viewsets.ModelViewSet):
