@@ -570,7 +570,18 @@ class AssessmentQuestionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = AssessmentQuestion
-        fields = '__all__'
+        fields = (
+            'id',
+            'assessment_task_template',
+            'plan',
+            'prompt',
+            'worst_label',
+            'best_label',
+            'order',
+        )
+        read_only_fields = (
+            'id',
+        )
 
 
 class AssessmentTaskTemplateSerializer(serializers.ModelSerializer):
