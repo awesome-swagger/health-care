@@ -802,6 +802,7 @@ class VitalQuestionSerializer(serializers.ModelSerializer):
         fields = (
             'id',
             'vital_task_template',
+            'plan',
             'prompt',
             'answer_type',
             'order'
