@@ -975,6 +975,14 @@ class VitalQuestion(UUIDPrimaryKeyMixin):
         related_name="questions",
         on_delete=models.CASCADE
     )
+    plan = models.ForeignKey(
+        'plans.CarePlan',
+        related_name='vital_questions',
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+        help_text=_('This will be used for ad hoc tasks.')
+    )
     prompt = models.CharField(max_length=255)
     answer_type = models.CharField(max_length=128, choices=ANSWER_TYPE_CHOICES)
     order = models.IntegerField(default=0)
