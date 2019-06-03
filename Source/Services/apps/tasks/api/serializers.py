@@ -250,6 +250,7 @@ class CarePlanTeamTemplateSerializer(ValidateTaskTemplateAndCustomFields,
             'custom_due_time',
             'custom_is_manager_task',
             'custom_category',
+            'custom_roles',
             'name',
             'start_on_day',
             'frequency',
@@ -258,6 +259,7 @@ class CarePlanTeamTemplateSerializer(ValidateTaskTemplateAndCustomFields,
             'due_time',
             'is_manager_task',
             'category',
+            'roles',
         )
         write_only_fields = (
             'custom_name',
@@ -268,6 +270,7 @@ class CarePlanTeamTemplateSerializer(ValidateTaskTemplateAndCustomFields,
             'custom_due_time',
             'custom_is_manager_task',
             'custom_category',
+            'custom_roles',
         )
         read_only_fields = (
             'id',
@@ -276,6 +279,11 @@ class CarePlanTeamTemplateSerializer(ValidateTaskTemplateAndCustomFields,
             {
                 'field': 'team_task_template',
                 'serializer_class': TeamTaskTemplateSerializer,
+            },
+            {
+                'field': 'roles',
+                'serializer_class': ProviderRoleSerializer,
+                'many': True
             }
         ]
         task_template_field = 'team_task_template'
@@ -562,7 +570,18 @@ class AssessmentQuestionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = AssessmentQuestion
-        fields = '__all__'
+        fields = (
+            'id',
+            'assessment_task_template',
+            'plan',
+            'prompt',
+            'worst_label',
+            'best_label',
+            'order',
+        )
+        read_only_fields = (
+            'id',
+        )
 
 
 class AssessmentTaskTemplateSerializer(serializers.ModelSerializer):
@@ -783,6 +802,7 @@ class VitalQuestionSerializer(serializers.ModelSerializer):
         fields = (
             'id',
             'vital_task_template',
+            'plan',
             'prompt',
             'answer_type',
             'order'
