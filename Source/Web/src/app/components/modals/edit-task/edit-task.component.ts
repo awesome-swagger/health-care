@@ -267,7 +267,7 @@ export class EditTaskComponent implements OnInit {
     let keys = Object.keys(this.task);
     let customFields = [
       'name', 'start_on_day', 'frequency', 'repeat_amount', 'appear_time',
-      'due_time', 'default_symptoms', 'instructions'];
+      'due_time', 'default_symptoms', 'instructions', 'category'];
     keys.forEach((key) => {
      if (this.taskForm.value[key] != undefined) {
         if (key === 'repeat_amount' && this.taskForm.value['repeat_amount'] != -1) {
@@ -494,6 +494,10 @@ export class EditTaskComponent implements OnInit {
     }
     if (this.getTaskType().type === 'manager') {
       this.task.is_manager_task = true;
+    }
+    if (this.getTaskType().type === 'plan-manager') {
+      this.task.is_manager_task = true;
+      this.task.custom_is_manager_task = true;
     }
     if (!this.task.id) {
       this.createTask().then((task) => {

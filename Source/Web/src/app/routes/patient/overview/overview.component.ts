@@ -259,18 +259,15 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
   }
 
   public taskIsManager(teamTask) {
-    let task_template = teamTask.team_task_template;
-    return task_template && task_template.is_manager_task;
+    return teamTask.is_manager_task;
   }
 
   public assessmentTracksOutcome(assessment) {
-    let task_template = assessment.assessment_task_template;
-    return task_template && task_template.tracks_outcome;
+    return assessment.tracks_outcome;
   }
 
   public assessmentTracksSatisfaction(assessment) {
-    let task_template = assessment.assessment_task_template;
-    return task_template && task_template.tracks_satisfaction;
+    return assessment.tracks_satisfaction;
   }
 
   public openGoal() {
