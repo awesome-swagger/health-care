@@ -439,6 +439,10 @@ class CarePlanTeamTemplate(AbstractPlanTaskTemplate):
         max_length=120,
         blank=True,
         choices=CATEGORY_CHOICES)
+    custom_roles = models.ManyToManyField(
+        'core.ProviderRole',
+        related_name='plan_team_templates',
+        blank=True)
 
     class Meta:
         verbose_name = _('Care Plan Team Template')
@@ -458,6 +462,12 @@ class CarePlanTeamTemplate(AbstractPlanTaskTemplate):
         return self.custom_category \
             if self.custom_category \
             else self.team_task_template.category
+
+    @property
+    def roles(self):
+        return self.custom_roles.all() \
+            if self.custom_roles.exists() \
+            else self.team_task_template.roles.all()
 
 
 class TeamTask(AbstractTask):
@@ -749,6 +759,14 @@ class AssessmentQuestion(UUIDPrimaryKeyMixin):
         related_name='questions',
         on_delete=models.CASCADE
     )
+    plan = models.ForeignKey(
+        'plans.CarePlan',
+        related_name='assessment_questions',
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+        help_text=_('This will be used for ad hoc tasks.')
+    )
     prompt = models.CharField(max_length=240, null=False, blank=False)
     worst_label = models.CharField(max_length=40, null=False, blank=False)
     best_label = models.CharField(max_length=40, null=False, blank=False)
@@ -956,6 +974,14 @@ class VitalQuestion(UUIDPrimaryKeyMixin):
         VitalTaskTemplate,
         related_name="questions",
         on_delete=models.CASCADE
+    )
+    plan = models.ForeignKey(
+        'plans.CarePlan',
+        related_name='vital_questions',
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+        help_text=_('This will be used for ad hoc tasks.')
     )
     prompt = models.CharField(max_length=255)
     answer_type = models.CharField(max_length=128, choices=ANSWER_TYPE_CHOICES)

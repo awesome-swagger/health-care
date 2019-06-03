@@ -1,3 +1,5 @@
+import urllib
+
 from django.urls import reverse
 
 from faker import Faker
@@ -15,7 +17,10 @@ class TestVitalQuestionUsingEmployee(TasksMixin, APITestCase):
 
     def setUp(self):
         self.fake = Faker()
-        self.employee = self.create_employee()
+        self.facility = self.create_facility()
+        self.employee = self.create_employee(
+            organizations_managed=[self.facility.organization]
+        )
         self.user = self.employee.user
 
         self.template = self.create_vital_task_template()
@@ -37,6 +42,36 @@ class TestVitalQuestionUsingEmployee(TasksMixin, APITestCase):
             self.template.questions.count()
         )
 
+    def test_get_vital_questions_filter_plan_and_template(self):
+        patient = self.create_patient(facility=self.facility)
+        plan = self.create_care_plan(patient)
+        plan_questions = 5
+
+        for i in range(plan_questions):
+            self.create_vital_question(plan=plan)
+
+        query_params = urllib.parse.urlencode({
+            'plan': plan.id
+        })
+        url = f'{self.url}?{query_params}'
+        response = self.client.get(url)
+        self.assertEqual(response.data['count'], plan_questions)
+
+        plan_template_questions = 3
+        for i in range(plan_template_questions):
+            self.create_vital_question(
+                plan=plan,
+                vital_task_template=self.template
+            )
+
+        query_params = urllib.parse.urlencode({
+            'plan': plan.id,
+            'vital_task_template': self.template.id
+        })
+        url = f'{self.url}?{query_params}'
+        response = self.client.get(url)
+        self.assertEqual(response.data['count'], plan_template_questions)
+
     def test_get_vital_question_detail(self):
         response = self.client.get(self.detail_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -49,6 +84,18 @@ class TestVitalQuestionUsingEmployee(TasksMixin, APITestCase):
     def test_create_vital_question(self):
         payload = {
             'vital_task_template': self.template.id,
+            'prompt': self.fake.sentence(nb_words=10),
+            'answer_type': self.get_random_vital_answer_type(),
+        }
+        response = self.client.post(self.url, payload)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_create_vital_question_for_ad_hoc_tasks(self):
+        patient = self.create_patient(facility=self.facility)
+        plan = self.create_care_plan(patient)
+        payload = {
+            'vital_task_template': self.template.id,
+            'plan': plan.id,
             'prompt': self.fake.sentence(nb_words=10),
             'answer_type': self.get_random_vital_answer_type(),
         }
