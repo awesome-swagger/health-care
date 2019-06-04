@@ -760,14 +760,6 @@ class AssessmentQuestion(UUIDPrimaryKeyMixin):
         on_delete=models.CASCADE,
         blank=True,
         null=True)
-    plan = models.ForeignKey(
-        'plans.CarePlan',
-        related_name='assessment_questions',
-        on_delete=models.CASCADE,
-        blank=True,
-        null=True,
-        help_text=_('This will be used for ad hoc tasks.')
-    )
     assessment_template = models.ForeignKey(
         'tasks.CarePlanAssessmentTemplate',
         on_delete=models.CASCADE,
