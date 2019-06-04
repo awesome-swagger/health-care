@@ -573,7 +573,6 @@ class AssessmentQuestionSerializer(serializers.ModelSerializer):
         fields = (
             'id',
             'assessment_task_template',
-            'plan',
             'assessment_template',
             'prompt',
             'worst_label',
