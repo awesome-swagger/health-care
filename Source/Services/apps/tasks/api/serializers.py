@@ -573,7 +573,7 @@ class AssessmentQuestionSerializer(serializers.ModelSerializer):
         fields = (
             'id',
             'assessment_task_template',
-            'plan',
+            'assessment_template',
             'prompt',
             'worst_label',
             'best_label',
@@ -802,7 +802,7 @@ class VitalQuestionSerializer(serializers.ModelSerializer):
         fields = (
             'id',
             'vital_task_template',
-            'plan',
+            'vital_template',
             'prompt',
             'answer_type',
             'order'
