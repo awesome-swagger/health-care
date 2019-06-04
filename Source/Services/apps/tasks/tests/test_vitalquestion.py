@@ -42,31 +42,34 @@ class TestVitalQuestionUsingEmployee(TasksMixin, APITestCase):
             self.template.questions.count()
         )
 
-    def test_get_vital_questions_filter_plan_and_template(self):
-        patient = self.create_patient(facility=self.facility)
-        plan = self.create_care_plan(patient)
-        plan_questions = 5
-
-        for i in range(plan_questions):
-            self.create_vital_question(plan=plan)
-
-        query_params = urllib.parse.urlencode({
-            'plan': plan.id
-        })
-        url = f'{self.url}?{query_params}'
-        response = self.client.get(url)
-        self.assertEqual(response.data['count'], plan_questions)
-
+    def test_get_vital_questions_filter_assessment_task_template(self):
         plan_template_questions = 3
+        template = self.create_vital_task_template()
         for i in range(plan_template_questions):
             self.create_vital_question(
-                plan=plan,
-                vital_task_template=self.template
+                vital_task_template=template
             )
 
         query_params = urllib.parse.urlencode({
-            'plan': plan.id,
-            'vital_task_template': self.template.id
+            'vital_task_template': template.id
+        })
+        url = f'{self.url}?{query_params}'
+        response = self.client.get(url)
+        self.assertEqual(response.data['count'], plan_template_questions)
+
+    def test_get_vital_questions_filter_assessment_template(self):
+        plan_template_questions = 3
+        patient = self.create_patient(facility=self.facility)
+        plan = self.create_care_plan(patient)
+        vital_template = self.create_plan_vital_template(plan=plan)
+
+        for i in range(plan_template_questions):
+            self.create_vital_question(
+                vital_template=vital_template
+            )
+
+        query_params = urllib.parse.urlencode({
+            'vital_template': vital_template.id
         })
         url = f'{self.url}?{query_params}'
         response = self.client.get(url)

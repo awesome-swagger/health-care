@@ -757,16 +757,15 @@ class AssessmentQuestion(UUIDPrimaryKeyMixin):
     assessment_task_template = models.ForeignKey(
         AssessmentTaskTemplate,
         related_name='questions',
-        on_delete=models.CASCADE
-    )
-    plan = models.ForeignKey(
-        'plans.CarePlan',
-        related_name='assessment_questions',
         on_delete=models.CASCADE,
         blank=True,
-        null=True,
-        help_text=_('This will be used for ad hoc tasks.')
-    )
+        null=True)
+    assessment_template = models.ForeignKey(
+        'tasks.CarePlanAssessmentTemplate',
+        on_delete=models.CASCADE,
+        related_name='assessment_questions',
+        blank=True,
+        null=True)
     prompt = models.CharField(max_length=240, null=False, blank=False)
     worst_label = models.CharField(max_length=40, null=False, blank=False)
     best_label = models.CharField(max_length=40, null=False, blank=False)
@@ -973,16 +972,15 @@ class VitalQuestion(UUIDPrimaryKeyMixin):
     vital_task_template = models.ForeignKey(
         VitalTaskTemplate,
         related_name="questions",
-        on_delete=models.CASCADE
-    )
-    plan = models.ForeignKey(
-        'plans.CarePlan',
-        related_name='vital_questions',
         on_delete=models.CASCADE,
         blank=True,
-        null=True,
-        help_text=_('This will be used for ad hoc tasks.')
-    )
+        null=True)
+    vital_template = models.ForeignKey(
+        'tasks.CarePlanVitalTemplate',
+        on_delete=models.CASCADE,
+        related_name='vital_questions',
+        blank=True,
+        null=True)
     prompt = models.CharField(max_length=255)
     answer_type = models.CharField(max_length=128, choices=ANSWER_TYPE_CHOICES)
     order = models.IntegerField(default=0)
