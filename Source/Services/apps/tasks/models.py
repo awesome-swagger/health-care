@@ -975,14 +975,6 @@ class VitalQuestion(UUIDPrimaryKeyMixin):
         on_delete=models.CASCADE,
         blank=True,
         null=True)
-    plan = models.ForeignKey(
-        'plans.CarePlan',
-        related_name='vital_questions',
-        on_delete=models.CASCADE,
-        blank=True,
-        null=True,
-        help_text=_('This will be used for ad hoc tasks.')
-    )
     vital_template = models.ForeignKey(
         'tasks.CarePlanVitalTemplate',
         on_delete=models.CASCADE,
