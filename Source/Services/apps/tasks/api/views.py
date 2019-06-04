@@ -1074,7 +1074,6 @@ class VitalQuestionViewSet(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend, )
     filterset_fields = (
         'vital_task_template',
-        'plan',
         'vital_template',
     )
     queryset = VitalQuestion.objects.all()
