@@ -767,6 +767,12 @@ class AssessmentQuestion(UUIDPrimaryKeyMixin):
         null=True,
         help_text=_('This will be used for ad hoc tasks.')
     )
+    assessment_template = models.ForeignKey(
+        'tasks.CarePlanAssessmentTemplate',
+        on_delete=models.CASCADE,
+        related_name='assessment_questions',
+        blank=True,
+        null=True)
     prompt = models.CharField(max_length=240, null=False, blank=False)
     worst_label = models.CharField(max_length=40, null=False, blank=False)
     best_label = models.CharField(max_length=40, null=False, blank=False)
