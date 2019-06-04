@@ -4,6 +4,8 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
+from model_utils import Choices
+
 from .signals import (
     assessmentresponse_post_save,
     careplanassessmenttemplate_post_init,
@@ -57,6 +59,12 @@ FREQUENCY_CHOICES = (
     ('weekly', 'Weekly'),
     ('weekdays', 'Weekdays'),
     ('weekends', 'Weekends'),
+)
+
+CATEGORY_CHOICES = Choices(
+    ('notes', 'Notes'),
+    ('interaction', 'Patient Interaction'),
+    ('coordination', 'Care Team Coordination'),
 )
 
 
@@ -209,6 +217,9 @@ class AbstractPlanTaskTemplate(UUIDPrimaryKeyMixin):
     plan task template implementation
     """
 
+    custom_name = models.CharField(
+        max_length=100,
+        blank=True)
     custom_start_on_day = models.IntegerField(
         blank=True,
         null=True)
@@ -248,6 +259,12 @@ class AbstractPlanTaskTemplate(UUIDPrimaryKeyMixin):
         return plan_task_template_lookup[model_name]
 
     @property
+    def name(self):
+        task_template = self.get_task_template_field()
+        return self.custom_name \
+            if self.custom_name else task_template.name
+
+    @property
     def start_on_day(self):
         task_template = self.get_task_template_field()
         return self.custom_start_on_day \
@@ -283,7 +300,8 @@ class AbstractPlanTaskTemplate(UUIDPrimaryKeyMixin):
 
     @property
     def has_custom_values(self):
-        return self.custom_start_on_day is not None or \
+        return self.custom_name != '' or \
+            self.custom_start_on_day is not None or \
             self.custom_frequency or \
             self.custom_repeat_amount is not None or \
             self.custom_appear_time is not None or \
@@ -382,11 +400,6 @@ class TeamTaskTemplate(AbstractTaskTemplate):
         on_delete=models.CASCADE)
     name = models.CharField(max_length=140, null=False, blank=False)
     is_manager_task = models.BooleanField(default=False)
-    CATEGORY_CHOICES = (
-        ('notes', 'Notes'),
-        ('interaction', 'Patient Interaction'),
-        ('coordination', 'Care Team Coordination'),
-    )
     category = models.CharField(max_length=120, choices=CATEGORY_CHOICES)
     roles = models.ManyToManyField(
         'core.ProviderRole',
@@ -421,6 +434,15 @@ class CarePlanTeamTemplate(AbstractPlanTaskTemplate):
         on_delete=models.CASCADE,
         blank=True,
         null=True)
+    custom_is_manager_task = models.NullBooleanField()
+    custom_category = models.CharField(
+        max_length=120,
+        blank=True,
+        choices=CATEGORY_CHOICES)
+    custom_roles = models.ManyToManyField(
+        'core.ProviderRole',
+        related_name='plan_team_templates',
+        blank=True)
 
     class Meta:
         verbose_name = _('Care Plan Team Template')
@@ -428,6 +450,24 @@ class CarePlanTeamTemplate(AbstractPlanTaskTemplate):
 
     def __str__(self):
         return f'{self.plan}: {self.team_task_template}'
+
+    @property
+    def is_manager_task(self):
+        return self.custom_is_manager_task \
+            if self.custom_is_manager_task is not None \
+            else self.team_task_template.is_manager_task
+
+    @property
+    def category(self):
+        return self.custom_category \
+            if self.custom_category \
+            else self.team_task_template.category
+
+    @property
+    def roles(self):
+        return self.custom_roles.all() \
+            if self.custom_roles.exists() \
+            else self.team_task_template.roles.all()
 
 
 class TeamTask(AbstractTask):
@@ -547,6 +587,11 @@ class CarePlanSymptomTemplate(AbstractPlanTaskTemplate):
         on_delete=models.CASCADE,
         blank=True,
         null=True)
+    custom_default_symptoms = models.ManyToManyField(
+        'core.Symptom',
+        related_name='plan_task_templates',
+        blank=True,
+        )
 
     class Meta:
         verbose_name = _('Care Plan Symptom Template')
@@ -554,6 +599,12 @@ class CarePlanSymptomTemplate(AbstractPlanTaskTemplate):
 
     def __str__(self):
         return f'{self.plan}: {self.symptom_task_template}'
+
+    @property
+    def default_symptoms(self):
+        return self.custom_default_symptoms.all() \
+            if self.custom_default_symptoms.exists() \
+            else self.symptom_task_template.default_symptoms.all()
 
 
 class SymptomTask(AbstractTask):
@@ -679,6 +730,8 @@ class CarePlanAssessmentTemplate(AbstractPlanTaskTemplate):
         on_delete=models.CASCADE,
         blank=True,
         null=True)
+    custom_tracks_outcome = models.NullBooleanField()
+    custom_tracks_satisfaction = models.NullBooleanField()
 
     class Meta:
         verbose_name = _('Care Plan Assessment Template')
@@ -687,13 +740,32 @@ class CarePlanAssessmentTemplate(AbstractPlanTaskTemplate):
     def __str__(self):
         return f'{self.plan}: {self.assessment_task_template}'
 
+    @property
+    def tracks_outcome(self):
+        return self.custom_tracks_outcome \
+            if self.custom_tracks_outcome is not None \
+            else self.assessment_task_template.tracks_outcome
+
+    @property
+    def tracks_satisfaction(self):
+        return self.custom_tracks_satisfaction \
+            if self.custom_tracks_satisfaction is not None \
+            else self.assessment_task_template.tracks_satisfaction
+
 
 class AssessmentQuestion(UUIDPrimaryKeyMixin):
     assessment_task_template = models.ForeignKey(
         AssessmentTaskTemplate,
         related_name='questions',
-        on_delete=models.CASCADE
-    )
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True)
+    assessment_template = models.ForeignKey(
+        'tasks.CarePlanAssessmentTemplate',
+        on_delete=models.CASCADE,
+        related_name='assessment_questions',
+        blank=True,
+        null=True)
     prompt = models.CharField(max_length=240, null=False, blank=False)
     worst_label = models.CharField(max_length=40, null=False, blank=False)
     best_label = models.CharField(max_length=40, null=False, blank=False)
@@ -837,6 +909,9 @@ class CarePlanVitalTemplate(AbstractPlanTaskTemplate):
         on_delete=models.CASCADE,
         blank=True,
         null=True)
+    custom_instructions = models.CharField(
+        max_length=240,
+        blank=True)
 
     class Meta:
         verbose_name = _('Care Plan Vital Template')
@@ -844,6 +919,12 @@ class CarePlanVitalTemplate(AbstractPlanTaskTemplate):
 
     def __str__(self):
         return f'{self.plan}: {self.vital_task_template}'
+
+    @property
+    def instructions(self):
+        task_template = self.get_task_template_field()
+        return self.custom_instructions \
+            if self.custom_instructions else task_template.instructions
 
 
 class VitalTask(AbstractTask):
@@ -891,8 +972,15 @@ class VitalQuestion(UUIDPrimaryKeyMixin):
     vital_task_template = models.ForeignKey(
         VitalTaskTemplate,
         related_name="questions",
-        on_delete=models.CASCADE
-    )
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True)
+    vital_template = models.ForeignKey(
+        'tasks.CarePlanVitalTemplate',
+        on_delete=models.CASCADE,
+        related_name='vital_questions',
+        blank=True,
+        null=True)
     prompt = models.CharField(max_length=255)
     answer_type = models.CharField(max_length=128, choices=ANSWER_TYPE_CHOICES)
     order = models.IntegerField(default=0)

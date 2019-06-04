@@ -167,13 +167,15 @@ export class AddAssessmentComponent implements OnInit {
       this.modal.close(assessment);
     } else {
       assessment = {
-        custom_start_on_day: 0,
-        custom_frequency: 'once',
-        custom_repeat_amount: -1,
-        custom_appear_time: '00:00:00',
-        custom_due_time: '00:00:00',
-        custom_name: assessmentName,
+        start_on_day: 0,
+        frequency: 'once',
+        repeat_amount: -1,
+        appear_time: '00:00:00',
+        due_time: '00:00:00',
+        name: assessmentName,
         plan: this.data.planId,
+        tracks_outcome: false,
+        tracks_satisfaction: false,
       };
       this.createAssessment = false;
       this.modal.close(assessment);

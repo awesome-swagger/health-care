@@ -3,7 +3,7 @@ import datetime
 import pytz
 
 from django.contrib.auth import get_user_model
-from django.db.models import Avg, Sum
+from django.db.models import Avg, Sum, Q
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
@@ -789,7 +789,6 @@ class CarePlanTemplateAverageSerializer(serializers.ModelSerializer):
         kwargs = {
             'assessment_template__plan__in': employee_care_plans,
             'assessment_template__plan__plan_template': obj,
-            'assessment_template__assessment_task_template__tracks_outcome': True,
             'assessment_template__plan__patient__facility__is_affiliate': False
         }
         if facility:
@@ -802,7 +801,13 @@ class CarePlanTemplateAverageSerializer(serializers.ModelSerializer):
                 'assessment_template__plan__patient__facility__organization': organization
             })
 
-        tasks = AssessmentTask.objects.filter(**kwargs).aggregate(
+        tasks = AssessmentTask.objects.filter(
+            Q(assessment_template__custom_tracks_outcome=True) |
+            (
+                Q(assessment_template__custom_tracks_outcome__isnull=True) &
+                Q(assessment_template__assessment_task_template__tracks_outcome=True)
+            ),
+            **kwargs).aggregate(
             average=Avg('responses__rating'))
         average = tasks['average'] or 0
         avg = round((average / 5) * 100)
@@ -1078,8 +1083,12 @@ class CarePlanOverviewSerializer(RepresentationMixin, serializers.ModelSerialize
 
     def get_average_outcome(self, obj):
         tasks = AssessmentTask.objects.filter(
+            Q(assessment_template__custom_tracks_outcome=True) |
+            (
+                Q(assessment_template__custom_tracks_outcome__isnull=True) &
+                Q(assessment_template__assessment_task_template__tracks_outcome=True)
+            ),
             assessment_template__plan=obj,
-            assessment_template__assessment_task_template__tracks_outcome=True
         ).aggregate(average=Avg('responses__rating'))
         average = tasks['average'] or 0
         avg = round((average / 5) * 100)

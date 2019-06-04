@@ -28,6 +28,7 @@ export class BillingComponent implements OnDestroy, OnInit {
   public billingPractitioners = [];
 
   public billingData = null;
+  public loadingBillingData = true;
   public patients = [];
   public facilities = [];
   public facilitiesShown = [];
@@ -77,6 +78,10 @@ export class BillingComponent implements OnDestroy, OnInit {
       }
       this.organization = organization;
       this.isManager = this.organization.is_manager;
+      this.getEmployees(this.organization.id).then((employees: any) => {
+        this.employees = employees;
+        this.employeesShown = this.employees;
+      });
       this.getBillingData();
     });
     this.facilitiesSub = this.auth.facilities$.subscribe((facilities) => {
@@ -110,6 +115,20 @@ export class BillingComponent implements OnDestroy, OnInit {
     }
   }
 
+  public getEmployees(organizationId) {
+    return new Promise((resolve, reject) => {
+      let employeesSub = this.store.EmployeeProfile.readListPaged({
+        organization: organizationId
+      }).subscribe(
+        (employees) => resolve(employees),
+        (err) => reject(err),
+        () => {
+          employeesSub.unsubscribe();
+        }
+      );
+    });
+  }
+
   public resolveActivityOverview(organizationId) {
     let promise = new Promise((resolve, reject) => {
       let params = {};
@@ -117,10 +136,10 @@ export class BillingComponent implements OnDestroy, OnInit {
         params['plan__patient__facility'] = this.selectedFacility.id;
       }
       if (this.selectedServiceArea !== null) {
-        params['plan_template__service_area'] = this.selectedServiceArea.id;
+        params['plan__plan_template__service_area'] = this.selectedServiceArea.id;
       }
-      params['activity_date__month'] = this.selectedMonth.month() + 1;
-      params['activity_date__year'] = this.selectedMonth.year();
+      params['activity_datetime__month'] = this.selectedMonth.month() + 1;
+      params['activity_datetime__year'] = this.selectedMonth.year();
       let overviewSub = this.store.Organization.detailRoute('get', organizationId, 'billed_activities/overview', {}, params).subscribe(
         (data) => resolve(data),
         (err) => reject(err),
@@ -141,8 +160,8 @@ export class BillingComponent implements OnDestroy, OnInit {
       if (this.selectedServiceArea !== null) {
         params['billed_plans__plan_template__service_area'] = this.selectedServiceArea.id;
       }
-      params['billed_plans__activities__activity_date__month'] = this.selectedMonth.month() + 1;
-      params['billed_plans__activities__activity_date__year'] = this.selectedMonth.year();
+      params['billed_plans__activities__activity_datetime__month'] = this.selectedMonth.month() + 1;
+      params['billed_plans__activities__activity_datetime__year'] = this.selectedMonth.year();
       let bpSub = this.store.Organization.detailRoute('get', organizationId, 'billing_practitioners', {}, params).subscribe(
         (data: any) => resolve(data.results),
         (err) => reject(err),
@@ -155,10 +174,11 @@ export class BillingComponent implements OnDestroy, OnInit {
   }
 
   public getBillingData() {
-    this.resolveActivityOverview(this.organization.id).then((overviewStats: any) => {
+    this.loadingBillingData = true;
+    let overviewPromise = this.resolveActivityOverview(this.organization.id).then((overviewStats: any) => {
       this.overviewStats = overviewStats;
     });
-    this.resolveBillingPractitioners(this.organization.id).then((billingPractitioners: any) => {
+    let practitionersPromise = this.resolveBillingPractitioners(this.organization.id).then((billingPractitioners: any) => {
       this.billingPractitioners = billingPractitioners.map((bp) => {
         let filteredPlans = bp.plans.filter((plan) => {
           if (this.selectedStatus === 'all') {
@@ -174,6 +194,9 @@ export class BillingComponent implements OnDestroy, OnInit {
         bp.plans = filteredPlans;
         return bp;
       });
+    });
+    Promise.all([overviewPromise, practitionersPromise]).then(() => {
+      this.loadingBillingData = false;
     });
   }
 
@@ -287,6 +310,14 @@ export class BillingComponent implements OnDestroy, OnInit {
         billSub.unsubscribe();
       }
     );
+  }
+
+  public getActionType(details) {
+    if (details.team_task_template) {
+      return details.team_task_template.name;
+    } else {
+      return 'Patient Data Review';
+    }
   }
 
   public minutesToHours(n) {

@@ -34,6 +34,7 @@ from ..models import (
     VitalResponse,
 )
 from ..search_indexes import VitalTaskTemplateIndex
+from .mixins import ValidateTaskTemplateAndCustomFields
 from apps.core.api.mixins import RepresentationMixin
 from apps.core.api.serializers import SymptomSerializer, ProviderRoleSerializer
 from apps.core.models import Symptom
@@ -50,7 +51,8 @@ class PatientTaskTemplateSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class CarePlanPatientTemplateSerializer(RepresentationMixin,
+class CarePlanPatientTemplateSerializer(ValidateTaskTemplateAndCustomFields,
+                                        RepresentationMixin,
                                         serializers.ModelSerializer):
     """
     Serializer to be used by :model:`tasks.CarePlanPatientTemplate`
@@ -62,11 +64,13 @@ class CarePlanPatientTemplateSerializer(RepresentationMixin,
             'id',
             'plan',
             'patient_task_template',
+            'custom_name',
             'custom_start_on_day',
             'custom_frequency',
             'custom_repeat_amount',
             'custom_appear_time',
             'custom_due_time',
+            'name',
             'start_on_day',
             'frequency',
             'repeat_amount',
@@ -74,6 +78,7 @@ class CarePlanPatientTemplateSerializer(RepresentationMixin,
             'due_time',
         )
         write_only_fields = (
+            'custom_name',
             'custom_start_on_day',
             'custom_frequency',
             'custom_repeat_amount',
@@ -89,6 +94,7 @@ class CarePlanPatientTemplateSerializer(RepresentationMixin,
                 'serializer_class': PatientTaskTemplateSerializer,
             }
         ]
+        task_template_field = 'patient_task_template'
 
 
 class PatientTaskSerializer(RepresentationMixin, serializers.ModelSerializer):
@@ -140,7 +146,7 @@ class PatientTaskTodaySerializer(serializers.ModelSerializer):
         return 'patient_task'
 
     def get_name(self, obj):
-        return obj.patient_template.patient_task_template.name
+        return obj.patient_template.name
 
     def get_occurrence(self, obj):
         total_tasks = PatientTask.objects.filter(
@@ -223,7 +229,8 @@ class TeamTaskTemplateSerializer(RepresentationMixin,
         ]
 
 
-class CarePlanTeamTemplateSerializer(RepresentationMixin,
+class CarePlanTeamTemplateSerializer(ValidateTaskTemplateAndCustomFields,
+                                     RepresentationMixin,
                                      serializers.ModelSerializer):
     """
     Serializer to be used by :model:`tasks.CarePlanTeamTemplate`
@@ -235,23 +242,35 @@ class CarePlanTeamTemplateSerializer(RepresentationMixin,
             'id',
             'plan',
             'team_task_template',
+            'custom_name',
             'custom_start_on_day',
             'custom_frequency',
             'custom_repeat_amount',
             'custom_appear_time',
             'custom_due_time',
+            'custom_is_manager_task',
+            'custom_category',
+            'custom_roles',
+            'name',
             'start_on_day',
             'frequency',
             'repeat_amount',
             'appear_time',
             'due_time',
+            'is_manager_task',
+            'category',
+            'roles',
         )
         write_only_fields = (
+            'custom_name',
             'custom_start_on_day',
             'custom_frequency',
             'custom_repeat_amount',
             'custom_appear_time',
             'custom_due_time',
+            'custom_is_manager_task',
+            'custom_category',
+            'custom_roles',
         )
         read_only_fields = (
             'id',
@@ -260,8 +279,14 @@ class CarePlanTeamTemplateSerializer(RepresentationMixin,
             {
                 'field': 'team_task_template',
                 'serializer_class': TeamTaskTemplateSerializer,
+            },
+            {
+                'field': 'roles',
+                'serializer_class': ProviderRoleSerializer,
+                'many': True
             }
         ]
+        task_template_field = 'team_task_template'
 
 
 class TeamTaskSerializer(RepresentationMixin,
@@ -399,7 +424,8 @@ class SymptomTaskTemplateSerializer(RepresentationMixin,
         ]
 
 
-class CarePlanSymptomTemplateSerializer(RepresentationMixin,
+class CarePlanSymptomTemplateSerializer(ValidateTaskTemplateAndCustomFields,
+                                        RepresentationMixin,
                                         serializers.ModelSerializer):
     """
     Serializer to be used by :model:`tasks.CarePlanSymptomTemplate`
@@ -411,23 +437,29 @@ class CarePlanSymptomTemplateSerializer(RepresentationMixin,
             'id',
             'plan',
             'symptom_task_template',
+            'custom_name',
             'custom_start_on_day',
             'custom_frequency',
             'custom_repeat_amount',
             'custom_appear_time',
             'custom_due_time',
+            'custom_default_symptoms',
+            'name',
             'start_on_day',
             'frequency',
             'repeat_amount',
             'appear_time',
             'due_time',
+            'default_symptoms',
         )
         write_only_fields = (
+            'custom_name',
             'custom_start_on_day',
             'custom_frequency',
             'custom_repeat_amount',
             'custom_appear_time',
             'custom_due_time',
+            'custom_default_symptoms',
         )
         read_only_fields = (
             'id',
@@ -436,8 +468,14 @@ class CarePlanSymptomTemplateSerializer(RepresentationMixin,
             {
                 'field': 'symptom_task_template',
                 'serializer_class': SymptomTaskTemplateSerializer,
+            },
+            {
+                'field': 'default_symptoms',
+                'serializer_class': SymptomSerializer,
+                'many': True
             }
         ]
+        task_template_field = 'symptom_task_template'
 
 
 class SymptomRatingSerializer(RepresentationMixin,
@@ -532,7 +570,18 @@ class AssessmentQuestionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = AssessmentQuestion
-        fields = '__all__'
+        fields = (
+            'id',
+            'assessment_task_template',
+            'assessment_template',
+            'prompt',
+            'worst_label',
+            'best_label',
+            'order',
+        )
+        read_only_fields = (
+            'id',
+        )
 
 
 class AssessmentTaskTemplateSerializer(serializers.ModelSerializer):
@@ -594,16 +643,17 @@ class AssessmentResponseSerializer(RepresentationMixin,
         ]
 
     def get_assessment_task_name(self, obj):
-        return obj.assessment_question.assessment_task_template.name
+        return obj.assessment_task.assessment_template.name
 
     def get_tracks_outcome(self, obj):
-        return obj.assessment_question.assessment_task_template.tracks_outcome
+        return obj.assessment_task.assessment_template.tracks_outcome
 
     def get_tracks_satisfaction(self, obj):
-        return obj.assessment_question.assessment_task_template.tracks_satisfaction
+        return obj.assessment_task.assessment_template.tracks_satisfaction
 
 
-class CarePlanAssessmentTemplateSerializer(RepresentationMixin,
+class CarePlanAssessmentTemplateSerializer(ValidateTaskTemplateAndCustomFields,
+                                           RepresentationMixin,
                                            serializers.ModelSerializer):
     """
     Serializer to be used by :model:`tasks.CarePlanAssessmentTemplate`
@@ -615,23 +665,32 @@ class CarePlanAssessmentTemplateSerializer(RepresentationMixin,
             'id',
             'plan',
             'assessment_task_template',
+            'custom_name',
             'custom_start_on_day',
             'custom_frequency',
             'custom_repeat_amount',
             'custom_appear_time',
             'custom_due_time',
+            'custom_tracks_outcome',
+            'custom_tracks_satisfaction',
+            'name',
             'start_on_day',
             'frequency',
             'repeat_amount',
             'appear_time',
             'due_time',
+            'tracks_outcome',
+            'tracks_satisfaction',
         )
         write_only_fields = (
+            'custom_name',
             'custom_start_on_day',
             'custom_frequency',
             'custom_repeat_amount',
             'custom_appear_time',
             'custom_due_time',
+            'custom_tracks_outcome',
+            'custom_tracks_satisfaction',
         )
         read_only_fields = (
             'id',
@@ -642,6 +701,7 @@ class CarePlanAssessmentTemplateSerializer(RepresentationMixin,
                 'serializer_class': AssessmentTaskTemplateSerializer,
             }
         ]
+        task_template_field = 'assessment_task_template'
 
 
 class AssessmentTaskSerializer(RepresentationMixin,
@@ -742,6 +802,7 @@ class VitalQuestionSerializer(serializers.ModelSerializer):
         fields = (
             'id',
             'vital_task_template',
+            'vital_template',
             'prompt',
             'answer_type',
             'order'
@@ -959,7 +1020,8 @@ class VitalResponseSerializer(RepresentationMixin, serializers.ModelSerializer):
         return instance
 
 
-class CarePlanVitalTemplateSerializer(RepresentationMixin,
+class CarePlanVitalTemplateSerializer(ValidateTaskTemplateAndCustomFields,
+                                      RepresentationMixin,
                                       serializers.ModelSerializer):
     """
     Serializer to be used by :model:`tasks.CarePlanVitalTemplate`
@@ -971,23 +1033,29 @@ class CarePlanVitalTemplateSerializer(RepresentationMixin,
             'id',
             'plan',
             'vital_task_template',
+            'custom_name',
             'custom_start_on_day',
             'custom_frequency',
             'custom_repeat_amount',
             'custom_appear_time',
             'custom_due_time',
+            'custom_instructions',
+            'name',
             'start_on_day',
             'frequency',
             'repeat_amount',
             'appear_time',
             'due_time',
+            'instructions',
         )
         write_only_fields = (
+            'custom_name',
             'custom_start_on_day',
             'custom_frequency',
             'custom_repeat_amount',
             'custom_appear_time',
             'custom_due_time',
+            'custom_instructions',
         )
         read_only_fields = (
             'id',
@@ -998,6 +1066,7 @@ class CarePlanVitalTemplateSerializer(RepresentationMixin,
                 'serializer_class': VitalTaskTemplateSerializer,
             }
         ]
+        task_template_field = 'vital_task_template'
 
 
 class VitalTaskSerializer(RepresentationMixin, serializers.ModelSerializer):

@@ -158,8 +158,7 @@ export class AddVitalComponent implements OnInit {
         is_available: true,
         name: vitalName,
         plan_template: this.data.planTemplateId,
-        tracks_outcome: false,
-        tracks_satisfaction: false,
+        instructions: '',
       }
       this.createVital = false;
       this.modal.close({
@@ -168,13 +167,14 @@ export class AddVitalComponent implements OnInit {
       });
     } else {
       newVital = {
-        custom_start_on_day: 0,
-        custom_frequency: 'once',
-        custom_repeat_amount: -1,
-        custom_appear_time: '00:00:00',
-        custom_due_time: '00:00:00',
-        custom_name: vitalName,
+        start_on_day: 0,
+        frequency: 'once',
+        repeat_amount: -1,
+        appear_time: '00:00:00',
+        due_time: '00:00:00',
+        name: vitalName,
         plan: this.data.planId,
+        instructions: '',
       };
       this.createVital = false;
       this.modal.close({

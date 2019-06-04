@@ -1,6 +1,6 @@
 import datetime
 
-from django.db.models import Avg, Sum
+from django.db.models import Avg, Q
 from datetime import timedelta
 from django.utils import timezone
 
@@ -36,8 +36,12 @@ class CarePlanResultOverTimeTask(PeriodicTask):
         now = timezone.now()
         date = now.date() - timedelta(days=7)
         tasks = AssessmentTask.objects.filter(
+            Q(assessment_template__custom_tracks_outcome=True) |
+            (
+                Q(assessment_template__custom_tracks_outcome__isnull=True) &
+                Q(assessment_template__assessment_task_template__tracks_outcome=True)
+            ),
             assessment_template__plan=plan,
-            assessment_template__assessment_task_template__tracks_outcome=True,
             due_datetime__range=[date, now]
         ).aggregate(average=Avg('responses__rating'))
         average = tasks['average'] or 0

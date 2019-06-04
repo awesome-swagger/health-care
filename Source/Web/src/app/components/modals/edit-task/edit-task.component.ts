@@ -158,11 +158,7 @@ export class EditTaskComponent implements OnInit {
   }
 
   public getTaskName() {
-    if (!this.isAdhoc) {
-      return this.task.name;
-    } else {
-      return this.getRelatedModel().name;
-    }
+    return this.task.name;
   }
 
   public updateTaskName() {
@@ -172,39 +168,44 @@ export class EditTaskComponent implements OnInit {
     let id = null;
     if (this.task.id) {
       id = this.task.id;
-    } else if (this.getRelatedModel() && this.getRelatedModel().id) {
-      id = this.getRelatedModel().id;
     }
+    this.task.name = this.nameForm.value['name'];
     if (!this.isAdhoc) {
-      this.task.name = this.nameForm.value['name'];
+      if (id) {
+        let updateSub = this.getTaskType().dataModel.update(id, {
+          name: this.nameForm.value['name'],
+        }, true).subscribe(
+          (task) => {
+            this.editName = false;
+          },
+          (err) => {},
+          () => {
+            updateSub.unsubscribe();
+          }
+        );
+      }
     } else {
-      this.getRelatedModel().name = this.nameForm.value['name'];
+      if (id) {
+        let updateSub = this.getTaskType().relatedModel.update(id, {
+          custom_name: this.nameForm.value['name'],
+        }, true).subscribe(
+          (task) => {
+            this.editName = false;
+          },
+          (err) => {},
+          () => {
+            updateSub.unsubscribe();
+          }
+        );
+      }
     }
-    if (id) {
-      let updateSub = this.getTaskType().dataModel.update(id, {
-        name: this.nameForm.value['name'],
-      }, true).subscribe(
-        (task) => {
-          this.editName = false;
-        },
-        (err) => {},
-        () => {
-          updateSub.unsubscribe();
-        }
-      );
-    } else {
-      this.editName = false;
-    }
+    this.editName = false;
   }
 
   public initForm(task) {
     if (task.name) {
       this.nameForm = new FormGroup({
         name: new FormControl(task.name),
-      });
-    } else if (task[this.getTaskType().relatedField].name) {
-      this.nameForm = new FormGroup({
-        name: new FormControl(task[this.getTaskType().relatedField].name),
       });
     }
     this.taskForm = new FormGroup({
@@ -219,8 +220,6 @@ export class EditTaskComponent implements OnInit {
       let defaultSymptomIds = [];
       if (task.default_symptoms) {
         defaultSymptomIds = task.default_symptoms.map((obj) => obj.id);
-      } else if (task.symptom_task_template && task.symptom_task_template.default_symptoms) {
-        defaultSymptomIds = task.symptom_task_template.default_symptoms.map((obj) => obj.id);
       } else {
         defaultSymptomIds = [];
         task.default_symptoms = [];
@@ -230,8 +229,6 @@ export class EditTaskComponent implements OnInit {
         this.symptomChoices = symptoms;
         if (task.default_symptoms) {
           this.symptomsSelected = task.default_symptoms;
-        } else if (task.symptom_task_template && task.symptom_task_template.default_symptoms) {
-          this.symptomsSelected = task.symptom_task_template.default_symptoms;
         }
       });
     }
@@ -268,7 +265,9 @@ export class EditTaskComponent implements OnInit {
 
   public updateFormFields() {
     let keys = Object.keys(this.task);
-    let customFields = ['start_on_day', 'frequency', 'repeat_amount', 'appear_time', 'due_time'];
+    let customFields = [
+      'name', 'start_on_day', 'frequency', 'repeat_amount', 'appear_time',
+      'due_time', 'default_symptoms', 'instructions'];
     keys.forEach((key) => {
      if (this.taskForm.value[key] != undefined) {
         if (key === 'repeat_amount' && this.taskForm.value['repeat_amount'] != -1) {
@@ -433,7 +432,9 @@ export class EditTaskComponent implements OnInit {
           },
         );
       } else {
-        postData[this.getTaskType().relatedField] = this.task[this.getTaskType().relatedField].id;
+        if (this.task[this.getTaskType().relatedField]) {
+          postData[this.getTaskType().relatedField] = this.task[this.getTaskType().relatedField].id;
+        }
         let createSub = this.getTaskType().relatedModel.create(postData).subscribe(
           (task) => {
             this.task = Object.assign({}, task, {questions: questions});
@@ -488,6 +489,9 @@ export class EditTaskComponent implements OnInit {
 
   public submitTask() {
     this.updateFormFields();
+    if (this.isAdhoc) {
+      this.task.custom_name = this.task.name;
+    }
     if (this.getTaskType().type === 'manager') {
       this.task.is_manager_task = true;
     }
@@ -519,7 +523,7 @@ export class EditTaskComponent implements OnInit {
   }
 
   public saveDisabled() {
-    if (this.getTaskType().type === 'symptom') {
+    if (this.getTaskType().type === 'symptom' || this.getTaskType().type === 'plan-symptom') {
       return this.symptomsSelected.length < 1;
     }
   }

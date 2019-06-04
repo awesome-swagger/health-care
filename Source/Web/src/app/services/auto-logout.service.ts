@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { AuthService } from './auth.service';
+import { TimeTrackerService } from './time-tracker.service';
 import store from 'store';
 import { Router } from '@angular/router';
 
@@ -10,6 +11,7 @@ export class AutoLogoutService {
 
   constructor(
     private auth: AuthService,
+    private timer: TimeTrackerService,
     private router: Router,
   ) {
     this.initClickListener();
@@ -45,8 +47,11 @@ export class AutoLogoutService {
 
     if (diff < 0 && this.auth.isLoggedIn()) {
       console.log('logging out');
+      this.timer.stopTimer();
+      this.timer.resetTimers();
       this.auth.logout();
       this.router.navigate(['login']);
+      window.location.reload();
     }
   }
 }

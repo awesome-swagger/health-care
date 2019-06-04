@@ -191,7 +191,13 @@ class TasksMixin(PlansMixin):
             kwargs.update({
                 'symptom_task_template': self.create_symptom_task_template()
             })
-        return CarePlanSymptomTemplateFactory(**kwargs)
+
+        default_symptoms = kwargs.pop('custom_default_symptoms', [])
+
+        template = CarePlanSymptomTemplateFactory(**kwargs)
+        template.custom_default_symptoms.add(*default_symptoms)
+
+        return template
 
     def create_symptom_task(self, **kwargs):
         now = timezone.now()
@@ -391,6 +397,8 @@ class TasksMixin(PlansMixin):
         return template
 
     def create_plan_team_template(self, **kwargs):
+        custom_roles = kwargs.pop('custom_roles', [])
+
         if 'plan' not in kwargs:
             kwargs.update({'plan': self.create_care_plan()})
 
@@ -398,7 +406,9 @@ class TasksMixin(PlansMixin):
             kwargs.update({
                 'team_task_template': self.create_team_task_template()
             })
-        return CarePlanTeamTemplateFactory(**kwargs)
+        template = CarePlanTeamTemplateFactory(**kwargs)
+        template.custom_roles.add(*custom_roles)
+        return template
 
     def create_team_task(self, **kwargs):
         now = timezone.now()
