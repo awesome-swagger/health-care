@@ -57,6 +57,24 @@ class TestVitalQuestionUsingEmployee(TasksMixin, APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.data['count'], plan_template_questions)
 
+    def test_get_vital_questions_filter_assessment_template(self):
+        plan_template_questions = 3
+        patient = self.create_patient(facility=self.facility)
+        plan = self.create_care_plan(patient)
+        vital_template = self.create_plan_vital_template(plan=plan)
+
+        for i in range(plan_template_questions):
+            self.create_vital_question(
+                vital_template=vital_template
+            )
+
+        query_params = urllib.parse.urlencode({
+            'vital_template': vital_template.id
+        })
+        url = f'{self.url}?{query_params}'
+        response = self.client.get(url)
+        self.assertEqual(response.data['count'], plan_template_questions)
+
     def test_get_vital_question_detail(self):
         response = self.client.get(self.detail_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
