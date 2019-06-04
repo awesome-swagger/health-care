@@ -705,7 +705,6 @@ class AssessmentQuestionViewSet(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend, )
     filterset_fields = (
         'assessment_task_template',
-        'plan',
         'assessment_template',
     )
 
