@@ -972,8 +972,9 @@ class VitalQuestion(UUIDPrimaryKeyMixin):
     vital_task_template = models.ForeignKey(
         VitalTaskTemplate,
         related_name="questions",
-        on_delete=models.CASCADE
-    )
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True)
     plan = models.ForeignKey(
         'plans.CarePlan',
         related_name='vital_questions',
