@@ -127,6 +127,7 @@ export class EditTaskComponent implements OnInit {
   public symptomsDropOpen = false;
   public roleHelpOpen = false;
   public roleDropOpen = false;
+  public creatingTasks = false;
 
   constructor(
     private modal: ModalService,
@@ -488,6 +489,7 @@ export class EditTaskComponent implements OnInit {
   }
 
   public submitTask() {
+    this.creatingTasks = true;
     this.updateFormFields();
     if (this.isAdhoc) {
       this.task.custom_name = this.task.name;
@@ -503,9 +505,11 @@ export class EditTaskComponent implements OnInit {
       this.createTask().then((task) => {
         if (this.getTaskType().type === 'assessment' || this.getTaskType().type === 'vital') {
           this.createOrUpdateAllQuestions().then(() => {
+            this.creatingTasks = false;
             this.modal.close(this.task);
           });
         } else {
+          this.creatingTasks = false;
           this.modal.close(task);
         }
       });
@@ -513,9 +517,11 @@ export class EditTaskComponent implements OnInit {
       this.updateTask().then((task) => {
         if (this.getTaskType().type === 'assessment' || this.getTaskType().type === 'vital') {
           this.createOrUpdateAllQuestions().then(() => {
+            this.creatingTasks = false;
             this.modal.close(this.task);
           });
         } else {
+          this.creatingTasks = false;
           this.modal.close(task);
         }
       });

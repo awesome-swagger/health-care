@@ -121,6 +121,10 @@ class AssessmentTaskTemplateAdmin(admin.ModelAdmin):
         'appear_time', 'due_time', 'tracks_outcome', 'tracks_satisfaction', 'is_active', 'is_available',  )
 
 
+class AssessmentQuestionAdmin(admin.ModelAdmin):
+    list_display = ('plan', 'assessment_task_template', 'order', )
+
+
 class CarePlanAssessmentTemplateAdmin(admin.ModelAdmin):
     list_display = ('plan', 'assessment_task_template', )
 
@@ -182,6 +186,7 @@ admin.site.register(SymptomTaskTemplate, SymptomTaskTemplateAdmin)
 admin.site.register(CarePlanSymptomTemplate, CarePlanSymptomTemplateAdmin)
 admin.site.register(SymptomTask, SymptomTaskAdmin)
 admin.site.register(AssessmentTaskTemplate, AssessmentTaskTemplateAdmin)
+admin.site.register(AssessmentQuestion, AssessmentQuestionAdmin)
 admin.site.register(CarePlanAssessmentTemplate, CarePlanAssessmentTemplateAdmin)
 admin.site.register(AssessmentTask, AssessmentTaskAdmin)
 admin.site.register(VitalTaskTemplate, VitalTaskTemplateAdmin)

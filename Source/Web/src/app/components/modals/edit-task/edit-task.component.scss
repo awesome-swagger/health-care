@@ -1,1 +1,24 @@
 @import "../../../modules/modals/modal-outlet.component.scss";
+
+
+.savingOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 100%;
+  width: 100%;
+  // background-color: $grayDker;
+  // background-color: rgba($grayDker, 0.7);
+
+  &__card {
+    background-color: white;
+    border-radius: 4px;
+    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.4);
+    position: relative;
+    top: 30%;
+    margin: 2rem;
+    padding: 1rem;
+  }
+}
