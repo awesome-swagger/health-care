@@ -706,6 +706,7 @@ class AssessmentQuestionViewSet(viewsets.ModelViewSet):
     filterset_fields = (
         'assessment_task_template',
         'plan',
+        'assessment_template',
     )
 
 
