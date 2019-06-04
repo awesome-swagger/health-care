@@ -574,6 +574,7 @@ class AssessmentQuestionSerializer(serializers.ModelSerializer):
             'id',
             'assessment_task_template',
             'plan',
+            'assessment_template',
             'prompt',
             'worst_label',
             'best_label',
