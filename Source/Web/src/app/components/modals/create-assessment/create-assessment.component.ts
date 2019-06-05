@@ -133,7 +133,9 @@ export class CreateAssessmentComponent implements OnInit {
     let tracksSatisfaction = this.assessmentTracking === 'satisfaction';
     this.assessment.name = this.nameInput;
     this.assessment.tracks_outcome = tracksOutcome;
+    this.assessment.custom_tracks_outcome = tracksOutcome;
     this.assessment.tracks_satisfaction = tracksSatisfaction;
+    this.assessment.custom_tracks_satisfaction = tracksSatisfaction;
     this.modal.close(this.assessment);
     // this.updateAssessment().then((assessment: any) => {
     //   this.createOrUpdateAllQuestions().then(() => {

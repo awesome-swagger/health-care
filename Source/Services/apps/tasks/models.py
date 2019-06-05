@@ -775,9 +775,14 @@ class AssessmentQuestion(UUIDPrimaryKeyMixin):
         ordering = ('order',)
 
     def __str__(self):
-        return '{}: {}'.format(
-            self.assessment_task_template.name,
-            self.prompt,
+        name = ''
+        if self.assessment_task_template:
+            name = self.assessment_task_template.name
+        elif self.assessment_template:
+            name = self.assessment_template.name
+        return '{}: question {}'.format(
+            name,
+            self.order,
         )
 
 
@@ -823,9 +828,9 @@ class AssessmentResponse(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
         ordering = ('assessment_task__appear_datetime', )
 
     def __str__(self):
-        return '{}: {} (rated: {})'.format(
-            self.assessment_task.assessment_template.assessment_task_template.name,
-            self.assessment_question.prompt,
+        return '{}: question {} (rated: {})'.format(
+            self.assessment_task.assessment_template.name,
+            self.assessment_question.order,
             self.rating,
         )
 
@@ -989,7 +994,15 @@ class VitalQuestion(UUIDPrimaryKeyMixin):
         ordering = ('order', )
 
     def __str__(self):
-        return f'{self.vital_task_template.name}: {self.prompt}'
+        name = ''
+        if self.vital_task_template:
+            name = self.vital_task_template.name
+        elif self.vital_template:
+            name = self.vital_template.name
+        return '{}: question {}'.format(
+            name,
+            self.order,
+        )
 
 
 class VitalResponse(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
@@ -1015,7 +1028,7 @@ class VitalResponse(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
     answer_string = models.CharField(max_length=255, blank=True)
 
     def __str__(self):
-        return f"{self.vital_task.vital_task_template.name}:" + \
+        return f"{self.vital_task.vital_template.name}:" + \
             f"{self.question.prompt} (answer: {self.answer})"
 
     @property

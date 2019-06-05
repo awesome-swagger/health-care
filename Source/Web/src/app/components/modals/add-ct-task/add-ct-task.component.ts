@@ -233,7 +233,7 @@ export class AddCTTaskComponent implements OnInit {
       if (this.getTaskType().type === 'team' || this.getTaskType().type === 'manager') {
         task['category'] = 'interaction';
       }
-      if (this.getTaskType().type === 'team') {
+      if (this.getTaskType().type === 'team' || this.getTaskType().type === 'manager') {
         task['roles'] = [];
       }
       if (this.getTaskType().type === 'manager') {
@@ -254,7 +254,7 @@ export class AddCTTaskComponent implements OnInit {
       if (this.getTaskType().type === 'plan-team' || this.getTaskType().type === 'plan-manager') {
         task['category'] = 'interaction';
       }
-      if (this.getTaskType().type === 'plan-team') {
+      if (this.getTaskType().type === 'plan-team' || this.getTaskType().type === 'plan-manager') {
         task['roles'] = [];
       }
       if (this.getTaskType().type === 'plan-manager') {

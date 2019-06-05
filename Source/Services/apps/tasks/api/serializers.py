@@ -184,7 +184,7 @@ class TeamTaskTodaySerializer(serializers.ModelSerializer):
         return 'team_task'
 
     def get_name(self, obj):
-        return obj.team_template.team_task_template.name
+        return obj.team_template.name
 
     def get_patient(self, obj):
         patient = obj.team_template.plan.patient
@@ -658,6 +658,19 @@ class CarePlanAssessmentTemplateSerializer(ValidateTaskTemplateAndCustomFields,
     """
     Serializer to be used by :model:`tasks.CarePlanAssessmentTemplate`
     """
+    questions = serializers.SerializerMethodField()
+
+    def get_questions(self, obj):
+        if obj.assessment_questions.count() > 0:
+            serializer = AssessmentQuestionSerializer(
+                obj.assessment_questions.all(), many=True, read_only=True)
+            return serializer.data
+        elif obj.assessment_task_template and obj.assessment_task_template.questions.count() > 0:
+            serializer = AssessmentQuestionSerializer(
+                obj.assessment_task_template.questions.all(), many=True, read_only=True)
+            return serializer.data
+        else:
+            return []
 
     class Meta:
         model = CarePlanAssessmentTemplate
@@ -673,6 +686,7 @@ class CarePlanAssessmentTemplateSerializer(ValidateTaskTemplateAndCustomFields,
             'custom_due_time',
             'custom_tracks_outcome',
             'custom_tracks_satisfaction',
+            'questions',
             'name',
             'start_on_day',
             'frequency',
@@ -1026,6 +1040,19 @@ class CarePlanVitalTemplateSerializer(ValidateTaskTemplateAndCustomFields,
     """
     Serializer to be used by :model:`tasks.CarePlanVitalTemplate`
     """
+    questions = serializers.SerializerMethodField()
+
+    def get_questions(self, obj):
+        if obj.vital_questions.count() > 0:
+            serializer = VitalQuestionSerializer(
+                obj.vital_questions.all(), many=True, read_only=True)
+            return serializer.data
+        elif obj.vital_task_template and obj.vital_task_template.questions.count() > 0:
+            serializer = VitalQuestionSerializer(
+                obj.vital_task_template.questions.all(), many=True, read_only=True)
+            return serializer.data
+        else:
+            return []
 
     class Meta:
         model = CarePlanVitalTemplate
@@ -1040,6 +1067,7 @@ class CarePlanVitalTemplateSerializer(ValidateTaskTemplateAndCustomFields,
             'custom_appear_time',
             'custom_due_time',
             'custom_instructions',
+            'questions',
             'name',
             'start_on_day',
             'frequency',

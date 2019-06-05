@@ -102,6 +102,7 @@ export class EditTaskComponent implements OnInit {
       relatedField: 'assessment_task_template',
       questionModel: this.store.AssessmentQuestion,
       questionRelatedField: 'assessment_task_template',
+      questionRelatedAdhocField: 'assessment_template',
     },
     {
       type: 'plan-symptom',
@@ -118,6 +119,7 @@ export class EditTaskComponent implements OnInit {
       relatedField: 'vital_task_template',
       questionModel: this.store.VitalsQuestions,
       questionRelatedField: 'vital_task_template',
+      questionRelatedAdhocField: 'vital_template',
     },
   ];
   public adhocTypes = ['plan-manager', 'plan-team', 'plan-patient', 'plan-assessment', 'plan-symptom', 'plan-vital'];
@@ -242,6 +244,11 @@ export class EditTaskComponent implements OnInit {
       }
       this.taskForm.addControl('category', new FormControl(categoryValue));
     }
+    if (this.getTaskType().type === 'manager' || this.getTaskType().type === 'plan-manager') {
+      this.taskForm.addControl('roles', new FormControl([]));
+      this.rolesChoices = [];
+      this.rolesSelected = [];
+    }
     if (this.getTaskType().type === 'team' || this.getTaskType().type === 'plan-team') {
       let roleIds = [];
       if (task.roles) {
@@ -268,7 +275,7 @@ export class EditTaskComponent implements OnInit {
     let keys = Object.keys(this.task);
     let customFields = [
       'name', 'start_on_day', 'frequency', 'repeat_amount', 'appear_time',
-      'due_time', 'default_symptoms', 'instructions', 'category'];
+      'due_time', 'default_symptoms', 'instructions', 'category', 'roles'];
     keys.forEach((key) => {
      if (this.taskForm.value[key] != undefined) {
         if (key === 'repeat_amount' && this.taskForm.value['repeat_amount'] != -1) {
@@ -406,7 +413,16 @@ export class EditTaskComponent implements OnInit {
     }
     let promises = [];
     this.task.questions.forEach((question, i) => {
-      question[this.getTaskType().questionRelatedField] = this.task.id;
+      if (!this.isAdhoc) {
+        question[this.getTaskType().questionRelatedField] = this.task.id;
+        question[this.getTaskType().questionRelatedAdhocField] = null;
+      } else {
+        if (question[this.getTaskType().questionRelatedField]) {
+          question.id = null;
+        }
+        question[this.getTaskType().questionRelatedField] = null;
+        question[this.getTaskType().questionRelatedAdhocField] = this.task.id;
+      }
       if (!question.id) {
         promises.push(this.createQuestion(question));
       } else {
@@ -488,11 +504,23 @@ export class EditTaskComponent implements OnInit {
     return promise;
   }
 
+  public isAssessmentOrVital() {
+    let types = ['assessment', 'vital', 'plan-assessment', 'plan-vital'];
+    return types.includes(this.getTaskType().type)
+  }
+
   public submitTask() {
     this.creatingTasks = true;
     this.updateFormFields();
     if (this.isAdhoc) {
       this.task.custom_name = this.task.name;
+    }
+    if (this.getTaskType().type === 'team') {
+      this.task.is_manager_task = false;
+    }
+    if (this.getTaskType().type === 'plan-team') {
+      this.task.is_manager_task = false;
+      this.task.custom_is_manager_task = false;
     }
     if (this.getTaskType().type === 'manager') {
       this.task.is_manager_task = true;
@@ -503,7 +531,7 @@ export class EditTaskComponent implements OnInit {
     }
     if (!this.task.id) {
       this.createTask().then((task) => {
-        if (this.getTaskType().type === 'assessment' || this.getTaskType().type === 'vital') {
+        if (this.isAssessmentOrVital()) {
           this.createOrUpdateAllQuestions().then(() => {
             this.creatingTasks = false;
             this.modal.close(this.task);
@@ -515,7 +543,7 @@ export class EditTaskComponent implements OnInit {
       });
     } else {
       this.updateTask().then((task) => {
-        if (this.getTaskType().type === 'assessment' || this.getTaskType().type === 'vital') {
+        if (this.isAssessmentOrVital()) {
           this.createOrUpdateAllQuestions().then(() => {
             this.creatingTasks = false;
             this.modal.close(this.task);

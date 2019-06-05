@@ -31,11 +31,6 @@ export class CreateVitalComponent implements OnInit {
       this.vital = this.data.vital ? this.data.vital : {};
       this.isEditing = this.data.isEditing ? this.data.isEditing : false;
       if (this.vital) {
-        if (this.vital.vital_task_template) {
-          this.vital.name = this.vital.vital_task_template.name;
-          this.vital.instructions = this.vital.vital_task_template.instructions;
-          this.vital.questions = this.vital.vital_task_template.questions;
-        }
         if (this.vital.questions) {
           this.vital.questions.forEach((obj) => {
             if (obj.answer_type === 'float') {
@@ -154,6 +149,7 @@ export class CreateVitalComponent implements OnInit {
       return;
     }
     this.updateVital();
+    this.vital.custom_instructions = this.vital.instructions;
     this.modal.close(this.vital);
   }
 
