@@ -231,11 +231,11 @@ def get_all_tasks_for_today(user, **kwargs):
             medication_tasks = medication_tasks.filter(
                 medication_task_template__plan__plan_template=plan_template)
             symptom_tasks = symptom_tasks.filter(
-                symptom_template__symptom_task_template__plan_template=plan_template)
+                symptom_template__plan__plan_template=plan_template)
             assessment_tasks = assessment_tasks.filter(
-                assessment_template__assessment_task_template__plan_template=plan_template)
+                assessment_template__plan__plan_template=plan_template)
             vital_tasks = vital_tasks.filter(
-                vital_template__vital_task_template__plan_template=plan_template)
+                vital_template__plan__plan_template=plan_template)
 
         if patient_tasks.exists():
             serializer = PatientTaskTodaySerializer(

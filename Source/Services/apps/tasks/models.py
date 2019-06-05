@@ -367,7 +367,7 @@ class CarePlanPatientTemplate(AbstractPlanTaskTemplate):
         verbose_name = _('Care Plan Patient Templates')
 
     def __str__(self):
-        return f'{self.plan}: {self.patient_task_template}'
+        return f'{self.plan}: {self.name}'
 
 
 class PatientTask(AbstractTask):
@@ -449,7 +449,7 @@ class CarePlanTeamTemplate(AbstractPlanTaskTemplate):
         verbose_name = _('Care Plan Team Templates')
 
     def __str__(self):
-        return f'{self.plan}: {self.team_task_template}'
+        return f'{self.plan}: {self.name}'
 
     @property
     def is_manager_task(self):
@@ -598,7 +598,7 @@ class CarePlanSymptomTemplate(AbstractPlanTaskTemplate):
         verbose_name = _('Care Plan Symptom Templates')
 
     def __str__(self):
-        return f'{self.plan}: {self.symptom_task_template}'
+        return f'{self.plan}: {self.name}'
 
     @property
     def default_symptoms(self):
@@ -738,7 +738,7 @@ class CarePlanAssessmentTemplate(AbstractPlanTaskTemplate):
         verbose_name = _('Care Plan Assessment Templates')
 
     def __str__(self):
-        return f'{self.plan}: {self.assessment_task_template}'
+        return f'{self.plan}: {self.name}'
 
     @property
     def tracks_outcome(self):
@@ -923,7 +923,7 @@ class CarePlanVitalTemplate(AbstractPlanTaskTemplate):
         verbose_name = _('Care Plan Vital Templates')
 
     def __str__(self):
-        return f'{self.plan}: {self.vital_task_template}'
+        return f'{self.plan}: {self.name}'
 
     @property
     def instructions(self):

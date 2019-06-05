@@ -555,7 +555,7 @@ class SymptomTaskTodaySerializer(serializers.ModelSerializer):
         return 'symptom_task'
 
     def get_name(self, obj):
-        return 'Symptoms Report'
+        return obj.symptom_template.name
 
     def get_occurrence(self, obj):
         total_tasks = SymptomTask.objects.filter(
@@ -771,7 +771,7 @@ class AssessmentTaskTodaySerializer(serializers.ModelSerializer):
         return 'assessment_task'
 
     def get_name(self, obj):
-        return obj.assessment_template.assessment_task_template.name
+        return obj.assessment_template.name
 
     def get_occurrence(self, obj):
         total_tasks = AssessmentTask.objects.filter(
@@ -895,7 +895,7 @@ class VitalTaskTodaySerializer(serializers.ModelSerializer):
         return 'vital_task'
 
     def get_name(self, obj):
-        return obj.vital_template.vital_task_template.name
+        return obj.vital_template.name
 
     def get_occurrence(self, obj):
         total_tasks = VitalTask.objects.filter(
