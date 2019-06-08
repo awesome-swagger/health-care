@@ -79,6 +79,7 @@ from apps.tasks.api.serializers import (
 from apps.tasks.models import (
     AssessmentTask,
     AssessmentTaskTemplate,
+    CarePlanAssessmentTemplate,
     CarePlanTeamTemplate,
     PatientTask,
     PatientTaskTemplate,
@@ -1876,7 +1877,7 @@ class AssessmentResultViewSet(ParentViewSetPermissionMixin,
     ========
 
     list:
-        Returns list of all :model:`tasks.AssessmentTaskTemplate` objects.
+        Returns list of all :model:`tasks.CarePlanAssessmentTemplate` objects.
         Employees and patients will only have access to objects which
         they are a member of.
 
@@ -1898,11 +1899,11 @@ class AssessmentResultViewSet(ParentViewSetPermissionMixin,
     permission_classes = (
         permissions.IsAuthenticated,
     )
-    queryset = AssessmentTaskTemplate.objects.all()
-    parent_field = 'plan_assessment_templates__plan'
+    queryset = CarePlanAssessmentTemplate.objects.all()
+    parent_field = 'plan'
     parent_lookup = [
         (
-            'plan_assessment_templates__plan',
+            'plan',
             CarePlan,
             CarePlanViewSet
         )
@@ -1924,8 +1925,8 @@ class AssessmentResultViewSet(ParentViewSetPermissionMixin,
                                              tzinfo=pytz.utc)
 
         return queryset.filter(
-            plan_assessment_templates__assessment_tasks__due_datetime__range=(date_min, date_max),
-            plan_assessment_templates__assessment_tasks__is_complete=True,
+            assessment_tasks__due_datetime__range=(date_min, date_max),
+            assessment_tasks__is_complete=True,
         ).distinct()
 
     def get_serializer_context(self):
