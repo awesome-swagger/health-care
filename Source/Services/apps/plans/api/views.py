@@ -80,6 +80,7 @@ from apps.tasks.models import (
     AssessmentTask,
     AssessmentTaskTemplate,
     CarePlanAssessmentTemplate,
+    CarePlanSymptomTemplate,
     CarePlanTeamTemplate,
     PatientTask,
     PatientTaskTemplate,
@@ -1944,12 +1945,12 @@ class SymptomByPlanViewSet(ParentViewSetPermissionMixin,
                            mixins.ListModelMixin,
                            viewsets.GenericViewSet):
     """
-    Viewset for :model:`core.Symptom`
+    Viewset for :model:`tasks.CarePlanSymptomTemplate`
     ========
 
     list:
-        Returns list of all :model:`core.Symptom` objects related to the
-        parent care plan.
+        Returns list of all :model:`tasks.CarePlanSymptomTemplate` objects
+        related to the parent care plan.
         Employees and patients will only have access to objects which
         they are a member of.
 
@@ -1971,11 +1972,11 @@ class SymptomByPlanViewSet(ParentViewSetPermissionMixin,
     permission_classes = (
         permissions.IsAuthenticated,
     )
-    queryset = Symptom.objects.all()
-    parent_field = 'ratings__symptom_task__symptom_template__plan'
+    queryset = CarePlanSymptomTemplate.objects.all()
+    parent_field = 'plan'
     parent_lookup = [
         (
-            'ratings__symptom_task__symptom_template__plan',
+            'plan',
             CarePlan,
             CarePlanViewSet
         )
@@ -2000,8 +2001,8 @@ class SymptomByPlanViewSet(ParentViewSetPermissionMixin,
 
         date_range = self._get_date_range_filter()
         return queryset.filter(
-            ratings__symptom_task__due_datetime__range=date_range,
-            ratings__symptom_task__is_complete=True,
+            symptom_tasks__due_datetime__range=date_range,
+            symptom_tasks__is_complete=True,
         ).distinct()
 
     def get_serializer_context(self):
@@ -2009,7 +2010,6 @@ class SymptomByPlanViewSet(ParentViewSetPermissionMixin,
                         self).get_serializer_context()
 
         context.update({
-            'plan': self.parent_obj,
             'date_range': self._get_date_range_filter()
         })
         return context
