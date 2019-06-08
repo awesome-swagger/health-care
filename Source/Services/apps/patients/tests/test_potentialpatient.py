@@ -86,9 +86,10 @@ class TestPotentialPatientUsingEmployee(PatientsMixin, APITestCase):
         payload = {
             'first_name': self.fake.first_name(),
             'last_name': self.fake.last_name(),
-            'care_plan': self.fake.name(),
+            'care_plan': self.create_care_plan_template().id,
             'phone': self.fake.phone_number()[:16],
             'facility': [facility.id],
+            'source': self.fake.name(),
         }
         response = self.client.post(self.url, payload)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -98,9 +99,10 @@ class TestPotentialPatientUsingEmployee(PatientsMixin, APITestCase):
         payload = {
             'first_name': self.fake.first_name(),
             'last_name': self.fake.last_name(),
-            'care_plan': self.fake.name(),
+            'care_plan': self.create_care_plan_template().id,
             'phone': self.fake.phone_number()[:16],
             'facility': [facility.id],
+            'source': self.fake.name(),
         }
         response = self.client.put(self.detail_url, payload)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -110,7 +112,7 @@ class TestPotentialPatientUsingEmployee(PatientsMixin, APITestCase):
         payload = {
             'first_name': self.fake.first_name(),
             'last_name': self.fake.last_name(),
-            'care_plan': self.fake.name(),
+            'care_plan': self.create_care_plan_template().id,
             'phone': self.fake.phone_number()[:16],
             'facility': [facility.id],
         }
@@ -206,7 +208,7 @@ class TestPotentialPatientUsingPatient(PatientsMixin, APITestCase):
         payload = {
             'first_name': self.fake.first_name(),
             'last_name': self.fake.last_name(),
-            'care_plan': self.fake.name(),
+            'care_plan': self.create_care_plan_template().id,
             'phone': self.fake.phone_number()[:16],
             'facility': [facility.id],
         }
@@ -218,7 +220,7 @@ class TestPotentialPatientUsingPatient(PatientsMixin, APITestCase):
         payload = {
             'first_name': self.fake.first_name(),
             'last_name': self.fake.last_name(),
-            'care_plan': self.fake.name(),
+            'care_plan': self.create_care_plan_template().id,
             'phone': self.fake.phone_number()[:16],
             'facility': [facility.id],
         }
@@ -230,7 +232,7 @@ class TestPotentialPatientUsingPatient(PatientsMixin, APITestCase):
         payload = {
             'first_name': self.fake.first_name(),
             'last_name': self.fake.last_name(),
-            'care_plan': self.fake.name(),
+            'care_plan': self.create_care_plan_template().id,
             'phone': self.fake.phone_number()[:16],
             'facility': [facility.id],
         }
