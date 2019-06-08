@@ -1132,14 +1132,14 @@ class AssessmentResponseOverviewSerializer(serializers.ModelSerializer):
 
 class AssessmentResultOverviewSerializer(serializers.ModelSerializer):
     """
-    serializer to be used by :model:`tasks.AssessmentTaskTemplate`
+    serializer to be used by :model:`tasks.CarePlanAssessmentTemplate`
     to be used in `Assessment Results` section in  `patients_Details` page
     """
 
     questions = serializers.SerializerMethodField()
 
     class Meta:
-        model = AssessmentTaskTemplate
+        model = CarePlanAssessmentTemplate
         fields = (
             'id',
             'name',
@@ -1149,13 +1149,9 @@ class AssessmentResultOverviewSerializer(serializers.ModelSerializer):
         )
 
     def get_questions(self, obj):
-        plan = self.context.get('plan')
         request = self.context.get('request')
         timestamp = request.GET.get('date', None)
-        tasks = AssessmentTask.objects.filter(
-            assessment_template__plan=plan,
-            assessment_template__assessment_task_template=obj
-        )
+        tasks = AssessmentTask.objects.filter(assessment_template=obj)
         date_format = "%Y-%m-%d"
         date_object = datetime.datetime.strptime(timestamp, date_format).date() \
             if timestamp else timezone.now().date()
