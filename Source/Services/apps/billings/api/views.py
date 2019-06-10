@@ -68,8 +68,8 @@ class BilledActivityViewSet(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend, )
     filterset_fields = {
         'activity_datetime': ['lte'],
-        'plan': ['exact'],
-        'team_task_template': ['exact']
+        'team_template__plan': ['exact'],
+        'team_template__team_task_template': ['exact']
     }
 
     def get_queryset(self):
@@ -86,24 +86,24 @@ class BilledActivityViewSet(viewsets.ModelViewSet):
                 facilities = employee.facilities_managed.all()
                 assigned_roles = employee.assigned_roles.all()
                 qs = qs.filter(
-                    Q(plan__patient__facility__organization__in=organizations) |
-                    Q(plan__patient__facility__in=facilities) |
-                    Q(plan__care_team_members__in=assigned_roles)
+                    Q(team_template__plan__patient__facility__organization__in=organizations) |
+                    Q(team_template__plan__patient__facility__in=facilities) |
+                    Q(team_template__plan__care_team_members__in=assigned_roles)
                 )
             elif employee.facilities_managed.exists():
                 facilities = employee.facilities_managed.all()
                 assigned_roles = employee.assigned_roles.all()
                 qs = qs.filter(
-                    Q(plan__patient__facility__in=facilities) |
-                    Q(plan__care_team_members__in=assigned_roles)
+                    Q(team_template__plan__patient__facility__in=facilities) |
+                    Q(team_template__plan__care_team_members__in=assigned_roles)
                 )
             else:
                 assigned_roles = employee.assigned_roles.all()
-                qs = qs.filter(plan__care_team_members__in=assigned_roles)
+                qs = qs.filter(team_template__plan__care_team_members__in=assigned_roles)
 
         elif user.is_patient:
             qs = qs.filter(
-                plan__patient=user.patient_profile
+                team_template__plan__patient=user.patient_profile
             )
 
         return qs.distinct()
