@@ -27,6 +27,12 @@ class BilledActivity(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
         on_delete=models.SET_NULL,
         blank=True,
         null=True)
+    team_template = models.ForeignKey(
+        'tasks.CarePlanTeamTemplate',
+        related_name='activities',
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True)
     members = models.ManyToManyField(
         'core.EmployeeProfile',
         blank=True,
