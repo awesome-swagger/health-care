@@ -1182,7 +1182,7 @@ class SymptomByPlanSerializer(serializers.ModelSerializer):
     occurrence = serializers.SerializerMethodField()
 
     class Meta:
-        model = Symptom
+        model = CarePlanSymptomTemplate
         fields = (
             'id',
             'name',
@@ -1191,25 +1191,21 @@ class SymptomByPlanSerializer(serializers.ModelSerializer):
         )
 
     def get_rating(self, obj):
-        plan = self.context.get('plan')
         date_range = self.context.get('date_range')
 
         rating_obj = SymptomRating.objects.filter(
-            symptom_task__symptom_template__plan=plan,
+            symptom_task__symptom_template=obj,
             symptom_task__due_datetime__range=date_range,
-            symptom=obj,
         ).order_by('created').last()
         serializer = SymptomRatingSerializer(rating_obj)
 
         return serializer.data
 
     def get_occurrence(self, obj):
-        plan = self.context.get('plan')
-        total_tasks = SymptomTask.objects.filter(symptom_template__plan=plan)
+        total_tasks = SymptomTask.objects.filter(symptom_template=obj)
 
         rating_obj = SymptomRating.objects.filter(
-            symptom_task__symptom_template__plan=plan,
-            symptom=obj
+            symptom_task__symptom_template=obj
         ).order_by('created').last()
 
         obj_occurrence = total_tasks.filter(

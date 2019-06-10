@@ -348,7 +348,7 @@ care_plan_routes.register(
     r'symptoms',
     SymptomByPlanViewSet,
     base_name='plan_symptoms',
-    parents_query_lookups=['ratings__symptom_task__symptom_template__plan'])
+    parents_query_lookups=['plan'])
 care_plan_routes.register(
     r'vitals',
     VitalByPlanViewSet,

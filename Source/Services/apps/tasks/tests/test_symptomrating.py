@@ -249,22 +249,26 @@ class TestSymptomRatingUsingEmployee(TasksMixin, APITestCase):
             default_symptoms=symptoms
         )
 
-        symptom_template = self.create_plan_symptom_template(
-            plan=plan,
-            symptom_task_template=template
-        )
-        task = self.create_symptom_task(
-            symptom_template=symptom_template,
-            due_datetime=now
-        )
+        for i in range(symptoms_count):
+            symptom_template = self.create_plan_symptom_template(
+                plan=plan,
+                symptom_task_template=template
+            )
+            task = self.create_symptom_task(
+                symptom_template=symptom_template,
+                due_datetime=now
+            )
 
-        for symptom in symptoms:
-            self.create_symptom_rating(symptom_task=task, symptom=symptom)
+            for symptom in symptoms:
+                self.create_symptom_rating(
+                    symptom_task=task,
+                    symptom=symptom
+                )
 
         url = reverse(
             'plan_symptoms-list',
             kwargs={
-                'parent_lookup_ratings__symptom_task__symptom_template__plan': plan.id
+                'parent_lookup_plan': plan.id
             }
         )
 
@@ -274,6 +278,7 @@ class TestSymptomRatingUsingEmployee(TasksMixin, APITestCase):
     def test_get_symptoms_by_plan_rating_field(self):
         self.client.logout()
 
+        symptoms_count = 4
         facility = self.create_facility()
         patient = self.create_patient(facility=facility)
         employee = self.create_employee(facilities_managed=[facility])
@@ -287,24 +292,31 @@ class TestSymptomRatingUsingEmployee(TasksMixin, APITestCase):
         )
 
         now = timezone.now()
-        template = self.create_symptom_task_template()
-        symptoms = template.default_symptoms.all()
-
-        symptom_template = self.create_plan_symptom_template(
-            plan=plan,
-            symptom_task_template=template
+        symptoms = [self.create_symptom() for i in range(symptoms_count)]
+        template = self.create_symptom_task_template(
+            default_symptoms=symptoms
         )
-        task = self.create_symptom_task(
-            symptom_template=symptom_template,
-            due_datetime=now)
 
-        for symptom in symptoms:
-            self.create_symptom_rating(symptom_task=task, symptom=symptom)
+        for i in range(symptoms_count):
+            symptom_template = self.create_plan_symptom_template(
+                plan=plan,
+                symptom_task_template=template
+            )
+            task = self.create_symptom_task(
+                symptom_template=symptom_template,
+                due_datetime=now
+            )
+
+            for symptom in symptoms:
+                self.create_symptom_rating(
+                    symptom_task=task,
+                    symptom=symptom
+                )
 
         url = reverse(
             'plan_symptoms-list',
             kwargs={
-                'parent_lookup_ratings__symptom_task__symptom_template__plan': plan.id
+                'parent_lookup_plan': plan.id
             }
         )
 
@@ -342,7 +354,7 @@ class TestSymptomRatingUsingEmployee(TasksMixin, APITestCase):
         url = reverse(
             'plan_symptoms-list',
             kwargs={
-                'parent_lookup_ratings__symptom_task__symptom_template__plan': plan.id
+                'parent_lookup_plan': plan.id
             }
         )
 
@@ -386,7 +398,7 @@ class TestSymptomRatingUsingEmployee(TasksMixin, APITestCase):
         url = reverse(
             'plan_symptoms-list',
             kwargs={
-                'parent_lookup_ratings__symptom_task__symptom_template__plan': plan.id
+                'parent_lookup_plan': plan.id
             }
         )
 
@@ -430,7 +442,7 @@ class TestSymptomRatingUsingEmployee(TasksMixin, APITestCase):
         url = reverse(
             'plan_symptoms-list',
             kwargs={
-                'parent_lookup_ratings__symptom_task__symptom_template__plan': plan.id
+                'parent_lookup_plan': plan.id
             }
         )
 
@@ -476,7 +488,7 @@ class TestSymptomRatingUsingEmployee(TasksMixin, APITestCase):
         url = reverse(
             'plan_symptoms-list',
             kwargs={
-                'parent_lookup_ratings__symptom_task__symptom_template__plan': plan.id
+                'parent_lookup_plan': plan.id
             }
         )
 
