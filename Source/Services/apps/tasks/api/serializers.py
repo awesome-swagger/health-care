@@ -1260,7 +1260,7 @@ class VitalByPlanSerializer(serializers.ModelSerializer):
     questions = serializers.SerializerMethodField()
 
     class Meta:
-        model = VitalTaskTemplate
+        model = CarePlanVitalTemplate
         fields = (
             'id',
             'name',
@@ -1268,11 +1268,9 @@ class VitalByPlanSerializer(serializers.ModelSerializer):
         )
 
     def get_questions(self, obj):
-        plan = self.context.get('plan')
         date_range = self.context.get('date_range')
         tasks = VitalTask.objects.filter(
-            vital_template__plan=plan,
-            vital_template__vital_task_template=obj
+            vital_template=obj
         )
 
         kwargs = {

@@ -82,6 +82,7 @@ from apps.tasks.models import (
     CarePlanAssessmentTemplate,
     CarePlanSymptomTemplate,
     CarePlanTeamTemplate,
+    CarePlanVitalTemplate,
     PatientTask,
     PatientTaskTemplate,
     MedicationTask,
@@ -2020,11 +2021,11 @@ class VitalByPlanViewSet(ParentViewSetPermissionMixin,
                          mixins.ListModelMixin,
                          viewsets.GenericViewSet):
     """
-    Viewset for :model:`tasks.VitalTaskTemplate`
+    Viewset for :model:`tasks.CarePlanVitalTemplate`
     ========
 
     list:
-        Returns list of all :model:`tasks.VitalTaskTemplate` objects.
+        Returns list of all :model:`tasks.CarePlanVitalTemplate` objects.
         Employees and patients will only have access to objects which
         they are a member of.
 
@@ -2046,11 +2047,11 @@ class VitalByPlanViewSet(ParentViewSetPermissionMixin,
     permission_classes = (
         permissions.IsAuthenticated,
     )
-    queryset = VitalTaskTemplate.objects.all()
-    parent_field = 'plan_vital_templates__plan'
+    queryset = CarePlanVitalTemplate.objects.all()
+    parent_field = 'plan'
     parent_lookup = [
         (
-            'plan_vital_templates__plan',
+            'plan',
             CarePlan,
             CarePlanViewSet
         )
@@ -2076,8 +2077,8 @@ class VitalByPlanViewSet(ParentViewSetPermissionMixin,
         date_range = self._get_date_range_filter()
 
         return queryset.filter(
-            plan_vital_templates__vital_tasks__due_datetime__range=date_range,
-            plan_vital_templates__vital_tasks__is_complete=True,
+            vital_tasks__due_datetime__range=date_range,
+            vital_tasks__is_complete=True,
         ).distinct()
 
     def get_serializer_context(self):

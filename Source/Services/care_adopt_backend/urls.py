@@ -353,7 +353,7 @@ care_plan_routes.register(
     r'vitals',
     VitalByPlanViewSet,
     base_name='vitals',
-    parents_query_lookups=['plan_vital_templates__plan'])
+    parents_query_lookups=['plan'])
 message_recipient_routes = care_plan_routes.register(
     r'message_recipients',
     MessageRecipientViewSet,

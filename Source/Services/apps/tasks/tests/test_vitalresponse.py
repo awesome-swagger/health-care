@@ -292,7 +292,7 @@ class TestVitalResponseUsingEmployee(TasksMixin, APITestCase):
         url = reverse(
             'vitals-list',
             kwargs={
-                'parent_lookup_plan_vital_templates__plan': plan.id
+                'parent_lookup_plan': plan.id
             })
         response = self.client.get(url)
         self.assertEqual(response.data['count'], templates_count)
@@ -332,7 +332,7 @@ class TestVitalResponseUsingEmployee(TasksMixin, APITestCase):
         url = reverse(
             'vitals-list',
             kwargs={
-                'parent_lookup_plan_vital_templates__plan': plan.id
+                'parent_lookup_plan': plan.id
             })
         response = self.client.get(url)
         self.assertEqual(len(response.data['results'][0]['questions']), 5)
