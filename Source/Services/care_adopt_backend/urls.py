@@ -137,7 +137,7 @@ organization_routes.register(
     r'billed_activities',
     OrganizationBilledActivity,
     base_name='organization-billed-activities',
-    parents_query_lookups=['plan__patient__facility__organization']
+    parents_query_lookups=['team_template__plan__patient__facility__organization']
 )
 organization_routes.register(
     r'employee_profiles',
