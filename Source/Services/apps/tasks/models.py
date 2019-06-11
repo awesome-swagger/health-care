@@ -610,7 +610,8 @@ class CarePlanSymptomTemplate(AbstractPlanTaskTemplate):
 class SymptomTask(AbstractTask):
     symptom_template = models.ForeignKey(
         'tasks.CarePlanSymptomTemplate',
-        on_delete=models.CASCADE)
+        on_delete=models.CASCADE,
+        related_name='symptom_tasks')
     comments = models.CharField(max_length=1024, null=True, blank=True)
     is_complete = models.BooleanField(
         default=False,
