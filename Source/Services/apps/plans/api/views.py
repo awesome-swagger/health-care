@@ -479,10 +479,10 @@ class CarePlanViewSet(viewsets.ModelViewSet):
         ```
         """
         now = timezone.now()
-        last_30 = now - relativedelta(days=30)
-
-        base_queryset = self.get_queryset().filter(created__gte=last_30)
-        queryset = self.filter_queryset(base_queryset)
+        # last_30 = now - relativedelta(days=30)
+        # base_queryset = self.get_queryset().filter(created__gte=last_30)
+        # queryset = self.filter_queryset(base_queryset)
+        queryset = self.filter_queryset(self.get_queryset())
         total_patients = queryset.values_list('patient',
                                               flat=True).distinct().count()
         total_facilities = queryset.values_list('patient__facility',
