@@ -42,7 +42,6 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
   public employees = [];
   public employeeChecked = {};
   public employee = null;
-  public activePatientsCount = 0;
 
   public openAlsoTip = {};
   public activeServiceAreas = {};
@@ -114,10 +113,6 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
             });
           });
         });
-
-        this.getPatientsOverview(organization.id).then((overview:any) => {
-          this.activePatientsCount = overview.active;
-        })
 
       });
     });
@@ -221,7 +216,11 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
     if (!plan || !plan.created) {
       return 0;
     }
-    return moment().diff(moment(plan.created), 'weeks') + 1;
+    const diff = moment().diff(moment(plan.created), 'weeks') + 1;
+    if (diff < plan.plan_template.duration_weeks) {
+      return diff;
+    }
+    return plan.plan_template.duration_weeks;
   }
 
   public get userFilterListText() {
@@ -475,5 +474,15 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
       const facility = this.facilities.find(f => f.id === facilityId);
       facility.carePlans = carePlans.results;
     })
+  }
+
+  public get activePatientsCount() {
+    let total = 0;
+    this.facilities.forEach(f => {
+      if (this.facilityTotal[f.id]) {
+        total += this.facilityTotal[f.id];
+      }
+    })
+    return total;
   }
 }
