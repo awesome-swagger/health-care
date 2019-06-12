@@ -115,8 +115,18 @@ def assign_is_complete_to_assessment_task(instance):
     """
     task = instance.assessment_task
     assessment_template = task.assessment_template
-    questions = assessment_template.assessment_task_template.questions.values_list(
+    adhoc_questions = assessment_template.assessment_questions.values_list(
         'id', flat=True).distinct()
+    task_template = assessment_template.assessment_task_template
+    template_questions = task_template.questions.values_list(
+        'id', flat=True).distinct()
+    questions = None
+    if adhoc_questions.count() > 0:
+        questions = adhoc_questions
+    elif task_template:
+        questions = template_questions
+    else:
+        questions = []
     responses = task.responses.values_list(
         'assessment_question', flat=True).distinct()
 
@@ -143,8 +153,18 @@ def assign_is_complete_to_vital_task(instance):
     """
     task = instance.vital_task
     vital_template = task.vital_template
-    questions = vital_template.vital_task_template.questions.values_list(
+    adhoc_questions = vital_template.vital_questions.values_list(
         'id', flat=True).distinct()
+    task_template = vital_template.vital_task_template
+    template_questions = task_template.questions.values_list(
+        'id', flat=True).distinct()
+    questions = None
+    if adhoc_questions.count() > 0:
+        questions = adhoc_questions
+    elif task_template:
+        questions = template_questions
+    else:
+        questions = []
     responses = task.responses.values_list(
         'question', flat=True).distinct()
 

@@ -122,6 +122,9 @@ class AssessmentTaskTemplateAdmin(admin.ModelAdmin):
 
 
 class CarePlanAssessmentTemplateAdmin(admin.ModelAdmin):
+    inlines = [
+        AssessmentQuestionInline,
+    ]
     list_display = ('plan', 'assessment_task_template', )
 
 
@@ -156,6 +159,9 @@ class VitalTaskTemplateAdmin(admin.ModelAdmin):
 
 
 class CarePlanVitalTemplateAdmin(admin.ModelAdmin):
+    inlines = [
+        VitalQuestionInline,
+    ]
     list_display = ('plan', 'vital_task_template', )
 
 

@@ -558,8 +558,33 @@ class EmployeeProfileViewSet(viewsets.ModelViewSet):
         if qualified_practitioner:
             qs = qs.filter(qualified_practitioner=qualified_practitioner=='true')
         if employee_profile is not None:
-            # TODO: For employees, only return employees in the same facilities/organizations
-            return qs.all()
+            if employee_profile.organizations_managed.count() > 0:
+                # For organization managers, return all employees in
+                # managed organizations (and other facilities they manage)
+                organizations_managed = employee_profile.organizations_managed.values_list('id', flat=True)
+                facilities_managed = employee_profile.facilities_managed.values_list('id', flat=True)
+                return qs.filter(
+                    Q(organizations_managed__id__in=organizations_managed) |
+                    Q(organizations__id__in=organizations_managed) |
+                    Q(facilities_managed__id__in=facilities_managed) |
+                    Q(facilities__id__in=facilities_managed)
+                ).distinct()
+            elif employee_profile.facilities_managed.count() > 0:
+                # For facility managers, return all employees in the facilities
+                # they manage.
+                facilities_managed = employee_profile.facilities_managed.values_list('id', flat=True)
+                return qs.filter(
+                    Q(facilities_managed__id__in=facilities_managed) |
+                    Q(facilities__id__in=facilities_managed)
+                ).distinct()
+            else:
+                # For regular employees, return only the employees in the same
+                # facilities as them.
+                facilities = employee_profile.facilities.values_list('id', flat=True)
+                return qs.filter(
+                    Q(facilities_managed__id__in=facilities) |
+                    Q(facilities__id__in=facilities)
+                ).distinct()
         if patient_profile is not None:
             care_team_members = CareTeamMember.objects.filter(
                 plan__patient=patient_profile).values_list(

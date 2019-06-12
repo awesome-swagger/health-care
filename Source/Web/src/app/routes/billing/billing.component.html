@@ -107,29 +107,43 @@
   			</app-popover>
   		</div>
   	</div>
-  	<!--/ container for care plan type filter-->
-
-  	<div class="drop" *ngIf="isManager">
-  		<label>Search Users</label>
-  		<div *ngIf="selectedEmployee" class="flex alignCenter">
-  			<div class="picName marRight8">
-  				<img class="picName__img" src="../../../assets/img/profile.svg" />{{selectedEmployee.first_name}} {{selectedEmployee.last_name}}, {{selectedEmployee.title}}
-  			</div>
-  			<button class="button button--icon" (click)="selectedEmployee = null; employeeSearch = '';"><i class="ss-delete"></i></button>
-  		</div>
-  		<input *ngIf="!selectedEmployee" class="input input--search" type="text" (click)="employeeSearchOpen = !employeeSearchOpen" placeholder="Search" [(ngModel)]="employeeSearch" (ngModelChange)="filterEmployee()" />
-  		<app-popover [visible]="employeeSearchOpen" (visibleChange)="employeeSearchOpen = $event;">
-  			<ul class="drop__dropdown isOpen" (click)="employeeSearchOpen = !employeeSearchOpen">
-  				<li class="drop__option" *ngFor="let employee of employees" (click)="setSelectedEmployee(employee)">
-  					<a class="drop__link">
-  						<div class="picName">
-  							<img class="picName__img" src="../../../assets/img/profile.svg" />{{employee.user.first_name}} {{employee.user.last_name}}<span *ngIf="employee.title">, {{employee.title.abbreviation}}</span>
-  						</div>
-  					</a>
-  				</li>
-  			</ul>
-  		</app-popover>
-  	</div>
+    <!--/ container for care plan type filter-->
+    <ng-container *ngIf="isManager">
+      <div class="drop">
+        <label>Search Users</label>
+        <div class="drop__input" (click)="employeeSearchOpen = !employeeSearchOpen">
+          {{formatSelectedUsers()}}
+        </div>
+        <app-popover [visible]="employeeSearchOpen" [options]="employeesDropOptions" (visibleChange)="employeeSearchOpen = $event;">
+          <ul class="drop__dropdown drop__dropdown--right isOpen">
+            <div class="drop__buttons">
+              <button class="button button--iconText" (click)="checkAllEmployees()">
+                <i class="ss-check ss-standard"></i> Check All
+              </button>
+              <button class="button button--iconText" (click)="uncheckAllEmployees()">
+                <i class="ss-ban"></i> Uncheck All
+              </button>
+            </div>
+            <li class="drop__option">
+              <input class="input input--search drop__innerInput" type="text" placeholder="Search" [(ngModel)]="employeeSearch" />
+            </li>
+            <ng-container *ngIf="loadingEmployees">
+              <div class="center ssSpinner marTop24 marBottom24"></div>
+            </ng-container>
+            <ng-container *ngIf="!loadingEmployees">
+              <label class="drop__checkbox styledInput" *ngFor="let employee of employeesShown()">
+                <input type="checkbox" class="styledInput__input" [checked]="isEmployeeSelected(employee)" (change)="toggleEmployeeSelected(employee, $event)" />
+                <span class="styledInput__box"></span>
+                <div class="picName">
+                  <img class="picName__img" src="../../../assets/img/profile.svg" />{{employee.user.first_name}} {{employee.user.last_name}}
+                </div>
+              </label>
+            </ng-container>
+          </ul>
+        </app-popover>
+      </div>
+      <!--/.drop (multiselect for users)-->
+    </ng-container>
   	<!--/ container for search users filter-->
   </div>
   <!--/.flex (for filters)-->
@@ -290,17 +304,19 @@
                         </tr>
                       </thead>
                       <tbody>
-                        <tr *ngFor="let details of plan.details_of_service">
-                          <td class="left">{{getActionType(details)}}</td>
-                          <td class="left">
-                            <a (click)="routeToUser(details.added_by.id)" class="picName">
-                              <img class="picName__img" [src]="details.added_by.user.image_url" />
-                              {{details.added_by.user.first_name}} {{details.added_by.user.last_name}}
-                            </a>
-                          </td>
-                          <td class="left">{{moment(details.activity_datetime).format('MMMM D, YYYY')}}</td>
-                          <td>{{details.time_spent}} minutes</td>
-                        </tr>
+                        <ng-container *ngFor="let details of plan.details_of_service">
+                          <tr *ngIf="isEmployeeSelected(details.added_by)">
+                            <td class="left">{{getActionType(details)}}</td>
+                            <td class="left">
+                              <a (click)="routeToUser(details.added_by.id)" class="picName">
+                                <img class="picName__img" [src]="details.added_by.user.image_url" />
+                                {{details.added_by.user.first_name}} {{details.added_by.user.last_name}}
+                              </a>
+                            </td>
+                            <td class="left">{{moment(details.activity_datetime).format('MMMM D, YYYY')}}</td>
+                            <td>{{details.time_spent}} minutes</td>
+                          </tr>
+                        </ng-container>
                       </tbody>
                     </table>
                   </div> <!--/.accordion__contents (details of service)-->

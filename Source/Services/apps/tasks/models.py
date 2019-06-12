@@ -367,7 +367,7 @@ class CarePlanPatientTemplate(AbstractPlanTaskTemplate):
         verbose_name = _('Care Plan Patient Templates')
 
     def __str__(self):
-        return f'{self.plan}: {self.patient_task_template}'
+        return f'{self.plan}: {self.name}'
 
 
 class PatientTask(AbstractTask):
@@ -449,7 +449,7 @@ class CarePlanTeamTemplate(AbstractPlanTaskTemplate):
         verbose_name = _('Care Plan Team Templates')
 
     def __str__(self):
-        return f'{self.plan}: {self.team_task_template}'
+        return f'{self.plan}: {self.name}'
 
     @property
     def is_manager_task(self):
@@ -598,7 +598,7 @@ class CarePlanSymptomTemplate(AbstractPlanTaskTemplate):
         verbose_name = _('Care Plan Symptom Templates')
 
     def __str__(self):
-        return f'{self.plan}: {self.symptom_task_template}'
+        return f'{self.plan}: {self.name}'
 
     @property
     def default_symptoms(self):
@@ -610,7 +610,8 @@ class CarePlanSymptomTemplate(AbstractPlanTaskTemplate):
 class SymptomTask(AbstractTask):
     symptom_template = models.ForeignKey(
         'tasks.CarePlanSymptomTemplate',
-        on_delete=models.CASCADE)
+        on_delete=models.CASCADE,
+        related_name='symptom_tasks')
     comments = models.CharField(max_length=1024, null=True, blank=True)
     is_complete = models.BooleanField(
         default=False,
@@ -738,7 +739,7 @@ class CarePlanAssessmentTemplate(AbstractPlanTaskTemplate):
         verbose_name = _('Care Plan Assessment Templates')
 
     def __str__(self):
-        return f'{self.plan}: {self.assessment_task_template}'
+        return f'{self.plan}: {self.name}'
 
     @property
     def tracks_outcome(self):
@@ -775,9 +776,14 @@ class AssessmentQuestion(UUIDPrimaryKeyMixin):
         ordering = ('order',)
 
     def __str__(self):
-        return '{}: {}'.format(
-            self.assessment_task_template.name,
-            self.prompt,
+        name = ''
+        if self.assessment_task_template:
+            name = self.assessment_task_template.name
+        elif self.assessment_template:
+            name = self.assessment_template.name
+        return '{}: question {}'.format(
+            name,
+            self.order,
         )
 
 
@@ -823,9 +829,9 @@ class AssessmentResponse(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
         ordering = ('assessment_task__appear_datetime', )
 
     def __str__(self):
-        return '{}: {} (rated: {})'.format(
-            self.assessment_task.assessment_template.assessment_task_template.name,
-            self.assessment_question.prompt,
+        return '{}: question {} (rated: {})'.format(
+            self.assessment_task.assessment_template.name,
+            self.assessment_question.order,
             self.rating,
         )
 
@@ -918,7 +924,7 @@ class CarePlanVitalTemplate(AbstractPlanTaskTemplate):
         verbose_name = _('Care Plan Vital Templates')
 
     def __str__(self):
-        return f'{self.plan}: {self.vital_task_template}'
+        return f'{self.plan}: {self.name}'
 
     @property
     def instructions(self):
@@ -989,7 +995,15 @@ class VitalQuestion(UUIDPrimaryKeyMixin):
         ordering = ('order', )
 
     def __str__(self):
-        return f'{self.vital_task_template.name}: {self.prompt}'
+        name = ''
+        if self.vital_task_template:
+            name = self.vital_task_template.name
+        elif self.vital_template:
+            name = self.vital_template.name
+        return '{}: question {}'.format(
+            name,
+            self.order,
+        )
 
 
 class VitalResponse(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
@@ -1015,7 +1029,7 @@ class VitalResponse(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
     answer_string = models.CharField(max_length=255, blank=True)
 
     def __str__(self):
-        return f"{self.vital_task.vital_task_template.name}:" + \
+        return f"{self.vital_task.vital_template.name}:" + \
             f"{self.question.prompt} (answer: {self.answer})"
 
     @property

@@ -24,32 +24,34 @@
               <div class="drop__input" (click)="multiOpen = !multiOpen">
                 All
               </div>
-              <ul class="drop__dropdown drop__dropdown--right" [ngClass]="{ 'isOpen' : multiOpen }">
-                <div class="drop__buttons">
-                  <button class="button button--iconText" (click)="toggleAllUsers(true)">
-                    <i class="ss-check ss-standard"></i> Check All
-                  </button>
-                  <button class="button button--iconText" (click)="toggleAllUsers(false)">
-                    <i class="ss-ban"></i> Uncheck All
-                  </button>
-                </div>
+              <app-popover [visible]="multiOpen" [options]="employeesDropOptions" (visibleChange)="multiOpen = $event;">
+                <ul class="drop__dropdown drop__dropdown--right isOpen">
+                  <div class="drop__buttons">
+                    <button class="button button--iconText" (click)="toggleAllUsers(true)">
+                      <i class="ss-check ss-standard"></i> Check All
+                    </button>
+                    <button class="button button--iconText" (click)="toggleAllUsers(false)">
+                      <i class="ss-ban"></i> Uncheck All
+                    </button>
+                  </div>
 
-                <li class="drop__option">
-                  <input class="input input--search drop__innerInput" type="text" placeholder="Search" />
-                </li>
-
-                <ng-container *ngFor="let employee of employees">
-                  <li class="drop__option" *ngIf="showUserInFilter(employee)">
-                    <label class="drop__checkbox styledInput">
-                      <input type="checkbox" class="styledInput__input" [(ngModel)]="employeeChecked[employee.id]" (click)="refreshAll()" />
-                      <span class="styledInput__box"></span>
-                      <div class="picName">
-                        <img class="picName__img" src="../../../assets/img/profile.svg" />{{employee.user.first_name}} {{employee.user.last_name}}
-                      </div>
-                    </label>
+                  <li class="drop__option">
+                    <input class="input input--search drop__innerInput" type="text" placeholder="Search" />
                   </li>
-                </ng-container>
-              </ul>
+
+                  <ng-container *ngFor="let employee of employees">
+                    <li class="drop__option">
+                      <label class="drop__checkbox styledInput">
+                        <input type="checkbox" class="styledInput__input" [checked]="employeeChecked[employee.id]" (change)="toggleEmployeeChecked(employee.id, $event)" />
+                        <span class="styledInput__box"></span>
+                        <div class="picName">
+                          <img class="picName__img" src="../../../assets/img/profile.svg" />{{employee.user.first_name}} {{employee.user.last_name}}
+                        </div>
+                      </label>
+                    </li>
+                  </ng-container>
+                </ul>
+              </app-popover>
             </div> <!--/.drop (multiselect for users)-->
 
         </ng-container>
@@ -307,7 +309,7 @@
         [startDate]="topBillingStart"
         [endDate]="topBillingEnd"
       ></app-date-range>
-      <a [routerLink]="['/billing']" class="button button--iconText">
+      <a (click)="routeToBillingView()" class="button button--iconText">
         <i class="ss-standard ss-view"></i> View Billing Details
       </a>
     </div>
@@ -340,7 +342,7 @@
         [startDate]="bottomBillingStart"
         [endDate]="bottomBillingEnd"
       ></app-date-range>
-      <a [routerLink]="['/billing']" class="button button--iconText">
+      <a (click)="routeToBillingView()" class="button button--iconText">
         <i class="ss-standard ss-view"></i> View Billing Details
       </a>
     </div>

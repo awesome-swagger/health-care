@@ -220,8 +220,16 @@
 		<button class="button button--2nd" (click)="close()">
 			Cancel
 		</button>
-		<button type="submit" class="button" [disabled]="saveDisabled()">
+		<button type="submit" class="button" [disabled]="saveDisabled() || creatingTasks">
 			Save
 		</button>
 	</div>
 </form>
+
+<div class="savingOverlay" *ngIf="creatingTasks">
+	<div class="savingOverlay__card">
+		<div class="center ssSpinner"></div>
+		<p class="marTop24 center" *ngIf="!isAdhoc">Saving tasks on existing care plans.  Please wait.</p>
+		<p class="marTop24 center" *ngIf="isAdhoc">Saving tasks on care plan.  Please wait.</p>
+	</div>
+</div>

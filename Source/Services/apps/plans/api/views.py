@@ -79,7 +79,10 @@ from apps.tasks.api.serializers import (
 from apps.tasks.models import (
     AssessmentTask,
     AssessmentTaskTemplate,
+    CarePlanAssessmentTemplate,
+    CarePlanSymptomTemplate,
     CarePlanTeamTemplate,
+    CarePlanVitalTemplate,
     PatientTask,
     PatientTaskTemplate,
     MedicationTask,
@@ -318,8 +321,13 @@ class CarePlanViewSet(viewsets.ModelViewSet):
         if employee_profile is not None:
             if employee_profile.organizations_managed.count() > 0:
                 organizations_managed = employee_profile.organizations_managed.values_list('id', flat=True)
+                facilities_managed = employee_profile.facilities_managed.values_list('id', flat=True)
+                assigned_roles = employee_profile.assigned_roles.values_list('id', flat=True)
                 qs = qs.filter(
-                    patient__facility__organization__id__in=organizations_managed)
+                    Q(patient__facility__organization__id__in=organizations_managed) |
+                    Q(patient__facility__id__in=facilities_managed) |
+                    Q(care_team_members__id__in=assigned_roles)
+                )
             elif employee_profile.facilities_managed.count() > 0:
                 facilities_managed = employee_profile.facilities_managed.values_list('id', flat=True)
                 assigned_roles = employee_profile.assigned_roles.values_list('id', flat=True)
@@ -471,10 +479,10 @@ class CarePlanViewSet(viewsets.ModelViewSet):
         ```
         """
         now = timezone.now()
-        last_30 = now - relativedelta(days=30)
-
-        base_queryset = self.get_queryset().filter(created__gte=last_30)
-        queryset = self.filter_queryset(base_queryset)
+        # last_30 = now - relativedelta(days=30)
+        # base_queryset = self.get_queryset().filter(created__gte=last_30)
+        # queryset = self.filter_queryset(base_queryset)
+        queryset = self.filter_queryset(self.get_queryset())
         total_patients = queryset.values_list('patient',
                                               flat=True).distinct().count()
         total_facilities = queryset.values_list('patient__facility',
@@ -1237,8 +1245,13 @@ class CarePlanByFacility(ParentViewSetPermissionMixin,
             employee = user.employee_profile
             if employee.organizations_managed.exists():
                 organizations = employee.organizations_managed.all()
+                facilities = employee.facilities_managed.all()
+                assigned_roles = employee.assigned_roles.all()
                 qs = qs.filter(
-                    patient__facility__organization__in=organizations)
+                    Q(patient__facility__organization__in=organizations) |
+                    Q(patient__facility__in=facilities) |
+                    Q(care_team_members__in=assigned_roles)
+                )
             elif employee.facilities_managed.exists():
                 facilities = employee.facilities_managed.all()
                 assigned_roles = employee.assigned_roles.all()
@@ -1289,8 +1302,13 @@ class CarePlanByTemplateFacility(ParentViewSetPermissionMixin,
             employee = user.employee_profile
             if employee.organizations_managed.exists():
                 organizations = employee.organizations_managed.all()
+                facilities = employee.facilities_managed.all()
+                assigned_roles = employee.assigned_roles.all()
                 qs = qs.filter(
-                    patient__facility__organization__in=organizations)
+                    Q(patient__facility__organization__in=organizations) |
+                    Q(patient__facility__in=facilities) |
+                    Q(care_team_members__in=assigned_roles)
+                )
             elif employee.facilities_managed.exists():
                 facilities = employee.facilities_managed.all()
                 assigned_roles = employee.assigned_roles.all()
@@ -1648,8 +1666,13 @@ class PatientCarePlanOverview(ParentViewSetPermissionMixin,
             employee = user.employee_profile
             if employee.organizations_managed.exists():
                 organizations = employee.organizations_managed.all()
+                facilities = employee.facilities_managed.all()
+                assigned_roles = employee.assigned_roles.all()
                 queryset = queryset.filter(
-                    patient__facility__organization__in=organizations)
+                    Q(patient__facility__organization__in=organizations) |
+                    Q(patient__facility__in=facilities) |
+                    Q(care_team_members__in=assigned_roles)
+                )
             elif employee.facilities_managed.exists():
                 facilities = employee.facilities_managed.all()
                 assigned_roles = employee.assigned_roles.all()
@@ -1876,7 +1899,7 @@ class AssessmentResultViewSet(ParentViewSetPermissionMixin,
     ========
 
     list:
-        Returns list of all :model:`tasks.AssessmentTaskTemplate` objects.
+        Returns list of all :model:`tasks.CarePlanAssessmentTemplate` objects.
         Employees and patients will only have access to objects which
         they are a member of.
 
@@ -1898,11 +1921,11 @@ class AssessmentResultViewSet(ParentViewSetPermissionMixin,
     permission_classes = (
         permissions.IsAuthenticated,
     )
-    queryset = AssessmentTaskTemplate.objects.all()
-    parent_field = 'plan_assessment_templates__plan'
+    queryset = CarePlanAssessmentTemplate.objects.all()
+    parent_field = 'plan'
     parent_lookup = [
         (
-            'plan_assessment_templates__plan',
+            'plan',
             CarePlan,
             CarePlanViewSet
         )
@@ -1924,8 +1947,8 @@ class AssessmentResultViewSet(ParentViewSetPermissionMixin,
                                              tzinfo=pytz.utc)
 
         return queryset.filter(
-            plan_assessment_templates__assessment_tasks__due_datetime__range=(date_min, date_max),
-            plan_assessment_templates__assessment_tasks__is_complete=True,
+            assessment_tasks__due_datetime__range=(date_min, date_max),
+            assessment_tasks__is_complete=True,
         ).distinct()
 
     def get_serializer_context(self):
@@ -1943,12 +1966,12 @@ class SymptomByPlanViewSet(ParentViewSetPermissionMixin,
                            mixins.ListModelMixin,
                            viewsets.GenericViewSet):
     """
-    Viewset for :model:`core.Symptom`
+    Viewset for :model:`tasks.CarePlanSymptomTemplate`
     ========
 
     list:
-        Returns list of all :model:`core.Symptom` objects related to the
-        parent care plan.
+        Returns list of all :model:`tasks.CarePlanSymptomTemplate` objects
+        related to the parent care plan.
         Employees and patients will only have access to objects which
         they are a member of.
 
@@ -1970,11 +1993,11 @@ class SymptomByPlanViewSet(ParentViewSetPermissionMixin,
     permission_classes = (
         permissions.IsAuthenticated,
     )
-    queryset = Symptom.objects.all()
-    parent_field = 'ratings__symptom_task__symptom_template__plan'
+    queryset = CarePlanSymptomTemplate.objects.all()
+    parent_field = 'plan'
     parent_lookup = [
         (
-            'ratings__symptom_task__symptom_template__plan',
+            'plan',
             CarePlan,
             CarePlanViewSet
         )
@@ -1999,8 +2022,8 @@ class SymptomByPlanViewSet(ParentViewSetPermissionMixin,
 
         date_range = self._get_date_range_filter()
         return queryset.filter(
-            ratings__symptom_task__due_datetime__range=date_range,
-            ratings__symptom_task__is_complete=True,
+            symptom_tasks__due_datetime__range=date_range,
+            symptom_tasks__is_complete=True,
         ).distinct()
 
     def get_serializer_context(self):
@@ -2008,7 +2031,6 @@ class SymptomByPlanViewSet(ParentViewSetPermissionMixin,
                         self).get_serializer_context()
 
         context.update({
-            'plan': self.parent_obj,
             'date_range': self._get_date_range_filter()
         })
         return context
@@ -2019,11 +2041,11 @@ class VitalByPlanViewSet(ParentViewSetPermissionMixin,
                          mixins.ListModelMixin,
                          viewsets.GenericViewSet):
     """
-    Viewset for :model:`tasks.VitalTaskTemplate`
+    Viewset for :model:`tasks.CarePlanVitalTemplate`
     ========
 
     list:
-        Returns list of all :model:`tasks.VitalTaskTemplate` objects.
+        Returns list of all :model:`tasks.CarePlanVitalTemplate` objects.
         Employees and patients will only have access to objects which
         they are a member of.
 
@@ -2045,11 +2067,11 @@ class VitalByPlanViewSet(ParentViewSetPermissionMixin,
     permission_classes = (
         permissions.IsAuthenticated,
     )
-    queryset = VitalTaskTemplate.objects.all()
-    parent_field = 'plan_vital_templates__plan'
+    queryset = CarePlanVitalTemplate.objects.all()
+    parent_field = 'plan'
     parent_lookup = [
         (
-            'plan_vital_templates__plan',
+            'plan',
             CarePlan,
             CarePlanViewSet
         )
@@ -2075,8 +2097,8 @@ class VitalByPlanViewSet(ParentViewSetPermissionMixin,
         date_range = self._get_date_range_filter()
 
         return queryset.filter(
-            plan_vital_templates__vital_tasks__due_datetime__range=date_range,
-            plan_vital_templates__vital_tasks__is_complete=True,
+            vital_tasks__due_datetime__range=date_range,
+            vital_tasks__is_complete=True,
         ).distinct()
 
     def get_serializer_context(self):

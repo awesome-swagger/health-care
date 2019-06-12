@@ -664,12 +664,17 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
 
   public openRecordResults(task) {
     this.store.TeamTask.read(task.id).subscribe((taskObj) => {
+      let hasTeamTaskTemplate = !!taskObj.team_template.team_task_template;
+      let teamTaskTemplateId = null;
+      if (hasTeamTaskTemplate) {
+        teamTaskTemplateId = taskObj.team_template.team_task_template.id;
+      }
       this.modals.open(RecordResultsComponent, {
         closeDisabled: false,
         data: {
           patient: this.patient,
           carePlan: this.carePlan,
-          teamTaskId: taskObj.team_template.team_task_template.id,
+          teamTaskId: teamTaskTemplateId,
           taskEditable: false,
           totalMinutes: null,
           with: null,

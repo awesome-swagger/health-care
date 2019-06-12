@@ -164,8 +164,13 @@ class CarePlanPatientTemplateViewSet(viewsets.ModelViewSet):
             employee_profile = user.employee_profile
             if employee_profile.organizations_managed.exists():
                 organizations = employee_profile.organizations_managed.all()
+                facilities = employee_profile.facilities_managed.all()
+                assigned_roles = employee_profile.assigned_roles.all()
                 qs = qs.filter(
-                    plan__patient__facility__organization__in=organizations)
+                    Q(plan__patient__facility__organization__in=organizations) |
+                    Q(plan__patient__facility__in=facilities) |
+                    Q(plan__care_team_members__in=assigned_roles)
+                )
             elif employee_profile.facilities_managed.exists():
                 facilities = employee_profile.facilities_managed.all()
                 assigned_roles = employee_profile.assigned_roles.all()
@@ -207,8 +212,13 @@ class PatientTaskViewSet(viewsets.ModelViewSet):
             employee_profile = user.employee_profile
             if employee_profile.organizations_managed.exists():
                 organizations = employee_profile.organizations_managed.all()
+                facilities = employee_profile.facilities_managed.all()
+                assigned_roles = employee_profile.assigned_roles.all()
                 qs = qs.filter(
-                    patient_template__plan__patient__facility__organization__in=organizations)
+                    Q(patient_template__plan__patient__facility__organization__in=organizations) |
+                    Q(patient_template__plan__patient__facility__in=facilities) |
+                    Q(patient_template__plan__care_team_members__in=assigned_roles)
+                )
             elif employee_profile.facilities_managed.exists():
                 facilities = employee_profile.facilities_managed.all()
                 assigned_roles = employee_profile.assigned_roles.all()
@@ -315,8 +325,13 @@ class CarePlanTeamTemplateViewSet(viewsets.ModelViewSet):
             employee_profile = user.employee_profile
             if employee_profile.organizations_managed.exists():
                 organizations = employee_profile.organizations_managed.all()
+                facilities = employee_profile.facilities_managed.all()
+                assigned_roles = employee_profile.assigned_roles.all()
                 qs = qs.filter(
-                    plan__patient__facility__organization__in=organizations)
+                    Q(plan__patient__facility__organization__in=organizations) |
+                    Q(plan__patient__facility__in=facilities) |
+                    Q(plan__care_team_members__in=assigned_roles)
+                )
             elif employee_profile.facilities_managed.exists():
                 facilities = employee_profile.facilities_managed.all()
                 assigned_roles = employee_profile.assigned_roles.all()
@@ -346,8 +361,13 @@ class TeamTaskViewSet(viewsets.ModelViewSet):
             employee_profile = user.employee_profile
             if employee_profile.organizations_managed.exists():
                 organizations = employee_profile.organizations_managed.all()
+                facilities = employee_profile.facilities_managed.all()
+                assigned_roles = employee_profile.assigned_roles.all()
                 qs = qs.filter(
-                    team_template__plan__patient__facility__organization__in=organizations)
+                    Q(team_template__plan__patient__facility__organization__in=organizations) |
+                    Q(team_template__plan__patient__facility__in=facilities) |
+                    Q(team_template__plan__care_team_members__in=assigned_roles)
+                )
             elif employee_profile.facilities_managed.exists():
                 facilities = employee_profile.facilities_managed.all()
                 assigned_roles = employee_profile.assigned_roles.all()
@@ -402,8 +422,13 @@ class MedicationTaskViewSet(viewsets.ModelViewSet):
             employee_profile = user.employee_profile
             if employee_profile.organizations_managed.count() > 0:
                 organizations_managed = employee_profile.organizations_managed.values_list('id', flat=True)
+                facilities_managed = employee_profile.facilities_managed.values_list('id', flat=True)
+                assigned_roles = employee_profile.assigned_roles.values_list('id', flat=True)
                 qs = qs.filter(
-                    medication_task_template__plan__patient__facility__organization__id__in=organizations_managed)
+                    Q(medication_task_template__plan__patient__facility__organization__id__in=organizations_managed) |
+                    Q(medication_task_template__plan__patient__facility__id__in=facilities_managed) |
+                    Q(medication_task_template__plan__care_team_members__id__in=assigned_roles)
+                )
             elif employee_profile.facilities_managed.count() > 0:
                 facilities_managed = employee_profile.facilities_managed.values_list('id', flat=True)
                 assigned_roles = employee_profile.assigned_roles.values_list('id', flat=True)
@@ -489,8 +514,13 @@ class CarePlanSymptomTemplateViewSet(viewsets.ModelViewSet):
             employee_profile = user.employee_profile
             if employee_profile.organizations_managed.exists():
                 organizations = employee_profile.organizations_managed.all()
+                facilities = employee_profile.facilities_managed.all()
+                assigned_roles = employee_profile.assigned_roles.all()
                 qs = qs.filter(
-                    plan__patient__facility__organization__in=organizations)
+                    Q(plan__patient__facility__organization__in=organizations) |
+                    Q(plan__patient__facility__in=facilities) |
+                    Q(plan__care_team_members__in=assigned_roles)
+                )
             elif employee_profile.facilities_managed.exists():
                 facilities = employee_profile.facilities_managed.all()
                 assigned_roles = employee_profile.assigned_roles.all()
@@ -530,8 +560,12 @@ class SymptomTaskViewSet(viewsets.ModelViewSet):
             employee = user.employee_profile
             if employee.organizations_managed.exists():
                 organizations = employee.organizations_managed.all()
+                facilities = employee.facilities_managed.all()
+                assigned_roles = employee.assigned_roles.all()
                 qs = qs.filter(
-                    symptom_template__plan__patient__facility__organization__in=organizations
+                    Q(symptom_template__plan__patient__facility__organization__in=organizations) |
+                    Q(symptom_template__plan__patient__facility__in=facilities) |
+                    Q(symptom_template__plan__care_team_members__in=assigned_roles)
                 )
             elif employee.facilities_managed.exists():
                 facilities = employee.facilities_managed.all()
@@ -571,8 +605,13 @@ class SymptomRatingViewSet(viewsets.ModelViewSet):
             employee_profile = user.employee_profile
             if employee_profile.organizations_managed.exists():
                 organizations = employee_profile.organizations_managed.all()
+                facilities = employee_profile.facilities_managed.all()
+                assigned_roles = employee_profile.assigned_roles.all()
                 qs = qs.filter(
-                    symptom_task__symptom_template__plan__patient__facility__organization__in=organizations)
+                    Q(symptom_task__symptom_template__plan__patient__facility__organization__in=organizations) |
+                    Q(symptom_task__symptom_template__plan__patient__facility__in=facilities) |
+                    Q(symptom_task__symptom_template__plan__care_team_members__in=assigned_roles)
+                )
             elif employee_profile.facilities_managed.exists():
                 facilities = employee_profile.facilities_managed.all()
                 assigned_roles = employee_profile.assigned_roles.all()
@@ -680,8 +719,13 @@ class CarePlanAssessmentTemplateViewSet(viewsets.ModelViewSet):
             employee_profile = user.employee_profile
             if employee_profile.organizations_managed.exists():
                 organizations = employee_profile.organizations_managed.all()
+                facilities = employee_profile.facilities_managed.all()
+                assigned_roles = employee_profile.assigned_roles.all()
                 qs = qs.filter(
-                    plan__patient__facility__organization__in=organizations)
+                    Q(plan__patient__facility__organization__in=organizations) |
+                    Q(plan__patient__facility__in=facilities) |
+                    Q(plan__care_team_members__in=assigned_roles)
+                )
             elif employee_profile.facilities_managed.exists():
                 facilities = employee_profile.facilities_managed.all()
                 assigned_roles = employee_profile.assigned_roles.all()
@@ -730,8 +774,13 @@ class AssessmentTaskViewSet(viewsets.ModelViewSet):
             employee_profile = user.employee_profile
             if employee_profile.organizations_managed.exists():
                 organizations = employee_profile.organizations_managed.all()
+                facilities = employee_profile.facilities_managed.all()
+                assigned_roles = employee_profile.assigned_roles.all()
                 qs = qs.filter(
-                    assessment_template__plan__patient__facility__organization__in=organizations)
+                    Q(assessment_template__plan__patient__facility__organization__in=organizations) |
+                    Q(assessment_template__plan__patient__facility__in=facilities) |
+                    Q(assessment_template__plan__care_team_members__in=assigned_roles)
+                )
             elif employee_profile.facilities_managed.exists():
                 facilities = employee_profile.facilities_managed.all()
                 assigned_roles = employee_profile.assigned_roles.all()
@@ -773,8 +822,13 @@ class AssessmentResponseViewSet(viewsets.ModelViewSet):
             employee_profile = user.employee_profile
             if employee_profile.organizations_managed.exists():
                 organizations = employee_profile.organizations_managed.all()
+                facilities = employee_profile.facilities_managed.all()
+                assigned_roles = employee_profile.assigned_roles.all()
                 qs = qs.filter(
-                    assessment_task__assessment_template__plan__patient__facility__organization__in=organizations)
+                    Q(assessment_task__assessment_template__plan__patient__facility__organization__in=organizations) |
+                    Q(assessment_task__assessment_template__plan__patient__facility__in=facilities) |
+                    Q(assessment_task__assessment_template__plan__care_team_members__in=assigned_roles)
+                )
             elif employee_profile.facilities_managed.exists():
                 facilities = employee_profile.facilities_managed.all()
                 assigned_roles = employee_profile.assigned_roles.all()
@@ -922,8 +976,13 @@ class CarePlanVitalTemplateViewSet(viewsets.ModelViewSet):
             employee_profile = user.employee_profile
             if employee_profile.organizations_managed.exists():
                 organizations = employee_profile.organizations_managed.all()
+                facilities = employee_profile.facilities_managed.all()
+                assigned_roles = employee_profile.assigned_roles.all()
                 qs = qs.filter(
-                    plan__patient__facility__organization__in=organizations)
+                    Q(plan__patient__facility__organization__in=organizations) |
+                    Q(plan__patient__facility__in=facilities) |
+                    Q(plan__care_team_members__in=assigned_roles)
+                )
             elif employee_profile.facilities_managed.exists():
                 facilities = employee_profile.facilities_managed.all()
                 assigned_roles = employee_profile.assigned_roles.all()
@@ -1021,8 +1080,13 @@ class VitalTaskViewSet(viewsets.ModelViewSet):
             employee_profile = user.employee_profile
             if employee_profile.organizations_managed.exists():
                 organizations = employee_profile.organizations_managed.all()
+                facilities = employee_profile.facilities_managed.all()
+                assigned_roles = employee_profile.assigned_roles.all()
                 qs = qs.filter(
-                    vital_template__plan__patient__facility__organization__in=organizations)
+                    Q(vital_template__plan__patient__facility__organization__in=organizations) |
+                    Q(vital_template__plan__patient__facility__in=facilities) |
+                    Q(vital_template__plan__care_team_members__in=assigned_roles)
+                )
             elif employee_profile.facilities_managed.exists():
                 facilities = employee_profile.facilities_managed.all()
                 assigned_roles = employee_profile.assigned_roles.all()
@@ -1137,8 +1201,13 @@ class VitalResponseViewSet(viewsets.ModelViewSet):
             employee_profile = user.employee_profile
             if employee_profile.organizations_managed.exists():
                 organizations = employee_profile.organizations_managed.all()
+                facilities = employee_profile.facilities_managed.all()
+                assigned_roles = employee_profile.assigned_roles.all()
                 qs = qs.filter(
-                    vital_task__vital_template__plan__patient__facility__organization__in=organizations)
+                    Q(vital_task__vital_template__plan__patient__facility__organization__in=organizations) |
+                    Q(vital_task__vital_template__plan__patient__facility__in=facilities) |
+                    Q(vital_task__vital_template__plan__care_team_members__in=assigned_roles)
+                )
             elif employee_profile.facilities_managed.exists():
                 facilities = employee_profile.facilities_managed.all()
                 assigned_roles = employee_profile.assigned_roles.all()

@@ -343,17 +343,17 @@ care_plan_routes.register(
     r'assessment_results',
     AssessmentResultViewSet,
     base_name='assessment_results',
-    parents_query_lookups=['plan_assessment_templates__plan'])
+    parents_query_lookups=['plan'])
 care_plan_routes.register(
     r'symptoms',
     SymptomByPlanViewSet,
     base_name='plan_symptoms',
-    parents_query_lookups=['ratings__symptom_task__symptom_template__plan'])
+    parents_query_lookups=['plan'])
 care_plan_routes.register(
     r'vitals',
     VitalByPlanViewSet,
     base_name='vitals',
-    parents_query_lookups=['plan_vital_templates__plan'])
+    parents_query_lookups=['plan'])
 message_recipient_routes = care_plan_routes.register(
     r'message_recipients',
     MessageRecipientViewSet,

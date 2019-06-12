@@ -259,18 +259,15 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
   }
 
   public taskIsManager(teamTask) {
-    let task_template = teamTask.team_task_template;
-    return task_template && task_template.is_manager_task;
+    return teamTask.is_manager_task;
   }
 
   public assessmentTracksOutcome(assessment) {
-    let task_template = assessment.assessment_task_template;
-    return task_template && task_template.tracks_outcome;
+    return assessment.tracks_outcome;
   }
 
   public assessmentTracksSatisfaction(assessment) {
-    let task_template = assessment.assessment_task_template;
-    return task_template && task_template.tracks_satisfaction;
+    return assessment.tracks_satisfaction;
   }
 
   public openGoal() {
@@ -427,14 +424,13 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
   }
 
   public formatSelectedRoles(task) {
-    let taskTemplate = task.team_task_template;
-    if (!taskTemplate || !taskTemplate.roles || taskTemplate.roles.length < 1) {
+    if (!task || !task.roles || task.roles.length < 1) {
       return 'Not set';
     }
-    if (taskTemplate.roles.length > 1) {
-      return `${taskTemplate.roles[0].name}, +${taskTemplate.roles.length - 1}`
-    } else if (taskTemplate.roles.length > 0) {
-      return taskTemplate.roles[0].name;
+    if (task.roles.length > 1) {
+      return `${task.roles[0].name}, +${task.roles.length - 1}`
+    } else if (task.roles.length > 0) {
+      return task.roles[0].name;
     }
   }
 

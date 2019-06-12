@@ -29,33 +29,17 @@ export class CreateAssessmentComponent implements OnInit {
       this.assessment = this.data.assessment ? this.data.assessment : {};
       this.isEditing = this.data.isEditing ? this.data.isEditing : false;
       if (this.assessment) {
-        if (!this.assessment.assessment_task_template) {
-          this.nameInput = this.assessment.name;
-          if (this.assessment.tracks_outcome) {
-            this.assessmentTracking = 'outcome';
-          } else if (this.assessment.tracks_satisfaction) {
-            this.assessmentTracking = 'satisfaction';
-          }
-          if (this.assessment.questions) {
-            let sortedQuestions = this.sortQuestions(this.assessment.questions);
-            sortedQuestions.forEach((obj, index) => {
-              obj.order = index;
-            });
-          }
-        } else {
-          this.nameInput = this.assessment.assessment_task_template.name;
-          this.assessment.questions = this.assessment.assessment_task_template.questions;
-          if (this.assessment.assessment_task_template.tracks_outcome) {
-            this.assessmentTracking = 'outcome';
-          } else if (this.assessment.assessment_task_template.tracks_satisfaction) {
-            this.assessmentTracking = 'satisfaction';
-          }
-          if (this.assessment.questions) {
-            let sortedQuestions = this.sortQuestions(this.assessment.questions);
-            sortedQuestions.forEach((obj, index) => {
-              obj.order = index;
-            });
-          }
+        this.nameInput = this.assessment.name;
+        if (this.assessment.tracks_outcome) {
+          this.assessmentTracking = 'outcome';
+        } else if (this.assessment.tracks_satisfaction) {
+          this.assessmentTracking = 'satisfaction';
+        }
+        if (this.assessment.questions) {
+          let sortedQuestions = this.sortQuestions(this.assessment.questions);
+          sortedQuestions.forEach((obj, index) => {
+            obj.order = index;
+          });
         }
       }
     }
@@ -149,7 +133,9 @@ export class CreateAssessmentComponent implements OnInit {
     let tracksSatisfaction = this.assessmentTracking === 'satisfaction';
     this.assessment.name = this.nameInput;
     this.assessment.tracks_outcome = tracksOutcome;
+    this.assessment.custom_tracks_outcome = tracksOutcome;
     this.assessment.tracks_satisfaction = tracksSatisfaction;
+    this.assessment.custom_tracks_satisfaction = tracksSatisfaction;
     this.modal.close(this.assessment);
     // this.updateAssessment().then((assessment: any) => {
     //   this.createOrUpdateAllQuestions().then(() => {

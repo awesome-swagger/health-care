@@ -1,14 +1,16 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import  { Subscription } from 'rxjs';
 import * as moment from 'moment';
 import {
   sumBy as _sumBy,
   uniqBy as _uniqBy,
+  uniq as _uniq,
   groupBy as _groupBy,
   flattenDeep as _flattenDeep,
 } from 'lodash';
-import { AuthService, StoreService, UtilsService, } from '../../services';
+import { PopoverOptions } from '../../modules/popover';
+import { AuthService, StoreService, SessionStorageService, UtilsService, } from '../../services';
 
 @Component({
   selector: 'app-billing',
@@ -40,9 +42,9 @@ export class BillingComponent implements OnDestroy, OnInit {
   public serviceSearch = '';
   public selectedStatus = 'all';
   public employees = [];
-  public employeesShown = [];
+  public loadingEmployees = true;
   public employeeSearch = '';
-  public selectedEmployee = null;
+  public selectedEmployees = [];
   public planTypes = [];
 
   public syncTooltipOpen = false;
@@ -50,6 +52,10 @@ export class BillingComponent implements OnDestroy, OnInit {
   public filterServiceOpen = false;
   public filterStatusOpen = false;
   public employeeSearchOpen = false;
+  public employeesDropOptions: PopoverOptions = {
+    relativeTop: '80px',
+    relativeRight: '0px',
+  };
   public billablePatientsHelpOpen = false;
   public practitionerDropdownOpen = {};
   public detailsOpen = {};
@@ -60,47 +66,60 @@ export class BillingComponent implements OnDestroy, OnInit {
 
   constructor(
     private router: Router,
+    private route: ActivatedRoute,
     private auth: AuthService,
     private store: StoreService,
+    private session: SessionStorageService,
     public utils: UtilsService,
   ) { }
 
   public ngOnInit() {
-    this.authSub = this.auth.user$.subscribe((user) => {
-      if (!user) {
-        return;
+    this.route.queryParams.subscribe((qparams) => {
+      if (qparams.from_dashboard) {
+        this.selectedEmployees = [];
+        let dashboardEmployeesSelected = this.session.getObj('dashboardEmployeesSelected');
+        if (dashboardEmployeesSelected && dashboardEmployeesSelected.length > 0) {
+          this.selectedEmployees = dashboardEmployeesSelected;
+        }
       }
-      this.user = user;
-    });
-    this.orgSub = this.auth.organization$.subscribe((organization) => {
-      if (!organization) {
-        return;
-      }
-      this.organization = organization;
-      this.isManager = this.organization.is_manager;
-      this.getEmployees(this.organization.id).then((employees: any) => {
-        this.employees = employees;
-        this.employeesShown = this.employees;
+      this.authSub = this.auth.user$.subscribe((user) => {
+        if (!user) {
+          return;
+        }
+        this.user = user;
+        if (qparams.from_patient_dashboard) {
+          this.selectedEmployees = [this.user.id];
+        }
       });
-      this.getBillingData();
+      this.orgSub = this.auth.organization$.subscribe((organization) => {
+        if (!organization) {
+          return;
+        }
+        this.organization = organization;
+        this.isManager = this.organization.is_manager;
+        this.getEmployees(this.organization.id).then((employees: any) => {
+          this.employees = employees;
+        });
+        this.getBillingData();
+      });
+      this.facilitiesSub = this.auth.facilities$.subscribe((facilities) => {
+        if (!facilities) {
+          return;
+        }
+        this.facilities = facilities;
+        this.facilitiesShown = this.facilities.concat();
+      });
+      let serviceAreasSub = this.store.ServiceArea.readListPaged().subscribe(
+        (serviceAreas) => {
+          this.serviceAreas = serviceAreas;
+          this.serviceAreasShown = this.serviceAreas.concat();
+        },
+        (err) => {},
+        () => {
+          serviceAreasSub.unsubscribe();
+        }
+      );
     });
-    this.facilitiesSub = this.auth.facilities$.subscribe((facilities) => {
-      if (!facilities) {
-        return;
-      }
-      this.facilities = facilities;
-      this.facilitiesShown = this.facilities.concat();
-    });
-    let serviceAreasSub = this.store.ServiceArea.readListPaged().subscribe(
-      (serviceAreas) => {
-        this.serviceAreas = serviceAreas;
-        this.serviceAreasShown = this.serviceAreas.concat();
-      },
-      (err) => {},
-      () => {
-        serviceAreasSub.unsubscribe();
-      }
-    );
   }
 
   public ngOnDestroy() {
@@ -116,11 +135,15 @@ export class BillingComponent implements OnDestroy, OnInit {
   }
 
   public getEmployees(organizationId) {
+    this.loadingEmployees = true;
     return new Promise((resolve, reject) => {
       let employeesSub = this.store.EmployeeProfile.readListPaged({
         organization: organizationId
       }).subscribe(
-        (employees) => resolve(employees),
+        (employees) => {
+          this.loadingEmployees = false;
+          resolve(employees);
+        },
         (err) => reject(err),
         () => {
           employeesSub.unsubscribe();
@@ -244,16 +267,48 @@ export class BillingComponent implements OnDestroy, OnInit {
     this.getBillingData();
   }
 
-  public filterEmployee() {
-    this.employeesShown = this.employees.filter((obj) => {
-      let fullNameWithTitle = `${obj.first_name} ${obj.last_name}, ${obj.title}`;
-      return fullNameWithTitle.toLowerCase().includes(this.employeeSearch.toLowerCase());
+  public filterEmployees() {
+    return this.employees.concat().filter((obj) => {
+      let fullName = `${obj.user.first_name} ${obj.user.last_name}`;
+      return fullName.toLowerCase().includes(this.employeeSearch.toLowerCase());
     });
   }
 
-  public setSelectedEmployee(employee) {
-    this.selectedEmployee = employee;
-    this.employeeSearch = `${employee.first_name} ${employee.last_name}, ${employee.title}`;
+  public employeesShown() {
+    if (this.employeeSearch && this.employeeSearch.length > 0) {
+      return this.filterEmployees();
+    } else {
+      return this.employees.concat();
+    }
+  }
+
+  public toggleEmployeeSelected(employee) {
+    if (this.isEmployeeSelected(employee)) {
+      let index = this.selectedEmployees.indexOf(employee.id);
+      this.selectedEmployees.splice(index, 1);
+    } else {
+      this.selectedEmployees.push(employee.id);
+    }
+  }
+
+  public checkAllEmployees() {
+    this.selectedEmployees = this.employees.map((emp) => emp.id);
+  }
+
+  public uncheckAllEmployees() {
+    this.selectedEmployees = [];
+  }
+
+  public isEmployeeSelected(employee) {
+    return this.selectedEmployees.includes(employee.id);
+  }
+
+  public formatSelectedUsers() {
+    if (this.selectedEmployees.length === 0 || this.selectedEmployees.length === this.employees.length) {
+      return 'All';
+    } else {
+      return this.selectedEmployees.length + ' Users';
+    }
   }
 
   public getUniqueFacilities() {
@@ -262,6 +317,18 @@ export class BillingComponent implements OnDestroy, OnInit {
     });
     facilities = _uniqBy(_flattenDeep(facilities), (obj) => obj.id);
     return facilities;
+  }
+
+  public planContainsSelectedEmployees(plan) {
+    if (!this.selectedEmployees || this.selectedEmployees.length === 0) {
+      return true;
+    }
+    let planUserIds = [plan.care_manager.id];
+    let uniqueDetailsUsers = _uniq(plan.details_of_service.map((details) => {
+      return details.added_by.id;
+    }));
+    planUserIds = planUserIds.concat(uniqueDetailsUsers);
+    return this.selectedEmployees.filter((emp) => -1 !== planUserIds.indexOf(emp)).length > 0;
   }
 
   public getFacilityPractitioners(facilityId) {
@@ -278,7 +345,7 @@ export class BillingComponent implements OnDestroy, OnInit {
       return [];
     }
     return practitioner.plans.filter((obj) => {
-      return obj.patient.facility.id === facilityId;
+      return obj.patient.facility.id === facilityId && this.planContainsSelectedEmployees(obj);
     });
   }
 
