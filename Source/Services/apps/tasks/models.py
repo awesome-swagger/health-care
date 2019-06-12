@@ -700,6 +700,7 @@ class AssessmentTaskTemplate(AbstractTaskTemplate):
     name = models.CharField(max_length=120, null=False, blank=False)
     tracks_outcome = models.BooleanField(default=False)
     tracks_satisfaction = models.BooleanField(default=False)
+    instructions = models.CharField(max_length=240, null=True, blank=True)
 
     def __str__(self):
         return '{}'.format(
@@ -733,6 +734,9 @@ class CarePlanAssessmentTemplate(AbstractPlanTaskTemplate):
         null=True)
     custom_tracks_outcome = models.NullBooleanField()
     custom_tracks_satisfaction = models.NullBooleanField()
+    custom_instructions = models.CharField(
+        max_length=240,
+        blank=True)
 
     class Meta:
         verbose_name = _('Care Plan Assessment Template')
@@ -752,6 +756,13 @@ class CarePlanAssessmentTemplate(AbstractPlanTaskTemplate):
         return self.custom_tracks_satisfaction \
             if self.custom_tracks_satisfaction is not None \
             else self.assessment_task_template.tracks_satisfaction
+
+    @property
+    def instructions(self):
+        task_template = self.get_task_template_field()
+        return self.custom_instructions \
+            if self.custom_instructions else task_template.instructions
+
 
 
 class AssessmentQuestion(UUIDPrimaryKeyMixin):

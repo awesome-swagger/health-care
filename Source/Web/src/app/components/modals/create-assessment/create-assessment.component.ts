@@ -15,6 +15,7 @@ export class CreateAssessmentComponent implements OnInit {
   public assessment = null;
   public assessmentTracking = null;
   public nameInput = '';
+  public instructionsInput = '';
 
   constructor(
     private modal: ModalService,
@@ -30,6 +31,7 @@ export class CreateAssessmentComponent implements OnInit {
       this.isEditing = this.data.isEditing ? this.data.isEditing : false;
       if (this.assessment) {
         this.nameInput = this.assessment.name;
+        this.instructionsInput = this.assessment.instructions;
         if (this.assessment.tracks_outcome) {
           this.assessmentTracking = 'outcome';
         } else if (this.assessment.tracks_satisfaction) {
@@ -88,10 +90,12 @@ export class CreateAssessmentComponent implements OnInit {
     let promise = new Promise((resolve, reject) => {
       let tracksOutcome = this.assessmentTracking === 'outcome';
       let tracksSatisfaction = this.assessmentTracking === 'satisfaction';
+      let instructions = this.instructionsInput;
       let updateSub = this.store.AssessmentTaskTemplate.update(this.assessment.id, {
         name: this.nameInput,
         tracks_outcome: tracksOutcome,
         tracks_satisfaction: tracksSatisfaction,
+        instructions: instructions,
       }, true).subscribe(
         (res) => resolve(res),
         (err) => reject(err),
@@ -132,6 +136,8 @@ export class CreateAssessmentComponent implements OnInit {
     let tracksOutcome = this.assessmentTracking === 'outcome';
     let tracksSatisfaction = this.assessmentTracking === 'satisfaction';
     this.assessment.name = this.nameInput;
+    this.assessment.instructions = this.instructionsInput;
+    this.assessment.custom_instructions = this.assessment.instructions;
     this.assessment.tracks_outcome = tracksOutcome;
     this.assessment.custom_tracks_outcome = tracksOutcome;
     this.assessment.tracks_satisfaction = tracksSatisfaction;

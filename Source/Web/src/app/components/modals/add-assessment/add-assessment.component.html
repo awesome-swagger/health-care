@@ -95,6 +95,10 @@
         <h4 class="marBottom24" *ngIf="selectedAssessment.tracks_outcome">Tracks Outcome</h4>
         <h4 class="marBottom24" *ngIf="selectedAssessment.tracks_satisfaction">Tracks Satisfaction</h4>
         <h5 class="marBottom32">Note: Each assessment includes an optional notes field (not shown here) for the patient to provide feedback.</h5>
+        <label>Instructions</label>
+        <p class="marBottom24">
+          {{selectedAssessment.instructions}}
+        </p>
         <div class="assessmentQuestion" *ngFor="let question of selectedAssessment.questions">
           <p>{{question.prompt}}</p>
           <div class="scale marBottom32">

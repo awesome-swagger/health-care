@@ -162,6 +162,7 @@ export class AddAssessmentComponent implements OnInit {
         plan_template: this.data.planTemplateId,
         tracks_outcome: false,
         tracks_satisfaction: false,
+        instructions: '',
       }
       this.createAssessment = false;
       this.modal.close(assessment);
@@ -176,6 +177,7 @@ export class AddAssessmentComponent implements OnInit {
         plan: this.data.planId,
         tracks_outcome: false,
         tracks_satisfaction: false,
+        instructions: '',
       };
       this.createAssessment = false;
       this.modal.close(assessment);
@@ -195,6 +197,7 @@ export class AddAssessmentComponent implements OnInit {
       is_available: true,
       tracks_outcome: this.selectedAssessment.tracks_outcome,
       tracks_satisfaction: this.selectedAssessment.tracks_satisfaction,
+      instructions: this.selectedAssessment.instructions,
     };
     if (!this.isAdhoc) {
       newAssessment['plan_template'] = this.data.planTemplateId;
