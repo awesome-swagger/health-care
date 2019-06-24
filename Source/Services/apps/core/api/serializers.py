@@ -572,8 +572,8 @@ class OrganizationPatientGraphSerializer(serializers.ModelSerializer):
             'is_active': True
         }
         billable_kwargs = {
-            'plan__patient__facility__in': facilities,
-            'plan__patient__is_active': True
+            'team_template__plan__patient__facility__in': facilities,
+            'team_template__plan__patient__is_active': True
         }
 
         if care_team_members.exists() and filter_allowed:
@@ -581,7 +581,7 @@ class OrganizationPatientGraphSerializer(serializers.ModelSerializer):
                 'care_plans__care_team_members__employee_profile__in': care_team_members
             })
             billable_kwargs.update({
-                'plan__care_team_members__employee_profile__in': care_team_members
+                'team_template__plan__care_team_members__employee_profile__in': care_team_members
             })
 
         if 'facility' in request.GET and filter_allowed:
@@ -589,7 +589,7 @@ class OrganizationPatientGraphSerializer(serializers.ModelSerializer):
                 'facility__id': request.GET.get('facility')
             })
             billable_kwargs.update({
-                'plan__patient__facility__id': request.GET.get('facility')
+                'team_template__plan__patient__facility__id': request.GET.get('facility')
             })
 
         for i in range(months):
@@ -608,7 +608,8 @@ class OrganizationPatientGraphSerializer(serializers.ModelSerializer):
                 **enrolled_kwargs).distinct().count()
             billable_patients = BilledActivity.objects.filter(
                 **billable_kwargs).values_list(
-                    'plan__patient', flat=True).distinct().count()
+                    'team_template__plan__patient',
+                    flat=True).distinct().count()
 
             monthly_data = {
                 'enrolled_patients': enrolled_patients,
