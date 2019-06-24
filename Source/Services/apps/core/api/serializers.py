@@ -1449,7 +1449,8 @@ class BilledPlanSerializer(RepresentationMixin, serializers.ModelSerializer):
         return []
 
     def get_details_of_service(self, obj):
-        activities = obj.activities.filter(**self.context)\
+        activities = BilledActivity.objects.filter(
+            team_template__plan=obj, **self.context)\
             .order_by('activity_datetime')
         serializer = BilledActivityDetailSerializer(activities, many=True)
         return serializer.data
@@ -1501,8 +1502,8 @@ class BillingPractitionerSerializer(serializers.ModelSerializer):
         activity_year = self.context.get('activity_year', now.year)
         kwargs = {
             'patient__facility__organization': organization,
-            'activities__activity_datetime__month': activity_month,
-            'activities__activity_datetime__year': activity_year
+            'plan_team_templates__activities__activity_datetime__month': activity_month,
+            'plan_team_templates__activities__activity_datetime__year': activity_year
         }
 
         if facility:
@@ -1529,6 +1530,7 @@ class BillingPractitionerSerializer(serializers.ModelSerializer):
             'activity_datetime__month': activity_month,
             'activity_datetime__year': activity_year
         }
+
         billed_plans = obj.billed_plans.filter(**kwargs).distinct()
         serializer = BilledPlanSerializer(
             billed_plans,
