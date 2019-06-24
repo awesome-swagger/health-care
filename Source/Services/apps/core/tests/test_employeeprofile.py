@@ -458,17 +458,16 @@ class TestFacilityEmployee(BillingsMixin, APITestCase):
         self.client.force_authenticate(user=employee.user)
 
         for i in range(plans_count):
-            # Create care plans as member
-            member_plan = self.create_care_plan()
+            team_template = self.create_plan_team_template()
             self.create_care_team_member(**{
                 'employee_profile': employee,
-                'plan': member_plan,
+                'plan': team_template.plan,
                 'is_manager': False
             })
 
             minutes = random.randint(5, 120)
             self.create_billed_activity(**{
-                'plan': member_plan,
+                'team_template': team_template,
                 'added_by': employee,
                 'time_spent': minutes
             })
@@ -476,17 +475,16 @@ class TestFacilityEmployee(BillingsMixin, APITestCase):
 
         # create dummy records
         for i in range(plans_count):
-            # Create care plans as member
-            member_plan = self.create_care_plan()
+            team_template = self.create_plan_team_template()
             self.create_care_team_member(**{
                 'employee_profile': employee,
-                'plan': member_plan,
+                'plan': team_template.plan,
                 'is_manager': False
             })
 
             minutes = random.randint(5, 120)
             self.create_billed_activity(**{
-                'plan': member_plan,
+                'team_template': team_template,
                 'added_by': employee,
                 'time_spent': minutes,
                 'activity_datetime': previous_month.date()
@@ -581,8 +579,9 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
             plan = self.create_care_plan(patient, **{
                 'billing_practitioner': employee
             })
+            team_template = self.create_plan_team_template(plan=plan)
             self.create_billed_activity(**{
-                'plan': plan
+                'team_template': team_template
             })
 
         # Create dummy records for practitioners belonging to other
@@ -597,8 +596,9 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
             plan = self.create_care_plan(patient, **{
                 'billing_practitioner': employee
             })
+            team_template = self.create_plan_team_template(plan=plan)
             self.create_billed_activity(**{
-                'plan': plan
+                'team_template': team_template
             })
 
         response = self.client.get(self.url)
@@ -623,8 +623,9 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
             plan = self.create_care_plan(patient, **{
                 'billing_practitioner': employee
             })
+            team_template = self.create_plan_team_template(plan=plan)
             self.create_billed_activity(**{
-                'plan': plan
+                'team_template': team_template
             })
 
         # Create dummy records for practitioners belonging to other
@@ -639,8 +640,9 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
             plan = self.create_care_plan(patient, **{
                 'billing_practitioner': employee
             })
+            team_template = self.create_plan_team_template(plan=plan)
             self.create_billed_activity(**{
-                'plan': plan
+                'team_template': team_template
             })
 
         response = self.client.get(self.url)
@@ -663,8 +665,9 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
             plan = self.create_care_plan(patient, **{
                 'billing_practitioner': employee
             })
+            team_template = self.create_plan_team_template(plan=plan)
             self.create_billed_activity(**{
-                'plan': plan
+                'team_template': team_template
             })
 
         # Create dummy records for practitioners having records last month
@@ -680,14 +683,15 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
             plan = self.create_care_plan(patient, **{
                 'billing_practitioner': employee
             })
+            team_template = self.create_plan_team_template(plan=plan)
             self.create_billed_activity(**{
-                'plan': plan,
+                'team_template': team_template,
                 'activity_datetime': last_month
             })
 
         query_params = urllib.parse.urlencode({
-            'billed_plans__activities__activity_datetime__month': last_month.month,
-            'billed_plans__activities__activity_datetime__year': last_month.year
+            'billed_plans__plan_team_templates__activities__activity_datetime__month': last_month.month,
+            'billed_plans__plan_team_templates__activities__activity_datetime__year': last_month.year
         })
         filter_url = f'{self.url}?{query_params}'
         response = self.client.get(filter_url)
@@ -708,8 +712,9 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
             plan = self.create_care_plan(patient, **{
                 'billing_practitioner': employee
             })
+            team_template = self.create_plan_team_template(plan=plan)
             self.create_billed_activity(**{
-                'plan': plan
+                'team_template': team_template
             })
 
         # Create dummy records for practitioners belonging to other
@@ -724,8 +729,9 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
             plan = self.create_care_plan(patient, **{
                 'billing_practitioner': employee
             })
+            team_template = self.create_plan_team_template(plan=plan)
             self.create_billed_activity(**{
-                'plan': plan
+                'team_template': team_template
             })
 
         query_params = urllib.parse.urlencode({
@@ -754,8 +760,9 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
                 'billing_practitioner': employee,
                 'plan_template': plan_template
             })
+            team_template = self.create_plan_team_template(plan=plan)
             self.create_billed_activity(**{
-                'plan': plan
+                'team_template': team_template
             })
 
         # Create dummy records for practitioners belonging to other
@@ -770,8 +777,9 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
             plan = self.create_care_plan(patient, **{
                 'billing_practitioner': employee
             })
+            team_template = self.create_plan_team_template(plan=plan)
             self.create_billed_activity(**{
-                'plan': plan
+                'team_template': team_template
             })
 
         query_params = urllib.parse.urlencode({
@@ -801,8 +809,9 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
                 'billing_practitioner': employee,
                 'plan_template': plan_template
             })
+            team_template = self.create_plan_team_template(plan=plan)
             self.create_billed_activity(**{
-                'plan': plan
+                'team_template': team_template
             })
 
         # Create dummy records for same facility
@@ -818,8 +827,9 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
             plan = self.create_care_plan(patient, **{
                 'billing_practitioner': employee
             })
+            team_template = self.create_plan_team_template(plan=plan)
             self.create_billed_activity(**{
-                'plan': plan
+                'team_template': team_template
             })
 
         # Create dummy records for same service area
@@ -838,8 +848,9 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
                 'billing_practitioner': employee,
                 'plan_template': plan_template
             })
+            team_template = self.create_plan_team_template(plan=plan)
             self.create_billed_activity(**{
-                'plan': plan
+                'team_template': team_template
             })
 
         # Create dummy records for practitioners belonging to other
@@ -874,8 +885,9 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
             plan = self.create_care_plan(patient, **{
                 'billing_practitioner': self.employee
             })
+            team_template = self.create_plan_team_template(plan=plan)
             self.create_billed_activity(**{
-                'plan': plan
+                'team_template': team_template
             })
 
         # Create dummy records for practitioners belonging to other
@@ -889,8 +901,9 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
             plan = self.create_care_plan(patient, **{
                 'billing_practitioner': self.employee
             })
+            team_template = self.create_plan_team_template(plan=plan)
             self.create_billed_activity(**{
-                'plan': plan
+                'team_template': team_template
             })
 
         response = self.client.get(self.url)
@@ -910,8 +923,9 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
             plan = self.create_care_plan(patient, **{
                 'billing_practitioner': self.employee
             })
+            team_template = self.create_plan_team_template(plan=plan)
             self.create_billed_activity(**{
-                'plan': plan
+                'team_template': team_template
             })
 
         # Create dummy records for non-billable patients
@@ -923,8 +937,9 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
             plan = self.create_care_plan(patient, **{
                 'billing_practitioner': self.employee
             })
+            team_template = self.create_plan_team_template(plan=plan)
             self.create_billed_activity(**{
-                'plan': plan
+                'team_template': team_template
             })
 
         response = self.client.get(self.url)
@@ -946,8 +961,9 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
             plan = self.create_care_plan(patient, **{
                 'billing_practitioner': self.employee
             })
+            team_template = self.create_plan_team_template(plan=plan)
             self.create_billed_activity(**{
-                'plan': plan
+                'team_template': team_template
             })
 
         # Create records for non-billable patients
@@ -959,8 +975,9 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
             plan = self.create_care_plan(patient, **{
                 'billing_practitioner': self.employee
             })
+            team_template = self.create_plan_team_template(plan=plan)
             self.create_billed_activity(**{
-                'plan': plan
+                'team_template': team_template
             })
 
         response = self.client.get(self.url)
@@ -980,8 +997,9 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
             plan = self.create_care_plan(patient, **{
                 'billing_practitioner': self.employee
             })
+            team_template = self.create_plan_team_template(plan=plan)
             self.create_billed_activity(**{
-                'plan': plan
+                'team_template': team_template
             })
 
         # Create dummy records for practitioners belonging to other
@@ -995,8 +1013,9 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
             plan = self.create_care_plan(patient, **{
                 'billing_practitioner': self.employee
             })
+            team_template = self.create_plan_team_template(plan=plan)
             self.create_billed_activity(**{
-                'plan': plan
+                'team_template': team_template
             })
 
         query_params = urllib.parse.urlencode({
@@ -1025,8 +1044,9 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
                 'billing_practitioner': self.employee,
                 'plan_template': plan_template
             })
+            team_template = self.create_plan_team_template(plan=plan)
             self.create_billed_activity(**{
-                'plan': plan
+                'team_template': team_template
             })
 
         # Create dummy records for practitioners belonging to other
@@ -1040,8 +1060,9 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
             plan = self.create_care_plan(patient, **{
                 'billing_practitioner': self.employee
             })
+            team_template = self.create_plan_team_template(plan=plan)
             self.create_billed_activity(**{
-                'plan': plan
+                'team_template': team_template
             })
 
         query_params = urllib.parse.urlencode({
@@ -1070,8 +1091,9 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
                 'billing_practitioner': self.employee,
                 'plan_template': plan_template
             })
+            team_template = self.create_plan_team_template(plan=plan)
             self.create_billed_activity(**{
-                'plan': plan
+                'team_template': team_template
             })
 
         # Create dummy records for same facility
@@ -1083,8 +1105,9 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
             plan = self.create_care_plan(patient, **{
                 'billing_practitioner': self.employee
             })
+            team_template = self.create_plan_team_template(plan=plan)
             self.create_billed_activity(**{
-                'plan': plan
+                'team_template': team_template
             })
 
         # Create dummy records for same service area
@@ -1099,8 +1122,9 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
                 'billing_practitioner': self.employee,
                 'plan_template': plan_template
             })
+            team_template = self.create_plan_team_template(plan=plan)
             self.create_billed_activity(**{
-                'plan': plan
+                'team_template': team_template
             })
 
         query_params = urllib.parse.urlencode({
@@ -1121,10 +1145,11 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
         plan = self.create_care_plan(patient, **{
             'billing_practitioner': self.employee
         })
+        team_template = self.create_plan_team_template(plan=plan)
 
         for i in range(activity_count):
             self.create_billed_activity(**{
-                'plan': plan,
+                'team_template': team_template,
                 'added_by': self.employee
             })
 
@@ -1144,10 +1169,11 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
         plan = self.create_care_plan(patient, **{
             'billing_practitioner': self.employee
         })
+        team_template = self.create_plan_team_template(plan=plan)
 
         for i in range(activity_count):
             self.create_billed_activity(**{
-                'plan': plan,
+                'team_template': team_template,
                 'added_by': self.employee
             })
 
@@ -1169,24 +1195,25 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
         plan = self.create_care_plan(patient, **{
             'billing_practitioner': self.employee
         })
+        team_template = self.create_plan_team_template(plan=plan)
 
         for i in range(activity_count):
             self.create_billed_activity(**{
-                'plan': plan,
+                'team_template': team_template,
                 'added_by': self.employee
             })
 
         # create billed activity last month
         for i in range(activity_count):
             self.create_billed_activity(**{
-                'plan': plan,
+                'team_template': team_template,
                 'added_by': self.employee,
                 'activity_datetime': last_month
             })
 
         query_params = urllib.parse.urlencode({
-            'billed_plans__activities__activity_datetime__month': last_month.month,
-            'billed_plans__activities__activity_datetime__year': last_month.year
+            'billed_plans__plan_team_templates__activities__activity_datetime__month': last_month.month,
+            'billed_plans__plan_team_templates__activities__activity_datetime__year': last_month.year
         })
         filter_url = f'{self.url}?{query_params}'
         response = self.client.get(filter_url)
