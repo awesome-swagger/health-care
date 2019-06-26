@@ -9,6 +9,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from dateutil.relativedelta import relativedelta
 
+from apps.billings.models import BilledActivity
 from apps.core.models import EmployeeProfile, ProviderRole
 from apps.patients.models import PatientProfile
 from care_adopt_backend.mixins import CreatedModifiedMixin, UUIDPrimaryKeyMixin
@@ -146,7 +147,8 @@ class CarePlan(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
     def time_spent_this_month(self):
         now = timezone.now()
         first_day_of_month = now.replace(day=1).date()
-        time_spent = self.activities.filter(
+        time_spent = BilledActivity.objects.filter(
+            team_template__plan=self,
             activity_datetime__gte=first_day_of_month).aggregate(
                 total=Sum('time_spent'))
         total = time_spent['total'] or 0
@@ -230,7 +232,8 @@ class CareTeamMember(UUIDPrimaryKeyMixin):
         now = timezone.now()
         first_day_of_month = now.replace(day=1).date()
         time_spent = self.employee_profile.added_activities.filter(
-            plan=self.plan, activity_datetime__gte=first_day_of_month)\
+            team_template__plan=self.plan,
+            activity_datetime__gte=first_day_of_month)\
             .aggregate(total=Sum('time_spent'))
         total = time_spent['total'] or 0
         return str(datetime.timedelta(minutes=total))[:-3]

@@ -1040,7 +1040,7 @@ class CarePlanOverviewSerializer(RepresentationMixin, serializers.ModelSerialize
 
     def get_time_count(self, obj):
         time_spent = BilledActivity.objects.filter(
-            plan=obj,
+            team_template__plan=obj,
             activity_datetime__gte=timezone.now().replace(
                 day=1, hour=0, minute=0, second=0, microsecond=0)) \
                 .aggregate(total=Sum('time_spent'))
@@ -1049,7 +1049,7 @@ class CarePlanOverviewSerializer(RepresentationMixin, serializers.ModelSerialize
 
     def get_last_contact(self, obj):
         last_patient_included_activity = BilledActivity.objects.filter(
-            plan=obj,
+            team_template__plan=obj,
             patient_included=True).order_by('-activity_datetime').first()
         if last_patient_included_activity:
             serializer = LastContactSerializer(last_patient_included_activity, many=False)
