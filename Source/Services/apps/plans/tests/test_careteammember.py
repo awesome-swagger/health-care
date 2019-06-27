@@ -43,9 +43,11 @@ class TestCareTeamMemberUsingAdmin(BillingsMixin, APITestCase):
         now = timezone.now()
         last_month = now - relativedelta(months=1)
         total_this_month = 0
+        team_template = self.create_plan_team_template(plan=self.plan)
+
         for i in range(5):
             activity = self.create_billed_activity(**{
-                'plan': self.plan,
+                'team_template': team_template,
                 'added_by': self.employee_member,
                 'activity_datetime': now
             })
@@ -54,7 +56,7 @@ class TestCareTeamMemberUsingAdmin(BillingsMixin, APITestCase):
         # create activities last month
         for i in range(5):
             self.create_billed_activity(**{
-                'plan': self.plan,
+                'team_template': team_template,
                 'added_by': self.employee_member,
                 'activity_datetime': last_month
             })
@@ -122,9 +124,11 @@ class TestCareTeamMemberUsingEmployee(BillingsMixin, APITestCase):
         now = timezone.now()
         last_month = now - relativedelta(months=1)
         total_this_month = 0
+        team_template = self.create_plan_team_template(plan=self.plan)
+
         for i in range(5):
             activity = self.create_billed_activity(**{
-                'plan': self.plan,
+                'team_template': team_template,
                 'added_by': self.employee_member,
                 'activity_datetime': now
             })
@@ -133,7 +137,7 @@ class TestCareTeamMemberUsingEmployee(BillingsMixin, APITestCase):
         # create activities last month
         for i in range(5):
             self.create_billed_activity(**{
-                'plan': self.plan,
+                'team_template': team_template,
                 'added_by': self.employee_member,
                 'activity_datetime': last_month
             })
@@ -177,9 +181,11 @@ class TestCareTeamMemberUsingPatient(BillingsMixin, APITestCase):
         now = timezone.now()
         last_month = now - relativedelta(months=1)
         total_this_month = 0
+        team_template = self.create_plan_team_template(plan=self.plan)
+
         for i in range(5):
             activity = self.create_billed_activity(**{
-                'plan': self.plan,
+                'team_template': team_template,
                 'added_by': self.employee_member,
                 'activity_datetime': now
             })
@@ -188,7 +194,7 @@ class TestCareTeamMemberUsingPatient(BillingsMixin, APITestCase):
         # create activities last month
         for i in range(5):
             self.create_billed_activity(**{
-                'plan': self.plan,
+                'team_template': team_template,
                 'added_by': self.employee_member,
                 'activity_datetime': last_month
             })
