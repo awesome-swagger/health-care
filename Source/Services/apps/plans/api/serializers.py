@@ -640,26 +640,28 @@ class CarePlanTemplateAverageSerializer(serializers.ModelSerializer):
         )
 
     def care_plans_for_employee(self, obj, employee):
-        qs = obj.care_plans.filter(patient__facility__is_affiliate=False).distinct()
-        if employee.organizations_managed.count() > 0:
-            organizations_managed = employee.organizations_managed.values_list('id', flat=True)
-            facilities_managed = employee.facilities_managed.values_list('id', flat=True)
-            assigned_roles = employee.assigned_roles.values_list('id', flat=True)
+        qs = obj.care_plans.filter(
+            patient__facility__is_affiliate=False).distinct()
+
+        if employee.organizations_managed.exists():
+            organizations_managed = employee.organizations_managed.all()
+            facilities_managed = employee.facilities_managed.all()
+            assigned_roles = employee.assigned_roles.all()
             qs = qs.filter(
-                Q(patient__facility__organization__id__in=organizations_managed) |
-                Q(patient__facility__id__in=facilities_managed) |
-                Q(care_team_members__id__in=assigned_roles)
+                Q(patient__facility__organization__in=organizations_managed) |
+                Q(patient__facility__in=facilities_managed) |
+                Q(care_team_members__in=assigned_roles)
             )
         elif employee.facilities_managed.count() > 0:
-            facilities_managed = employee.facilities_managed.values_list('id', flat=True)
-            assigned_roles = employee.assigned_roles.values_list('id', flat=True)
+            facilities_managed = employee.facilities_managed.all()
+            assigned_roles = employee.assigned_roles.all()
             qs = qs.filter(
-                Q(patient__facility__id__in=facilities_managed) |
-                Q(care_team_members__id__in=assigned_roles)
+                Q(patient__facility__in=facilities_managed) |
+                Q(care_team_members__in=assigned_roles)
             )
         else:
-            assigned_roles = employee.assigned_roles.values_list('id', flat=True)
-            qs = qs.filter(care_team_members__id__in=assigned_roles)
+            assigned_roles = employee.assigned_roles.all()
+            qs = qs.filter(care_team_members__in=assigned_roles)
         return qs.all()
 
     def get_total_patients(self, obj):
@@ -735,19 +737,19 @@ class CarePlanTemplateAverageSerializer(serializers.ModelSerializer):
         employee_care_plans = self.care_plans_for_employee(obj, employee)
 
         kwargs = {
-            'plan__id__in': employee_care_plans.values_list('id', flat=True),
-            'plan__patient__facility__is_affiliate': False,
-            'plan__plan_template': obj,
+            'team_template__plan__in': employee_care_plans,
+            'team_template__plan__patient__facility__is_affiliate': False,
+            'team_template__plan__plan_template': obj,
             'activity_datetime__gte': timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         }
         if facility:
             kwargs.update({
-                'plan__patient__facility': facility
+                'team_template__plan__patient__facility': facility
             })
 
         if organization:
             kwargs.update({
-                'plan__patient__facility__organization': organization
+                'team_template__plan__patient__facility__organization': organization
             })
 
         time_spent = BilledActivity.objects.filter(**kwargs).aggregate(
@@ -762,22 +764,22 @@ class CarePlanTemplateAverageSerializer(serializers.ModelSerializer):
         employee_care_plans = self.care_plans_for_employee(obj, employee)
 
         kwargs = {
-            'plan__id__in': employee_care_plans.values_list('id', flat=True),
-            'plan__patient__facility__is_affiliate': False,
-            'plan__plan_template': obj,
+            'team_template__plan__id__in': employee_care_plans.values_list('id', flat=True),
+            'team_template__plan__patient__facility__is_affiliate': False,
+            'team_template__plan__plan_template': obj,
             'activity_datetime__gte': timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         }
         exclude_kwargs = {
-            'plan__billing_type__acronym': 'TCM',
+            'team_template__plan__billing_type__acronym': 'TCM',
         }
         if facility:
             kwargs.update({
-                'plan__patient__facility': facility
+                'team_template__plan__patient__facility': facility
             })
 
         if organization:
             kwargs.update({
-                'plan__patient__facility__organization': organization
+                'team_template__plan__patient__facility__organization': organization
             })
 
         time_spent = BilledActivity.objects.exclude(**exclude_kwargs).filter(**kwargs).aggregate(
@@ -1040,7 +1042,7 @@ class CarePlanOverviewSerializer(RepresentationMixin, serializers.ModelSerialize
 
     def get_time_count(self, obj):
         time_spent = BilledActivity.objects.filter(
-            plan=obj,
+            team_template__plan=obj,
             activity_datetime__gte=timezone.now().replace(
                 day=1, hour=0, minute=0, second=0, microsecond=0)) \
                 .aggregate(total=Sum('time_spent'))
@@ -1049,7 +1051,7 @@ class CarePlanOverviewSerializer(RepresentationMixin, serializers.ModelSerialize
 
     def get_last_contact(self, obj):
         last_patient_included_activity = BilledActivity.objects.filter(
-            plan=obj,
+            team_template__plan=obj,
             patient_included=True).order_by('-activity_datetime').first()
         if last_patient_included_activity:
             serializer = LastContactSerializer(last_patient_included_activity, many=False)

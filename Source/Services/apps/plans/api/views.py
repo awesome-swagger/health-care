@@ -57,6 +57,7 @@ from .serializers import (
     TeamMessageSerializer,
 )
 from apps.accounts.models import EmailUser
+from apps.billings.models import BilledActivity
 from apps.core.api.mixins import ParentViewSetPermissionMixin
 from apps.core.models import Organization, Facility, Symptom
 from apps.core.api.serializers import ProviderRoleSerializer
@@ -509,7 +510,10 @@ class CarePlanViewSet(viewsets.ModelViewSet):
         plan = self.get_object()
         start_date = request.GET.get('start_date')
         end_date = request.GET.get('end_date')
-        queryset = plan.activities.filter(activity_datetime__range=[start_date, end_date])
+        queryset = BilledActivity.objects.filter(
+            team_template__plan=plan,
+            activity_datetime__range=[start_date, end_date]
+        )
         time_spent = queryset.aggregate(total=Sum('time_spent'))
         total_time_spent = time_spent['total'] or 0
 
@@ -625,7 +629,9 @@ class CarePlanViewSet(viewsets.ModelViewSet):
         """
         plan = self.get_object()
         if not plan.is_billed:
-            plan.activities.update(is_billed=True)
+            BilledActivity.objects.filter(
+                team_template__plan=plan).update(is_billed=True)
+
             plan.is_billed = True
             plan.save(update_fields=['is_billed'])
 

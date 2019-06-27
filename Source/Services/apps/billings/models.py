@@ -15,16 +15,10 @@ class BilledActivity(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
     for a specific care plan or patient.
     """
 
-    plan = models.ForeignKey(
-        'plans.CarePlan',
+    team_template = models.ForeignKey(
+        'tasks.CarePlanTeamTemplate',
         related_name='activities',
-        on_delete=models.SET_NULL,
-        null=True
-        )
-    team_task_template = models.ForeignKey(
-        'tasks.TeamTaskTemplate',
-        related_name='activities',
-        on_delete=models.SET_NULL,
+        on_delete=models.CASCADE,
         blank=True,
         null=True)
     members = models.ManyToManyField(

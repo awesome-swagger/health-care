@@ -22,6 +22,7 @@ from apps.patients.models import PatientProfile, PotentialPatient
 from apps.plans.models import CarePlan
 from apps.tasks.models import (
     AssessmentTask,
+    CarePlanTeamTemplate,
     PatientTask,
     MedicationTask,
     SymptomTask,
@@ -571,8 +572,8 @@ class OrganizationPatientGraphSerializer(serializers.ModelSerializer):
             'is_active': True
         }
         billable_kwargs = {
-            'plan__patient__facility__in': facilities,
-            'plan__patient__is_active': True
+            'team_template__plan__patient__facility__in': facilities,
+            'team_template__plan__patient__is_active': True
         }
 
         if care_team_members.exists() and filter_allowed:
@@ -580,7 +581,7 @@ class OrganizationPatientGraphSerializer(serializers.ModelSerializer):
                 'care_plans__care_team_members__employee_profile__in': care_team_members
             })
             billable_kwargs.update({
-                'plan__care_team_members__employee_profile__in': care_team_members
+                'team_template__plan__care_team_members__employee_profile__in': care_team_members
             })
 
         if 'facility' in request.GET and filter_allowed:
@@ -588,7 +589,7 @@ class OrganizationPatientGraphSerializer(serializers.ModelSerializer):
                 'facility__id': request.GET.get('facility')
             })
             billable_kwargs.update({
-                'plan__patient__facility__id': request.GET.get('facility')
+                'team_template__plan__patient__facility__id': request.GET.get('facility')
             })
 
         for i in range(months):
@@ -607,7 +608,8 @@ class OrganizationPatientGraphSerializer(serializers.ModelSerializer):
                 **enrolled_kwargs).distinct().count()
             billable_patients = BilledActivity.objects.filter(
                 **billable_kwargs).values_list(
-                    'plan__patient', flat=True).distinct().count()
+                    'team_template__plan__patient',
+                    flat=True).distinct().count()
 
             monthly_data = {
                 'enrolled_patients': enrolled_patients,
@@ -1291,6 +1293,34 @@ class ActivityTeamTaskTemplateSerializer(RepresentationMixin,
         ]
 
 
+class ActivityTeamTemplateSerializer(RepresentationMixin,
+                                     serializers.ModelSerializer):
+
+    class Meta:
+        model = CarePlanTeamTemplate
+        fields = (
+            'id',
+            'plan',
+            'team_task_template',
+            'name',
+            'start_on_day',
+            'frequency',
+            'repeat_amount',
+            'appear_time',
+            'due_time',
+            'is_manager_task',
+            'category',
+            'roles',
+        )
+        nested_serializers = [
+            {
+                'field': 'roles',
+                'serializer_class': ProviderRoleSerializer,
+                'many': True,
+            }
+        ]
+
+
 class ActivityTeamTaskSerializer(RepresentationMixin,
                                  serializers.ModelSerializer):
     """
@@ -1324,7 +1354,7 @@ class BilledActivityDetailSerializer(RepresentationMixin,
         model = BilledActivity
         fields = (
             'id',
-            'team_task_template',
+            'team_template',
             'members',
             'added_by',
             'is_billed',
@@ -1333,8 +1363,8 @@ class BilledActivityDetailSerializer(RepresentationMixin,
         )
         nested_serializers = [
             {
-                'field': 'team_task_template',
-                'serializer_class': ActivityTeamTaskTemplateSerializer
+                'field': 'team_template',
+                'serializer_class': ActivityTeamTemplateSerializer
             },
             {
                 'field': 'added_by',
@@ -1420,7 +1450,8 @@ class BilledPlanSerializer(RepresentationMixin, serializers.ModelSerializer):
         return []
 
     def get_details_of_service(self, obj):
-        activities = obj.activities.filter(**self.context)\
+        activities = BilledActivity.objects.filter(
+            team_template__plan=obj, **self.context)\
             .order_by('activity_datetime')
         serializer = BilledActivityDetailSerializer(activities, many=True)
         return serializer.data
@@ -1472,8 +1503,8 @@ class BillingPractitionerSerializer(serializers.ModelSerializer):
         activity_year = self.context.get('activity_year', now.year)
         kwargs = {
             'patient__facility__organization': organization,
-            'activities__activity_datetime__month': activity_month,
-            'activities__activity_datetime__year': activity_year
+            'plan_team_templates__activities__activity_datetime__month': activity_month,
+            'plan_team_templates__activities__activity_datetime__year': activity_year
         }
 
         if facility:
@@ -1500,6 +1531,7 @@ class BillingPractitionerSerializer(serializers.ModelSerializer):
             'activity_datetime__month': activity_month,
             'activity_datetime__year': activity_year
         }
+
         billed_plans = obj.billed_plans.filter(**kwargs).distinct()
         serializer = BilledPlanSerializer(
             billed_plans,

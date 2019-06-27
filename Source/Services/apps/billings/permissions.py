@@ -12,7 +12,7 @@ class IsAdminOrEmployeeActivityOwner(IsAdminOrEmployee):
             return request.user.is_employee and \
                 obj.added_by == request.user.employee_profile
 
-        members = obj.plan.care_team_members.values_list('employee_profile',
-                                                         flat=True).distinct()
+        members = obj.team_template.plan.care_team_members.values_list(
+            'employee_profile', flat=True).distinct()
         return request.user.is_employee and \
             request.user.employee_profile.id in members
