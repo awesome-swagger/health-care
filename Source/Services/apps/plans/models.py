@@ -139,7 +139,8 @@ class CarePlan(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
 
     @property
     def total_time_spent(self):
-        time_spent = self.activities.aggregate(total=Sum('time_spent'))
+        time_spent = BilledActivity.objects.filter(
+            team_template__plan=self).aggregate(total=Sum('time_spent'))
         total = time_spent['total'] or 0
         return str(datetime.timedelta(minutes=total))[:-3]
 

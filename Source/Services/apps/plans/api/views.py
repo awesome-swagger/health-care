@@ -510,7 +510,10 @@ class CarePlanViewSet(viewsets.ModelViewSet):
         plan = self.get_object()
         start_date = request.GET.get('start_date')
         end_date = request.GET.get('end_date')
-        queryset = plan.activities.filter(activity_datetime__range=[start_date, end_date])
+        queryset = BilledActivity.objects.filter(
+            team_template__plan=plan,
+            activity_datetime__range=[start_date, end_date]
+        )
         time_spent = queryset.aggregate(total=Sum('time_spent'))
         total_time_spent = time_spent['total'] or 0
 

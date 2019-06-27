@@ -5,7 +5,10 @@ def billedactivity_post_save(sender, instance, created, **kwargs):
     """
     plan = instance.team_template.plan
     if instance.is_billed:
-        unbilled_activities = plan.activities.filter(is_billed=False)
+        unbilled_activities = sender.objects.filter(
+            team_template__plan=plan,
+            is_billed=False
+        )
         if not unbilled_activities.exists() and not plan.is_billed:
             plan.is_billed = True
             plan.save(update_fields=['is_billed'])
