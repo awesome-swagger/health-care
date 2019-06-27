@@ -300,6 +300,9 @@ export class BillingComponent implements OnDestroy, OnInit {
   }
 
   public isEmployeeSelected(employee) {
+    if (this.selectedEmployees.length === 0) {
+      return true;
+    }
     return this.selectedEmployees.includes(employee.id);
   }
 
@@ -380,8 +383,8 @@ export class BillingComponent implements OnDestroy, OnInit {
   }
 
   public getActionType(details) {
-    if (details.team_task_template) {
-      return details.team_task_template.name;
+    if (details.team_template) {
+      return details.team_template.name;
     } else {
       return 'Patient Data Review';
     }

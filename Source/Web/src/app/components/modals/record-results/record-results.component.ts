@@ -18,8 +18,8 @@ export class RecordResultsComponent implements OnInit, OnDestroy {
   public date = null;
   public carePlan = null;
   public tasksLoaded = false;
-  public teamTaskTemplates = [];
-  public selectedTaskTemplate = null;
+  public teamTemplates = [];
+  public selectedTeamTemplate = null;
   public taskEditable = true;
   public totalMinutes = null;
   public teamMembersLoaded = false;
@@ -78,13 +78,13 @@ export class RecordResultsComponent implements OnInit, OnDestroy {
         }
       });
       // Get Task Templates
-      this.getTaskTemplates().then((taskTemplates: any) => {
+      this.getTeamTemplates().then((teamTemplates: any) => {
         this.tasksLoaded = true;
-        this.teamTaskTemplates = taskTemplates;
-        // If teamTaskId is passed in data, set it as the selected task.
-        if (this.data.teamTaskId) {
-          this.selectedTaskTemplate = this.teamTaskTemplates.find((obj) => {
-            return obj.id === this.data.teamTaskId;
+        this.teamTemplates = teamTemplates;
+        // If teamTemplateId is passed in data, set it as the selected task.
+        if (this.data.teamTemplateId) {
+          this.selectedTeamTemplate = this.teamTemplates.find((obj) => {
+            return obj.id === this.data.teamTemplateId;
           });
         }
       });
@@ -110,14 +110,14 @@ export class RecordResultsComponent implements OnInit, OnDestroy {
     return promise;
   }
 
-  public getTaskTemplates() {
+  public getTeamTemplates() {
     let promise = new Promise((resolve, reject) => {
       // Get team task templates for this care plan template type
-      let teamTasksSub = this.store.TeamTaskTemplate.readListPaged().subscribe(
-        (teamTasks) => resolve(teamTasks),
+      let teamTemplatesSub = this.store.PlanTeamTemplate.readListPaged().subscribe(
+        (teamTemplates) => resolve(teamTemplates),
         (err) => reject(err),
         () => {
-          teamTasksSub.unsubscribe();
+          teamTemplatesSub.unsubscribe();
         },
       );
     });
@@ -176,14 +176,14 @@ export class RecordResultsComponent implements OnInit, OnDestroy {
   }
 
   public saveDisabled() {
-    return (!this.date || !this.selectedTaskTemplate || !this.totalMinutes);
+    return (!this.date || !this.selectedTeamTemplate || !this.totalMinutes);
   }
 
   public clickSave() {
     this.modal.close({
       date: this.date,
       carePlan: this.carePlan,
-      teamTaskTemplate: this.selectedTaskTemplate.id,
+      teamTemplate: this.selectedTeamTemplate.id,
       totalMinutes: this.totalMinutes,
       with: this.withSelected.map((obj) => obj.employee_profile.id),
       patientIncluded: this.patientIncluded,

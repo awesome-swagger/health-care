@@ -664,17 +664,17 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
 
   public openRecordResults(task) {
     this.store.TeamTask.read(task.id).subscribe((taskObj) => {
-      let hasTeamTaskTemplate = !!taskObj.team_template.team_task_template;
-      let teamTaskTemplateId = null;
-      if (hasTeamTaskTemplate) {
-        teamTaskTemplateId = taskObj.team_template.team_task_template.id;
+      let hasPlanTemplate = !!taskObj.team_template;
+      let teamTemplateId = null;
+      if (hasPlanTemplate) {
+        teamTemplateId = taskObj.team_template.id;
       }
       this.modals.open(RecordResultsComponent, {
         closeDisabled: false,
         data: {
           patient: this.patient,
           carePlan: this.carePlan,
-          teamTaskId: teamTaskTemplateId,
+          teamTemplateId: teamTemplateId,
           taskEditable: false,
           totalMinutes: null,
           with: null,
@@ -693,7 +693,7 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
           members: [
             this.user.id,
           ].concat(results.with),
-          team_task_template: results.teamTaskTemplate,
+          team_template: results.teamTemplate,
           patient_included: results.patientIncluded,
           sync_to_ehr: results.syncToEHR,
           added_by: this.user.id,

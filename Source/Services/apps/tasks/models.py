@@ -652,8 +652,8 @@ class SymptomRating(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
 
     def __str__(self):
         return '{} {} {}: {}'.format(
-            self.symptom_task.plan.patient.user.first_name,
-            self.symptom_task.plan.patient.user.last_name,
+            self.symptom_task.symptom_template.plan.patient.user.first_name,
+            self.symptom_task.symptom_template.plan.patient.user.last_name,
             self.symptom.name,
             self.rating,
         )

@@ -299,7 +299,7 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
         members: [
           this.user.id,
         ].concat(results.with),
-        team_task_template: results.teamTaskTemplate,
+        team_template: results.teamTemplate,
         patient_included: results.patientIncluded,
         sync_to_ehr: results.syncToEHR,
         added_by: this.user.id,
@@ -328,7 +328,7 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
         patient: this.patient,
         carePlan: this.carePlan,
         date: moment(result.activity_datetime),
-        teamTaskId: result.team_task_template ? result.team_task_template.id : null,
+        teamTemplateId: result.team_template ? result.team_template.id : null,
         patientIncluded: result.patient_included,
         totalMinutes: result.time_spent,
         with: result.members.map((member) => member.id),
@@ -344,7 +344,7 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
         members: [
           this.user.id,
         ].concat(results.with),
-        team_task_template: results.teamTaskTemplate,
+        team_template: results.teamTemplate,
         patient_included: results.patientIncluded,
         sync_to_ehr: results.syncToEHR,
         notes: results.notes,
