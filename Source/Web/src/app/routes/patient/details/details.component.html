@@ -463,7 +463,7 @@
 			<!--/.accordion__head-->
 			<div class="accordion__body">
 				<div class="accordion__contents">
-					<h2 *ngIf="assessmentResults.length < 1">No assessment results on selected date</h2>
+					<h2 *ngIf="assessmentResults.length < 1">No assessments on selected date</h2>
 					<ng-container *ngFor="let assessment of assessmentResults">
 						<div class="flex alignCenter">
 							<h3 class="noMargin marRight24">{{assessment.name}}</h3>
@@ -494,7 +494,7 @@
 								</app-popover>
 							</div>
 						</div>
-						<table class="fullWidth marBottom48">
+						<table class="fullWidth marBottom24">
 							<thead>
 								<tr>
 									<th class="thSortable">
@@ -592,21 +592,23 @@
 							</thead>
 							<tbody>
 								<tr *ngFor="let question of assessment.questions">
-									<td class="left">{{question.question}}</td>
+									<td class="left">{{question.prompt}}</td>
 									<td>
-										<ng-container *ngIf="!isUpdatingAssessmentResult(question)">
-											<div class="pill" [ngClass]="utils.percentPillClass(outcomePercentage(question.rating))">
-												{{question.rating}}/5
+										<ng-container *ngIf="!isUpdatingAssessmentResult(question) && question.response">
+											<div class="pill" [ngClass]="utils.percentPillClass(outcomePercentage(question.response.rating))">
+												{{question.response.rating}}/5
 											</div>
 										</ng-container>
-										<ng-container *ngIf="isUpdatingAssessmentResult(question)">
-											<input type="number" min="0" max="5" class="input" [(ngModel)]="question.rating" />
+										<ng-container *ngIf="isUpdatingAssessmentResult(question) && question.response">
+											<input type="number" min="0" max="5" class="input" [(ngModel)]="question.response.rating" />
 										</ng-container>
 									</td>
-									<td>{{question.occurrence}}</td>
+									<td>
+										<span *ngIf="question.response">{{question.response.occurrence}}</span>
+									</td>
 									<td>
 										<div class="iconText">
-											<i class="iconText__icon iconText__icon--noTop ss-standard ss-up iconSmall iconLime"></i> N/A
+											<i class="iconText__icon iconText__icon--noTop ss-standard iconSmall" [ngClass]="getBehaviorIcon(question.response.behavior)"></i> {{question.response.behavior}}
 										</div>
 									</td>
 									<td>
@@ -614,20 +616,32 @@
 									</td>
 									<td>
 										<div class="iconText">
-											<i class="iconText__icon iconText__icon--noTop ss-standard ss-hyphen iconSmall"></i> N/A
+											<i class="iconText__icon iconText__icon--noTop ss-standard iconSmall" [ngClass]="getBehaviorIcon(question.response.behavior_against_care_plan)"></i> {{question.response.behavior_against_care_plan}}
 										</div>
 									</td>
 									<td>
 										<a *ngIf="!isUpdatingAssessmentResult(question)" class="button button--icon--small button--icon button--center relative" (click)="clickUpdateAssessmentResult(question)">
 											<i class="ss-write"></i>
 										</a>
-										<a *ngIf="isUpdatingAssessmentResult(question)" class="button button--icon--small button--icon button--center relative" (click)="clickSaveAssessmentResult(question)">
+										<a *ngIf="isUpdatingAssessmentResult(question)" class="button button--icon--small button--icon button--center relative" (click)="clickSaveAssessmentResult(assessment, question)">
 											<i class="ss-floppydisk"></i>
 										</a>
 									</td>
 								</tr>
 							</tbody>
 						</table>
+						<label>Comment</label>
+						<ng-container *ngIf="assessment.task.comments">
+							<p>
+								"{{assessment.task.comments}}"
+							</p>
+							<button (click)="routeToMessaging()" class="button button--iconText marBottom48">
+								<i class="ss-chat"></i> Reply
+							</button>
+						</ng-container>
+						<ng-container *ngIf="!assessment.task.comments">
+							<p>No comment given for this assessment</p>
+						</ng-container>
 					</ng-container>
 				</div>
 				<!--/.accordion__contents-->
@@ -654,7 +668,7 @@
 			<!--/.accordion__head-->
 			<div class="accordion__body">
 				<div class="accordion__contents">
-					<h2 *ngIf="symptomResults.length < 1">No symptoms reported on selected date</h2>
+					<h2 *ngIf="symptomResults.length < 1">No symptom reports on selected date</h2>
 					<table class="fullWidth" *ngIf="symptomResults.length > 0">
 						<thead>
 							<tr>
@@ -793,9 +807,9 @@
 					<p>
 						"I think this new medication makes my head hurt more."
 					</p>
-					<a (click)="routeToMessaging()" class="button button--iconText">
+					<button (click)="routeToMessaging()" class="button button--iconText">
 						<i class="ss-chat"></i> Reply
-					</a>
+					</button>
 				</div>
 				<!--/.accordion__contents-->
 			</div>
@@ -815,7 +829,7 @@
 			<!--/.accordion__head-->
 			<div class="accordion__body">
 				<div class="accordion__contents">
-					<h2 *ngIf="vitalResults.length < 1">No vital results on selected date</h2>
+					<h2 *ngIf="vitalResults.length < 1">No vital reports on selected date</h2>
 					<ng-container *ngFor="let vital of vitalResults">
 						<h3 class="noMargin">{{vital.name}}</h3>
 						<table class="fullWidth">
@@ -918,30 +932,30 @@
 								</tr>
 							</thead>
 							<tbody>
-								<tr *ngFor="let result of vital.questions">
-									<td class="left">{{result.question}}</td>
-									<td>{{formatVitalQuestionType(result.answer_type) | titlecase}}</td>
+								<tr *ngFor="let question of vital.questions">
+									<td class="left">{{question.prompt}}</td>
+									<td>{{formatVitalQuestionType(question.answer_type) | titlecase}}</td>
 									<td>
-										<ng-container *ngIf="!isUpdatingVitalResult(result)">
+										<ng-container *ngIf="!isUpdatingVitalResult(question)">
 											<div>
-												{{result.answer}}
+												{{question.response.answer}}
 											</div>
 										</ng-container>
-										<ng-container *ngIf="isUpdatingVitalResult(result)">
-											<div class="editInput styledSelect" *ngIf="result.answer_type === 'boolean'">
-												<select class="styledSelect__select" [(ngModel)]="result.answer">
-													<option [ngValue]="true">True</option>
-													<option [ngValue]="false">False</option>
+										<ng-container *ngIf="isUpdatingVitalResult(question)">
+											<div class="editInput styledSelect" *ngIf="question.answer_type === 'boolean'">
+												<select class="styledSelect__select" [(ngModel)]="question.response.answer">
+													<option [ngValue]="'True'">True</option>
+													<option [ngValue]="'False'">False</option>
 												</select>
 											</div>
-											<app-time-picker *ngIf="result.answer_type === 'time'" [startingValue]="result.answer" (valueChange)="result.answer = $event;"></app-time-picker>
-											<input type="number" class="editInput input" step="1" [(ngModel)]="result.answer" *ngIf="result.answer_type === 'integer'" />
-											<input type="number" class="editInput input" step="0.01" [(ngModel)]="result.answer" *ngIf="result.answer_type === 'float'" />
-											<input type="number" min="0" max="5" class="editInput input" [(ngModel)]="result.answer" *ngIf="result.answer_type === 'scale'" />
-											<input type="text" class="editInput input" [(ngModel)]="result.answer" *ngIf="result.answer_type === 'string'" />
+											<app-time-picker *ngIf="question.answer_type === 'time'" [startingValue]="question.response.answer" (valueChange)="question.response.answer = $event;"></app-time-picker>
+											<input type="number" class="editInput input" step="1" [(ngModel)]="question.response.answer" *ngIf="question.answer_type === 'integer'" />
+											<input type="number" class="editInput input" step="0.01" [(ngModel)]="question.response.answer" *ngIf="question.answer_type === 'float'" />
+											<input type="number" min="0" max="5" class="editInput input" [(ngModel)]="question.response.answer" *ngIf="question.answer_type === 'scale'" />
+											<input type="text" class="editInput input" [(ngModel)]="question.response.answer" *ngIf="question.answer_type === 'string'" />
 										</ng-container>
 									</td>
-									<td>{{result.occurrence}}</td>
+									<td>{{question.response.occurrence}}</td>
 									<td>
 										<div class="iconText">
 											<i class="iconText__icon iconText__icon--noTop ss-standard ss-up iconSmall"></i> N/A
@@ -956,24 +970,29 @@
 										</div>
 									</td>
 									<td>
-										<a *ngIf="!isUpdatingVitalResult(result)" class="button button--icon--small button--icon button--center relative" (click)="clickUpdateVitalResult(result)">
+										<a *ngIf="!isUpdatingVitalResult(question)" class="button button--icon--small button--icon button--center relative" (click)="clickUpdateVitalResult(question)">
 											<i class="ss-write"></i>
 										</a>
-										<a *ngIf="isUpdatingVitalResult(result)" class="button button--icon--small button--icon button--center relative" (click)="clickSaveVitalResult(result)">
+										<a *ngIf="isUpdatingVitalResult(question)" class="button button--icon--small button--icon button--center relative" (click)="clickSaveVitalResult(vital, question)">
 											<i class="ss-floppydisk"></i>
 										</a>
 									</td>
 								</tr>
 							</tbody>
 						</table>
+						<label>Comment</label>
+						<ng-container *ngIf="vital.task.comments">
+							<p>
+								"{{vital.task.comments}}"
+							</p>
+							<button (click)="routeToMessaging()" class="button button--iconText marBottom48">
+								<i class="ss-chat"></i> Reply
+							</button>
+						</ng-container>
+						<ng-container *ngIf="!vital.task.comments">
+							<p>No comment given for this vital report</p>
+						</ng-container>
 					</ng-container>
-					<label>Comment</label>
-					<p>
-						"My blood pressure seems to be stabilizing."
-					</p>
-					<a (click)="routeToMessaging()" class="button button--iconText">
-						<i class="ss-chat"></i> Reply
-					</a>
 				</div>
 				<!--/.accordion__contents-->
 			</div>

@@ -1954,7 +1954,6 @@ class AssessmentResultViewSet(ParentViewSetPermissionMixin,
 
         return queryset.filter(
             assessment_tasks__due_datetime__range=(date_min, date_max),
-            assessment_tasks__is_complete=True,
         ).distinct()
 
     def get_serializer_context(self):
@@ -2104,7 +2103,6 @@ class VitalByPlanViewSet(ParentViewSetPermissionMixin,
 
         return queryset.filter(
             vital_tasks__due_datetime__range=date_range,
-            vital_tasks__is_complete=True,
         ).distinct()
 
     def get_serializer_context(self):

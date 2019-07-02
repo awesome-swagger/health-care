@@ -938,7 +938,7 @@ class VitalResponseSerializer(RepresentationMixin, serializers.ModelSerializer):
         ]
 
     def get_vital_task_name(self, obj):
-        return obj.vital_task.vital_template.vital_task_template.name
+        return obj.vital_task.vital_template.name
 
     def format_answer(self, answer_type, response):
         if answer_type == VitalQuestion.BOOLEAN:
@@ -1112,6 +1112,7 @@ class VitalTaskSerializer(RepresentationMixin, serializers.ModelSerializer):
         fields = (
             'id',
             'vital_template',
+            'comments',
             'is_complete',
             'responses',
             'appear_datetime',
@@ -1136,6 +1137,7 @@ class AssessmentResponseOverviewSerializer(serializers.ModelSerializer):
     """
 
     question = serializers.SerializerMethodField()
+    question_id = serializers.SerializerMethodField()
     occurrence = serializers.SerializerMethodField()
 
     class Meta:
@@ -1143,6 +1145,7 @@ class AssessmentResponseOverviewSerializer(serializers.ModelSerializer):
         fields = (
             'id',
             'question',
+            'question_id',
             'rating',
             'occurrence',
             'behavior',
@@ -1151,6 +1154,9 @@ class AssessmentResponseOverviewSerializer(serializers.ModelSerializer):
 
     def get_question(self, obj):
         return obj.assessment_question.prompt
+
+    def get_question_id(self, obj):
+        return obj.assessment_question.id
 
     def get_occurrence(self, obj):
         task = obj.assessment_task
@@ -1168,19 +1174,64 @@ class AssessmentResultOverviewSerializer(serializers.ModelSerializer):
     to be used in `Assessment Results` section in  `patients_Details` page
     """
 
+    task = serializers.SerializerMethodField()
     questions = serializers.SerializerMethodField()
+    responses = serializers.SerializerMethodField()
 
     class Meta:
         model = CarePlanAssessmentTemplate
         fields = (
             'id',
+            'task',
             'name',
             'tracks_outcome',
             'tracks_satisfaction',
             'questions',
+            'responses',
         )
 
+    def get_task(self, obj):
+        request = self.context.get('request')
+        timestamp = request.GET.get('date', None)
+        tasks = AssessmentTask.objects.filter(assessment_template=obj)
+        date_format = "%Y-%m-%d"
+        date_object = datetime.datetime.strptime(timestamp, date_format).date() \
+            if timestamp else timezone.now().date()
+        date_min = datetime.datetime.combine(date_object,
+                                             datetime.time.min,
+                                             tzinfo=pytz.utc)
+        date_max = datetime.datetime.combine(date_object,
+                                             datetime.time.max,
+                                             tzinfo=pytz.utc)
+        kwargs = {
+            'id__in': tasks,
+            'due_datetime__range': (date_min, date_max)
+        }
+
+        task = AssessmentTask.objects.filter(**kwargs)
+        serializer = AssessmentTaskSerializer(task.first())
+        return serializer.data
+
     def get_questions(self, obj):
+        adhoc_questions = obj.assessment_questions.values_list(
+            'id', flat=True).distinct()
+        task_template = obj.assessment_task_template
+        template_questions = None
+        if task_template:
+            template_questions = task_template.questions.values_list(
+                'id', flat=True).distinct()
+        questions = None
+        if adhoc_questions.count() > 0:
+            questions = adhoc_questions
+        elif task_template:
+            questions = template_questions
+        else:
+            questions = []
+        questions = AssessmentQuestion.objects.filter(id__in=questions)
+        serializer = AssessmentQuestionSerializer(questions, many=True)
+        return serializer.data
+
+    def get_responses(self, obj):
         request = self.context.get('request')
         timestamp = request.GET.get('date', None)
         tasks = AssessmentTask.objects.filter(assessment_template=obj)
@@ -1252,6 +1303,7 @@ class VitalResponseOverviewSerializer(serializers.ModelSerializer):
     """
 
     question = serializers.SerializerMethodField()
+    question_id = serializers.SerializerMethodField()
     answer_type = serializers.SerializerMethodField()
     occurrence = serializers.SerializerMethodField()
 
@@ -1260,6 +1312,7 @@ class VitalResponseOverviewSerializer(serializers.ModelSerializer):
         fields = (
             'id',
             'question',
+            'question_id',
             'answer',
             'answer_type',
             'occurrence',
@@ -1269,6 +1322,9 @@ class VitalResponseOverviewSerializer(serializers.ModelSerializer):
 
     def get_question(self, obj):
         return obj.question.prompt
+
+    def get_question_id(self, obj):
+        return obj.question.id
 
     def get_answer_type(self, obj):
         return obj.question.answer_type
@@ -1289,21 +1345,54 @@ class VitalByPlanSerializer(serializers.ModelSerializer):
     `Vitals` section in `patients_Details` page
     """
 
+    task = serializers.SerializerMethodField()
     questions = serializers.SerializerMethodField()
+    responses = serializers.SerializerMethodField()
 
     class Meta:
         model = CarePlanVitalTemplate
         fields = (
             'id',
+            'task',
             'name',
             'questions',
+            'responses',
         )
 
-    def get_questions(self, obj):
+    def get_task(self, obj):
         date_range = self.context.get('date_range')
-        tasks = VitalTask.objects.filter(
-            vital_template=obj
-        )
+        tasks = VitalTask.objects.filter(vital_template=obj)
+        kwargs = {
+            'id__in': tasks,
+            'due_datetime__range': date_range
+        }
+
+        task = VitalTask.objects.filter(**kwargs)
+        serializer = VitalTaskSerializer(task.first())
+        return serializer.data
+
+    def get_questions(self, obj):
+        adhoc_questions = obj.vital_questions.values_list(
+            'id', flat=True).distinct()
+        task_template = obj.vital_task_template
+        template_questions = None
+        if task_template:
+            template_questions = task_template.questions.values_list(
+                'id', flat=True).distinct()
+        questions = None
+        if adhoc_questions.count() > 0:
+            questions = adhoc_questions
+        elif task_template:
+            questions = template_questions
+        else:
+            questions = []
+        questions = VitalQuestion.objects.filter(id__in=questions)
+        serializer = VitalQuestionSerializer(questions, many=True)
+        return serializer.data
+
+    def get_responses(self, obj):
+        date_range = self.context.get('date_range')
+        tasks = VitalTask.objects.filter(vital_template=obj)
 
         kwargs = {
             'vital_task__in': tasks,

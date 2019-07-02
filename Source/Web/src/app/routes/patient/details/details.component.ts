@@ -160,6 +160,10 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
     }
   }
 
+  /***************************************************************************
+  * API Promises
+  ****************************************************************************/
+
   public getPatientProfile(patientId) {
     let promise = new Promise((resolve, reject) => {
       let patientSub = this.store.PatientProfile.read(patientId).subscribe(
@@ -342,6 +346,99 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
     return promise;
   }
 
+  public refetchPatientTasks(formattedDate) {
+    let patientTasksPromise = this.getPatientTasks(this.patient.user.id, this.carePlan.plan_template.id, formattedDate).then((tasks: any) => {
+      this.patientTasks = tasks.tasks;
+    });
+    return patientTasksPromise;
+  }
+
+  public refetchAllTasks(dateAsMoment) {
+    if (!this.patient || !this.carePlan) {
+      return;
+    }
+    this.detailsLoaded = false;
+    let startOfDay = dateAsMoment.startOf('day').utc().toISOString();
+    let endOfDay = dateAsMoment.endOf('day').utc().toISOString();
+    let formattedDate = dateAsMoment.utc().format('YYYY-MM-DD');
+    let goalsPromise = this.getGoals(this.patient.id, this.carePlan.plan_template.id, startOfDay, endOfDay).then((goals: any) => {
+      this.planGoals = goals;
+    });
+    let userTasksPromise = this.getUserTasks(this.carePlan.plan_template.id, formattedDate).then((tasks: any) => {
+      this.userTasks = tasks.tasks.filter((obj) => obj.patient && obj.patient.id === this.patient.id);
+    });
+    this.teamTasks = [];
+    let teamTasksPromise = this.getAllTeamMemberTasks(this.carePlan.plan_template.id, formattedDate).then((teamMemberTasks: any) => {
+      teamMemberTasks.forEach((tasks) => {
+        this.teamTasks = this.teamTasks.concat(tasks.tasks.filter((obj) => obj.patient && obj.patient.id === this.patient.id));
+      });
+    });
+    let patientTasksPromise = this.refetchPatientTasks(formattedDate).then(() => {
+      if (!this.isUsingMobile) {
+        this.updatingPatientTasks = this.patientTasks.filter((obj) => this.isPatientTaskUpdatable(obj));
+      }
+    });
+    this.updatingAssessmentResults = [];
+    let assessmentsPromise = this.getAssessmentResults(this.carePlan, formattedDate).then((assessments: any) => {
+      this.assessmentResults = assessments.results;
+      this.assessmentResults.forEach((assessment) => {
+        assessment.questions.forEach((question) => {
+          let response = this.assessmentQuestionResponse(assessment, question);
+          if (response) {
+            question.response = response;
+          } else {
+            question.response = {
+              question: question.prompt,
+              question_id: question.id,
+              rating: 0,
+              occurrence: 'n/a',
+              behavior: 'n/a',
+              behavior_against_care_plan: 'n/a'
+            };
+          }
+        });
+      });
+      if (!this.isUsingMobile) {
+        this.assessmentResults.forEach((assessment) => {
+          this.updatingAssessmentResults = this.updatingAssessmentResults.concat(assessment.questions);
+        });
+      }
+    });
+    let symptomsPromise = this.getSymptomResults(this.carePlan, formattedDate).then((symptoms: any) => {
+      this.symptomResults = symptoms.results;
+      if (!this.isUsingMobile) {
+        this.updatingSymptomResults = this.symptomResults.concat();
+      }
+    });
+    let vitalResultsPromise = this.getVitalResults(this.carePlan, formattedDate).then((vitals: any) => {
+      this.vitalResults = vitals.results;
+      this.vitalResults.forEach((vital) => {
+        vital.questions.forEach((question) => {
+          let response = this.vitalQuestionResponse(vital, question);
+          if (response) {
+            question.response = response;
+          } else {
+            question.response = {
+              question: question.prompt,
+              question_id: question.id,
+              answer: null,
+              answer_type: question.answer_type,
+              occurrence: 'n/a',
+              behavior: 'n/a',
+              behavior_against_care_plan: 'n/a'
+            };
+          }
+        });
+      });
+      if (!this.isUsingMobile) {
+        this.vitalResults.forEach((vital) => {
+          this.updatingVitalResults = this.updatingVitalResults.concat(vital.questions);
+        });
+      }
+    });
+    return Promise.all([goalsPromise, userTasksPromise, teamTasksPromise, patientTasksPromise, assessmentsPromise, symptomsPromise, vitalResultsPromise]);
+  }
+
   public setAllUpdatable() {
     this.updatingPatientTasks = this.patientTasks.filter((obj) => this.isPatientTaskUpdatable(obj));
     this.assessmentResults.forEach((assessment) => {
@@ -367,58 +464,6 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
         updatePatientSub.unsubscribe();
       }
     );
-  }
-
-  public refetchAllTasks(dateAsMoment) {
-    if (!this.patient || !this.carePlan) {
-      return;
-    }
-    this.detailsLoaded = false;
-    let startOfDay = dateAsMoment.startOf('day').utc().toISOString();
-    let endOfDay = dateAsMoment.endOf('day').utc().toISOString();
-    let formattedDate = dateAsMoment.utc().format('YYYY-MM-DD');
-    let goalsPromise = this.getGoals(this.patient.id, this.carePlan.plan_template.id, startOfDay, endOfDay).then((goals: any) => {
-      this.planGoals = goals;
-    });
-    let userTasksPromise = this.getUserTasks(this.carePlan.plan_template.id, formattedDate).then((tasks: any) => {
-      this.userTasks = tasks.tasks.filter((obj) => obj.patient && obj.patient.id === this.patient.id);
-    });
-    this.teamTasks = [];
-    let teamTasksPromise = this.getAllTeamMemberTasks(this.carePlan.plan_template.id, formattedDate).then((teamMemberTasks: any) => {
-      teamMemberTasks.forEach((tasks) => {
-        this.teamTasks = this.teamTasks.concat(tasks.tasks.filter((obj) => obj.patient && obj.patient.id === this.patient.id));
-      });
-    });
-    let patientTasksPromise = this.getPatientTasks(this.patient.user.id, this.carePlan.plan_template.id, formattedDate).then((tasks: any) => {
-      this.patientTasks = tasks.tasks;
-      if (!this.isUsingMobile) {
-        this.updatingPatientTasks = this.patientTasks.filter((obj) => this.isPatientTaskUpdatable(obj));
-      }
-    });
-    this.updatingAssessmentResults = [];
-    let assessmentsPromise = this.getAssessmentResults(this.carePlan, formattedDate).then((assessments: any) => {
-      this.assessmentResults = assessments.results;
-      if (!this.isUsingMobile) {
-        this.assessmentResults.forEach((assessment) => {
-          this.updatingAssessmentResults = this.updatingAssessmentResults.concat(assessment.questions);
-        });
-      }
-    });
-    let symptomsPromise = this.getSymptomResults(this.carePlan, formattedDate).then((symptoms: any) => {
-      this.symptomResults = symptoms.results;
-      if (!this.isUsingMobile) {
-        this.updatingSymptomResults = this.symptomResults.concat();
-      }
-    });
-    let vitalResultsPromise = this.getVitalResults(this.carePlan, formattedDate).then((vitals: any) => {
-      this.vitalResults = vitals.results;
-      if (!this.isUsingMobile) {
-        this.vitalResults.forEach((vital) => {
-          this.updatingVitalResults = this.updatingVitalResults.concat(vital.questions);
-        });
-      }
-    });
-    return Promise.all([goalsPromise, userTasksPromise, teamTasksPromise, patientTasksPromise, assessmentsPromise, symptomsPromise, vitalResultsPromise]);
   }
 
   public setSelectedDay(dateAsMoment) {
@@ -527,8 +572,8 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
   public averageOutcomeScore() {
     let outcomeAssessments = this.assessmentResults.filter((assessment) => assessment.tracks_outcome);
     let totalSum = _sumBy(outcomeAssessments, (assessment) => {
-      return _sumBy(assessment.questions, (question) => {
-        return question.rating;
+      return _sumBy(assessment.responses, (response) => {
+        return response.rating;
       });
     });
     let average = (totalSum / this.totalOutcomeQuestions()) + .0;
@@ -542,8 +587,8 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
   public averageSatisfactionScore() {
     let satisfactionAssessments = this.assessmentResults.filter((assessment) => assessment.tracks_satisfaction);
     let totalSum = _sumBy(satisfactionAssessments, (assessment) => {
-      return _sumBy(assessment.questions, (question) => {
-        return question.rating;
+      return _sumBy(assessment.responses, (response) => {
+        return response.rating;
       });
     });
     let average = (totalSum / this.totalSatisfactionQuestions()) + .0;
@@ -571,6 +616,225 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
   public ratingPercentage(rating) {
     return (rating / 5.0) * 100;
   }
+
+  public isUpdatingPatientTask(task) {
+    return this.updatingPatientTasks.findIndex((obj) => obj.id === task.id) >= 0;
+  }
+
+  public isPatientTaskUpdatable(task) {
+    return this.updatablePatientTaskTypes.includes(task.type);
+  }
+
+  public clickUpdatePatientTask(task) {
+    this.updatingPatientTasks.push(task);
+  }
+
+  public clickSavePatientTask(task) {
+    let storeModel = null;
+    if (task.type === 'patient_task') {
+      storeModel = this.store.PatientTask;
+    } else if (task.type === 'medication_task') {
+      storeModel = this.store.MedicationTask;
+    }
+    if (!storeModel) {
+      return;
+    }
+    let updateSub = storeModel.update(task.id, {
+      status: task.state,
+    }, true).subscribe(
+      (res) => {
+        let taskUpdateListIndex = this.updatingPatientTasks.findIndex((obj) => obj.id === task.id);
+        this.updatingPatientTasks.splice(taskUpdateListIndex, 1);
+      },
+      (err) => {},
+      () => {
+        updateSub.unsubscribe();
+      },
+    );
+  }
+
+  public assessmentQuestionResponse(assessment, question) {
+    let res = assessment.responses.find((response) => {
+      return response.question_id === question.id;
+    });
+    return res;
+  }
+
+  public isUpdatingAssessmentResult(question) {
+    return this.updatingAssessmentResults.findIndex((obj) => obj.id === question.id) >= 0;
+  }
+
+  public clickUpdateAssessmentResult(question) {
+    this.updatingAssessmentResults.push(question);
+  }
+
+  public clickSaveAssessmentResult(assessment, question) {
+    if (!question.response || !question.response.rating) {
+      return;
+    }
+    if (question.response.id) {
+      let updateSub = this.store.AssessmentResponse.update(question.response.id, {
+        rating: question.response.rating,
+      }, true).subscribe(
+        (res) => {
+          let resultsListIndex = this.updatingAssessmentResults.findIndex((obj) => obj.id === question.id);
+          this.updatingAssessmentResults.splice(resultsListIndex, 1);
+          let formattedDate = this.selectedDate.utc().format('YYYY-MM-DD');
+          // this.refetchAssessmentResults(formattedDate).then(() => {});
+          this.refetchPatientTasks(formattedDate).then(() => {})
+        },
+        (err) => {},
+        () => {
+          updateSub.unsubscribe();
+        },
+      );
+    } else {
+      let createSub = this.store.AssessmentResponse.create({
+        assessment_task: assessment.task.id,
+        assessment_question: question.id,
+        rating: question.response.rating,
+      }).subscribe(
+        (res) => {
+          let resultsListIndex = this.updatingAssessmentResults.findIndex((obj) => obj.id === question.id);
+          this.updatingAssessmentResults.splice(resultsListIndex, 1);
+          let formattedDate = this.selectedDate.utc().format('YYYY-MM-DD');
+          // this.refetchAssessmentResults(formattedDate).then(() => {});
+          this.refetchPatientTasks(formattedDate).then(() => {})
+        },
+        (err) => {},
+        () => {
+          createSub.unsubscribe();
+        }
+      );
+    }
+  }
+
+  public isUpdatingSymptomResult(result) {
+    return this.updatingSymptomResults.findIndex((obj) => obj.id === result.id) >= 0;
+  }
+
+  public clickUpdateSymptomResult(result) {
+    this.updatingSymptomResults.push(result);
+  }
+
+  public clickSaveSymptomResult(result) {
+    let updateSub = this.store.SymptomRating.update(result.rating.id, {
+      rating: result.rating.rating,
+    }, true).subscribe(
+      (res) => {
+        let resultsListIndex = this.updatingSymptomResults.findIndex((obj) => obj.id === result.id);
+        this.updatingSymptomResults.splice(resultsListIndex, 1);
+      },
+      (err) => {},
+      () => {
+        updateSub.unsubscribe();
+      },
+    );
+  }
+
+  public vitalQuestionResponse(vital, question) {
+    let res = vital.responses.find((response) => {
+      return response.question_id === question.id;
+    });
+    return res;
+  }
+
+  public isUpdatingVitalResult(question) {
+    return this.updatingVitalResults.findIndex((obj) => obj.id === question.id) >= 0;
+  }
+
+  public clickUpdateVitalResult(question) {
+    this.updatingVitalResults.push(question);
+  }
+
+  public clickSaveVitalResult(vital, question) {
+    if (!question.response) {
+      return;
+    }
+    if (question.response.id) {
+      let updateSub = this.store.VitalResponse.update(question.response.id, {
+        response: question.response.answer,
+      }, true).subscribe(
+        (res) => {
+          let resultsListIndex = this.updatingVitalResults.findIndex((obj) => obj.id === question.id);
+          this.updatingVitalResults.splice(resultsListIndex, 1);
+          let formattedDate = this.selectedDate.utc().format('YYYY-MM-DD');
+          // this.refetchVitalResults(formattedDate).then(() => {});
+          this.refetchPatientTasks(formattedDate).then(() => {})
+        },
+        (err) => {},
+        () => {
+          updateSub.unsubscribe();
+        },
+      );
+    } else {
+      let createSub = this.store.VitalResponse.create({
+        vital_task: vital.task.id,
+        question: question.id,
+        response: question.response.answer,
+      }).subscribe(
+        (res) => {
+          let resultsListIndex = this.updatingVitalResults.findIndex((obj) => obj.id === question.id);
+          this.updatingVitalResults.splice(resultsListIndex, 1);
+          let formattedDate = this.selectedDate.utc().format('YYYY-MM-DD');
+          // this.refetchVitalResults(formattedDate).then(() => {});
+          this.refetchPatientTasks(formattedDate).then(() => {})
+        },
+        (err) => {},
+        () => {
+          createSub.unsubscribe();
+        }
+      );
+    }
+  }
+
+  public formatTaskType(type: string) {
+    return type.toLowerCase().replace('_task', '').replace('patient', 'task');
+  }
+
+  public floor(num) {
+    return Math.floor(num);
+  }
+
+  public formatVitalQuestionType(type: string) {
+    if (!type) {
+      return '';
+    }
+    if (type === 'boolean') {
+      return 'True/False';
+    } else if (type == 'float') {
+      return 'Decimal';
+    } else if (type === 'string') {
+      return 'String';
+    } else {
+      return type;
+    }
+  }
+
+  public routeToMessaging() {
+    this.router.navigate(['/patient', this.patient.id, 'messaging', this.carePlan.id]);
+  }
+
+  public getBehaviorIcon(behavior) {
+    switch(behavior) {
+      case 'increasing':
+      case 'better':
+        return 'ss-up iconLime';
+      case 'decreasing':
+      case 'worse':
+        return 'ss-down iconRed'
+      case 'equal':
+      case 'new':
+      case 'avg':
+        return 'ss-hyphen';
+      default:
+        return 'ss-hyphen';
+    }
+  }
+
+  /***************************************************************************
+  * MODAL TRIGGERS
+  ****************************************************************************/
 
   public addGoal() {
     this.modals.open(GoalComponent, {
@@ -761,137 +1025,5 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
         modalSub.unsubscribe();
       }
     );
-  }
-
-  public isUpdatingPatientTask(task) {
-    return this.updatingPatientTasks.findIndex((obj) => obj.id === task.id) >= 0;
-  }
-
-  public isPatientTaskUpdatable(task) {
-    return this.updatablePatientTaskTypes.includes(task.type);
-  }
-
-  public clickUpdatePatientTask(task) {
-    this.updatingPatientTasks.push(task);
-  }
-
-  public clickSavePatientTask(task) {
-    let storeModel = null;
-    if (task.type === 'patient_task') {
-      storeModel = this.store.PatientTask;
-    } else if (task.type === 'medication_task') {
-      storeModel = this.store.MedicationTask;
-    }
-    if (!storeModel) {
-      return;
-    }
-    let updateSub = storeModel.update(task.id, {
-      status: task.state,
-    }, true).subscribe(
-      (res) => {
-        let taskUpdateListIndex = this.updatingPatientTasks.findIndex((obj) => obj.id === task.id);
-        this.updatingPatientTasks.splice(taskUpdateListIndex, 1);
-      },
-      (err) => {},
-      () => {
-        updateSub.unsubscribe();
-      },
-    );
-  }
-
-  public isUpdatingAssessmentResult(result) {
-    return this.updatingAssessmentResults.findIndex((obj) => obj.id === result.id) >= 0;
-  }
-
-  public clickUpdateAssessmentResult(result) {
-    this.updatingAssessmentResults.push(result);
-  }
-
-  public clickSaveAssessmentResult(result) {
-    let updateSub = this.store.AssessmentResponse.update(result.id, {
-      rating: result.rating,
-    }, true).subscribe(
-      (res) => {
-        let resultsListIndex = this.updatingAssessmentResults.findIndex((obj) => obj.id === result.id);
-        this.updatingAssessmentResults.splice(resultsListIndex, 1);
-      },
-      (err) => {},
-      () => {
-        updateSub.unsubscribe();
-      },
-    );
-  }
-
-  public isUpdatingSymptomResult(result) {
-    return this.updatingSymptomResults.findIndex((obj) => obj.id === result.id) >= 0;
-  }
-
-  public clickUpdateSymptomResult(result) {
-    this.updatingSymptomResults.push(result);
-  }
-
-  public clickSaveSymptomResult(result) {
-    let updateSub = this.store.SymptomRating.update(result.rating.id, {
-      rating: result.rating.rating,
-    }, true).subscribe(
-      (res) => {
-        let resultsListIndex = this.updatingSymptomResults.findIndex((obj) => obj.id === result.id);
-        this.updatingSymptomResults.splice(resultsListIndex, 1);
-      },
-      (err) => {},
-      () => {
-        updateSub.unsubscribe();
-      },
-    );
-  }
-
-  public isUpdatingVitalResult(result) {
-    return this.updatingVitalResults.findIndex((obj) => obj.id === result.id) >= 0;
-  }
-
-  public clickUpdateVitalResult(result) {
-    this.updatingVitalResults.push(result);
-  }
-
-  public clickSaveVitalResult(result) {
-    let updateSub = this.store.VitalResponse.update(result.id, {
-      response: result.answer,
-    }, true).subscribe(
-      (res) => {
-        let resultsListIndex = this.updatingVitalResults.findIndex((obj) => obj.id === result.id);
-        this.updatingVitalResults.splice(resultsListIndex, 1);
-      },
-      (err) => {},
-      () => {
-        updateSub.unsubscribe();
-      },
-    );
-  }
-
-  public formatTaskType(type: string) {
-    return type.toLowerCase().replace('_task', '').replace('patient', 'task');
-  }
-
-  public floor(num) {
-    return Math.floor(num);
-  }
-
-  public formatVitalQuestionType(type: string) {
-    if (!type) {
-      return '';
-    }
-    if (type === 'boolean') {
-      return 'True/False';
-    } else if (type == 'float') {
-      return 'Decimal';
-    } else if (type === 'string') {
-      return 'String';
-    } else {
-      return type;
-    }
-  }
-
-  public routeToMessaging() {
-    this.router.navigate(['/patient', this.patient.id, 'messaging', this.carePlan.id]);
   }
 }

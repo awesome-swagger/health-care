@@ -952,6 +952,7 @@ class VitalTask(AbstractTask):
         'tasks.CarePlanVitalTemplate',
         on_delete=models.CASCADE,
         related_name='vital_tasks')
+    comments = models.CharField(max_length=1024, null=True, blank=True)
     is_complete = models.BooleanField(
         default=False,
         editable=False,
