@@ -15,6 +15,7 @@ from faker import Faker
 from rest_framework import status
 from rest_framework.test import APITestCase
 
+from apps.billings.models import BilledActivity
 from apps.billings.tests.mixins import BillingsMixin
 from apps.tasks.models import (
     PatientTask,
@@ -834,6 +835,7 @@ class TestCarePlanUsingEmployee(BillingsMixin, APITestCase):
         plan = self.create_care_plan(patient, **{
             'plan_template': self.plan_template
         })
+        team_template = self.create_plan_team_template(plan=plan)
 
         self.create_care_team_member(**{
             'employee_profile': self.employee,
@@ -860,6 +862,7 @@ class TestCarePlanUsingEmployee(BillingsMixin, APITestCase):
         for i in range(5):
             activity = self.create_billed_activity(**{
                 'plan': plan,
+                'team_template': team_template,
                 'added_by': self.employee
             })
             total_minutes += activity.time_spent
@@ -966,10 +969,12 @@ class TestCarePlanUsingEmployee(BillingsMixin, APITestCase):
             'employee_profile': self.employee,
             'plan': plan
         })
+        team_template = self.create_plan_team_template(plan=plan)
 
         for i in range(activities_count):
             self.create_billed_activity(**{
-                'plan': plan
+                'plan': plan,
+                'team_template': team_template
             })
 
         url = reverse(

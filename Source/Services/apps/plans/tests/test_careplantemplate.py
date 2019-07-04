@@ -545,10 +545,12 @@ class TestCarePlanTemplateAverage(BillingsMixin, APITestCase):
                 'plan': member_plan,
                 'is_manager': False
             })
+            team_template = self.create_plan_team_template(plan=member_plan)
 
             minutes = random.randint(5, 120)
             self.create_billed_activity(**{
                 'plan': member_plan,
+                'team_template': team_template,
                 'added_by': employee,
                 'time_spent': minutes
             })
@@ -563,10 +565,12 @@ class TestCarePlanTemplateAverage(BillingsMixin, APITestCase):
                 'plan': member_plan,
                 'is_manager': False
             })
+            team_template = self.create_plan_team_template(plan=member_plan)
 
             minutes = random.randint(5, 120)
             self.create_billed_activity(**{
                 'plan': member_plan,
+                'team_template': team_template,
                 'added_by': employee,
                 'time_spent': minutes,
             })

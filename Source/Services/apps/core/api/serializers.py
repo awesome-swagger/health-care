@@ -22,6 +22,7 @@ from apps.patients.models import PatientProfile, PotentialPatient
 from apps.plans.models import CarePlan
 from apps.tasks.models import (
     AssessmentTask,
+    CarePlanTeamTemplate,
     PatientTask,
     MedicationTask,
     SymptomTask,
@@ -607,7 +608,8 @@ class OrganizationPatientGraphSerializer(serializers.ModelSerializer):
                 **enrolled_kwargs).distinct().count()
             billable_patients = BilledActivity.objects.filter(
                 **billable_kwargs).values_list(
-                    'plan__patient', flat=True).distinct().count()
+                    'plan__patient',
+                    flat=True).distinct().count()
 
             monthly_data = {
                 'enrolled_patients': enrolled_patients,
@@ -1291,6 +1293,34 @@ class ActivityTeamTaskTemplateSerializer(RepresentationMixin,
         ]
 
 
+class ActivityTeamTemplateSerializer(RepresentationMixin,
+                                     serializers.ModelSerializer):
+
+    class Meta:
+        model = CarePlanTeamTemplate
+        fields = (
+            'id',
+            'plan',
+            'team_task_template',
+            'name',
+            'start_on_day',
+            'frequency',
+            'repeat_amount',
+            'appear_time',
+            'due_time',
+            'is_manager_task',
+            'category',
+            'roles',
+        )
+        nested_serializers = [
+            {
+                'field': 'roles',
+                'serializer_class': ProviderRoleSerializer,
+                'many': True,
+            }
+        ]
+
+
 class ActivityTeamTaskSerializer(RepresentationMixin,
                                  serializers.ModelSerializer):
     """
@@ -1324,7 +1354,7 @@ class BilledActivityDetailSerializer(RepresentationMixin,
         model = BilledActivity
         fields = (
             'id',
-            'team_task_template',
+            'team_template',
             'members',
             'added_by',
             'is_billed',
@@ -1333,8 +1363,8 @@ class BilledActivityDetailSerializer(RepresentationMixin,
         )
         nested_serializers = [
             {
-                'field': 'team_task_template',
-                'serializer_class': ActivityTeamTaskTemplateSerializer
+                'field': 'team_template',
+                'serializer_class': ActivityTeamTemplateSerializer
             },
             {
                 'field': 'added_by',
@@ -1500,6 +1530,7 @@ class BillingPractitionerSerializer(serializers.ModelSerializer):
             'activity_datetime__month': activity_month,
             'activity_datetime__year': activity_year
         }
+
         billed_plans = obj.billed_plans.filter(**kwargs).distinct()
         serializer = BilledPlanSerializer(
             billed_plans,

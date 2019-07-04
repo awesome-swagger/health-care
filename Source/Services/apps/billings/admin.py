@@ -8,7 +8,12 @@ class BillingTypeAdmin(admin.ModelAdmin):
 
 
 class BilledActivityAdmin(admin.ModelAdmin):
-    list_display = ('plan', 'added_by', 'activity_datetime', 'time_spent')
+    list_display = (
+        'plan',
+        'team_template',
+        'added_by',
+        'activity_datetime',
+        'time_spent')
 
 
 admin.site.register(models.BilledActivity, BilledActivityAdmin)

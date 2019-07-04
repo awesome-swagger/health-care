@@ -3,8 +3,7 @@ from rest_framework import serializers
 from ..models import BilledActivity, BillingType
 from apps.core.api.mixins import RepresentationMixin
 from apps.core.api.serializers import BasicEmployeeProfileSerializer
-from apps.plans.api.serializers import CarePlanSerializer
-from apps.tasks.models import TeamTaskTemplate
+from apps.tasks.api.serializers import CarePlanTeamTemplateSerializer
 
 
 class BillingTypeSerializer(serializers.ModelSerializer):
@@ -26,28 +25,6 @@ class BillingTypeSerializer(serializers.ModelSerializer):
         )
 
 
-class ActivityTeamTaskTemplateSerializer(serializers.ModelSerializer):
-    """
-    serializer for :model:`tasks.TeamTaskTemplate`
-    """
-
-    class Meta:
-        model = TeamTaskTemplate
-        fields = (
-            'id',
-            'plan_template',
-            'name',
-            'is_manager_task',
-            'category',
-            'roles',
-            'start_on_day',
-            'frequency',
-            'repeat_amount',
-            'appear_time',
-            'due_time',
-        )
-
-
 class BilledActivitySerializer(RepresentationMixin,
                                serializers.ModelSerializer):
     """
@@ -59,7 +36,7 @@ class BilledActivitySerializer(RepresentationMixin,
         fields = (
             'id',
             'plan',
-            'team_task_template',
+            'team_template',
             'members',
             'patient_included',
             'sync_to_ehr',
@@ -79,8 +56,8 @@ class BilledActivitySerializer(RepresentationMixin,
         )
         nested_serializers = [
             {
-                'field': 'plan',
-                'serializer_class': CarePlanSerializer,
+                'field': 'team_template',
+                'serializer_class': CarePlanTeamTemplateSerializer
             },
             {
                 'field': 'members',
@@ -90,9 +67,5 @@ class BilledActivitySerializer(RepresentationMixin,
             {
                 'field': 'added_by',
                 'serializer_class': BasicEmployeeProfileSerializer
-            },
-            {
-                'field': 'team_task_template',
-                'serializer_class': ActivityTeamTaskTemplateSerializer
             },
         ]

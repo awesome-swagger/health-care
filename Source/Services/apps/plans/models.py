@@ -9,6 +9,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from dateutil.relativedelta import relativedelta
 
+from apps.billings.models import BilledActivity
 from apps.core.models import EmployeeProfile, ProviderRole
 from apps.patients.models import PatientProfile
 from care_adopt_backend.mixins import CreatedModifiedMixin, UUIDPrimaryKeyMixin
