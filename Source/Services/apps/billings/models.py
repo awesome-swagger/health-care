@@ -21,12 +21,6 @@ class BilledActivity(UUIDPrimaryKeyMixin, CreatedModifiedMixin):
         on_delete=models.SET_NULL,
         null=True
         )
-    team_task_template = models.ForeignKey(
-        'tasks.TeamTaskTemplate',
-        related_name='activities',
-        on_delete=models.SET_NULL,
-        blank=True,
-        null=True)
     team_template = models.ForeignKey(
         'tasks.CarePlanTeamTemplate',
         related_name='activities',
