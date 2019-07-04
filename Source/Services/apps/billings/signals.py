@@ -3,7 +3,7 @@ def billedactivity_post_save(sender, instance, created, **kwargs):
     Function to be used as signal (post_save) when saving
     :model:`billings.BilledActivity`
     """
-    plan = instance.team_template.plan
+    plan = instance.plan
     if instance.is_billed:
         unbilled_activities = plan.activities.filter(is_billed=False)
         if not unbilled_activities.exists() and not plan.is_billed:

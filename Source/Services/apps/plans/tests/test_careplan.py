@@ -861,6 +861,7 @@ class TestCarePlanUsingEmployee(BillingsMixin, APITestCase):
         total_minutes = 0
         for i in range(5):
             activity = self.create_billed_activity(**{
+                'plan': plan,
                 'team_template': team_template,
                 'added_by': self.employee
             })
@@ -972,6 +973,7 @@ class TestCarePlanUsingEmployee(BillingsMixin, APITestCase):
 
         for i in range(activities_count):
             self.create_billed_activity(**{
+                'plan': plan,
                 'team_template': team_template
             })
 
@@ -981,8 +983,7 @@ class TestCarePlanUsingEmployee(BillingsMixin, APITestCase):
         )
         self.client.post(url, {})
         self.assertEqual(
-            BilledActivity.objects.filter(
-                team_template__plan=plan, is_billed=True).count(),
+            plan.activities.filter(is_billed=True).count(),
             activities_count
         )
 

@@ -68,7 +68,7 @@ class BilledActivityViewSet(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend, )
     filterset_fields = {
         'activity_datetime': ['lte'],
-        'team_template__plan': ['exact'],
+        'plan': ['exact'],
         'team_template__team_task_template': ['exact']
     }
 
@@ -86,24 +86,24 @@ class BilledActivityViewSet(viewsets.ModelViewSet):
                 facilities = employee.facilities_managed.all()
                 assigned_roles = employee.assigned_roles.all()
                 qs = qs.filter(
-                    Q(team_template__plan__patient__facility__organization__in=organizations) |
-                    Q(team_template__plan__patient__facility__in=facilities) |
-                    Q(team_template__plan__care_team_members__in=assigned_roles)
+                    Q(plan__patient__facility__organization__in=organizations) |
+                    Q(plan__patient__facility__in=facilities) |
+                    Q(plan__care_team_members__in=assigned_roles)
                 )
             elif employee.facilities_managed.exists():
                 facilities = employee.facilities_managed.all()
                 assigned_roles = employee.assigned_roles.all()
                 qs = qs.filter(
-                    Q(team_template__plan__patient__facility__in=facilities) |
-                    Q(team_template__plan__care_team_members__in=assigned_roles)
+                    Q(plan__patient__facility__in=facilities) |
+                    Q(plan__care_team_members__in=assigned_roles)
                 )
             else:
                 assigned_roles = employee.assigned_roles.all()
-                qs = qs.filter(team_template__plan__care_team_members__in=assigned_roles)
+                qs = qs.filter(plan__care_team_members__in=assigned_roles)
 
         elif user.is_patient:
             qs = qs.filter(
-                team_template__plan__patient=user.patient_profile
+                plan__patient=user.patient_profile
             )
 
         return qs.distinct()
@@ -172,18 +172,18 @@ class OrganizationBilledActivity(ParentViewSetPermissionMixin,
         IsAdminOrEmployeeActivityOwner,
     )
     queryset = BilledActivity.objects.filter(
-        team_template__plan__patient__payer_reimbursement=True)
+        plan__patient__payer_reimbursement=True)
     parent_lookup = [
         (
-            'team_template__plan__patient__facility__organization',
+            'plan__patient__facility__organization',
             Organization,
             OrganizationViewSet
         )
     ]
     filter_backends = (DjangoFilterBackend, )
     filterset_fields = {
-        'team_template__plan__patient__facility': ['exact'],
-        'team_template__plan__plan_template__service_area': ['exact'],
+        'plan__patient__facility': ['exact'],
+        'plan__plan_template__service_area': ['exact'],
         'activity_datetime': ['lte'],
     }
 
@@ -201,36 +201,36 @@ class OrganizationBilledActivity(ParentViewSetPermissionMixin,
                 facilities = employee.facilities_managed.all()
                 assigned_roles = employee.assigned_roles.all()
                 queryset = queryset.filter(
-                    Q(team_template__plan__patient__facility__organization__in=organizations) |
-                    Q(team_template__plan__patient__facility__in=facilities) |
-                    Q(team_template__plan__care_team_members__in=assigned_roles)
+                    Q(plan__patient__facility__organization__in=organizations) |
+                    Q(plan__patient__facility__in=facilities) |
+                    Q(plan__care_team_members__in=assigned_roles)
                 )
             elif employee.facilities_managed.exists():
                 facilities = employee.facilities_managed.all()
                 assigned_roles = employee.assigned_roles.all()
                 queryset = queryset.filter(
-                    Q(team_template__plan__patient__facility__in=facilities) |
-                    Q(team_template__plan__care_team_members__in=assigned_roles)
+                    Q(plan__patient__facility__in=facilities) |
+                    Q(plan__care_team_members__in=assigned_roles)
                 )
             else:
                 assigned_roles = employee.assigned_roles.all()
                 queryset = queryset.filter(
-                    team_template__plan__care_team_members__in=assigned_roles)
+                    plan__care_team_members__in=assigned_roles)
 
         elif user.is_patient:
             queryset = queryset.filter(
-                team_template__plan__patient=user.patient_profile
+                plan__patient=user.patient_profile
             )
 
         return queryset.distinct()
 
     def _get_billable_patients(self, queryset):
         parents_query_dict = self.get_parents_query_dict()
-        organization_id = parents_query_dict['team_template__plan__patient__facility__organization']
+        organization_id = parents_query_dict['plan__patient__facility__organization']
 
         patient_ids = queryset.filter(
-            team_template__plan__patient__facility__organization__id=organization_id)\
-            .values_list('team_template__plan__patient', flat=True).distinct()
+            plan__patient__facility__organization__id=organization_id)\
+            .values_list('plan__patient', flat=True).distinct()
         return PatientProfile.objects.filter(id__in=patient_ids)
 
     def get_billable_patients_count(self, queryset):
@@ -242,7 +242,7 @@ class OrganizationBilledActivity(ParentViewSetPermissionMixin,
         return patients.values_list('facility', flat=True).distinct().count()
 
     def get_total_practitioners(self, queryset):
-        return queryset.values_list('team_template__plan__billing_practitioner',
+        return queryset.values_list('plan__billing_practitioner',
                                     flat=True).distinct().count()
 
     @action(methods=['get'], detail=False)

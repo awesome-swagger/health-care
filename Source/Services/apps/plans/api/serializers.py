@@ -737,19 +737,19 @@ class CarePlanTemplateAverageSerializer(serializers.ModelSerializer):
         employee_care_plans = self.care_plans_for_employee(obj, employee)
 
         kwargs = {
-            'team_template__plan__in': employee_care_plans,
-            'team_template__plan__patient__facility__is_affiliate': False,
-            'team_template__plan__plan_template': obj,
+            'plan__in': employee_care_plans,
+            'plan__patient__facility__is_affiliate': False,
+            'plan__plan_template': obj,
             'activity_datetime__gte': timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         }
         if facility:
             kwargs.update({
-                'team_template__plan__patient__facility': facility
+                'plan__patient__facility': facility
             })
 
         if organization:
             kwargs.update({
-                'team_template__plan__patient__facility__organization': organization
+                'plan__patient__facility__organization': organization
             })
 
         time_spent = BilledActivity.objects.filter(**kwargs).aggregate(
@@ -764,22 +764,22 @@ class CarePlanTemplateAverageSerializer(serializers.ModelSerializer):
         employee_care_plans = self.care_plans_for_employee(obj, employee)
 
         kwargs = {
-            'team_template__plan__id__in': employee_care_plans.values_list('id', flat=True),
-            'team_template__plan__patient__facility__is_affiliate': False,
-            'team_template__plan__plan_template': obj,
+            'plan__id__in': employee_care_plans.values_list('id', flat=True),
+            'plan__patient__facility__is_affiliate': False,
+            'plan__plan_template': obj,
             'activity_datetime__gte': timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         }
         exclude_kwargs = {
-            'team_template__plan__billing_type__acronym': 'TCM',
+            'plan__billing_type__acronym': 'TCM',
         }
         if facility:
             kwargs.update({
-                'team_template__plan__patient__facility': facility
+                'plan__patient__facility': facility
             })
 
         if organization:
             kwargs.update({
-                'team_template__plan__patient__facility__organization': organization
+                'plan__patient__facility__organization': organization
             })
 
         time_spent = BilledActivity.objects.exclude(**exclude_kwargs).filter(**kwargs).aggregate(
@@ -1042,7 +1042,7 @@ class CarePlanOverviewSerializer(RepresentationMixin, serializers.ModelSerialize
 
     def get_time_count(self, obj):
         time_spent = BilledActivity.objects.filter(
-            team_template__plan=obj,
+            plan=obj,
             activity_datetime__gte=timezone.now().replace(
                 day=1, hour=0, minute=0, second=0, microsecond=0)) \
                 .aggregate(total=Sum('time_spent'))
@@ -1051,7 +1051,7 @@ class CarePlanOverviewSerializer(RepresentationMixin, serializers.ModelSerialize
 
     def get_last_contact(self, obj):
         last_patient_included_activity = BilledActivity.objects.filter(
-            team_template__plan=obj,
+            plan=obj,
             patient_included=True).order_by('-activity_datetime').first()
         if last_patient_included_activity:
             serializer = LastContactSerializer(last_patient_included_activity, many=False)

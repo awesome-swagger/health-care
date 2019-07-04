@@ -35,6 +35,7 @@ class BilledActivitySerializer(RepresentationMixin,
         model = BilledActivity
         fields = (
             'id',
+            'plan',
             'team_template',
             'members',
             'patient_included',

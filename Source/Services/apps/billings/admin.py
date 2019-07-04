@@ -9,6 +9,7 @@ class BillingTypeAdmin(admin.ModelAdmin):
 
 class BilledActivityAdmin(admin.ModelAdmin):
     list_display = (
+        'plan',
         'team_template',
         'added_by',
         'activity_datetime',

@@ -50,6 +50,7 @@ class TestBilledActivityUsingEmployee(BillingsMixin, APITestCase):
         )
 
         self.activity = self.create_billed_activity(**{
+            'plan': self.plan,
             'team_template': self.team_template,
             'added_by': self.employee
         })
@@ -83,6 +84,7 @@ class TestBilledActivityUsingEmployee(BillingsMixin, APITestCase):
     def test_create_billed_activity(self):
         member = self.create_employee()
         payload = {
+            'plan': self.plan.id,
             'team_template': self.team_template.id,
             'members': [self.employee.id, member.id],
             'added_by': self.employee.id,
@@ -95,6 +97,7 @@ class TestBilledActivityUsingEmployee(BillingsMixin, APITestCase):
     def test_full_update_billed_activity(self):
         member = self.create_employee()
         payload = {
+            'plan': self.plan.id,
             'team_template': self.team_template.id,
             'members': [self.employee.id, member.id],
             'added_by': self.employee.id,
@@ -139,12 +142,14 @@ class TestBilledActivityUsingEmployee(BillingsMixin, APITestCase):
         team_template = self.create_plan_team_template(plan=plan)
 
         self.create_billed_activity(
+            plan=plan,
             team_template=team_template,
             added_by=self.employee
         )
 
         for i in range(activities_count):
             self.create_billed_activity(**{
+                'plan': self.plan,
                 'team_template': self.team_template,
                 'added_by': self.employee,
                 'is_billed': True
@@ -164,6 +169,7 @@ class TestBilledActivityUsingEmployee(BillingsMixin, APITestCase):
 
         for i in range(activities_count):
             self.create_billed_activity(**{
+                'plan': self.plan,
                 'team_template': self.team_template,
                 'added_by': self.employee,
                 'is_billed': True
@@ -186,6 +192,7 @@ class TestBilledActivityUsingEmployee(BillingsMixin, APITestCase):
 
         for i in range(filtered_results):
             self.activity = self.create_billed_activity(**{
+                'plan': self.plan,
                 'team_template': self.team_template,
                 'added_by': self.employee,
                 'activity_datetime': last_week
@@ -194,6 +201,7 @@ class TestBilledActivityUsingEmployee(BillingsMixin, APITestCase):
         # Create dummy records for billed activities
         for i in range(filtered_results):
             self.activity = self.create_billed_activity(**{
+                'plan': self.plan,
                 'team_template': self.team_template,
                 'added_by': self.employee,
             })
@@ -223,7 +231,7 @@ class TestBilledActivityOverview(BillingsMixin, APITestCase):
         self.url = reverse(
             'organization-billed-activities-overview',
             kwargs={
-                'parent_lookup_team_template__plan__patient__facility__organization': self.organization.id
+                'parent_lookup_plan__patient__facility__organization': self.organization.id
             })
         self.client.force_authenticate(user=self.user)
 
@@ -254,6 +262,7 @@ class TestBilledActivityOverview(BillingsMixin, APITestCase):
             )
 
             self.create_billed_activity(**{
+                'plan': plan,
                 'team_template': team_template,
                 'added_by': self.employee
             })
@@ -276,6 +285,7 @@ class TestBilledActivityOverview(BillingsMixin, APITestCase):
                 })
 
             self.create_billed_activity(**{
+                'plan': plan,
                 'team_template': team_template,
                 'added_by': self.employee
             })
@@ -316,6 +326,7 @@ class TestBilledActivityOverview(BillingsMixin, APITestCase):
                 })
 
             self.create_billed_activity(**{
+                'plan': plan,
                 'team_template': team_template,
                 'added_by': self.employee
             })
@@ -345,6 +356,7 @@ class TestBilledActivityOverview(BillingsMixin, APITestCase):
                 })
 
             self.create_billed_activity(**{
+                'plan': plan,
                 'team_template': team_template,
                 'added_by': self.employee
             })
@@ -378,6 +390,7 @@ class TestBilledActivityOverview(BillingsMixin, APITestCase):
                 })
 
             self.create_billed_activity(**{
+                'plan': plan,
                 'team_template': team_template,
                 'added_by': self.employee
             })
@@ -407,6 +420,7 @@ class TestBilledActivityOverview(BillingsMixin, APITestCase):
                 })
 
             self.create_billed_activity(**{
+                'plan': plan,
                 'team_template': team_template,
                 'added_by': self.employee
             })
@@ -441,6 +455,7 @@ class TestBilledActivityOverview(BillingsMixin, APITestCase):
                 })
 
             activity = self.create_billed_activity(**{
+                'plan': plan,
                 'team_template': team_template,
                 'added_by': self.employee
             })
@@ -471,6 +486,7 @@ class TestBilledActivityOverview(BillingsMixin, APITestCase):
                 })
 
             self.create_billed_activity(**{
+                'plan': plan,
                 'team_template': team_template,
                 'added_by': self.employee
             })
@@ -505,6 +521,7 @@ class TestBilledActivityOverview(BillingsMixin, APITestCase):
                 })
 
             self.create_billed_activity(**{
+                'plan': plan,
                 'team_template': team_template,
                 'added_by': self.employee
             })
@@ -534,12 +551,13 @@ class TestBilledActivityOverview(BillingsMixin, APITestCase):
                 })
 
             self.create_billed_activity(**{
+                'plan': plan,
                 'team_template': team_template,
                 'added_by': self.employee
             })
 
         query_params = urllib.parse.urlencode({
-            'team_template__plan__patient__facility': main_facility.id
+            'plan__patient__facility': main_facility.id
         })
         filter_url = f'{self.url}?{query_params}'
         response = self.client.get(filter_url)
@@ -576,6 +594,7 @@ class TestBilledActivityOverview(BillingsMixin, APITestCase):
                 })
 
             self.create_billed_activity(**{
+                'plan': plan,
                 'team_template': team_template,
                 'added_by': self.employee
             })
@@ -605,12 +624,13 @@ class TestBilledActivityOverview(BillingsMixin, APITestCase):
                 })
 
             self.create_billed_activity(**{
+                'plan': plan,
                 'team_template': team_template,
                 'added_by': self.employee
             })
 
         query_params = urllib.parse.urlencode({
-            'team_template__plan__plan_template__service_area': service_area.id
+            'plan__plan_template__service_area': service_area.id
         })
         filter_url = f'{self.url}?{query_params}'
         response = self.client.get(filter_url)
@@ -648,6 +668,7 @@ class TestBilledActivityOverview(BillingsMixin, APITestCase):
                 })
 
             self.create_billed_activity(**{
+                'plan': plan,
                 'team_template': team_template,
                 'added_by': self.employee
             })
@@ -677,6 +698,7 @@ class TestBilledActivityOverview(BillingsMixin, APITestCase):
                 })
 
             self.create_billed_activity(**{
+                'plan': plan,
                 'team_template': team_template,
                 'added_by': self.employee
             })
@@ -711,13 +733,14 @@ class TestBilledActivityOverview(BillingsMixin, APITestCase):
                 })
 
             self.create_billed_activity(**{
+                'plan': plan,
                 'team_template': team_template,
                 'added_by': self.employee
             })
 
         query_params = urllib.parse.urlencode({
-            'team_template__plan__patient__facility': main_facility.id,
-            'team_template__plan__plan_template__service_area': service_area.id
+            'plan__patient__facility': main_facility.id,
+            'plan__plan_template__service_area': service_area.id
         })
         filter_url = f'{self.url}?{query_params}'
         response = self.client.get(filter_url)
@@ -755,6 +778,7 @@ class TestBilledActivityOverview(BillingsMixin, APITestCase):
                 })
 
             self.create_billed_activity(**{
+                'plan': plan,
                 'team_template': team_template,
                 'added_by': self.employee,
                 'activity_datetime': last_month
@@ -785,6 +809,7 @@ class TestBilledActivityOverview(BillingsMixin, APITestCase):
                 })
 
             self.create_billed_activity(**{
+                'plan': plan,
                 'team_template': team_template,
                 'added_by': self.employee,
                 'activity_datetime': next_month
@@ -829,6 +854,7 @@ class TestBilledActivityOverview(BillingsMixin, APITestCase):
                 })
 
             self.create_billed_activity(**{
+                'plan': plan,
                 'team_template': team_template,
                 'added_by': self.employee,
                 'activity_datetime': last_month
@@ -859,6 +885,7 @@ class TestBilledActivityOverview(BillingsMixin, APITestCase):
                 })
 
             self.create_billed_activity(**{
+                'plan': plan,
                 'team_template': team_template,
                 'added_by': self.employee,
                 'activity_datetime': next_month
