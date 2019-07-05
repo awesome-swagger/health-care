@@ -629,8 +629,7 @@ class CarePlanViewSet(viewsets.ModelViewSet):
         """
         plan = self.get_object()
         if not plan.is_billed:
-            BilledActivity.objects.filter(
-                team_template__plan=plan).update(is_billed=True)
+            plan.activities.update(is_billed=True)
 
             plan.is_billed = True
             plan.save(update_fields=['is_billed'])

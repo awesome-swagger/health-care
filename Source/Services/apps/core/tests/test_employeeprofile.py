@@ -458,15 +458,17 @@ class TestFacilityEmployee(BillingsMixin, APITestCase):
         self.client.force_authenticate(user=employee.user)
 
         for i in range(plans_count):
-            team_template = self.create_plan_team_template()
+            member_plan = self.create_care_plan()
+            team_template = self.create_plan_team_template(plan=member_plan)
             self.create_care_team_member(**{
+                'plan': member_plan,
                 'employee_profile': employee,
-                'plan': team_template.plan,
                 'is_manager': False
             })
 
             minutes = random.randint(5, 120)
             self.create_billed_activity(**{
+                'plan': member_plan,
                 'team_template': team_template,
                 'added_by': employee,
                 'time_spent': minutes
@@ -475,15 +477,17 @@ class TestFacilityEmployee(BillingsMixin, APITestCase):
 
         # create dummy records
         for i in range(plans_count):
-            team_template = self.create_plan_team_template()
+            member_plan = self.create_care_plan()
+            team_template = self.create_plan_team_template(plan=member_plan)
             self.create_care_team_member(**{
                 'employee_profile': employee,
-                'plan': team_template.plan,
+                'plan': member_plan,
                 'is_manager': False
             })
 
             minutes = random.randint(5, 120)
             self.create_billed_activity(**{
+                'plan': member_plan,
                 'team_template': team_template,
                 'added_by': employee,
                 'time_spent': minutes,
@@ -581,6 +585,7 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
             })
             team_template = self.create_plan_team_template(plan=plan)
             self.create_billed_activity(**{
+                'plan': plan,
                 'team_template': team_template
             })
 
@@ -598,6 +603,7 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
             })
             team_template = self.create_plan_team_template(plan=plan)
             self.create_billed_activity(**{
+                'plan': plan,
                 'team_template': team_template
             })
 
@@ -625,6 +631,7 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
             })
             team_template = self.create_plan_team_template(plan=plan)
             self.create_billed_activity(**{
+                'plan': plan,
                 'team_template': team_template
             })
 
@@ -642,6 +649,7 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
             })
             team_template = self.create_plan_team_template(plan=plan)
             self.create_billed_activity(**{
+                'plan': plan,
                 'team_template': team_template
             })
 
@@ -667,6 +675,7 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
             })
             team_template = self.create_plan_team_template(plan=plan)
             self.create_billed_activity(**{
+                'plan': plan,
                 'team_template': team_template
             })
 
@@ -685,6 +694,7 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
             })
             team_template = self.create_plan_team_template(plan=plan)
             self.create_billed_activity(**{
+                'plan': plan,
                 'team_template': team_template,
                 'activity_datetime': last_month
             })
@@ -714,6 +724,7 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
             })
             team_template = self.create_plan_team_template(plan=plan)
             self.create_billed_activity(**{
+                'plan': plan,
                 'team_template': team_template
             })
 
@@ -731,6 +742,7 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
             })
             team_template = self.create_plan_team_template(plan=plan)
             self.create_billed_activity(**{
+                'plan': plan,
                 'team_template': team_template
             })
 
@@ -762,6 +774,7 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
             })
             team_template = self.create_plan_team_template(plan=plan)
             self.create_billed_activity(**{
+                'plan': plan,
                 'team_template': team_template
             })
 
@@ -779,6 +792,7 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
             })
             team_template = self.create_plan_team_template(plan=plan)
             self.create_billed_activity(**{
+                'plan': plan,
                 'team_template': team_template
             })
 
@@ -811,6 +825,7 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
             })
             team_template = self.create_plan_team_template(plan=plan)
             self.create_billed_activity(**{
+                'plan': plan,
                 'team_template': team_template
             })
 
@@ -829,6 +844,7 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
             })
             team_template = self.create_plan_team_template(plan=plan)
             self.create_billed_activity(**{
+                'plan': plan,
                 'team_template': team_template
             })
 
@@ -887,6 +903,7 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
             })
             team_template = self.create_plan_team_template(plan=plan)
             self.create_billed_activity(**{
+                'plan': plan,
                 'team_template': team_template
             })
 
@@ -925,6 +942,7 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
             })
             team_template = self.create_plan_team_template(plan=plan)
             self.create_billed_activity(**{
+                'plan': plan,
                 'team_template': team_template
             })
 
@@ -939,6 +957,7 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
             })
             team_template = self.create_plan_team_template(plan=plan)
             self.create_billed_activity(**{
+                'plan': plan,
                 'team_template': team_template
             })
 
@@ -963,6 +982,7 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
             })
             team_template = self.create_plan_team_template(plan=plan)
             self.create_billed_activity(**{
+                'plan': plan,
                 'team_template': team_template
             })
 
@@ -977,6 +997,7 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
             })
             team_template = self.create_plan_team_template(plan=plan)
             self.create_billed_activity(**{
+                'plan': plan,
                 'team_template': team_template
             })
 
@@ -999,6 +1020,7 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
             })
             team_template = self.create_plan_team_template(plan=plan)
             self.create_billed_activity(**{
+                'plan': plan,
                 'team_template': team_template
             })
 
@@ -1015,6 +1037,7 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
             })
             team_template = self.create_plan_team_template(plan=plan)
             self.create_billed_activity(**{
+                'plan': plan,
                 'team_template': team_template
             })
 
@@ -1046,6 +1069,7 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
             })
             team_template = self.create_plan_team_template(plan=plan)
             self.create_billed_activity(**{
+                'plan': plan,
                 'team_template': team_template
             })
 
@@ -1062,6 +1086,7 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
             })
             team_template = self.create_plan_team_template(plan=plan)
             self.create_billed_activity(**{
+                'plan': plan,
                 'team_template': team_template
             })
 
@@ -1093,6 +1118,7 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
             })
             team_template = self.create_plan_team_template(plan=plan)
             self.create_billed_activity(**{
+                'plan': plan,
                 'team_template': team_template
             })
 
@@ -1107,6 +1133,7 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
             })
             team_template = self.create_plan_team_template(plan=plan)
             self.create_billed_activity(**{
+                'plan': plan,
                 'team_template': team_template
             })
 
@@ -1124,6 +1151,7 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
             })
             team_template = self.create_plan_team_template(plan=plan)
             self.create_billed_activity(**{
+                'plan': plan,
                 'team_template': team_template
             })
 
@@ -1149,6 +1177,7 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
 
         for i in range(activity_count):
             self.create_billed_activity(**{
+                'plan': plan,
                 'team_template': team_template,
                 'added_by': self.employee
             })
@@ -1173,6 +1202,7 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
 
         for i in range(activity_count):
             self.create_billed_activity(**{
+                'plan': plan,
                 'team_template': team_template,
                 'added_by': self.employee
             })
@@ -1199,6 +1229,7 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
 
         for i in range(activity_count):
             self.create_billed_activity(**{
+                'plan': plan,
                 'team_template': team_template,
                 'added_by': self.employee
             })
@@ -1206,6 +1237,7 @@ class TestOrganizationBillingPractitioner(BillingsMixin, APITestCase):
         # create billed activity last month
         for i in range(activity_count):
             self.create_billed_activity(**{
+                'plan': plan,
                 'team_template': team_template,
                 'added_by': self.employee,
                 'activity_datetime': last_month

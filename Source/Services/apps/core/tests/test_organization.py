@@ -743,6 +743,7 @@ class TestOrganizationPatientGraph(BillingsMixin, APITestCase):
                 plan = self.create_care_plan(patient)
                 team_template = self.create_plan_team_template(plan=plan)
                 self.create_billed_activity(**{
+                    'plan': plan,
                     'team_template': team_template
                 })
 
@@ -755,6 +756,7 @@ class TestOrganizationPatientGraph(BillingsMixin, APITestCase):
                 plan = self.create_care_plan(patient)
                 team_template = self.create_plan_team_template(plan=plan)
                 self.create_billed_activity(**{
+                    'plan': plan,
                     'team_template': team_template,
                     'activity_datetime': last_month
                 })
