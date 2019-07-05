@@ -2028,7 +2028,6 @@ class SymptomByPlanViewSet(ParentViewSetPermissionMixin,
         date_range = self._get_date_range_filter()
         return queryset.filter(
             symptom_tasks__due_datetime__range=date_range,
-            symptom_tasks__is_complete=True,
         ).distinct()
 
     def get_serializer_context(self):
@@ -2036,6 +2035,7 @@ class SymptomByPlanViewSet(ParentViewSetPermissionMixin,
                         self).get_serializer_context()
 
         context.update({
+            'plan': self.parent_obj,
             'date_range': self._get_date_range_filter()
         })
         return context

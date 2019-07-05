@@ -5,6 +5,7 @@ import {
   sumBy as _sumBy,
   filter as _filter,
   flatten as _flatten,
+  flattenDeep as _flattenDeep,
   groupBy as _groupBy,
   uniqBy as _uniqBy,
 } from 'lodash';
@@ -131,6 +132,7 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
                 return obj.employee_profile.user.id !== this.user.user.id;
               });
           		this.refetchAllTasks(this.selectedDate).then(() => {
+                this.assignRatingsToQuestions();
                 this.detailsLoaded = true;
               });
             });
@@ -353,6 +355,59 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
     return patientTasksPromise;
   }
 
+  public assignRatingsToQuestions() {
+    this.assessmentResults.forEach((assessment) => {
+      assessment.questions.forEach((question) => {
+        let response = this.assessmentQuestionResponse(assessment, question);
+        if (response) {
+          question.response = response;
+        } else {
+          question.response = {
+            question: question.prompt,
+            question_id: question.id,
+            rating: 0,
+            occurrence: 'n/a',
+            behavior: 'n/a',
+            behavior_against_care_plan: 'n/a'
+          };
+        }
+      });
+    });
+    this.symptomResults.forEach((symptom) => {
+      symptom.default_symptoms.forEach((def) => {
+        let rating = this.defaultSymptomRating(symptom, def);
+        if (rating) {
+          def.rating = rating;
+        } else {
+          def.rating = {
+            rating: 0,
+            behavior: 'n/a',
+            behavior_against_care_plan: 'n/a',
+            symptom: def,
+          };
+        }
+      });
+    });
+    this.vitalResults.forEach((vital) => {
+      vital.questions.forEach((question) => {
+        let response = this.vitalQuestionResponse(vital, question);
+        if (response) {
+          question.response = response;
+        } else {
+          question.response = {
+            question: question.prompt,
+            question_id: question.id,
+            answer: null,
+            answer_type: question.answer_type,
+            occurrence: 'n/a',
+            behavior: 'n/a',
+            behavior_against_care_plan: 'n/a'
+          };
+        }
+      });
+    });
+  }
+
   public refetchAllTasks(dateAsMoment) {
     if (!this.patient || !this.carePlan) {
       return;
@@ -381,23 +436,6 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
     this.updatingAssessmentResults = [];
     let assessmentsPromise = this.getAssessmentResults(this.carePlan, formattedDate).then((assessments: any) => {
       this.assessmentResults = assessments.results;
-      this.assessmentResults.forEach((assessment) => {
-        assessment.questions.forEach((question) => {
-          let response = this.assessmentQuestionResponse(assessment, question);
-          if (response) {
-            question.response = response;
-          } else {
-            question.response = {
-              question: question.prompt,
-              question_id: question.id,
-              rating: 0,
-              occurrence: 'n/a',
-              behavior: 'n/a',
-              behavior_against_care_plan: 'n/a'
-            };
-          }
-        });
-      });
       if (!this.isUsingMobile) {
         this.assessmentResults.forEach((assessment) => {
           this.updatingAssessmentResults = this.updatingAssessmentResults.concat(assessment.questions);
@@ -412,24 +450,6 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
     });
     let vitalResultsPromise = this.getVitalResults(this.carePlan, formattedDate).then((vitals: any) => {
       this.vitalResults = vitals.results;
-      this.vitalResults.forEach((vital) => {
-        vital.questions.forEach((question) => {
-          let response = this.vitalQuestionResponse(vital, question);
-          if (response) {
-            question.response = response;
-          } else {
-            question.response = {
-              question: question.prompt,
-              question_id: question.id,
-              answer: null,
-              answer_type: question.answer_type,
-              occurrence: 'n/a',
-              behavior: 'n/a',
-              behavior_against_care_plan: 'n/a'
-            };
-          }
-        });
-      });
       if (!this.isUsingMobile) {
         this.vitalResults.forEach((vital) => {
           this.updatingVitalResults = this.updatingVitalResults.concat(vital.questions);
@@ -472,6 +492,7 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
     }
     this.selectedDate = dateAsMoment;
     this.refetchAllTasks(dateAsMoment).then(() => {
+      this.assignRatingsToQuestions();
       this.detailsLoaded = true;
     });
   }
@@ -604,8 +625,15 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
   }
 
   public averageSymptomRating() {
-    let totalSum = _sumBy(this.symptomResults, (obj) => obj.rating.rating);
-    let average = (totalSum / this.symptomResults.length) + .0;
+    if (!this.symptomResults) {
+      return 0;
+    }
+    let allRatings = _flattenDeep(this.symptomResults.map((obj) => { return obj.ratings }));
+    if (allRatings.length === 0) {
+      return 0;
+    }
+    let totalSum = _sumBy(allRatings, (obj) => { return obj.rating });
+    let average = (totalSum / allRatings.length) + .0;
     return Math.round(average * 10) / 10;
   }
 
@@ -680,7 +708,6 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
           let resultsListIndex = this.updatingAssessmentResults.findIndex((obj) => obj.id === question.id);
           this.updatingAssessmentResults.splice(resultsListIndex, 1);
           let formattedDate = this.selectedDate.utc().format('YYYY-MM-DD');
-          // this.refetchAssessmentResults(formattedDate).then(() => {});
           this.refetchPatientTasks(formattedDate).then(() => {})
         },
         (err) => {},
@@ -690,7 +717,7 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
       );
     } else {
       let createSub = this.store.AssessmentResponse.create({
-        assessment_task: assessment.task.id,
+        assessment_task: assessment.task_id,
         assessment_question: question.id,
         rating: question.response.rating,
       }).subscribe(
@@ -698,7 +725,8 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
           let resultsListIndex = this.updatingAssessmentResults.findIndex((obj) => obj.id === question.id);
           this.updatingAssessmentResults.splice(resultsListIndex, 1);
           let formattedDate = this.selectedDate.utc().format('YYYY-MM-DD');
-          // this.refetchAssessmentResults(formattedDate).then(() => {});
+          question.response.id = res.id;
+          assessment.responses.push(question.response);
           this.refetchPatientTasks(formattedDate).then(() => {})
         },
         (err) => {},
@@ -709,6 +737,13 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
     }
   }
 
+  public defaultSymptomRating(symptom, def) {
+    let rating = symptom.ratings.find((r) => {
+      return r.symptom.id === def.id;
+    });
+    return rating;
+  }
+
   public isUpdatingSymptomResult(result) {
     return this.updatingSymptomResults.findIndex((obj) => obj.id === result.id) >= 0;
   }
@@ -717,19 +752,43 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
     this.updatingSymptomResults.push(result);
   }
 
-  public clickSaveSymptomResult(result) {
-    let updateSub = this.store.SymptomRating.update(result.rating.id, {
-      rating: result.rating.rating,
-    }, true).subscribe(
-      (res) => {
-        let resultsListIndex = this.updatingSymptomResults.findIndex((obj) => obj.id === result.id);
-        this.updatingSymptomResults.splice(resultsListIndex, 1);
-      },
-      (err) => {},
-      () => {
-        updateSub.unsubscribe();
-      },
-    );
+  public clickSaveSymptomResult(symptom, default_symptom) {
+    if (!default_symptom.rating) {
+      return;
+    }
+    if (default_symptom.rating.id) {
+      let updateSub = this.store.SymptomRating.update(default_symptom.rating.id, {
+        rating: default_symptom.rating.rating,
+      }, true).subscribe(
+        (res) => {
+          let resultsListIndex = this.updatingSymptomResults.findIndex((obj) => obj.id === default_symptom.id);
+          this.updatingSymptomResults.splice(resultsListIndex, 1);
+        },
+        (err) => {},
+        () => {
+          updateSub.unsubscribe();
+        },
+      );
+    } else {
+      let createSub = this.store.SymptomRating.create({
+        symptom_task: symptom.task_id,
+        symptom: default_symptom.id,
+        rating: default_symptom.rating.rating,
+      }).subscribe(
+        (res) => {
+          let resultsListIndex = this.updatingSymptomResults.findIndex((obj) => obj.id === default_symptom.id);
+          this.updatingSymptomResults.splice(resultsListIndex, 1);
+          let formattedDate = this.selectedDate.utc().format('YYYY-MM-DD');
+          default_symptom.rating.id = res.id;
+          symptom.ratings.push(default_symptom.rating);
+          this.refetchPatientTasks(formattedDate).then(() => {});
+        },
+        (err) => {},
+        () => {
+          createSub.unsubscribe();
+        }
+      );
+    }
   }
 
   public vitalQuestionResponse(vital, question) {
@@ -759,8 +818,7 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
           let resultsListIndex = this.updatingVitalResults.findIndex((obj) => obj.id === question.id);
           this.updatingVitalResults.splice(resultsListIndex, 1);
           let formattedDate = this.selectedDate.utc().format('YYYY-MM-DD');
-          // this.refetchVitalResults(formattedDate).then(() => {});
-          this.refetchPatientTasks(formattedDate).then(() => {})
+          this.refetchPatientTasks(formattedDate).then(() => {});
         },
         (err) => {},
         () => {
@@ -769,7 +827,7 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
       );
     } else {
       let createSub = this.store.VitalResponse.create({
-        vital_task: vital.task.id,
+        vital_task: vital.task_id,
         question: question.id,
         response: question.response.answer,
       }).subscribe(
@@ -777,8 +835,9 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
           let resultsListIndex = this.updatingVitalResults.findIndex((obj) => obj.id === question.id);
           this.updatingVitalResults.splice(resultsListIndex, 1);
           let formattedDate = this.selectedDate.utc().format('YYYY-MM-DD');
-          // this.refetchVitalResults(formattedDate).then(() => {});
-          this.refetchPatientTasks(formattedDate).then(() => {})
+          question.response.id = res.id;
+          vital.responses.push(question.response);
+          this.refetchPatientTasks(formattedDate).then(() => {});
         },
         (err) => {},
         () => {
@@ -856,6 +915,7 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
           }).subscribe(
             (goal) => {
               this.refetchAllTasks(this.selectedDate).then(() => {
+                this.assignRatingsToQuestions();
                 this.detailsLoaded = true;
               });
             },

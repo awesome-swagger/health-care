@@ -1174,7 +1174,9 @@ class AssessmentResultOverviewSerializer(serializers.ModelSerializer):
     to be used in `Assessment Results` section in  `patients_Details` page
     """
 
-    task = serializers.SerializerMethodField()
+    task_id = serializers.SerializerMethodField()
+    task_comments = serializers.SerializerMethodField()
+    occurrence = serializers.SerializerMethodField()
     questions = serializers.SerializerMethodField()
     responses = serializers.SerializerMethodField()
 
@@ -1182,7 +1184,9 @@ class AssessmentResultOverviewSerializer(serializers.ModelSerializer):
         model = CarePlanAssessmentTemplate
         fields = (
             'id',
-            'task',
+            'task_id',
+            'task_comments',
+            'occurrence',
             'name',
             'tracks_outcome',
             'tracks_satisfaction',
@@ -1190,10 +1194,10 @@ class AssessmentResultOverviewSerializer(serializers.ModelSerializer):
             'responses',
         )
 
-    def get_task(self, obj):
+    def _get_task_for_today(self, assessment_template):
         request = self.context.get('request')
         timestamp = request.GET.get('date', None)
-        tasks = AssessmentTask.objects.filter(assessment_template=obj)
+        tasks = AssessmentTask.objects.filter(assessment_template=assessment_template)
         date_format = "%Y-%m-%d"
         date_object = datetime.datetime.strptime(timestamp, date_format).date() \
             if timestamp else timezone.now().date()
@@ -1209,8 +1213,21 @@ class AssessmentResultOverviewSerializer(serializers.ModelSerializer):
         }
 
         task = AssessmentTask.objects.filter(**kwargs)
-        serializer = AssessmentTaskSerializer(task.first())
-        return serializer.data
+        return task.first()
+
+    def get_task_id(self, obj):
+        return self._get_task_for_today(obj).id
+
+    def get_task_comments(self, obj):
+        return self._get_task_for_today(obj).comments
+
+    def get_occurrence(self, obj):
+        total_tasks = AssessmentTask.objects.filter(assessment_template=obj)
+        task_today = self._get_task_for_today(obj)
+
+        obj_occurrence = total_tasks.filter(
+            due_datetime__lte=task_today.due_datetime).count()
+        return f'{obj_occurrence} of {total_tasks.count()}'
 
     def get_questions(self, obj):
         adhoc_questions = obj.assessment_questions.values_list(
@@ -1255,45 +1272,82 @@ class AssessmentResultOverviewSerializer(serializers.ModelSerializer):
         return serializer.data
 
 
-class SymptomByPlanSerializer(serializers.ModelSerializer):
+class SymptomByPlanSerializer(RepresentationMixin,
+                              serializers.ModelSerializer):
     """
     serializer to be used by :model:`core.Symptom` to be used in
     `Symptoms` section in `patients_Details` page
     """
 
-    rating = serializers.SerializerMethodField()
+    task_id = serializers.SerializerMethodField()
+    task_comments = serializers.SerializerMethodField()
     occurrence = serializers.SerializerMethodField()
+    ratings = serializers.SerializerMethodField()
 
     class Meta:
         model = CarePlanSymptomTemplate
         fields = (
             'id',
             'name',
-            'rating',
+            'task_id',
+            'task_comments',
+            'default_symptoms',
+            'ratings',
             'occurrence',
         )
+        nested_serializers = [
+            {
+                'field': 'default_symptoms',
+                'serializer_class': SymptomSerializer,
+                'many': True
+            }
+        ]
 
-    def get_rating(self, obj):
-        date_range = self.context.get('date_range')
+    def _get_task_for_today(self, symptom_template):
+        request = self.context.get('request')
+        timestamp = request.GET.get('date', None)
+        tasks = SymptomTask.objects.filter(symptom_template=symptom_template)
+        date_format = "%Y-%m-%d"
+        date_object = datetime.datetime.strptime(timestamp, date_format).date() \
+            if timestamp else timezone.now().date()
+        date_min = datetime.datetime.combine(date_object,
+                                             datetime.time.min,
+                                             tzinfo=pytz.utc)
+        date_max = datetime.datetime.combine(date_object,
+                                             datetime.time.max,
+                                             tzinfo=pytz.utc)
+        kwargs = {
+            'id__in': tasks,
+            'due_datetime__range': (date_min, date_max)
+        }
 
-        rating_obj = SymptomRating.objects.filter(
-            symptom_task__symptom_template=obj,
-            symptom_task__due_datetime__range=date_range,
-        ).order_by('created').last()
-        serializer = SymptomRatingSerializer(rating_obj)
+        task = SymptomTask.objects.filter(**kwargs)
+        return task.first()
 
-        return serializer.data
+    def get_task_id(self, obj):
+        return self._get_task_for_today(obj).id
+
+    def get_task_comments(self, obj):
+        return self._get_task_for_today(obj).comments
 
     def get_occurrence(self, obj):
         total_tasks = SymptomTask.objects.filter(symptom_template=obj)
-
-        rating_obj = SymptomRating.objects.filter(
-            symptom_task__symptom_template=obj
-        ).order_by('created').last()
+        task_today = self._get_task_for_today(obj)
 
         obj_occurrence = total_tasks.filter(
-            due_datetime__lte=rating_obj.symptom_task.due_datetime).count()
+            due_datetime__lte=task_today.due_datetime).count()
         return f'{obj_occurrence} of {total_tasks.count()}'
+
+    def get_ratings(self, obj):
+        date_range = self.context.get('date_range')
+
+        rating_objs = SymptomRating.objects.filter(
+            symptom_task__symptom_template=obj,
+            symptom_task__due_datetime__range=date_range,
+        )
+        serializer = SymptomRatingSerializer(rating_objs, many=True)
+
+        return serializer.data
 
 
 class VitalResponseOverviewSerializer(serializers.ModelSerializer):
@@ -1345,7 +1399,9 @@ class VitalByPlanSerializer(serializers.ModelSerializer):
     `Vitals` section in `patients_Details` page
     """
 
-    task = serializers.SerializerMethodField()
+    task_id = serializers.SerializerMethodField()
+    task_comments = serializers.SerializerMethodField()
+    occurrence = serializers.SerializerMethodField()
     questions = serializers.SerializerMethodField()
     responses = serializers.SerializerMethodField()
 
@@ -1353,23 +1409,38 @@ class VitalByPlanSerializer(serializers.ModelSerializer):
         model = CarePlanVitalTemplate
         fields = (
             'id',
-            'task',
+            'task_id',
+            'task_comments',
+            'occurrence',
             'name',
             'questions',
             'responses',
         )
 
-    def get_task(self, obj):
+    def _get_task_for_today(self, vital_template):
         date_range = self.context.get('date_range')
-        tasks = VitalTask.objects.filter(vital_template=obj)
+        tasks = VitalTask.objects.filter(vital_template=vital_template)
         kwargs = {
             'id__in': tasks,
             'due_datetime__range': date_range
         }
 
-        task = VitalTask.objects.filter(**kwargs)
-        serializer = VitalTaskSerializer(task.first())
-        return serializer.data
+        task = VitalTask.objects.filter(**kwargs).first()
+        return task
+
+    def get_task_id(self, obj):
+        return self._get_task_for_today(obj).id
+
+    def get_task_comments(self, obj):
+        return self._get_task_for_today(obj).comments
+
+    def get_occurrence(self, obj):
+        total_tasks = VitalTask.objects.filter(vital_template=obj)
+        task_today = self._get_task_for_today(obj)
+
+        obj_occurrence = total_tasks.filter(
+            due_datetime__lte=task_today.due_datetime).count()
+        return f'{obj_occurrence} of {total_tasks.count()}'
 
     def get_questions(self, obj):
         adhoc_questions = obj.vital_questions.values_list(

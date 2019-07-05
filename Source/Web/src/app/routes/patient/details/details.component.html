@@ -604,7 +604,7 @@
 										</ng-container>
 									</td>
 									<td>
-										<span *ngIf="question.response">{{question.response.occurrence}}</span>
+										<span>{{assessment.occurrence}}</span>
 									</td>
 									<td>
 										<div class="iconText">
@@ -631,15 +631,15 @@
 							</tbody>
 						</table>
 						<label>Comment</label>
-						<ng-container *ngIf="assessment.task.comments">
+						<ng-container *ngIf="assessment.task_comments">
 							<p>
-								"{{assessment.task.comments}}"
+								"{{assessment.task_comments}}"
 							</p>
 							<button (click)="routeToMessaging()" class="button button--iconText marBottom48">
 								<i class="ss-chat"></i> Reply
 							</button>
 						</ng-container>
-						<ng-container *ngIf="!assessment.task.comments">
+						<ng-container *ngIf="!assessment.task_comments">
 							<p>No comment given for this assessment</p>
 						</ng-container>
 					</ng-container>
@@ -669,147 +669,155 @@
 			<div class="accordion__body">
 				<div class="accordion__contents">
 					<h2 *ngIf="symptomResults.length < 1">No symptom reports on selected date</h2>
-					<table class="fullWidth" *ngIf="symptomResults.length > 0">
-						<thead>
-							<tr>
-								<th class="thSortable">
-									<span class="thSortable__text thSortable__text--left">Symptom</span>
-								</th>
-								<th class="thSortable thSortable--sortDown">
-									<span class="thSortable__text">Rating</span>
-								</th>
-								<th class="thSortable">
-									<div class="tool justifyCenter">
-										<span class="thSortable__text">Reported</span>
-										<div class="tool__anchor">
-											<button class="button button--icon button--icon--small" (click)="symptomReportedTTOpen=!symptomReportedTTOpen">
-												<i class="ss-help"></i>
-											</button>
-											<app-popover [visible]="symptomReportedTTOpen" (visibleChange)="symptomReportedTTOpen = $event;">
-												<div class="tool__tip isOpen">
-													<div class="tool__text">
-														This is the number of times the patient has reported this symptom, out of the total times possible.
+					<ng-container *ngFor="let symptom of symptomResults">
+						<h3 class="noMargin">{{symptom.name}}</h3>
+						<table class="fullWidth">
+							<thead>
+								<tr>
+									<th class="thSortable">
+										<span class="thSortable__text thSortable__text--left">Symptom</span>
+									</th>
+									<th class="thSortable thSortable--sortDown">
+										<span class="thSortable__text">Rating</span>
+									</th>
+									<th class="thSortable">
+										<div class="tool justifyCenter">
+											<span class="thSortable__text">Reported</span>
+											<div class="tool__anchor">
+												<button class="button button--icon button--icon--small" (click)="symptomReportedTTOpen=!symptomReportedTTOpen">
+													<i class="ss-help"></i>
+												</button>
+												<app-popover [visible]="symptomReportedTTOpen" (visibleChange)="symptomReportedTTOpen = $event;">
+													<div class="tool__tip isOpen">
+														<div class="tool__text">
+															This is the number of times the patient has reported this symptom, out of the total times possible.
+														</div>
 													</div>
-												</div>
-											</app-popover>
+												</app-popover>
+											</div>
 										</div>
-									</div>
-								</th>
-								<th class="thSortable">
-									<div class="tool justifyCenter">
-										<span class="thSortable__text">Vs Prev</span>
-										<div class="tool__anchor">
-											<button class="button button--icon button--icon--small" (click)="symptomVsPrevTTOpen=!symptomVsPrevTTOpen">
-												<i class="ss-help"></i>
-											</button>
-											<app-popover [visible]="symptomVsPrevTTOpen" (visibleChange)="symptomVsPrevTTOpen = $event;">
-												<div class="tool__tip isOpen">
-													<div class="tool__text">
-														This column shows how these results compare to the patient’s previous report of these symptoms.
+									</th>
+									<th class="thSortable">
+										<div class="tool justifyCenter">
+											<span class="thSortable__text">Vs Prev</span>
+											<div class="tool__anchor">
+												<button class="button button--icon button--icon--small" (click)="symptomVsPrevTTOpen=!symptomVsPrevTTOpen">
+													<i class="ss-help"></i>
+												</button>
+												<app-popover [visible]="symptomVsPrevTTOpen" (visibleChange)="symptomVsPrevTTOpen = $event;">
+													<div class="tool__tip isOpen">
+														<div class="tool__text">
+															This column shows how these results compare to the patient’s previous report of these symptoms.
+														</div>
 													</div>
-												</div>
-											</app-popover>
+												</app-popover>
+											</div>
 										</div>
-									</div>
-								</th>
-								<th class="thSortable">
-									<div class="tool justifyCenter">
-										<span class="thSortable__text">Vs Next</span>
-										<div class="tool__anchor">
-											<button class="button button--icon button--icon--small" (click)="symptomVsNextTTOpen=!symptomVsNextTTOpen">
-												<i class="ss-help"></i>
-											</button>
-											<app-popover [visible]="symptomVsNextTTOpen" (visibleChange)="symptomVsNextTTOpen = $event;">
-												<div class="tool__tip isOpen">
-													<div class="tool__text">
-														This column shows how these results compare to the patient’s next report of these symptoms.
+									</th>
+									<th class="thSortable">
+										<div class="tool justifyCenter">
+											<span class="thSortable__text">Vs Next</span>
+											<div class="tool__anchor">
+												<button class="button button--icon button--icon--small" (click)="symptomVsNextTTOpen=!symptomVsNextTTOpen">
+													<i class="ss-help"></i>
+												</button>
+												<app-popover [visible]="symptomVsNextTTOpen" (visibleChange)="symptomVsNextTTOpen = $event;">
+													<div class="tool__tip isOpen">
+														<div class="tool__text">
+															This column shows how these results compare to the patient’s next report of these symptoms.
+														</div>
 													</div>
-												</div>
-											</app-popover>
+												</app-popover>
+											</div>
 										</div>
-									</div>
-								</th>
-								<th class="thSortable">
-									<div class="tool justifyCenter">
-										<span class="thSortable__text">Vs Care Plan</span>
-										<div class="tool__anchor">
-											<button class="button button--icon button--icon--small" (click)="symptomVsPlanTTOpen=!symptomVsPlanTTOpen">
-												<i class="ss-help"></i>
-											</button>
-											<app-popover [visible]="symptomVsPlanTTOpen" (visibleChange)="symptomVsPlanTTOpen = $event;">
-												<div class="tool__tip isOpen">
-													<div class="tool__text">
-														This column shows how these results compare to the patient's average report of these symptoms over the course of the care plan.
+									</th>
+									<th class="thSortable">
+										<div class="tool justifyCenter">
+											<span class="thSortable__text">Vs Care Plan</span>
+											<div class="tool__anchor">
+												<button class="button button--icon button--icon--small" (click)="symptomVsPlanTTOpen=!symptomVsPlanTTOpen">
+													<i class="ss-help"></i>
+												</button>
+												<app-popover [visible]="symptomVsPlanTTOpen" (visibleChange)="symptomVsPlanTTOpen = $event;">
+													<div class="tool__tip isOpen">
+														<div class="tool__text">
+															This column shows how these results compare to the patient's average report of these symptoms over the course of the care plan.
+														</div>
 													</div>
-												</div>
-											</app-popover>
+												</app-popover>
+											</div>
 										</div>
-									</div>
-								</th>
-								<th class="thSortable">
-									<div class="tool justifyCenter">
-										<span class="thSortable__text">Update</span>
-										<div class="tool__anchor">
-											<button class="button button--icon button--icon--small" (click)="symptomUpdateTTOpen=!symptomUpdateTTOpen">
-												<i class="ss-help"></i>
-											</button>
-											<app-popover [visible]="symptomUpdateTTOpen" (visibleChange)="symptomUpdateTTOpen = $event;">
-												<div class="tool__tip isOpen">
-													<div class="tool__text">
-														You are able to update the patient's information. This will override anything the patient has already submitted.
+									</th>
+									<th class="thSortable">
+										<div class="tool justifyCenter">
+											<span class="thSortable__text">Update</span>
+											<div class="tool__anchor">
+												<button class="button button--icon button--icon--small" (click)="symptomUpdateTTOpen=!symptomUpdateTTOpen">
+													<i class="ss-help"></i>
+												</button>
+												<app-popover [visible]="symptomUpdateTTOpen" (visibleChange)="symptomUpdateTTOpen = $event;">
+													<div class="tool__tip isOpen">
+														<div class="tool__text">
+															You are able to update the patient's information. This will override anything the patient has already submitted.
+														</div>
 													</div>
-												</div>
-											</app-popover>
+												</app-popover>
+											</div>
 										</div>
-									</div>
-								</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr *ngFor="let symptom of symptomResults">
-								<td class="left">{{symptom.name}}</td>
-								<td>
-									<ng-container *ngIf="!isUpdatingSymptomResult(symptom)">
-										<div class="pill" [ngClass]="utils.percentPillClass(ratingPercentage(symptom.rating.rating))">
-											{{symptom.rating.rating}}/5
+									</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr *ngFor="let default of symptom.default_symptoms">
+									<td class="left">{{default.name}}</td>
+									<td>
+										<ng-container *ngIf="!isUpdatingSymptomResult(default)">
+											<div class="pill" [ngClass]="utils.percentPillClass(ratingPercentage(default.rating.rating))">
+												{{default.rating.rating}}/5
+											</div>
+										</ng-container>
+										<ng-container *ngIf="isUpdatingSymptomResult(default)">
+											<input type="number" min="0" max="5" class="input" [(ngModel)]="default.rating.rating" />
+										</ng-container>
+									</td>
+									<td>{{symptom.occurrence}}</td>
+									<td>
+										<div class="iconText">
+											<i class="iconText__icon iconText__icon--noTop ss-standard ss-hyphen iconSmall"></i> {{default.rating.behavior}}
 										</div>
-									</ng-container>
-									<ng-container *ngIf="isUpdatingSymptomResult(symptom)">
-										<input type="number" min="0" max="5" class="input" [(ngModel)]="symptom.rating.rating" />
-									</ng-container>
-								</td>
-								<td>{{symptom.occurrence}}</td>
-								<td>
-									<div class="iconText">
-										<i class="iconText__icon iconText__icon--noTop ss-standard ss-hyphen iconSmall"></i> {{symptom.rating.behavior}}
-									</div>
-								</td>
-								<td>
-									N/A
-								</td>
-								<td>
-									<div class="iconText">
-										<i class="iconText__icon iconText__icon--noTop ss-standard ss-hyphen iconSmall"></i> N/A
-									</div>
-								</td>
-								<td>
-									<a *ngIf="!isUpdatingSymptomResult(symptom)" class="button button--icon--small button--icon button--center relative" (click)="clickUpdateSymptomResult(symptom)">
-										<i class="ss-write"></i>
-									</a>
-									<a *ngIf="isUpdatingSymptomResult(symptom)" class="button button--icon--small button--icon button--center relative" (click)="clickSaveSymptomResult(symptom)">
-										<i class="ss-floppydisk"></i>
-									</a>
-								</td>
-							</tr>
-						</tbody>
-					</table>
-					<label>Comment</label>
-					<p>
-						"I think this new medication makes my head hurt more."
-					</p>
-					<button (click)="routeToMessaging()" class="button button--iconText">
-						<i class="ss-chat"></i> Reply
-					</button>
+									</td>
+									<td>
+										N/A
+									</td>
+									<td>
+										<div class="iconText">
+											<i class="iconText__icon iconText__icon--noTop ss-standard ss-hyphen iconSmall"></i> N/A
+										</div>
+									</td>
+									<td>
+										<a *ngIf="!isUpdatingSymptomResult(default)" class="button button--icon--small button--icon button--center relative" (click)="clickUpdateSymptomResult(default)">
+											<i class="ss-write"></i>
+										</a>
+										<a *ngIf="isUpdatingSymptomResult(default)" class="button button--icon--small button--icon button--center relative" (click)="clickSaveSymptomResult(symptom, default)">
+											<i class="ss-floppydisk"></i>
+										</a>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+						<label>Comment</label>
+						<ng-container *ngIf="symptom.task_comments">
+							<p>
+								"{{symptom.task_comments}}"
+							</p>
+							<button (click)="routeToMessaging()" class="button button--iconText marBottom48">
+								<i class="ss-chat"></i> Reply
+							</button>
+						</ng-container>
+						<ng-container *ngIf="!symptom.task_comments">
+							<p>No comment given for this symptoms report</p>
+						</ng-container>
+					</ng-container>
 				</div>
 				<!--/.accordion__contents-->
 			</div>
@@ -955,7 +963,7 @@
 											<input type="text" class="editInput input" [(ngModel)]="question.response.answer" *ngIf="question.answer_type === 'string'" />
 										</ng-container>
 									</td>
-									<td>{{question.response.occurrence}}</td>
+									<td>{{vital.occurrence}}</td>
 									<td>
 										<div class="iconText">
 											<i class="iconText__icon iconText__icon--noTop ss-standard ss-up iconSmall"></i> N/A
@@ -981,15 +989,15 @@
 							</tbody>
 						</table>
 						<label>Comment</label>
-						<ng-container *ngIf="vital.task.comments">
+						<ng-container *ngIf="vital.task_comments">
 							<p>
-								"{{vital.task.comments}}"
+								"{{vital.task_comments}}"
 							</p>
 							<button (click)="routeToMessaging()" class="button button--iconText marBottom48">
 								<i class="ss-chat"></i> Reply
 							</button>
 						</ng-container>
-						<ng-container *ngIf="!vital.task.comments">
+						<ng-container *ngIf="!vital.task_comments">
 							<p>No comment given for this vital report</p>
 						</ng-container>
 					</ng-container>
