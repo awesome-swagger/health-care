@@ -113,7 +113,9 @@ export class RecordResultsComponent implements OnInit, OnDestroy {
   public getTeamTemplates() {
     let promise = new Promise((resolve, reject) => {
       // Get team task templates for this care plan template type
-      let teamTemplatesSub = this.store.PlanTeamTemplate.readListPaged().subscribe(
+      let teamTemplatesSub = this.store.PlanTeamTemplate.readListPaged({
+        plan: this.carePlan.id,
+      }).subscribe(
         (teamTemplates) => resolve(teamTemplates),
         (err) => reject(err),
         () => {

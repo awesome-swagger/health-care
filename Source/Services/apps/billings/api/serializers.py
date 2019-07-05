@@ -2,6 +2,7 @@ from rest_framework import serializers
 
 from ..models import BilledActivity, BillingType
 from apps.core.api.mixins import RepresentationMixin
+from apps.plans.api.serializers import CarePlanSerializer
 from apps.core.api.serializers import BasicEmployeeProfileSerializer
 from apps.tasks.api.serializers import CarePlanTeamTemplateSerializer
 
@@ -55,6 +56,10 @@ class BilledActivitySerializer(RepresentationMixin,
             'modified',
         )
         nested_serializers = [
+            {
+                'field': 'plan',
+                'serializer_class': CarePlanSerializer,
+            },
             {
                 'field': 'team_template',
                 'serializer_class': CarePlanTeamTemplateSerializer

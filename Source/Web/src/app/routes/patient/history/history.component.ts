@@ -144,7 +144,9 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
 
   public getTaskTemplates() {
     let promise = new Promise((resolve, reject) => {
-      let teamTasksSub = this.store.TeamTaskTemplate.readListPaged().subscribe(
+      let teamTasksSub = this.store.PlanTeamTemplate.readListPaged({
+        plan: this.carePlan.id,
+      }).subscribe(
         (teamTasks) => resolve(teamTasks),
         (err) => reject(err),
         () => {
@@ -251,11 +253,11 @@ export class PatientHistoryComponent implements OnDestroy, OnInit {
   public filteredBilledActivities() {
     let selectedTaskNames = this.selectedTasks.map((task) => task.name);
     return this.billedActivities.filter((activity) => {
-      let isPatientDataReview = !activity.team_task_template;
+      let isPatientDataReview = !activity.team_template;
       if (isPatientDataReview) {
         return this.showDataReview;
       }
-      return selectedTaskNames.includes(activity.team_task_template.name);
+      return selectedTaskNames.includes(activity.team_template.name);
     });
   }
 

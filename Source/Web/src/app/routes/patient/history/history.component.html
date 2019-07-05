@@ -72,8 +72,8 @@
                 </div>
               </div>
               <div class="marBottom16">
-                <span *ngIf="activity.team_task_template">{{formatTaskType(activity.team_task_template.category)}}</span>
-                <span *ngIf="!activity.team_task_template">Patient Data Review</span>
+                <span *ngIf="activity.team_template">{{formatTaskType(activity.team_template.category)}}</span>
+                <span *ngIf="!activity.team_template">Patient Data Review</span>
               </div>
               <h5 class="noMargin">
                 Added by {{activity.added_by.user.first_name}} {{activity.added_by.user.last_name}}
@@ -109,8 +109,8 @@
               </div>
               <label>Task Category</label>
               <h2 class="noMargin">
-                <span *ngIf="selectedActivity.team_task_template">{{formatTaskType(selectedActivity.team_task_template.category)}}</span>
-                <span *ngIf="!selectedActivity.team_task_template">Patient Data Review</span>
+                <span *ngIf="selectedActivity.team_template">{{formatTaskType(selectedActivity.team_template.category)}}</span>
+                <span *ngIf="!selectedActivity.team_template">Patient Data Review</span>
               </h2>
               <div class="divider divider--smallMargin"></div>
               <h5>Added by {{selectedActivity.added_by.user.first_name}} {{selectedActivity.added_by.user.last_name}}&emsp;{{moment(selectedActivity.activity_datetime).format('MMM DD, YYYY')}}&ensp;|&ensp;{{moment(selectedActivity.activity_datetime).format('h:mm A')}}</h5>
