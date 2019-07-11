@@ -8,6 +8,7 @@ import {
   flattenDeep as _flattenDeep,
   groupBy as _groupBy,
   uniqBy as _uniqBy,
+  intersection as _intersection,
 } from 'lodash';
 import { ModalService, ConfirmModalComponent } from '../../../modules/modals';
 import { PopoverOptions } from '../../../modules/popover';
@@ -128,9 +129,7 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
         		this.carePlan = carePlan;
             this.timer.startTimer(this.user, this.carePlan);
             this.getCareTeam(params.planId).then((teamMembers: any) => {
-              this.careTeamMembers = teamMembers.filter((obj) => {
-                return obj.employee_profile.user.id !== this.user.user.id;
-              });
+              this.careTeamMembers = teamMembers;
           		this.refetchAllTasks(this.selectedDate).then(() => {
                 this.assignRatingsToQuestions();
                 this.detailsLoaded = true;
@@ -222,51 +221,19 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
     return promise;
   }
 
-  public getUserTasks(planTemplate, date) {
+  public getAllTeamTasks(plan, date) {
     let promise = new Promise((resolve, reject) => {
-      let tasksSub = this.store.User.detailRoute('get', this.user.user.id, 'tasks', {}, {
-        plan_template: planTemplate,
-        plan: this.carePlan.id,
+      let tasksSub = this.store.CarePlan.detailRoute('get', plan.id, 'team_tasks_for_today', {}, {
         date: date,
-        exclude_done: false,
       }).subscribe(
         (res) => resolve(res),
         (err) => reject(err),
         () => {
           tasksSub.unsubscribe();
         }
-      );
+      )
     });
     return promise;
-  }
-
-  public getTeamMemberTasks(teamMember, planTemplate, date) {
-    let promise = new Promise((resolve, reject) => {
-      let tasksSub = this.store.User.detailRoute('get', teamMember.employee_profile.user.id, 'tasks', {}, {
-        plan_template: planTemplate,
-        plan: this.carePlan.id,
-        date: date,
-        exclude_done: false,
-      }).subscribe(
-        (res: any) => {
-          res.tasks.map((obj) => {
-            obj['responsible_person'] = teamMember;
-          });
-          resolve(res);
-        },
-        (err) => reject(err),
-        () => {
-          tasksSub.unsubscribe();
-        }
-      );
-    });
-    return promise;
-  }
-
-  public getAllTeamMemberTasks(planTemplate, date) {
-    let promises = _uniqBy(this.careTeamMembers, (obj) => obj.employee_profile.id)
-      .map((obj) => this.getTeamMemberTasks(obj, planTemplate, date));
-    return Promise.all(promises);
   }
 
   public getPatientTasks(patient, planTemplate, date) {
@@ -348,6 +315,64 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
     return promise;
   }
 
+  public refetchTeamTasks(formattedDate) {
+    let teamTasksPromise = this.getAllTeamTasks(this.carePlan, formattedDate).then((tasks: any) => {
+      let userRoles = this.careTeamMembers.filter((teamMember) => {
+        return teamMember.employee_profile.id === this.user.id;
+      });
+      let userRoleIds = userRoles.filter((userRole) => userRole.role).map((userRole) => userRole.role.id);
+      let userHasManagerRole = userRoles.filter((userRole) => {
+        return userRole.is_manager === true;
+      }).length > 0;
+      this.userTasks = tasks.filter((task) => {
+        if (!userRoles || userRoles.length === 0) {
+          return false;
+        }
+        let taskRoles = task.roles.map((role) => role.id);
+        if (!taskRoles || taskRoles.length === 0) {
+          if (task.is_manager_task && userHasManagerRole) {
+            return true;
+          }
+        } else {
+          if (_intersection(userRoleIds, taskRoles).length > 0) {
+            return true;
+          }
+        }
+        return false;
+      });
+      this.teamTasks = tasks.filter((task) => {
+        return !this.userTasks.includes(task);
+      });
+      this.teamTasks.forEach((task) => {
+        task.responsible_person = this.getResponsiblePersonField(task);
+      });
+    });
+    return teamTasksPromise;
+  }
+
+  public getResponsiblePersonField(task) {
+    let taskRoles = task.roles.map((role) => role.id);
+    if (task.is_manager_task) {
+      let teamManagers = this.careTeamMembers.filter(
+        (teamMember) => teamMember.is_manager);
+      if (teamManagers.length > 0) {
+        return teamManagers[0];
+      } else {
+        return null;
+      }
+    } else if (taskRoles.length > 0) {
+      let qualifiedMembers = this.careTeamMembers.filter(
+        (teamMember) => teamMember.role && taskRoles.includes(teamMember.role.id));
+      if (qualifiedMembers.length > 0) {
+        return qualifiedMembers[0];
+      } else {
+        return null;
+      }
+    } else {
+      return null;
+    }
+  }
+
   public refetchPatientTasks(formattedDate) {
     let patientTasksPromise = this.getPatientTasks(this.patient.user.id, this.carePlan.plan_template.id, formattedDate).then((tasks: any) => {
       this.patientTasks = tasks.tasks;
@@ -419,15 +444,16 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
     let goalsPromise = this.getGoals(this.patient.id, this.carePlan.plan_template.id, startOfDay, endOfDay).then((goals: any) => {
       this.planGoals = goals;
     });
-    let userTasksPromise = this.getUserTasks(this.carePlan.plan_template.id, formattedDate).then((tasks: any) => {
-      this.userTasks = tasks.tasks.filter((obj) => obj.patient && obj.patient.id === this.patient.id);
-    });
-    this.teamTasks = [];
-    let teamTasksPromise = this.getAllTeamMemberTasks(this.carePlan.plan_template.id, formattedDate).then((teamMemberTasks: any) => {
-      teamMemberTasks.forEach((tasks) => {
-        this.teamTasks = this.teamTasks.concat(tasks.tasks.filter((obj) => obj.patient && obj.patient.id === this.patient.id));
-      });
-    });
+    let teamTasksPromise = this.refetchTeamTasks(formattedDate).then();
+    // let userTasksPromise = this.getUserTasks(this.carePlan.plan_template.id, formattedDate).then((tasks: any) => {
+    //   this.userTasks = tasks.tasks.filter((obj) => obj.patient && obj.patient.id === this.patient.id);
+    // });
+    // this.teamTasks = [];
+    // let teamTasksPromise = this.getAllTeamMemberTasks(this.carePlan.plan_template.id, formattedDate).then((teamMemberTasks: any) => {
+    //   teamMemberTasks.forEach((tasks) => {
+    //     this.teamTasks = this.teamTasks.concat(tasks.tasks.filter((obj) => obj.patient && obj.patient.id === this.patient.id));
+    //   });
+    // });
     let patientTasksPromise = this.refetchPatientTasks(formattedDate).then(() => {
       if (!this.isUsingMobile) {
         this.updatingPatientTasks = this.patientTasks.filter((obj) => this.isPatientTaskUpdatable(obj));
@@ -456,7 +482,7 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
         });
       }
     });
-    return Promise.all([goalsPromise, userTasksPromise, teamTasksPromise, patientTasksPromise, assessmentsPromise, symptomsPromise, vitalResultsPromise]);
+    return Promise.all([goalsPromise, teamTasksPromise, patientTasksPromise, assessmentsPromise, symptomsPromise, vitalResultsPromise]);
   }
 
   public setAllUpdatable() {
@@ -874,6 +900,10 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
     this.router.navigate(['/patient', this.patient.id, 'messaging', this.carePlan.id]);
   }
 
+  public routeToCareTeam() {
+    this.router.navigate(['/patient', this.patient.id, 'team', this.carePlan.id]);
+  }
+
   public getBehaviorIcon(behavior) {
     switch(behavior) {
       case 'increasing':
@@ -1069,15 +1099,7 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
     }).subscribe(
       (updatedTask) => {
         let formattedDate = this.selectedDate.utc().format('YYYY-MM-DD');
-        let userTasksPromise = this.getUserTasks(this.carePlan.plan_template.id, formattedDate).then((tasks: any) => {
-          this.userTasks = tasks.tasks.filter((obj) => obj.patient && obj.patient.id === this.patient.id);
-        });
-        this.teamTasks = [];
-        let teamTasksPromise = this.getAllTeamMemberTasks(this.carePlan.plan_template.id, formattedDate).then((teamMemberTasks: any) => {
-          teamMemberTasks.forEach((tasks) => {
-            this.teamTasks = this.teamTasks.concat(tasks.tasks.filter((obj) => obj.patient && obj.patient.id === this.patient.id));
-          });
-        });
+        this.refetchTeamTasks(formattedDate).then();
         if (!updatedTask) return;
       },
       (err) => {},

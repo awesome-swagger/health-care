@@ -465,9 +465,12 @@ class CarePlanTeamTemplate(AbstractPlanTaskTemplate):
 
     @property
     def roles(self):
-        return self.custom_roles.all() \
-            if self.custom_roles.exists() \
-            else self.team_task_template.roles.all()
+        if self.custom_roles.exists():
+            return self.custom_roles.all()
+        elif self.team_task_template and self.team_task_template.roles:
+            return self.team_task_template.roles.all()
+        else:
+            return []
 
 
 class TeamTask(AbstractTask):

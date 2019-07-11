@@ -76,6 +76,7 @@ from apps.tasks.api.serializers import (
     AssessmentResultOverviewSerializer,
     SymptomByPlanSerializer,
     VitalByPlanSerializer,
+    TeamTaskTodaySerializer,
 )
 from apps.tasks.models import (
     AssessmentTask,
@@ -94,6 +95,7 @@ from apps.tasks.models import (
     VitalTaskTemplate,
 )
 from apps.tasks.permissions import IsEmployeeOrPatientReadOnly
+from apps.tasks.utils import get_all_team_tasks_for_plan_today
 from care_adopt_backend import utils
 from care_adopt_backend.permissions import (
     EmployeeOrReadOnly,
@@ -370,16 +372,30 @@ class CarePlanViewSet(viewsets.ModelViewSet):
     @action(methods=['get'], detail=True)
     def available_roles(self, request, pk=None):
         plan = self.get_object()
-        template = plan.plan_template
         care_team_members = plan.care_team_members.all()
-        all_roles = template.team_tasks.values_list(
-            'roles', flat=True).distinct()
+        all_roles = [team_template.roles for team_template in plan.plan_team_templates.all()]
+        roles_flat = [role.id for sublist in all_roles for role in sublist]
+        roles_unique = list(set(roles_flat))
         assigned_roles = care_team_members.filter(
             role__isnull=False).values_list('role', flat=True).distinct()
         available_roles = ProviderRole.objects.filter(
-            id__in=all_roles).exclude(id__in=assigned_roles)
-
+            id__in=roles_unique).exclude(id__in=assigned_roles)
         serializer = ProviderRoleSerializer(available_roles, many=True)
+        return Response(serializer.data)
+
+    @action(methods=['get'], detail=True)
+    def team_tasks_for_today(self, request, pk=None):
+        plan = self.get_object()
+        timestamp = request.GET.get('date', None)
+        date_format = "%Y-%m-%d"
+        date_object = datetime.datetime.strptime(timestamp, date_format).date() \
+            if timestamp else timezone.now().date()
+        tasks = get_all_team_tasks_for_plan_today(
+            self.request.user,
+            plan,
+            date_object=date_object,
+        )
+        serializer = TeamTaskTodaySerializer(tasks, many=True)
         return Response(serializer.data)
 
     def calculate_average_satisfaction(self, queryset):

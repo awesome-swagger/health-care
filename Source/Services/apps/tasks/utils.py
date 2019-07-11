@@ -149,6 +149,28 @@ def get_all_tasks_of_patient_today(patient):
     return tasks
 
 
+def get_all_team_tasks_for_plan_today(user, plan, **kwargs):
+    """
+    Retrieves all team tasks for the given plan on the day given
+    """
+    if user.is_employee:
+        date_object = kwargs.pop('date_object', timezone.now().date())
+        today_min = datetime.datetime.combine(date_object,
+                                              datetime.time.min,
+                                              tzinfo=pytz.utc)
+        today_max = datetime.datetime.combine(date_object,
+                                              datetime.time.max,
+                                              tzinfo=pytz.utc)
+        next_checkin = None
+        team_tasks = TeamTask.objects.filter(
+            team_template__plan=plan,
+            due_datetime__range=(today_min, today_max)
+        )
+        return team_tasks.all()
+    else:
+        return []
+
+
 def get_all_tasks_for_today(user, **kwargs):
     """
     Retrieves all tasks for the given user that are due for current day.

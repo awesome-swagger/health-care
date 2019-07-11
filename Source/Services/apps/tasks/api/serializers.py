@@ -164,6 +164,8 @@ class TeamTaskTodaySerializer(serializers.ModelSerializer):
     """
     type = serializers.SerializerMethodField()
     name = serializers.SerializerMethodField()
+    is_manager_task = serializers.SerializerMethodField()
+    roles = serializers.SerializerMethodField()
     patient = serializers.SerializerMethodField()
     occurrence = serializers.SerializerMethodField()
 
@@ -173,6 +175,8 @@ class TeamTaskTodaySerializer(serializers.ModelSerializer):
             'id',
             'type',
             'name',
+            'is_manager_task',
+            'roles',
             'state',
             'patient',
             'occurrence',
@@ -185,6 +189,14 @@ class TeamTaskTodaySerializer(serializers.ModelSerializer):
 
     def get_name(self, obj):
         return obj.team_template.name
+
+    def get_is_manager_task(self, obj):
+        return obj.team_template.is_manager_task
+
+    def get_roles(self, obj):
+        roles = obj.team_template.roles
+        serializer = ProviderRoleSerializer(roles, many=True)
+        return serializer.data
 
     def get_patient(self, obj):
         patient = obj.team_template.plan.patient

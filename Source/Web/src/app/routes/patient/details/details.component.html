@@ -279,6 +279,9 @@
 										<span *ngIf="task.responsible_person.role"> ({{task.responsible_person.role.name}})</span>
 										<span *ngIf="!task.responsible_person.role"> (Care Manager)</span>
 									</span>
+									<button class="button completeButton" *ngIf="!task.responsible_person" (click)="routeToCareTeam()">
+										Assign Role
+									</button>
 								</td>
 							</tr>
 						</tbody>
