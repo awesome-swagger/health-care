@@ -371,6 +371,24 @@ class PotentialPatient(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
         return f'{self.first_name} {self.last_name}'
 
 
+class ProspectivePatient(CreatedModifiedMixin, UUIDPrimaryKeyMixin):
+    mrn = models.CharField(max_length=64)
+    first_name = models.CharField(_('first name'), max_length=30)
+    last_name = models.CharField(_('last name'), max_length=30)
+    email = models.EmailField(_('email address'), null=True, blank=True)
+    birthdate = models.DateField(
+        null=True, blank=True, verbose_name='Birth date')
+    phone = models.CharField(
+        max_length=16, blank=True, verbose_name='Phone number')
+    enhnicity = models.CharField(max_length=250, null=True, blank=True)
+    diagnosises = models.TextField(null=True, blank=True)
+    medications = models.TextField(null=True, blank=True)
+    procedures = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        return f'{self.first_name} {self.last_name}'
+
+
 # Signals
 models.signals.post_save.connect(
     patientprofile_post_save,
