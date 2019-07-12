@@ -37,7 +37,7 @@ export class PatientsEnrolledGraphComponent implements OnInit {
   public drawChart() {
     const chartWidth = 1300;
 
-    const months = this._data;
+    const months = this._data.reverse();
 
     const margin = {top: 30, right: 20, bottom: 30, left: 50};
     const width = chartWidth - margin.left - margin.right;

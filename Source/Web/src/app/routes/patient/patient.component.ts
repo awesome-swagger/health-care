@@ -244,8 +244,10 @@ export class PatientComponent implements OnDestroy, OnInit {
         this.carePlans.forEach(cp => {
           this.store.MedicationTaskTemplate.readListPaged({plan__id: cp.id}).subscribe((res:any) => {
             res.forEach(taskTemplate => {
-              const patientMedication = this.patientMedications.find(m => m.id === taskTemplate.patient_medication.id);
-              patientMedication.task = taskTemplate;
+			  const patientMedication = this.patientMedications.find(m => m.id === taskTemplate.patient_medication.id);
+			  
+			  if(patientMedication)
+              	patientMedication.task = taskTemplate;
             })
           })
         })
@@ -662,7 +664,7 @@ export class PatientComponent implements OnDestroy, OnInit {
   }
 
   get patientAge() {
-    if (this.patient) {
+    if (this.patient && this.patient.user.birthdate) {
       return moment().diff(this.patient.user.birthdate, 'years');
     }
     return '';

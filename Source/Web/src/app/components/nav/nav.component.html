@@ -161,8 +161,8 @@
         </div> <!--/.drop (for logout, switch org)-->
 
         <a (click)="routeToProfile()">
-          <img class="nav__profile" *ngIf="!employee?.user.image_url" src="../../../assets/img/profile--2.svg" />
-          <img class="nav__profile" *ngIf="employee?.user.image_url" [src]="employee?.user.image_url" />
+          <img class="nav__profile" *ngIf="!employee?.user?.image_url" src="../../../assets/img/profile--2.svg" />
+          <img class="nav__profile" *ngIf="employee?.user?.image_url" [src]="employee?.user.image_url" />
         </a>
       </div> <!--/.nav__right-->
     </div> <!--/.nav__top-->
