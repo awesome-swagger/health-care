@@ -17,6 +17,7 @@ import {
 } from 'lodash';
 import * as moment from 'moment';
 import { AddUserToFacilityComponent } from './modals/add-user-to-facility/add-user-to-facility.component';
+import { Capitalize, CapitalizationOptions } from '../../../extensions';
 
 
 class ImageSnippet {
@@ -484,10 +485,10 @@ export class UserComponent implements OnDestroy, OnInit {
     const okText = "Continue";
     this.modals.open(ConfirmModalComponent, {
       data: {
-        title: 'Remove Administrator?', 
+        title: `${Capitalize(action, CapitalizationOptions.Capitalize)} Administrator?`,
         body: `Do you want to ${action} ${employeeName} as an administrator at ${orgOrFacilityName}?`,
         cancelText,
-        okText,
+        okText
       },
       width: '384px'
     }).subscribe(res => {

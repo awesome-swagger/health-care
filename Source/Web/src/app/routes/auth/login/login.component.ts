@@ -34,7 +34,11 @@ export class LoginComponent implements OnDestroy, OnInit {
     this.nav.hide();
     // This is triggered after the user logins in
     let userSub = this.auth.user$.subscribe((user) => {
-      if (user === null) {
+		if(user === null)
+			return;
+
+      if (user.results) {
+		  this.toast.error('Invalid username or password. Please try again.');
         return;
       }
       this.user = user;
@@ -64,7 +68,10 @@ export class LoginComponent implements OnDestroy, OnInit {
       .subscribe(
         (res) => { },
         (err) => {
-          this.toast.error('An error occurred.');
+			if(err.status === 401)
+				this.toast.error('Invalid username or password. Please try again.');
+			else
+				this.toast.error('An error occurred.');
         },
         () => {
           this.username = '';

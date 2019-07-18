@@ -87,12 +87,15 @@ export class NavComponent implements OnDestroy, OnInit {
   public ngOnInit() {
     this.authSub = this.auth.user$.subscribe(
       (res) => {
-        if (!res) return;
-        this.employee = res;
-        this.getTasks(this.employee.user.id).then((tasks:any) => {
-          this.tasks = tasks;
-          this.tasksData = tasks;
-        });
+		if (!res) return;
+		
+		if(res.user && res.user.id) {
+			this.employee = res;
+			this.getTasks(this.employee.user.id).then((tasks:any) => {
+				this.tasks = tasks;
+				this.tasksData = tasks;
+			});
+		}
       },
       (err) => {},
       () => {}
@@ -254,9 +257,19 @@ export class NavComponent implements OnDestroy, OnInit {
   private getNotifications() {
     return new Promise((resolve, reject) => {
       this.auth.user$.subscribe(
-        user => {
-          if (!user) return;
-          let notificationsSub = this.store.User.detailRoute('GET', user.user.id, 'notifications').subscribe(
+        response => {
+		  if (!response) return;
+		  
+		  let user = null;
+		  if(Array.isArray(response.results) && response.results.length > 0)
+			user = response.results[0];
+			else
+				user = response.user;
+
+			if(!user || !user.id)
+				return;
+
+          let notificationsSub = this.store.User.detailRoute('GET', user.id, 'notifications').subscribe(
             (notifications:any) => {
               resolve(notifications);
             }

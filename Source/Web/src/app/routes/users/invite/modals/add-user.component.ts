@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { StoreService, AuthService } from '../../../../services';
 import { ModalService } from '../../../../modules/modals';
+import { User } from '../../../../models/user';
+
 
 @Component({
   selector: 'app-add-user',
@@ -168,7 +170,7 @@ export class AddUserComponent implements OnInit {
       }
     })
     if (this.firstNameInput && this.lastNameInput && this.emailInput) {
-      this.modals.close({
+      this.modals.close(<User>{
         firstName: this.firstNameInput,
         lastName: this.lastNameInput,
         title: this.titleInput,

@@ -78,7 +78,6 @@
 
         <div class="dashRisk">
           <div class="dashRisk__chart">
-            <!--TODO: replace fakeChart with actual js charts-->
             <app-active-patients-graph [data]="riskLevelBreakdown"></app-active-patients-graph>
           </div> <!--/.dashRisk__chart-->
           <div class="dashRisk__key">
@@ -316,23 +315,23 @@
     <div class="info info--dk info--horiz marTop16">
       <div class="info__cell">
         <label>Total Patients</label>
-        <h1 class="info__bigNumber">{{billingOverview?.billable_patients}}</h1>
+        <h1 class="info__bigNumber">{{topBillingOverview?.billable_patients}}</h1>
       </div>
       <div class="info__cell">
         <label>Total Hours</label>
-        <h1 class="info__bigNumber">{{billingOverview?.total_hours}}</h1>
+        <h1 class="info__bigNumber">{{topBillingOverview?.total_hours}}</h1>
       </div>
       <div class="info__cell">
         <label>Billable Patients</label>
-        <h1 class="info__bigNumber">{{billingOverview?.billable_patients}}</h1>
+        <h1 class="info__bigNumber">{{topBillingOverview?.billable_patients}}</h1>
       </div>
       <div class="info__cell">
         <label>Billable Hours</label>
-        <h1 class="info__bigNumber">{{billingOverview?.total_hours}}</h1>
+        <h1 class="info__bigNumber">{{topBillingOverview?.total_hours}}</h1>
       </div>
       <div class="info__cell">
         <label>Est. Month Total</label>
-        <h1 class="info__bigNumber">${{billingOverview?.total_billable}}</h1>
+        <h1 class="info__bigNumber">${{topBillingOverview?.total_billable}}</h1>
       </div>
     </div> <!--/.info (for current month to date)-->
 
@@ -349,23 +348,23 @@
     <div class="info info--dk info--horiz marTop16">
       <div class="info__cell">
         <label>Total Patients</label>
-        <h1 class="info__bigNumber">{{billingOverview?.billable_patients}}</h1>
+        <h1 class="info__bigNumber">{{bottomBillingOverview?.billable_patients}}</h1>
       </div>
       <div class="info__cell">
         <label>Total Hours</label>
-        <h1 class="info__bigNumber">{{billingOverview?.total_hours}}</h1>
+        <h1 class="info__bigNumber">{{bottomBillingOverview?.total_hours}}</h1>
       </div>
       <div class="info__cell">
         <label>Billable Patients</label>
-        <h1 class="info__bigNumber">{{billingOverview?.billable_patients}}</h1>
+        <h1 class="info__bigNumber">{{bottomBillingOverview?.billable_patients}}</h1>
       </div>
       <div class="info__cell">
         <label>Billable Hours</label>
-        <h1 class="info__bigNumber">{{billingOverview?.total_hours}}</h1>
+        <h1 class="info__bigNumber">{{bottomBillingOverview?.total_hours}}</h1>
       </div>
       <div class="info__cell">
         <label>Est. Month Total</label>
-        <h1 class="info__bigNumber">${{billingOverview?.total_billable}}</h1>
+        <h1 class="info__bigNumber">${{bottomBillingOverview?.total_billable}}</h1>
       </div>
     </div> <!--/.info (for past month)-->
 

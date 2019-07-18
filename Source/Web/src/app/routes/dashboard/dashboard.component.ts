@@ -36,7 +36,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   public riskLevelBreakdown = null;
   public patientAdoption = null;
-  public billingOverview = null;
+  public topBillingOverview = null;
+  public bottomBillingOverview = null;
 
   public analyticsData = null;
   public patientOverview = null;
@@ -113,9 +114,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
           }
         )
 
-        this.store.Organization.detailRoute('GET', org.id, 'billed_activities/overview').subscribe(
+        this.store.Organization.detailRoute('GET', org.id, `billed_activities/overview?activity_datetime__lte=${this.topBillingEnd.toISOString()}&activity_datetime__gte=${this.topBillingStart.toISOString()}`).subscribe(
           (res:any) => {
-            this.billingOverview = res;
+            this.topBillingOverview = res;
+          }
+		)
+		
+		this.store.Organization.detailRoute('GET', org.id, `billed_activities/overview?activity_datetime__lte=${this.bottomBillingEnd.toISOString()}&activity_datetime__gte=${this.bottomBillingStart.toISOString()}`).subscribe(
+          (res:any) => {
+            this.bottomBillingOverview = res;
           }
         )
 
@@ -236,7 +243,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   public get userIsAdmin() {
     if (this.user) {
-      return this.user.facilities_managed.length > 0 || this.user.organizations_managed.length > 0;
+	  return this.user &&
+		  (Array.isArray(this.user.facilities_managed) && this.user.facilities_managed.length > 0) ||
+		  (Array.isArray(this.user.organizations_managed) && this.user.organizations_managed.length > 0);
     }
     return false;
   }
