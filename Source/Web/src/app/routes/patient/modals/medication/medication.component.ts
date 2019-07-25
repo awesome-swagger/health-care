@@ -16,12 +16,12 @@ export class MedicationComponent implements OnInit {
 
   public data = null;
   public frequencyOptions: Array<any> = [
-    {displayName: 'Once', value: 'once'},
-    {displayName: 'Daily', value: 'daily'},
-    {displayName: 'Every Other Day', value: 'every_other_day'},
-    {displayName: 'Weekly', value: 'weekly'},
-    {displayName: 'Weekdays', value: 'weekdays'},
-    {displayName: 'Weekends', value: 'weekends'},
+    { displayName: 'Once', value: 'once' },
+    { displayName: 'Daily', value: 'daily' },
+    { displayName: 'Every Other Day', value: 'every_other_day' },
+    { displayName: 'Weekly', value: 'weekly' },
+    { displayName: 'Weekdays', value: 'weekdays' },
+    { displayName: 'Weekends', value: 'weekends' },
   ];
   public plan = null;
   public plans = [];
@@ -30,7 +30,7 @@ export class MedicationComponent implements OnInit {
   public medications = [];
   public careTeamMembers = [];
   public employees = [];
-  public employeeSearchString:string = '';
+  public employeeSearchString: string = '';
   public selectedEmployee = null;
   public selectedMedication = null;
   public doseMg = 0;
@@ -53,7 +53,7 @@ export class MedicationComponent implements OnInit {
   constructor(
     private modal: ModalService,
     private store: StoreService,
-  ) {}
+  ) { }
 
   public ngOnInit() {
     this.fetchMedications().then((medications: any) => {
@@ -64,12 +64,12 @@ export class MedicationComponent implements OnInit {
       users => {
         this.employees = users;
       },
-      err => {},
+      err => { },
       () => employeeSub.unsubscribe()
     )
 
     if (this.data) {
-      console.log('patient --- ',this.data.patient);
+      console.log('patient --- ', this.data.patient);
       this.plan = this.data.plan;
       this.plans = this.data.plans;
       this.patient = this.data.patient;
@@ -143,11 +143,8 @@ export class MedicationComponent implements OnInit {
     return promise;
   }
 
-  public saveDisabled() {
-    return (
-      !this.selectedMedication || !this.doseMg ||
-      !this.datePrescribed || !this.durationDays ||
-      !this.selectedEmployee || !this.datePrescribed);
+  public saveDisabled(): boolean {
+    return (!this.selectedPlan || !this.selectedMedication);
   }
 
   public clickDelete() {
@@ -182,7 +179,7 @@ export class MedicationComponent implements OnInit {
           repeat_amount: this.repeatsChoice === 'plan_end' ? -1 : this.repeatAmount,
           appear_time: this.appearTime,
           due_time: this.dueTime,
-        }).subscribe((task:any) => {
+        }).subscribe((task: any) => {
           res.task = task;
           this.modal.close(res);
         })
@@ -208,7 +205,7 @@ export class MedicationComponent implements OnInit {
           repeat_amount: this.repeatsChoice === 'plan_end' ? -1 : this.repeatAmount,
           appear_time: this.appearTime,
           due_time: this.dueTime,
-        }).subscribe((task:any) => {
+        }).subscribe((task: any) => {
           res.task = task;
           this.modal.close(res);
         })

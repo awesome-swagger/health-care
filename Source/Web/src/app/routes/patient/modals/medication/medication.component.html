@@ -1,7 +1,4 @@
 <h1 class="modal__title">
-  <!--TODO: Show the following span if adding a medication-->
-  <!--<span>Add</span>-->
-  <!--TODO: Show the following span if editing a medication-->
   {{data.type === 'edit' ? 'Edit' : 'Add'}} Medication
 </h1>
 <div class="divider"></div>
@@ -53,10 +50,6 @@
       days
     </div>
   </div>
-  <!-- <div class="modal__inputWrap100">
-    <label>Refills</label>
-    <input type="number" class="input fullWidth" min="0" />
-  </div> -->
 </div>
 <div class="drop marBottom32">
   <label>Diagnosing Practitioner</label>
@@ -93,7 +86,7 @@
   </div>
   <label *ngIf="frequency !== 'once'">
     Repeats
-    <div class="flex">
+    <span class="flex">
       <label class="styledInput marRight48">
         <input type="radio" class="styledInput__input" name="radioPDM" [value]="'plan_end'" [(ngModel)]="repeatsChoice" />
         <span class="styledInput__radio"></span> Until Plan Ends
@@ -101,12 +94,12 @@
       <label class="styledInput">
         <input type="radio" class="styledInput__input" name="radioPDM" [value]="'other'" [(ngModel)]="repeatsChoice" />
         <span class="styledInput__radio"></span>
-        <div class="modal__inputWrap80 marRight8">
+        <span class="modal__inputWrap80 marRight8">
           <input type="number" class="input fullWidth" min="0" [(ngModel)]="repeatAmount" />
-        </div>
+        </span>
         times
       </label>
-    </div>
+    </span>
   </label>
   <div class="flex justifySpaceBetween marBottom32">
     <div class="modal__inputWrap marRight32">
