@@ -17,24 +17,22 @@ interface ListResponse {
 }
 
 export class Store {
-
-  private http: HttpService;
-  private endpoint: string;
-
-  constructor(http: HttpService, endpoint: string) {
-    this.http = http;
-    this.endpoint = endpoint;
+  constructor(
+    private http: HttpService,
+    private endpoint: string
+  ) {
+    // Nothing yet
   }
 
   public create(payload: any): Observable<any> {
-    let request = this.http.post(this.createUrl(), payload);
+    const request = this.http.post(this.createUrl(), payload);
     return request.catch((error: any) => {
       return throwError(error);
     });
   }
 
   public createAlt(payload: any): Observable<any> {
-    let request = this.http.post(this.createRestAuthUrl(), payload);
+    const request = this.http.post(this.createRestAuthUrl(), payload);
     return request.catch((error: any) => {
       return throwError(error);
     });
@@ -46,7 +44,7 @@ export class Store {
   }
 
   public readList(params = {}): Observable<any> {
-    let request = this.http.get(this.createUrl(), params);
+    const request = this.http.get(this.createUrl(), params);
     return request
       .map((response: ListResponse) => {
         const results = Object.assign(response.results, {
@@ -54,6 +52,8 @@ export class Store {
           next: response.next,
           previous: response.previous
         });
+
+        // Was this supposed to return the result not the response?
         return response;
       }).catch((error: any) => {
         return throwError(error);
@@ -61,10 +61,10 @@ export class Store {
   }
 
   public readListPaged(params = {}): Observable<any> {
-    let request = this.http.get(this.createUrl(), params);
+    const request = this.http.get(this.createUrl(), params);
     return request
       .flatMap((firstPage: ListResponse) => {
-        let pageObservables: Observable<any>[] = [ of(firstPage.results)];
+        let pageObservables: Observable<any>[] = [of(firstPage.results)];
         // construct each page url for each existing page, starting at 2
         if (firstPage.next) {
           for (let i = 2; i <= Math.ceil(firstPage.count / firstPage.results.length); i++) {
@@ -73,6 +73,7 @@ export class Store {
             pageObservables.push(page);
           }
         }
+
         return combineLatest(pageObservables)
           .map((nested) => nested.reduce((acc, cur) => acc.concat(cur), [])).catch((error: any) => {
             return throwError(error);
@@ -89,6 +90,7 @@ export class Store {
     } else {
       request = this.http.put(this.createUrl(id), payload);
     }
+    
     return request.catch((error: any) => {
       return throwError(error);
     });
@@ -101,27 +103,28 @@ export class Store {
     } else {
       request = this.http.put(this.createRestAuthUrl(id), payload);
     }
+
     return request.catch((error: any) => {
       return throwError(error);
     });
   }
 
   public destroy(id: number | string): Observable<any> {
-    let request = this.http.delete(this.createUrl(id));
+    const request = this.http.delete(this.createUrl(id));
     return request.catch((error: any) => {
       return throwError(error);
     });
   }
 
   public detailRoute(method: string, id: number | string, route: string, payload = {}, params = {}) {
-    let request = this.http.request(method, `${this.createUrl(id)}${route}/`, payload, params);
+    const request = this.http.request(method, `${this.createUrl(id)}${route}/`, payload, params);
     return request.catch((error: any) => {
       return throwError(error);
     });
   }
 
   public listRoute(method: string, route: string, payload = {}, params = {}) {
-    let request = this.http.request(method, `${this.createUrl()}${route}/`, payload, params);
+    const request = this.http.request(method, `${this.createUrl()}${route}/`, payload, params);
     return request.catch((error: any) => {
       return throwError(error);
     });
@@ -130,16 +133,16 @@ export class Store {
   private createUrl(id: number | string = null): string {
     if (id) {
       return `${AppConfig.apiUrl}${this.endpoint}/${id}/`;
-    } else {
-      return `${AppConfig.apiUrl}${this.endpoint}/`;
     }
+
+    return `${AppConfig.apiUrl}${this.endpoint}/`;
   }
 
-  private createRestAuthUrl(id: number | string = null):string {
+  private createRestAuthUrl(id: number | string = null): string {
     if (id) {
       return `${AppConfig.restAuthUrl}${this.endpoint}/${id}/`;
-    } else {
-      return `${AppConfig.restAuthUrl}${this.endpoint}/`;
     }
+
+    return `${AppConfig.restAuthUrl}${this.endpoint}/`;
   }
 }

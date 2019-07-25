@@ -125,11 +125,11 @@
       <div class="info__cell">
         <label class="tool info__tool justifyCenter">
           Time
-          <div class="tool__anchor">
+          <span class="tool__anchor">
             <button class="button button--icon button--icon--small" (click)="openFinancialDetails(plan)">
               <i class="ss-info"></i>
             </button>
-          </div>
+          </span>
         </label>
         <ng-container *ngIf="patient && plan.overview">
           <div class="pill" [ngClass]="timePillColor(plan)">

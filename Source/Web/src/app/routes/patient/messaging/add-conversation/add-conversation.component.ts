@@ -16,49 +16,50 @@ export class AddConversationComponent implements OnInit {
   constructor(
     private modals: ModalService,
     private store: StoreService,
-  ) { }
+  ) {
+    // Nothing yet
+  }
 
-  ngOnInit() {
+  ngOnInit(): void {
     if (this.data && this.data.careTeam) {
       Object.keys(this.data.careTeam).forEach((id) => {
         if (id !== this.data.userId) {
           this.userChecked[id] = false;
         }
-      })
+      });
     }
   }
 
-  public get careTeamMembers() {
+  public get careTeamMembers(): Array<any> {
     if (this.data && this.data.careTeam) {
       const result = [];
-      Object.keys(this.data.careTeam).forEach((id) => {
-        result.push(this.data.careTeam[id])
-      })
+      Object.keys(this.data.careTeam).forEach((id) => result.push(this.data.careTeam[id]));
+
       return result;
     }
+
     return [];
   }
 
-  public close() {
+  public close(): void {
     this.modals.close(null);
   }
 
-  public continue() {
+  public continue(): void {
     const members = [];
     Object.keys(this.userChecked).forEach(id => {
       if (this.userChecked[id]) {
         members.push(id);
       }
-    })
+    });
+
     members.push(this.data.userId);
     if (this.patientChecked) {
-      members.push(this.data.patient.user.id)
+      members.push(this.data.patient.user.id);
     }
-    this.store.CarePlan.detailRoute('POST', this.data.planId, 'message_recipients', {
-      members
-    }).subscribe(res => {
-      this.modals.close(res);
-    })
-  }
 
+    this.store.CarePlan
+      .detailRoute('POST', this.data.planId, 'message_recipients', { members })
+      .subscribe(res => this.modals.close(res));
+  }
 }

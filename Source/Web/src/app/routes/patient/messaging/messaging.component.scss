@@ -18,7 +18,9 @@
   flex: 1 1 auto;
   min-height: rem-calc(355);
 
-  &--pad { padding-bottom: rem-calc(16); }
+  &--pad {
+    padding-bottom: rem-calc(16);
+  }
 
   &__side {
     flex: 0 0 rem-calc(320);
@@ -78,7 +80,6 @@
     white-space: nowrap;
     text-overflow: ellipsis;
   }
-
   /* This was for the section at the bottom of the threads list to add a thread. Keeping it in case we bring it back later
   &__addThread {
     border-top: 1px solid $border;
@@ -86,7 +87,6 @@
     padding: rem-calc(8) rem-calc(16);
   }
   */
-
   &__picBubble {
     display: flex;
     align-items: flex-end;
@@ -127,10 +127,11 @@
 
   &__message {
     margin-bottom: rem-calc(16);
-
     max-width: 300px;
 
-    &:last-child { margin-bottom: 0; }
+    &:last-child {
+      margin-bottom: 0;
+    }
 
     &--teal {
       .chat__bubble {
@@ -142,10 +143,8 @@
         }
       }
     }
-
     /*separate styling for messages from self
     muy much nesting :( But it makes it easy to change one class on .chat__message */
-
     &--right {
       margin-left: auto;
       align-self: flex-end;
@@ -168,7 +167,9 @@
         }
       }
 
-      .chat__info { text-align: right; }
+      .chat__info {
+        text-align: right;
+      }
     }
   }
 
@@ -179,7 +180,9 @@
     align-items: center;
     justify-content: center;
 
-    &:first-child { margin-top: rem-calc(0); }
+    &:first-child {
+      margin-top: rem-calc(0);
+    }
   }
 
   &__divider {
@@ -217,4 +220,28 @@
   font-family: "Roboto", "Franklin Gothic Medium", Tahoma, sans-serif;
   font-size: 10px;
   color: black;
+}
+
+label {
+  &.styledInput {
+    &.disabled {
+      cursor: not-allowed;
+    }
+  }
+}
+
+button[disabled] {
+  &.button {
+    &.button--iconText {
+      background-color: initial !important;
+      cursor: not-allowed;
+    }
+  }
+}
+
+textarea[readonly] {
+  &.input--textarea {
+    background-color: $grayLter;
+    cursor: default;
+  }
 }

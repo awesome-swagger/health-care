@@ -9,12 +9,10 @@
 
       <div class="chat__side">
         <div class="chat__threads">
-          <div
-            *ngFor="let stream of messageStreams"
-            class="chat__thread"
-            [ngClass]="{ 'chat__thread--active': stream?.id === currentStream?.id }"
-            (click)="changeStream(stream)"
-          >
+          <div *ngFor="let stream of messageStreams"
+               class="chat__thread"
+               [ngClass]="{ 'chat__thread--active': stream?.id === currentStream?.id }"
+               (click)="changeStream(stream)">
             <div class="flex justifySpaceBetween alignCenter marBottom8">
               <div class="picName">
                 <img class="picName__img" src="../../../../assets/img/profile.svg" />
@@ -46,19 +44,17 @@
                   <div class="chat__date">{{getDay(messageGroup[0])}}</div>
                 </div>
 
-                <div
-                  *ngFor="let message of messageGroup"
-                  class="chat__message"
-                  [ngClass]="{ 'chat__message--right': isSelf(currentStream, message) }"
-                >
+                <div *ngFor="let message of messageGroup"
+                     class="chat__message"
+                     [ngClass]="{ 'chat__message--right': isSelf(currentStream, message) }">
                   <h5 class="chat__info" style="text-align: right;"></h5>
                   <div class="chat__picBubble">
-                    <img class="chat__img" [src]="careTeam[getUser(currentStream, message).id]?.user?.image_url" />
+                    <img class="chat__img" [src]="careTeam[getUser(currentStream, message)?.id]?.user?.image_url || '../../../assets/img/profile--2.svg'" />
                     <div class="chat__bubble">
                       <ng-container *ngIf="!message?.image">
                         <span *ngFor="let messageLine of message.text.split('\n')">{{messageLine}}<br></span>
                       </ng-container>
-                      <a *ngIf="message.image" [href]="message.image" target="_blank" style="display: inline-block">
+                      <a *ngIf="message.image" [href]="message.image" [target]="_blank" style="display: inline-block">
                         <img [src]="message.image" />
                       </a>
                     </div>
@@ -73,20 +69,19 @@
         </div> <!--/.chat__contents-->
 
         <div class="chat__form">
-          <textarea
-            class="input input--textarea marBottom8"
-            placeholder="Type message&hellip;"
-            [(ngModel)]="newMessageText"
-            (keydown.shift.enter)="addMessage()"
-          ></textarea>
+          <textarea class="input input--textarea marBottom8"
+                    placeholder="Type message&hellip;"
+                    [(ngModel)]="newMessageText"
+                    (keydown.shift.enter)="addMessage()"
+                    [readonly]="!currentStream"></textarea>
           <div class="flex justifySpaceBetween">
-            <label class="styledInput">
-              <input #imageUpload accept="image/*" type="file" class="styledInput__input" (change)="processUpload()" />
-              <div class="button button--iconText">
+            <label class="styledInput" [ngClass]="{'disabled' : !currentStream }">
+              <input #imageUpload accept="image/*" type="file" class="styledInput__input" (change)="processUpload()" [disabled]="!currentStream" />
+              <span class="button button--iconText">
                 <i class="ss-picture"></i> Attach Image
-              </div>
+              </span>
             </label>
-            <button class="button button--iconText" (click)="addMessage()">
+            <button class="button button--iconText" (click)="addMessage()" [disabled]="!currentStream">
               <i class="ss-chat"></i> Post Message
             </button>
           </div>

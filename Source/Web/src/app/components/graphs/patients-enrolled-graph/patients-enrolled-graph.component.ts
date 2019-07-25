@@ -1,8 +1,6 @@
 import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import * as d3 from 'd3';
-import {
-  map as _map
-} from 'lodash';
+import { map as _map } from 'lodash';
 
 interface MonthData {
   month: string
@@ -16,7 +14,6 @@ interface MonthData {
   styleUrls: ['./patients-enrolled-graph.component.scss']
 })
 export class PatientsEnrolledGraphComponent implements OnInit {
-
   private _data;
   @Input()
   public get data() {
@@ -26,9 +23,8 @@ export class PatientsEnrolledGraphComponent implements OnInit {
     this._data = data;
     this.drawChart();
   }
-
-  @ViewChild('chart') private chartContainer: ElementRef;
-  constructor() { }
+  @ViewChild('chart')
+  private chartContainer: ElementRef;
 
   ngOnInit() {
     this.drawChart();
@@ -36,14 +32,11 @@ export class PatientsEnrolledGraphComponent implements OnInit {
 
   public drawChart() {
     const chartWidth = 1300;
-
     const months = this._data.reverse();
-
-    const margin = {top: 30, right: 20, bottom: 30, left: 50};
+    const margin = { top: 30, right: 20, bottom: 30, left: 50 };
     const width = chartWidth - margin.left - margin.right;
     const height = 500 - margin.top - margin.bottom;
-
-    let element = this.chartContainer.nativeElement;
+    const element = this.chartContainer.nativeElement;
     element.innerHTML = '';
     const wrapper = d3.select(element);
 
@@ -52,7 +45,7 @@ export class PatientsEnrolledGraphComponent implements OnInit {
       const billable = _map(months, m => m.billable);
       const values = [...enrolled, ...billable];
       const maxValue = Math.max(...values);
-      return Math.ceil(maxValue/100)*100;
+      return Math.ceil(maxValue / 100) * 100;
     }
 
     const upperLimit = getUpperLimit(months);
@@ -62,12 +55,12 @@ export class PatientsEnrolledGraphComponent implements OnInit {
       .domain([.8, months.length + .2]);
     const y = d3.scaleLinear()
       .range([height, 0])
-      .domain([-5, upperLimit + upperLimit/20]);
+      .domain([-5, upperLimit + upperLimit / 20]);
 
     const xAxis = d3.axisBottom(x)
       .ticks(months.length <= 8 ? months.length : 8)
       .tickSize(0)
-      .tickFormat((t:number) => months[t - 1].month)
+      .tickFormat((t: number) => months[t - 1].month)
 
     const yAxis = d3.axisLeft(y)
       .ticks(5)
@@ -78,7 +71,7 @@ export class PatientsEnrolledGraphComponent implements OnInit {
       .attr('height', 500)
       .attr('width', chartWidth)
       .append("g")
-        .attr('transform', `translate(${margin.left}, ${margin.top})`);
+      .attr('transform', `translate(${margin.left}, ${margin.top})`);
 
     svg.append('rect')
       .attr('x', 0)
@@ -128,28 +121,25 @@ export class PatientsEnrolledGraphComponent implements OnInit {
     svg.selectAll('dot')
       .data(months)
       .enter().append('circle')
-        .attr('r', 5)
-        .attr('cx', (d, i) => x(i + 1))
-        .attr('cy', (d:MonthData) => y(d.enrolled))
-        .attr('fill', '#ffffff')
-        .on('mouseover', (d:MonthData, i) => {
-          tooltip.transition()
-            .duration(200)
-            .style('opacity', 1)
-          tooltip.html(
-              `<h4>${d.month}</h4><span><span style="color: #49b48b">&middot;&middot;&middot;</span>  Enrolled: ${d.enrolled}<br/><span style="color: #49b48b;">&mdash;</span>  Billable: ${d.billable}</span>`
-            )
-            .style('left', (d3.event.pageX) + "px")
-            .style('top', (d3.event.pageY + 30) + "px")
-        })
-        .on('mouseout', (d) => {
-          console.log('vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv');
-          console.log('asdf');
-          console.log('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^');
-          tooltip.transition()
-            .duration(500)
-            .style('opacity', 0)
-        })
+      .attr('r', 5)
+      .attr('cx', (d, i) => x(i + 1))
+      .attr('cy', (d: MonthData) => y(d.enrolled))
+      .attr('fill', '#ffffff')
+      .on('mouseover', (d: MonthData, i) => {
+        tooltip.transition()
+          .duration(200)
+          .style('opacity', 1)
+        tooltip.html(
+          `<h4>${d.month}</h4><span><span style="color: #49b48b">&middot;&middot;&middot;</span>  Enrolled: ${d.enrolled}<br/><span style="color: #49b48b;">&mdash;</span>  Billable: ${d.billable}</span>`
+        )
+          .style('left', (d3.event.pageX) + "px")
+          .style('top', (d3.event.pageY + 30) + "px")
+      })
+      .on('mouseout', (d) => {
+        tooltip.transition()
+          .duration(500)
+          .style('opacity', 0)
+      })
 
     svg.append('path')
       .attr('d', billableValueLine(months))
@@ -161,28 +151,25 @@ export class PatientsEnrolledGraphComponent implements OnInit {
     svg.selectAll('dot')
       .data(months)
       .enter().append('circle')
-        .attr('r', 5)
-        .attr('cx', (d, i) => x(i + 1))
-        .attr('cy', (d:MonthData) => y(d.billable))
-        .attr('fill', '#49b48b')
-        .on('mouseover', (d:MonthData, i) => {
-          tooltip.transition()
-            .duration(200)
-            .style('opacity', 1)
-          tooltip.html(
-              `<h4>${d.month}</h4><span><span style="color: #49b48b;">&middot;&middot;&middot;</span>  Enrolled: ${d.enrolled}<br/><span style="color: #49b48b;">&mdash;</span>  Billable: ${d.billable}</span>`
-            )
-            .style('left', (d3.event.pageX) + "px")
-            .style('top', (d3.event.pageY + 30) + "px")
-        })
-        .on('mouseout', (d) => {
-          console.log('vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv');
-          console.log('asdfasdf');
-          console.log('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^');
-          tooltip.transition()
-            .duration(500)
-            .style('opacity', 0)
-        })
+      .attr('r', 5)
+      .attr('cx', (d, i) => x(i + 1))
+      .attr('cy', (d: MonthData) => y(d.billable))
+      .attr('fill', '#49b48b')
+      .on('mouseover', (d: MonthData, i) => {
+        tooltip.transition()
+          .duration(200)
+          .style('opacity', 1)
+        tooltip.html(
+          `<h4>${d.month}</h4><span><span style="color: #49b48b;">&middot;&middot;&middot;</span>  Enrolled: ${d.enrolled}<br/><span style="color: #49b48b;">&mdash;</span>  Billable: ${d.billable}</span>`
+        )
+          .style('left', (d3.event.pageX) + "px")
+          .style('top', (d3.event.pageY + 30) + "px")
+      })
+      .on('mouseout', (d) => {
+        tooltip.transition()
+          .duration(500)
+          .style('opacity', 0)
+      })
 
     d3.selectAll('.axis').selectAll('text')
       .attr('fill', 'white')
@@ -196,5 +183,4 @@ export class PatientsEnrolledGraphComponent implements OnInit {
       .attr('stroke-opacity', .4)
 
   }
-
 }

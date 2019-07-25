@@ -16,7 +16,7 @@ export class ValidationService {
     return config[validatorName];
   }
 
-  public emailValidator(control: any) {
+  public emailValidator(control: { value: string }) {
     // RFC 2822 compliant regex for email validation
     if (control.value.match(/^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/)) {
       return null;
@@ -25,7 +25,7 @@ export class ValidationService {
     }
   }
 
-  public passwordValidator(control: any) {
+  public passwordValidator(control: { value: string }) {
     // {6,100}           - Assert password is between 6 and 100 characters
     // (?=.*[0-9])       - Assert a string has at least one number
     if (control.value.match(/^(?=.*[0-9])[a-zA-Z0-9!@#$%^&*]{6,100}$/)) {
@@ -35,7 +35,7 @@ export class ValidationService {
     }
   }
 
-  public phoneInternationalValidator(control: any) {
+  public phoneInternationalValidator(control: { value: string }) {
     // {6,100}           - Assert password is between 6 and 100 characters
     // (?=.*[0-9])       - Assert a string has at least one number
     // tslint:disable-next-line:max-line-length

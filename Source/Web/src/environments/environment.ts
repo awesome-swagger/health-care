@@ -7,5 +7,6 @@ export const environment = {
   production: false,
   // apiHost: 'http://localhost:8000',
   // apiHost: 'https://careadopt.izeni.net',
-  apiHost: 'http://careadopt.dev.mfire.co',
+  // apiHost: 'http://careadopt.dev.mfire.co',
+  apiHost: 'http://192.168.1.12:8000',
 };

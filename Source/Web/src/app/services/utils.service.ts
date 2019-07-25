@@ -8,7 +8,7 @@ export class UtilsService {
 
   constructor() { }
 
-  public timePillColorTCM(planStart) {
+  public timePillColorTCM(planStart: moment.MomentInput): string {
     let planStartMoment = moment(planStart);
     let daysSinceStart = moment().diff(planStartMoment, 'days');
     if (daysSinceStart < 7) {
@@ -24,7 +24,7 @@ export class UtilsService {
     }
   }
 
-  public timePillColor(minutes, allotted) {
+  public timePillColor(minutes: number, allotted: number): string {
     const daysThisMonth = moment().daysInMonth();
     const currentDay = moment().date();
 
@@ -45,23 +45,23 @@ export class UtilsService {
     }
   }
 
-  public percentPillClass(percentage) {
+  public percentPillClass(percentage: number): string {
     if (percentage >= 90) {
       return 'pill--lime';
     } else if (percentage <= 89 && percentage >= 70) {
       return 'pill--yellow';
     } else if (percentage <= 69 && percentage >= 50) {
-       return 'pill--red';
+      return 'pill--red';
     } else {
       return 'pill--purple';
     }
   }
 
-  public pillStatusClass(status) {
+  public pillStatusClass(status: string): string {
     if (status === 'done') {
       return 'pill--lime';
     } else if (status === 'late') {
-       return 'pill--red';
+      return 'pill--red';
     } else if (status === 'missed') {
       return 'pill--purple';
     } else if (status === 'open') {
@@ -69,13 +69,13 @@ export class UtilsService {
     }
   }
 
-  public getRiskLevelText(riskLevel) {
+  public getRiskLevelText(riskLevel: number): string {
     if (riskLevel >= 90) {
       return 'On Track';
     } else if (riskLevel <= 89 && riskLevel >= 70) {
       return 'Low Risk';
     } else if (riskLevel <= 69 && riskLevel >= 50) {
-       return 'Med Risk';
+      return 'Med Risk';
     } else {
       return 'High Risk';
     }

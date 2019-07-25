@@ -20,8 +20,8 @@ export class TimeTrackerService {
     }
   }
 
-  public createRecord(user, plan) {
-    let createSub = this.store.BilledActivity.create({
+  public createRecord(user: { id?: string | number }, plan: { id?: string | number }): void {
+    const createSub = this.store.BilledActivity.create({
       plan: plan.id,
       members: [user.id],
       added_by: user.id,
@@ -30,41 +30,45 @@ export class TimeTrackerService {
       (record) => {
         this.emitBilledActivity.next(record);
       },
-      (err) => {},
+      (err) => { },
       () => {
         createSub.unsubscribe();
       }
     );
   }
 
-  public startTimer(user, plan) {
+  public startTimer(user: { id?: string | number, qualified_practitioner?: boolean }, plan: { billing_type?: string, id?: string | number }): void {
     this.stopTimer();
-    let billingType = plan.billing_type;
-    let isQualified = user.qualified_practitioner;
+    const billingType = plan.billing_type;
+    const isQualified = user.qualified_practitioner;
     // if plan is RPM, only start timer if user is a qualified practitioner
     if (billingType === 'RPM' && !isQualified) {
       return;
     }
+
     this.timer = setInterval(() => {
       if (!this.planTimers[plan.id]) {
         this.planTimers[plan.id] = 0;
       }
+
       this.planTimers[plan.id]++;
       if (this.planTimers[plan.id] >= 180) {
         this.createRecord(user, plan);
         this.planTimers[plan.id] = 0;
       }
+
       this.session.setObj('planTimers', this.planTimers);
     }, 1000);
   }
 
-  public stopTimer() {
+  public stopTimer(): void {
     if (!this.timer) return;
+
     clearInterval(this.timer);
     this.timer = null;
   }
 
-  public resetTimers() {
+  public resetTimers(): void {
     this.planTimers = {};
   }
 }
