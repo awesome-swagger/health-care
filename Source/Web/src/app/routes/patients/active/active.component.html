@@ -7,11 +7,13 @@
           <button class="button button--icon button--icon--small" (click)="toolAP1Open=!toolAP1Open">
             <i class="ss-help"></i>
           </button>
-          <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : toolAP1Open }">
-            <div class="tool__text">
-              Active patients have created an account and have a current care plan.
+          <app-popover [visible]="toolAP1Open" (visibleChange)="toolAP1Open=$event">
+            <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : toolAP1Open }">
+              <div class="tool__text">
+                Active patients have created an account and have a current care plan.
+              </div>
             </div>
-          </div>
+          </app-popover>
         </div>
       </div>
       <div class="fullWidth"></div>
@@ -68,6 +70,9 @@
         {{formatTime(averageTimeMinutes()) || '0:00'}}
       </div>
     </div>
+
+
+    ce
     <div class="info__cell">
       <label>Avg Engagement</label>
       <div class="pill" [ngClass]="utils.percentPillClass(average?.average_engagement)">
@@ -188,9 +193,11 @@
                         <button class="button button--icon button--icon--small" (click)="tooltip2Open=!tooltip2Open">
                           <i class="ss-help"></i>
                         </button>
-                        <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltip2Open }">
-                          <div class="tool__text">This is the number of additional care plans a patient has. Click the number for details.</div>
-                        </div>
+                        <app-popover [visible]="tooltip2Open" (visibleChange)="tooltip2Open=$event">
+                          <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltip2Open }">
+                            <div class="tool__text">This is the number of additional care plans a patient has. Click the number for details.</div>
+                          </div>
+                        </app-popover>
                       </div>
                     </div>
                   </th>
