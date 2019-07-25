@@ -21,39 +21,38 @@
         <ng-container *ngIf="userIsAdmin">
           <label>Filter By User</label>
           <div class="drop">
-              <div class="drop__input" (click)="multiOpen = !multiOpen">
-                All
-              </div>
-              <app-popover [visible]="multiOpen" [options]="employeesDropOptions" (visibleChange)="multiOpen = $event;">
-                <ul class="drop__dropdown drop__dropdown--right isOpen">
-                  <div class="drop__buttons">
-                    <button class="button button--iconText" (click)="toggleAllUsers(true)">
-                      <i class="ss-check ss-standard"></i> Check All
-                    </button>
-                    <button class="button button--iconText" (click)="toggleAllUsers(false)">
-                      <i class="ss-ban"></i> Uncheck All
-                    </button>
-                  </div>
+            <div class="drop__input" (click)="multiOpen = !multiOpen">
+              All
+            </div>
+            <app-popover [visible]="multiOpen" [options]="employeesDropOptions" (visibleChange)="multiOpen = $event;">
+              <ul class="drop__dropdown drop__dropdown--right isOpen">
+                <li class="drop__buttons">
+                  <button class="button button--iconText" (click)="toggleAllUsers(true)">
+                    <i class="ss-check ss-standard"></i> Check All
+                  </button>
+                  <button class="button button--iconText" (click)="toggleAllUsers(false)">
+                    <i class="ss-ban"></i> Uncheck All
+                  </button>
+                </li>
 
+                <li class="drop__option">
+                  <input class="input input--search drop__innerInput" type="text" placeholder="Search" />
+                </li>
+
+                <ng-container *ngFor="let employee of employees">
                   <li class="drop__option">
-                    <input class="input input--search drop__innerInput" type="text" placeholder="Search" />
+                    <label class="drop__checkbox styledInput">
+                      <input type="checkbox" class="styledInput__input" [checked]="employeeChecked[employee.id]" (change)="toggleEmployeeChecked(employee.id, $event)" />
+                      <span class="styledInput__box"></span>
+                      <span class="picName">
+                        <img class="picName__img" [src]="employee.user.image_url || '../../../assets/img/profile.svg'" />{{employee.user.first_name}} {{employee.user.last_name}}
+                      </span>
+                    </label>
                   </li>
-
-                  <ng-container *ngFor="let employee of employees">
-                    <li class="drop__option">
-                      <label class="drop__checkbox styledInput">
-                        <input type="checkbox" class="styledInput__input" [checked]="employeeChecked[employee.id]" (change)="toggleEmployeeChecked(employee.id, $event)" />
-                        <span class="styledInput__box"></span>
-                        <div class="picName">
-                          <img class="picName__img" [src]="employee.user.image_url || '../../../assets/img/profile.svg'" />{{employee.user.first_name}} {{employee.user.last_name}}
-                        </div>
-                      </label>
-                    </li>
-                  </ng-container>
-                </ul>
-              </app-popover>
-            </div> <!--/.drop (multiselect for users)-->
-
+                </ng-container>
+              </ul>
+            </app-popover>
+          </div> <!--/.drop (multiselect for users)-->
         </ng-container>
       </div>
     </div> <!--/.flexHeader (for top row)-->
@@ -67,11 +66,13 @@
               <button class="button button--icon button--icon--small" (click)="dashTip1=!dashTip1">
                 <i class="ss-help"></i>
               </button>
-              <div class="tool__tip" [ngClass]="{ 'isOpen' : dashTip1 }">
-                <div class="tool__text">
-                  Risk level is an average of engagement and outcome percentages. Engagement is the percentage of completed tasks and assessments. Outcome averages the results of patient well-being assessments. Risk levels are: On Track (90-100%), Low Risk (75-89%), Med Risk (51-74%), and High Risk (0-50%).
+              <app-popover [visible]="dashTip1" (visibleChange)="dashTip1=$event">
+                <div class="tool__tip" [ngClass]="{ 'isOpen' : dashTip1 }">
+                  <div class="tool__text">
+                    Risk level is an average of engagement and outcome percentages. Engagement is the percentage of completed tasks and assessments. Outcome averages the results of patient well-being assessments. Risk levels are: On Track (90-100%), Low Risk (75-89%), Med Risk (51-74%), and High Risk (0-50%).
+                  </div>
                 </div>
-              </div>
+              </app-popover>
             </div>
           </div> <!--/.tool-->
         </div>
@@ -127,7 +128,7 @@
             </table>
             <a [routerLink]="['/patients/active']" class="button button--iconText">
               <i class="ss-standard ss-view"></i> View Active Patients
-          </a>
+            </a>
           </div> <!--/.dashRisk__key-->
         </div> <!--/.dashRisk-->
       </div> <!--/.dashLeft (section with patient risk levels donut chart)-->
@@ -187,17 +188,15 @@
     <div class="dashDivider"></div>
 
     <div class="timeChart">
-    <h2>Patients Enrolled Over Time</h2>
-    <div>
-      <!--TODO: Get an option to style the date range text; in this instance it needs to be smaller-->
-      <app-date-range
-        [datePickerOverrides]="datepickerOptions"
-        [startDate]="patientsEnrolledStart"
-        (startDateChange)="patientsEnrolledStart = $event; filterData()"
-        [endDate]="patientsEnrolledEnd"
-        (endDateChange)="patientsEnrolledEnd = $event; filterData()"
-      ></app-date-range>
-    </div>
+      <h2>Patients Enrolled Over Time</h2>
+      <div>
+        <!--TODO: Get an option to style the date range text; in this instance it needs to be smaller-->
+        <app-date-range [datePickerOverrides]="datepickerOptions"
+                        [startDate]="patientsEnrolledStart"
+                        (startDateChange)="patientsEnrolledStart = $event; filterData()"
+                        [endDate]="patientsEnrolledEnd"
+                        (endDateChange)="patientsEnrolledEnd = $event; filterData()"></app-date-range>
+      </div>
       <div class="timeChart__header">
         <div class="flex">
           <p class="timeChart__key timeChart__key--dotted">
@@ -214,30 +213,32 @@
               <div class="drop__input" (click)="multi2Open = !multi2Open">
                 All
               </div>
-              <ul class="drop__dropdown drop__dropdown--right" [ngClass]="{ 'isOpen' : multi2Open }">
-                <div class="drop__buttons">
-                  <button class="button button--iconText" (click)="toggleAllFacilities(true)">
-                    <i class="ss-check ss-standard"></i> Check All
-                  </button>
-                  <button class="button button--iconText" (click)="toggleAllFacilities(false)">
-                    <i class="ss-ban"></i> Uncheck All
-                  </button>
-                </div>
-
-                <li class="drop__option">
-                  <input class="input input--search drop__innerInput" type="text" placeholder="Search" />
-                </li>
-
-                <ng-container *ngFor="let facility of facilities">
-                  <li class="drop__option" *ngIf="!facility.is_affiliate">
-                    <label class="drop__checkbox styledInput">
-                      <input type="checkbox" class="styledInput__input" [(ngModel)]="facilityChecked[facility.id]" />
-                      <span class="styledInput__box"></span>
-                      {{facility.name}}
-                    </label>
+              <app-popover [visible]="multi2Open" [options]="employeesDropOptions" (visibleChange)="multi2Open = $event;">
+                <ul class="drop__dropdown drop__dropdown--right" [ngClass]="{ 'isOpen' : multi2Open }">
+                  <li class="drop__buttons">
+                    <button class="button button--iconText" (click)="toggleAllFacilities(true)">
+                      <i class="ss-check ss-standard"></i> Check All
+                    </button>
+                    <button class="button button--iconText" (click)="toggleAllFacilities(false)">
+                      <i class="ss-ban"></i> Uncheck All
+                    </button>
                   </li>
-                </ng-container>
-              </ul>
+
+                  <li class="drop__option">
+                    <input class="input input--search drop__innerInput" type="text" placeholder="Search" />
+                  </li>
+
+                  <ng-container *ngFor="let facility of facilities">
+                    <li class="drop__option" *ngIf="!facility.is_affiliate">
+                      <label class="drop__checkbox styledInput">
+                        <input type="checkbox" class="styledInput__input" [(ngModel)]="facilityChecked[facility.id]" />
+                        <span class="styledInput__box"></span>
+                        {{facility.name}}
+                      </label>
+                    </li>
+                  </ng-container>
+                </ul>
+              </app-popover>
             </div> <!--/.drop-->
           </div> <!--/.timeChart__selectWrap (for facility filter)-->
 
@@ -247,49 +248,51 @@
               <div class="drop__input" (click)="multi3Open = !multi3Open">
                 All
               </div>
-              <ul class="drop__dropdown drop__dropdown--right" [ngClass]="{ 'isOpen' : multi3Open }">
-                <div class="drop__buttons">
-                  <button class="button button--iconText" (click)="toggleAllRiskLevels(true)">
-                    <i class="ss-check ss-standard"></i> Check All
-                  </button>
-                  <button class="button button--iconText" (click)="toggleAllRiskLevels(false)">
-                    <i class="ss-ban"></i> Uncheck All
-                  </button>
-                </div>
+              <app-popover [visible]="multi3Open" [options]="employeesDropOptions" (visibleChange)="multi3Open = $event;">
+                <ul class="drop__dropdown drop__dropdown--right" [ngClass]="{ 'isOpen' : multi3Open }">
+                  <li class="drop__buttons">
+                    <button class="button button--iconText" (click)="toggleAllRiskLevels(true)">
+                      <i class="ss-check ss-standard"></i> Check All
+                    </button>
+                    <button class="button button--iconText" (click)="toggleAllRiskLevels(false)">
+                      <i class="ss-ban"></i> Uncheck All
+                    </button>
+                  </li>
 
-                <li class="drop__option">
-                  <input class="input input--search drop__innerInput" type="text" placeholder="Search" />
-                </li>
+                  <li class="drop__option">
+                    <input class="input input--search drop__innerInput" type="text" placeholder="Search" />
+                  </li>
 
-                <li class="drop__option">
-                  <label class="drop__checkbox styledInput">
-                    <input type="checkbox" class="styledInput__input" [(ngModel)]="riskLevelChecked['on_track']" />
-                    <span class="styledInput__box"></span>
-                    On Track
-                  </label>
-                </li>
-                <li class="drop__option">
-                  <label class="drop__checkbox styledInput">
-                    <input type="checkbox" class="styledInput__input" [(ngModel)]="riskLevelChecked['low_risk']" />
-                    <span class="styledInput__box"></span>
-                    Low Risk
-                  </label>
-                </li>
-                <li class="drop__option">
-                  <label class="drop__checkbox styledInput">
-                    <input type="checkbox" class="styledInput__input" [(ngModel)]="riskLevelChecked['med_risk']" />
-                    <span class="styledInput__box"></span>
-                    Med Risk
-                  </label>
-                </li>
-                <li class="drop__option">
-                  <label class="drop__checkbox styledInput">
-                    <input type="checkbox" class="styledInput__input" [(ngModel)]="riskLevelChecked['high_risk']" />
-                    <span class="styledInput__box"></span>
-                    High Risk
-                  </label>
-                </li>
-              </ul>
+                  <li class="drop__option">
+                    <label class="drop__checkbox styledInput">
+                      <input type="checkbox" class="styledInput__input" [(ngModel)]="riskLevelChecked['on_track']" />
+                      <span class="styledInput__box"></span>
+                      On Track
+                    </label>
+                  </li>
+                  <li class="drop__option">
+                    <label class="drop__checkbox styledInput">
+                      <input type="checkbox" class="styledInput__input" [(ngModel)]="riskLevelChecked['low_risk']" />
+                      <span class="styledInput__box"></span>
+                      Low Risk
+                    </label>
+                  </li>
+                  <li class="drop__option">
+                    <label class="drop__checkbox styledInput">
+                      <input type="checkbox" class="styledInput__input" [(ngModel)]="riskLevelChecked['med_risk']" />
+                      <span class="styledInput__box"></span>
+                      Med Risk
+                    </label>
+                  </li>
+                  <li class="drop__option">
+                    <label class="drop__checkbox styledInput">
+                      <input type="checkbox" class="styledInput__input" [(ngModel)]="riskLevelChecked['high_risk']" />
+                      <span class="styledInput__box"></span>
+                      High Risk
+                    </label>
+                  </li>
+                </ul>
+              </app-popover>
             </div> <!--/.drop-->
           </div> <!--/.flex (contains 2 multi-selects)-->
         </div> <!--/.flex (for row above the time chart)-->
@@ -303,11 +306,9 @@
     <div class="dashDivider"></div>
 
     <div class="flex justifySpaceBetween">
-      <app-date-range
-        [datePickerOverrides]="datepickerOptions"
-        [startDate]="topBillingStart"
-        [endDate]="topBillingEnd"
-      ></app-date-range>
+      <app-date-range [datePickerOverrides]="datepickerOptions"
+                      [startDate]="topBillingStart"
+                      [endDate]="topBillingEnd"></app-date-range>
       <a (click)="routeToBillingView()" class="button button--iconText">
         <i class="ss-standard ss-view"></i> View Billing Details
       </a>
@@ -336,11 +337,9 @@
     </div> <!--/.info (for current month to date)-->
 
     <div class="flex justifySpaceBetween">
-      <app-date-range
-        [datePickerOverrides]="datepickerOptions"
-        [startDate]="bottomBillingStart"
-        [endDate]="bottomBillingEnd"
-      ></app-date-range>
+      <app-date-range [datePickerOverrides]="datepickerOptions"
+                      [startDate]="bottomBillingStart"
+                      [endDate]="bottomBillingEnd"></app-date-range>
       <a (click)="routeToBillingView()" class="button button--iconText">
         <i class="ss-standard ss-view"></i> View Billing Details
       </a>

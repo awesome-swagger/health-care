@@ -44,10 +44,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
     relativeTop: '48px',
     relativeRight: '0px',
   };
-  public multiOpen;
   public dashTip1;
-  public multi2Open;
-  public multi3Open;
+  private multiOpen = false;
+  public multi2Open = false;
+  public multi3Open = false;
   public patientsEnrolledStart: moment.Moment = moment().subtract(5, 'M');
   public patientsEnrolledEnd: moment.Moment = moment();
   public topBillingStart: moment.Moment = moment().startOf('M');
