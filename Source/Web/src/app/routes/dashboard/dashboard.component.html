@@ -45,7 +45,7 @@
                         <input type="checkbox" class="styledInput__input" [checked]="employeeChecked[employee.id]" (change)="toggleEmployeeChecked(employee.id, $event)" />
                         <span class="styledInput__box"></span>
                         <div class="picName">
-                          <img class="picName__img" src="../../../assets/img/profile.svg" />{{employee.user.first_name}} {{employee.user.last_name}}
+                          <img class="picName__img" [src]="employee.user.image_url || '../../../assets/img/profile.svg'" />{{employee.user.first_name}} {{employee.user.last_name}}
                         </div>
                       </label>
                     </li>
