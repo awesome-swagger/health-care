@@ -75,7 +75,7 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
   public symptomVsNextTTOpen = false;
   public symptomVsPlanTTOpen = false;
   public symptomUpdateTTOpen = false;
-  public helpfulTTOpen = false;
+  public helpfulTTOpen: { [key: string]: boolean } = {};
   // Assessment and vital tooltips occur on multiple tables
   // so they are tied to the id of the vital or assessment
   public assmntOutcomeTTOpen: any = {};

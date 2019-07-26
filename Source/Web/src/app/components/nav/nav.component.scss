@@ -101,3 +101,9 @@
   top: 0px;
   right: 10px;
 }
+
+div {
+  &.nav__link {
+    cursor: pointer;
+  }
+}

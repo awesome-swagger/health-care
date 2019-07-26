@@ -33,7 +33,8 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
   public facilityPage = {};
   public facilityTotal = {};
   public facilityPageCount = {};
-  public accordionsOpen = {};
+  public accordionsOpen: { [key: string]: boolean } = {};
+  public tooltip2Open: { [key: string]: boolean } = {};
   public employees = [];
   public employeeChecked = {};
   public employee = null;

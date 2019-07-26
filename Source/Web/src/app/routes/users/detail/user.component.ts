@@ -21,7 +21,7 @@ import { Capitalize, CapitalizationOptions } from '../../../extensions';
 
 
 class ImageSnippet {
-  constructor(public src: string, public file: File) {}
+  constructor(public src: string, public file: File) { }
 }
 
 @Component({
@@ -79,23 +79,23 @@ export class UserComponent implements OnDestroy, OnInit {
         this.router.navigate(['/error']);
         return;
       }
-      let employeeSub = this.store.EmployeeProfile.read(res.id).subscribe(
-        (employee) => {
+
+      let employeeSub = this.store.EmployeeProfile.read(res.id).subscribe((employee) => {
           this.employee = employee;
           console.log('employee', this.employee);
 
-          this.auth.user$.subscribe(res => {
-            if (!res) return;
-            if (res.id === this.employee.id) {
-              this.isCurrentUser = true;
-            } else {
-              this.isCurrentUser = false;
-            }
-          })
+        this.auth.user$.subscribe(res => {
+          if (!res) return;
+          if (res.id === this.employee.id) {
+            this.isCurrentUser = true;
+          } else {
+            this.isCurrentUser = false;
+          }
+        });
 
           this.refreshFacilityRoles();
 
-          this.activeSince = moment(this.employee.user.date_joined).format('MMM D, YYYY')
+        this.activeSince = moment(this.employee.user.date_joined).format('MMM D, YYYY');
           this.first_name = this.employee.user.first_name;
           this.last_name = this.employee.user.last_name;
           this.title = this.employee.title;
@@ -108,7 +108,7 @@ export class UserComponent implements OnDestroy, OnInit {
             this.employedBy = this.employee.organizations[0];
           }
 
-          this.store.BillingCoordinator.readListPaged().subscribe((res:any) => {
+          this.store.BillingCoordinator.readListPaged().subscribe((res: any) => {
             res.forEach(bc => {
               if (bc.user.id !== this.employee.id) return;
               const facility = _find(this.employee.facilities, f => f.id = bc.facility.id);
@@ -127,7 +127,7 @@ export class UserComponent implements OnDestroy, OnInit {
         },
       );
 
-      let careTeamSub = this.store.CareTeamMember.readListPaged({employee_profile: res.id}).subscribe(
+      let careTeamSub = this.store.CareTeamMember.readListPaged({ employee_profile: res.id }).subscribe(
         careTeam => {
           this.roleDetails = groupByRole(careTeam)
           this.careTeam = careTeam;
@@ -156,7 +156,7 @@ export class UserComponent implements OnDestroy, OnInit {
         }
         this.organization = res;
       },
-      (err) => {},
+      (err) => { },
       () => { organizationSub.unsubscribe() }
     );
 
@@ -164,7 +164,7 @@ export class UserComponent implements OnDestroy, OnInit {
       roles => {
         this.roles = roles;
       },
-      err => {},
+      err => { },
       () => rolesSub.unsubscribe()
     );
 
@@ -204,7 +204,7 @@ export class UserComponent implements OnDestroy, OnInit {
     this.modals.open(ReassignPatientsComponent, {
       width: 'calc(100vw - 48px)',
       minWidth: '976px',
-    }).subscribe(() => {});
+    }).subscribe(() => { });
   }
 
   public editUserDetails() {
@@ -246,17 +246,17 @@ export class UserComponent implements OnDestroy, OnInit {
   }
 
   public processUpload() {
-    const file : File = this.imageUpload.nativeElement.files[0];
+    const file: File = this.imageUpload.nativeElement.files[0];
     const reader = new FileReader;
 
-    reader.addEventListener('load', (event:any) => {
+    reader.addEventListener('load', (event: any) => {
       const formData = new FormData();
       const selectedFile = new ImageSnippet(event.target.result, file);
       formData.append('image', selectedFile.file);
       this.http.request('PATCH', `${AppConfig.apiUrl}users/${this.employee.user.id}/`, {
         body: formData,
         headers: new HttpHeaders().set('Accept', 'application/json'),
-      }).subscribe((res:any) => {
+      }).subscribe((res: any) => {
         this.employee.user.image_url = res.image_url;
       })
     })
@@ -268,18 +268,18 @@ export class UserComponent implements OnDestroy, OnInit {
   public openChangePassword() {
     this.modals.open(ChangePasswordComponent, {
       width: '384px',
-    }).subscribe(() => {});
+    }).subscribe(() => { });
   }
 
   public confirmRevokeAccess(facility) {
     const okText = 'Continue';
     const cancelText = 'Cancel';
     this.modals.open(ConfirmModalComponent, {
-     data: {
-       title: 'Revoke Access?',
-       body: `Are you sure you want revoke ${this.employee.user.first_name} ${this.employee.user.last_name}'s access to ${facility.name}?`,
-       cancelText: 'Cancel',
-       okText: 'Continue',
+      data: {
+        title: 'Revoke Access?',
+        body: `Are you sure you want revoke ${this.employee.user.first_name} ${this.employee.user.last_name}'s access to ${facility.name}?`,
+        cancelText: 'Cancel',
+        okText: 'Continue',
       },
       width: '384px',
     }).subscribe(res => {
@@ -297,16 +297,16 @@ export class UserComponent implements OnDestroy, OnInit {
     const cancelText = 'Cancel';
     const okText = 'Continue';
     this.modals.open(ConfirmModalComponent, {
-     data: {
-       title: 'Remove BC?',
-       body: 'Are you sure you want to remove this billing coordinator?',
-       cancelText,
-       okText,
+      data: {
+        title: 'Remove BC?',
+        body: 'Are you sure you want to remove this billing coordinator?',
+        cancelText,
+        okText,
       },
       width: '384px',
     }).subscribe((res) => {
       if (res === okText) {
-        this.store.BillingCoordinator.destroy(bc.id).subscribe((res:any) => {
+        this.store.BillingCoordinator.destroy(bc.id).subscribe((res: any) => {
           this.employee.facilities.forEach(facility => {
             if (facility.billingCoordinators) {
               facility.billingCoordinators = _filter(facility.billingCoordinators, b => b.id !== bc.id);
@@ -319,20 +319,24 @@ export class UserComponent implements OnDestroy, OnInit {
 
   public confirmRemoveBP() {
     this.modals.open(ConfirmModalComponent, {
-     data: {
-       title: 'Remove BP?',
-       body: 'Are you sure you want to remove this billing practitioner?',
-       cancelText: 'Cancel',
-       okText: 'Continue',
+      data: {
+        title: 'Remove BP?',
+        body: 'Are you sure you want to remove this billing practitioner?',
+        cancelText: 'Cancel',
+        okText: 'Continue',
       },
       width: '384px',
     }).subscribe(() => {
-    // do something with result
+      // do something with result
     });
   }
 
   public confirmAddRole(i) {
     const role = this.selectedRole[i];
+    if (!role) {
+      return;
+    }
+
     const facility = this.employee.facilities[i];
     const employeeName = `${this.employee.user.first_name} ${this.employee.user.last_name}`;
     const cancelText = 'Cancel';
@@ -354,20 +358,9 @@ export class UserComponent implements OnDestroy, OnInit {
           role: role.id,
         }).subscribe(() => {
           this.refreshFacilityRoles();
-        })
-
-        // const roles = _map(this.employee.roles, r => r.id);
-        // roles.push(role.id);
-        // this.store.EmployeeProfile.update(this.employee.id, {
-        //   user: this.employee.user.id,
-        //   roles
-        // }).subscribe(
-        //   res => {
-        //     this.employee = res;
-        //   }
-        // )
+        });
       }
-    })
+    });
   }
 
   public confirmAddBC(i) {
@@ -389,16 +382,16 @@ export class UserComponent implements OnDestroy, OnInit {
           facility: this.employee.facilities[i].id,
           user: this.employee.id,
           coordinator: billingPractitioner.id,
-        }).subscribe((res:any) => {
+        }).subscribe((res: any) => {
           const facility = this.employee.facilities[i];
           if (!facility.billingCoordinators) {
             facility.billingCoordinators = [];
           }
           facility.billingCoordinators.push(res);
-        })
+          this.selectedBillingPractitioner[i] = null;
+        });
       }
-    })
-
+    });
   }
 
   public confirmRemoveRole(role, facility) {
@@ -426,14 +419,14 @@ export class UserComponent implements OnDestroy, OnInit {
     })
   }
 
-  confirmToggleBillingView(status:boolean) {
+  confirmToggleBillingView(status: boolean) {
     const action = status ? ['give', 'to'] : ['remove', 'from'];
     const employeeName = `${this.employee.user.first_name} ${this.employee.user.last_name}`;
     const cancelText = "Cancel";
     const okText = "Continue";
     this.modals.open(ConfirmModalComponent, {
       data: {
-        title: 'Billing View', 
+        title: 'Billing View',
         body: `Do you want to ${action[0]} billing view ${action[1]} ${employeeName}?`,
         cancelText,
         okText,
@@ -451,14 +444,14 @@ export class UserComponent implements OnDestroy, OnInit {
     })
   }
 
-  confirmToggleQualifiedPractitioner(status:boolean) {
+  confirmToggleQualifiedPractitioner(status: boolean) {
     const action = status ? ['give', 'to'] : ['remove', 'from'];
     const employeeName = `${this.employee.user.first_name} ${this.employee.user.last_name}`;
     const cancelText = "Cancel";
     const okText = "Continue";
     this.modals.open(ConfirmModalComponent, {
       data: {
-        title: 'Billing View', 
+        title: 'Billing View',
         body: `Do you want to ${action[0]} the qualified practitioner role ${action[1]} ${employeeName}?`,
         cancelText,
         okText,
@@ -477,7 +470,7 @@ export class UserComponent implements OnDestroy, OnInit {
   }
 
 
-  public confirmToggleAdmin(status:boolean, id:string = null) {
+  public confirmToggleAdmin(status: boolean, id: string = null) {
     const action = status ? 'add' : 'remove';
     const employeeName = `${this.employee.user.first_name} ${this.employee.user.last_name}`;
     const orgOrFacilityName = id ? _find(this.employee.facilities, f => f.id === id).name : this.organization.name;
@@ -511,7 +504,7 @@ export class UserComponent implements OnDestroy, OnInit {
       }
     })
 
-    function toggleManaged(managed:string[], id:string) {
+    function toggleManaged(managed: string[], id: string) {
       if (managed.indexOf(id) === -1) {
         managed.push(id);
         return managed;

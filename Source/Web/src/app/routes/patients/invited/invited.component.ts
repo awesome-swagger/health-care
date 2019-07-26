@@ -31,7 +31,7 @@ export class InvitedPatientsComponent implements OnDestroy, OnInit {
   public activeCarePlans: { [key: string]: boolean } = {};
   public openAlsoTip = {};
   public toolIP1Open;
-  public tooltip2Open;
+  public tooltip2Open: { [key: string]: boolean } = {};
   public tooltipPP2Open;
   public accord2Open;
   public multi1Open;
@@ -39,7 +39,7 @@ export class InvitedPatientsComponent implements OnDestroy, OnInit {
   public multi3Open;
   public multi4Open;
   public totalInvited = 0;
-  public facilityAccordOpen = {};
+  public facilityAccordOpen: { [key: string]: boolean } = {};
   public facilities = [];
   public employees = [];
   public employeeChecked = {};
@@ -275,15 +275,16 @@ export class InvitedPatientsComponent implements OnDestroy, OnInit {
   }
 
   public hasCheckedCareTeamMember(plan): boolean {
+    let result = false;
     if (plan.careTeamMembers) {
       plan.careTeamMembers.forEach(teamMember => {
         if (this.employeeChecked[teamMember.employee_profile.id]) {
-          return true;
+          result = true;
         }
       });
     }
 
-    return false;
+    return result;
   }
 
   public userSearchMatch(user) {

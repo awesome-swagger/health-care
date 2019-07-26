@@ -22,7 +22,7 @@ import {
 export class InactivePatientsComponent implements OnDestroy, OnInit {
 
   public facilities = [];
-  public facilitiesOpen = {};
+  public facilitiesOpen: { [key: string]: boolean } = {};
   public activePatients = [];
   public activeServiceAreas = {};
   public employees = [];
@@ -31,7 +31,7 @@ export class InactivePatientsComponent implements OnDestroy, OnInit {
   public toolXP1Open;
   public toolIP1Open;
   public accord1Open;
-  public tooltip2Open;
+  public tooltip2Open: { [key: string]: boolean } = {};
   public tooltipPP2Open;
   public accord2Open;
   public multi1Open;
@@ -40,10 +40,10 @@ export class InactivePatientsComponent implements OnDestroy, OnInit {
   public multi4Open;
   public openAlsoTip = {};
 
-  public totalInactive:number = 0;
-  public total:number = 0;
+  public totalInactive: number = 0;
+  public total: number = 0;
   public facilityTotals = {};
-  public currentPage:number = 1;
+  public currentPage: number = 1;
   public facilityPages = {};
 
   constructor(
@@ -61,7 +61,7 @@ export class InactivePatientsComponent implements OnDestroy, OnInit {
         this.facilities = facilities.filter(f => !f.is_affiliate);
         this.facilities.forEach(facility => {
           this.facilitiesOpen[facility.id] = false;
-          this.getInactivePatients(facility.id).then((inactivePatients:any) => {
+          this.getInactivePatients(facility.id).then((inactivePatients: any) => {
             this.facilityPages[facility.id] = 1;
             this.facilityTotals[facility.id] = inactivePatients.count;
             facility.inactivePatients = inactivePatients.results;
@@ -90,7 +90,7 @@ export class InactivePatientsComponent implements OnDestroy, OnInit {
       }
     )
 
-    this.store.EmployeeProfile.readListPaged().subscribe((res:any) => {
+    this.store.EmployeeProfile.readListPaged().subscribe((res: any) => {
       this.employees = res;
       this.employees.forEach(e => {
         this.employeeChecked[e.id] = true;
@@ -111,7 +111,7 @@ export class InactivePatientsComponent implements OnDestroy, OnInit {
   private getInactivePatients(facilityId) {
     return new Promise((resolve, reject) => {
       let inactivePatientsSub = this.store.Facility.detailRoute('get', facilityId, 'patients', {}, { type: 'inactive' }).subscribe(
-        (inactivePatients:any) => resolve(inactivePatients),
+        (inactivePatients: any) => resolve(inactivePatients),
         err => reject(err),
         () => inactivePatientsSub.unsubscribe()
       )
@@ -122,11 +122,11 @@ export class InactivePatientsComponent implements OnDestroy, OnInit {
 
   public confirmArchive(patient, facilityIndex) {
     this.modals.open(ConfirmModalComponent, {
-     data: {
-       title: 'Archive Patient?',
-       body: 'Are you sure you want to archive this patient? This will revoke their access to CareAdopt. They would need to be sent a new invitation in order to use the app again.',
-       cancelText: 'Cancel',
-       okText: 'Continue',
+      data: {
+        title: 'Archive Patient?',
+        body: 'Are you sure you want to archive this patient? This will revoke their access to CareAdopt. They would need to be sent a new invitation in order to use the app again.',
+        cancelText: 'Cancel',
+        okText: 'Continue',
       },
       width: '384px',
     }).subscribe((res) => {
@@ -135,7 +135,7 @@ export class InactivePatientsComponent implements OnDestroy, OnInit {
           is_archived: true,
         }).subscribe((res) => {
           const facility = this.facilities[facilityIndex];
-          this.store.Facility.detailRoute('GET', facility.id, 'patients', {}, {type: 'inactive'}).subscribe((res: any) => {
+          this.store.Facility.detailRoute('GET', facility.id, 'patients', {}, { type: 'inactive' }).subscribe((res: any) => {
             facility.inactivePatients = res.results;
             facility.inactivePatients.forEach(patient => {
               this.store.CarePlan.readListPaged({ patient: patient.id }).subscribe(plans => {
@@ -185,7 +185,7 @@ export class InactivePatientsComponent implements OnDestroy, OnInit {
     })
   }
 
-  public switchNthFacilityPage(n:number, by:number, to:number = 0) {
+  public switchNthFacilityPage(n: number, by: number, to: number = 0) {
     if (this.facilities) {
       const facility = this.facilities[n];
       let inactivePatientsSub = this.store.Facility.detailRoute(
@@ -205,7 +205,7 @@ export class InactivePatientsComponent implements OnDestroy, OnInit {
             this.facilityPages[facility.id] += by;
           }
         },
-        (err) => {},
+        (err) => { },
         () => {
           inactivePatientsSub.unsubscribe();
         },
@@ -214,7 +214,7 @@ export class InactivePatientsComponent implements OnDestroy, OnInit {
   }
 
   public lastPage(total) {
-    return Math.ceil(total/20);
+    return Math.ceil(total / 20);
   }
 
   public hasCheckedCareTeamMember(plan) {

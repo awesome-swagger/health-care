@@ -32,9 +32,9 @@ export class PotentialPatientsComponent implements OnDestroy, OnInit {
   public facilitySortDirection = {};
   public accordOpen = {};
   public accord1Open;
-  public tooltip2Open;
+  public tooltip2Open: { [key: string]: boolean } = {};
   public tooltipPP2Open;
-  public accord2Open;
+  public accord2Open: { [key: string]: boolean } = {};
   public toolPP1Open;
   public multi1Open;
   public multi2Open;

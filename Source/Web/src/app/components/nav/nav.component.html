@@ -3,40 +3,21 @@
     <div class="nav__top">
 
       <div class="nav__left">
-        <a [routerLink]="['/dashboard']"><img src="../../../assets/img/CareAdoptlogo-White.png" width="154px" alt="CareAdopt"></a>
-        <!-- <div class="drop">
-          <a class="nav__appSwitcher drop__arrowWhite" (click)="appListOpen = !appListOpen">
-            Care Management
-          </a>
-          <app-popover [visible]="appListOpen" (visibleChange)="appListOpen = $event;" [options]="appListOptions">
-            <ul class="drop__dropdown isOpen" (click)="appListOpen = !appListOpen">
-              <label class="drop__label">Switch Applications</label>
-              <li class="drop__option">
-                <a class="drop__link">
-                  Patient Health Analytics
-                </a>
-              </li>
-            </ul>
-          </app-popover>
-        </div> -->
+        <a [routerLink]="['/dashboard']"><img src="../../../assets/img/CareAdoptlogo-White.png" width="154" alt="CareAdopt"></a>
       </div> <!--/.nav__left-->
 
       <div class="nav__right">
         <div class="drop">
           <div id="patientSearchContainer">
-            <input
-              class="input input--nav"
-              [ngClass]="{ 'typing': searchString.length > 0 }"
-              [(ngModel)]="searchString"
-              type="text"
-              (keyup)="searchChange($event.target.value)"
-              placeholder="Search Patients"
-            />
-            <button
-              class="button button--icon button--icon--nav searchClear"
-              (click)="searchString = ''"
-              *ngIf="searchString.length > 0"
-            >
+            <input class="input input--nav"
+                   [ngClass]="{ 'typing': searchString.length > 0 }"
+                   [(ngModel)]="searchString"
+                   type="text"
+                   (keyup)="searchChange($event.target.value)"
+                   placeholder="Search Patients" />
+            <button class="button button--icon button--icon--nav searchClear"
+                    (click)="searchString = ''"
+                    *ngIf="searchString.length > 0">
               <i class="ss-delete"></i>
             </button>
           </div>
@@ -51,15 +32,6 @@
                   </a>
                 </li>
               </ng-container>
-              <!-- <li class="drop__option">
-                <a class="drop__link drop__link--dis"
-                (click)="confirmUnarchive()">
-                  <div class="picName">
-                    <img class="picName__img" src="../../../assets/img/profile.svg" />Hank Granowski
-                  </div>
-                  <i class="drop__icon ss-filecabinet"></i>
-                </a>
-              </li> -->
             </ul>
           </app-popover>
         </div> <!--/.drop (for search)-->
@@ -71,7 +43,7 @@
           </button>
           <app-popover [visible]="taskDropOpen" (visibleChange)="taskDropOpen = $event;" [options]="taskDropOptions">
             <ul class="drop__dropdown isOpen">
-              <label class="drop__label">My Check-Ins Today</label>
+              <li class="drop__label">My Check-Ins Today</li>
               <li class="drop__option" *ngFor="let checkIn of tasksData?.checkIns">
                 <a class="drop__link">
                   <div class="picName">
@@ -79,7 +51,7 @@
                   </div>
                 </a>
               </li>
-              <label class="drop__label">My Tasks Due Today</label>
+              <li class="drop__label">My Tasks Due Today</li>
               <li class="drop__option" *ngFor="let task of tasksData?.tasks">
                 <a class="drop__link">
                   <div class="picName">
@@ -93,13 +65,13 @@
 
         <div class="drop">
           <div *ngIf="notifications?.length" class="badge">{{notifications?.length}}</div>
-          <button class="button button--icon button--icon--nav"  (click)="notificationsDropOpen = !notificationsDropOpen">
+          <button class="button button--icon button--icon--nav" (click)="notificationsDropOpen = !notificationsDropOpen">
             <i class="ss-notifications"></i>
           </button>
           <app-popover [visible]="notificationsDropOpen" (visibleChange)="notificationsDropOpen = $event;" [options]="notificationsDropOptions">
             <ul class="drop__dropdown drop__dropdown--notifications isOpen">
               <ng-container *ngFor="let category of notificationData">
-                <label class="drop__label">{{category.category}}</label>
+                <li class="drop__label">{{category.category}}</li>
                 <li class="drop__option" *ngFor="let notification of category.notifications">
                   <a class="drop__link drop__link--complex">
                     <h6 class="drop__date">{{timeSince(notification.created)}}</h6>
@@ -122,7 +94,7 @@
           </button>
           <app-popover [visible]="analyticsOpen" (visibleChange)="analyticsOpen = $event;" [options]="logoutDropOptions">
             <ul class="drop__dropdown isOpen">
-              <label class="drop__label">Switch Applications</label>
+              <li class="drop__label">Switch Applications</li>
               <li class="drop__option">
                 <a class="drop__link drop__link" (click)="routeToAnalytics()">
                   Patient Analytics
@@ -131,9 +103,6 @@
             </ul>
           </app-popover>
         </div> <!--/.drop (for logout, switch org)-->
-
-        <!--Login will happen in a separate component.
-        <a *ngIf="!user?.id" [routerLink]="['login']"><i class="ss-door"></i> Login</a>-->
 
         <div class="drop">
           <button class="button button--icon button--icon--nav" (click)="logoutOpen=!logoutOpen">
@@ -149,7 +118,7 @@
                 </a>
               </li>
               <ng-container *ngIf="selectableOrganizations && selectableOrganizations.length > 0">
-                <label class="drop__label">Other Organizations</label>
+                <li class="drop__label">Other Organizations</li>
                 <li class="drop__option">
                   <a class="drop__link drop__link" *ngFor="let organization of selectableOrganizations" (click)="switchOrganization(organization)">
                     {{organization.name}}
@@ -161,8 +130,7 @@
         </div> <!--/.drop (for logout, switch org)-->
 
         <a (click)="routeToProfile()">
-          <img class="nav__profile" *ngIf="!employee?.user?.image_url" src="../../../assets/img/profile--2.svg" />
-          <img class="nav__profile" *ngIf="employee?.user?.image_url" [src]="employee?.user.image_url" />
+          <img class="nav__profile" [src]="employee?.user?.image_url || '../../../assets/img/profile--2.svg'" />
         </a>
       </div> <!--/.nav__right-->
     </div> <!--/.nav__top-->
@@ -177,16 +145,18 @@
         <a [routerLink]="['/billing']" [routerLinkActive]="['nav__link--current']" class="nav__link" *ngIf="employee?.billing_view">
           Billing
         </a>
-        <a class="nav__link drop drop__arrowWhite" [ngClass]="{'nav__link--current': patientsDropOpen}" (click)="patientsDropOpen=!patientsDropOpen">
+        <div class="nav__link drop drop__arrowWhite"
+             [ngClass]="{'nav__link--current': patientsDropOpen || isPatientsRoute()}"
+             (click)="patientsDropOpen=!patientsDropOpen">
           Patients
-          <app-popover [options]="patientsDropOptions" [visible]="patientsDropOpen">
+          <app-popover [options]="patientsDropOptions" [visible]="patientsDropOpen" (visibleChange)="patientsDropOpen = $event;">
             <ul class="drop__dropdown isOpen">
               <li class="drop__option">
                 <a (click)="openEnrollPatient()" class="button button--iconText drop__button">
                   <i class="ss-plus"></i> Add Patient
                 </a>
               </li>
-              <label class="drop__label" *ngIf="nav.recentPatients.length > 0">Recent Patients</label>
+              <li class="drop__label" *ngIf="nav.recentPatients.length > 0">Recent Patients</li>
               <li class="drop__option" *ngFor="let patient of nav.recentPatients?.reverse()">
                 <a class="drop__link" (click)="routeToPatient(patient.id)">
                   <div class="picName">
@@ -195,7 +165,7 @@
                   </div>
                 </a>
               </li>
-              <label class="drop__label">Patients Lists</label>
+              <li class="drop__label">Patients Lists</li>
               <li class="drop__option">
                 <a class="drop__link" [routerLink]="['/patients/active']">
                   Active Patients ({{activePatientsCount}})
@@ -218,7 +188,7 @@
               </li>
             </ul>
           </app-popover>
-        </a>
+        </div>
         <a [routerLink]="['/plans']" [routerLinkActive]="['nav__link--current']" class="nav__link">
           Care Plans
         </a>

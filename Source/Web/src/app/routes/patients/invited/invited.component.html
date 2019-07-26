@@ -4,15 +4,16 @@
       <div class="fullWidth flex">
         <h1 class="noMargin">Invited Patients ({{totalInvited}})</h1>
         <div class="tool__anchor">
-          <button class="button button--icon button--icon--small"
-                  (click)="toolIP1Open=!toolIP1Open">
+          <button class="button button--icon button--icon--small" (click)="toolIP1Open=!toolIP1Open">
             <i class="ss-help"></i>
           </button>
-          <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : toolIP1Open }">
-            <div class="tool__text">
-              Invited patients have received an invitation, but have not yet created their account.
+          <app-popover [visible]="toolIP1Open" [options]="employeesDropOptions" (visibleChange)="toolIP1Open = $event;">
+            <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : toolIP1Open }">
+              <div class="tool__text">
+                Invited patients have received an invitation, but have not yet created their account.
+              </div>
             </div>
-          </div>
+          </app-popover>
         </div>
       </div>
       <div class="fullWidth"></div>
@@ -24,14 +25,14 @@
           </div>
           <app-popover [visible]="multi4Open" (visibleChange)="multi4Open = $event">
             <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : multi4Open }">
-              <div class="drop__buttons">
+              <li class="drop__buttons">
                 <button class="button button--iconText" (click)="toggleAllUsers(true)">
                   <i class="ss-check ss-standard"></i> Check All
                 </button>
                 <button class="button button--iconText" (click)="toggleAllUsers(false)">
                   <i class="ss-ban"></i> Uncheck All
                 </button>
-              </div>
+              </li>
 
               <li class="drop__option">
                 <input class="input input--search drop__innerInput" type="text" placeholder="Search" [(ngModel)]="userSearch" />
@@ -104,14 +105,14 @@
         </div>
         <app-popover [visible]="multi3Open" (visibleChange)="multi3Open = $event">
           <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : multi3Open }">
-            <div class="drop__buttons">
+            <li class="drop__buttons">
               <button class="button button--iconText" (click)="toggleAllCarePlans(true)">
                 <i class="ss-check ss-standard"></i> Check All
               </button>
               <button class="button button--iconText" (click)="toggleAllCarePlans(false)">
                 <i class="ss-ban"></i> Uncheck All
               </button>
-            </div>
+            </li>
 
             <li class="drop__option">
               <input class="input input--search drop__innerInput" type="text" placeholder="Search" [(ngModel)]="carePlanSearch" />
@@ -159,12 +160,14 @@
                     <div class="tool justifyCenter">
                       <span class="thSortable__text">Also</span>
                       <div class="tool__anchor">
-                        <button class="button button--icon button--icon--small" (click)="tooltip2Open=!tooltip2Open">
+                        <button class="button button--icon button--icon--small" (click)="tooltip2Open[facility.id]=!tooltip2Open[facility.id]">
                           <i class="ss-help"></i>
                         </button>
-                        <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltip2Open }">
-                          <div class="tool__text">This is the number of additional care plans a patient has. Click the number for details.</div>
-                        </div>
+                        <app-popover [visible]="tooltip2Open[facility.id]" [options]="employeesDropOptions" (visibleChange)="tooltip2Open[facility.id] = $event;">
+                          <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltip2Open[facility.id] }">
+                            <div class="tool__text">This is the number of additional care plans a patient has. Click the number for details.</div>
+                          </div>
+                        </app-popover>
                       </div>
                     </div>
                   </th>

@@ -1,53 +1,51 @@
 <div class="ssContainer ssContents">
   <div class="flexHeader wrap">
-      <div class="flex alignCenter">
-        <div class="picName marRight32">
-          <!--TODO: Clicking pic should trigger file upload-->
-          <img
-            class="picName__img picName__img--big"
-            *ngIf="employee?.user.image_url"
-            [src]="employee?.user.image_url ? employee?.user.image_url : '../../../assets/img/profile.svg'"
-            (click)="clickImageUpload()"
-          />
-          <input #imageUpload type="file" class="hiddenInput" (change)="processUpload()" accept="image/*" />
-          <div *ngIf="!editName" class="flex alignCenter">
-            <h1 class="noMargin marRight8">{{first_name}} {{last_name}}<span *ngIf="employee?.title">, {{employee?.title.abbreviation}}</span></h1>
-            <button class="button button--icon" (click)="editName=!editName" *ngIf="isCurrentUser">
-              <i class="ss-write"></i>
-            </button>
-          </div>
-          <form *ngIf="editName" class="flexForm">
-            <input type="text" class="input flexForm__input" placeholder="First Name" [(ngModel)]="first_name" name="first" />
-            <input type="text" class="input flexForm__input" placeholder="Last Name" [(ngModel)]="last_name" name="last" />
-            <div class="styledSelect flexForm__title">
-              <select class="styledSelect__select" [(ngModel)]="title" [compareWith]="compareFn" name="editTitle">
-                <option>Title</option>
-                <option *ngFor="let title of titles" [ngValue]="title">{{title.abbreviation}}</option>
-              </select>
-            </div>
-            <button class="button button--icon button--flex" (click)="editName=!editName; first_name = employee.user.first_name; last_name = employee.user.last_name">
-              <i class="ss-undo"></i>
-            </button>
-            <button class="button button--icon button--flex" (click)="saveUserName(); editName=!editName">
-              <i class="ss-floppydisk"></i>
-            </button>
-          </form>
-        </div>
-        <div class="fullWidth flex">
-          <div class="marRight32">
-            <label>Status</label>
-            {{employee?.status}} <span *ngIf="employee?.status === 'active'">({{activeSince}})</span>
-          </div>
-          <button class="button button--iconText" (click)="confirmToggleActive()" *ngIf="employee">
-            <i class="ss-standard ss-ban"></i>Make {{employee?.status === 'active' ? 'Inactive' : 'Active'}}
+    <div class="flex alignCenter">
+      <div class="picName marRight32">
+        <!--TODO: Clicking pic should trigger file upload-->
+        <img class="picName__img picName__img--big"
+             *ngIf="employee?.user.image_url"
+             [src]="employee?.user.image_url ? employee?.user.image_url : '../../../assets/img/profile.svg'"
+             (click)="clickImageUpload()" />
+        <input #imageUpload type="file" class="hiddenInput" (change)="processUpload()" accept="image/*" />
+        <div *ngIf="!editName" class="flex alignCenter">
+          <h1 class="noMargin marRight8">{{first_name}} {{last_name}}<span *ngIf="employee?.title">, {{employee?.title.abbreviation}}</span></h1>
+          <button class="button button--icon" (click)="editName=!editName" *ngIf="isCurrentUser">
+            <i class="ss-write"></i>
           </button>
         </div>
+        <form *ngIf="editName" class="flexForm">
+          <input type="text" class="input flexForm__input" placeholder="First Name" [(ngModel)]="first_name" name="first" />
+          <input type="text" class="input flexForm__input" placeholder="Last Name" [(ngModel)]="last_name" name="last" />
+          <div class="styledSelect flexForm__title">
+            <select class="styledSelect__select" [(ngModel)]="title" [compareWith]="compareFn" name="editTitle">
+              <option>Title</option>
+              <option *ngFor="let title of titles" [ngValue]="title">{{title.abbreviation}}</option>
+            </select>
+          </div>
+          <button class="button button--icon button--flex" (click)="editName=!editName; first_name = employee.user.first_name; last_name = employee.user.last_name">
+            <i class="ss-undo"></i>
+          </button>
+          <button class="button button--icon button--flex" (click)="saveUserName(); editName=!editName">
+            <i class="ss-floppydisk"></i>
+          </button>
+        </form>
       </div>
-      <div>
-        <button class="button button--2nd" (click)="openChangePassword()" *ngIf="isCurrentUser">
-          Change Password
+      <div class="fullWidth flex">
+        <div class="marRight32">
+          <label>Status</label>
+          {{employee?.status}} <span *ngIf="employee?.status === 'active'">({{activeSince}})</span>
+        </div>
+        <button class="button button--iconText" (click)="confirmToggleActive()" *ngIf="employee">
+          <i class="ss-standard ss-ban"></i>Make {{employee?.status === 'active' ? 'Inactive' : 'Active'}}
         </button>
       </div>
+    </div>
+    <div>
+      <button class="button button--2nd" (click)="openChangePassword()" *ngIf="isCurrentUser">
+        Change Password
+      </button>
+    </div>
   </div> <!--/.flexHeader-->
 
   <div class="flex">
@@ -67,23 +65,26 @@
         <span *ngIf="!employee?.user.phone">--</span>
       </div>
       <div class="info__cell">
-        <label class="tool info__tool">NPI
+        <div class="tool info__tool">
+          NPI
           <div class="tool__anchor">
             <button class="button button--icon button--icon--small" (click)="tooltip1Open=!tooltip1Open">
               <i class="ss-help"></i>
             </button>
-            <div class="tool__tip" [ngClass]="{ 'isOpen' : tooltip1Open }">
-              <div class="tool__text">
-                By adding the NPI number to the user profile, we can link providers to the electronic medical records (EMR). If the user is not a provider they won't have an NPI number.
+            <app-popover [visible]="tooltip1Open">
+              <div class="tool__tip" [ngClass]="{ 'isOpen' : tooltip1Open }">
+                <div class="tool__text">
+                  By adding the NPI number to the user profile, we can link providers to the electronic medical records (EMR). If the user is not a provider they won't have an NPI number.
+                </div>
               </div>
-            </div>
+            </app-popover>
           </div>
-        </label>
+        </div>
         <span *ngIf="employee?.npi_code">{{employee?.npi_code}}</span>
         <span *ngIf="!employee?.npi_code">--</span>
       </div>
       <button class="button button--icon button--icon--small info__edit"
-      (click)="editUserDetails()">
+              (click)="editUserDetails()">
         <i class="ss-write"></i>
       </button>
     </div> <!--/.info (for employer, specialty, phone, npi)-->
@@ -152,12 +153,10 @@
         <div class="accordion__contents">
           <div class="flex marBottom48 fullWidth">
             <label class="styledInput" (click)="confirmToggleAdmin(!isOrgAdmin)">
-              <input
-                type="checkbox"
-                class="styledInput__input"
-                [checked]="isOrgAdmin"
-                disabled
-              />
+              <input type="checkbox"
+                     class="styledInput__input"
+                     [checked]="isOrgAdmin"
+                     disabled />
               <span class="styledInput__box"></span>
               Organization Administrator
             </label>
@@ -165,20 +164,20 @@
               <button class="button button--icon button--icon--small" (click)="tooltip2Open=!tooltip2Open">
                 <i class="ss-help"></i>
               </button>
-              <div class="tool__tip" [ngClass]="{ 'isOpen' : tooltip2Open }">
-                <div class="tool__text">
-                  Checking this box allows the user to see and edit all details for the organization. There must always be at least one admin for the organization and one for each facility.
+              <app-popover [visible]="tooltip2Open">
+                <div class="tool__tip" [ngClass]="{ 'isOpen' : tooltip2Open }">
+                  <div class="tool__text">
+                    Checking this box allows the user to see and edit all details for the organization. There must always be at least one admin for the organization and one for each facility.
+                  </div>
                 </div>
-              </div>
+              </app-popover>
             </div> <!--/.tool__anchor-->
 
             <label class="styledInput" (click)="confirmToggleBillingView(!employee?.billing_view)">
-              <input
-                type="checkbox"
-                class="styledInput__input"
-                [checked]="employee?.billing_view"
-                disabled
-              />
+              <input type="checkbox"
+                     class="styledInput__input"
+                     [checked]="employee?.billing_view"
+                     disabled />
               <span class="styledInput__box"></span>
               Billing View
             </label>
@@ -186,20 +185,20 @@
               <button class="button button--icon button--icon--small" (click)="tooltip3Open=!tooltip3Open">
                 <i class="ss-help"></i>
               </button>
-              <div class="tool__tip" [ngClass]="{ 'isOpen' : tooltip3Open }">
-                <div class="tool__text">
-                  By clicking the Billng View check box it enables this user to have access to the billing view.
+              <app-popover [visible]="tooltip3Open">
+                <div class="tool__tip" [ngClass]="{ 'isOpen' : tooltip3Open }">
+                  <div class="tool__text">
+                    By clicking the Billng View check box it enables this user to have access to the billing view.
+                  </div>
                 </div>
-              </div>
+              </app-popover>
             </div> <!--/.tool__anchor-->
 
             <label class="styledInput" (click)="confirmToggleQualifiedPractitioner(!employee?.qualified_practitioner)">
-              <input
-                type="checkbox"
-                class="styledInput__input"
-                [checked]="employee?.qualified_practitioner"
-                disabled
-              />
+              <input type="checkbox"
+                     class="styledInput__input"
+                     [checked]="employee?.qualified_practitioner"
+                     disabled />
               <span class="styledInput__box"></span>
               Qualified Practitioner
             </label>
@@ -207,74 +206,76 @@
               <button class="button button--icon button--icon--small" (click)="tooltip4Open=!tooltip4Open">
                 <i class="ss-help"></i>
               </button>
-              <div class="tool__tip" [ngClass]="{ 'isOpen' : tooltip4Open }">
-                <div class="tool__text">
-                  Billing Coordinators (BCs) can view billing info for Billing Practitioners (BPs) to whom they’re assigned.
+              <app-popover [visible]="tooltip4Open">
+                <div class="tool__tip" [ngClass]="{ 'isOpen' : tooltip4Open }">
+                  <div class="tool__text">
+                    Billing Coordinators (BCs) can view billing info for Billing Practitioners (BPs) to whom they’re assigned.
+                  </div>
                 </div>
-              </div>
+              </app-popover>
             </div> <!--/.tool__anchor-->
           </div> <!--/.flex (for checkboxes)-->
           <div class="divider"></div>
 
           <ng-container *ngFor="let facility of employee?.facilities; let i = index">
             <ng-container *ngIf="!facility.is_affiliate">
-              <div class="flex justifySpaceBetween alignCenter upperRow"><!-- start facility -->
+              <div class="flex justifySpaceBetween alignCenter upperRow">
+                <!-- start facility -->
                 <h3 class="noMargin">{{facility.name}}</h3>
                 <!--TODO: If role is not CM or BP, show a confirmation modal-->
                 <label class="styledInput" (click)="confirmToggleAdmin(!isFacilityManager(facility.id), facility.id)">
-                  <input
-                    type="checkbox"
-                    class="styledInput__input"
-                    [checked]="isFacilityManager(facility.id)"
-                    disabled
-                  />
+                  <input type="checkbox"
+                         class="styledInput__input"
+                         [checked]="isFacilityManager(facility.id)"
+                         disabled />
                   <span class="styledInput__box"></span>
                   Facility Administrator
                 </label>
                 <button class="button button--iconText"
-                (click)="confirmRevokeAccess(facility)">
+                        (click)="confirmRevokeAccess(facility)">
                   <i class="ss-delete"></i>Revoke Access
                 </button>
               </div>
 
               <div class="cols">
-                <div class="cols__colBig marRight96"> <!-- start left column-->
-                    <table class="fullWidth marBottom48">
-                      <thead>
-                        <tr>
-                          <th class="thSortable thSortable--sortDown">
-                            <span class="thSortable__text thSortable__text--left">Facility</span>
-                          </th>
-                          <th class="thSortable">
-                            <span class="thSortable__text">Patients</span>
-                          </th>
-                          <th class="thSortable">
-                            <span class="thSortable__text">Managing</span>
-                          </th>
-                          <th class="thSortable">
-                            <span class="thSortable__text">Care Team</span>
-                          </th>
-                          <th class="thSortable">
-                            <span class="thSortable__text">Billing</span>
-                          </th>
-                          <th></th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr *ngFor="let role of facility?.roles">
-                          <td class="left">{{role.name}}</td>
-                          <td>{{roleStats(role.id, facility.di).patients}}</td>
-                          <td>{{roleStats(role.id, facility.di).managing}}</td>
-                          <td>{{roleStats(role.id, facility.di).careTeam}}</td>
-                          <td><i *ngIf="isBilling(role)" class="ss-standard ss-check"></i></td>
-                          <td>
-                            <button class="button button--icon button--icon--small" (click)="confirmRemoveRole(role, facility)">
-                              <i class="ss-delete"></i>
-                            </button>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table> <!-- end facility -->
+                <div class="cols__colBig marRight96">
+                  <!-- start left column-->
+                  <table class="fullWidth marBottom48">
+                    <thead>
+                      <tr>
+                        <th class="thSortable thSortable--sortDown">
+                          <span class="thSortable__text thSortable__text--left">Facility</span>
+                        </th>
+                        <th class="thSortable">
+                          <span class="thSortable__text">Patients</span>
+                        </th>
+                        <th class="thSortable">
+                          <span class="thSortable__text">Managing</span>
+                        </th>
+                        <th class="thSortable">
+                          <span class="thSortable__text">Care Team</span>
+                        </th>
+                        <th class="thSortable">
+                          <span class="thSortable__text">Billing</span>
+                        </th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let role of facility?.roles">
+                        <td class="left">{{role.name}}</td>
+                        <td>{{roleStats(role.id, facility.di).patients}}</td>
+                        <td>{{roleStats(role.id, facility.di).managing}}</td>
+                        <td>{{roleStats(role.id, facility.di).careTeam}}</td>
+                        <td><i *ngIf="isBilling(role)" class="ss-standard ss-check"></i></td>
+                        <td>
+                          <button class="button button--icon button--icon--small" (click)="confirmRemoveRole(role, facility)">
+                            <i class="ss-delete"></i>
+                          </button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table> <!-- end facility -->
 
                   <label>Add Role</label>
                   <form class="flexForm">
@@ -285,24 +286,25 @@
                         </option>
                       </select>
                     </div>
-                    <button class="button button--icon button--flex" (click)="confirmAddRole(i)">
+                    <button class="button button--icon button--flex" (click)="confirmAddRole(i)" [disabled]="!selectedRole[i]">
                       <i class="ss-plus"></i>
                     </button>
                   </form>
                 </div> <!--/ left column-->
 
-                <div class="cols__colSmall"> <!-- start right column-->
+                <div class="cols__colSmall">
+                  <!-- start right column-->
                   <div class="bc">
                     <label>Billing Coordinators (BCs)</label>
                     <ul class="nameList">
                       <li class="nameList__item" *ngFor="let billingCoordinator of facility.billingCoordinators">
                         <!--TODO: Link to user detail page-->
                         <a class="picName fullWidth">
-                          <img class="picName__img" src="../../../assets/img/profile.svg"/>
+                          <img class="picName__img" src="../../../assets/img/profile.svg" />
                           {{billingCoordinator?.coordinator?.user?.first_name}} {{billingCoordinator?.coordinator?.user?.last_name}}
                         </a>
                         <button class="button button--icon button--icon--small"
-                        (click)="confirmRemoveBC(billingCoordinator)">
+                                (click)="confirmRemoveBC(billingCoordinator)">
                           <i class="ss-delete"></i>
                         </button>
                       </li>
@@ -317,7 +319,7 @@
                         </option>
                       </select>
                     </div>
-                    <button class="button button--icon button--flex" (click)="confirmAddBC(i)">
+                    <button class="button button--icon button--flex" (click)="confirmAddBC(i)" [disabled]="!selectedBillingPractitioner[i]">
                       <i class="ss-plus"></i>
                     </button>
                   </form>

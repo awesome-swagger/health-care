@@ -25,14 +25,14 @@
           </div>
           <app-popover [visible]="multi4Open" (visibleChange)="multi4Open = $event">
             <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : multi4Open }">
-              <div class="drop__buttons">
+              <li class="drop__buttons">
                 <button class="button button--iconText" (click)="toggleAllUsers(true)">
                   <i class="ss-check ss-standard"></i> Check All
                 </button>
                 <button class="button button--iconText" (click)="toggleAllUsers(false)">
                   <i class="ss-ban"></i> Uncheck All
                 </button>
-              </div>
+              </li>
               <li class="drop__option">
                 <input class="input input--search drop__innerInput" type="text" placeholder="Search" />
               </li>
@@ -71,8 +71,6 @@
       </div>
     </div>
 
-
-    ce
     <div class="info__cell">
       <label>Avg Engagement</label>
       <div class="pill" [ngClass]="utils.percentPillClass(average?.average_engagement)">
@@ -101,14 +99,14 @@
         </div>
         <app-popover [visible]="multi2Open" (visibleChange)="multi2Open = $event">
           <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : multi2Open }">
-            <div class="drop__buttons">
+            <li class="drop__buttons">
               <button class="button button--iconText" (click)="toggleAllServiceAreas(true)">
                 <i class="ss-check ss-standard"></i> Check All
               </button>
               <button class="button button--iconText" (click)="toggleAllServiceAreas(false)">
                 <i class="ss-ban"></i> Uncheck All
               </button>
-            </div>
+            </li>
             <li class="drop__option">
               <input class="input input--search drop__innerInput" type="text" placeholder="Search" [(ngModel)]="serviceAreaSearch" />
             </li>
@@ -133,14 +131,14 @@
         </div>
         <app-popover [visible]="multi3Open" (visibleChange)="multi3Open = $event">
           <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : multi3Open }">
-            <div class="drop__buttons">
+            <li class="drop__buttons">
               <button class="button button--iconText" (click)="toggleAllCarePlans(true)">
                 <i class="ss-check ss-standard"></i> Check All
               </button>
               <button class="button button--iconText" (click)="toggleAllCarePlans(false)">
                 <i class="ss-ban"></i> Uncheck All
               </button>
-            </div>
+            </li>
             <li class="drop__option">
               <input class="input input--search drop__innerInput" type="text" placeholder="Search" [(ngModel)]="carePlanSearch" />
             </li>
@@ -190,11 +188,11 @@
                     <div class="tool">
                       <span class="thSortable__text">Also</span>
                       <div class="tool__anchor">
-                        <button class="button button--icon button--icon--small" (click)="tooltip2Open=!tooltip2Open">
+                        <button class="button button--icon button--icon--small" (click)="tooltip2Open[facility.id]=!tooltip2Open[facility.id]">
                           <i class="ss-help"></i>
                         </button>
-                        <app-popover [visible]="tooltip2Open" (visibleChange)="tooltip2Open=$event">
-                          <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltip2Open }">
+                        <app-popover [visible]="tooltip2Open[facility.id]" (visibleChange)="tooltip2Open[facility.id]=$event">
+                          <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltip2Open[facility.id] }">
                             <div class="tool__text">This is the number of additional care plans a patient has. Click the number for details.</div>
                           </div>
                         </app-popover>
@@ -240,11 +238,13 @@
                     <td>
                       <a class="tool__anchor justifyCenter" (click)="openAlsoTip[plan.id] = !openAlsoTip[plan.id]" *ngIf="plan.other_plans.length > 0">
                         {{plan.other_plans.length}}
-                        <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : openAlsoTip[plan.id] }">
-                          <div class="iconText iconText--white iconText--autoHeight marBottom8" *ngFor="let otherPlan of plan.other_plans">
-                            {{otherPlan.plan_template.name}}
+                        <app-popover [visible]="openAlsoTip[plan.id]">
+                          <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : openAlsoTip[plan.id] }">
+                            <div class="iconText iconText--white iconText--autoHeight marBottom8" *ngFor="let otherPlan of plan.other_plans">
+                              {{otherPlan.plan_template.name}}
+                            </div>
                           </div>
-                        </div>
+                        </app-popover>
                       </a>
                     </td>
                     <td>

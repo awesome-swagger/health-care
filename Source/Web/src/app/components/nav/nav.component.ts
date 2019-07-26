@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import  { Subject } from 'rxjs/Subject';
+import { Subject } from 'rxjs/Subject';
 import 'rxjs/add/operator/debounceTime';
 import 'rxjs/add/operator/distinctUntilChanged';
 import { Subscription } from 'rxjs/Subscription';
@@ -12,7 +12,6 @@ import {
   map as _map,
   sum as _sum
 } from 'lodash';
-import tasksData from './tasksData';
 import * as moment from 'moment';
 import { AddPatientToPlanComponent } from '../modals/add-patient-to-plan/add-patient-to-plan.component';
 
@@ -22,59 +21,41 @@ import { AddPatientToPlanComponent } from '../modals/add-patient-to-plan/add-pat
   styleUrls: ['./nav.component.scss']
 })
 export class NavComponent implements OnDestroy, OnInit {
-
-  public moment = moment;
-
-  public employee = null;
-  public organization = null;
-  public organizations = [];
-  public patients = [];
-  public activePatientsCount = 0;
-  public inactivePatientsCount = 0;
-  public invitedPatientsCount = 0;
-  public potentialPatientsCount = 0;
-  public selectableOrganizations = [];
-  public appListOpen = false;
-  public appListOptions: PopoverOptions = {
-    relativeBottom: '0',
-    relativeLeft: '1.5rem',
-  };
-  public searchOpen = false;
-  public searchString = '';
-  public taskDropOpen = false;
-  public taskDropOptions: PopoverOptions = {
-    relativeRight: '16rem',
-  };
-  public notificationsDropOpen = false;
-  public notificationsDropOptions: PopoverOptions = {
-    relativeRight: '30rem',
-  };
-  public logoutOpen = false;
-  public logoutDropOptions: PopoverOptions = {
-    relativeRight: '16rem',
-  };
-  public patientsDropOpen = false;
-  public patientsDropOptions: PopoverOptions = {
-    relativeBottom: '0',
-    relativeLeft: '0',
-  };
-
-  public searchResults = [];
-  public searchUpdated$: Subject<string> = new Subject<string>();
-
-  public normalState = true;
-  public planDetailState = false;
-  public patientDetailState = false;
-
+  private readonly patientRoutes = /((in)?active|invited|potential)/;
   private authSub: Subscription = null;
   private organizationSub: Subscription = null;
   private routeParams = null;
-
+  public activePatientsCount = 0;
   public analyticsOpen = false;
-
-  public notifications = [];
-  public tasksData = null;
+  public appListOpen = false;
+  public appListOptions: PopoverOptions = { relativeBottom: '0', relativeLeft: '1.5rem', };
+  public employee: { billing_view: {}, id: string, user: { id: string, image_url: string } } = null;
+  public inactivePatientsCount = 0;
+  public invitedPatientsCount = 0;
+  public logoutDropOptions: PopoverOptions = { relativeRight: '16rem', };
+  public logoutOpen = false;
+  public moment = moment;
+  public normalState = true;
+  public notifications: Array<INotification> = [];
+  public notificationsDropOpen = false;
+  public notificationsDropOptions: PopoverOptions = { relativeRight: '30rem', };
+  public organization: { id: string, is_manager: boolean } = null;
+  public organizations: Array<{ id: string, name: string }> = [];
+  public patientDetailState = false;
+  public patients: IPatientsOverview = {};
+  public patientsDropOpen = false;
+  public patientsDropOptions: PopoverOptions = { relativeBottom: '0', relativeLeft: '0', };
+  public planDetailState = false;
+  public potentialPatientsCount = 0;
+  public searchOpen = false;
+  public searchResults = [];
+  public searchString = '';
+  public searchUpdated$: Subject<string> = new Subject<string>();
+  public selectableOrganizations: Array<{ id: string, name: string }> = [];
+  public taskDropOpen = false;
+  public taskDropOptions: PopoverOptions = { relativeRight: '16rem', };
   public tasks = [];
+  public tasksData: ITaskData = null;
 
   constructor(
     private router: Router,
@@ -82,53 +63,75 @@ export class NavComponent implements OnDestroy, OnInit {
     public nav: NavbarService,
     private store: StoreService,
     private modals: ModalService,
-  ) { }
+  ) {
+    // Nothing yet
+  }
 
   public ngOnInit() {
     this.authSub = this.auth.user$.subscribe(
       (res) => {
-		if (!res) return;
-		
-		if(res.user && res.user.id) {
-			this.employee = res;
-			this.getTasks(this.employee.user.id).then((tasks:any) => {
-				this.tasks = tasks;
-				this.tasksData = tasks;
-			});
-		}
+        if (!res || !res.user || !res.user.id) {
+          return;
+        }
+
+        this.employee = res;
+        this.getTasks(this.employee.user.id).then((tasks: any) => {
+          this.tasks = tasks;
+          this.tasksData = tasks;
+          // TODO: Determine if the user has the profile image
+          //this.tasksData = {
+          //  checkIns: [
+          //    { patient: 'Bob Loblaw', time: '9:00 am' },
+          //    { patient: 'Krusty the Clown', time: '10:00 am' },
+          //    { patient: 'Montgomery Burns', time: '11:00 am' },
+          //    { patient: 'Waylan Smithers', time: '12:00 pm' },
+          //    { patient: 'Homer Simpson', time: '1:00 pm' },
+          //  ],
+          //  length: 10,
+          //  tasks: [
+          //    { patient: 'Dr. Nick Riviera', tasks: 3 },
+          //    { patient: 'Dr. Julius M. Hibbert', tasks: 3 },
+          //    { patient: 'Dr. Gregory House', tasks: 3 },
+          //    { patient: 'Doogie Howser, MD.', tasks: 3 },
+          //    { patient: 'Dr. Heathcliff Huxtable', tasks: 3 },
+          //  ]
+          //};
+        });
       },
-      (err) => {},
-      () => {}
+      () => { },
+      () => { }
     );
+
     this.organizationSub = this.auth.organization$.subscribe(
       (res) => {
         if (res === null) {
           return;
         }
+
         this.organization = res;
-        this.patients = [];
-        this.getPatientsOverview(this.organization.id).then((patientOverview: any) => {
-          this.patients = patientOverview;
-          this.activePatientsCount = patientOverview.active;
-          this.inactivePatientsCount = patientOverview.inactive;
-          this.potentialPatientsCount = patientOverview.potential;
-          this.invitedPatientsCount = patientOverview.invited;
-        });
+        this.getPatientsOverview(this.organization.id).then(e => this.refreshPatientOverview(e));
+
         this.store.Organization.readListPaged()
           .subscribe(
-            (res) => {
+            (res: Array<{ id: string, name: string }>) => {
               this.organizations = res;
-              this.selectableOrganizations = this.organizations.filter((obj) => {
-                return obj.id !== this.organization.id;
-              });
+              this.selectableOrganizations = this.organizations.filter((obj) => obj.id !== this.organization.id);
+              //this.selectableOrganizations = [
+              //  { id: '1', name: 'Organization 1' },
+              //  { id: '2', name: 'Organization 2' },
+              //  { id: '3', name: 'Organization 3' },
+              //  { id: '4', name: 'Organization 4' },
+              //  { id: '5', name: 'Organization 5' },
+              //];
             },
-            () => {},
-            () => {},
+            () => { },
+            () => { },
           );
       },
-      (err) => {},
-      () => {}
+      () => { },
+      () => { }
     );
+
     this.searchUpdated$
       .asObservable()
       .debounceTime(400)
@@ -139,43 +142,66 @@ export class NavComponent implements OnDestroy, OnInit {
           this.searchOpen = false;
           return;
         }
-        let searchSub = this.store.PatientProfile.listRoute('get', 'search', {}, {
-          q: searchStr,
-        }).subscribe(
+
+        const searchSub = this.store.PatientProfile.listRoute('get', 'search', {}, { q: searchStr }).subscribe(
           (searchResults: any) => {
             this.searchResults = searchResults.results;
             if (this.searchResults.length > 0) {
               this.searchOpen = true;
             }
           },
-          (err: any) => {},
-          () => {
-            searchSub.unsubscribe();
-          },
+          () => { },
+          () => searchSub.unsubscribe()
         );
       });
 
-    this.getNotifications().then((notifications:any) => {
-      this.notifications = notifications.results;
+    this.getNotifications().then((notifications: { results: Array<INotification> }) => {
+      this.notifications = notifications.results || [];
+      // TODO: Determine if patient has profile image
+      //this.notifications = [
+      //  { category: 'unread_message',  created: '7/19/2019', message: 'Message 1', patient: { first_name: 'Bob',        last_name: 'Loblaw'    } },
+      //  { category: 'unread_message',  created: '7/20/2019', message: 'Message 2', patient: { first_name: 'Krusty',     last_name: 'the Clown' } },
+      //  { category: 'unread_message',  created: '7/21/2019', message: 'Message 3', patient: { first_name: 'Montgomery', last_name: 'Burns'     } },
+      //  { category: 'unread_message',  created: '7/22/2019', message: 'Message 4', patient: { first_name: 'Waylan',     last_name: 'Smithers'  } },
+      //  { category: 'unread_message',  created: '7/23/2019', message: 'Message 5', patient: { first_name: 'Homer',      last_name: 'Simpson'   } },
+      //  { category: 'flagged_patient', created: '7/19/2019', message: 'Message 1', patient: { first_name: 'Bob',        last_name: 'Loblaw'    } },
+      //  { category: 'flagged_patient', created: '7/20/2019', message: 'Message 2', patient: { first_name: 'Krusty',     last_name: 'the Clown' } },
+      //  { category: 'flagged_patient', created: '7/21/2019', message: 'Message 3', patient: { first_name: 'Montgomery', last_name: 'Burns'     } },
+      //  { category: 'flagged_patient', created: '7/22/2019', message: 'Message 4', patient: { first_name: 'Waylan',     last_name: 'Smithers'  } },
+      //  { category: 'flagged_patient', created: '7/23/2019', message: 'Message 5', patient: { first_name: 'Homer',      last_name: 'Simpson'   } },
+      //  { category: 'assignment',      created: '7/19/2019', message: 'Message 1', patient: { first_name: 'Bob',        last_name: 'Loblaw'    } },
+      //  { category: 'assignment',      created: '7/20/2019', message: 'Message 2', patient: { first_name: 'Krusty',     last_name: 'the Clown' } },
+      //  { category: 'assignment',      created: '7/21/2019', message: 'Message 3', patient: { first_name: 'Montgomery', last_name: 'Burns'     } },
+      //  { category: 'assignment',      created: '7/22/2019', message: 'Message 4', patient: { first_name: 'Waylan',     last_name: 'Smithers'  } },
+      //  { category: 'assignment',      created: '7/23/2019', message: 'Message 5', patient: { first_name: 'Homer',      last_name: 'Simpson'   } },
+      //];
     });
 
     document.addEventListener('refreshPatientOverview', e => {
-      this.getPatientsOverview(this.organization.id).then((patientOverview:any) => {
-        this.activePatientsCount = patientOverview.active;
-        this.inactivePatientsCount = patientOverview.inactive;
-        this.potentialPatientsCount = patientOverview.potential;
-        this.invitedPatientsCount = patientOverview.invited;
-      })
-    })
+      this.getPatientsOverview(this.organization.id).then(e => this.refreshPatientOverview(e));
+    });
   }
 
   public ngOnDestroy() {
     if (this.authSub) {
       this.authSub.unsubscribe();
     }
+
     if (this.organizationSub) {
       this.organizationSub.unsubscribe();
     }
+  }
+
+  public isPatientsRoute(): boolean {
+    return this.router.url.match(this.patientRoutes) !== null;
+  }
+
+  private refreshPatientOverview(patientOverview: IPatientsOverview) {
+    this.patients = patientOverview || {};
+    this.activePatientsCount = this.patients.active;
+    this.inactivePatientsCount = this.patients.inactive;
+    this.potentialPatientsCount = this.patients.potential;
+    this.invitedPatientsCount = this.patients.invited;
   }
 
   public logout() {
@@ -200,9 +226,7 @@ export class NavComponent implements OnDestroy, OnInit {
         'okText': 'Continue',
         'cancelText': 'Cancel',
       }
-    }).subscribe(() => {
-
-    });
+    }).subscribe();
   }
 
   public closeAllPopovers() {
@@ -226,7 +250,7 @@ export class NavComponent implements OnDestroy, OnInit {
     this.router.navigate(['/patients/active']);
   }
 
-  public routeToPatient(id) {
+  public routeToPatient(id: string) {
     this.searchString = '';
     this.router.navigate(['/patient', id]);
   }
@@ -236,79 +260,66 @@ export class NavComponent implements OnDestroy, OnInit {
   }
 
   public getPatientsOverview(organizationId) {
-    let promise = new Promise((resolve, reject) => {
-      let patientsSub = this.store.PatientProfile.listRoute('GET', 'overview', {}, {
+    const promise = new Promise((resolve, reject) => {
+      const data = {
         'facility__organization__id': organizationId,
-      }).subscribe(
-        (patients) => {
-          resolve(patients);
-        },
-        (err) => {
-          reject(err);
-        },
-        () => {
-          patientsSub.unsubscribe();
-        }
+      };
+      const patientsSub = this.store.PatientProfile.listRoute('GET', 'overview', {}, data).subscribe(
+        patients => resolve(patients),
+        err => reject(err),
+        () => patientsSub.unsubscribe()
       );
     });
+
     return promise;
   }
 
   private getNotifications() {
     return new Promise((resolve, reject) => {
-      this.auth.user$.subscribe(
-        response => {
-		  if (!response) return;
-		  
-		  let user = null;
-		  if(Array.isArray(response.results) && response.results.length > 0)
-			user = response.results[0];
-			else
-				user = response.user;
-
-			if(!user || !user.id)
-				return;
-
-          let notificationsSub = this.store.User.detailRoute('GET', user.id, 'notifications').subscribe(
-            (notifications:any) => {
-              resolve(notifications);
-            }
-          )
+      this.auth.user$.subscribe(response => {
+        if (!response) {
+          return;
         }
-      )
+
+        const user = (Array.isArray(response.results) && response.results.length > 0)
+          ? response.results[0]
+          : response.user;
+
+        if (!user || !user.id) {
+          return;
+        }
+
+        this.store.User.detailRoute('GET', user.id, 'notifications').subscribe(notifications => resolve(notifications));
+      });
     });
   }
 
-  public get notificationData() {
+  public get notificationData(): Array<{ category: string, notifications: Array<INotification> }> {
     if (this.notifications.length) {
       return [
         {
           category: 'Unread Messages',
           notifications: _filter(this.notifications, n => n.category === 'unread_message'),
-        },
-        {
+        }, {
           category: 'Flagged Patients',
           notifications: _filter(this.notifications, n => n.category === 'flagged_patient'),
-        },
-        {
+        }, {
           category: 'Assignments',
           notifications: _filter(this.notifications, n => n.category === 'assignment'),
         }
       ];
     }
+
+    return null;
   }
 
   private getTasks(userId) {
     return new Promise((resolve, reject) => {
-      let tasksSub = this.store.User.detailRoute('GET', userId, 'tasks').subscribe(
-        (tasks) => {
-          resolve(tasks);
-        },
-        (err) => reject(err),
-        () => {
-          tasksSub.unsubscribe();
-        }
-      )
+      const tasksSub = this.store.User.detailRoute('GET', userId, 'tasks').subscribe(
+        tasks => resolve(tasks),
+        err => reject(err),
+        () => tasksSub.unsubscribe()
+      );
     });
   }
 
@@ -320,7 +331,7 @@ export class NavComponent implements OnDestroy, OnInit {
     return this.tasksData.length;
   }
 
-  public timeSince(d) {
+  public timeSince(d: moment.MomentInput): string {
     const date = moment(d);
     const daysSince = moment().diff(date, 'days');
     const hoursSince = moment().diff(date, 'hours');
@@ -329,12 +340,12 @@ export class NavComponent implements OnDestroy, OnInit {
     if (!daysSince) {
       if (!hoursSince) {
         return `${minutesSince} minute${minutesSince !== 1 ? 's' : ''} ago`;
-      } else {
-        return `${hoursSince} hour${hoursSince !== 1 ? 's' : ''} ago`;
       }
-    } else {
-      return `${daysSince} day${daysSince !== 1 ? 's' : ''} ago`;
+
+      return `${hoursSince} hour${hoursSince !== 1 ? 's' : ''} ago`;
     }
+
+    return `${daysSince} day${daysSince !== 1 ? 's' : ''} ago`;
   }
 
   public openEnrollPatient() {
@@ -347,5 +358,28 @@ export class NavComponent implements OnDestroy, OnInit {
       },
       width: '576px',
     }).subscribe()
+  }
+}
+
+interface ITaskData {
+  checkIns: Array<{ patient: string, time: string }>,
+  length: number,
+  tasks: Array<{ patient: string, tasks: number }>
+}
+
+interface IPatientsOverview {
+  active?: number,
+  inactive?: number,
+  invited?: number,
+  potential?: number
+}
+
+interface INotification {
+  category?: 'unread_message' | 'flagged_patient' | 'assignment',
+  created?: moment.MomentInput,
+  message?: string,
+  patient?: {
+    first_name?: string,
+    last_name?: string
   }
 }
