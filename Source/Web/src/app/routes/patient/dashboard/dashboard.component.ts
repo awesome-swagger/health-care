@@ -14,7 +14,7 @@ export class PatientDashboardComponent implements OnDestroy, OnInit {
   public patient = null;
   public carePlans = null;
   public patientAverage = null;
-  public resultsOverTime = [];
+  public resultsOverTime: Array<{ month: string, billable: number, enrolled: number }> = [];
 
   public weeksOnPlan = 0;
   public displayWeeks = 4;
@@ -37,6 +37,7 @@ export class PatientDashboardComponent implements OnDestroy, OnInit {
 
   public bottomBillingStart: moment.Moment = moment().subtract('1', 'M').startOf('M');
   public bottomBillingEnd: moment.Moment = moment().subtract('1', 'M').endOf('M');
+  public graphedResults: Array<{ month: string, billable: number, enrolled: number }>;
 
 
   public datepickerOptions = {
@@ -99,6 +100,7 @@ export class PatientDashboardComponent implements OnDestroy, OnInit {
         }
 
         this.resultsOverTime = results;
+        this.graphedResults = this.resultsOverTime.filter((r, i) => i < this.displayWeeks);
         this.displayWeeks = results.length;
       });
 
@@ -142,9 +144,6 @@ export class PatientDashboardComponent implements OnDestroy, OnInit {
     this.timer.stopTimer();
   }
 
-  public get graphedResults() {
-    return this.resultsOverTime.filter((r, i) => i < this.displayWeeks);
-  }
 
   public onRangeChange(which) {
     let startDate: moment.Moment;

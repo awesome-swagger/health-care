@@ -2,7 +2,6 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { StoreService, AuthService, SessionStorageService } from '../../services';
 import * as moment from 'moment';
 import { Subscription } from 'rxjs';
-import patientsEnrolledData from './patientsEnrolledData';
 import {
   filter as _filter,
   find as _find,
@@ -38,8 +37,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
   public bottomBillingOverview = null;
   public analyticsData = null;
   public patientOverview = null;
-  public patientsEnrolledData = [];
-  public filteredPatientsEnrolledData = patientsEnrolledData;
+  public patientsEnrolledData: Array<IMonthData> = [];
+  public filteredPatientsEnrolledData: Array<IMonthData>;
   public employeesDropOptions: PopoverOptions = {
     relativeTop: '48px',
     relativeRight: '0px',
@@ -251,4 +250,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
       }
     });
   }
+}
+
+interface IMonthData {
+  month: string;
+  enrolled: number;
+  billable: number;
 }
