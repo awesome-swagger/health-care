@@ -185,6 +185,22 @@ class TestEmployeeOrganization(CoreMixin, APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
+    def test_employee_image_url(self):
+        response = self.client.get(self.url)
+        employee = response.data['results'][0]
+        self.assertIsNotNone(employee['image_url'])
+
+    def test_employee_title(self):
+        title = self.create_provider_title()
+        obj = self.employee
+        obj.title = title
+        obj.save(update_fields=['title'])
+
+        response = self.client.get(self.url)
+        employee = response.data['results'][0]
+        self.assertIsNotNone(employee['title'])
+        self.assertEqual(employee['title'], obj.title.name)
+
 
 class TestOrganizationFacility(CoreMixin, APITestCase):
     """
