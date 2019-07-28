@@ -69,3 +69,12 @@ class InsuranceFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = 'core.Insurance'
         django_get_or_create = ('name', 'organization')
+
+
+class ProviderTitleFactory(factory.DjangoModelFactory):
+    """
+    Factory for :model:`core.ProviderTitle`
+    """
+
+    class Meta:
+        model = 'core.ProviderTitle'

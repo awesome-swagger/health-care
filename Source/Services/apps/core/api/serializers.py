@@ -1094,8 +1094,8 @@ class OrganizationEmployeeSerializer(serializers.ModelSerializer):
     """
     full_name = serializers.SerializerMethodField()
     facilities_count = serializers.SerializerMethodField()
-    image_url = serializers.ReadOnlyField(source='user.image_url')
-    title = serializers.ReadOnlyField(source='title.name')
+    image_url = serializers.SerializerMethodField()
+    title = serializers.SerializerMethodField()
 
     class Meta:
         model = EmployeeProfile
@@ -1117,6 +1117,12 @@ class OrganizationEmployeeSerializer(serializers.ModelSerializer):
             Q(id__in=obj.facilities_managed.all()),
         ).distinct()
         return queryset.count()
+
+    def get_image_url(self, obj):
+        return obj.user.get_image_url()
+
+    def get_title(self, obj):
+        return obj.title.name if obj.title else ''
 
 
 class FacilityEmployeeSerializer(serializers.ModelSerializer):

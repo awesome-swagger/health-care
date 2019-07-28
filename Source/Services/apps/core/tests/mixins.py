@@ -4,6 +4,7 @@ from .factories import (
     FacilityFactory,
     MedicationFactory,
     ProviderRoleFactory,
+    ProviderTitleFactory,
     SymptomFactory,
     InsuranceFactory,
 )
@@ -85,3 +86,16 @@ class CoreMixin(object):
             })
 
         return InsuranceFactory(**kwargs)
+
+    def create_provider_title(self, **kwargs):
+        if 'name' not in kwargs:
+            kwargs.update({
+                'name': self.fake.name()
+            })
+
+        if 'abbreviation' not in kwargs:
+            kwargs.update({
+                'abbreviation': self.fake.word()[:10]
+            })
+
+        return ProviderTitleFactory(**kwargs)
