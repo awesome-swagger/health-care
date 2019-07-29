@@ -286,11 +286,12 @@ export class PatientComponent implements OnDestroy, OnInit {
     });
   }
 
-  public progressInWeeks(plan) {
+  public progressInWeeks(plan: { created: moment.MomentInput, plan_template: { duration_weeks: number }}): number {
     if (!plan || !plan.created) {
       return 0;
     }
-    return moment().diff(moment(plan.created), 'weeks');
+
+    return Math.min(plan.plan_template.duration_weeks, moment().diff(moment(plan.created), 'weeks'));
   }
 
   public isBefore3DaysAgo(dateAsMoment) {
