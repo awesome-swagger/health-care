@@ -7,7 +7,7 @@
           <button class="button button--icon button--icon--small" (click)="toolIP1Open=!toolIP1Open">
             <i class="ss-help"></i>
           </button>
-          <app-popover [visible]="toolIP1Open" [options]="employeesDropOptions" (visibleChange)="toolIP1Open = $event;">
+          <app-popover [visible]="toolIP1Open" (visibleChange)="toolIP1Open = $event;">
             <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : toolIP1Open }">
               <div class="tool__text">
                 Inactive patients have an account, but don’t currently have a care plan, and have not been archived.

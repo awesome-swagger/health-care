@@ -7,7 +7,7 @@
                 (click)="toolPP1Open=!toolPP1Open">
           <i class="ss-help"></i>
         </button>
-        <app-popover [visible]="toolPP1Open" [options]="employeesDropOptions" (visibleChange)="toolPP1Open = $event;">
+        <app-popover [visible]="toolPP1Open" (visibleChange)="toolPP1Open = $event;">
           <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : toolPP1Open }">
             <div class="tool__text">
               Potential patients have been identified in the EHR, from CareInsight, or added individually as candidates for care management.
@@ -143,7 +143,7 @@
                           <button class="button button--icon button--icon--small" (click)="tooltip2Open[facility.id]=!tooltip2Open[facility.id]">
                             <i class="ss-help"></i>
                           </button>
-                          <app-popover [visible]="tooltip2Open[facility.id]" [options]="employeesDropOptions" (visibleChange)="tooltip2Open[facility.id] = $event;">
+                          <app-popover [visible]="tooltip2Open[facility.id]" (visibleChange)="tooltip2Open[facility.id] = $event;">
                             <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltip2Open[facility.id] }">
                               <div class="tool__text">This is the number of additional care plans a patient has. Click the number for details.</div>
                             </div>
