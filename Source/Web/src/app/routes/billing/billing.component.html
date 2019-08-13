@@ -116,28 +116,28 @@
         </div>
         <app-popover [visible]="employeeSearchOpen" [options]="employeesDropOptions" (visibleChange)="employeeSearchOpen = $event;">
           <ul class="drop__dropdown drop__dropdown--right isOpen">
-            <div class="drop__buttons">
+            <li class="drop__buttons">
               <button class="button button--iconText" (click)="checkAllEmployees()">
                 <i class="ss-check ss-standard"></i> Check All
               </button>
               <button class="button button--iconText" (click)="uncheckAllEmployees()">
                 <i class="ss-ban"></i> Uncheck All
               </button>
-            </div>
+            </li>
             <li class="drop__option">
               <input class="input input--search drop__innerInput" type="text" placeholder="Search" [(ngModel)]="employeeSearch" />
             </li>
             <ng-container *ngIf="loadingEmployees">
-              <div class="center ssSpinner marTop24 marBottom24"></div>
+              <li class="center ssSpinner marTop24 marBottom24"></li>
             </ng-container>
             <ng-container *ngIf="!loadingEmployees">
-              <label class="drop__checkbox styledInput" *ngFor="let employee of employeesShown()">
+              <li class="drop__checkbox styledInput" *ngFor="let employee of employeesShown()">
                 <input type="checkbox" class="styledInput__input" [checked]="isEmployeeSelected(employee)" (change)="toggleEmployeeSelected(employee, $event)" />
                 <span class="styledInput__box"></span>
                 <div class="picName">
                   <img class="picName__img" src="../../../assets/img/profile.svg" />{{employee.user.first_name}} {{employee.user.last_name}}
                 </div>
-              </label>
+              </li>
             </ng-container>
           </ul>
         </app-popover>

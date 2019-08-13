@@ -4,15 +4,16 @@
       <div class="fullWidth flex">
         <h1 class="noMargin">Invited Patients ({{totalInvited}})</h1>
         <div class="tool__anchor">
-          <button class="button button--icon button--icon--small"
-          (click)="toolIP1Open=!toolIP1Open">
+          <button class="button button--icon button--icon--small" (click)="toolIP1Open=!toolIP1Open">
             <i class="ss-help"></i>
           </button>
-          <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : toolIP1Open }">
-            <div class="tool__text">
-              Invited patients have recieved an invitation, but have not yet created their account.
+          <app-popover [visible]="toolIP1Open" (visibleChange)="toolIP1Open = $event;">
+            <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : toolIP1Open }">
+              <div class="tool__text">
+                Invited patients have received an invitation, but have not yet created their account.
+              </div>
             </div>
-          </div>
+          </app-popover>
         </div>
       </div>
       <div class="fullWidth"></div>
@@ -24,14 +25,14 @@
           </div>
           <app-popover [visible]="multi4Open" (visibleChange)="multi4Open = $event">
             <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : multi4Open }">
-              <div class="drop__buttons">
+              <li class="drop__buttons">
                 <button class="button button--iconText" (click)="toggleAllUsers(true)">
                   <i class="ss-check ss-standard"></i> Check All
                 </button>
                 <button class="button button--iconText" (click)="toggleAllUsers(false)">
                   <i class="ss-ban"></i> Uncheck All
                 </button>
-              </div>
+              </li>
 
               <li class="drop__option">
                 <input class="input input--search drop__innerInput" type="text" placeholder="Search" [(ngModel)]="userSearch" />
@@ -39,10 +40,8 @@
 
               <ng-container *ngFor="let employee of employees">
                 <li class="drop__option" *ngIf="userSearchMatch(employee)">
-                  <label
-                    class="drop__checkbox styledInput"
-                    title="Behavioral Health Initiative"
-                  >
+                  <label class="drop__checkbox styledInput"
+                         title="Behavioral Health Initiative">
                     <input type="checkbox" class="styledInput__input" [(ngModel)]="employeeChecked[employee.id]" />
                     <span class="styledInput__box"></span>
                     {{employee?.user?.first_name}} {{employee?.user?.last_name}}
@@ -54,7 +53,7 @@
         </div>
       </div>
       <button class="button button--iconText"
-      (click)="addPatientToPlan()">
+              (click)="addPatientToPlan()">
         <i class="ss-plus"></i> Add Patient
       </button>
     </div>
@@ -65,75 +64,73 @@
     <div class="marRight32">
       <label>Service Area</label>
       <div class="drop">
-          <div class="drop__input" (click)="multi2Open = !multi2Open">
-            All
-          </div>
-          <app-popover [visible]="multi2Open" (visibleChange)="multi2Open = $event">
-            <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : multi2Open }">
-              <div class="drop__buttons">
-                <button class="button button--iconText" (click)="toggleAllServiceAreas(true)">
-                  <i class="ss-check ss-standard"></i> Check All
-                </button>
-                <button class="button button--iconText" (click)="toggleAllServiceAreas(false)">
-                  <i class="ss-ban"></i> Uncheck All
-                </button>
-              </div>
-
-              <li class="drop__option">
-                <input class="input input--search drop__innerInput" type="text" placeholder="Search" [(ngModel)]="serviceAreaSearch" />
-              </li>
-
-              <ng-container *ngFor="let serviceArea of serviceAreas">
-                <li class="drop__option" *ngIf="saSearchMatch(serviceArea)">
-                  <label class="drop__checkbox styledInput"
-                  title="Behavioral Health Initiative">
-                    <input type="checkbox" class="styledInput__input" [(ngModel)]="activeServiceAreas[serviceArea.id]" />
-                    <span class="styledInput__box"></span>
-                    {{serviceArea.name}}
-                  </label>
-                </li>
-              </ng-container>
-            </ul>
-          </app-popover>
+        <div class="drop__input" (click)="multi2Open = !multi2Open">
+          All
         </div>
+        <app-popover [visible]="multi2Open" (visibleChange)="multi2Open = $event">
+          <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : multi2Open }">
+            <div class="drop__buttons">
+              <button class="button button--iconText" (click)="toggleAllServiceAreas(true)">
+                <i class="ss-check ss-standard"></i> Check All
+              </button>
+              <button class="button button--iconText" (click)="toggleAllServiceAreas(false)">
+                <i class="ss-ban"></i> Uncheck All
+              </button>
+            </div>
+
+            <li class="drop__option">
+              <input class="input input--search drop__innerInput" type="text" placeholder="Search" [(ngModel)]="serviceAreaSearch" />
+            </li>
+
+            <ng-container *ngFor="let serviceArea of serviceAreas">
+              <li class="drop__option" *ngIf="saSearchMatch(serviceArea)">
+                <label class="drop__checkbox styledInput"
+                       title="Behavioral Health Initiative">
+                  <input type="checkbox" class="styledInput__input" [(ngModel)]="activeServiceAreas[serviceArea.id]" />
+                  <span class="styledInput__box"></span>
+                  {{serviceArea.name}}
+                </label>
+              </li>
+            </ng-container>
+          </ul>
+        </app-popover>
+      </div>
     </div> <!--/ container for care plan type filter-->
 
     <div>
       <label>Care Plan</label>
       <div class="drop">
-          <div class="drop__input" (click)="multi3Open = !multi3Open">
-            All
-          </div>
-          <app-popover [visible]="multi3Open" (visibleChange)="multi3Open = $event">
-            <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : multi3Open }">
-              <div class="drop__buttons">
-                <button class="button button--iconText" (click)="toggleAllCarePlans(true)">
-                  <i class="ss-check ss-standard"></i> Check All
-                </button>
-                <button class="button button--iconText" (click)="toggleAllCarePlans(false)">
-                  <i class="ss-ban"></i> Uncheck All
-                </button>
-              </div>
-
-              <li class="drop__option">
-                <input class="input input--search drop__innerInput" type="text" placeholder="Search" [(ngModel)]="carePlanSearch" />
-              </li>
-
-              <ng-container *ngFor="let carePlan of carePlanTemplates">
-                <li class="drop__option" *ngIf="activeServiceAreas[carePlan.service_area.id] && cpSearchMatch(carePlan)">
-                  <label
-                    class="drop__checkbox styledInput"
-                    title="Behavioral Health Initiative"
-                  >
-                    <input type="checkbox" class="styledInput__input" [(ngModel)]="activeCarePlans[carePlan.id]" />
-                    <span class="styledInput__box"></span>
-                    {{carePlan.name}}
-                  </label>
-                </li>
-              </ng-container>
-            </ul>
-          </app-popover>
+        <div class="drop__input" (click)="multi3Open = !multi3Open">
+          All
         </div>
+        <app-popover [visible]="multi3Open" (visibleChange)="multi3Open = $event">
+          <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : multi3Open }">
+            <li class="drop__buttons">
+              <button class="button button--iconText" (click)="toggleAllCarePlans(true)">
+                <i class="ss-check ss-standard"></i> Check All
+              </button>
+              <button class="button button--iconText" (click)="toggleAllCarePlans(false)">
+                <i class="ss-ban"></i> Uncheck All
+              </button>
+            </li>
+
+            <li class="drop__option">
+              <input class="input input--search drop__innerInput" type="text" placeholder="Search" [(ngModel)]="carePlanSearch" />
+            </li>
+
+            <ng-container *ngFor="let carePlan of carePlanTemplates">
+              <li class="drop__option" *ngIf="activeServiceAreas[carePlan.service_area.id] && cpSearchMatch(carePlan)">
+                <label class="drop__checkbox styledInput"
+                       title="Behavioral Health Initiative">
+                  <input type="checkbox" class="styledInput__input" [(ngModel)]="activeCarePlans[carePlan.id]" />
+                  <span class="styledInput__box"></span>
+                  {{carePlan.name}}
+                </label>
+              </li>
+            </ng-container>
+          </ul>
+        </app-popover>
+      </div>
     </div> <!--/ container for care plan name filter-->
   </div> <!--/.flex (for filters)-->
 
@@ -163,12 +160,14 @@
                     <div class="tool justifyCenter">
                       <span class="thSortable__text">Also</span>
                       <div class="tool__anchor">
-                        <button class="button button--icon button--icon--small" (click)="tooltip2Open=!tooltip2Open">
+                        <button class="button button--icon button--icon--small" (click)="tooltip2Open[facility.id]=!tooltip2Open[facility.id]">
                           <i class="ss-help"></i>
                         </button>
-                        <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltip2Open }">
-                          <div class="tool__text">This is the number of additional care plans a patient has. Click the number for details.</div>
-                        </div>
+                        <app-popover [visible]="tooltip2Open[facility.id]" [options]="employeesDropOptions" (visibleChange)="tooltip2Open[facility.id] = $event;">
+                          <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltip2Open[facility.id] }">
+                            <div class="tool__text">This is the number of additional care plans a patient has. Click the number for details.</div>
+                          </div>
+                        </app-popover>
                       </div>
                     </div>
                   </th>
@@ -197,11 +196,9 @@
                           </div>
                         </td>
                         <td>
-                          <a
-                            class="tool__anchor justifyCenter"
-                            (click)="openAlsoTip[''+i+j] = !openAlsoTip[''+i+j]"
-                            *ngIf="getAlsoPlans(j, patient).length"
-                          >
+                          <a class="tool__anchor justifyCenter"
+                             (click)="openAlsoTip[''+i+j] = !openAlsoTip[''+i+j]"
+                             *ngIf="getAlsoPlans(j, patient).length">
                             {{getAlsoPlans(j, patient).length}}
                             <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : openAlsoTip[''+i+j] }">
                               <div class="iconText iconText--white iconText--autoHeight marBottom8" *ngFor="let planName of getAlsoPlans(j, patient)">
@@ -215,13 +212,13 @@
                         <td class="left">{{patient.phone}}</td>
                         <td class="noPad">
                           <button class="button button--center button--icon"
-                          (click)="reminderEmail(patient, facility)">
+                                  (click)="reminderEmail(patient, facility)">
                             <i class="ss-standard ss-mail"></i>
                           </button>
                         </td>
                         <td class="noPad">
                           <button class="button button--center button--icon button--icon--small"
-                          (click)="confirmRemovePatient(facility, patient, plan)">
+                                  (click)="confirmRemovePatient(facility, patient, plan)">
                             <i class="ss-delete"></i>
                           </button>
                         </td>

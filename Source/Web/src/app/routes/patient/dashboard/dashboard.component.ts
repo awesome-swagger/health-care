@@ -14,7 +14,7 @@ export class PatientDashboardComponent implements OnDestroy, OnInit {
   public patient = null;
   public carePlans = null;
   public patientAverage = null;
-  public resultsOverTime = [];
+  public resultsOverTime: Array<{ month: string, billable: number, enrolled: number }> = [];
 
   public weeksOnPlan = 0;
   public displayWeeks = 4;
@@ -32,16 +32,17 @@ export class PatientDashboardComponent implements OnDestroy, OnInit {
     },
   }
 
-  public topBillingStart:moment.Moment = moment().subtract('1', 'M').startOf('M');
-  public topBillingEnd:moment.Moment = moment().subtract('1', 'M').endOf('M');
+  public topBillingStart: moment.Moment = moment().startOf('M');
+  public topBillingEnd: moment.Moment = moment();
 
-  public bottomBillingStart:moment.Moment = moment().subtract('2', 'M').startOf('M');
-  public bottomBillingEnd:moment.Moment = moment().subtract('2', 'M').endOf('M');
+  public bottomBillingStart: moment.Moment = moment().subtract('1', 'M').startOf('M');
+  public bottomBillingEnd: moment.Moment = moment().subtract('1', 'M').endOf('M');
+  public graphedResults: Array<{ month: string, billable: number, enrolled: number }>;
 
 
   public datepickerOptions = {
-     relativeTop: '-368px',
-   };
+    relativeTop: '-368px',
+  };
 
   constructor(
     private route: ActivatedRoute,
@@ -50,7 +51,9 @@ export class PatientDashboardComponent implements OnDestroy, OnInit {
     private store: StoreService,
     private nav: NavbarService,
     private timer: TimeTrackerService,
-  ) { }
+  ) {
+    // Nothing yet
+  }
 
   public ngOnInit() {
     this.route.params.subscribe((params) => {
@@ -59,27 +62,30 @@ export class PatientDashboardComponent implements OnDestroy, OnInit {
         if (!user) {
           return;
         }
+
         this.user = user;
         this.getCarePlan(params.planId).then((plan: any) => {
           this.timer.startTimer(this.user, plan);
 
           console.log(plan);
-          this.weeksOnPlan = moment(plan.created).diff('weeks');
+          this.weeksOnPlan = moment(Date.parse(plan.created), ['YYYY-MM-DDTHH:mm:ss.SSSZZ']).diff('weeks');
         });
+
         this.getPatient(params.patientId).then((patient) => {
           this.patient = patient;
           this.nav.addRecentPatient(this.patient);
         });
-        this.getCarePlans(params.patientId).then((plans) => {
-          this.carePlans = plans;
-        });
 
-        this.store.CarePlan.detailRoute('GET', null, 'patient_average', {}, {
+        this.getCarePlans(params.patientId).then((plans) => this.carePlans = plans);
+
+        const patientPlanData = {
           patient: params.patientId,
           plan: params.planId,
-        }).subscribe(res => {
-          this.patientAverage = res;
-        })
+        };
+
+        this.store.CarePlan
+          .detailRoute('GET', null, 'patient_average', {}, patientPlanData)
+          .subscribe(res => this.patientAverage = res);
       });
 
       this.store.CarePlan.detailRoute('GET', params.planId, 'results_over_time', {}, { weeks: 4 }).subscribe((res: any) => {
@@ -89,37 +95,36 @@ export class PatientDashboardComponent implements OnDestroy, OnInit {
             results[i] = {
               outcome: 0,
               engagement: 0,
-            }
+            };
           }
         }
+
         this.resultsOverTime = results;
+        this.graphedResults = this.resultsOverTime.filter((r, i) => i < this.displayWeeks);
         this.displayWeeks = results.length;
-      })
+      });
 
       this.onRangeChange('top');
       this.onRangeChange('bottom');
-
     });
   }
 
   public getPatient(patientId) {
     return new Promise((resolve, reject) => {
-        let patientSub = this.store.PatientProfile.read(patientId).subscribe(
-          patient => resolve(patient),
-          err => reject(err),
-          () => patientSub.unsubscribe()
-        )
+      let patientSub = this.store.PatientProfile.read(patientId).subscribe(
+        patient => resolve(patient),
+        err => reject(err),
+        () => patientSub.unsubscribe()
+      );
     });
-  }12
+  }
 
   public getCarePlan(planId) {
     let promise = new Promise((resolve, reject) => {
       let carePlanSub = this.store.CarePlan.read(planId).subscribe(
         (carePlan) => resolve(carePlan),
         (err) => reject(err),
-        () => {
-          carePlanSub.unsubscribe();
-        },
+        () => carePlanSub.unsubscribe(),
       );
     });
     return promise;
@@ -127,11 +132,11 @@ export class PatientDashboardComponent implements OnDestroy, OnInit {
 
   public getCarePlans(patientId) {
     return new Promise((resolve, reject) => {
-        let carePlanSub = this.store.PatientProfile.detailRoute('get', patientId, 'care_plans').subscribe(
-          plans => resolve(plans),
-          err => reject(err),
-          () => carePlanSub.unsubscribe()
-        )
+      let carePlanSub = this.store.PatientProfile.detailRoute('get', patientId, 'care_plans').subscribe(
+        plans => resolve(plans),
+        err => reject(err),
+        () => carePlanSub.unsubscribe()
+      );
     });
   }
 
@@ -139,9 +144,6 @@ export class PatientDashboardComponent implements OnDestroy, OnInit {
     this.timer.stopTimer();
   }
 
-  public get graphedResults() {
-    return this.resultsOverTime.filter((r, i) => i < this.displayWeeks);
-  }
 
   public onRangeChange(which) {
     let startDate: moment.Moment;
@@ -163,24 +165,22 @@ export class PatientDashboardComponent implements OnDestroy, OnInit {
   }
 
   public getBillingInfo(range, which) {
-     this.route.params.subscribe((params: any) => {
-      this.store.CarePlan.detailRoute(
-        'GET',
-        params.planId,
-        'billing_info',
-        {},
-        range
-      ).subscribe((res: any) => {
-        this.billingInfo[which] = res;
-      })
-    })
+    this.route.params.subscribe((params: any) => {
+      this.store.CarePlan
+        .detailRoute('GET', params.planId, 'billing_info', {}, range)
+        .subscribe((res: any) => this.billingInfo[which] = res);
+    });
   }
 
   public formatTime(minutes) {
-    if (!minutes) return '0:00';
+    if (!minutes) {
+      return '0:00';
+    }
+
     const h = `${Math.floor(minutes / 60)}`;
     const m = `${minutes % 60}`;
-    return `${h}:${m.length === 1 ? '0' : ''}${minutes % 60}`
+
+    return `${h}:${m.length === 1 ? '0' : ''}${minutes % 60}`;
   }
 
   public formatMoney(amount) {
@@ -190,7 +190,9 @@ export class PatientDashboardComponent implements OnDestroy, OnInit {
       decimal = '00';
     } else {
       decimal = `${amount - Math.floor(amount)}`.split('.')[1];
-      if (decimal.length === 1) {decimal += '0'}
+      if (decimal.length === 1) {
+        decimal += '0';
+      }
     }
 
     return `$${Math.floor(amount)}.${decimal}`;

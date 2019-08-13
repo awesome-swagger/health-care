@@ -1,4 +1,4 @@
-import {Component, ElementRef, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 // noinspection ES6UnusedImports
 import { TitleCasePipe } from '@angular/common'
@@ -15,17 +15,17 @@ import { PatientCommunicationComponent } from './modals/patient-communication/pa
 import { PatientAddressComponent } from './modals/patient-address/patient-address.component';
 import { PatientEmergencyContactComponent } from './modals/patient-emergency-contact/patient-emergency-contact.component';
 import { DeleteMedicationComponent } from './modals/delete-medication/delete-medication.component';
-import {AuthService, NavbarService, StoreService, UtilsService} from '../../services';
+import { AuthService, NavbarService, StoreService, UtilsService } from '../../services';
 import * as moment from 'moment';
 import {
   filter as _filter,
   find as _find
 } from 'lodash';
-import {HttpClient, HttpHeaders} from '@angular/common/http';
-import {AppConfig} from '../../app.config';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { AppConfig } from '../../app.config';
 
 class ImageSnippet {
-  constructor(public src: string, public file: File) {}
+  constructor(public src: string, public file: File) { }
 }
 
 @Component({
@@ -72,32 +72,32 @@ export class PatientComponent implements OnDestroy, OnInit {
   public ngOnInit() {
     this.nav.normalState();
     this.routeSub = this.route.params.subscribe((params) => {
-      this.getPatient(params.patientId).then((patient:any) => {
+      this.getPatient(params.patientId).then((patient: any) => {
         this.patient = patient;
         this.nav.addRecentPatient(this.patient);
         this.getEmergencyContact();
         this.getCarePlans(this.patient.id).then((carePlans: any) => {
           this.carePlans = carePlans;
-    			this.getCarePlanOverview(this.patient.id).then((overview: any) => {
+          this.getCarePlanOverview(this.patient.id).then((overview: any) => {
             let overviewStats = overview.results;
             this.carePlans.forEach((carePlan) => {
               carePlan.overview = overviewStats.find((overviewObj) => overviewObj.plan_template.id === carePlan.plan_template.id);
               let allTeamMembers = carePlan.overview.care_team;
               // Get care manager
-      				carePlan.care_manager = allTeamMembers.filter((obj) => {
-      					return obj.is_manager;
-      				})[0];
+              carePlan.care_manager = allTeamMembers.filter((obj) => {
+                return obj.is_manager;
+              })[0];
               // Get regular team members
-      				carePlan.team_members = allTeamMembers.filter((obj) => {
-      					return !obj.is_manager;
-      				});
+              carePlan.team_members = allTeamMembers.filter((obj) => {
+                return !obj.is_manager;
+              });
               // Get team member with closest check in date
               let sortedCT = this.sortTeamMembersByCheckin(allTeamMembers);
               if (sortedCT.length > 0) {
                 this.nextCheckinTeamMember = sortedCT[0];
               }
             });
-    			});
+          });
           this.getPatientMedications(this.patient.id);
         });
         this.getProblemAreas(this.patient.id).then((problemAreas: any) => {
@@ -109,13 +109,13 @@ export class PatientComponent implements OnDestroy, OnInit {
 
         this.store.PatientStat.readListPaged().subscribe(res => {
           this.patientStats = _find(res, stat => stat.mrn === patient.emr_code);
-        })
+        });
 
         this.getPatientDiagnoses(this.patient);
 
 
       }).catch(() => {
-        this.router.navigate(['/error']).then(() => {});
+        this.router.navigate(['/error']).then(() => { });
         // this.patient = patientData.patient;
         // this.carePlans = patientData.carePlans;
       });
@@ -124,7 +124,7 @@ export class PatientComponent implements OnDestroy, OnInit {
     this.auth.user$.subscribe(user => {
       if (!user) return;
       this.employee = user;
-    })
+    });
   }
 
   public ngOnDestroy() {
@@ -163,17 +163,17 @@ export class PatientComponent implements OnDestroy, OnInit {
 
   public getCarePlans(patientId) {
     return new Promise((resolve, reject) => {
-        let carePlanSub = this.store.CarePlan.readListPaged({patient: patientId}).subscribe(
-          (plans) => {
-            resolve(plans);
-          },
-          (err) => {
-            reject(err);
-          },
-          () => {
-            carePlanSub.unsubscribe();
-          }
-        )
+      let carePlanSub = this.store.CarePlan.readListPaged({ patient: patientId }).subscribe(
+        (plans) => {
+          resolve(plans);
+        },
+        (err) => {
+          reject(err);
+        },
+        () => {
+          carePlanSub.unsubscribe();
+        }
+      );
     });
   }
 
@@ -190,20 +190,20 @@ export class PatientComponent implements OnDestroy, OnInit {
   }
 
   public getEmergencyContact() {
-    this.store.PatientProfile.detailRoute('GET', this.patient.id, 'emergency_contacts').subscribe((res:any) => {
+    this.store.PatientProfile.detailRoute('GET', this.patient.id, 'emergency_contacts').subscribe((res: any) => {
       if (res.results[0]) {
         this.emergencyContact = res.results[0];
       } else {
         this.emergencyContact = {};
       }
-    })
+    });
   }
 
   public getCareTeam(plan) {
     return new Promise((resolve) => {
-        this.store.CarePlan.detailRoute('GET', plan.id, 'care_team_members').subscribe((res:any) => {
-          resolve(res);
-        })
+      this.store.CarePlan.detailRoute('GET', plan.id, 'care_team_members').subscribe((res: any) => {
+        resolve(res);
+      });
     });
   }
 
@@ -224,17 +224,17 @@ export class PatientComponent implements OnDestroy, OnInit {
   public getPatientDiagnoses(patient) {
     patient.diagnosis.forEach(d => {
       this.store.PatientDiagnosis.read(d).subscribe(
-        (diagnosis:any) => {
+        (diagnosis: any) => {
           this.patientDiagnosesRaw.push(diagnosis);
           this.store.Diagnosis.read(diagnosis.diagnosis).subscribe(
-            (res:any) => {
+            (res: any) => {
               res.patient_diagnosis = diagnosis;
               this.patientDiagnoses.push(res);
             }
           );
         }
-      )
-    })
+      );
+    });
   }
 
   public getPatientMedications(patientId) {
@@ -242,15 +242,17 @@ export class PatientComponent implements OnDestroy, OnInit {
       res => {
         this.patientMedications = res;
         this.carePlans.forEach(cp => {
-          this.store.MedicationTaskTemplate.readListPaged({plan__id: cp.id}).subscribe((res:any) => {
+          this.store.MedicationTaskTemplate.readListPaged({ plan__id: cp.id }).subscribe((res: any) => {
             res.forEach(taskTemplate => {
               const patientMedication = this.patientMedications.find(m => m.id === taskTemplate.patient_medication.id);
-              patientMedication.task = taskTemplate;
-            })
-          })
-        })
+
+              if (patientMedication)
+                patientMedication.task = taskTemplate;
+            });
+          });
+        });
       }
-    )
+    );
   }
 
   public formatTimeSince(time) {
@@ -284,11 +286,12 @@ export class PatientComponent implements OnDestroy, OnInit {
     });
   }
 
-  public progressInWeeks(plan) {
+  public progressInWeeks(plan: { created: moment.MomentInput, plan_template: { duration_weeks: number }}): number {
     if (!plan || !plan.created) {
       return 0;
     }
-    return moment().diff(moment(plan.created), 'weeks');
+
+    return Math.min(plan.plan_template.duration_weeks, moment().diff(moment(plan.created), 'weeks'));
   }
 
   public isBefore3DaysAgo(dateAsMoment) {
@@ -348,15 +351,15 @@ export class PatientComponent implements OnDestroy, OnInit {
 
   public confirmPause() {
     this.modals.open(ConfirmModalComponent, {
-     data: {
-       title: 'Pause Plan?',
-       body: 'Do you want to pause this plan? The patient won’t be able to record any progress while the plan is paused.',
-       cancelText: 'Cancel',
-       okText: 'Confirm',
+      data: {
+        title: 'Pause Plan?',
+        body: 'Do you want to pause this plan? The patient won’t be able to record any progress while the plan is paused.',
+        cancelText: 'Cancel',
+        okText: 'Confirm',
       },
       width: '384px',
     }).subscribe(() => {
-    // do something with result
+      // do something with result
     });
   }
 
@@ -364,29 +367,29 @@ export class PatientComponent implements OnDestroy, OnInit {
     const cancelText = 'Cancel';
     const okText = 'Continue';
     this.modals.open(ConfirmModalComponent, {
-     data: {
-       title: 'Delete Plan?',
-       body: 'Are you sure you want to remove this plan? This will negate the patient\'s current progress. This cannot be undone.',
-       cancelText,
-       okText,
+      data: {
+        title: 'Delete Plan?',
+        body: 'Are you sure you want to remove this plan? This will negate the patient\'s current progress. This cannot be undone.',
+        cancelText,
+        okText,
       },
       width: '384px',
     }).subscribe((res) => {
       if (res === okText) {
         this.store.CarePlan.destroy(planId).subscribe(() => {
           this.carePlans = _filter(this.carePlans, plan => plan.id !== planId);
-        })
+        });
       }
     });
   }
 
   public openConsentForm(plan) {
     this.modals.open(CarePlanConsentComponent, {
-     data: {
-       plan_id: plan,
-     },
-     width: '560px',
-   }).subscribe(() => {});
+      data: {
+        plan_id: plan,
+      },
+      width: '560px',
+    }).subscribe(() => { });
   }
 
   public addPatientToPlan(patient) {
@@ -468,8 +471,8 @@ export class PatientComponent implements OnDestroy, OnInit {
     }).subscribe((res) => {
       if (!res) return;
       this.store.Diagnosis.read(res.diagnosis).subscribe(
-        (res:any) => {
-          this.patientDiagnoses.push(res)
+        (res: any) => {
+          this.patientDiagnoses.push(res);
         }
       );
     });
@@ -505,11 +508,11 @@ export class PatientComponent implements OnDestroy, OnInit {
     }).subscribe(res => {
       if (res === okText) {
         this.store.PatientDiagnosis.destroy(_find(this.patientDiagnosesRaw, d => d.diagnosis = diagnosis).id).subscribe(() => {
-          this.patientDiagnoses = this.patientDiagnoses.filter((d, i) => i !== index)
+          this.patientDiagnoses = this.patientDiagnoses.filter((d, i) => i !== index);
 
-        })
+        });
       }
-    })
+    });
   }
 
   public addProcedure() {
@@ -547,11 +550,11 @@ export class PatientComponent implements OnDestroy, OnInit {
 
   public deleteProcedure(patientProcedure) {
     this.modals.open(ConfirmModalComponent, {
-     data: {
-       title: 'Delete Procedure?',
-       body: 'Are you sure you want to remove this procedure?',
-       cancelText: 'Cancel',
-       okText: 'Continue',
+      data: {
+        title: 'Delete Procedure?',
+        body: 'Are you sure you want to remove this procedure?',
+        cancelText: 'Cancel',
+        okText: 'Continue',
       },
       width: '384px',
     }).subscribe((res) => {
@@ -563,7 +566,7 @@ export class PatientComponent implements OnDestroy, OnInit {
           }
         );
       }
-    // do something with result
+      // do something with result
     });
   }
 
@@ -614,37 +617,37 @@ export class PatientComponent implements OnDestroy, OnInit {
 
   public confirmMakePatientInactive() {
     this.modals.open(ConfirmModalComponent, {
-     data: {
-       title: 'Make Patient Inactive?',
-       body: 'Are you sure you want to make this patient inactive? This will negate the patient\'s current progress. This cannot be undone.',
-       cancelText: 'Cancel',
-       okText: 'Continue',
+      data: {
+        title: 'Make Patient Inactive?',
+        body: 'Are you sure you want to make this patient inactive? This will negate the patient\'s current progress. This cannot be undone.',
+        cancelText: 'Cancel',
+        okText: 'Continue',
       },
       width: '384px',
     }).subscribe(() => {
       this.store.PatientProfile.update(this.patient.id, {
         is_active: false,
       }).subscribe(() => {
-        this.router.navigate(['/patients', 'active']).then(() => {})
-      })
+        this.router.navigate(['/patients', 'active']).then(() => { });
+      });
     });
   }
 
   public confirmMakePatientActive() {
-     this.modals.open(ConfirmModalComponent, {
-     data: {
-       title: 'Make Patient Active?',
-       body: 'Are you sure you want to make this patient active again?',
-       cancelText: 'Cancel',
-       okText: 'Continue',
+    this.modals.open(ConfirmModalComponent, {
+      data: {
+        title: 'Make Patient Active?',
+        body: 'Are you sure you want to make this patient active again?',
+        cancelText: 'Cancel',
+        okText: 'Continue',
       },
       width: '384px',
     }).subscribe(() => {
       this.store.PatientProfile.update(this.patient.id, {
         is_active: true,
       }).subscribe(() => {
-        this.router.navigate(['/patients', 'active']).then(() => {})
-      })
+        this.router.navigate(['/patients', 'active']).then(() => { });
+      });
     });
   }
 
@@ -662,7 +665,7 @@ export class PatientComponent implements OnDestroy, OnInit {
   }
 
   get patientAge() {
-    if (this.patient) {
+    if (this.patient && this.patient.user.birthdate) {
       return moment().diff(this.patient.user.birthdate, 'years');
     }
     return '';
@@ -674,27 +677,27 @@ export class PatientComponent implements OnDestroy, OnInit {
   }
 
   public processUpload() {
-    const file : File = this.imageUpload.nativeElement.files[0];
+    const file: File = this.imageUpload.nativeElement.files[0];
     const reader = new FileReader;
 
-    reader.addEventListener('load', (event:any) => {
+    reader.addEventListener('load', (event: any) => {
       const formData = new FormData();
       const selectedFile = new ImageSnippet(event.target.result, file);
       formData.append('image', selectedFile.file);
       this.http.request('PATCH', `${AppConfig.apiUrl}users/${this.patient.user.id}/`, {
         body: formData,
         headers: new HttpHeaders().set('Accept', 'application/json'),
-      }).subscribe((res:any) => {
+      }).subscribe((res: any) => {
         this.patient.user.image = res.image_url;
-      })
-    })
+      });
+    });
 
     reader.readAsDataURL(file);
 
   }
 
-  public numberFormat(num):string {
-    if (num){
+  public numberFormat(num): string {
+    if (num) {
       return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     }
   }

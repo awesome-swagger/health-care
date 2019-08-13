@@ -123,3 +123,4 @@ foo/*
 **/node_modules
 *.orig
 celerybeat-schedule
+Source/Web/yarn.lock

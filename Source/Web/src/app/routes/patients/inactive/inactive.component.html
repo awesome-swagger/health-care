@@ -4,15 +4,16 @@
       <div class="fullWidth flex">
         <h1 class="noMargin">Inactive Patients ({{totalInactive}})</h1>
         <div class="tool__anchor">
-          <button class="button button--icon button--icon--small"
-          (click)="toolIP1Open=!toolIP1Open">
+          <button class="button button--icon button--icon--small" (click)="toolIP1Open=!toolIP1Open">
             <i class="ss-help"></i>
           </button>
-          <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : toolIP1Open }">
-            <div class="tool__text">
-              Inactive patients have an account, but don’t currently have a care plan, and have not been archived.
+          <app-popover [visible]="toolIP1Open" (visibleChange)="toolIP1Open = $event;">
+            <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : toolIP1Open }">
+              <div class="tool__text">
+                Inactive patients have an account, but don’t currently have a care plan, and have not been archived.
+              </div>
             </div>
-          </div>
+          </app-popover>
         </div>
       </div>
       <div class="fullWidth"></div>
@@ -24,24 +25,22 @@
           </div>
           <app-popover [visible]="multi4Open" (visibleChange)="multi4Open = $event">
             <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : multi4Open }">
-              <div class="drop__buttons">
+              <li class="drop__buttons">
                 <button class="button button--iconText" (click)="toggleAllUsers(true)">
                   <i class="ss-check ss-standard"></i> Check All
                 </button>
                 <button class="button button--iconText" (click)="toggleAllUsers(false)">
                   <i class="ss-ban"></i> Uncheck All
                 </button>
-              </div>
+              </li>
 
               <li class="drop__option">
                 <input class="input input--search drop__innerInput" type="text" placeholder="Search" />
               </li>
 
               <li class="drop__option" *ngFor="let employee of employees">
-                <label
-                  class="drop__checkbox styledInput"
-                  title="Behavioral Health Initiative"
-                >
+                <label class="drop__checkbox styledInput"
+                       title="Behavioral Health Initiative">
                   <input type="checkbox" class="styledInput__input" [(ngModel)]="employeeChecked[employee.id]" />
                   <span class="styledInput__box"></span>
                   {{employee?.user?.first_name}} {{employee?.user?.last_name}}
@@ -59,67 +58,65 @@
     <div class="marRight32">
       <label>Service Area</label>
       <div class="drop">
-          <div class="drop__input" (click)="multi2Open = !multi2Open">
-            All
-          </div>
-          <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : multi2Open }">
-            <div class="drop__buttons">
-              <button class="button button--iconText" (click)="toggleAllServiceAreas(true)">
-                <i class="ss-check ss-standard"></i> Check All
-              </button>
-              <button class="button button--iconText" (click)="toggleAllServiceAreas(false)">
-                <i class="ss-ban"></i> Uncheck All
-              </button>
-            </div>
-
-            <li class="drop__option">
-              <input class="input input--search drop__innerInput" type="text" placeholder="Search" />
-            </li>
-
-            <li class="drop__option" *ngFor="let serviceArea of allServiceAreas">
-              <label class="drop__checkbox styledInput"
-              title="Behavioral Health Initiative">
-                <input type="checkbox" class="styledInput__input" [(ngModel)]="activeServiceAreas[serviceArea]" />
-                <span class="styledInput__box"></span>
-                {{serviceArea}}
-              </label>
-            </li>
-          </ul>
+        <div class="drop__input" (click)="multi2Open = !multi2Open">
+          All
         </div>
+        <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : multi2Open }">
+          <li class="drop__buttons">
+            <button class="button button--iconText" (click)="toggleAllServiceAreas(true)">
+              <i class="ss-check ss-standard"></i> Check All
+            </button>
+            <button class="button button--iconText" (click)="toggleAllServiceAreas(false)">
+              <i class="ss-ban"></i> Uncheck All
+            </button>
+          </li>
+
+          <li class="drop__option">
+            <input class="input input--search drop__innerInput" type="text" placeholder="Search" />
+          </li>
+
+          <li class="drop__option" *ngFor="let serviceArea of allServiceAreas">
+            <label class="drop__checkbox styledInput"
+                   title="Behavioral Health Initiative">
+              <input type="checkbox" class="styledInput__input" [(ngModel)]="activeServiceAreas[serviceArea]" />
+              <span class="styledInput__box"></span>
+              {{serviceArea}}
+            </label>
+          </li>
+        </ul>
+      </div>
     </div> <!--/ container for care plan type filter-->
 
     <div>
       <label>Care Plan</label>
       <div class="drop">
-          <div class="drop__input" (click)="multi3Open = !multi3Open">
-            All
-          </div>
-          <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : multi3Open }">
-            <div class="drop__buttons">
-              <button class="button button--iconText" (click)="toggleAllCarePlans(true)">
-                <i class="ss-check ss-standard"></i> Check All
-              </button>
-              <button class="button button--iconText" (click)="toggleAllCarePlans(false)">
-                <i class="ss-ban"></i> Uncheck All
-              </button>
-            </div>
-
-            <li class="drop__option">
-              <input class="input input--search drop__innerInput" type="text" placeholder="Search" />
-            </li>
-
-            <li class="drop__option" *ngFor="let carePlan of allCarePlans">
-              <label
-                class="drop__checkbox styledInput"
-                title="Behavioral Health Initiative"
-              >
-                <input type="checkbox" class="styledInput__input" [(ngModel)]="activeCarePlans[carePlan]" />
-                <span class="styledInput__box"></span>
-                {{carePlan}}
-              </label>
-            </li>
-          </ul>
+        <div class="drop__input" (click)="multi3Open = !multi3Open">
+          All
         </div>
+        <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : multi3Open }">
+          <li class="drop__buttons">
+            <button class="button button--iconText" (click)="toggleAllCarePlans(true)">
+              <i class="ss-check ss-standard"></i> Check All
+            </button>
+            <button class="button button--iconText" (click)="toggleAllCarePlans(false)">
+              <i class="ss-ban"></i> Uncheck All
+            </button>
+          </li>
+
+          <li class="drop__option">
+            <input class="input input--search drop__innerInput" type="text" placeholder="Search" />
+          </li>
+
+          <li class="drop__option" *ngFor="let carePlan of allCarePlans">
+            <label class="drop__checkbox styledInput"
+                   title="Behavioral Health Initiative">
+              <input type="checkbox" class="styledInput__input" [(ngModel)]="activeCarePlans[carePlan]" />
+              <span class="styledInput__box"></span>
+              {{carePlan}}
+            </label>
+          </li>
+        </ul>
+      </div>
     </div> <!--/ container for care plan name filter-->
   </div> <!--/.flex (for filters)-->
 
@@ -150,12 +147,14 @@
                   <div class="tool justifyCenter">
                     <span class="thSortable__text">Also</span>
                     <div class="tool__anchor">
-                      <button class="button button--icon button--icon--small" (click)="tooltip2Open=!tooltip2Open">
+                      <button class="button button--icon button--icon--small" (click)="tooltip2Open[facility.id]=!tooltip2Open[facility.id]">
                         <i class="ss-help"></i>
                       </button>
-                      <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltip2Open }">
-                        <div class="tool__text">This is the number of additional care plans a patient has. Click the number for details.</div>
-                      </div>
+                      <app-popover [visible]="tooltip2Open[facility.id]" [options]="employeesDropOptions" (visibleChange)="tooltip2Open[facility.id] = $event;">
+                        <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : tooltip2Open[facility.id] }">
+                          <div class="tool__text">This is the number of additional care plans a patient has. Click the number for details.</div>
+                        </div>
+                      </app-popover>
                     </div>
                   </div>
                 </th>
@@ -186,11 +185,9 @@
                       </div>
                     </td>
                     <td>
-                      <a
-                        class="tool__anchor justifyCenter"
-                        (click)="openAlsoTip[''+inactivePatient.id+j] = !openAlsoTip[''+inactivePatient.id+j]"
-                        *ngIf="getAlsoPlans(j, inactivePatient).length"
-                      >
+                      <a class="tool__anchor justifyCenter"
+                         (click)="openAlsoTip[''+inactivePatient.id+j] = !openAlsoTip[''+inactivePatient.id+j]"
+                         *ngIf="getAlsoPlans(j, inactivePatient).length">
                         {{getAlsoPlans(j, inactivePatient).length}}
                         <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : openAlsoTip[''+inactivePatient.id+j] }">
                           <div class="iconText iconText--white iconText--autoHeight marBottom8" *ngFor="let planName of getAlsoPlans(j, inactivePatient)">
@@ -204,7 +201,7 @@
                     <td class="left">{{inactivePatient.care_manager}}</td>
                     <td>
                       <button class="button button--center button--icon"
-                      (click)="confirmArchive(inactivePatient.id, i)">
+                              (click)="confirmArchive(inactivePatient.id, i)">
                         <i class="ss-filecabinet"></i>
                       </button>
                     </td>
@@ -217,19 +214,19 @@
       </div> <!--/.accordion__contents-->
       <div class="paginationWrap" *ngIf="lastPage(facilityTotals[facility.id]) > 1">
         <div class="pagination">
-            <button class="button button--icon button--icon--dis" (click)="switchNthFacilityPage(i, null, 1)">
-                <i class="ss-standard ss-skipback"></i>
-            </button>
-            <button class="button button--icon button--icon--dis" (click)="switchNthFacilityPage(i, -1)">
-                <i class="ss-standard ss-directleft"></i>
-            </button>
-            <span>{{facilityPages[facility.id]}} of {{lastPage(facilityTotals[facility.id])}}</span>
-            <button class="button button--icon" (click)="switchNthFacilityPage(i, 1)">
-                <i class="ss-standard ss-directright"></i>
-            </button>
-            <button class="button button--icon" (click)="switchNthFacilityPage(i, null, lastPage(facilityTotals[facility.id]))">
-                <i class="ss-standard ss-skipforward"></i>
-            </button>
+          <button class="button button--icon button--icon--dis" (click)="switchNthFacilityPage(i, null, 1)">
+            <i class="ss-standard ss-skipback"></i>
+          </button>
+          <button class="button button--icon button--icon--dis" (click)="switchNthFacilityPage(i, -1)">
+            <i class="ss-standard ss-directleft"></i>
+          </button>
+          <span>{{facilityPages[facility.id]}} of {{lastPage(facilityTotals[facility.id])}}</span>
+          <button class="button button--icon" (click)="switchNthFacilityPage(i, 1)">
+            <i class="ss-standard ss-directright"></i>
+          </button>
+          <button class="button button--icon" (click)="switchNthFacilityPage(i, null, lastPage(facilityTotals[facility.id]))">
+            <i class="ss-standard ss-skipforward"></i>
+          </button>
         </div> <!--/.pagination-->
       </div> <!--/.paginationWrap-->
     </div> <!--/.accordion__body-->

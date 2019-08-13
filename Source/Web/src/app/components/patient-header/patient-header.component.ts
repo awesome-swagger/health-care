@@ -63,22 +63,22 @@ export class PatientHeaderComponent implements OnInit, OnDestroy {
   ) { }
 
   public ngOnInit() {
-  	this.routeSub = this.route.params.subscribe((params) => {
-  		this.employeeSub = this.auth.user$.subscribe((employee) => {
-  			if (!employee) {
-  				return;
-  			}
-  			this.employee = employee;
-  			this.getPatient(params.patientId).then((patient: any) => {
-  				this.patient = patient;
-  			});
+    this.routeSub = this.route.params.subscribe((params) => {
+      this.employeeSub = this.auth.user$.subscribe((employee) => {
+        if (!employee) {
+          return;
+        }
+        this.employee = employee;
+        this.getPatient(params.patientId).then((patient: any) => {
+          this.patient = patient;
+        });
         this.getCarePlans(params.patientId).then((carePlans: any) => {
           this.carePlans = carePlans;
           this.selectedPlan = carePlans.find((obj) => {
             return obj.id === params.planId;
           });
-    			this.getCarePlanOverview(params.patientId).then((overview: any) => {
-    				this.patientPlansOverview = overview.results;
+          this.getCarePlanOverview(params.patientId).then((overview: any) => {
+            this.patientPlansOverview = overview.results;
             this.selectedPlanOverview = this.getOverviewForPlanTemplate(this.selectedPlan.plan_template.id);
             this.allTeamMembers = this.selectedPlanOverview.care_team;
             // Get care manager
@@ -108,13 +108,13 @@ export class PatientHeaderComponent implements OnInit, OnDestroy {
             if (sortedCT.length > 0) {
               this.nextCheckinTeamMember = sortedCT[0];
             }
-    			});
-    			this.getProblemAreas(params.patientId).then((problemAreas: any) => {
-    				this.problemAreas = problemAreas;
-    			});
+          });
+          this.getProblemAreas(params.patientId).then((problemAreas: any) => {
+            this.problemAreas = problemAreas;
+          });
         });
-  		});
-  	});
+      });
+    });
   }
 
   public ngOnDestroy() {
@@ -243,11 +243,12 @@ export class PatientHeaderComponent implements OnInit, OnDestroy {
     });
   }
 
-  public progressInWeeks(plan) {
+  public progressInWeeks(plan: { created: moment.MomentInput, plan_template: { duration_weeks: number } }): number {
     if (!plan || !plan.created) {
       return 0;
     }
-    return moment().diff(moment(plan.created), 'weeks');
+
+    return Math.min(plan.plan_template.duration_weeks, moment().diff(moment(plan.created), 'weeks'));
   }
 
   public parseTime(time) {
@@ -392,7 +393,7 @@ export class PatientHeaderComponent implements OnInit, OnDestroy {
         (success) => {
           obj.next_checkin = success.next_checkin;
         },
-        (err) => {},
+        (err) => { },
         () => {
           // Recalculate next checkin in overview section
           // Get team member with closest check in date
@@ -431,7 +432,7 @@ export class PatientHeaderComponent implements OnInit, OnDestroy {
     if (!collapsedPatientHeaders) {
       this.local.setObj('collapsed-patient-headers', ['messaging', 'history']);
       if (this._currentPage !== 'messaging' || this._currentPage !== 'history')
-      this.isCollapsed = false;
+        this.isCollapsed = false;
     }
     if (collapsedPatientHeaders.includes(this._currentPage)) {
       this.isCollapsed = true;

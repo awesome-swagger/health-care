@@ -1,11 +1,9 @@
 <div class="ssContainer ssContents">
   <div class="flex alignCenter marBottom32">
     <div class="picName marRight8">
-      <img
-        class="picName__img picName__img--big"
-        [src]="patient?.user.image ? patient?.user.image : '../../../assets/img/profile.svg'"
-        (click)="clickImageUpload()"
-      />
+      <img class="picName__img picName__img--big"
+           [src]="patient?.user.image ? patient?.user.image : '../../../assets/img/profile.svg'"
+           (click)="clickImageUpload()" />
       <input #imageUpload type="file" class="hiddenInput" (change)="processUpload()" accept="image/*" />
       <div *ngIf="!editName" class="flex alignCenter">
         <h1 class="noMargin marRight8">{{patient?.user.first_name}} {{patient?.user.last_name}}</h1>
@@ -100,7 +98,7 @@
             <app-popover [visible]="nextCheckinVisible" (visibleChange)="nextCheckinVisible = $event;">
               <div class="tool__tip tool__tip--bottom isOpen">
                 <div class="tool__text">
-                  <span>{{nextCheckinTeamMember.employee_profile.user.first_name}} {{nextCheckinTeamMember.employee_profile.user.last_name}}<span *ngIf="nextCheckinTeamMember.employee_profile.title">, {{nextCheckinTeamMember.employee_profile.title.abbreviation}}</span></span><br/>
+                  <span>{{nextCheckinTeamMember.employee_profile.user.first_name}} {{nextCheckinTeamMember.employee_profile.user.last_name}}<span *ngIf="nextCheckinTeamMember.employee_profile.title">, {{nextCheckinTeamMember.employee_profile.title.abbreviation}}</span></span><br />
                   <span *ngIf="nextCheckinTeamMember.role">{{nextCheckinTeamMember.role.name}}</span>
                   <span *ngIf="nextCheckinTeamMember.is_manager">Care Manager</span>
                   <br />
@@ -125,11 +123,11 @@
       <div class="info__cell">
         <label class="tool info__tool justifyCenter">
           Time
-          <div class="tool__anchor">
+          <span class="tool__anchor">
             <button class="button button--icon button--icon--small" (click)="openFinancialDetails(plan)">
               <i class="ss-info"></i>
             </button>
-          </div>
+          </span>
         </label>
         <ng-container *ngIf="patient && plan.overview">
           <div class="pill" [ngClass]="timePillColor(plan)">
@@ -155,11 +153,13 @@
         <button class="button button--icon button--icon--small" (click)="tooltipPSOpen=!tooltipPSOpen">
           <i class="ss-help"></i>
         </button>
-        <div class="tool__tip" [ngClass]="{'isOpen' : tooltipPSOpen }">
-          <div class="tool__text">
-            Patient Statistics are key indicators of patient risk.
+        <app-popover [visible]="tooltipPSOpen">
+          <div class="tool__tip" [ngClass]="{'isOpen' : tooltipPSOpen }">
+            <div class="tool__text">
+              Patient Statistics are key indicators of patient risk.
+            </div>
           </div>
-        </div>
+        </app-popover>
       </div>
     </div> <!--/.flex (for patient statistics header and tooltip)-->
     <div class="info info--horiz">
@@ -272,7 +272,7 @@
         <div class="info__header">
           <h3 class="noMargin">Profile</h3>
           <button class="button button--icon button--icon--small"
-          (click)="editPatientProfile()">
+                  (click)="editPatientProfile()">
             <i class="ss-write"></i>
           </button>
         </div>
@@ -363,7 +363,7 @@
         <div class="info__header">
           <h3 class="noMargin">Emergency Contact</h3>
           <button class="button button--icon button--icon--small"
-          (click)="editPatientEmergencyContact()">
+                  (click)="editPatientEmergencyContact()">
             <i class="ss-write"></i>
           </button>
         </div>
