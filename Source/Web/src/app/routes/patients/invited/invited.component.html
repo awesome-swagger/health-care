@@ -69,14 +69,14 @@
         </div>
         <app-popover [visible]="multi2Open" (visibleChange)="multi2Open = $event">
           <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : multi2Open }">
-            <div class="drop__buttons">
+            <li class="drop__buttons">
               <button class="button button--iconText" (click)="toggleAllServiceAreas(true)">
                 <i class="ss-check ss-standard"></i> Check All
               </button>
               <button class="button button--iconText" (click)="toggleAllServiceAreas(false)">
                 <i class="ss-ban"></i> Uncheck All
               </button>
-            </div>
+            </li>
 
             <li class="drop__option">
               <input class="input input--search drop__innerInput" type="text" placeholder="Search" [(ngModel)]="serviceAreaSearch" />

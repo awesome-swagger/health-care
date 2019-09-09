@@ -1,0 +1,70 @@
+@import '../../../modules/modals/modal-outlet.component.scss';
+@import '~scss/mixins';
+@import '~scss/variables';
+
+.add-diagnosis-button {
+  > button {
+    display: block;
+    text-align: center;
+    width: 100%;
+  }
+}
+
+.button--2nd:disabled {
+  color: white;
+}
+
+.drop__input {
+  max-width: initial;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.searchClear {
+  position: absolute;
+  right: 10px;
+  top: 0px;
+}
+
+label {
+  &.styledInput {
+    &.disabled {
+      cursor: default;
+    }
+  }
+}
+
+p {
+  font-size: rem-calc(14);
+  line-height: rem-calc(24);
+  padding: 5px;
+
+  &.typeahead-patient-notice {
+    margin: -20px 0;
+    padding: 0;
+    text-align: center;
+  }
+
+  &.typeahead-patient-warning {
+    color: $red;
+
+    > i.ss-alert {
+      color: $red;
+    }
+  }
+}
+
+select {
+  &.styledSelect__select {
+    &[disabled] {
+      cursor: default;
+    }
+  }
+}
+
+span {
+  &.required {
+    color: $red;
+    vertical-align: top;
+  }
+}

@@ -1,20 +1,16 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
+import * as moment from 'moment';
+import { compact as _compact, filter as _filter, find as _find, flattenDeep as _flattenDeep, map as _map, mean as _mean, sum as _sum, uniqBy as _uniqBy } from 'lodash';
 import { Router, ActivatedRoute } from '@angular/router';
+
 import { ModalService, ConfirmModalComponent } from '../../../modules/modals';
-import { AddPatientToPlanComponent } from '../../../components';
 import { StoreService, AuthService } from '../../../services';
 import { UtilsService } from '../../../services';
-import {
-  uniqBy as _uniqBy,
-  filter as _filter,
-  find as _find,
-  map as _map,
-  flattenDeep as _flattenDeep,
-  mean as _mean,
-  sum as _sum,
-  compact as _compact,
-} from 'lodash';
-import * as moment from 'moment';
+import { PatientCreationModalService } from '../../../services/patient-creation-modal.service';
+import { Utils } from '../../../utils';
+
+import { IFacility } from '../../../models/facility';
+import { IAddPatientToPlanComponentData } from '../../../models/iadd-patient-to-plan-component-data';
 
 @Component({
   selector: 'app-active',
@@ -52,12 +48,13 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
   private organizationSub = null;
 
   constructor(
-    private auth: AuthService,
-    private router: Router,
-    private route: ActivatedRoute,
-    private modals: ModalService,
-    private store: StoreService,
-    public utils: UtilsService,
+    public auth: AuthService,
+    public modals: ModalService,
+    public patientCreationModalService: PatientCreationModalService,
+    public route: ActivatedRoute,
+    public router: Router,
+    public store: StoreService,
+    public utilsService: UtilsService
   ) {
     // Nothing yet
   }
@@ -82,12 +79,10 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
         this.getFacilitiesForOrganization(organization.id).then((facilities: any) => {
           this.facilities = facilities.results.filter(f => !f.is_affiliate);
           this.facilities = this.facilities.filter(f => user.facilities.find(fa => fa.id === f.id));
-          console.log('facilities ---', this.facilities);
           this.facilities.forEach((facility) => {
             this.accordionsOpen[facility.id] = false;
             this.facilityPage[facility.id] = 1;
             this.getFacilityCarePlans(facility.id).then((carePlans: any) => {
-              console.log(facility.name, '---', carePlans);
               facility.carePlans = carePlans.results;
               this.facilityTotal[facility.id] = carePlans.count;
               this.facilityPageCount[facility.id] = this.getPageCount(carePlans.count);
@@ -259,74 +254,74 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
     });
   }
 
-  public addPatientToPlan(): void {
-    const modalData = {
-      data: {
-        action: 'add',
-        enrollPatientChecked: true,
-        patientInSystem: true,
-        planKnown: false,
-      },
-      width: '576px',
+  public addPatientToPlan(facility: IFacility = null): void {
+    // TODO: FIX THIS
+    const data: IAddPatientToPlanComponentData = {
+      action: 'add',
+      enrollPatientChecked: true,
+      facility: facility
     };
 
-    this.modals.open(AddPatientToPlanComponent, modalData).subscribe(res => {
-      if (!res) {
-        return;
-      }
-
-      console.log(res);
-      if (!(res.hasOwnProperty('patient') && res.hasOwnProperty('plan'))) {
-        res.careTeamMembers = res.careTeam;
-        res.engagement = res.engagement || 0;
-        res.outcomes = res.outcomes || 0;
-        res.current_week = res.current_week || 0;
-        res.risk_level = res.risk_level || 0;
-        res.tasks_this_week = res.tasks_this_week || 0;
-        const facility = this.facilities.find(f => f.id === res.patient.facility.id);
-        const patient = facility.patients.find(p => p.id === res.patient.id);
-        if (!patient) {
-          this.store.PatientProfile.read(res.patient.id).subscribe(patient => {
-            if (facility.patients && facility.patients.length) {
-              facility.patients.push(patient);
-            } else {
-              facility.patients = [patient];
-            }
-
-            this.store.CarePlan.readListPaged({ patient: patient.id }).subscribe(plans => {
-              patient.carePlans = plans;
-              patient.carePlans.forEach(plan => {
-                this.store.CareTeamMember
-                  .readListPaged({ plan: plan.id })
-                  .subscribe(careTeamMembers => plan.careTeamMembers = careTeamMembers);
-              });
-            });
-          });
-        } else {
-          if (patient.carePlans && patient.carePlans.length) {
-            patient.carePlans.push(res);
-          } else {
-            patient.carePlans = [res];
-          }
+    this.patientCreationModalService
+      .openEnrollment_PotentialPatientDetails(data)
+      .then((response) => {
+        if (Utils.isNullOrUndefined(response)) {
+          return;
         }
-      }
 
-      if (res.hasOwnProperty('patient') && res.hasOwnProperty('plan')) {
-        res.plan.careTeamMembers = res.plan.careTeam;
-        res.plan.engagement = res.plan.engagement || 0;
-        res.plan.outcomes = res.plan.outcomes || 0;
-        res.plan.current_week = res.plan.current_week || 0;
-        res.plan.risk_level = res.plan.risk_level || 0;
-        res.plan.tasks_this_week = res.plan.tasks_this_week || 0;
-        res.patient.carePlans = [res.plan];
-        const facility = this.facilities.find(f => f.id === res.patient.facility.id);
-        if (facility.patients && facility.patients.length) {
-          facility.patients.push(res.patient);
-        } else {
-          facility.patients = [res.patient];
-        }
-      }
-    });
+        console.log('TODO: Fix this', response);
+        // TODO: FIX THIS
+        //if (!(res.hasOwnProperty('patient') && res.hasOwnProperty('plan'))) {
+        //  res.careTeamMembers = res.careTeam;
+        //  res.engagement = res.engagement || 0;
+        //  res.outcomes = res.outcomes || 0;
+        //  res.current_week = res.current_week || 0;
+        //  res.risk_level = res.risk_level || 0;
+        //  res.tasks_this_week = res.tasks_this_week || 0;
+        //  const facility = this.facilities.find(f => f.id === res.patient.facility.id);
+        //  const patient = facility.patients.find(p => p.id === res.patient.id);
+        //  if (!patient) {
+        //    this.store.PatientProfile.read(res.patient.id).subscribe(patient => {
+        //      if (facility.patients && facility.patients.length) {
+        //        facility.patients.push(patient);
+        //      } else {
+        //        facility.patients = [patient];
+        //      }
+
+        //      this.store.CarePlan.readListPaged({ patient: patient.id }).subscribe(plans => {
+        //        patient.carePlans = plans;
+        //        patient.carePlans.forEach(plan => {
+        //          this.store.CareTeamMember
+        //            .readListPaged({ plan: plan.id })
+        //            .subscribe(careTeamMembers => plan.careTeamMembers = careTeamMembers);
+        //        });
+        //      });
+        //    });
+        //  } else {
+        //    if (patient.carePlans && patient.carePlans.length) {
+        //      patient.carePlans.push(res);
+        //    } else {
+        //      patient.carePlans = [res];
+        //    }
+        //  }
+        //}
+
+        //if (res.hasOwnProperty('patient') && res.hasOwnProperty('plan')) {
+        //  res.plan.careTeamMembers = res.plan.careTeam;
+        //  res.plan.engagement = res.plan.engagement || 0;
+        //  res.plan.outcomes = res.plan.outcomes || 0;
+        //  res.plan.current_week = res.plan.current_week || 0;
+        //  res.plan.risk_level = res.plan.risk_level || 0;
+        //  res.plan.tasks_this_week = res.plan.tasks_this_week || 0;
+        //  res.patient.carePlans = [res.plan];
+        //  const facility = this.facilities.find(f => f.id === res.patient.facility.id);
+        //  if (facility.patients && facility.patients.length) {
+        //    facility.patients.push(res.patient);
+        //  } else {
+        //    facility.patients = [res.patient];
+        //  }
+        //}
+      });
   }
 
   public routeToPatient(patient: { id: string }): void {
@@ -362,11 +357,11 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
     }
 
     if (plan.billing_type.acronym === 'TCM') {
-      return this.utils.timePillColorTCM(plan.created);
+      return this.utilsService.timePillColorTCM(plan.created);
     }
 
     const allotted = plan.billing_type.billable_minutes;
-    return this.utils.timePillColor(plan.time_count, allotted);
+    return this.utilsService.timePillColor(plan.time_count, allotted);
   }
 
   public facilityTimeCount(facility: { carePlans: Array<{ billing_type: boolean, patient: { payer_reimbursement: boolean } }> }): number {
@@ -395,7 +390,7 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
       return null;
     }
 
-    return this.utils.timePillColor(avgTime, avgAllotted);
+    return this.utilsService.timePillColor(avgTime, avgAllotted);
   }
 
   public averageTimeMinutes(): number {
@@ -424,7 +419,7 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
       return null;
     }
 
-    return this.utils.timePillColor(avgTime, avgAllotted);
+    return this.utilsService.timePillColor(avgTime, avgAllotted);
   }
 
   public avgFacilityRiskLevel(facility: { carePlans: Array<{ risk_level: number }> }): number {
@@ -478,7 +473,6 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
   public navigatePages(facilityId: string, to: any): void {
     this.facilityPage[facilityId] = to;
     this.getFacilityCarePlans(facilityId).then((carePlans: any) => {
-      console.log(carePlans);
       const facility = this.facilities.find(f => f.id === facilityId);
       facility.carePlans = carePlans.results;
     });

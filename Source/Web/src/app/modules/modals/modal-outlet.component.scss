@@ -16,6 +16,10 @@
     background-color: transparent;
   }
 
+  &--backdrop {
+    background-color: rgba(255, 255, 255, .8);
+  }
+
   &__content {
     // position set in js
     margin: 0 auto;
@@ -54,24 +58,51 @@
     display: flex;
     justify-content: flex-end;
 
-    .button:first-child { margin-right: rem-calc(32); }
+    .button:first-child {
+      margin-right: rem-calc(32);
+    }
 
     &--full .button {
       width: calc(50% - #{rem-calc(16)});
       padding: 0;
     }
 
-    &--marBottom48 { margin: rem-calc(32) 0 rem-calc(48); }
+    &--marBottom48 {
+      margin: rem-calc(32) 0 rem-calc(48);
+    }
   }
 
-  &__inputWrap { flex: 1 1 auto; }
-  &__inputWrap0 { flex: 0 0 auto; }
-  &__inputWrap70 { flex: 0 0 rem-calc(70); }
-  &__inputWrap80 { flex: 0 0 rem-calc(80); }
-  &__inputWrap100 { flex: 0 0 rem-calc(100); }
-  &__inputWrap120 { flex: 0 0 rem-calc(120); }
-  &__inputWrap140 { flex: 0 0 rem-calc(140); }
-  &__inputWrap160 { flex: 0 0 rem-calc(160); }
+  &__inputWrap {
+    flex: 1 1 auto;
+  }
+
+  &__inputWrap0 {
+    flex: 0 0 auto;
+  }
+
+  &__inputWrap70 {
+    flex: 0 0 rem-calc(70);
+  }
+
+  &__inputWrap80 {
+    flex: 0 0 rem-calc(80);
+  }
+
+  &__inputWrap100 {
+    flex: 0 0 rem-calc(100);
+  }
+
+  &__inputWrap120 {
+    flex: 0 0 rem-calc(120);
+  }
+
+  &__inputWrap140 {
+    flex: 0 0 rem-calc(140);
+  }
+
+  &__inputWrap160 {
+    flex: 0 0 rem-calc(160);
+  }
 
   &__input {
     width: 100%;

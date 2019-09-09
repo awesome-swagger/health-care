@@ -1,0 +1,13 @@
+@import '../../../modules/modals/modal-outlet.component.scss';
+@import '~scss/mixins';
+@import '~scss/variables';
+
+.modal__buttons {
+  button {
+    &.button {
+      &.button--2nd {
+        margin-right: 18px;
+      }
+    }
+  }
+}

@@ -1,0 +1,56 @@
+@import '../../../modules/modals/modal-outlet.component.scss';
+@import '~scss/mixins';
+@import '~scss/variables';
+
+select {
+  &.styledSelect__select {
+    &[disabled] {
+      cursor: default;
+    }
+  }
+}
+
+span {
+  &.required {
+    color: $red;
+    vertical-align: top;
+  }
+}
+
+button {
+  &.button-delete {
+    &:hover {
+      > i {
+        &.ss-delete {
+          color: $red;
+        }
+      }
+    }
+  }
+}
+
+.drop__input {
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: initial;
+}
+
+.overflow-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
+.modal__buttons {
+  button{
+    &.button {
+      &.button--2nd {
+        margin-right: 18px;
+      }
+    }
+  }
+}
+
+input[name="newDiagnosis"] {
+  width: 234px;
+}

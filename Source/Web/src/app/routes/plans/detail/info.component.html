@@ -130,7 +130,7 @@
             </tbody>
           </table>
           <div class="paginationWrap">
-            <button class="button button--iconText" (click)="addPatientToPlan()">
+            <button class="button button--iconText" (click)="addPatientToPlan(facility)">
               <i class="ss-plus"></i> Add Patient
             </button>
             <!-- <div class="pagination">
@@ -155,7 +155,7 @@
     <div class="accordion__body" *ngIf="!facility.plans || facility.plans.length === 0">
       <div class="accordion__contents">
         <h2 class="center">No patients have been added to this care plan.</h2>
-        <button class="button button--center button--iconText" (click)="addPatientToPlan()">
+        <button class="button button--center button--iconText" (click)="addPatientToPlan(facility)">
           <i class="ss-plus"></i> Add Patient
         </button>
       </div>

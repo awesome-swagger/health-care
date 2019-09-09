@@ -1,4 +1,4 @@
-<div class="modal" [hidden]="!visible" [ngClass]="{'modal--noBackdrop': !options?.backdropDisabled}" (click)="close()">
+<div class="modal" [hidden]="!visible" [ngClass]="{'modal--noBackdrop': !options?.backdropDisabled, 'modal--backdrop' : options?.preventClose}" (click)="!options?.preventClose && close()">
   <div class="modal__content" [ngStyle]="{
         'animation': options?.animation,
         'width': options?.width,
@@ -13,7 +13,7 @@
         'overflowY': options?.overflowY ? options?.overflowY : 'auto',
         'overflow': options?.overflow ? options?.overflow : 'visible'
       }" (click)="$event.stopPropagation()">
-      <div class="modal__close" [hidden]="options?.closeDisabled">
+      <div class="modal__close" [hidden]="options?.closeDisabled || options?.preventClose">
         <button class="button button--icon" (click)="close()">
           <i class="ss-delete "></i>
         </button>

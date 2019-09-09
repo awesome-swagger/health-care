@@ -22,7 +22,7 @@ import { AddStreamComponent } from '../../components/modals/add-stream/add-strea
 import { CreateStreamComponent } from '../../components/modals/create-stream/create-stream.component';
 import { DeletePlanComponent } from '../plans/modals/delete-plan/delete-plan.component';
 import { ReminderEmailComponent } from '../patients/invited/modals/reminder-email/reminder-email.component';
-import { AddPatientToPlanComponent } from '../../components/modals/add-patient-to-plan/add-patient-to-plan.component';
+//import { AddPatientToPlanComponent } from '../../components/modals/add-patient-to-plan/add-patient-to-plan.component';
 import { ModalService, ConfirmModalComponent } from '../../modules/modals';
 import { ReassignBillingPractitionerComponent } from '../users/modals/reassign-billing-practitioner/reassign-billing-practitioner.component';
 import { EnrollPatientComponent } from '../patient/modals/enroll-patient/enroll-patient.component';
@@ -80,7 +80,7 @@ export class AllModalsComponent implements OnInit {
         isOrganization: false,
       },
       width: '512px',
-    }).subscribe(() => {});
+    }).subscribe(() => { });
   }
 
   public openDeleteFacility() {
@@ -92,7 +92,7 @@ export class AllModalsComponent implements OnInit {
         cancelText: 'Cancel',
       },
       width: '440px',
-    }).subscribe(() => {});
+    }).subscribe(() => { });
   }
 
   public openAddUser() {
@@ -208,9 +208,9 @@ export class AllModalsComponent implements OnInit {
   }
 
   public openAddPatientToPlan() {
-    this.modals.open(AddPatientToPlanComponent, {
-      width: '512px',
-    })
+    //this.modals.open(AddPatientToPlanComponent, {
+    //  width: '512px',
+    //})
   }
 
   public openEnrollPatient() {

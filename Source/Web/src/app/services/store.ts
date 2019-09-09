@@ -116,7 +116,7 @@ export class Store {
     });
   }
 
-  public detailRoute(method: string, id: number | string, route: string, payload = {}, params = {}) {
+  public detailRoute(method: string, id: number | string, route: string, payload = {}, params = {}): Observable<any> {
     const request = this.http.request(method, `${this.createUrl(id)}${route}/`, payload, params);
     return request.catch((error: any) => {
       return throwError(error);

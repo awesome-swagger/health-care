@@ -1,19 +1,14 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
-import {
-  uniqBy as _uniqBy,
-  groupBy as _groupBy,
-  filter as _filter,
-  map as _map,
-  flattenDeep as _flattenDeep,
-  mean as _mean
-} from 'lodash';
 import * as moment from 'moment';
-import { ModalService, ConfirmModalComponent } from '../../../modules/modals';
-import { HttpService, StoreService, AuthService } from '../../../services';
+import { filter as _filter, flattenDeep as _flattenDeep, groupBy as _groupBy, map as _map, mean as _mean, uniqBy as _uniqBy } from 'lodash';
+
 import { AppConfig } from '../../../app.config';
+import { HttpService, StoreService, AuthService } from '../../../services';
+import { ModalService, ConfirmModalComponent } from '../../../modules/modals';
+import { PatientCreationModalService } from '../../../services/patient-creation-modal.service';
 import { ReminderEmailComponent } from './modals/reminder-email/reminder-email.component';
-import { AddPatientToPlanComponent } from '../../../components';
+
+import { IAddPatientToPlanComponentData } from '../../../models/iadd-patient-to-plan-component-data';
 
 @Component({
   selector: 'app-invited',
@@ -47,9 +42,9 @@ export class InvitedPatientsComponent implements OnDestroy, OnInit {
 
   constructor(
     private auth: AuthService,
-    private router: Router,
-    private modals: ModalService,
     private http: HttpService,
+    private modals: ModalService,
+    private patientCreationModalService: PatientCreationModalService,
     private store: StoreService,
   ) {
     // Nothing yet
@@ -216,9 +211,8 @@ export class InvitedPatientsComponent implements OnDestroy, OnInit {
         const postSub = this.http.post(url, reminderData).subscribe(
           (success) => {
             patient.emails_sent++;
-            console.log('Successfully sent email');
           },
-          (err) => console.log(err),
+          (err) => console.error(err),
           () => postSub.unsubscribe()
         );
       },
@@ -228,16 +222,12 @@ export class InvitedPatientsComponent implements OnDestroy, OnInit {
   }
 
   public addPatientToPlan() {
-    const modalData = {
-      data: {
+    const data:IAddPatientToPlanComponentData = {
         action: 'add',
-        enrollPatientChecked: true,
-        patientInSystem: true,
-        planKnown: false,
-      },
-      width: '576px',
+        enrollPatientChecked: true
     };
-    this.modals.open(AddPatientToPlanComponent, modalData).subscribe()
+
+    this.patientCreationModalService.openEnrollment_PotentialPatientDetails(data);
   }
 
   public confirmRemovePatient(facility, patient, plan) {

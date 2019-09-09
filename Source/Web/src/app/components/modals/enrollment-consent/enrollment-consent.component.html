@@ -1,0 +1,90 @@
+<div class="enrollment-consent-component">
+  <div class="enrollment-consent-header">
+    <h1 class="modal__title">Enroll Patient</h1>
+    <div class="divider"></div>
+    <h2 class="modal__title">Verbal Confirmation</h2>
+    <p>Call the patient to obtain verbal consent for care plan enrollment.</p>
+    <div class="divider"></div>
+  </div>
+
+  <div class="enrollment-consent-content">
+    <h3 class="modal__title">{{name}}{{phone}}</h3>
+    <h4 class="modal__title">{{serviceArea}}, {{carePlan}}</h4>
+    <h4 class="modal__title" [hidden]="!carePlanTypeName">{{carePlanTypeName}} ({{carePlanTypeAbr}})</h4>
+    <div class="divider"></div>
+
+    <h5 class="marBottom32">
+      Patients can be enrolled without meeting reimbursement requirements.
+      However, they won’t be eligible to receive reimbursement until requirements have been meet.
+    </h5>
+
+    <label class="styledInput listHead">REIMBURSEMENT REQUIREMENTS (OPT)</label>
+
+    <label class="styledInput">
+      <input type="checkbox" class="styledInput__input" [(ngModel)]="verbalConsent" />
+      <span class="styledInput__box"></span>
+      Patient has verbally consented to begin care plan.
+    </label>
+
+    <label class="styledInput">
+      <input type="checkbox" class="styledInput__input" [(ngModel)]="seenInLastYear" />
+      <span class="styledInput__box"></span>
+      Patient has been seen by the billing practitioner within the past year.
+    </label>
+
+    <label class="styledInput">
+      <input type="checkbox" class="styledInput__input" [(ngModel)]="copayPotential" />
+      <span class="styledInput__box"></span>
+      Patient understands the potential co-pay.
+    </label>
+
+
+    <label class="styledInput listHead">PATIENT COMMITMENT (OPT)</label>
+
+    <label class="styledInput">
+      <input type="checkbox" class="styledInput__input" [(ngModel)]="useMobilApp" />
+      <span class="styledInput__box"></span>
+      Use the mobile app.
+    </label>
+
+    <div class="iconText iconText--wrap iconText--autoHeight error marBottom8" *ngIf="isRpmPlan">
+      <i class="iconText__icon ss-alert"></i>
+      <span class="error__text">
+        For RPM plans, the patient must agree to use the mobile app.
+      </span>
+    </div>
+
+    <label class="styledInput">
+      <input type="checkbox" class="styledInput__input" [(ngModel)]="interactWithTeam" />
+      <span class="styledInput__box"></span>
+      Interact with care team.
+    </label>
+
+    <label class="styledInput">
+      <input type="checkbox" class="styledInput__input" [(ngModel)]="completeDailyTasks" />
+      <span class="styledInput__box"></span>
+      Complete daily tasks.
+    </label>
+
+    <div class="modal__inputWrap0 marTop32">
+      <label>Plan Start Date</label>
+      <div class="datepicker">
+        <div class="datepicker__date" (click)="showDate=!showDate">
+          {{displayDate}}
+        </div>
+        <app-popover [visible]="showDate" (visibleChange)="showDate = $event">
+          <app-date-picker class="datepicker__picker datepicker__picker--top isOpen"
+                           [selected]="planStartDate"
+                           (selectedChange)="dateChanged($event)"></app-date-picker>
+        </app-popover>
+      </div>
+    </div>
+    <div class="divider"></div>
+  </div>
+
+  <div class="modal__buttons padBottom32">
+    <button (click)="close()" class="button button--2nd">Cancel</button>
+    <button (click)="later()" class="button button--2nd">Later</button>
+    <button (click)="enroll()" class="button" [disabled]="isValid">Enroll</button>
+  </div>
+</div>

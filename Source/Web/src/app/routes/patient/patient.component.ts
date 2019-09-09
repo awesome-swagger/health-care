@@ -1,28 +1,26 @@
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
-// noinspection ES6UnusedImports
-import { TitleCasePipe } from '@angular/common'
-import { ModalService, ConfirmModalComponent } from '../../modules/modals';
-import { FinancialDetailsComponent } from './modals/financial-details/financial-details.component';
-import { CarePlanConsentComponent } from './modals/care-plan-consent/care-plan-consent.component';
-import { ProblemAreasComponent } from './modals/problem-areas/problem-areas.component';
-import { AddDiagnosisComponent } from './modals/add-diagnosis/add-diagnosis.component';
-import { ProcedureComponent } from './modals/procedure/procedure.component';
-import { MedicationComponent } from './modals/medication/medication.component';
-import { AddPatientToPlanComponent } from '../../components';
-import { PatientProfileComponent } from './modals/patient-profile/patient-profile.component';
-import { PatientCommunicationComponent } from './modals/patient-communication/patient-communication.component';
-import { PatientAddressComponent } from './modals/patient-address/patient-address.component';
-import { PatientEmergencyContactComponent } from './modals/patient-emergency-contact/patient-emergency-contact.component';
-import { DeleteMedicationComponent } from './modals/delete-medication/delete-medication.component';
-import { AuthService, NavbarService, StoreService, UtilsService } from '../../services';
 import * as moment from 'moment';
-import {
-  filter as _filter,
-  find as _find
-} from 'lodash';
+import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { filter as _filter, find as _find } from 'lodash';
+
+import { AddDiagnosisComponent } from './modals/add-diagnosis/add-diagnosis.component';
 import { AppConfig } from '../../app.config';
+import { AuthService, NavbarService, StoreService, UtilsService } from '../../services';
+import { CarePlanConsentComponent } from './modals/care-plan-consent/care-plan-consent.component';
+import { DeleteMedicationComponent } from './modals/delete-medication/delete-medication.component';
+import { FinancialDetailsComponent } from './modals/financial-details/financial-details.component';
+import { MedicationComponent } from './modals/medication/medication.component';
+import { ModalService, ConfirmModalComponent } from '../../modules/modals';
+import { PatientAddressComponent } from './modals/patient-address/patient-address.component';
+import { PatientCommunicationComponent } from './modals/patient-communication/patient-communication.component';
+import { PatientCreationModalService } from '../../services/patient-creation-modal.service';
+import { PatientEmergencyContactComponent } from './modals/patient-emergency-contact/patient-emergency-contact.component';
+import { PatientProfileComponent } from './modals/patient-profile/patient-profile.component';
+import { ProblemAreasComponent } from './modals/problem-areas/problem-areas.component';
+import { ProcedureComponent } from './modals/procedure/procedure.component';
+
+import { IAddPatientToPlanComponentData } from '../../models/iadd-patient-to-plan-component-data';
 
 class ImageSnippet {
   constructor(public src: string, public file: File) { }
@@ -59,15 +57,18 @@ export class PatientComponent implements OnDestroy, OnInit {
   public employee = null;
 
   constructor(
-    private route: ActivatedRoute,
-    private router: Router,
+    private auth: AuthService,
+    private http: HttpClient,
     private modals: ModalService,
     private nav: NavbarService,
+    private route: ActivatedRoute,
+    private router: Router,
     private store: StoreService,
+    public patientCreationModalService: PatientCreationModalService,
     public utils: UtilsService,
-    private http: HttpClient,
-    private auth: AuthService,
-  ) { }
+  ) {
+    // Nothing here
+  }
 
   public ngOnInit() {
     this.nav.normalState();
@@ -286,7 +287,7 @@ export class PatientComponent implements OnDestroy, OnInit {
     });
   }
 
-  public progressInWeeks(plan: { created: moment.MomentInput, plan_template: { duration_weeks: number }}): number {
+  public progressInWeeks(plan: { created: moment.MomentInput, plan_template: { duration_weeks: number } }): number {
     if (!plan || !plan.created) {
       return 0;
     }
@@ -393,22 +394,22 @@ export class PatientComponent implements OnDestroy, OnInit {
   }
 
   public addPatientToPlan(patient) {
-    this.modals.open(AddPatientToPlanComponent, {
-      data: {
-        action: 'add',
-        patientKnown: true,
-        patient: patient,
-        planKnown: false,
-        facility: this.patient.facility,
-        enrollPatientChecked: true,
-        disableRemovePatient: true,
-      },
-      width: '576px',
-    }).subscribe((plan) => {
-      if (plan) {
-        this.carePlans.push(plan);
-      }
-    });
+    const data: IAddPatientToPlanComponentData = {
+      action: 'add',
+      disableRemovePatient: true,
+      enrollPatientChecked: true,
+      facility: this.patient.facility,
+      patient: patient
+    };
+    this.patientCreationModalService
+      .openEnrollment_PotentialPatientDetails(data)
+      .then((plan) => {
+        //// TODO: This is not what it would have ever returned!
+        //// this returns an IPatient you might need to refresh the carePlans
+        //if (plan) {
+        //  this.carePlans.push(plan);
+        //}
+      });
   }
 
   public editPatientProfile() {

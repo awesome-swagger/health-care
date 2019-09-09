@@ -1,21 +1,22 @@
 import { Component, OnInit, OnDestroy, ViewEncapsulation } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
-import { ModalService, ConfirmModalComponent } from '../../modules/modals';
-import { ToastService } from '../../modules/toast';
+
+import { ActivePatientsGraphComponent } from '../../components/graphs/active-patients-graph/active-patients-graph.component';
 import { AuthService, HttpService, StoreService } from '../../services';
-import { EditTaskComponent } from '../../components/modals/edit-task/edit-task.component';
-import { PreviewVitalComponent } from '../../components/modals/preview-vital/preview-vital.component';
-import { CreateVitalComponent } from '../../components/modals/create-vital/create-vital.component';
+import { ConfirmModalComponent, ModalService } from '../../modules/modals';
 import { CreateAssessmentComponent } from '../../components/modals/create-assessment/create-assessment.component';
 import { CreateStreamComponent } from '../../components/modals/create-stream/create-stream.component';
+import { CreateVitalComponent } from '../../components/modals/create-vital/create-vital.component';
+import { EditTaskComponent } from '../../components/modals/edit-task/edit-task.component';
+import { EnrollmentPatientEnrolledComponent } from '../../components';
 import { EnrollmentRequiredComponent } from '../../components/modals/enrollment-required/enrollment-required.component';
-import { PatientEnrolledComponent } from '../../components/modals/patient-enrolled/patient-enrolled.component';
+import { PatientsEnrolledGraphComponent } from '../../components/graphs/patients-enrolled-graph/patients-enrolled-graph.component';
+import { PercentageGaugeComponent } from '../../components/graphs/percentage-gauge/percentage-gauge.component';
 import { PlanExpiredComponent } from '../../components/modals/plan-expired/plan-expired.component';
 import { PlanLimitReachedComponent } from '../../components/modals/plan-limit-reached/plan-limit-reached.component';
-import { PercentageGaugeComponent } from '../../components/graphs/percentage-gauge/percentage-gauge.component';
+import { PreviewVitalComponent } from '../../components/modals/preview-vital/preview-vital.component';
 import { ResultsGraphComponent } from '../../components/graphs/results-graph/results-graph.component';
-import { ActivePatientsGraphComponent } from '../../components/graphs/active-patients-graph/active-patients-graph.component';
-import { PatientsEnrolledGraphComponent } from '../../components/graphs/patients-enrolled-graph/patients-enrolled-graph.component';
+import { ToastService } from '../../modules/toast';
 
 @Component({
   selector: 'app-styleguide',
@@ -112,7 +113,7 @@ export class StyleguideComponent implements OnInit {
   }
 
   public patientEnrolled() {
-    this.modals.open(PatientEnrolledComponent, {
+    this.modals.open(EnrollmentPatientEnrolledComponent, {
       closeDisabled: true,
       width: '384px',
     }).subscribe(() => {});

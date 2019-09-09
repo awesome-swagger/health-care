@@ -1,0 +1,225 @@
+<div class="potential-patient-enrollment-details-component">
+  <div class="add-patient-header">
+    <h1 class="modal__title">Add a Patient to a Plan</h1>
+    <div class="divider"></div>
+  </div>
+
+  <div class="care-plan-manager-typeahead">
+    <label>Care Manager<span class="required">*</span></label>
+    <div class="drop">
+      <input type="text"
+             class="input input--search fullWidth marBottom32"
+             [placeholder]="(patientCreationService.employeesLoaded ? 'Search Care Managers' : 'Loading...')"
+             (click)="$event.target.select()"
+             [(ngModel)]="typeahead.careManager"
+             (keyup)="searchEmployeeCollection(true)"
+             [disabled]="!patientCreationService.careManagers" />
+      <ul class="drop__dropdown fullWidth" [ngClass]="{ 'isOpen' : typeahead.careManager.length >= 3 && !newPatientDetails.careManager }">
+        <li class="drop__option" *ngFor="let manager of filters.careManager.array">
+          <a class="drop__link" (click)="setEmployee('careManager', manager)">
+            <div class="picName">
+              <img class="picName__img" [src]="manager?.user?.image_url || '../../../assets/img/profile.svg'" />{{manager?.user?.first_name}} {{manager?.user?.last_name}}, {{manager?.title?.abbreviation}}
+            </div>
+          </a>
+        </li>
+      </ul>
+    </div>
+    <div class="divider"></div>
+  </div>
+
+  <div class="payer-reimburement">
+    <label class="styledInput">
+      <input type="checkbox" class="styledInput__input" [(ngModel)]="newPatientDetails.checked.reimburses" />
+      <span class="styledInput__box"></span>
+      Payer Reimbursement
+    </label>
+
+    <p>
+      Determining payer reimbursement can be accomplished after the patient has been enrolled.
+    </p>
+
+    <div class="divider"></div>
+  </div>
+
+  <ng-container *ngIf="newPatientDetails.checked.reimburses">
+    <div class="insurance-billing-category">
+      <div class="flex justifySpaceBetween">
+        <div class="modal__inputWrap marRight32">
+          <label>Insurance<span class="required">*</span></label>
+          <div class="styledSelect">
+            <select class="styledSelect__select" [(ngModel)]="newPatientDetails.insurance" [compareWith]="compareFn">
+              <option *ngFor="let insurance of insurances" [value]="insurance">{{insurance.name}}</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal__inputWrap">
+          <label>Billing Category<span class="required">*</span></label>
+          <div class="styledSelect">
+            <select class="styledSelect__select" [(ngModel)]="newPatientDetails.planType">
+              <option *ngFor="let billingType of billingTypes" [ngValue]="billingType">{{billingType.acronym}}</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="divider"></div>
+    </div>
+
+    <div *ngIf="newPatientDetails.planType?.isChronic == true">
+      <div class="iconText iconText--wrap iconText--autoHeight error">
+        <i class="iconText__icon ss-alert"></i>
+        <span class="error__text">
+          Patients must be diagnosed with 2 or more chronic conditions<br />
+          to qualify for CCM or CCCM plans.
+        </span>
+      </div>
+
+      <div class="diagnoses-table">
+        <table class="marBottom8 fullWidth">
+          <thead>
+            <tr>
+              <th class="left">Diagnosis</th>
+              <th class="left">Chronic</th>
+              <th class="noPad"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let diagnoses of newPatientDetails.diagnoses; let i = index" [hidden]="!!diagnoses.hidden">
+              <td class="left">
+                {{diagnoses.diagnosis_object.name}}
+              </td>
+              <td class="left">
+                {{diagnoses.is_chronic ? 'Chronic' : 'Not Chronic'}}
+              </td>
+              <td class="noPad">
+                <div class="tool__anchor flex justifyEnd">
+                  <button class="button button--icon button--icon--small" (click)="editDiagnoses(diagnoses, i)" title="Edit">
+                    <i class="ss-write"></i>
+                  </button>
+                  <button class="button button--icon button--icon--small button-delete" (click)="deleteDiagnoses(diagnoses, i)" title="Delete">
+                    <i class="ss-delete"></i>
+                  </button>
+                  <button class="button button--icon button--icon--small" (click)="diagnoses.showTip=!diagnoses.showTip" title="Help">
+                    <i class="ss-help"></i>
+                  </button>
+                  <app-popover [visible]="diagnoses.showTip" (visibleChange)="diagnoses.showTip = $event">
+                    <div class="tool__tip tool__tip--bottom" [ngClass]="{ 'isOpen' : diagnoses.showTip }">
+                      <div class="tool__text">
+                        Go to the patient profile to edit or remove previously added diagnosis.
+                      </div>
+                    </div>
+                  </app-popover>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="add-diagnosis-button" *ngIf="!diagnosesAction">
+        <button class="button button--iconText" (click)="openDiagnosesForm()">
+          <i class="ss-plus"></i> Add Diagnosis
+        </button>
+      </div>
+
+      <form *ngIf="diagnosesAction" class="flex" autocomplete="off">
+        <div class="drop marRight32">
+          <input type="text"
+                 class="input input--search"
+                 (click)="$event.target.select()"
+                 [placeholder]="diagnoses == null ? 'Loading...' : 'Search Diagnosis'"
+                 [(ngModel)]="typeahead.diagnosis"
+                 (keyup)="searchDiagnoses($event)"
+                 name="newDiagnosis" />
+          <ul class="drop__dropdown fullWidth" [ngClass]="{ 'isOpen' : typeahead.diagnosis.length > 2 && !newPatientDetails.diagnosis }">
+            <li class="drop__option" *ngFor="let diagnosis of filters.diagnosis.array">
+              <a class="drop__link" (click)="setDiagnosis(diagnosis)">
+                <div class="picName">
+                  {{diagnosis.name}}
+                </div>
+              </a>
+            </li>
+          </ul>
+        </div>
+        <div class="styledSelect">
+          <select class="styledSelect__select" [(ngModel)]="newPatientDetails.chronic" name="newDiagnosisSelect">
+            <option [ngValue]="false">Not Chronic</option>
+            <option [ngValue]="true">Chronic</option>
+          </select>
+        </div>
+        <div class="flex">
+          <button class="button button--icon button--icon--small" type="button" (click)="unselectDiagnosis()" title="Undo">
+            <i class="ss-undo"></i>
+          </button>
+          <button class="button button--icon button--icon--small"
+                  type="button"
+                  (click)="addDiagnoses()"
+                  title="Add"
+                  [disabled]="!newPatientDetails.diagnosis || newPatientDetails.chronic == null">
+            <i class="ss-plus"></i>
+          </button>
+        </div>
+      </form>
+
+      <div class="divider"></div>
+    </div> <!-- section for diagnosis -->
+
+    <div class="billing-practioner">
+      <label>Billing Practitioner<span class="required">*</span></label>
+      <div class="drop">
+        <input type="text"
+               class="input input--search fullWidth marBottom32"
+               [placeholder]="(patientCreationService.employeesLoaded ? 'Search Providers' : 'Loading...')"
+               (click)="$event.target.select()"
+               [(ngModel)]="typeahead.billingPractioner"
+               (keyup)="searchEmployeeCollection(false)"
+               [disabled]="!patientCreationService.billingPractitioners" />
+        <ul class="drop__dropdown fullWidth" [ngClass]="{ 'isOpen' : typeahead.billingPractioner.length >= 3 && !newPatientDetails.billingPractioner }">
+          <li class="drop__option" *ngFor="let employee of filters.billingPractioner.array">
+            <a class="drop__link" (click)="setEmployee('billingPractioner', employee)">
+              <div class="picName">
+                <img class="picName__img" [src]="employee?.user?.image_url || '../../../assets/img/profile.svg'" />{{employee?.user?.first_name}} {{employee?.user?.last_name}}, {{employee?.title?.abbreviation}}
+              </div>
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <label>Care Plan Role</label>
+      <div class="drop">
+        <div class="drop__input" (click)="carePlanRoles.open = !carePlanRoles.open">
+          <div class="overflow-ellipsis" [title]="carePlanRoles.display">{{carePlanRoles.display}}</div>
+        </div>
+        <app-popover [visible]="carePlanRoles.open" (visibleChange)="carePlanRoles.open = $event">
+          <ul class="drop__dropdown" [ngClass]="{ 'isOpen' : carePlanRoles.open }">
+            <li class="drop__buttons">
+              <button class="button button--iconText" (click)="toggleAllCarePlanRoles(true)">
+                <i class="ss-check ss-standard"></i> Check All
+              </button>
+              <button class="button button--iconText" (click)="toggleAllCarePlanRoles(false)">
+                <i class="ss-ban"></i> Uncheck All
+              </button>
+            </li>
+            <ng-container *ngFor="let roleId of carePlanRoles.roleIds">
+              <li class="drop__option">
+                <label class="drop__checkbox styledInput">
+                  <input type="checkbox" class="styledInput__input" [(ngModel)]="carePlanRoles.selectedIds[roleId]" (ngModelChange)="carePlanRolesChanged($event, roleId)" />
+                  <span class="styledInput__box"></span>
+                  {{carePlanRoles.roles[roleId].name}}
+                </label>
+              </li>
+            </ng-container>
+          </ul>
+        </app-popover>
+      </div>
+
+      <div class="divider"></div>
+    </div>
+  </ng-container>
+
+  <div class="modal__buttons">
+    <button (click)="move('Back')" class="button button--2nd" title="Edit Patient Details">Back</button>
+    <button (click)="move('Cancel')" class="button button--2nd" title="Discard and close">Cancel</button>
+    <button (click)="move('Later')" class="button button--2nd" title="Save potential patient and close">Later</button>
+    <button (click)="move('Next')" class="button" title="Proceed with enrollment" [disabled]="!isValidPotentialPatient">Next</button>
+  </div>
+</div>

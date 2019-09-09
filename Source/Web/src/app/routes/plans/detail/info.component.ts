@@ -1,24 +1,17 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import {
-  sum as _sum,
-  sumBy as _sumBy,
-  map as _map,
-} from 'lodash';
+import { sum as _sum, sumBy as _sumBy, map as _map } from 'lodash';
 import * as moment from 'moment';
-import { ModalService, ConfirmModalComponent } from '../../../modules/modals';
+
 import { AddPlanComponent } from '../modals/add-plan/add-plan.component';
-import {
-  AddPatientToPlanComponent,
-  PlanDurationComponent
-} from '../../../components';
+import { AuthService, NavbarService, StoreService, UtilsService } from '../../../services';
 import { DeletePlanComponent } from '../modals/delete-plan/delete-plan.component';
-import {
-  AuthService,
-  NavbarService,
-  StoreService,
-  UtilsService,
-} from '../../../services';
+import { ModalService } from '../../../modules/modals';
+import { PatientCreationModalService } from '../../../services/patient-creation-modal.service';
+import { PlanDurationComponent } from '../../../components';
+
+import { IAddPatientToPlanComponentData } from '../../../models/iadd-patient-to-plan-component-data';
+import { IFacility } from '../../../models/facility';
 
 @Component({
   selector: 'app-plan-info',
@@ -43,14 +36,17 @@ export class PlanInfoComponent implements OnDestroy, OnInit {
   private facilitiesSub = null;
 
   constructor(
+    private auth: AuthService,
+    private modals: ModalService,
+    private nav: NavbarService,
     private route: ActivatedRoute,
     private router: Router,
-    private modals: ModalService,
-    private auth: AuthService,
-    private nav: NavbarService,
     private store: StoreService,
+    public patientCreationModalService: PatientCreationModalService,
     public utils: UtilsService,
-  ) { }
+  ) {
+    // Nothing here
+  }
 
   public ngOnInit() {
     this.routeSub = this.route.params.subscribe((params) => {
@@ -158,18 +154,14 @@ export class PlanInfoComponent implements OnDestroy, OnInit {
     }).subscribe(() => {});
   }
 
-  public addPatientToPlan(plan) {
-    this.modals.open(AddPatientToPlanComponent, {
-      closeDisabled: true,
-      data: {
+  public addPatientToPlan(facility: IFacility): void {
+    const data: IAddPatientToPlanComponentData = {
         action: 'add',
-        patientKnown: false,
-        patientInSystem: true,
-        planKnown: true,
-        planTemplate: this.planTemplate,
-      },
-      width: '576px',
-    }).subscribe(() => {});
+        carePlan: this.planTemplate,
+        facility: facility
+    };
+
+    this.patientCreationModalService.openEnrollment_PotentialPatientDetails(data);
   }
 
   public formatTime(minutes) {

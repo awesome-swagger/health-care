@@ -54,7 +54,7 @@
       </button>
     </div>
   </div> <!--/.flex (for title and tooltip)-->
-  <div class="info info--horiz">
+  <div class="info info--horiz status-bar-results">
     <div class="info__cell">
       <label>Active Patients</label>
       {{activePatientsCount}}
@@ -73,24 +73,24 @@
 
     <div class="info__cell">
       <label>Avg Engagement</label>
-      <div class="pill" [ngClass]="utils.percentPillClass(average?.average_engagement)">
+      <div class="pill" [ngClass]="utilsService.percentPillClass(average?.average_engagement)">
         {{average?.average_engagement || '0'}}%
       </div>
     </div>
     <div class="info__cell">
       <label>Avg Outcome</label>
-      <div class="pill" [ngClass]="utils.percentPillClass(average?.average_outcome)">
+      <div class="pill" [ngClass]="utilsService.percentPillClass(average?.average_outcome)">
         {{average?.average_outcome || '0'}}%
       </div>
     </div>
     <div class="info__cell">
       <label>Avg Risk Level</label>
-      <div class="pill" [ngClass]="utils.percentPillClass(averageaverage?.risk_level)">
-        {{utils.getRiskLevelText(average?.risk_level)}} {{average?.risk_level}}%
+      <div class="pill" [ngClass]="utilsService.percentPillClass(averageaverage?.risk_level)">
+        {{utilsService.getRiskLevelText(average?.risk_level)}} {{average?.risk_level}}%
       </div>
     </div>
   </div> <!--/.info-->
-  <div class="flex marBottom48">
+  <div class="flex marBottom48 service-area-and-care-plan">
     <div class="marRight32">
       <label>Service Area</label>
       <div class="drop">
@@ -164,8 +164,8 @@
           <div class="pill marRight32" [ngClass]="avgFacilityTimeColor(facility)">
             Time {{formatTime(facilityTimeCount(facility))}}
           </div>
-          <div class="pill" [ngClass]="utils.percentPillClass(facility.avgRiskLevel)">
-            {{utils.getRiskLevelText(avgFacilityRiskLevel(facility))}} {{avgFacilityRiskLevel(facility)}}%
+          <div class="pill" [ngClass]="utilsService.percentPillClass(facility.avgRiskLevel)">
+            {{utilsService.getRiskLevelText(avgFacilityRiskLevel(facility))}} {{avgFacilityRiskLevel(facility)}}%
           </div>
           <div class="accordion__arrow">
             <i class="ss-standard ss-navigateright"></i>
@@ -264,18 +264,18 @@
                       </div>
                     </td>
                     <td>
-                      <div class="pill" [ngClass]="utils.percentPillClass(plan.average_engagement)">
+                      <div class="pill" [ngClass]="utilsService.percentPillClass(plan.average_engagement)">
                         {{plan.average_engagement}}%
                       </div>
                     </td>
                     <td>
-                      <div class="pill" [ngClass]="utils.percentPillClass(plan.average_outcome)">
+                      <div class="pill" [ngClass]="utilsService.percentPillClass(plan.average_outcome)">
                         {{plan.average_outcome}}%
                       </div>
                     </td>
                     <td>
-                      <div class="pill" [ngClass]="utils.percentPillClass(plan.risk_level)">
-                        {{utils.getRiskLevelText(plan.risk_level)}} {{plan.risk_level}}%
+                      <div class="pill" [ngClass]="utilsService.percentPillClass(plan.risk_level)">
+                        {{utilsService.getRiskLevelText(plan.risk_level)}} {{plan.risk_level}}%
                       </div>
                     </td>
                     <td class="noPad">
@@ -290,7 +290,7 @@
           </div> <!--/.tableWrap-->
         </div> <!--/.accordion__contents-->
         <div class="paginationWrap" *ngIf="true">
-          <button class="button button--iconText" (click)="addPatientToPlan()">
+          <button class="button button--iconText" (click)="addPatientToPlan(facility)">
             <i class="ss-plus"></i> Add Patient
           </button>
           <div class="pagination">

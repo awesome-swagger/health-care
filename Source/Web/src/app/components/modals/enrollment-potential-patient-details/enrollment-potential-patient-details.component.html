@@ -1,0 +1,199 @@
+<div class="potential-patient-details-component">
+  <div class="add-patient-inital-form">
+    <div class="add-patient-header">
+      <h1 class="modal__title">
+        <span *ngIf="data.action === 'add'">Add a Patient to a Plan</span>
+        <span *ngIf="data.action === 'edit'">Edit Patient Details</span>
+      </h1>
+      <div class="divider"></div>
+    </div>
+
+    <div class="add-patient-service-area-and-care-plan">
+      <div class="flex justifySpaceBetween service-area-care-plan">
+        <div class="modal__inputWrap fullWidth marRight16">
+          <label>Service Area<span class="required">*</span></label>
+          <div class="styledSelect">
+            <select class="styledSelect__select"
+                    [ngClass]="{'disabled': data.carePlan}"
+                    [compareWith]="compareFn"
+                    [disabled]="data.carePlan"
+                    [(ngModel)]="newPatientDetails.serviceArea"
+                    (ngModelChange)="updateFilteredCarePlan(true)">
+              <option *ngFor="let serviceArea of serviceAreas" [ngValue]="serviceArea">{{serviceArea.name}}</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal__inputWrap fullWidth">
+          <label>Care Plan<span class="required">*</span></label>
+          <div class="styledSelect" [ngClass]="{'disabled': data.carePlan || !newPatientDetails.serviceArea}">
+            <select class="styledSelect__select"
+                    [compareWith]="compareFn"
+                    [disabled]="!newPatientDetails.serviceArea || data.carePlan"
+                    [(ngModel)]="newPatientDetails.carePlan"
+                    (ngModelChange)="verifyPatientPlanEnrollment()">
+              <option *ngFor="let plan of filteredCarePlans" [ngValue]="plan">{{plan.name}}</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="divider"></div>
+    </div>
+
+    <div *ngIf="alreadyEnrolled">
+      <p class="typeahead-patient-warning">
+        <i class="iconText__icon ss-alert"></i>
+        {{newPatientDetails.firstName}} {{newPatientDetails.lastName}} is already enrolled in the {{newPatientDetails.carePlan?.name}} care plan.
+      </p>
+      <div class="divider"></div>
+    </div>
+
+    <div class="add-patient-search-patient-typeahead" *ngIf="data.action==='add' && !data.patient">
+      <div class="drop marBottom32 flex justifySpaceBetween typeahead-patient-selector">
+        <input type="text"
+               class="input fullWidth modal__inputWrap"
+               [ngClass]="{'input--search': !newPatientDetails.patient.patient }"
+               [placeholder]="(patients && potentialPatients ? 'Search Patients' : 'Loading...')"
+               [value]="newPatientDetails.name"
+               [disabled]="newPatientDetails.patient.patient || !newPatientDetails.carePlan"
+               [(ngModel)]="typeahead.patient"
+               (keyup)="searchPatients($event)" />
+        <button class="button button--icon searchClear"
+                (click)="unselectPatient()"
+                *ngIf="newPatientDetails.patient.patient && !data.disableRemovePatient">
+          <i class="ss-delete"></i>
+        </button>
+        <ul class="drop__dropdown fullWidth isOpen" *ngIf="!newPatientDetails.patient.patient">
+          <li class="drop__option" *ngFor="let patient of filters.patients.array" (click)="setPatient(patient)">
+            <a class="drop__link">
+              <div class="picName">
+                <img class="picName__img" [src]="patient?.image || '../../../assets/img/profile.svg'" />{{patient?.name}}
+              </div>
+            </a>
+          </li>
+        </ul>
+      </div>
+      <p class="typeahead-patient-notice" *ngIf="data.action === 'add'">
+        If the patient is already in CareAdopt, use the look up to find the patient.<br />
+        If the patient is new, fill out all the fields below.
+      </p>
+      <div class="divider"></div>
+    </div>
+
+    <div class="add-patient-patient-details">
+      <div class="flex justifySpaceBetween patient-name-fields">
+        <div class="modal__inputWrap marRight16">
+          <label>First Name<span class="required">*</span></label>
+          <input class="input fullWidth"
+                 [(ngModel)]="newPatientDetails.firstName"
+                 [disabled]="newPatientDetails.patient.patient || !newPatientDetails.carePlan" />
+        </div>
+        <div class="modal__inputWrap">
+          <label>Last Name<span class="required">*</span></label>
+          <input class="input fullWidth"
+                 [(ngModel)]="newPatientDetails.lastName"
+                 [disabled]="newPatientDetails.patient.patient || !newPatientDetails.carePlan" />
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="flex justifySpaceBetween patient-contact-fields">
+        <div class="modal__inputWrap marRight16 fullWidth">
+          <label>Mobile Phone<span class="required">*</span></label>
+          <input class="input fullWidth"
+                 [(ngModel)]="newPatientDetails.phoneNumber"
+                 [disabled]="!newPatientDetails.carePlan || alreadyEnrolled" />
+        </div>
+        <div class="modal__inputWrap fullWidth">
+          <label>Email<span class="required">*</span></label>
+          <input class="input fullWidth"
+                 [(ngModel)]="newPatientDetails.email"
+                 [disabled]="!newPatientDetails.carePlan || alreadyEnrolled" />
+        </div>
+      </div>
+      <div class="divider"></div>
+    </div>
+
+    <div class="add-patient-facility-and-source">
+      <div class="flex justifySpaceBetween">
+        <div class="modal__inputWrap fullWidth marRight16">
+          <label>Facility<span class="required">*</span></label>
+          <div class="styledSelect">
+            <select class="styledSelect__select"
+                    [ngClass]="{'disabled': !newPatientDetails.carePlan || alreadyEnrolled || data.facility}"
+                    [(ngModel)]="newPatientDetails.facility"
+                    [compareWith]="compareFn"
+                    [disabled]="!newPatientDetails.carePlan || alreadyEnrolled || data.facility"
+                    (ngModelChange)="loadPatientFacilityDiagnoses()">
+              <option *ngFor="let facility of filteredFacilities" [ngValue]="facility">{{facility.name}}</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal__inputWrap fullWidth">
+          <label>Source<span class="required">*</span></label>
+          <div class="styledSelect">
+            <select class="styledSelect__select"
+                    [(ngModel)]="newPatientDetails.source"
+                    [disabled]="!newPatientDetails.carePlan || alreadyEnrolled">
+              <option></option>
+              <option value="Analytics">Analytics</option>
+              <option value="MD Referral">MD Referral</option>
+              <option value="Office Staff">Office Staff</option>
+              <option value="Care Manager">Care Manager</option>
+              <option value="Discharge Planner">Discharge Planner</option>
+              <option value="Enrollment Coordinator">Enrollment Coordinator</option>
+              <option value="Patient Request">Patient Request</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="divider"></div>
+    </div>
+  </div>
+
+  <div class="add-patient-enroll-patient-and-care-manager">
+    <label class="styledInput" [ngClass]="{'disabled': !isValidPotentialPatientForm}">
+      <input type="checkbox"
+             class="styledInput__input"
+             [(ngModel)]="newPatientDetails.checked.enroll"
+             [disabled]="!isValidPotentialPatientForm || alreadyEnrolled" />
+      <span class="styledInput__box"></span>
+      Enroll Patient
+    </label>
+    <p>
+      By default the patient will be added to the Potential Patients unless you select the checkbox Enroll Patient.
+    </p>
+    <div *ngIf="newPatientDetails.checked.enroll">
+      <label>Care Manager<span class="required">*</span></label>
+      <div class="drop">
+        <input type="text"
+               class="input input--search fullWidth marBottom32"
+               [placeholder]="(patientCreationService.employeesLoaded ? 'Search Care Managers' : 'Loading...')"
+               [(ngModel)]="typeahead.careManager"
+               (keyup)="searchCareManagers()"
+               [disabled]="alreadyEnrolled || !patientCreationService.careManagers" />
+        <ul class="drop__dropdown fullWidth" [ngClass]="{ 'isOpen' : typeahead.careManager.length >= 3 && !newPatientDetails.careManager }">
+          <li class="drop__option" *ngFor="let manager of filters.careManager.array">
+            <a class="drop__link" (click)="setCareManager(manager)">
+              <div class="picName">
+                <img class="picName__img" [src]="manager?.user?.image_url || '../../../assets/img/profile.svg'" />{{manager?.user?.first_name}} {{manager?.user?.last_name}}, {{manager?.title?.abbreviation}}
+              </div>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div class="divider"></div>
+  </div>
+
+  <div class="modal__buttons">
+    <button class="button button--2nd" (click)="cancel()" title="Discard and close">
+      Cancel
+    </button>
+    <button class="button"
+            (click)="save()"
+            [title]="newPatientDetails.checked.enroll ? 'Proceed with enrollment' : 'Save to Potential Patients'"
+            [disabled]="!isValidPotentialPatientForm">
+      {{newPatientDetails.checked.enroll ? 'Enroll': 'Save'}}
+    </button>
+  </div>
+</div>

@@ -13,7 +13,10 @@ import {
   sum as _sum
 } from 'lodash';
 import * as moment from 'moment';
-import { AddPatientToPlanComponent } from '../modals/add-patient-to-plan/add-patient-to-plan.component';
+import { PatientCreationModalService } from '../../services/patient-creation-modal.service';
+import { INotification } from '../../models/inotification';
+import { IPatientsOverview } from '../../models/ipatient-overview';
+import { ITaskData } from '../../models/itask-data';
 
 @Component({
   selector: 'app-nav',
@@ -63,6 +66,7 @@ export class NavComponent implements OnDestroy, OnInit {
     public nav: NavbarService,
     private store: StoreService,
     private modals: ModalService,
+    private patientCreationModalService: PatientCreationModalService
   ) {
     // Nothing yet
   }
@@ -78,24 +82,6 @@ export class NavComponent implements OnDestroy, OnInit {
         this.getTasks(this.employee.user.id).then((tasks: any) => {
           this.tasks = tasks;
           this.tasksData = tasks;
-          // TODO: Determine if the user has the profile image
-          //this.tasksData = {
-          //  checkIns: [
-          //    { patient: 'Bob Loblaw', time: '9:00 am' },
-          //    { patient: 'Krusty the Clown', time: '10:00 am' },
-          //    { patient: 'Montgomery Burns', time: '11:00 am' },
-          //    { patient: 'Waylan Smithers', time: '12:00 pm' },
-          //    { patient: 'Homer Simpson', time: '1:00 pm' },
-          //  ],
-          //  length: 10,
-          //  tasks: [
-          //    { patient: 'Dr. Nick Riviera', tasks: 3 },
-          //    { patient: 'Dr. Julius M. Hibbert', tasks: 3 },
-          //    { patient: 'Dr. Gregory House', tasks: 3 },
-          //    { patient: 'Doogie Howser, MD.', tasks: 3 },
-          //    { patient: 'Dr. Heathcliff Huxtable', tasks: 3 },
-          //  ]
-          //};
         });
       },
       () => { },
@@ -116,13 +102,6 @@ export class NavComponent implements OnDestroy, OnInit {
             (res: Array<{ id: string, name: string }>) => {
               this.organizations = res;
               this.selectableOrganizations = this.organizations.filter((obj) => obj.id !== this.organization.id);
-              //this.selectableOrganizations = [
-              //  { id: '1', name: 'Organization 1' },
-              //  { id: '2', name: 'Organization 2' },
-              //  { id: '3', name: 'Organization 3' },
-              //  { id: '4', name: 'Organization 4' },
-              //  { id: '5', name: 'Organization 5' },
-              //];
             },
             () => { },
             () => { },
@@ -157,24 +136,6 @@ export class NavComponent implements OnDestroy, OnInit {
 
     this.getNotifications().then((notifications: { results: Array<INotification> }) => {
       this.notifications = notifications.results || [];
-      // TODO: Determine if patient has profile image
-      //this.notifications = [
-      //  { category: 'unread_message',  created: '7/19/2019', message: 'Message 1', patient: { first_name: 'Bob',        last_name: 'Loblaw'    } },
-      //  { category: 'unread_message',  created: '7/20/2019', message: 'Message 2', patient: { first_name: 'Krusty',     last_name: 'the Clown' } },
-      //  { category: 'unread_message',  created: '7/21/2019', message: 'Message 3', patient: { first_name: 'Montgomery', last_name: 'Burns'     } },
-      //  { category: 'unread_message',  created: '7/22/2019', message: 'Message 4', patient: { first_name: 'Waylan',     last_name: 'Smithers'  } },
-      //  { category: 'unread_message',  created: '7/23/2019', message: 'Message 5', patient: { first_name: 'Homer',      last_name: 'Simpson'   } },
-      //  { category: 'flagged_patient', created: '7/19/2019', message: 'Message 1', patient: { first_name: 'Bob',        last_name: 'Loblaw'    } },
-      //  { category: 'flagged_patient', created: '7/20/2019', message: 'Message 2', patient: { first_name: 'Krusty',     last_name: 'the Clown' } },
-      //  { category: 'flagged_patient', created: '7/21/2019', message: 'Message 3', patient: { first_name: 'Montgomery', last_name: 'Burns'     } },
-      //  { category: 'flagged_patient', created: '7/22/2019', message: 'Message 4', patient: { first_name: 'Waylan',     last_name: 'Smithers'  } },
-      //  { category: 'flagged_patient', created: '7/23/2019', message: 'Message 5', patient: { first_name: 'Homer',      last_name: 'Simpson'   } },
-      //  { category: 'assignment',      created: '7/19/2019', message: 'Message 1', patient: { first_name: 'Bob',        last_name: 'Loblaw'    } },
-      //  { category: 'assignment',      created: '7/20/2019', message: 'Message 2', patient: { first_name: 'Krusty',     last_name: 'the Clown' } },
-      //  { category: 'assignment',      created: '7/21/2019', message: 'Message 3', patient: { first_name: 'Montgomery', last_name: 'Burns'     } },
-      //  { category: 'assignment',      created: '7/22/2019', message: 'Message 4', patient: { first_name: 'Waylan',     last_name: 'Smithers'  } },
-      //  { category: 'assignment',      created: '7/23/2019', message: 'Message 5', patient: { first_name: 'Homer',      last_name: 'Simpson'   } },
-      //];
     });
 
     document.addEventListener('refreshPatientOverview', e => {
@@ -349,37 +310,6 @@ export class NavComponent implements OnDestroy, OnInit {
   }
 
   public openEnrollPatient() {
-    this.modals.open(AddPatientToPlanComponent, {
-      data: {
-        action: 'add',
-        patientKnown: false,
-        patientInSystem: false,
-        planKnown: false,
-      },
-      width: '576px',
-    }).subscribe()
-  }
-}
-
-interface ITaskData {
-  checkIns: Array<{ patient: string, time: string }>,
-  length: number,
-  tasks: Array<{ patient: string, tasks: number }>
-}
-
-interface IPatientsOverview {
-  active?: number,
-  inactive?: number,
-  invited?: number,
-  potential?: number
-}
-
-interface INotification {
-  category?: 'unread_message' | 'flagged_patient' | 'assignment',
-  created?: moment.MomentInput,
-  message?: string,
-  patient?: {
-    first_name?: string,
-    last_name?: string
+    this.patientCreationModalService.openEnrollment_PotentialPatientDetails({ action: 'add' });
   }
 }

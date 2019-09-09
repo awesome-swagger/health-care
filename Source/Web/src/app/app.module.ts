@@ -37,10 +37,7 @@ import {
   CreateAssessmentComponent,
   AddStreamComponent,
   CreateStreamComponent,
-  AddPatientToPlanComponent,
   EnrollmentRequiredComponent,
-  EnrollmentComponent,
-  PatientEnrolledComponent,
   AddCTMemberComponent,
   PlanExpiredComponent,
   PlanLimitReachedComponent,
@@ -133,6 +130,13 @@ import { ActivePatientsGraphComponent } from './components/graphs/active-patient
 import { PatientsEnrolledGraphComponent } from './components/graphs/patients-enrolled-graph/patients-enrolled-graph.component';
 import { AddConversationComponent } from './routes/patient/messaging/add-conversation/add-conversation.component';
 import { AddUserToFacilityComponent } from './routes/users/detail/modals/add-user-to-facility/add-user-to-facility.component';
+import { PatientCreationService } from './services/patient-creation.service';
+import { PatientCreationModalService } from './services/patient-creation-modal.service';
+import { EnrollmentPotentialPatientDetailsComponent } from './components/modals/enrollment-potential-patient-details/enrollment-potential-patient-details.component';
+import { EnrollmentDetailsComponent } from './components/modals/enrollment-details/enrollment-details.component';
+import { EnrollmentPatientEnrolledComponent } from './components/modals/enrollment-patient-enrolled/enrollment-patient-enrolled.component';
+import { EnrollmentPotentialPatientAddedComponent } from './components/modals/enrollment-potential-patient-added/enrollment-potential-patient-added.component';
+import { EnrollmentConsentComponent } from './components/modals/enrollment-consent/enrollment-consent.component';
 
 @NgModule({
   imports: [
@@ -201,10 +205,6 @@ import { AddUserToFacilityComponent } from './routes/users/detail/modals/add-use
     AddStreamComponent,
     CreateStreamComponent,
     ReminderEmailComponent,
-    AddPatientToPlanComponent,
-    EnrollmentRequiredComponent,
-    EnrollmentComponent,
-    PatientEnrolledComponent,
     FinancialDetailsComponent,
     ProblemAreasComponent,
     DiagnosisComponent,
@@ -241,6 +241,13 @@ import { AddUserToFacilityComponent } from './routes/users/detail/modals/add-use
     PatientsEnrolledGraphComponent,
     AddConversationComponent,
     AddUserToFacilityComponent,
+
+    EnrollmentPotentialPatientDetailsComponent,
+    EnrollmentPotentialPatientAddedComponent,
+    EnrollmentDetailsComponent,
+    EnrollmentRequiredComponent,
+    EnrollmentConsentComponent,
+    EnrollmentPatientEnrolledComponent,
   ],
   providers: [
     {provide: APP_BASE_HREF, useValue: '/'},
@@ -257,6 +264,8 @@ import { AddUserToFacilityComponent } from './routes/users/detail/modals/add-use
     SessionStorageService,
     TimeTrackerService,
     ValidationService,
+    PatientCreationService,
+    PatientCreationModalService,
   ],
   bootstrap: [AppComponent],
   entryComponents: [
@@ -279,10 +288,6 @@ import { AddUserToFacilityComponent } from './routes/users/detail/modals/add-use
     AddStreamComponent,
     CreateStreamComponent,
     ReminderEmailComponent,
-    AddPatientToPlanComponent,
-    EnrollmentRequiredComponent,
-    EnrollmentComponent,
-    PatientEnrolledComponent,
     FinancialDetailsComponent,
     ProblemAreasComponent,
     DiagnosisComponent,
@@ -312,6 +317,13 @@ import { AddUserToFacilityComponent } from './routes/users/detail/modals/add-use
     EditCcmComponent,
     AddConversationComponent,
     AddUserToFacilityComponent,
+
+    EnrollmentPotentialPatientDetailsComponent,
+    EnrollmentPotentialPatientAddedComponent,
+    EnrollmentDetailsComponent,
+    EnrollmentRequiredComponent,
+    EnrollmentConsentComponent,
+    EnrollmentPatientEnrolledComponent,
   ],
 })
 export class AppModule { }

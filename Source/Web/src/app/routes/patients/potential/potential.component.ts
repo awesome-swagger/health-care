@@ -1,16 +1,16 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import * as moment from 'moment';
-import { ModalService, ConfirmModalComponent } from '../../../modules/modals';
-import { AddPatientToPlanComponent, EnrollmentComponent } from '../../../components/';
+import { compact as _compact, find as _find, flattenDeep as _flattenDeep, map as _map, uniq as _uniq, uniqBy as _uniqBy } from 'lodash';
+
 import { AuthService, StoreService } from '../../../services';
-import {
-  uniq as _uniq,
-  map as _map,
-  find as _find,
-  flattenDeep as _flattenDeep,
-  compact as _compact,
-  uniqBy as _uniqBy
-} from 'lodash';
+import { ConfirmModalComponent, ModalService } from '../../../modules/modals';
+import { PatientCreationModalService } from '../../../services/patient-creation-modal.service';
+import { Utils } from '../../../utils';
+
+import { IAddPatientToPlanComponentData } from '../../../models/iadd-patient-to-plan-component-data';
+import { IFacility } from '../../../models/facility';
+import { IPatientEnrollmentResponse } from '../../../models/ipatient-enrollment-modal-response';
+import { IPotentialPatient } from '../../../models/potential-patient';
 
 @Component({
   selector: 'app-potential',
@@ -18,7 +18,7 @@ import {
   styleUrls: ['./potential.component.scss'],
 })
 export class PotentialPatientsComponent implements OnDestroy, OnInit {
-  public facilities = [];
+  public facilities: Array<{ id: string, potentialPatients: Array<IPotentialPatient> }> = [];
   public potentialPatients = [];
   public activeCarePlans = {};
   public users = null;
@@ -40,12 +40,13 @@ export class PotentialPatientsComponent implements OnDestroy, OnInit {
   public multi2Open;
   public multi3Open;
   public multi4Open;
-  private orgSub = null;
   private facilitiesSub = null;
+  private orgSub;
 
   constructor(
-    private modals: ModalService,
     private auth: AuthService,
+    private modals: ModalService,
+    private patientCreationModalService: PatientCreationModalService,
     private store: StoreService,
   ) {
     // Nothing yet
@@ -132,70 +133,119 @@ export class PotentialPatientsComponent implements OnDestroy, OnInit {
 
   public ngOnDestroy() {
     this.facilitiesSub.unsubscribe();
+    this.orgSub.unsubscribe();
   }
 
-  public addPatientToPlan(facility = null) {
-    const modalData = {
-      data: {
-        action: 'add',
-        patientKnown: false,
-        patientInSystem: false,
-        planKnown: false,
-        facility: facility,
-      },
-      width: '576px',
+  public addPatientToPlan(facility: IFacility = null): void {
+    const data: IAddPatientToPlanComponentData = {
+      action: 'add',
+      facility: facility,
     };
 
-    this.modals.open(AddPatientToPlanComponent, modalData).subscribe((data) => {
-      if (!data) {
-        return;
-      }
+    this.patientCreationModalService
+      .openEnrollment_PotentialPatientDetails(data)
+      .then((response: IPatientEnrollmentResponse) => {
+        console.log('TODO: FIX THIS - adding potential patient', response);
 
-      document.dispatchEvent(new Event('refreshPatientOverview'));
-      this.potentialPatients.push(data);
-      const facility = _find(this.facilities, f => f.id === data.facility[0]);
-      if (facility.potentialPatients) {
-        facility.potentialPatients.push(data);
-      } else {
-        facility.potentialPatients = [data];
-      }
-    });
+        //if (!Utils.isNullOrUndefined(response.potentialPatient)) {
+        //  // User canceled action or completed enrollment - Do nothing at this time
+        //  return;
+        //}
+
+        //const patient = response.potentialPatient;
+        //document.dispatchEvent(new Event('refreshPatientOverview'));
+        //let existingPatient = this.potentialPatients.find(p => p.id === patient.id);
+        //if (!Utils.isNullOrUndefined(existingPatient)) {
+        //  existingPatient = Object.assign(existingPatient, patient);
+        //  return;
+        //}
+
+        //this.potentialPatients.push(patient);
+        //const pageFacility = this.facilities.find(f => f.id === patient.facility[0]);
+        //if (!Utils.isNullOrEmptyCollection(pageFacility.potentialPatients)) {
+        //  pageFacility.potentialPatients.push(patient);
+        //} else {
+        //  pageFacility.potentialPatients = [patient];
+        //}
+      });
   }
 
-  public enrollPotentialPatient(potentialPatient) {
-    const modalData = {
-      width: '608px',
-      data: { patient: potentialPatient }
-    };
+  public enrollPotentialPatient(potentialPatient: IPotentialPatient) {
 
-    this.modals.open(EnrollmentComponent, modalData).subscribe((res) => {
-      if (!res) {
-        return;
-      }
+    this.patientCreationModalService
+      .openEnrollment_EnrollmentDetails({ potentialPatient })
+      .then((response: IPatientEnrollmentResponse) => {
+        console.log('TODO: FIX THIS - enrolling potential patient', response);
 
-      const facility = this.facilities.find(f => f.id === res.facility);
-      facility.potentialPatients = facility.potentialPatients.filter(p => p.id !== res.patient);
-    });
+        //if (Utils.isNullOrUndefined(response)) {
+        //  return;
+        //}
+
+        //// TODO: determine the correct return type and go from there
+        //// TODO: This should really just be an INewPatientDetails with a new property for potentialPatientId - When enrollment was successful
+        //// Update the existing potential patient
+        //if (response.hasOwnProperty('care_plan')) {
+        //  const potentialPatient = response as IPotentialPatient;
+        //  const facility = this.facilities.find(f => f.id === potentialPatient.facility[0]);
+        //  const mergablePatient = facility.potentialPatients.filter(p => p.id === potentialPatient.id)[0];
+        //  Object.assign(mergablePatient, potentialPatient);
+        //  return;
+        //}
+
+        //// Enrollment has been completed
+        //if (response.hasOwnProperty('user')) {
+        //  const patient = response as IPatient;
+        //  const facility = this.facilities.find(f => f.id === (patient.facility || {}).id)[0];
+        //  if (Utils.isNullOrUndefined(facility)) {
+        //    return;
+        //  }
+
+        //  //facility.potentialPatients = facility.potentialPatients.filter(p => p.id !== res.patient);
+        //  return;
+        //}
+
+        //if (response.hasOwnProperty('checked')) {
+        //  const newPatientDetails = response as INewPatientDetails;
+        //  return;
+        //}
+
+
+        ////const facility = this.facilities.find(f => f.id === res.facility);
+        ////facility.potentialPatients = facility.potentialPatients.filter(p => p.id !== res.patient);
+      });
   }
 
-  public editPotentialPatient(potentialPatient) {
-    const modalData = {
-      data: {
-        action: 'edit',
-        planKnown: potentialPatient.care_plan ? true : false,
-        potentialPatient,
-      },
-      width: '576px',
+  public editPotentialPatient(potentialPatient: IPotentialPatient): void {
+    const data: IAddPatientToPlanComponentData = {
+      action: 'edit',
+      potentialPatient: potentialPatient
     };
 
-    this.modals.open(AddPatientToPlanComponent, modalData).subscribe((res) => {
-      if (!res) {
-        return;
-      }
+    this.patientCreationModalService
+      .openEnrollment_PotentialPatientDetails(data)
+      .then((response: IPatientEnrollmentResponse) => {
+        console.log('TODO: FIX THIS - edit potential patient', response);
 
-      let patient = this.potentialPatients.find(p => p.id === res.id);
-      patient = Object.assign(patient, res);
-    });
+        //// Response has no potential or new patient then user canceled the action.
+        //if (Utils.isNullOrUndefined(response) || (Utils.isNullOrUndefined(response.potentialPatient) && Utils.isNullOrUndefined(response.patient))) {
+        //  return;
+        //}
+
+        //const existingPatient = this.potentialPatients.find(p => p.id === response.potentialPatientId);
+        //// Response has potential patient then find and update the patient details, otherwise add the patient to the facility
+        //if (!Utils.isNullOrUndefined(response.potentialPatient)) {
+        //  Object.assign(existingPatient, response.potentialPatient);
+        //  return;
+        //}
+
+
+        //// Response has patient then enrollment was completed and therefore remove the potential patient
+        //if (!Utils.isNullOrUndefined(response.patient)) {
+        //  debugger;
+
+
+        //}
+      });
   }
 
   public removePotentialPatient(potentialPatient) {

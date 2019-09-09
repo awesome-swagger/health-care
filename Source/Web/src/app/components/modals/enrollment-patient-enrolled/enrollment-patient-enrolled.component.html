@@ -1,0 +1,16 @@
+<div class="enrollment-patient-enrolled-component">
+  <h1 class="modal__title noMargin">Patient Added</h1>
+  <h2 class="center">{{firstName}} {{lastName}}</h2>
+  <p class="center">is now found in potential patients</p>
+  <h3 class="center marBottom32">
+    <span class="marRight8">{{facilityName}}</span>
+  </h3>
+  <h3 class="center marBottom32">
+    <span class="marRight8">{{serviceAreaName}}, {{carePlanName}}</span>
+  </h3>
+  <div class="flex justifyEnd marBottom32 modal__buttons">
+    <button class="button" (click)="close()">
+      Done
+    </button>
+  </div>
+</div>
