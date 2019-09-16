@@ -9,6 +9,7 @@ import { Utils } from '../../../utils';
 
 import { IAddPatientToPlanComponentData } from '../../../models/iadd-patient-to-plan-component-data';
 import { IFacility } from '../../../models/facility';
+import { IPatient } from '../../../models/patient';
 import { IPatientEnrollmentResponse } from '../../../models/ipatient-enrollment-modal-response';
 import { IPotentialPatient } from '../../../models/potential-patient';
 
@@ -19,7 +20,7 @@ import { IPotentialPatient } from '../../../models/potential-patient';
 })
 export class PotentialPatientsComponent implements OnDestroy, OnInit {
   public facilities: Array<{ id: string, potentialPatients: Array<IPotentialPatient> }> = [];
-  public potentialPatients = [];
+  public potentialPatients: Array<IPotentialPatient> = [];
   public activeCarePlans = {};
   public users = null;
   public activeServiceAreas = {};
@@ -144,75 +145,14 @@ export class PotentialPatientsComponent implements OnDestroy, OnInit {
 
     this.patientCreationModalService
       .openEnrollment_PotentialPatientDetails(data)
-      .then((response: IPatientEnrollmentResponse) => {
-        console.log('TODO: FIX THIS - adding potential patient', response);
-
-        //if (!Utils.isNullOrUndefined(response.potentialPatient)) {
-        //  // User canceled action or completed enrollment - Do nothing at this time
-        //  return;
-        //}
-
-        //const patient = response.potentialPatient;
-        //document.dispatchEvent(new Event('refreshPatientOverview'));
-        //let existingPatient = this.potentialPatients.find(p => p.id === patient.id);
-        //if (!Utils.isNullOrUndefined(existingPatient)) {
-        //  existingPatient = Object.assign(existingPatient, patient);
-        //  return;
-        //}
-
-        //this.potentialPatients.push(patient);
-        //const pageFacility = this.facilities.find(f => f.id === patient.facility[0]);
-        //if (!Utils.isNullOrEmptyCollection(pageFacility.potentialPatients)) {
-        //  pageFacility.potentialPatients.push(patient);
-        //} else {
-        //  pageFacility.potentialPatients = [patient];
-        //}
-      });
+      .then(response => this.completedEnrollment(response));
   }
 
   public enrollPotentialPatient(potentialPatient: IPotentialPatient) {
 
     this.patientCreationModalService
       .openEnrollment_EnrollmentDetails({ potentialPatient })
-      .then((response: IPatientEnrollmentResponse) => {
-        console.log('TODO: FIX THIS - enrolling potential patient', response);
-
-        //if (Utils.isNullOrUndefined(response)) {
-        //  return;
-        //}
-
-        //// TODO: determine the correct return type and go from there
-        //// TODO: This should really just be an INewPatientDetails with a new property for potentialPatientId - When enrollment was successful
-        //// Update the existing potential patient
-        //if (response.hasOwnProperty('care_plan')) {
-        //  const potentialPatient = response as IPotentialPatient;
-        //  const facility = this.facilities.find(f => f.id === potentialPatient.facility[0]);
-        //  const mergablePatient = facility.potentialPatients.filter(p => p.id === potentialPatient.id)[0];
-        //  Object.assign(mergablePatient, potentialPatient);
-        //  return;
-        //}
-
-        //// Enrollment has been completed
-        //if (response.hasOwnProperty('user')) {
-        //  const patient = response as IPatient;
-        //  const facility = this.facilities.find(f => f.id === (patient.facility || {}).id)[0];
-        //  if (Utils.isNullOrUndefined(facility)) {
-        //    return;
-        //  }
-
-        //  //facility.potentialPatients = facility.potentialPatients.filter(p => p.id !== res.patient);
-        //  return;
-        //}
-
-        //if (response.hasOwnProperty('checked')) {
-        //  const newPatientDetails = response as INewPatientDetails;
-        //  return;
-        //}
-
-
-        ////const facility = this.facilities.find(f => f.id === res.facility);
-        ////facility.potentialPatients = facility.potentialPatients.filter(p => p.id !== res.patient);
-      });
+      .then(response => this.completedEnrollment(response));
   }
 
   public editPotentialPatient(potentialPatient: IPotentialPatient): void {
@@ -223,29 +163,46 @@ export class PotentialPatientsComponent implements OnDestroy, OnInit {
 
     this.patientCreationModalService
       .openEnrollment_PotentialPatientDetails(data)
-      .then((response: IPatientEnrollmentResponse) => {
-        console.log('TODO: FIX THIS - edit potential patient', response);
+      .then(response => this.completedEnrollment(response));
+  }
 
-        //// Response has no potential or new patient then user canceled the action.
-        //if (Utils.isNullOrUndefined(response) || (Utils.isNullOrUndefined(response.potentialPatient) && Utils.isNullOrUndefined(response.patient))) {
-        //  return;
-        //}
+  private completedEnrollment(response: IPatientEnrollmentResponse): void {
+    if (Utils.isNullOrUndefined(response)
+      || (
+        Utils.isNullOrUndefined(response.patient))
+      && Utils.isNullOrUndefined(response.potentialPatient)
+      && Utils.isNullOrWhitespace(response.potentialPatientId)
+    ) {
+      return;
+    }
 
-        //const existingPatient = this.potentialPatients.find(p => p.id === response.potentialPatientId);
-        //// Response has potential patient then find and update the patient details, otherwise add the patient to the facility
-        //if (!Utils.isNullOrUndefined(response.potentialPatient)) {
-        //  Object.assign(existingPatient, response.potentialPatient);
-        //  return;
-        //}
+    if (!Utils.isNullOrUndefined(response.potentialPatient)) {
+      const potentialPatient = response.potentialPatient;
+      const existingPatient = this.potentialPatients.find(p => p.id === potentialPatient.id);
 
+      if (!Utils.isNullOrUndefined(existingPatient)) {
+        // Editing
+        Object.assign(existingPatient, potentialPatient);
+      } else {
+        // Adding
+        this.potentialPatients.push(potentialPatient);
+        const pageFacility = this.facilities.find(f => f.id === potentialPatient.facility[0]);
+        if (!Utils.isNullOrUndefined(pageFacility)) {
+          (pageFacility.potentialPatients = pageFacility.potentialPatients || []).push(potentialPatient);
+        }
+      }
+    } else {
+      // Enrolling
+      const patient = response.patient;
+      this.potentialPatients = this.potentialPatients.filter(x => x.id !== response.potentialPatientId);
 
-        //// Response has patient then enrollment was completed and therefore remove the potential patient
-        //if (!Utils.isNullOrUndefined(response.patient)) {
-        //  debugger;
+      const facility = this.facilities.find(f => f.id === (patient.facility || {}).id);
+      if (!Utils.isNullOrUndefined(facility)) {
+        facility.potentialPatients = (facility.potentialPatients || []).filter(p => p.id !== response.potentialPatientId);
+      }
+    }
 
-
-        //}
-      });
+    document.dispatchEvent(new Event('refreshPatientOverview'));
   }
 
   public removePotentialPatient(potentialPatient) {

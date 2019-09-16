@@ -56,7 +56,7 @@ export class EnrollmentDetailsComponent implements OnInit {
 
   public ngOnInit(): void {
     this.data = this.data || {};
-    this.newPatientDetails = this.data.newPatientDetails || { checked: { enroll: true, reimburses: false }, diagnoses: [], patient: { isPotential: true, isPreload: true } };
+    this.newPatientDetails = this.data.newPatientDetails || { carePlanRoles: {}, checked: { enroll: true, reimburses: false }, diagnoses: [], patient: { isPotential: true, isPreload: true } };
     if (!Utils.isNullOrUndefined(this.data.potentialPatient)) {
       const patient = this.data.potentialPatient;
       this.newPatientDetails.patient.patient = patient;
@@ -115,6 +115,8 @@ export class EnrollmentDetailsComponent implements OnInit {
   }
 
   public carePlanRolesChanged(selected: boolean, roleId: string): void {
+    let role = this.carePlanRoles.roles[roleId];
+    (this.newPatientDetails.carePlanRoles[roleId] = this.newPatientDetails.carePlanRoles[roleId] || { role, selected }).selected = selected;
     if (!selected) {
       delete this.carePlanRoles.selectedIds[roleId];
     }
@@ -132,11 +134,11 @@ export class EnrollmentDetailsComponent implements OnInit {
 
     const roleNames: Array<string> = [];
     for (let roleId of roleIds) {
-      if (!this.carePlanRoles.roles[roleId]) {
+      if (Utils.isNullOrUndefined(this.carePlanRoles.roles[roleId])) {
         continue;
       }
 
-      const role = this.carePlanRoles.roles[roleId];
+      role = this.carePlanRoles.roles[roleId];
       roleNames.push(role.name);
     }
 
@@ -197,11 +199,14 @@ export class EnrollmentDetailsComponent implements OnInit {
   }
 
   private loadRoles(): void {
+    this.newPatientDetails.carePlanRoles = this.newPatientDetails.carePlanRoles || {};
     Utils.convertObservableToPromise(this.store.ProviderRole.readListPaged())
       .then((roles: Array<IRole>) => {
         for (let role of roles) {
+          const selected = !Utils.isNullOrUndefined(this.newPatientDetails.carePlanRoles[role.id]) && Utils.isTrueValue(this.newPatientDetails.carePlanRoles[role.id].selected);
           this.carePlanRoles.roleIds.push(role.id);
           this.carePlanRoles.roles[role.id] = role;
+          this.newPatientDetails.carePlanRoles[role.id] = this.newPatientDetails.carePlanRoles[role.id] || { role, selected };
         }
       });
   }
@@ -263,12 +268,18 @@ export class EnrollmentDetailsComponent implements OnInit {
 
   public toggleAllCarePlanRoles(checked: boolean): void {
     if (checked) {
-      this.carePlanRoles.roleIds.forEach(roleId => this.carePlanRoles.selectedIds[roleId] = true);
       this.carePlanRoles.display = 'All';
     } else {
       this.carePlanRoles.selectedIds = {};
       this.carePlanRoles.display = 'None';
     }
+
+    this.carePlanRoles.roleIds.forEach(roleId => {
+      (this.newPatientDetails.carePlanRoles[roleId] = this.newPatientDetails.carePlanRoles[roleId] || { role: this.carePlanRoles.roles[roleId], selected: checked }).selected = checked;
+      if (checked) {
+        this.carePlanRoles.selectedIds[roleId] = checked;
+      }
+    });
 
     this.carePlanRoles.open = false;
   }

@@ -1,16 +1,22 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import * as moment from 'moment';
 import { compact as _compact, filter as _filter, find as _find, flattenDeep as _flattenDeep, map as _map, mean as _mean, sum as _sum, uniqBy as _uniqBy } from 'lodash';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute, Params } from '@angular/router';
 
+import * as models from '../../../models/add-patient-models';
 import { ModalService, ConfirmModalComponent } from '../../../modules/modals';
-import { StoreService, AuthService } from '../../../services';
-import { UtilsService } from '../../../services';
 import { PatientCreationModalService } from '../../../services/patient-creation-modal.service';
+import { StoreService, AuthService } from '../../../services';
 import { Utils } from '../../../utils';
+import { UtilsService } from '../../../services';
 
-import { IFacility } from '../../../models/facility';
 import { IAddPatientToPlanComponentData } from '../../../models/iadd-patient-to-plan-component-data';
+import { IApiResultsContainer } from '../../../models/api-results-container';
+import { IEmployee } from '../../../models/employee';
+import { IFacility } from '../../../models/facility';
+import { IOrganization } from '../../../models/organization';
+import { IPatientEnrollmentResponse } from '../../../models/ipatient-enrollment-modal-response';
+import { IServiceArea } from '../../../models/service-area';
 
 @Component({
   selector: 'app-active',
@@ -18,34 +24,35 @@ import { IAddPatientToPlanComponentData } from '../../../models/iadd-patient-to-
   styleUrls: ['./active.component.scss'],
 })
 export class ActivePatientsComponent implements OnDestroy, OnInit {
-  public average = null;
-  public averageaverage;
-  public facilities = [];
-  public facilityOpen = {};
-  public serviceAreas = [];
-  public serviceAreaChecked = {};
-  public carePlanTemplates = [];
-  public carePlanTemplateChecked = {};
-  public facilityPage = {};
-  public facilityTotal = {};
-  public facilityPageCount = {};
   public accordionsOpen: { [key: string]: boolean } = {};
-  public tooltip2Open: { [key: string]: boolean } = {};
-  public employees = [];
-  public employeeChecked = {};
-  public employee = null;
-  public openAlsoTip = {};
   public activeServiceAreas = {};
   public activeUsers = {};
-  public users = null;
-  public toolAP1Open;
+  public authSub = null;
+  public average: models.ICarePlanAverage = null;
+  public averageaverage;
+  public carePlanSearch = '';
+  public carePlanTemplateChecked = {};
+  public carePlanTemplates: Array<models.IPlanTemplate> = [];
+  public employee: IEmployee = null;
+  public employeeChecked = {};
+  public employees: Array<models.IPatientProfile> = [];
+  public facilities: Array<models.IFacilityWithCarePlans> = [];
+  public facilityOpen = {};
+  public facilityPage = {};
+  public facilityPageCount = {};
+  public facilityTotal = {};
   public multi2Open;
   public multi3Open;
   public multi4Open;
+  public openAlsoTip = {};
+  public organizationSub = null;
+  public routeSub;
+  public serviceAreaChecked = {};
+  public serviceAreas: Array<IServiceArea> = [];
   public serviceAreaSearch = '';
-  public carePlanSearch = '';
-  private authSub = null;
-  private organizationSub = null;
+  public toolAP1Open;
+  public tooltip2Open: { [key: string]: boolean } = {};
+  public users = null;
 
   constructor(
     public auth: AuthService,
@@ -60,70 +67,74 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
   }
 
   public ngOnInit(): void {
-    this.authSub = this.auth.user$.subscribe((user) => {
-      if (!user) {
+    this.authSub = this.auth.user$.subscribe((user: IEmployee) => {
+      if (Utils.isNullOrUndefined(user)) {
         return;
       }
 
       this.employee = user;
-      if (user.facilities.length === 1) {
+      if ((user.facilities || []).length === 1) {
         this.accordionsOpen[user.facilities[0].id] = true;
       }
 
-      this.organizationSub = this.auth.organization$.subscribe((organization) => {
-        if (!organization) {
+      this.organizationSub = this.auth.organization$.subscribe((organization: IOrganization) => {
+        if (Utils.isNullOrUndefined(organization)) {
           return;
         }
 
-        this.getCarePlanAverage(organization.id).then((average: any) => this.average = average);
-        this.getFacilitiesForOrganization(organization.id).then((facilities: any) => {
-          this.facilities = facilities.results.filter(f => !f.is_affiliate);
-          this.facilities = this.facilities.filter(f => user.facilities.find(fa => fa.id === f.id));
-          this.facilities.forEach((facility) => {
-            this.accordionsOpen[facility.id] = false;
-            this.facilityPage[facility.id] = 1;
-            this.getFacilityCarePlans(facility.id).then((carePlans: any) => {
-              facility.carePlans = carePlans.results;
-              this.facilityTotal[facility.id] = carePlans.count;
-              this.facilityPageCount[facility.id] = this.getPageCount(carePlans.count);
-            });
-          });
+        this.loadCarePlanAverage(organization.id);
+        Utils.convertObservableToPromise<IApiResultsContainer<Array<IFacility>>>(this.store.Organization.detailRoute('GET', organization.id, 'facilities'))
+          .then((facilities: IApiResultsContainer<Array<IFacility>>) => {
+            this.facilities = facilities.results.filter(f => !f.is_affiliate);
+            this.facilities = this.facilities.filter(f => user.facilities.find(fa => fa.id === f.id));
 
-          this.store.EmployeeProfile.readListPaged().subscribe((users) => {
-            this.employees = users;
-            users.forEach((user) => this.employeeChecked[user.id] = true);
-            this.route.params.subscribe((params) => {
-              if (!params) {
-                return;
-              }
-
-              if (params.userId) {
-                const ids = params.userId.split(',');
-                users.forEach(user => this.employeeChecked[user.id] = false);
-                ids.forEach(id => this.employeeChecked[id] = true);
-                this.employeeChecked[params.userId] = true;
-              }
+            this.facilities.forEach((facility) => {
+              this.accordionsOpen[facility.id] = false;
+              this.facilityPage[facility.id] = 1;
+              this.loadFacilityCarePlans(facility);
             });
+
+            Utils.convertObservableToPromise<Array<models.IPatientProfile>>(this.store.EmployeeProfile.readListPaged())
+              .then((patientProfiles) => {
+                this.employees = patientProfiles;
+                patientProfiles.forEach((user) => this.employeeChecked[user.id] = true);
+                this.routeSub = this.route.params.subscribe((params) => {
+                  if (!params) {
+                    return;
+                  }
+
+                  if (params.userId) {
+                    const ids = params.userId.split(',');
+                    patientProfiles.forEach(user => this.employeeChecked[user.id] = false);
+                    ids.forEach(id => this.employeeChecked[id] = true);
+                    this.employeeChecked[params.userId] = true;
+                  }
+                });
+              });
           });
-        });
       });
     });
 
-    this.store.ServiceArea.readListPaged().subscribe((serviceAreas) => {
-      this.serviceAreas = serviceAreas;
-      serviceAreas.forEach((area) => this.serviceAreaChecked[area.id] = true);
-    });
-
-    this.store.CarePlanTemplate.readListPaged().subscribe((templates: any) => {
-      this.carePlanTemplates = templates.sort((a, b) => {
-        const textA = a.name.toUpperCase();
-        const textB = b.name.toUpperCase();
-
-        return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
+    Utils.convertObservableToPromise(this.store.ServiceArea.readListPaged())
+      .then((serviceAreas: Array<IServiceArea>) => {
+        this.serviceAreas = serviceAreas;
+        serviceAreas.forEach((area) => this.serviceAreaChecked[area.id] = true);
       });
 
-      templates.forEach((template) => this.carePlanTemplateChecked[template.id] = true);
-    });
+    Utils.convertObservableToPromise(this.store.CarePlanTemplate.readListPaged())
+      .then((templates: Array<models.IPlanTemplate>) => {
+        this.carePlanTemplates = Utils.sort(templates.map(t => ({ ...t, sortName: t.name.toLowerCase() })), true, 'sortName');
+        templates.forEach((template) => this.carePlanTemplateChecked[template.id] = true);
+      });
+  }
+
+  private loadFacilityCarePlans(facility: models.IFacilityWithCarePlans): void {
+    this.getFacilityCarePlans(facility.id)
+      .then((carePlans: IApiResultsContainer<Array<models.IActivePatientCarePlans>>) => {
+        facility.carePlans = carePlans.results;
+        this.facilityTotal[facility.id] = carePlans.count;
+        this.facilityPageCount[facility.id] = Math.ceil(carePlans.count / 20);
+      });
   }
 
   public ngOnDestroy(): void {
@@ -134,18 +145,17 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
     if (this.organizationSub) {
       this.organizationSub.unsubscribe();
     }
+
+    if (this.routeSub) {
+      this.routeSub.unsubscribe();
+    }
   }
 
-  public getCarePlanAverage(organizationId: string): Promise<any> {
-    return new Promise<any>((resolve, reject) => {
-      let averageSub = this.store.CarePlan.detailRoute('GET', null, 'average', {}, {
-        patient__facility__organization: organizationId
-      }).subscribe(
-        (average) => resolve(average),
-        (err) => reject(err),
-        () => averageSub.unsubscribe()
-      );
-    });
+  public loadCarePlanAverage(organizationId: string): void {
+    const params = { patient__facility__organization: organizationId };
+    Utils
+      .convertObservableToPromise<models.ICarePlanAverage>(this.store.CarePlan.detailRoute('GET', null, 'average', {}, params))
+      .then((average) => this.average = average);
   }
 
   public getPatientsOverview(organizationId: string): Promise<any> {
@@ -164,27 +174,11 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
     return promise;
   }
 
-  public getFacilitiesForOrganization(organizationId: string): Promise<any> {
-    return new Promise<any>((resolve, reject) => {
-      const facilitiesSub = this.store.Organization.detailRoute('GET', organizationId, 'facilities').subscribe(
-        facilities => resolve(facilities),
-        err => reject(err),
-        () => facilitiesSub.unsubscribe()
-      );
-    });
-  }
-
-  public getFacilityCarePlans(facilityId: string): Promise<any> {
-    return new Promise<any>((resolve, reject) => {
-      const params = {
-        page: this.facilityPage[facilityId]
-      };
-      const carePlansSub = this.store.Facility.detailRoute('get', facilityId, 'care_plans', {}, params).subscribe(
-        (carePlans) => resolve(carePlans),
-        (err) => reject(err),
-        () => carePlansSub.unsubscribe()
-      );
-    });
+  public getFacilityCarePlans(facilityId: string): Promise<IApiResultsContainer<Array<models.IActivePatientCarePlans>>> {
+    const params = { page: this.facilityPage[facilityId] };
+    return Utils
+      .convertObservableToPromise<IApiResultsContainer<Array<models.IActivePatientCarePlans>>>(this.store.Facility.detailRoute('get', facilityId, 'care_plans', {}, params))
+      .then((carePlans) => carePlans);
   }
 
   public getPatients(): Promise<any> {
@@ -255,7 +249,6 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
   }
 
   public addPatientToPlan(facility: IFacility = null): void {
-    // TODO: FIX THIS
     const data: IAddPatientToPlanComponentData = {
       action: 'add',
       enrollPatientChecked: true,
@@ -264,63 +257,16 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
 
     this.patientCreationModalService
       .openEnrollment_PotentialPatientDetails(data)
-      .then((response) => {
-        if (Utils.isNullOrUndefined(response)) {
+      .then((response: IPatientEnrollmentResponse) => {
+        if (Utils.isNullOrUndefined((response || {}).patient)) {
           return;
         }
 
-        console.log('TODO: Fix this', response);
-        // TODO: FIX THIS
-        //if (!(res.hasOwnProperty('patient') && res.hasOwnProperty('plan'))) {
-        //  res.careTeamMembers = res.careTeam;
-        //  res.engagement = res.engagement || 0;
-        //  res.outcomes = res.outcomes || 0;
-        //  res.current_week = res.current_week || 0;
-        //  res.risk_level = res.risk_level || 0;
-        //  res.tasks_this_week = res.tasks_this_week || 0;
-        //  const facility = this.facilities.find(f => f.id === res.patient.facility.id);
-        //  const patient = facility.patients.find(p => p.id === res.patient.id);
-        //  if (!patient) {
-        //    this.store.PatientProfile.read(res.patient.id).subscribe(patient => {
-        //      if (facility.patients && facility.patients.length) {
-        //        facility.patients.push(patient);
-        //      } else {
-        //        facility.patients = [patient];
-        //      }
-
-        //      this.store.CarePlan.readListPaged({ patient: patient.id }).subscribe(plans => {
-        //        patient.carePlans = plans;
-        //        patient.carePlans.forEach(plan => {
-        //          this.store.CareTeamMember
-        //            .readListPaged({ plan: plan.id })
-        //            .subscribe(careTeamMembers => plan.careTeamMembers = careTeamMembers);
-        //        });
-        //      });
-        //    });
-        //  } else {
-        //    if (patient.carePlans && patient.carePlans.length) {
-        //      patient.carePlans.push(res);
-        //    } else {
-        //      patient.carePlans = [res];
-        //    }
-        //  }
-        //}
-
-        //if (res.hasOwnProperty('patient') && res.hasOwnProperty('plan')) {
-        //  res.plan.careTeamMembers = res.plan.careTeam;
-        //  res.plan.engagement = res.plan.engagement || 0;
-        //  res.plan.outcomes = res.plan.outcomes || 0;
-        //  res.plan.current_week = res.plan.current_week || 0;
-        //  res.plan.risk_level = res.plan.risk_level || 0;
-        //  res.plan.tasks_this_week = res.plan.tasks_this_week || 0;
-        //  res.patient.carePlans = [res.plan];
-        //  const facility = this.facilities.find(f => f.id === res.patient.facility.id);
-        //  if (facility.patients && facility.patients.length) {
-        //    facility.patients.push(res.patient);
-        //  } else {
-        //    facility.patients = [res.patient];
-        //  }
-        //}
+        document.dispatchEvent(new Event('refreshPatientOverview'));
+        const facility = this.facilities.find(f => f.id === (response.patient.facility || {}).id);
+        if (!Utils.isNullOrUndefined(facility)) {
+          this.loadFacilityCarePlans(facility);
+        }
       });
   }
 
@@ -351,7 +297,7 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
     Object.keys(this.employeeChecked).forEach((user) => this.employeeChecked[user] = status);
   }
 
-  public timePillColor(plan: IPillColorPlan): string {
+  public timePillColor(plan: models.IPillColorPlan): string {
     if (!plan.patient.payer_reimbursement || !plan.billing_type) {
       return null;
     }
@@ -427,10 +373,11 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
     return Math.floor(avg);
   }
 
-  public hasCheckedCareTeamMember(plan: { care_team_employee_ids: Array<string> }): boolean {
+  public hasCheckedCareTeamMember(plan: { id: string, care_team_employee_ids: Array<string>, patient: { full_name: string } }): boolean {
     if (!this.employees) {
       return true;
     }
+
     let result = false;
     if (plan.care_team_employee_ids) {
       plan.care_team_employee_ids.forEach((employeeId) => {
@@ -439,6 +386,7 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
         }
       })
     }
+
     return result;
   }
 
@@ -451,23 +399,12 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
   }
 
   public showUserInFilter(user: { facilities: Array<{ id: string }> }): boolean {
-    if (this.employee) {
-      return this.employee.facilities.find(f => {
-        let result = false;
-        user.facilities.forEach(uf => {
-          if (uf.id === f.id) {
-            result = true;
-          }
-        })
-        return result;
-      })
-    } else {
+    if (Utils.isNullOrUndefined(this.employee)) {
       return false;
     }
-  }
 
-  public getPageCount(count: number): number {
-    return Math.ceil(count / 20);
+    const userFacility = this.employee.facilities.find(f => !Utils.isNullOrUndefined(user.facilities.find(uf => uf.id === f.id)));
+    return !Utils.isNullOrUndefined(userFacility);
   }
 
   public navigatePages(facilityId: string, to: any): void {
@@ -488,16 +425,4 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
 
     return total;
   }
-}
-
-interface IPillColorPlan {
-  billing_type: {
-    acronym: string,
-    billable_minutes: number
-  },
-  created: string,
-  patient: {
-    payer_reimbursement: any
-  },
-  time_count: number
 }

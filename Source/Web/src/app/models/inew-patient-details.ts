@@ -8,12 +8,14 @@ import { IFacility } from "./facility";
 import { IInsurance } from './insurance';
 import { IPatient } from "./patient";
 import { IPotentialPatient } from "./potential-patient";
+import { IRole } from "./role";
 import { IServiceArea } from "./service-area";
 
 export interface INewPatientDetails {
   billingPractioner?: IEmployee;
   careManager?: IEmployee;
   carePlan?: ICarePlan;
+  carePlanRoles: { [id: string]: { role: IRole, selected: boolean; } };
   checked: {
     enroll?: boolean;
     reimburses?: boolean;

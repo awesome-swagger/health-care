@@ -12,14 +12,3 @@ export interface IUser extends IBasicUser {
   preferred_name?: string;
   time_zone?: string;
 }
-
-//export class User {
-//	firstName: string;
-//	lastName: string;
-//	title: Title;
-//	email: string;
-//	employedBy: Employee;
-//	facility: Employee[];
-//	specialty: Specialty;
-//	npi: string;
-//};

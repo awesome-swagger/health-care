@@ -38,7 +38,7 @@ export class EnrollmentPotentialPatientDetailsComponent implements OnInit {
   public filteredFacilities: Array<IFacility>;
   public filters: IFilteredResults = { careManager: { array: [], search: '' }, patients: { array: [], search: '' } };
   public modalResponse: IPatientEnrollmentModalResponse = { action: PatientCreationAction.Cancel, step: PatientCreationStep.PotentialPatientDetails };
-  public newPatientDetails: INewPatientDetails = { checked: {}, diagnoses: [], patient: { isPotential: false, isPreload: false } };
+  public newPatientDetails: INewPatientDetails = { carePlanRoles: {}, checked: {}, diagnoses: [], patient: { isPotential: false, isPreload: false } };
   public patients: Array<IPatient> = [];
   public potentialPatients: Array<IPotentialPatient> = [];
   public serviceAreas: Array<IServiceArea> = [];
@@ -130,15 +130,15 @@ export class EnrollmentPotentialPatientDetailsComponent implements OnInit {
       this.newPatientDetails.serviceArea = preloadedCarePlan.service_area;
     }
 
-    Utils.convertObservableToPromise(this.store.CarePlanTemplate.readListPaged())
-      .then((plans: Array<ICarePlan>) => {
-        this.carePlans = plans;
-        this.updateFilteredCarePlan();
-      });
+    const plansLoaded = Utils.convertObservableToPromise(this.store.CarePlanTemplate.readListPaged())
+      .then((carePlans: Array<ICarePlan>) => this.carePlans = carePlans);
 
-    Utils.convertObservableToPromise(this.store.ServiceArea.readListPaged())
-      .then((serviceAreas: Array<IServiceArea>) => {
-        this.serviceAreas = serviceAreas;
+    const serviceAreasLoaded = Utils.convertObservableToPromise(this.store.ServiceArea.readListPaged())
+      .then((serviceAreas: Array<IServiceArea>) => this.serviceAreas = serviceAreas);
+
+    Promise.all([plansLoaded, serviceAreasLoaded])
+      .then(() => {
+        this.serviceAreas.forEach(s => s.uiCarePlans = this.carePlans.filter(x => x.service_area.id === s.id));
         this.updateFilteredCarePlan();
       });
   }
@@ -307,7 +307,7 @@ export class EnrollmentPotentialPatientDetailsComponent implements OnInit {
       return;
     }
 
-    this.filteredCarePlans = this.carePlans.filter(x => x.service_area.id === (this.newPatientDetails.serviceArea || {}).id);
+    this.filteredCarePlans = (this.newPatientDetails.serviceArea || {}).uiCarePlans || [];
 
     if (Utils.isNullOrUndefined(this.newPatientDetails.carePlan)) {
       this.newPatientDetails.carePlan = this.filteredCarePlans[0];

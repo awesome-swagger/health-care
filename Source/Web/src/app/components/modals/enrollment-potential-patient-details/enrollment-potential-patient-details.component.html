@@ -19,7 +19,12 @@
                     [disabled]="data.carePlan"
                     [(ngModel)]="newPatientDetails.serviceArea"
                     (ngModelChange)="updateFilteredCarePlan(true)">
-              <option *ngFor="let serviceArea of serviceAreas" [ngValue]="serviceArea">{{serviceArea.name}}</option>
+              <option *ngFor="let serviceArea of serviceAreas"
+                      [ngValue]="serviceArea"
+                      [title]="(serviceArea.uiCarePlans?.length || 0) == 0 ? 'Service Area does not contain any Care Plans' : ''"
+                      [disabled]="(serviceArea.uiCarePlans?.length || 0) == 0">
+                {{serviceArea.name}}
+              </option>
             </select>
           </div>
         </div>
