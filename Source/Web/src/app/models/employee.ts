@@ -1,12 +1,12 @@
-import { MomentInput } from "moment";
+import { MomentInput } from 'moment';
 
-import { IFacility } from "./facility";
-import { IHaveId } from "./ihaveid";
-import { IOrganization } from "./organization";
-import { IRole } from "./role";
-import { ISpecialty } from "./specialty";
-import { ITitle } from "./title";
-import { IUser } from "./user";
+import { IFacility } from './facility';
+import { IHaveId } from './ihave-id';
+import { IOrganization } from './organization';
+import { IRole } from './role';
+import { ISpecialty } from './specialty';
+import { ITitle } from './title';
+import { IUser } from './user';
 
 export interface IEmployee extends IHaveId {
   billing_view?: boolean;

@@ -44,7 +44,6 @@ export class ProcedureComponent implements OnInit {
   ) { }
 
   public ngOnInit() {
-    console.log(this.data);
     this.store.Procedure.readListPaged().subscribe((procedures) => {
       this.procedures = procedures;
       this.proceduresShown = this.procedures.concat();

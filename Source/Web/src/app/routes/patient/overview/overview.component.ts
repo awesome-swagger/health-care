@@ -543,7 +543,6 @@ export class PatientOverviewComponent implements OnDestroy, OnInit {
       width: '384px',
     }).subscribe(
       (newTask) => {
-        console.log(newTask);
         if (!newTask) return;
         setTimeout(() => {
           this.editPatientTask(newTask);

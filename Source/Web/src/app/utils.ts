@@ -1,7 +1,16 @@
 import { Observable } from "rxjs";
 
 import { errorFunc } from "./models/types";
-import { IHaveId } from "./models/ihaveid";
+import { IHaveId } from "./models/ihave-id";
+
+export enum LogLevel {
+  trace = 50,
+  debug = 40,
+  info = 30,
+  warn = 20,
+  error = 10,
+  fatal = 0
+}
 
 /**
  * Common utilities created to reduce duplicate code for consistent checks and methods.
@@ -13,6 +22,9 @@ export class Utils {
     isGreaterThan: 1,
     isLessThan: -1,
   };
+  private static readonly emailRegex = /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
+  /** Gets or sets a value indicating the minimum logger level that will be written to the sync */
+  public static minimumLoggingLevel: LogLevel = LogLevel.error;
 
   /**
    * Compares 2 objects that implement the IHaveId interface. Returns true if they are equal based in the id, false otherwise
@@ -161,6 +173,82 @@ export class Utils {
   }
 
   /**
+   * Returns a value indicating the validity of the user input as a valid email address
+   * @param input User input that should be an email
+   */
+  public static isValidEmail(input?: string): boolean {
+    return this.emailRegex.test(input);
+  }
+
+  /**
+   * Log a debug message to whatever logger is to be used
+   * @param message Message to be logged
+   * @param data Any object that should be logged
+   */
+  public static logDebug = <T = any>(message: string, data?: T): void => Utils.logMessage(LogLevel.debug, message, { data });
+
+  /**
+   * Log an error message to whatever logger is to be used
+   * @param message Message to be logged
+   * @param error Error that was thrown
+   * @param data Any object that should be logged
+   */
+  public static logError = <T = any>(message: string, error: Error | string, data: T): void => Utils.logMessage(LogLevel.error, message, { error, data });
+
+  /**
+   * Log a fatal error message to whatever logger is to be used
+   * @param message Message to be logged
+   * @param error Error that was thrown
+   * @param data Any object that should be logged
+   */
+  public static logFatal = <T = any>(message: string, error: Error | string, data: T): void => Utils.logMessage(LogLevel.fatal, message, { error, data });
+
+  /**
+   * Log an informational message to whatever logger is to be used
+   * @param message Message to be logged
+   * @param data Any object that should be logged
+   */
+  public static logInfo = <T = any>(message: string, data?: T): void => Utils.logMessage(LogLevel.info, message, { data });
+
+  /**
+   * Log a message to whatever logger is to be used
+   * @param level The level at which the logging should be entered;
+   * @param message Message to be logged
+   * @param data Any object that should be logged
+   */
+  private static logMessage<T = any>(level: LogLevel, message: string, data: { error?: Error | string, data?: T }): void {
+    if (Utils.minimumLoggingLevel < level) {
+      console.log('Skipping log', { min: Utils.minimumLoggingLevel, level, message, data });
+      return;
+    }
+
+    switch (level) {
+      case LogLevel.warn:
+        console.warn(message, data);
+        break;
+      case LogLevel.error:
+        console.error(message, data);
+        break;
+      case LogLevel.fatal:
+        console.error(message, data);
+        break;
+      default:
+      case LogLevel.trace:
+      case LogLevel.debug:
+      case LogLevel.info:
+        console.log(message, data);
+        break;
+    }
+  }
+
+  /**
+   * Log a warning message to whatever logger is to be used
+   * @param message Message to be logged
+   * @param data Any object that should be logged
+   */
+  public static logWarn = <T = any>(message: string, data?: T): void => Utils.logMessage(LogLevel.warn, message, { data });
+
+  /**
    * Sort collection by specified property (id will be used by default)
    * @param collection Collection to be sorted
    * @param ascending A value indicating whether the collection should be sorted ascending
@@ -179,7 +267,7 @@ export class Utils {
   }
 
   private static standardErrorHandle(reject: errorFunc, reason: string | Error): void {
-    console.error(reason);
+    console.error('Failed to complete subscription call', reason);
     reject(reason);
   }
 }

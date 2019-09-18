@@ -37,7 +37,6 @@ import {
   CreateAssessmentComponent,
   AddStreamComponent,
   CreateStreamComponent,
-  EnrollmentRequiredComponent,
   AddCTMemberComponent,
   PlanExpiredComponent,
   PlanLimitReachedComponent,
@@ -137,6 +136,8 @@ import { EnrollmentDetailsComponent } from './components/modals/enrollment-detai
 import { EnrollmentPatientEnrolledComponent } from './components/modals/enrollment-patient-enrolled/enrollment-patient-enrolled.component';
 import { EnrollmentPotentialPatientAddedComponent } from './components/modals/enrollment-potential-patient-added/enrollment-potential-patient-added.component';
 import { EnrollmentConsentComponent } from './components/modals/enrollment-consent/enrollment-consent.component';
+import { EnrollmentMessagingComponent } from './components/modals/enrollment-messaging';
+import { EnrollmentRequiredComponent } from './components/modals/enrollment-required/enrollment-required.component';
 
 @NgModule({
   imports: [
@@ -248,6 +249,7 @@ import { EnrollmentConsentComponent } from './components/modals/enrollment-conse
     EnrollmentRequiredComponent,
     EnrollmentConsentComponent,
     EnrollmentPatientEnrolledComponent,
+    EnrollmentMessagingComponent,
   ],
   providers: [
     {provide: APP_BASE_HREF, useValue: '/'},
@@ -324,6 +326,7 @@ import { EnrollmentConsentComponent } from './components/modals/enrollment-conse
     EnrollmentRequiredComponent,
     EnrollmentConsentComponent,
     EnrollmentPatientEnrolledComponent,
+    EnrollmentMessagingComponent,
   ],
 })
 export class AppModule { }

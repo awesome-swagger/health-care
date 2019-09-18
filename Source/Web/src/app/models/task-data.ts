@@ -1,3 +1,4 @@
+
 export interface ITaskData {
   checkIns: Array<{ patient: string, time: string }>,
   length: number,

@@ -1,4 +1,4 @@
-import { IHaveId } from './ihaveid';
+import { IHaveId } from './ihave-id';
 
 export interface IBasicUser extends IHaveId {
   email?: string;

@@ -6,6 +6,7 @@ import {
 } from 'lodash';
 import { ModalService } from '../../../../modules/modals';
 import { AuthService, StoreService } from '../../../../services';
+import { Utils } from '../../../../utils';
 
 @Component({
   selector: 'app-reassign-billing-practitioner',
@@ -37,7 +38,6 @@ export class ReassignBillingPractitionerComponent implements OnInit {
   ) { }
 
   public ngOnInit() {
-    console.log(this.data);
     this.getPlansForBillingPractitioner(this.data.billingPractitioner).then((plans: any) => {
       this.plans = plans.map((obj) => {
         obj.selectedBP = obj.billing_practitioner.id;
@@ -102,10 +102,10 @@ export class ReassignBillingPractitionerComponent implements OnInit {
         });
         let reassignSub = this.store.CarePlan.listRoute('post', 'bulk_reassign_billing_practitioner', payload).subscribe(
           (success) => {
-            console.log(success);
+            Utils.logDebug('success', success);
           },
           (err) => {
-            console.log(err);
+            Utils.logError('failed to reassign billing practitioners', err, payload);
           },
           () => {
             reassignSub.unsubscribe();
@@ -120,10 +120,10 @@ export class ReassignBillingPractitionerComponent implements OnInit {
         });
         let reassignSub = this.store.CarePlan.listRoute('post', 'bulk_reassign_billing_practitioner', payload).subscribe(
           (success) => {
-            console.log(success);
+            Utils.logDebug('success', success);
           },
           (err) => {
-            console.log(err);
+            Utils.logError('failed to reassign billing practitioners', err, payload);
           },
           () => {
             reassignSub.unsubscribe();

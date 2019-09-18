@@ -18,6 +18,7 @@ import {
 import * as moment from 'moment';
 import { AddUserToFacilityComponent } from './modals/add-user-to-facility/add-user-to-facility.component';
 import { Capitalize, CapitalizationOptions } from '../../../extensions';
+import { Utils } from '../../../utils';
 
 
 class ImageSnippet {
@@ -81,8 +82,8 @@ export class UserComponent implements OnDestroy, OnInit {
       }
 
       let employeeSub = this.store.EmployeeProfile.read(res.id).subscribe((employee) => {
-          this.employee = employee;
-          console.log('employee', this.employee);
+        this.employee = employee;
+        Utils.logDebug('employee', this.employee);
 
         this.auth.user$.subscribe(res => {
           if (!res) return;
@@ -131,7 +132,7 @@ export class UserComponent implements OnDestroy, OnInit {
         careTeam => {
           this.roleDetails = groupByRole(careTeam)
           this.careTeam = careTeam;
-          console.log('roleDetails', this.roleDetails);
+          Utils.logDebug('roleDetails', this.roleDetails);
         }
       )
 

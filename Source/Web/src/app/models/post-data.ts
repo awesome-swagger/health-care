@@ -1,4 +1,4 @@
-import { MomentInput } from "moment";
+import { MomentInput } from 'moment';
 
 export interface ICarePlanApiPostData {
   billing_type: string;

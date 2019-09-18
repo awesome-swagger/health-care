@@ -2,6 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ToastService } from '../../../modules/toast';
 import { AuthService, NavbarService, LocalStorageService, StoreService } from '../../../services';
+import { Utils } from '../../../utils';
 
 @Component({
   selector: 'app-login',
@@ -51,7 +52,7 @@ export class LoginComponent implements OnDestroy, OnInit {
           this.selectOrgState = true;
           this.organizations = organizations;
         },
-        (err) => { console.log(err) },
+        (err) => Utils.logError('Failed to load organization', err, user),
         () => {
           orgSub.unsubscribe();
         }

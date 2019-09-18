@@ -1,7 +1,7 @@
-import { MomentInput } from "moment";
+import { MomentInput } from 'moment';
 
-import { IDiagnosis } from "./diagnosis";
-import { IHaveId } from "./ihaveid";
+import { IDiagnosis } from './diagnosis';
+import { IHaveId } from './ihave-id';
 
 export interface IDiagnoses extends IHaveId {
   date_identified?: MomentInput;

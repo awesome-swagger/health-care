@@ -24,8 +24,6 @@ export class PatientAddressComponent implements OnInit {
   ) { }
 
   public ngOnInit() {
-    console.log(this.data);
-
     if (this.data) {
       this.addr_city = this.data.patient.addr_city;
       this.addr_state = this.data.patient.addr_state;

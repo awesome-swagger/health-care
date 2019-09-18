@@ -17,7 +17,6 @@ export class PreviewVitalComponent implements OnInit {
   }
 
   public ngOnInit() {
-    console.log(this.data);
   }
 
   public navigateBack() {

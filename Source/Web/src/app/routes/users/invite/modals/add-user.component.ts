@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { StoreService, AuthService } from '../../../../services';
 import { ModalService } from '../../../../modules/modals';
 import { IUser } from '../../../../models/user';
+import { Utils } from '../../../../utils';
 
 
 @Component({
@@ -40,9 +41,7 @@ export class AddUserComponent implements OnInit {
 
   public ngOnInit() {
     if (this.data && this.data.user) {
-      console.log('vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv');
-      console.log(this.data.user);
-      console.log('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^');
+      Utils.logDebug('adding user', this.data.user);
       this.firstNameInput = this.data.user.firstName;
       this.lastNameInput = this.data.user.lastName;
       this.titleInput = this.data.user.title;

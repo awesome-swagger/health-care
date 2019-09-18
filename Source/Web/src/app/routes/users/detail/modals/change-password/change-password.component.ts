@@ -26,7 +26,6 @@ export class ChangePasswordComponent implements OnInit {
   }
 
   public ngOnInit() {
-    console.log(this.data);
   }
 
   public get submitDisabled() {

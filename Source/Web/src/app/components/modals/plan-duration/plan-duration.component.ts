@@ -22,7 +22,6 @@ export class PlanDurationComponent implements OnInit {
   ) { }
 
   public ngOnInit() {
-    console.log(this.data);
     if (this.data) {
       this.planTemplate = this.data.planTemplate ? this.data.planTemplate : null;
       this.numPatients = this.data.numPatients ? this.data.numPatients : 0;

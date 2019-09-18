@@ -111,8 +111,23 @@
           <label>Email<span class="required">*</span></label>
           <input class="input fullWidth"
                  [(ngModel)]="newPatientDetails.email"
+                 (ngModelChange)="verifyEmail()"
                  [disabled]="!newPatientDetails.carePlan || alreadyEnrolled" />
         </div>
+      </div>
+      <div class="divider"></div>
+    </div>
+
+    <div *ngIf="matchingPatient" class="matching-patient-email">
+      <p class="typeahead-patient-warning">
+        <i class="iconText__icon ss-alert"></i>
+        A patient with a matching email was already found in the system.<br>
+        Would you like to use the existing patient?<br>
+        {{matchingPatient.name}} ({{matchingPatient.email}})
+      </p>
+      <div class="buttons">
+        <button class="button button--2nd" (click)="clearEmail()">No</button>
+        <button class="button" (click)="setMatchingPatient()">Yes</button>
       </div>
       <div class="divider"></div>
     </div>
@@ -180,7 +195,8 @@
           <li class="drop__option" *ngFor="let manager of filters.careManager.array">
             <a class="drop__link" (click)="setCareManager(manager)">
               <div class="picName">
-                <img class="picName__img" [src]="manager?.user?.image_url || '../../../assets/img/profile.svg'" />{{manager?.user?.first_name}} {{manager?.user?.last_name}}, {{manager?.title?.abbreviation}}
+                <img class="picName__img" [src]="manager?.user?.image_url || '../../../assets/img/profile.svg'" />
+                {{manager?.user?.first_name}} {{manager?.user?.last_name}}, {{manager?.title?.abbreviation}}
               </div>
             </a>
           </li>
@@ -197,7 +213,7 @@
     <button class="button"
             (click)="save()"
             [title]="newPatientDetails.checked.enroll ? 'Proceed with enrollment' : 'Save to Potential Patients'"
-            [disabled]="!isValidPotentialPatientForm">
+            [disabled]="!isValidForSaveOrNext">
       {{newPatientDetails.checked.enroll ? 'Enroll': 'Save'}}
     </button>
   </div>

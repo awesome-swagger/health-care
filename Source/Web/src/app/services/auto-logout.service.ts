@@ -3,6 +3,7 @@ import { AuthService } from './auth.service';
 import { TimeTrackerService } from './time-tracker.service';
 import store from 'store';
 import { Router } from '@angular/router';
+import { Utils } from '../utils';
 
 @Injectable({
   providedIn: 'root'
@@ -46,7 +47,7 @@ export class AutoLogoutService {
     const diff = timeLeft - now;
 
     if (diff < 0 && this.auth.isLoggedIn()) {
-      console.log('logging out');
+      Utils.logInfo('logging out');
       this.timer.stopTimer();
       this.timer.resetTimers();
       this.auth.logout();

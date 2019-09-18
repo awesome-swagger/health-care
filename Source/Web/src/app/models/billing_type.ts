@@ -1,4 +1,4 @@
-import { MomentInput } from "moment";
+import { MomentInput } from 'moment';
 
 export interface IBillingType {
   acronym?: string;

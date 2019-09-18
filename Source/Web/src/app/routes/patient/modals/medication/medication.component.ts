@@ -6,6 +6,7 @@ import {
 } from 'lodash';
 import * as moment from 'moment';
 import { P } from '@angular/core/src/render3';
+import { Utils } from '../../../../utils';
 
 @Component({
   selector: 'app-medication',
@@ -69,7 +70,7 @@ export class MedicationComponent implements OnInit {
     )
 
     if (this.data) {
-      console.log('patient --- ', this.data.patient);
+      Utils.logDebug('patient --- ', this.data.patient);
       this.plan = this.data.plan;
       this.plans = this.data.plans;
       this.patient = this.data.patient;

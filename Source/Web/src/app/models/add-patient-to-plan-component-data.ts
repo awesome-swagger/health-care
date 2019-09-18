@@ -1,8 +1,8 @@
-import { ICarePlan } from "./care-plan";
-import { IFacility } from "./facility";
-import { INewPatientDetails } from "./inew-patient-details";
-import { IPatient } from "./patient";
-import { IPotentialPatient } from "./potential-patient";
+import { ICarePlan } from './care-plan';
+import { IFacility } from './facility';
+import { INewPatientDetails } from './new-patient-details';
+import { IPatient } from './patient';
+import { IPotentialPatient } from './potential-patient';
 
 export interface IAddPatientToPlanComponentData {
   action?: ('add' | 'edit');

@@ -4,8 +4,8 @@ import { Moment } from "moment";
 import { ModalService } from "../../../modules/modals";
 import { Utils } from "../../../utils";
 
-import { INewPatientDetails } from "../../../models/inew-patient-details";
-import { IPatientEnrollmentModalResponse, PatientCreationAction, PatientCreationStep } from "../../../models/ipatient-enrollment-modal-response";
+import { INewPatientDetails } from "../../../models/new-patient-details";
+import { IPatientEnrollmentModalResponse, PatientCreationAction, PatientCreationStep } from "../../../models/patient-enrollment-modal-response";
 
 @Component({
   selector: 'app-enrollment-consent',

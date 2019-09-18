@@ -14,8 +14,6 @@ export * from './modals/add-assessment/add-assessment.component';
 export * from './modals/create-assessment/create-assessment.component';
 export * from './modals/add-stream/add-stream.component';
 export * from './modals/create-stream/create-stream.component';
-export * from './modals/enrollment-required/enrollment-required.component';
-export * from './modals/enrollment-patient-enrolled/enrollment-patient-enrolled.component';
 export * from './modals/add-ct-member/add-ct-member.component';
 export * from './modals/plan-expired/plan-expired.component';
 export * from './modals/plan-limit-reached/plan-limit-reached.component';

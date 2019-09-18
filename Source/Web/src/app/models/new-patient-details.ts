@@ -1,9 +1,9 @@
-import { IBillingType } from "./ibilling_type";
+import { IBillingType } from "./billing_type";
 import { ICarePlan } from "./care-plan";
 import { IDiagnoses } from "./diagnoses";
 import { IDiagnosis } from "./diagnosis";
 import { IEmployee } from "./employee";
-import { IEnrollmentConsentDetails } from "./ienrollment-consent-details";
+import { IEnrollmentConsentDetails } from "./enrollment-consent-details";
 import { IFacility } from "./facility";
 import { IInsurance } from './insurance';
 import { IPatient } from "./patient";
@@ -39,6 +39,7 @@ export interface INewPatientDetails {
     patient?: IPotentialPatient | IPatient
   };
   phoneNumber?: string;
+  /** Plan Type or Billing Category */
   planType?: IBillingType;
   serviceArea?: IServiceArea;
   source?: string;

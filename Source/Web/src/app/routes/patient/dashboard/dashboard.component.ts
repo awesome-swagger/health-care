@@ -67,7 +67,6 @@ export class PatientDashboardComponent implements OnDestroy, OnInit {
         this.getCarePlan(params.planId).then((plan: any) => {
           this.timer.startTimer(this.user, plan);
 
-          console.log(plan);
           this.weeksOnPlan = moment(Date.parse(plan.created), ['YYYY-MM-DDTHH:mm:ss.SSSZZ']).diff('weeks');
         });
 

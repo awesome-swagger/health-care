@@ -1,9 +1,13 @@
-import { MomentInput } from "moment";
+import { MomentInput } from 'moment';
 
-import { IHaveId } from "./ihaveid";
-import { IOrganization } from "./organization";
+import { IHaveId } from './ihave-id';
+import { IOrganization } from './organization';
 
-export interface IFacility extends IHaveId {
+export interface ISimpleFacility extends IHaveId {
+  name?: string;
+}
+
+export interface IFacility extends ISimpleFacility{
   active_users?: number;
   addr_city?: string;
   addr_state?: string;
@@ -14,7 +18,6 @@ export interface IFacility extends IHaveId {
   is_affiliate?: boolean;
   is_manager?: boolean;
   modified?: MomentInput;
-  name?: string;
   organization?: IOrganization;
   parent_company?: string;
 }

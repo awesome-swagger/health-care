@@ -34,7 +34,6 @@ export class AddVitalComponent implements OnInit {
   ) { }
 
   public ngOnInit() {
-    console.log(this.data);
     if (this.data) {
       this.totalPatients = this.data.totalPatients ? this.data.totalPatients : 0;
       if (this.data.planTemplateId) {

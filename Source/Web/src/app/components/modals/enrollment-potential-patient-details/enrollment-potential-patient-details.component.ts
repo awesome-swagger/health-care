@@ -6,22 +6,21 @@ import { PatientCreationService } from "../../../services/patient-creation.servi
 import { StoreService } from "../../../services";
 import { Utils } from "../../../utils";
 
-import { IAddPatientToPlanComponentData } from "../../../models/iadd-patient-to-plan-component-data";
+import { IAddPatientToPlanComponentData } from "../../../models/add-patient-to-plan-component-data";
 import { IBasicUser } from "../../../models/basic-user";
 import { ICarePlan } from "../../../models/care-plan";
 import { IEmployee } from "../../../models/employee";
 import { IFacility } from "../../../models/facility";
-import { IFilteredResults } from "../../../models/ifiltered-results";
-import { IHaveId } from "../../../models/ihaveid";
-import { INewPatientDetails } from "../../../models/inew-patient-details";
+import { IFilteredResults } from "../../../models/filtered-results";
+import { IHaveId } from "../../../models/ihave-id";
+import { INewPatientDetails } from "../../../models/new-patient-details";
 import { IPatient } from '../../../models/patient';
-import { IPatientEnrollmentModalResponse, PatientCreationAction, PatientCreationStep } from "../../../models/ipatient-enrollment-modal-response";
+import { IPatientEnrollmentModalResponse, PatientCreationAction, PatientCreationStep } from "../../../models/patient-enrollment-modal-response";
 import { IPotentialPatient } from "../../../models/potential-patient";
-import { ISearchablePatient } from "../../../models/isearchable-patient";
+import { ISearchablePatient } from "../../../models/searchable-patient";
 import { IServiceArea } from "../../../models/service-area";
-import { ITypeahead } from "../../../models/itypeahead";
+import { ITypeahead } from "../../../models/typeahead";
 import { IDiagnoses } from "../../../models/diagnoses";
-import { IDiagnosis } from "../../../models/diagnosis";
 
 @Component({
   selector: 'app-enrollment-potential-patient-details',
@@ -37,10 +36,12 @@ export class EnrollmentPotentialPatientDetailsComponent implements OnInit {
   public filteredCarePlans: Array<ICarePlan>;
   public filteredFacilities: Array<IFacility>;
   public filters: IFilteredResults = { careManager: { array: [], search: '' }, patients: { array: [], search: '' } };
+  public matchingPatient: ISearchablePatient;
   public modalResponse: IPatientEnrollmentModalResponse = { action: PatientCreationAction.Cancel, step: PatientCreationStep.PotentialPatientDetails };
   public newPatientDetails: INewPatientDetails = { carePlanRoles: {}, checked: {}, diagnoses: [], patient: { isPotential: false, isPreload: false } };
   public patients: Array<IPatient> = [];
   public potentialPatients: Array<IPotentialPatient> = [];
+  public searchablePatients: Array<ISearchablePatient> = [];
   public serviceAreas: Array<IServiceArea> = [];
   public typeahead: ITypeahead = { careManager: '', patient: '' };
 
@@ -69,14 +70,27 @@ export class EnrollmentPotentialPatientDetailsComponent implements OnInit {
       this.setPatient(patient, true);
     }
 
-    this.loadPatients(facilityId);
-    this.loadPotentialPatients(facilityId);
+    Promise.all([
+      this.loadPatients(facilityId),
+      this.loadPotentialPatients(facilityId)
+    ]).then(() => {
+      this.searchablePatients = [
+        ...this.patients.map<ISearchablePatient>(this.convertToSearchablePatient),
+        ...this.potentialPatients.map<ISearchablePatient>(this.convertToSearchablePatient)
+      ];
+    });
+
     this.loadFacilities(facilityId);
     this.loadCarePlansAndServiceAreas(this.data.carePlan || (this.data.potentialPatient || {}).care_plan);
   }
 
   public cancel(): void {
     this.modals.close(this.modalResponse);
+  }
+
+  public clearEmail(): void {
+    this.matchingPatient = null;
+    this.newPatientDetails.email = null;
   }
 
   public compareFn(obj1: IHaveId | string, obj2: IHaveId | string): boolean {
@@ -90,6 +104,7 @@ export class EnrollmentPotentialPatientDetailsComponent implements OnInit {
       const p = patient as IPotentialPatient;
       const name = `${p.first_name} ${p.last_name}`.trim();
       return <ISearchablePatient>{
+        email: (p.email || '').toLowerCase(),
         id: p.id,
         image: null,
         isPotentialPatient: true,
@@ -103,6 +118,7 @@ export class EnrollmentPotentialPatientDetailsComponent implements OnInit {
       const p = patient as IPatient;
       const name = `${p.user.first_name} ${p.user.last_name}`.trim();
       return <ISearchablePatient>{
+        email: (p.user.email || '').toLowerCase(),
         id: p.id,
         image: p.user.image,
         isPotentialPatient: false,
@@ -117,6 +133,10 @@ export class EnrollmentPotentialPatientDetailsComponent implements OnInit {
 
   public get isValidPotentialPatientForm(): boolean {
     return this.patientCreationService.isValidPotentialPatientDetails(this.newPatientDetails);
+  }
+
+  public get isValidForSaveOrNext(): boolean {
+    return this.patientCreationService.isValidForEnrollment(this.newPatientDetails);
   }
 
   private loadCarePlansAndServiceAreas(preloadedCarePlan: ICarePlan = null): void {
@@ -154,8 +174,8 @@ export class EnrollmentPotentialPatientDetailsComponent implements OnInit {
       });
   }
 
-  private loadPatients(facilityId: string): void {
-    Utils.convertObservableToPromise(this.store.PatientProfile.readListPaged())
+  private loadPatients(facilityId: string): Promise<void> {
+    return Utils.convertObservableToPromise(this.store.PatientProfile.readListPaged())
       .then((patients: Array<IPatient>) => {
         patients = patients || [];
         this.patients = !Utils.isNullOrWhitespace(facilityId)
@@ -174,8 +194,8 @@ export class EnrollmentPotentialPatientDetailsComponent implements OnInit {
       .then((diagnoses: Array<IDiagnoses>) => this.newPatientDetails.diagnoses = diagnoses);
   }
 
-  private loadPotentialPatients(facilityId: string): void {
-    Utils.convertObservableToPromise(this.store.PotentialPatient.readListPaged())
+  private loadPotentialPatients(facilityId: string): Promise<void> {
+    return Utils.convertObservableToPromise(this.store.PotentialPatient.readListPaged())
       .then((potentialPatients: Array<IPotentialPatient>) => {
         potentialPatients = potentialPatients || [];
         this.potentialPatients = uniqWith<Array<IPotentialPatient>>(potentialPatients, (a, b) => a.first_name === b.first_name && a.last_name === b.last_name);
@@ -214,18 +234,18 @@ export class EnrollmentPotentialPatientDetailsComponent implements OnInit {
     }
 
     this.filters.patients.search = this.typeahead.patient;
-    const array: Array<ISearchablePatient> = [
-      ...this.patients.map<ISearchablePatient>(this.convertToSearchablePatient),
-      ...this.potentialPatients.map<ISearchablePatient>(this.convertToSearchablePatient)
-    ];
-
     const lowerSearchText = this.typeahead.patient.toLowerCase();
-    this.filters.patients.array = Utils.sort(array.filter(u => u.nameLower.indexOf(lowerSearchText) > -1), true, 'nameLower');
+    this.filters.patients.array = Utils.sort(this.searchablePatients.filter(u => u.nameLower.indexOf(lowerSearchText) > -1), true, 'nameLower');
   }
 
   public setCareManager(employee: IEmployee): void {
     this.newPatientDetails.careManager = employee;
     this.typeahead.careManager = `${employee.user.first_name} ${employee.user.last_name}`;
+  }
+
+  public setMatchingPatient(): void {
+    this.setPatient(this.matchingPatient);
+    this.matchingPatient = null;
   }
 
   public setPatient(selectedPatient: ISearchablePatient, isPreload: boolean = false): void {
@@ -311,6 +331,17 @@ export class EnrollmentPotentialPatientDetailsComponent implements OnInit {
 
     if (Utils.isNullOrUndefined(this.newPatientDetails.carePlan)) {
       this.newPatientDetails.carePlan = this.filteredCarePlans[0];
+    }
+  }
+
+  public verifyEmail(): void {
+    if (Utils.isNullOrWhitespace(this.newPatientDetails.email)) {
+      return;
+    }
+
+    this.matchingPatient = this.searchablePatients.find(p => p.email === this.newPatientDetails.email.toLowerCase());
+    if (!Utils.isNullOrUndefined(this.matchingPatient)) {
+      Utils.logDebug('Found matching patient', this.matchingPatient);
     }
   }
 

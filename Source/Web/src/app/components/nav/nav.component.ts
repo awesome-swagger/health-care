@@ -1,22 +1,20 @@
+import * as moment from 'moment';
 import { Component, OnDestroy, OnInit } from '@angular/core';
+import { filter as _filter, map as _map, sum as _sum } from 'lodash';
 import { Router } from '@angular/router';
 import { Subject } from 'rxjs/Subject';
+import { Subscription } from 'rxjs/Subscription';
 import 'rxjs/add/operator/debounceTime';
 import 'rxjs/add/operator/distinctUntilChanged';
-import { Subscription } from 'rxjs/Subscription';
-import { PopoverOptions } from '../../modules/popover';
+
 import { AuthService, NavbarService, StoreService } from '../../services';
-import { ModalService, ConfirmModalComponent } from '../../modules/modals';
-import {
-  filter as _filter,
-  map as _map,
-  sum as _sum
-} from 'lodash';
-import * as moment from 'moment';
+import { ConfirmModalComponent, ModalService } from '../../modules/modals';
 import { PatientCreationModalService } from '../../services/patient-creation-modal.service';
-import { INotification } from '../../models/inotification';
-import { IPatientsOverview } from '../../models/ipatient-overview';
-import { ITaskData } from '../../models/itask-data';
+import { PopoverOptions } from '../../modules/popover';
+
+import { INotification } from '../../models/notification';
+import { IPatientsOverview } from '../../models/patient-overview';
+import { ITaskData } from '../../models/task-data';
 
 @Component({
   selector: 'app-nav',

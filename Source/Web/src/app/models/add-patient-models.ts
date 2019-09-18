@@ -1,15 +1,15 @@
-import { MomentInput } from "moment";
+import { MomentInput } from 'moment';
 
-import { IBillingType } from "./ibilling_type";
-import { IFacility } from "./facility";
-import { IHaveId } from "./ihaveid";
-import { IOrganization } from "./organization";
-import { IPatient } from "./patient";
-import { IRole } from "./role";
-import { IServiceArea } from "./service-area";
-import { IUser } from "./user";
-import { ITitle } from "./title";
-import { ISpecialty } from "./specialty";
+import { IBillingType } from './billing_type';
+import { IFacility } from './facility';
+import { IHaveId } from './ihave-id';
+import { IOrganization } from './organization';
+import { IPatient } from './patient';
+import { IRole } from './role';
+import { IServiceArea } from './service-area';
+import { ISpecialty } from './specialty';
+import { ITitle } from './title';
+import { IUser } from './user';
 
 /**
  * NOTE: This file exists only until the active patient page is re-factored then the actual types should be moved to separate files.
@@ -92,13 +92,3 @@ export interface IPatientProfile extends IHaveId {
   title?: ITitle;
   user?: IUser;
 }
-
-//export interface ITitle extends IHaveId {
-//  abbreviation?: string;
-//  name?: string;
-//}
-
-//export interface ISpecialty extends IHaveId {
-//  name?: string;
-//  physician_specialty?: boolean;
-//}

@@ -47,6 +47,5 @@ export class ReassignPatientsComponent implements OnInit {
   }
 
   public ngOnInit() {
-    console.log(this.data);
   }
 }

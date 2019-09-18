@@ -14,6 +14,5 @@ export class PlanExpiredComponent implements OnInit {
   }
 
   public ngOnInit() {
-    console.log(this.data);
   }
 }

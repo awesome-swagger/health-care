@@ -1,7 +1,7 @@
-import { MomentInput } from "moment";
+import { MomentInput } from 'moment';
 
-import { IBasicUser } from "./basic-user";
-import { ICarePlan } from "./care-plan";
+import { IBasicUser } from './basic-user';
+import { ICarePlan } from './care-plan';
 
 export interface IPotentialPatient extends IBasicUser {
   care_plan?: ICarePlan

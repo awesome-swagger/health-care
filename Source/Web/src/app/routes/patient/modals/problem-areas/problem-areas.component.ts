@@ -32,7 +32,6 @@ export class ProblemAreasComponent implements OnDestroy, OnInit {
   ) { }
 
   public ngOnInit() {
-    console.log(this.data);
     this.authSub = this.auth.user$.subscribe((user) => {
       this.user = user;
     });

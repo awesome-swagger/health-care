@@ -8,7 +8,7 @@ import { CreateAssessmentComponent } from '../../components/modals/create-assess
 import { CreateStreamComponent } from '../../components/modals/create-stream/create-stream.component';
 import { CreateVitalComponent } from '../../components/modals/create-vital/create-vital.component';
 import { EditTaskComponent } from '../../components/modals/edit-task/edit-task.component';
-import { EnrollmentPatientEnrolledComponent } from '../../components';
+import { EnrollmentPatientEnrolledComponent } from '../../components/modals/enrollment-patient-enrolled/enrollment-patient-enrolled.component';
 import { EnrollmentRequiredComponent } from '../../components/modals/enrollment-required/enrollment-required.component';
 import { PatientsEnrolledGraphComponent } from '../../components/graphs/patients-enrolled-graph/patients-enrolled-graph.component';
 import { PercentageGaugeComponent } from '../../components/graphs/percentage-gauge/percentage-gauge.component';

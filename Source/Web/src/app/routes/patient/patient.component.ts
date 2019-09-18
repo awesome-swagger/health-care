@@ -1,10 +1,12 @@
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import * as moment from 'moment';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, Params } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { filter as _filter, find as _find } from 'lodash';
 
 import { AddDiagnosisComponent } from './modals/add-diagnosis/add-diagnosis.component';
+import { Subscription } from 'rxjs';
+
 import { AppConfig } from '../../app.config';
 import { AuthService, NavbarService, StoreService, UtilsService } from '../../services';
 import { CarePlanConsentComponent } from './modals/care-plan-consent/care-plan-consent.component';
@@ -19,8 +21,15 @@ import { PatientEmergencyContactComponent } from './modals/patient-emergency-con
 import { PatientProfileComponent } from './modals/patient-profile/patient-profile.component';
 import { ProblemAreasComponent } from './modals/problem-areas/problem-areas.component';
 import { ProcedureComponent } from './modals/procedure/procedure.component';
+import { Utils } from '../../utils';
 
-import { IAddPatientToPlanComponentData } from '../../models/iadd-patient-to-plan-component-data';
+import { IAddPatientToPlanComponentData } from '../../models/add-patient-to-plan-component-data';
+import { IApiResultsContainer } from '../../models/api-results-container';
+import { IEmergencyContact } from '../../models/emergency-contact';
+import { IEmployee } from '../../models/employee';
+import { IPatient } from '../../models/patient';
+import { IPatientCarePlan, IOverview } from '../../models/patient-interfaces';
+import { IPatientEnrollmentResponse } from '../../models/patient-enrollment-modal-response';
 
 class ImageSnippet {
   constructor(public src: string, public file: File) { }
@@ -32,29 +41,27 @@ class ImageSnippet {
   styleUrls: ['./patient.component.scss'],
 })
 export class PatientComponent implements OnDestroy, OnInit {
-
   @ViewChild('imageUpload') private imageUpload: ElementRef;
 
-  public moment = moment;
+  private routeSub: Subscription = null;
+  private userSub: Subscription = null;
 
-  public patient = null;
-  public carePlans = [];
+  public carePlans: Array<IPatientCarePlan> = [];
+  public editName;
+  public emergencyContact: IEmergencyContact = null;
+  public employee: IEmployee = null;
+  public moment = moment;
+  public nextCheckinTeamMember = null;
+  public nextCheckinVisible = false;
+  public patient: IPatient = null;
   public patientDiagnoses = [];
   public patientDiagnosesRaw = [];
   public patientMedications = [];
-  public nextCheckinTeamMember = null;
-  public problemAreas = [];
   public patientProcedures = [];
-  public teamListOpen = {};
   public patientStats = null;
-  public emergencyContact = null;
-
-  public editName;
-  public tooltipPSOpen;
-  public nextCheckinVisible = false;
-
-  private routeSub = null;
-  public employee = null;
+  public problemAreas = [];
+  public teamListOpen = {};
+  public tooltipPSOpen; re
 
   constructor(
     private auth: AuthService,
@@ -72,132 +79,83 @@ export class PatientComponent implements OnDestroy, OnInit {
 
   public ngOnInit() {
     this.nav.normalState();
-    this.routeSub = this.route.params.subscribe((params) => {
-      this.getPatient(params.patientId).then((patient: any) => {
-        this.patient = patient;
-        this.nav.addRecentPatient(this.patient);
-        this.getEmergencyContact();
-        this.getCarePlans(this.patient.id).then((carePlans: any) => {
-          this.carePlans = carePlans;
-          this.getCarePlanOverview(this.patient.id).then((overview: any) => {
-            let overviewStats = overview.results;
-            this.carePlans.forEach((carePlan) => {
-              carePlan.overview = overviewStats.find((overviewObj) => overviewObj.plan_template.id === carePlan.plan_template.id);
-              let allTeamMembers = carePlan.overview.care_team;
-              // Get care manager
-              carePlan.care_manager = allTeamMembers.filter((obj) => {
-                return obj.is_manager;
-              })[0];
-              // Get regular team members
-              carePlan.team_members = allTeamMembers.filter((obj) => {
-                return !obj.is_manager;
-              });
-              // Get team member with closest check in date
-              let sortedCT = this.sortTeamMembersByCheckin(allTeamMembers);
-              if (sortedCT.length > 0) {
-                this.nextCheckinTeamMember = sortedCT[0];
-              }
-            });
-          });
-          this.getPatientMedications(this.patient.id);
-        });
-        this.getProblemAreas(this.patient.id).then((problemAreas: any) => {
-          this.problemAreas = problemAreas;
-        });
-        this.getPatientProcedures(this.patient.id).then((patientProcedures: any) => {
-          this.patientProcedures = patientProcedures;
-        });
-
-        this.store.PatientStat.readListPaged().subscribe(res => {
-          this.patientStats = _find(res, stat => stat.mrn === patient.emr_code);
-        });
-
-        this.getPatientDiagnoses(this.patient);
-
-
-      }).catch(() => {
-        this.router.navigate(['/error']).then(() => { });
-        // this.patient = patientData.patient;
-        // this.carePlans = patientData.carePlans;
-      });
+    this.routeSub = this.route.params.subscribe((params: Params) => {
+      this
+        .loadPatient(params.patientId)
+        .then(() => {
+          this.nav.addRecentPatient(this.patient);
+          this.loadEmergencyContact();
+          this.loadCarePlans(this.patient.id);
+          this.loadProblemAreas(this.patient.id);
+          this.loadPatientProcedures(this.patient.id);
+          Utils.convertObservableToPromise(this.store.PatientStat.readListPaged())
+            .then(res => this.patientStats = _find(res, stat => stat.mrn === this.patient.emr_code));
+          this.getPatientDiagnoses(this.patient);
+        })
+        .catch(() => this.router.navigate(['/error']));
     });
 
-    this.auth.user$.subscribe(user => {
-      if (!user) return;
+    this.userSub = this.auth.user$.subscribe((user: IEmployee) => {
+      if (Utils.isNullOrUndefined(user)) {
+        return;
+      }
+
       this.employee = user;
     });
   }
 
   public ngOnDestroy() {
-    this.routeSub.unsubscribe();
+    const unsub = (sub: Subscription) => (sub || { unsubscribe: () => null }).unsubscribe();
+    unsub(this.routeSub);
+    unsub(this.userSub);
   }
 
-  public getPatient(id) {
-    return new Promise((resolve, reject) => {
-      let patientSub = this.store.PatientProfile.read(id).subscribe(
-        (patient) => {
-          resolve(patient);
-        },
-        (err) => {
-          reject(err);
-        },
-        () => {
-          patientSub.unsubscribe();
-        },
-      );
-    });
+  public loadPatient(id: string): Promise<void> {
+    return Utils.convertObservableToPromise<IPatient>(this.store.PatientProfile.read(id))
+      .then(patient => this.patient = patient)
+      .then(() => null);
   }
 
-  public getProblemAreas(patientId) {
-    return new Promise((resolve, reject) => {
-      let problemAreasSub = this.store.ProblemArea.readListPaged({
-        patient: patientId,
-      }).subscribe(
-        (problemAreas) => resolve(problemAreas),
-        (err) => reject(err),
-        () => {
-          problemAreasSub.unsubscribe();
-        },
-      );
-    });
+  public loadProblemAreas(patientId: string): void {
+    const data = { patient: patientId };
+    Utils.convertObservableToPromise(this.store.ProblemArea.readListPaged(data))
+      .then((problemAreas: any) => this.problemAreas = problemAreas);
   }
 
-  public getCarePlans(patientId) {
-    return new Promise((resolve, reject) => {
-      let carePlanSub = this.store.CarePlan.readListPaged({ patient: patientId }).subscribe(
-        (plans) => {
-          resolve(plans);
-        },
-        (err) => {
-          reject(err);
-        },
-        () => {
-          carePlanSub.unsubscribe();
-        }
-      );
-    });
+  public loadCarePlans(patientId: string): void {
+    Utils
+      .convertObservableToPromise<Array<IPatientCarePlan>>(this.store.CarePlan.readListPaged({ patient: patientId }))
+      .then((carePlans: Array<IPatientCarePlan>) => this.carePlans = carePlans)
+      .then(() => {
+        this.getCarePlanOverview(this.patient.id).then((overviews: Array<IOverview>) => {
+          this.carePlans.forEach((carePlan) => {
+            carePlan.overview = overviews.find((overviewObj) => overviewObj.plan_template.id === carePlan.plan_template.id);
+            const allTeamMembers = carePlan.overview.care_team;
+            // Get care manager
+            carePlan.care_manager = allTeamMembers.filter((obj) => obj.is_manager)[0];
+            // Get regular team members
+            carePlan.team_members = allTeamMembers.filter((obj) => !obj.is_manager);
+            // Get team member with closest check in date
+            const sortedCT = this.sortTeamMembersByCheckin(allTeamMembers);
+            if (sortedCT.length > 0) {
+              this.nextCheckinTeamMember = sortedCT[0];
+            }
+          });
+        });
+
+        this.getPatientMedications(this.patient.id);
+      });
   }
 
-  public getCarePlanOverview(patientId) {
-    return new Promise((resolve, reject) => {
-      let overviewSub = this.store.PatientProfile.detailRoute('get', patientId, 'care_plan_overview').subscribe(
-        (overview) => resolve(overview),
-        (err) => reject(err),
-        () => {
-          overviewSub.unsubscribe();
-        }
-      );
-    });
+  public getCarePlanOverview(patientId: string): Promise<Array<IOverview>> {
+    return Utils
+      .convertObservableToPromise<IApiResultsContainer<Array<IOverview>>>(this.store.PatientProfile.detailRoute('get', patientId, 'care_plan_overview'))
+      .then(response => response.results);
   }
 
-  public getEmergencyContact() {
-    this.store.PatientProfile.detailRoute('GET', this.patient.id, 'emergency_contacts').subscribe((res: any) => {
-      if (res.results[0]) {
-        this.emergencyContact = res.results[0];
-      } else {
-        this.emergencyContact = {};
-      }
-    });
+  public loadEmergencyContact(): void {
+    Utils.convertObservableToPromise<IApiResultsContainer<Array<IEmergencyContact>>>(this.store.PatientProfile.detailRoute('GET', this.patient.id, 'emergency_contacts'))
+      .then((response: IApiResultsContainer<Array<IEmergencyContact>>) => this.emergencyContact = (response.results || [null])[0]);
   }
 
   public getCareTeam(plan) {
@@ -208,18 +166,10 @@ export class PatientComponent implements OnDestroy, OnInit {
     });
   }
 
-  public getPatientProcedures(patientId) {
-    return new Promise((resolve, reject) => {
-      let proceduresSub = this.store.PatientProcedure.readListPaged({
-        patient: patientId,
-      }).subscribe(
-        (procedures) => resolve(procedures),
-        (err) => reject(err),
-        () => {
-          proceduresSub.unsubscribe();
-        },
-      );
-    });
+  public loadPatientProcedures(patientId: string): void {
+    const data = { patient: patientId };
+    Utils.convertObservableToPromise(this.store.PatientProcedure.readListPaged(data))
+      .then(procedures => this.patientProcedures = procedures);
   }
 
   public getPatientDiagnoses(patient) {
@@ -330,12 +280,12 @@ export class PatientComponent implements OnDestroy, OnInit {
     }).subscribe((data) => {
       if (!data) return;
       this.patient.payer_reimbursement = data.patient.payer_reimbursement;
-      this.carePlans[planIndex].billing_type = data.plan.billing_type;
+      (this.carePlans[planIndex] as any).billing_type = data.plan.billing_type;
     });
   }
 
   public openProblemAreas(plan) {
-    this.modals.open(ProblemAreasComponent, {
+    const data = {
       closeDisabled: false,
       data: {
         patient: this.patient,
@@ -343,11 +293,10 @@ export class PatientComponent implements OnDestroy, OnInit {
         problemAreas: this.problemAreasFilteredByPlan(plan.id),
       },
       width: '560px',
-    }).subscribe(() => {
-      this.getProblemAreas(this.patient.id).then((problemAreas: any) => {
-        this.problemAreas = problemAreas;
-      });
-    });
+    };
+
+    Utils.convertObservableToPromise(this.modals.open(ProblemAreasComponent, data))
+      .then(() => this.loadProblemAreas(this.patient.id));
   }
 
   public confirmPause() {
@@ -403,12 +352,10 @@ export class PatientComponent implements OnDestroy, OnInit {
     };
     this.patientCreationModalService
       .openEnrollment_PotentialPatientDetails(data)
-      .then((plan) => {
-        //// TODO: This is not what it would have ever returned!
-        //// this returns an IPatient you might need to refresh the carePlans
-        //if (plan) {
-        //  this.carePlans.push(plan);
-        //}
+      .then((response: IPatientEnrollmentResponse) => {
+        if (!Utils.isNullOrUndefined(response.patient)) {
+          this.loadCarePlans(response.patient.id);
+        }
       });
   }
 

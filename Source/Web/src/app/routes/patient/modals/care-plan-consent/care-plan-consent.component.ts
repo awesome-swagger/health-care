@@ -28,7 +28,6 @@ export class CarePlanConsentComponent implements OnInit {
   ) { }
 
   public ngOnInit() {
-    console.log(this.data);
     this.store.CarePlan.read(this.data.plan_id).subscribe((carePlan) => {
       this.carePlan = carePlan;
       this.store.PatientProfile.read(carePlan.patient.id).subscribe((patient) => {

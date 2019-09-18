@@ -3,23 +3,25 @@ import { Injectable } from '@angular/core';
 import * as postData from '../models/post-data';
 import { EnrollmentConsentComponent } from '../components/modals/enrollment-consent/enrollment-consent.component';
 import { EnrollmentDetailsComponent } from '../components/modals/enrollment-details/enrollment-details.component';
+import { EnrollmentMessagingComponent } from '../components/modals/enrollment-messaging';
+import { EnrollmentPatientEnrolledComponent } from '../components/modals/enrollment-patient-enrolled/enrollment-patient-enrolled.component';
 import { EnrollmentPotentialPatientAddedComponent } from '../components/modals/enrollment-potential-patient-added/enrollment-potential-patient-added.component';
 import { EnrollmentPotentialPatientDetailsComponent } from '../components/modals/enrollment-potential-patient-details/enrollment-potential-patient-details.component';
 import { EnrollmentRequiredComponent } from '../components/modals/enrollment-required/enrollment-required.component';
 import { ModalService } from '../modules/modals';
 import { StoreService } from './store.service';
 import { ToastService } from '../modules/toast';
-import { Utils } from '../utils';
+import { Utils, LogLevel } from '../utils';
 
-import { IAddPatientToPlanComponentData } from '../models/iadd-patient-to-plan-component-data';
+import { IAddPatientToPlanComponentData } from '../models/add-patient-to-plan-component-data';
 import { ICarePlan } from '../models/care-plan';
 import { IDiagnoses } from '../models/diagnoses';
 import { IEmployee } from '../models/employee';
-import { INewPatientDetails } from '../models/inew-patient-details';
+import { INewPatientDetails } from '../models/new-patient-details';
 import { IPatient } from '../models/patient';
-import { IPatientEnrollmentModalResponse, IPatientEnrollmentResponse, PatientCreationAction, PatientCreationStep } from '../models/ipatient-enrollment-modal-response';
+import { IPatientEnrollmentModalResponse, IPatientEnrollmentResponse, PatientCreationAction, PatientCreationStep } from '../models/patient-enrollment-modal-response';
 import { IPotentialPatient } from '../models/potential-patient';
-import { IPotentialPatientEnrollmentDetailsComponentInitialData } from '../models/ipotential-patient-enrollment-details-component-initial-data';
+import { IPotentialPatientEnrollmentDetailsComponentInitialData } from '../models/potential-patient-enrollment-details-component-initial-data';
 import { IRole } from '../models/role';
 import { IUser } from '../models/user';
 
@@ -28,7 +30,14 @@ export class PatientCreationModalService {
   private readonly pw = 'password';
   private billingPractitionerRole: IRole = null;
   private careManagerRole: IRole = null;
-  private logMessages = false;
+  private logAction = <T>(message: string, action: () => Promise<T>, logResponse: boolean = false) => {
+    return Promise.resolve()
+      .then(() => Utils.logDebug(`starting_${message}`))
+      .then(() => action())
+      .then((response) => logResponse && Utils.logDebug(`response_${message}`, response))
+      .then(() => Utils.logDebug(`complete_${message}`))
+      .catch(() => null);
+  };
 
   constructor(
     private modals: ModalService,
@@ -36,58 +45,63 @@ export class PatientCreationModalService {
     private toast: ToastService
   ) {
     this.loadRoles();
+    Utils.minimumLoggingLevel = LogLevel.debug;
   }
 
-  private catchError<T>(message: string, error: Error | string, returnValue: T): Promise<T> {
-    this.toast.error(message);
-    console.error(error);
+  private catchError<T>(message: string, error: Error | string, returnValue: T, reject: boolean = false): Promise<T> {
+    Utils.logError(message, error, returnValue);
+    if (reject) {
+      return Promise.reject(message)
+    }
 
+    this.toast.error(message);
     return Promise.resolve(returnValue);
   }
 
   private completeEnrollment(newPatientDetails: INewPatientDetails, potentialPatientId: string): Promise<IPatientEnrollmentResponse> {
-    return Promise
-      .resolve(null)
-      // These log messages will remain in place until either the enrollment process (improvement) is complete or replaced with a single end-point
-      .then(() => this.logMessages && console.info('starting_updatePhoneIfNeeded'))
-      .then(() => this.updatePhoneIfNeeded(newPatientDetails))
-      .then(() => this.logMessages && console.info('complete_updatePhoneIfNeeded'))
+    const data: {
+      action?: () => Promise<void>,
+      error?: Error | string,
+      message: string,
+      name: string,
+      success?: boolean,
+    } = {
+      message: 'Creating/updating patient details',
+      name: `${newPatientDetails.firstName} ${newPatientDetails.lastName}`
+    };
+    const action = () => Promise
+      .resolve()
+      .then(() => this.logAction('updatePhoneIfNeeded', () => this.updatePhoneIfNeeded(newPatientDetails)))
+      .then(() => this.logAction('createPatientIfNeeded', () => this.createPatientIfNeeded(newPatientDetails), true))
+      .then(() => data.message = 'Creating care plan')
+      .then(() => this.logAction('createCarePlan', () => this.createCarePlan(newPatientDetails)))
+      .then(() => data.message = 'Creating care manager/billing practitioner')
+      .then(() => this.logAction('createCareTeamMemberIfNeeded_careManager', () => this.createCareTeamMemberIfNeeded(this.careManagerRole, newPatientDetails)))
+      .then(() => this.logAction('createCareTeamMemberIfNeeded_billingPractitioner', () => this.createCareTeamMemberIfNeeded(this.billingPractitionerRole, newPatientDetails)))
+      .then(() => data.message = 'Creating consent form')
+      .then(() => this.logAction('createPlanConsentForm', () => this.createPlanConsentForm(newPatientDetails)))
+      .then(() => data.message = 'Creating diagnoses')
+      .then(() => this.logAction('createDiagnosesIfNeeded', () => this.createDiagnosesIfNeeded(newPatientDetails)))
+      .then(() => this.logAction('deletePotentialPatientIfNeeded', () => this.deletePotentialPatientIfNeeded(newPatientDetails, potentialPatientId)))
+      .then(() => data.message = 'Creating care team')
+      .then(() => this.logAction('createOtherCareTeamRolesIfNeeded', () => this.createOtherCareTeamRolesIfNeeded(newPatientDetails)))
+      .catch(error => this.catchError('Failed to enroll patient', error, null, true));
+    data.action = action;
 
-      .then(() => this.logMessages && console.info('starting_createPatientIfNeeded'))
-      .then(() => this.createPatientIfNeeded(newPatientDetails))
-      .then((response) => (this.logMessages && console.log('patientDetails', { response, newPatientDetails })))
-      .then(() => this.logMessages && console.info('complete_createPatientIfNeeded'))
-
-      .then(() => this.logMessages && console.info('starting_createCarePlan'))
-      .then(() => this.createCarePlan(newPatientDetails))
-      .then(() => this.logMessages && console.info('complete_createCarePlan'))
-
-      .then(() => this.logMessages && console.info('starting_createCareTeamMemberIfNeeded_careManager'))
-      .then(() => this.createCareTeamMemberIfNeeded(this.careManagerRole, newPatientDetails))
-      .then(() => this.logMessages && console.info('complete_createCareTeamMemberIfNeeded_careManager'))
-
-      .then(() => this.logMessages && console.info('starting_createCareTeamMemberIfNeeded_billingPractitioner'))
-      .then(() => this.createCareTeamMemberIfNeeded(this.billingPractitionerRole, newPatientDetails))
-      .then(() => this.logMessages && console.info('complete_createCareTeamMemberIfNeeded_billingPractitioner'))
-
-      .then(() => this.logMessages && console.info('starting_createPlanConsentForm'))
-      .then(() => this.createPlanConsentForm(newPatientDetails))
-      .then(() => this.logMessages && console.info('complete_createPlanConsentForm'))
-
-      .then(() => this.logMessages && console.info('starting_createDiagnosesIfNeeded'))
-      .then(() => this.createDiagnosesIfNeeded(newPatientDetails))
-      .then(() => this.logMessages && console.info('complete_createDiagnosesIfNeeded'))
-
-      .then(() => this.logMessages && console.info('starting_deletePotentialPatientIfNeeded'))
-      .then(() => this.deletePotentialPatientIfNeeded(newPatientDetails, potentialPatientId))
-      .then(() => this.logMessages && console.info('complete_deletePotentialPatientIfNeeded'))
-
-      .then(() => this.logMessages && console.info('starting_createOtherCareTeamRolesIfNeeded'))
-      .then(() => this.createOtherCareTeamRolesIfNeeded(newPatientDetails))
-      .then(() => this.logMessages && console.info('complete_createOtherCareTeamRolesIfNeeded'))
-
-      .then(() => this.logMessages && console.info('complete_patientEnrolled'))
-      .then(() => ({ potentialPatientId, patient: newPatientDetails.patient.patient as IPatient, carePlan: newPatientDetails.carePlan }));
+    return this
+      .openModal(508, data, EnrollmentMessagingComponent, false)
+      .then(() => {
+        if (!Utils.isNullOrUndefined(data.error) || !data.success) {
+          throw data.error || 'An unknown error has occurred while attempting to enroll the patient';
+        }
+      })
+      .then(() => this.logAction('patientEnrolled_dispatchEvent_refreshPatientOverview', () => Promise.resolve(document.dispatchEvent(new Event('refreshPatientOverview')))))
+      .then(() => this.openModal(508, newPatientDetails, EnrollmentPatientEnrolledComponent))
+      .then(() => ({ potentialPatientId, patient: newPatientDetails.patient.patient as IPatient }))
+      .catch(error => {
+        this.modals.close(null);
+        return this.catchError('Failed to complete patient enrollment', error, null);
+      });
   }
 
   private createCarePlan(newPatientDetails: INewPatientDetails): Promise<INewPatientDetails> {
@@ -100,11 +114,12 @@ export class PatientCreationModalService {
     };
 
     return Promise.resolve()
-      .then(() => this.logMessages && console.info('starting_this.store.CarePlan.create'))
-      .then(() => Utils.convertObservableToPromise<ICarePlan>(this.store.CarePlan.create(postData)))
-      .then((carePlan: ICarePlan) => newPatientDetails.carePlan = carePlan)
-      .then(() => this.logMessages && console.info('complete_this.store.CarePlan.create'))
-      .then(() => newPatientDetails);
+      .then(() => this.logAction('this.store.CarePlan.create', () => Utils
+        .convertObservableToPromise<ICarePlan>(this.store.CarePlan.create(postData))
+        .then((carePlan: ICarePlan) => newPatientDetails.carePlan = carePlan)
+      ))
+      .then(() => newPatientDetails)
+      .catch(error => this.catchError('Failed to create care plan', error, null, true));
   }
 
   private createCareTeamMemberIfNeeded(role: IRole, newPatientDetails: INewPatientDetails): Promise<INewPatientDetails> {
@@ -114,7 +129,7 @@ export class PatientCreationModalService {
       : newPatientDetails.billingPractioner;
 
     if (Utils.isNullOrUndefined(careTeamMember)) {
-      (this.logMessages && console.info('complete_NoCareTeamMemberCreated'));
+      (Utils.logDebug('complete_NoCareTeamMemberCreated'));
       return Promise.resolve(null);
     }
 
@@ -127,58 +142,72 @@ export class PatientCreationModalService {
     };
 
     return Promise.resolve()
-      .then(() => this.logMessages && console.info('starting_this.store.CareTeamMember.create'))
-      .then(() => Utils.convertObservableToPromise<IEmployee>(this.store.CareTeamMember.create(postData)))
-      .then((member: IEmployee) => {
-        if (!Utils.isNullOrUndefined(member)) {
-          (this.logMessages && console.info('complete_careTeamMemberCreated'));
-          newPatientDetails.carePlan.careTeam.push(member);
-        }
-      })
-      .then(() => this.logMessages && console.info('complete_this.store.CareTeamMember.create'))
-      .then(() => newPatientDetails);
+      .then(() => this.logAction('this.store.CareTeamMember.create', () => {
+        return Utils
+          .convertObservableToPromise<IEmployee>(this.store.CareTeamMember.create(postData))
+          .then((member: IEmployee) => {
+            if (!Utils.isNullOrUndefined(member)) {
+              newPatientDetails.carePlan.careTeam.push(member);
+            }
+          });
+      }))
+      .then(() => newPatientDetails)
+      .catch(error => this.catchError('Failed to create team member', error, null, true));
   }
 
   private createDiagnosesIfNeeded(newPatientDetails: INewPatientDetails): Promise<INewPatientDetails> {
-    if (Utils.isNullOrEmptyCollection(newPatientDetails.diagnoses)) {
-      (this.logMessages && console.info('complete_noDiagnosesAdded'));
-      return Promise.resolve(newPatientDetails);
+    var notChronicPlan = () => {
+      const planType = (newPatientDetails.planType || {}).acronym;
+      return !(planType === 'CCM' || planType === 'CCCM');
+    };
+
+    if (!newPatientDetails.checked.reimburses || Utils.isNullOrEmptyCollection(newPatientDetails.diagnoses) || notChronicPlan()) {
+      return this.logAction('noDiagnosesAdded', () => Promise.resolve())
+        .then(() => newPatientDetails);
     }
 
     const totalDiagnoses = newPatientDetails.diagnoses.length;
-    let counter = -1;
+    let counter = 0;
     const promises: Array<Promise<IDiagnoses>> = [];
-    let p = Promise.resolve()
-      .then(() => (this.logMessages && console.info(`starting_this.store.PatientDiagnosis.update/create => (0 of ${totalDiagnoses})`)))
-      .then(() => null);
-    promises.push(p);
 
+    (Utils.logDebug(`starting_this.store.PatientDiagnosis.update/create => (0 of ${totalDiagnoses})`));
     const promise = new Promise<INewPatientDetails>(resolve => {
-      (newPatientDetails.diagnoses || []).forEach(diagnoses => {
+      newPatientDetails.diagnoses.forEach(diagnoses => {
         if (Utils.isNullOrWhitespace(diagnoses.patient)) {
           diagnoses.patient = newPatientDetails.patient.patient.id;
         }
 
+        const fail = `Failed to create diagnoses: ${++counter}`;
+        const message = `this.store.PatientDiagnosis.${(diagnoses.isModified ? 'update' : 'create')} => (${counter} of ${totalDiagnoses})`;
         const action = Utils.isTrueValue(diagnoses.isModified)
           ? this.store.PatientDiagnosis.update(diagnoses.id, diagnoses)
           : this.store.PatientDiagnosis.create(diagnoses);
 
-        p = Promise.resolve()
-          .then(() => this.logMessages && console.info(`starting_this.store.PatientDiagnosis.update/create => (${++counter} of ${totalDiagnoses})`))
-          .then(() => Utils.convertObservableToPromise<IDiagnoses>(action))
-          .then(() => this.logMessages && console.info(`complete_this.store.PatientDiagnosis.update/create => (${counter} of ${totalDiagnoses})`))
-          .then(newOrUpdatedDiagnoses => Object.assign(diagnoses, newOrUpdatedDiagnoses));
+        const p = this
+          .logAction(message, () => Utils
+            .convertObservableToPromise<IDiagnoses>(action)
+            .then(newOrUpdatedDiagnoses => Object.assign(diagnoses, newOrUpdatedDiagnoses))
+            .catch(error => this.catchError(fail, error, null))
+          );
 
         promises.push(p);
       });
 
       Promise
         .all(promises)
-        .then(diagnoses => diagnoses.map(d => d.id))
-        .then((diagnosis: Array<string>) => Utils.convertObservableToPromise(this.store.PatientProfile.update(newPatientDetails.patient.patient.id, { diagnosis })))
-        .then((a) => resolve(newPatientDetails))
-        .then(() => this.logMessages && console.info(`complete_this.store.PatientDiagnosis.update/create => (${totalDiagnoses} of ${totalDiagnoses})`))
-        .then(() => newPatientDetails);
+        .then(diagnoses => diagnoses.filter(x => !Utils.isNullOrUndefined(x)).map(d => d.id))
+        .then((diagnosis: Array<string>) => this
+          .logAction(
+            'updatingPatientProfile',
+            () => Utils
+              .convertObservableToPromise(this.store.PatientProfile.update(newPatientDetails.patient.patient.id, { diagnosis }))
+              .catch(error => this.catchError('Failed to create diagnoses', error, null, true)),
+            true
+          )
+        )
+        .then(() => Utils.logDebug(`complete_this.store.PatientDiagnosis.update/create => (${totalDiagnoses} of ${totalDiagnoses})`))
+        .then(() => resolve(newPatientDetails))
+        .catch(error => this.catchError('Failed to create diagnoses', error, null, true));
     });
 
     return promise;
@@ -196,7 +225,6 @@ export class PatientCreationModalService {
       source: newPatientDetails.source,
     };
 
-    let potentialPatient: IPotentialPatient;
     const action = () => Utils.convertObservableToPromise<IPotentialPatient>(
       isPotentialPatient
         ? this.store.PotentialPatient.update(newPatientDetails.patient.patient.id, potentialPatientData)
@@ -204,12 +232,13 @@ export class PatientCreationModalService {
     );
 
     return Promise.resolve()
-      .then(() => this.logMessages && console.info('starting_this.store.PotentialPatient.update/Update'))
+      .then(() => Utils.logDebug('starting_this.store.PotentialPatient.create/Update'))
       .then(() => action())
-      .then(p => potentialPatient = p)
-      .then(() => this.logMessages && console.info('complete_this.store.PotentialPatient.update/Update'))
-      .then(() => potentialPatient)
-      .catch(error => this.catchError('Failed to create/update potential patient', error, null));
+      .then(potentialPatient => {
+        (Utils.logDebug('complete_this.store.PotentialPatient.create/Update', potentialPatient));
+        return potentialPatient;
+      })
+      .catch(error => this.catchError('Failed to create/update potential patient', error, null, true));
   }
 
   private createOtherCareTeamRolesIfNeeded(newPatientDetails: INewPatientDetails): Promise<INewPatientDetails> {
@@ -217,7 +246,7 @@ export class PatientCreationModalService {
     let counter = -1;
     const promises: Array<Promise<INewPatientDetails>> = [];
     let p = Promise.resolve()
-      .then(() => this.logMessages && console.info(`starting_this.createCareTeamMemberIfNeeded => (${++counter} of ${totalRoles})`))
+      .then(() => Utils.logDebug(`starting_this.createCareTeamMemberIfNeeded => (${++counter} of ${totalRoles})`))
       .then(() => null);
     promises.push(p);
 
@@ -231,17 +260,18 @@ export class PatientCreationModalService {
           : this.createCareTeamMemberIfNeeded(role, newPatientDetails);
 
         p = Promise.resolve()
-          .then(() => this.logMessages && console.info(`starting_this.createCareTeamMemberIfNeeded => (${++counter} of ${totalRoles})`))
+          .then(() => Utils.logDebug(`starting_this.createCareTeamMemberIfNeeded => (${++counter} of ${totalRoles})`))
           .then(() => action())
-          .then(() => this.logMessages && console.info(`complete_this.createCareTeamMemberIfNeeded => (${counter} of ${totalRoles})`))
+          .then(() => Utils.logDebug(`complete_this.createCareTeamMemberIfNeeded => (${counter} of ${totalRoles})`))
 
         promises.push(p);
       }
 
       Promise.all(promises)
-        .then(() => this.logMessages && console.info(`complete_this.createCareTeamMemberIfNeeded => (${totalRoles} of ${totalRoles})`))
+        .then(() => Utils.logDebug(`complete_this.createCareTeamMemberIfNeeded => (${totalRoles} of ${totalRoles})`))
         .then(() => resolve(newPatientDetails))
-        .then(() => newPatientDetails);
+        .then(() => newPatientDetails)
+        .catch(error => this.catchError('Failed to create other care team members', error, null, true));
     });
 
     return promise;
@@ -249,7 +279,7 @@ export class PatientCreationModalService {
 
   private createPatientIfNeeded(newPatientDetails: INewPatientDetails): Promise<INewPatientDetails> {
     if (!Utils.isTrueValue(newPatientDetails.patient.isPotential) && !Utils.isNullOrUndefined(newPatientDetails.patient.patient)) {
-      (this.logMessages && console.info('complete_createPatientIfNeeded_patientAlreadyExists'));
+      (Utils.logDebug('complete_createPatientIfNeeded_patientAlreadyExists'));
       return Promise.resolve(newPatientDetails);
     }
 
@@ -263,15 +293,16 @@ export class PatientCreationModalService {
     };
 
     return Promise.resolve()
-      .then(() => this.logMessages && console.info('starting_this.getOrCreateUserId'))
+      .then(() => Utils.logDebug('starting_this.getOrCreateUserId'))
       .then(() => this.getOrCreateUserId(newPatientDetails))
       .then((userId: string) => createPatientProfilePostData.user = userId)
-      .then(() => (this.logMessages && console.info('createPatientProfilePostData', createPatientProfilePostData)))
+      .then(() => (Utils.logDebug('createPatientProfilePostData', createPatientProfilePostData)))
       .then(() => Utils.convertObservableToPromise<IPatient>(this.store.PatientProfile.create(createPatientProfilePostData)))
       .then(patient => newPatientDetails.patient.patient = patient)
-      .then(() => this.logMessages && console.info('createPatientIfNeeded.afterResponse', newPatientDetails))
-      .then(() => this.logMessages && console.info('complete_this.getOrCreateUserId'))
-      .then(() => newPatientDetails);
+      .then(() => Utils.logDebug('createPatientIfNeeded.afterResponse', newPatientDetails))
+      .then(() => Utils.logDebug('complete_this.getOrCreateUserId'))
+      .then(() => newPatientDetails)
+      .catch(error => this.catchError('Failed to create patient', error, null, true));
   }
 
   private createPlanConsentForm(newPatientDetails: INewPatientDetails): Promise<INewPatientDetails> {
@@ -286,34 +317,35 @@ export class PatientCreationModalService {
     };
 
     return Promise.resolve()
-      .then(() => this.logMessages && console.info('starting_this.store.PlanConsentForm.create'))
+      .then(() => Utils.logDebug('starting_this.store.PlanConsentForm.create'))
       .then(() => Utils.convertObservableToPromise<postData.IPlanConsentPostData>(this.store.PlanConsentForm.create(consentForm)))
-      .then(() => this.logMessages && console.info('complete_this.store.PlanConsentForm.create'))
-      .then(() => newPatientDetails);
+      .then(() => Utils.logDebug('complete_this.store.PlanConsentForm.create'))
+      .then(() => newPatientDetails)
+      .catch(error => this.catchError('Failed to create plan consent form', error, null, true));
   }
 
   private deletePotentialPatientIfNeeded(newPatientDetails: INewPatientDetails, potentialPatientId: string): Promise<INewPatientDetails> {
     if (Utils.isNullOrWhitespace(potentialPatientId)) {
-      (this.logMessages && console.info('complete_deletePotentialPatientIfNeeded_potentialPatientNotSpecified'));
+      (Utils.logDebug('complete_deletePotentialPatientIfNeeded_potentialPatientNotSpecified'));
       return Promise.resolve(newPatientDetails);
     }
 
     return Promise.resolve()
-      .then(() => this.logMessages && console.info('starting_this.store.PotentialPatient.destroy'))
+      .then(() => Utils.logDebug('starting_this.store.PotentialPatient.destroy'))
       .then(() => Utils.convertObservableToPromise(this.store.PotentialPatient.destroy(potentialPatientId)))
-      .then(() => this.logMessages && console.info('complete_this.store.PotentialPatient.destroy'))
+      .then(() => Utils.logDebug('complete_this.store.PotentialPatient.destroy'))
       .then(() => newPatientDetails)
       .catch(error => this.catchError(`Failed to delete potential patient with id: '${potentialPatientId}'`, error, newPatientDetails));
   }
 
   private getOrCreateUserId(newPatientDetails: INewPatientDetails): Promise<string> {
-    (this.logMessages && console.info('starting_getOrCreateUserId'));
+    (Utils.logDebug('starting_getOrCreateUserId'));
 
     return this
       .getUserIfEmailMatches(newPatientDetails.email)
       .then((user: IUser) => {
         if (!Utils.isNullOrUndefined(user) && !Utils.isNullOrWhitespace(user.id)) {
-          (this.logMessages && console.info('complete_getOrCreateUserId_basedOnEmail'));
+          (Utils.logDebug('complete_getOrCreateUserId_basedOnEmail'));
           return user.id;
         }
 
@@ -327,11 +359,12 @@ export class PatientCreationModalService {
 
         let userId: string;
         return Promise.resolve()
-          .then(() => this.logMessages && console.info('starting_this.store.AddUser.createAlt'))
+          .then(() => Utils.logDebug('starting_this.store.AddUser.createAlt'))
           .then(() => Utils.convertObservableToPromise<{ pk: string }>(this.store.AddUser.createAlt(createUserPostData)))
           .then((user: { pk: string }) => userId = user.pk)
-          .then(() => this.logMessages && console.info('complete_this.store.AddUser.createAlt'))
-          .then(() => userId);
+          .then(() => Utils.logDebug('complete_this.store.AddUser.createAlt'))
+          .then(() => userId)
+          .catch(error => this.catchError('Failed to create user', error, null, true));
       });
   }
 
@@ -359,14 +392,14 @@ export class PatientCreationModalService {
   private getUserIfEmailMatches(email: string): Promise<IUser> {
     if (Utils.isNullOrWhitespace(email)) {
       return Promise.resolve()
-        .then(() => this.logMessages && console.info('complete_getUserIfEmailMatches'))
+        .then(() => Utils.logDebug('complete_getUserIfEmailMatches'))
         .then(() => null);
     }
 
     let result: IUser
     email = email.toLowerCase().trim();
     return Promise.resolve()
-      .then(() => this.logMessages && console.info('starting_this.store.PatientProfile.readListPaged'))
+      .then(() => Utils.logDebug('starting_this.store.PatientProfile.readListPaged'))
       .then(() => Utils.convertObservableToPromise(this.store.PatientProfile.readListPaged()))
       .then((patients: Array<IPatient>) => patients
         .filter(x => !Utils.isNullOrUndefined(x.user) && !Utils.isNullOrWhitespace(x.user.email))
@@ -378,8 +411,9 @@ export class PatientCreationModalService {
           result = user.user
         }
       })
-      .then(() => this.logMessages && console.info('complete_this.store.PatientProfile.readListPaged'))
-      .then(() => result);
+      .then(() => Utils.logDebug('complete_this.store.PatientProfile.readListPaged'))
+      .then(() => result)
+      .catch(error => this.catchError('Failed to match user', error, null));
   }
 
   private loadRoles(): void {
@@ -414,16 +448,20 @@ export class PatientCreationModalService {
       .then((modalResponse) => this.processEnrollmentRequired(potentialPatientId, modalResponse));
   }
 
-  private openEnrollment_PotentialPatientAddedModal(potentialPatient: IPotentialPatient, potentialPatientId?: string): Promise<IPatientEnrollmentResponse> {
+  private openEnrollment_PotentialPatientAddedModal(newPatientDetails: INewPatientDetails, potentialPatientId?: string): Promise<IPatientEnrollmentResponse> {
+    const potentialPatient = newPatientDetails.patient.patient as IPotentialPatient;
+    (Utils.logDebug('starting_openEnrollment_PotentialPatientAddedModal'));
     potentialPatientId = this.getPotentialPatientId(potentialPatient, null, potentialPatientId);
     const obj: IPatientEnrollmentResponse = { potentialPatient, potentialPatientId };
 
-    if (!Utils.isNullOrWhitespace(potentialPatientId)) {
+    if (Utils.isNullOrUndefined(potentialPatient)) {
+      (Utils.logDebug('skipping_openEnrollment_PotentialPatientAddedModal', { potentialPatient, newPatientDetails }));
       return Promise.resolve(obj);
     }
 
     return this
-      .openModal(576, potentialPatient, EnrollmentPotentialPatientAddedComponent)
+      .openModal(576, newPatientDetails, EnrollmentPotentialPatientAddedComponent)
+      .then(() => (Utils.logDebug('completing_openEnrollment_PotentialPatientAddedModal')))
       .then(() => (obj));
   }
 
@@ -440,8 +478,9 @@ export class PatientCreationModalService {
       .then(modalResponse => this.processPotentialPatientDetails(potentialPatientId, modalResponse));
   }
 
-  private openModal<TComponent, TData>(width: number, data: TData, component: TComponent): Promise<IPatientEnrollmentModalResponse> {
+  private openModal<TComponent, TData>(width: number, data: TData, component: TComponent, blocking: boolean = true): Promise<IPatientEnrollmentModalResponse> {
     const modalData = {
+      blocking,
       data: data,
       preventClose: true,
       width: `${width}px`
@@ -503,6 +542,22 @@ export class PatientCreationModalService {
         break;
 
       case PatientCreationAction.Later:
+        // Clear data that should not be transmitted for a potential patient
+        const npd = modalResponse.newPatientDetails;
+        npd.checked.enroll = false;
+        npd.checked.reimburses = false;
+        npd.billingPractioner = null;
+        npd.careManager = null;
+        npd.chronic = null;
+        npd.diagnoses = null;
+        npd.diagnosis = null;
+        npd.enrollmentConsentDetails = null;
+        npd.insurance = null;
+        npd.planType = null;
+        for (let id in npd.carePlanRoles) {
+          npd.carePlanRoles[id].selected = false;
+        }
+        Utils.logDebug('Saving potential patient...', npd);
         promise = this.savePotentialPatientAndDisplayModalifNeeded(potentialPatientId, modalResponse);
         break;
 
@@ -601,16 +656,20 @@ export class PatientCreationModalService {
 
   private savePotentialPatientAndDisplayModalifNeeded(potentialPatientId: string, modalResponse: IPatientEnrollmentModalResponse): Promise<IPatientEnrollmentResponse> {
     return Promise.resolve()
-      .then(() => this.logMessages && console.info('starting_createOrUpdatePotentialPatient'))
+      .then(() => Utils.logDebug('starting_createOrUpdatePotentialPatient'))
       .then(() => this.createOrUpdatePotentialPatient(modalResponse.newPatientDetails))
       .then(potentialPatient => {
-        (this.logMessages && console.info('complete_createOrUpdatePotentialPatient'));
         if (Utils.isNullOrUndefined(potentialPatient)) {
+          (Utils.logDebug('skipping_createOrUpdatePotentialPatient_noPotentialPatient', potentialPatient));
           return Promise.resolve(null);
         }
 
-        return this.openEnrollment_PotentialPatientAddedModal(potentialPatient, potentialPatientId);
-      });
+        modalResponse.newPatientDetails.patient.patient = potentialPatient;
+        (Utils.logDebug('complete_createOrUpdatePotentialPatient', potentialPatient));
+
+        return this.openEnrollment_PotentialPatientAddedModal(modalResponse.newPatientDetails, potentialPatientId);
+      })
+      .catch(error => this.catchError('Failed to save potential patient', error, null));
   }
 
   private updatePhoneIfNeeded(newPatientDetails: INewPatientDetails): Promise<INewPatientDetails> {
@@ -624,20 +683,21 @@ export class PatientCreationModalService {
       || Utils.isNullOrWhitespace(newPhone)
       || (patient.user.phone || '').trim() === newPhone
     ) {
-      (this.logMessages && console.info('complete_updatePhoneIfNeeded_notNeeded'))
+      (Utils.logDebug('complete_updatePhoneIfNeeded_notNeeded'))
       return Promise.resolve(newPatientDetails);
     }
 
     const postData = { phone: newPhone };
     return Promise.resolve()
-      .then(() => this.logMessages && console.info('starting_this.store.User.update_phone'))
+      .then(() => Utils.logDebug('starting_this.store.User.update_phone'))
       .then(() => Utils.convertObservableToPromise(this.store.User.update(patient.user.id, postData)))
       .then((user: IUser) => {
         if (Utils.isNullOrUndefined(user)) {
-          console.warn('Failed to return an expected user object');
+          Utils.logWarn('Failed to return an expected user object');
         }
       })
-      .then(() => this.logMessages && console.info('complete_this.store.User.update_phone'))
-      .then(() => newPatientDetails);
+      .then(() => Utils.logDebug('complete_this.store.User.update_phone'))
+      .then(() => newPatientDetails)
+      .catch(error => this.catchError('Failed to update phone number', error, null));
   }
 }

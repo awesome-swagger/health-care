@@ -1,6 +1,6 @@
 import { MomentInput } from 'moment';
 
-import { IHaveId } from './ihaveid';
+import { IHaveId } from './ihave-id';
 
 export interface IOrganization extends IHaveId {
         addr_city?: string;

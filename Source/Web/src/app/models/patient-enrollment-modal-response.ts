@@ -1,10 +1,9 @@
-import { ICarePlan } from "./care-plan";
-import { INewPatientDetails } from "../components/modals/../../models/inew-patient-details";
-import { IPatient } from "./patient";
-import { IPotentialPatient } from "./potential-patient";
+import { ICarePlan } from './care-plan';
+import { INewPatientDetails } from './new-patient-details';
+import { IPatient } from './patient';
+import { IPotentialPatient } from './potential-patient';
 
 export interface IPatientEnrollmentResponse {
-  carePlan?: ICarePlan;
   patient?: IPatient;
   potentialPatient?: IPotentialPatient;
   potentialPatientId?: string;

@@ -1,6 +1,6 @@
 import { IDiagnosis } from './diagnosis';
 import { IEmployee } from './employee';
-import { ISearchablePatient } from './isearchable-patient';
+import { ISearchablePatient } from './searchable-patient';
 
 export interface IFilteredResults {
   billingPractioner?: {

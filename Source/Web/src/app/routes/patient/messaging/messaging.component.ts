@@ -12,6 +12,7 @@ import {
 import * as moment from 'moment';
 import { ModalService } from '../../../modules/modals';
 import { Promise } from 'q';
+import { Utils } from '../../../utils';
 
 @Component({
   selector: 'app-patient-messaging',
@@ -347,7 +348,7 @@ export class PatientMessagingComponent implements AfterViewChecked, OnDestroy, O
       this.store.CarePlan.detailRoute('POST', this.planId, uri, data).subscribe(
         (res: any) => {
           if (res === null) {
-            console.error('Failed to receive message data back from API');
+            Utils.logError('Failed to receive message data back from API', null, data);
             resolve(false);
             return;
           }
@@ -365,7 +366,7 @@ export class PatientMessagingComponent implements AfterViewChecked, OnDestroy, O
           resolve(true);
         },
         (err) => {
-          console.error('Failed to process message upload', err);
+          Utils.logError('Failed to process message upload', err, data);
           reject(false);
         },
         () => resolve(false)

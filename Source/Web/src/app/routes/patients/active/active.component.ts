@@ -7,15 +7,15 @@ import * as models from '../../../models/add-patient-models';
 import { ModalService, ConfirmModalComponent } from '../../../modules/modals';
 import { PatientCreationModalService } from '../../../services/patient-creation-modal.service';
 import { StoreService, AuthService } from '../../../services';
-import { Utils } from '../../../utils';
+import { Utils, LogLevel } from '../../../utils';
 import { UtilsService } from '../../../services';
 
-import { IAddPatientToPlanComponentData } from '../../../models/iadd-patient-to-plan-component-data';
+import { IAddPatientToPlanComponentData } from '../../../models/add-patient-to-plan-component-data';
 import { IApiResultsContainer } from '../../../models/api-results-container';
 import { IEmployee } from '../../../models/employee';
 import { IFacility } from '../../../models/facility';
 import { IOrganization } from '../../../models/organization';
-import { IPatientEnrollmentResponse } from '../../../models/ipatient-enrollment-modal-response';
+import { IPatientEnrollmentResponse } from '../../../models/patient-enrollment-modal-response';
 import { IServiceArea } from '../../../models/service-area';
 
 @Component({
@@ -64,6 +64,7 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
     public utilsService: UtilsService
   ) {
     // Nothing yet
+    Utils.minimumLoggingLevel = LogLevel.debug;
   }
 
   public ngOnInit(): void {

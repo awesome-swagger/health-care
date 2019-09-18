@@ -34,8 +34,6 @@ export class PatientProfileComponent implements OnInit {
   ) { }
 
   public ngOnInit() {
-    console.log(this.data);
-
     if (this.data && this.data.patient) {
       this.birthYear = this.data.patient.user.birthdate.split('-')[0]
       this.birthMonth = this.data.patient.user.birthdate.split('-')[1]

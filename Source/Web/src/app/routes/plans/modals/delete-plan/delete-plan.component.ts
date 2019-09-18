@@ -33,7 +33,6 @@ export class DeletePlanComponent implements OnInit, OnDestroy {
   ) {}
 
   public ngOnInit() {
-    console.log(this.data);
     this.getQualifiedPractitioners().then((practitioners: any) => {
       this.practitioners = practitioners;
     });

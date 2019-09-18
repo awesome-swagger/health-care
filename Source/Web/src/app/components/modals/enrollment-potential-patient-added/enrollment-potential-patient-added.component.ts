@@ -1,10 +1,9 @@
-import { Component, OnInit } from "@angular/core";
-//import * as moment from 'moment';
+import { Component, OnInit } from '@angular/core';
 
-import { ModalService } from "../../../modules/modals";
+import { ModalService } from '../../../modules/modals';
 
-import { INewPatientDetails } from "../../../models/inew-patient-details";
-import { IPatientEnrollmentModalResponse, PatientCreationAction, PatientCreationStep } from "../../../models/ipatient-enrollment-modal-response";
+import { INewPatientDetails } from '../../../models/new-patient-details';
+import { IPatientEnrollmentModalResponse, PatientCreationAction, PatientCreationStep } from '../../../models/patient-enrollment-modal-response';
 
 @Component({
   selector: 'app-enrollment-potential-patient-added',
@@ -19,7 +18,6 @@ export class EnrollmentPotentialPatientAddedComponent implements OnInit {
   public lastName: string;
   public modalResponse: IPatientEnrollmentModalResponse = { action: PatientCreationAction.Complete, step: PatientCreationStep.PotentialPatientAdded };
   public serviceAreaName: string;
-  public startDate: string;
 
   constructor(
     private modals: ModalService
@@ -29,6 +27,11 @@ export class EnrollmentPotentialPatientAddedComponent implements OnInit {
 
   public ngOnInit(): void {
     this.modalResponse.newPatientDetails = this.data;
+    this.carePlanName    = this.data.carePlan.name;
+    this.facilityName    = this.data.facility.name;
+    this.firstName       = this.data.firstName;
+    this.lastName        = this.data.lastName;
+    this.serviceAreaName = this.data.serviceArea.name;
   }
 
   public close(): void {

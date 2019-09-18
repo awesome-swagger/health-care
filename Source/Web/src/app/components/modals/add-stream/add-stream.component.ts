@@ -30,7 +30,6 @@ export class AddStreamComponent implements OnInit {
   ) { }
 
   public ngOnInit() {
-    console.log(this.data);
     if (this.data) {
       this.editingTemplate = this.data.editingTemplate;
       this.totalPatients = this.data.totalPatients ? this.data.totalPatients : 0;

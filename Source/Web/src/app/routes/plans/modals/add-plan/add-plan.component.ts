@@ -28,7 +28,6 @@ export class AddPlanComponent implements OnInit {
   ) {}
 
   public ngOnInit() {
-    console.log(this.data);
     if (this.data.duplicatePlan) {
       this.duplicatePlan = this.data.duplicatePlan;
       this.nameInput = this.duplicatePlan.name + ' (copy)';

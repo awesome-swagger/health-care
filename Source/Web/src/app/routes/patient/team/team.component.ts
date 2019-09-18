@@ -4,6 +4,7 @@ import { ModalService, ConfirmModalComponent } from '../../../modules/modals';
 import { ToastService } from '../../../modules/toast';
 import { AddCTMemberComponent } from '../../../components';
 import { AuthService, NavbarService, StoreService, TimeTrackerService, } from '../../../services';
+import { Utils } from '../../../utils';
 
 @Component({
   selector: 'app-patient-team',
@@ -63,8 +64,8 @@ export class PatientTeamComponent implements OnDestroy, OnInit {
             this.getAvailableRoles(params.planId).then((availableRoles: any) => {
               this.availableRoles = availableRoles;
             }, (err) => {
-              this.toast.error('Error fetching available roles');
-              console.log(err);
+                this.toast.error('Error fetching available roles');
+                Utils.logError('Error fetching available roles', err, { planId: this.planId });
             });
             // Get the assigned team members for this care plan
             this.getCareTeam(params.planId).then((teamMembers: any) => {
@@ -168,14 +169,14 @@ export class PatientTeamComponent implements OnDestroy, OnInit {
                   this.availableRoles = availableRoles;
                 },
                 (err) => {
-                this.toast.error('Error fetching available roles');
-                console.log(err);
+                  this.toast.error('Error fetching available roles');
+                  Utils.logError('Error fetching available roles', err, { planId: this.planId });
                 }
               );
             },
             (err) => {
               this.toast.error('Error creating care team member.');
-              console.log(err);
+              Utils.logError('Error creating care team member.', err, { planId: this.planId });
             },
             () => {
               createTeamMemberSub.unsubscribe();
@@ -246,8 +247,8 @@ export class PatientTeamComponent implements OnDestroy, OnInit {
                   this.availableRoles = availableRoles;
                 },
                 (err) => {
-                this.toast.error('Error fetching available roles');
-                console.log(err);
+                  this.toast.error('Error fetching available roles');
+                  Utils.logError('Error fetching available roles', err, { planId: this.planId });
                 }
               );
             }

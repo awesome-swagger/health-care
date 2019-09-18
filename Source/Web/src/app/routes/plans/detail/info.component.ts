@@ -10,8 +10,9 @@ import { ModalService } from '../../../modules/modals';
 import { PatientCreationModalService } from '../../../services/patient-creation-modal.service';
 import { PlanDurationComponent } from '../../../components';
 
-import { IAddPatientToPlanComponentData } from '../../../models/iadd-patient-to-plan-component-data';
+import { IAddPatientToPlanComponentData } from '../../../models/add-patient-to-plan-component-data';
 import { IFacility } from '../../../models/facility';
+import { Utils } from '../../../utils';
 
 @Component({
   selector: 'app-plan-info',
@@ -161,6 +162,7 @@ export class PlanInfoComponent implements OnDestroy, OnInit {
         facility: facility
     };
 
+    Utils.logDebug('adding new patient to...', data);
     this.patientCreationModalService.openEnrollment_PotentialPatientDetails(data);
   }
 

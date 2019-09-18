@@ -32,7 +32,6 @@ export class CreateStreamComponent implements OnInit {
   public showAddMessageForm;
 
   public ngOnInit() {
-    console.log(this.data);
     if (this.data) {
       this.editingTemplate = this.data.editingTemplate;
       this.totalPatients = this.data.totalPatients ? this.data.totalPatients : 0;

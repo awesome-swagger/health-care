@@ -23,7 +23,6 @@ export class ChangeEmailComponent implements OnInit {
   }
 
   public ngOnInit() {
-    console.log(this.data);
     this.auth.user$.subscribe(
       res => {
         this.user = res;

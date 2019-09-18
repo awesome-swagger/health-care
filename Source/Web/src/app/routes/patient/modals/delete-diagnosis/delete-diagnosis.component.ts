@@ -14,7 +14,6 @@ export class DeleteDiagnosisComponent implements OnInit {
   }
 
   public ngOnInit() {
-    console.log(this.data);
   }
 
 }

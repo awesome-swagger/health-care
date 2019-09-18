@@ -26,7 +26,6 @@ export class GoalCommentsComponent implements OnInit {
   }
 
   public ngOnInit() {
-    console.log(this.data);
     if (this.data) {
       this.user = this.data.user;
       this.patient = this.data.patient;

@@ -17,6 +17,7 @@ import { AuthService, NavbarService, StoreService, TimeTrackerService, UtilsServ
 import { GoalCommentsComponent } from './modals/goal-comments/goal-comments.component';
 import { Observable } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
+import { Utils } from '../../../utils';
 
 @Component({
   selector: 'app-patient-details',
@@ -134,16 +135,16 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
               this.refetchAllTasks(this.selectedDate).then(() => {
                 this.assignRatingsToQuestions();
                 this.detailsLoaded = true;
-              }).catch(err => console.error('ngOnInit.this.refetchAllTasks.promise.catch', err));
+              }).catch(err => Utils.logError('ngOnInit.this.refetchAllTasks.promise.catch', err, user));
             });
             let messageSub = this.store.InfoMessageQueue.readListPaged().subscribe(
               (messageQueues) => {
                 return this.messageQueues = _filter(messageQueues, m => m.plan_template.id === carePlan.plan_template.id);
               },
-              (err) => { },
+              (err) => Utils.logError('Failed to load message queue', err, user),
               () => messageSub.unsubscribe()
             );
-          }).catch(err => console.error('ngOnInit.this.getCarePlan.promise.catch', err));
+          }).catch(err => Utils.logError('ngOnInit.this.getCarePlan.promise.catch', err, user));
         });
       });
     });
@@ -174,7 +175,7 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
       const result = apiAction().subscribe(
         (data: T) => resolve(data),
         (err: HttpErrorResponse | Error) => {
-          console.warn(`Failed to complete call: "${caller.substring(0, caller.indexOf('('))}"`, err);
+          Utils.logWarn(`Failed to complete call: "${caller.substring(0, caller.indexOf('('))}"`, err);
           resolve(null);
           //reject(err);
         },
@@ -272,7 +273,7 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
         this.teamTasks = tasks.filter((task) => !this.userTasks.includes(task));
         this.teamTasks.forEach((task) => task.responsible_person = this.getResponsiblePersonField(task));
       })
-      .catch(err => console.warn('refetchTeamTasks.promise.catch', err));
+      .catch(err => Utils.logWarn('refetchTeamTasks.promise.catch', err));
 
     return teamTasksPromise;
   }
@@ -940,7 +941,7 @@ export class PatientDetailsComponent implements OnDestroy, OnInit {
       overflow: 'auto',
       width: '512px',
     }).subscribe((res) => {
-      console.log(res);
+      Utils.logDebug('Goal Comments', res);
     });
   }
 

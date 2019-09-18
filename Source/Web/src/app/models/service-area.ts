@@ -1,7 +1,7 @@
-import { MomentInput } from "moment";
+import { MomentInput } from 'moment';
 
-import { ICarePlan } from "./care-plan";
-import { IHaveId } from "./ihaveid";
+import { ICarePlan } from './care-plan';
+import { IHaveId } from './ihave-id';
 
 export interface IServiceArea extends IHaveId {
   care_plans_count?: number;

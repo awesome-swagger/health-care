@@ -138,7 +138,6 @@ export class EditTaskComponent implements OnInit {
 
   public ngOnInit() {
     if (this.data) {
-      console.log(this.data);
       if (this.adhocTypes.includes(this.data.type)) {
         this.isAdhoc = true;
       }

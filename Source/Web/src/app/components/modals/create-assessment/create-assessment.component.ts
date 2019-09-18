@@ -25,7 +25,6 @@ export class CreateAssessmentComponent implements OnInit {
   public tooltipCAM0Open;
 
   public ngOnInit() {
-    console.log(this.data);
     if (this.data) {
       this.assessment = this.data.assessment ? this.data.assessment : {};
       this.isEditing = this.data.isEditing ? this.data.isEditing : false;

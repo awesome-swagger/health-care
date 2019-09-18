@@ -68,3 +68,17 @@ span {
     vertical-align: top;
   }
 }
+
+div.matching-patient-email {
+  div.buttons {
+    text-align: center;
+
+    button {
+      display: inline;
+
+      &:first-child {
+        margin-right: 5px;
+      }
+    }
+  }
+}

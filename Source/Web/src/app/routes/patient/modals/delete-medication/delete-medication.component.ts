@@ -17,7 +17,6 @@ export class DeleteMedicationComponent implements OnInit {
   ) { }
 
   public ngOnInit() {
-    console.log(this.data);
   }
 
   clickCancel() {

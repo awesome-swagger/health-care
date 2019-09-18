@@ -36,7 +36,6 @@ export class AddDiagnosisComponent implements OnInit {
   ) { }
 
   ngOnInit() {
-    console.log('---', this.data)
     if (this.data && this.data.patient) {
       this.selectedFacility = this.data.patient.facility;
     }

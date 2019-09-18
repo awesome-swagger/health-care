@@ -26,7 +26,6 @@ export class CreateVitalComponent implements OnInit {
   ) { }
 
   public ngOnInit() {
-    console.log(this.data);
     if (this.data) {
       this.vital = this.data.vital ? this.data.vital : {};
       this.isEditing = this.data.isEditing ? this.data.isEditing : false;

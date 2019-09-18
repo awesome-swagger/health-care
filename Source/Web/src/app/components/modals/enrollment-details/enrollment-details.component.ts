@@ -8,21 +8,21 @@ import { PatientCreationService } from '../../../services/patient-creation.servi
 import { Utils } from "../../../utils";
 
 import { IApiResultsContainer } from "../../../models/api-results-container";
-import { IBillingType } from "../../../models/ibilling_type";
-import { ICarePlanRoles } from "../../../models/icare-plan-roles";
+import { IBillingType } from "../../../models/billing_type";
+import { ICarePlanRoles } from "../../../models/care-plan-roles";
 import { IDiagnoses } from "../../../models/diagnoses";
 import { IDiagnosis } from "../../../models/diagnosis";
 import { IEmployee } from "../../../models/employee";
 import { IFacility } from "../../../models/facility";
-import { IFilteredResults } from "../../../models/ifiltered-results";
-import { IHaveId } from "../../../models/ihaveid";
+import { IFilteredResults } from "../../../models/filtered-results";
+import { IHaveId } from "../../../models/ihave-id";
 import { IInsurance } from "../../../models/insurance";
-import { INewPatientDetails } from "../../../models/inew-patient-details";
+import { INewPatientDetails } from "../../../models/new-patient-details";
 import { IOrganization } from "../../../models/organization";
-import { IPatientEnrollmentModalResponse, PatientCreationAction, PatientCreationStep } from "../../../models/ipatient-enrollment-modal-response";
-import { IPotentialPatientEnrollmentDetailsComponentInitialData } from "../../../models/ipotential-patient-enrollment-details-component-initial-data";
+import { IPatientEnrollmentModalResponse, PatientCreationAction, PatientCreationStep } from "../../../models/patient-enrollment-modal-response";
+import { IPotentialPatientEnrollmentDetailsComponentInitialData } from "../../../models/potential-patient-enrollment-details-component-initial-data";
 import { IRole } from "../../../models/role";
-import { ITypeahead } from "../../../models/itypeahead";
+import { ITypeahead } from "../../../models/typeahead";
 
 @Component({
   selector: 'app-enrollment-details',
@@ -177,7 +177,7 @@ export class EnrollmentDetailsComponent implements OnInit {
   }
 
   public get isValidPotentialPatient(): boolean {
-    return this.patientCreationService.isValidPotentialPatientDetails(this.newPatientDetails);
+    return this.patientCreationService.isValidForEnrollment(this.newPatientDetails);
   }
 
   private loadBillingTypes(): void {

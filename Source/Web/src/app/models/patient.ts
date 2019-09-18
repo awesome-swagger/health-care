@@ -1,7 +1,8 @@
 import { MomentInput } from "moment";
 
 import { IFacility } from "./facility";
-import { IHaveId } from "./ihaveid";
+import { IHaveId } from "./ihave-id";
+import { IInsurance } from "./insurance";
 import { IMessage } from "./message";
 import { IUser } from "./user";
 
@@ -21,7 +22,7 @@ export interface IPatient extends IHaveId {
   facility?: IFacility,
   height_feet?: number;
   height_inches?: number;
-  insurance?: string;
+  insurance?: IInsurance;
   is_active?: boolean;
   is_archived?: boolean;
   is_invited?: boolean;
@@ -32,7 +33,7 @@ export interface IPatient extends IHaveId {
   mrn?: string | number;
   payer_reimbursement?: boolean;
   risk_level?: number;
-  secondary_insurance?: string;
+  secondary_insurance?: IInsurance;
   source?: string;
   telemedicine?: string;
   user?: IUser;

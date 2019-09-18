@@ -1,10 +1,12 @@
 import { Component, OnInit } from '@angular/core';
+import * as moment from 'moment';
 
 import { ModalService } from '../../../modules/modals';
 
-import { INewPatientDetails } from '../../../models/inew-patient-details';
+import { INewPatientDetails } from '../../../models/new-patient-details';
 import { IPatient } from '../../../models/patient';
-import { IPatientEnrollmentModalResponse, PatientCreationAction, PatientCreationStep } from '../../../models/ipatient-enrollment-modal-response';
+import { IPatientEnrollmentModalResponse, PatientCreationAction, PatientCreationStep } from '../../../models/patient-enrollment-modal-response';
+import { Utils } from '../../../utils';
 
 @Component({
   selector: 'app-enrollment-patient-enrolled',
@@ -19,6 +21,7 @@ export class EnrollmentPatientEnrolledComponent implements OnInit {
   public lastName: string;
   public modalResponse: IPatientEnrollmentModalResponse = { action: PatientCreationAction.Complete, step: PatientCreationStep.EnrollmentComplete };
   public serviceAreaName: string;
+  public startDate: string;
 
   constructor(
     private modals: ModalService
@@ -33,6 +36,13 @@ export class EnrollmentPatientEnrolledComponent implements OnInit {
     this.firstName = this.data.firstName;
     this.lastName = this.data.lastName;
     this.serviceAreaName = this.data.serviceArea.name;
+
+    let date: moment.MomentInput = Utils.isNullOrUndefined(this.data.enrollmentConsentDetails.planStartDate)
+      ? new Date()
+      : this.data.enrollmentConsentDetails.planStartDate;
+
+    let momentDate = moment(date);
+    this.startDate = momentDate.format('m/d/yyyy');
   }
 
   public close(): void {

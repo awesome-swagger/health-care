@@ -1,16 +1,16 @@
-import { Injectable } from "@angular/core";
+import { Injectable } from '@angular/core';
 
-import { StoreService } from "./store.service";
-import { Utils } from "../utils";
+import { StoreService } from './store.service';
+import { Utils } from '../utils';
 
-import { IDiagnoses } from "../models/diagnoses";
-import { IDiagnosis } from "../models/diagnosis";
-import { IEmployee } from "../models/employee";
-import { INewPatientDetails } from "../models/inew-patient-details";
-import { IPatient } from "../models/patient";
-import { IPatientProfileCarePlans } from "../models/patient-profile-careplans";
-import { IPotentialPatient } from "../models/potential-patient";
-import { IRole } from "../models/role";
+import { IDiagnoses } from '../models/diagnoses';
+import { IDiagnosis } from '../models/diagnosis';
+import { IEmployee } from '../models/employee';
+import { INewPatientDetails } from '../models/new-patient-details';
+import { IPatient } from '../models/patient';
+import { IPatientProfileCarePlans } from '../models/patient-profile-careplans';
+import { IPotentialPatient } from '../models/potential-patient';
+import { IRole } from '../models/role';
 
 @Injectable()
 export class PatientCreationService {
@@ -110,8 +110,25 @@ export class PatientCreationService {
    * @param newPatientDetails - Details from the form regarding the patient enrollment
    */
   public isValidForEnrollment(newPatientDetails: INewPatientDetails): boolean {
-    if (newPatientDetails.checked.enroll && Utils.isNullOrWhitespace((newPatientDetails.careManager || {}).id)) {
+    if (!newPatientDetails.checked.enroll || Utils.isNullOrUndefined(newPatientDetails.careManager)) {
       return false;
+    }
+
+    if (newPatientDetails.checked.reimburses) {
+      if (
+        Utils.isNullOrUndefined(newPatientDetails.insurance)
+        || Utils.isNullOrUndefined(newPatientDetails.planType)
+        || Utils.isNullOrUndefined(newPatientDetails.billingPractioner)
+      ) {
+        return false;
+      }
+
+      if (
+        (newPatientDetails.planType.acronym === 'CCM' || newPatientDetails.planType.acronym === 'CCCM')
+        && (newPatientDetails.diagnoses || []).filter(d => d.is_chronic).length < 2
+      ) {
+        return false;
+      }
     }
 
     return this.isValidPotentialPatientDetails(newPatientDetails);
@@ -126,7 +143,7 @@ export class PatientCreationService {
       !Utils.isNullOrWhitespace(newPatientDetails.firstName)
       && !Utils.isNullOrWhitespace(newPatientDetails.lastName)
       && !Utils.isNullOrWhitespace(newPatientDetails.phoneNumber)
-      && !Utils.isNullOrWhitespace(newPatientDetails.email)
+      && Utils.isValidEmail(newPatientDetails.email)
       && !Utils.isNullOrUndefined(newPatientDetails.carePlan)
       && !Utils.isNullOrUndefined(newPatientDetails.facility)
       && !Utils.isNullOrWhitespace(newPatientDetails.source)

@@ -6,7 +6,7 @@ import { AddUserComponent } from './modals/add-user.component';
 import { AuthService, StoreService } from '../../../services';
 import { ConfirmModalComponent ,ModalService} from '../../../modules/modals';
 
-import { IHaveId } from '../../../models/ihaveid';
+import { IHaveId } from '../../../models/ihave-id';
 import { IPotentialPatient } from '../../../models/potential-patient';
 
 @Component({

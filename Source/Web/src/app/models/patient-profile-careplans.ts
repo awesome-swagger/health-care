@@ -1,4 +1,4 @@
-import { ICarePlan } from "./care-plan";
+import { ICarePlan } from './care-plan';
 
 export interface IPatientProfileCarePlans
 {

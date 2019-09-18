@@ -23,7 +23,6 @@ export class ReminderEmailComponent implements OnInit {
   }
 
   public ngOnInit() {
-    console.log(this.data);
     if (this.data) {
       this.patient = this.data.patient;
       this.auth.user$.subscribe(user => {

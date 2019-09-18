@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { find as _find } from 'lodash';
 import { ModalService } from '../../../../modules/modals';
 import { StoreService } from '../../../../services';
+import { Utils } from '../../../../utils';
 
 @Component({
   selector: 'app-financial-details',
@@ -93,12 +94,11 @@ export class FinancialDetailsComponent implements OnInit {
   }
 
   public ngOnInit() {
-    console.log(this.data);
     if (this.data.patient) {
       this.patient = this.data.patient;
       this.trackingReimbursement = this.patient.payer_reimbursement;
     } else {
-      console.log('"patient" should be passed in the data field');
+      Utils.logInfo('"patient" should be passed in the data field');
     }
     if (this.data.plan) {
       this.plan = this.data.plan;
@@ -109,7 +109,7 @@ export class FinancialDetailsComponent implements OnInit {
         }
       });
     } else {
-      console.log('"plan" should be passed in the data field');
+      Utils.logInfo('"plan" should be passed in the data field');
     }
   }
 

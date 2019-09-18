@@ -7,10 +7,9 @@ import { ConfirmModalComponent, ModalService } from '../../../modules/modals';
 import { PatientCreationModalService } from '../../../services/patient-creation-modal.service';
 import { Utils } from '../../../utils';
 
-import { IAddPatientToPlanComponentData } from '../../../models/iadd-patient-to-plan-component-data';
+import { IAddPatientToPlanComponentData } from '../../../models/add-patient-to-plan-component-data';
 import { IFacility } from '../../../models/facility';
-import { IPatient } from '../../../models/patient';
-import { IPatientEnrollmentResponse } from '../../../models/ipatient-enrollment-modal-response';
+import { IPatientEnrollmentResponse } from '../../../models/patient-enrollment-modal-response';
 import { IPotentialPatient } from '../../../models/potential-patient';
 
 @Component({

@@ -48,7 +48,6 @@ export class RecordResultsComponent implements OnInit, OnDestroy {
   ) { }
 
   public ngOnInit() {
-    console.log(this.data);
     if (!this.data) {
       return;
     }

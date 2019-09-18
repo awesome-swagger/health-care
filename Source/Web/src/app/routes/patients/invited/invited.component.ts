@@ -8,7 +8,8 @@ import { ModalService, ConfirmModalComponent } from '../../../modules/modals';
 import { PatientCreationModalService } from '../../../services/patient-creation-modal.service';
 import { ReminderEmailComponent } from './modals/reminder-email/reminder-email.component';
 
-import { IAddPatientToPlanComponentData } from '../../../models/iadd-patient-to-plan-component-data';
+import { IAddPatientToPlanComponentData } from '../../../models/add-patient-to-plan-component-data';
+import { Utils } from '../../../utils';
 
 @Component({
   selector: 'app-invited',
@@ -212,7 +213,7 @@ export class InvitedPatientsComponent implements OnDestroy, OnInit {
           (success) => {
             patient.emails_sent++;
           },
-          (err) => console.error(err),
+          (err) => Utils.logError(`failed to post to: '${url}'`, err, reminderData),
           () => postSub.unsubscribe()
         );
       },

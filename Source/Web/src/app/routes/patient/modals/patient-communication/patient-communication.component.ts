@@ -20,7 +20,6 @@ export class PatientCommunicationComponent implements OnInit {
   ) {}
 
   public ngOnInit() {
-    console.log(this.data);
     if (this.data) {
       this.selectedPreference = this.data.patient.communication_preference;
       this.email = this.data.patient.communication_email;

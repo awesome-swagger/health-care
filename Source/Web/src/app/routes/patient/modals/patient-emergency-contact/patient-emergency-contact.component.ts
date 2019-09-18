@@ -24,7 +24,6 @@ export class PatientEmergencyContactComponent implements OnInit {
   }
 
   public ngOnInit() {
-    console.log(this.data);
     if (this.data && this.data.emergencyContact &&  Object.keys(this.data.emergencyContact).length > 0) {
       const contact = this.data.emergencyContact;
       this.name = `${contact.first_name} ${contact.last_name}`;

@@ -1,7 +1,7 @@
 import { MomentInput } from 'moment';
 
 import { IEmployee } from './employee';
-import { IHaveId } from './ihaveid';
+import { IHaveId } from './ihave-id';
 import { IServiceArea } from './service-area';
 
 export interface ICarePlan extends IHaveId {
