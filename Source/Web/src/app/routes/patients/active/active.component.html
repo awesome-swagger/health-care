@@ -18,7 +18,9 @@
       </div>
       <div class="fullWidth"></div>
       <div class="flex fullWidth">
-        <div [ngStyle]="{width: '100px', padding: '5px'}"><label>Filter By User</label></div>
+        <div [ngStyle]="{width: '100px', padding: '5px'}">
+          <label>Filter By User</label>
+        </div>
         <div class="drop">
           <div class="drop__input" (click)="multi4Open = !multi4Open">
             {{userFilterListText}}
@@ -36,12 +38,12 @@
               <li class="drop__option">
                 <input class="input input--search drop__innerInput" type="text" placeholder="Search" />
               </li>
-              <ng-container *ngFor="let user of employees">
-                <li class="drop__option" *ngIf="showUserInFilter(user)">
+              <ng-container *ngFor="let employee of employeeProfiles">
+                <li class="drop__option" *ngIf="showUserInFilter(employee)">
                   <label class="drop__checkbox styledInput">
-                    <input type="checkbox" class="styledInput__input" [(ngModel)]="employeeChecked[user.id]" />
+                    <input type="checkbox" class="styledInput__input" [(ngModel)]="employeeChecked[employee.id]" />
                     <span class="styledInput__box"></span>
-                    {{user?.user?.first_name}} {{user?.user?.last_name}}
+                    {{employee?.user?.first_name}} {{employee?.user?.last_name}}
                   </label>
                 </li>
               </ng-container>
@@ -85,8 +87,8 @@
     </div>
     <div class="info__cell">
       <label>Avg Risk Level</label>
-      <div class="pill" [ngClass]="utilsService.percentPillClass(averageaverage?.risk_level)">
-        {{utilsService.getRiskLevelText(average?.risk_level)}} {{average?.risk_level}}%
+      <div class="pill" [ngClass]="utilsService.percentPillClass(average?.risk_level)">
+        {{average?.riskLevelText}} {{average?.risk_level}}%
       </div>
     </div>
   </div> <!--/.info-->
@@ -157,8 +159,8 @@
     </div> <!--/ container for care plan name filter-->
   </div> <!--/.flex (for filters)-->
   <ng-container *ngFor="let facility of facilities">
-    <div class="accordion" [ngClass]="{ 'isOpen' : accordionsOpen[facility.id] }" *ngIf="facility.carePlans?.length > 0">
-      <div class="accordion__head" (click)="accordionsOpen[facility.id]=!accordionsOpen[facility.id]">
+    <div class="accordion" [ngClass]="{ 'isOpen' : facilityOpen[facility.id] }" *ngIf="facility.carePlans?.length > 0">
+      <div class="accordion__head" (click)="facilityOpen[facility.id]=!facilityOpen[facility.id]">
         <span class="accordion__title">{{facility.name}} ({{facilityTotal[facility.id]}})</span>
         <div class="accordion__right">
           <div class="pill marRight32" [ngClass]="avgFacilityTimeColor(facility)">
@@ -257,10 +259,13 @@
                     </td>
                     <td>
                       <div class="progress marCenter">
-                        Week {{progressInWeeks(plan)}} of {{plan.plan_template.duration_weeks}}
-                        <div class="progress__bg">
-                          <div class="progress__bar" [ngStyle]="{width: (progressInWeeks(plan) / plan.plan_template.duration_weeks) * 100 + '%'}"></div>
+                        <div *ngIf="plan?.plan_template?.duration_weeks > -1">
+                          Week {{progressInWeeks(plan)}} of {{plan.plan_template.duration_weeks}}
+                          <div class="progress__bg">
+                            <div class="progress__bar" [ngStyle]="{width: (progressInWeeks(plan) / plan.plan_template.duration_weeks) * 100 + '%'}"></div>
+                          </div>
                         </div>
+                        <div *ngIf="plan?.plan_template?.duration_weeks == -1">Ongoing</div>
                       </div>
                     </td>
                     <td>

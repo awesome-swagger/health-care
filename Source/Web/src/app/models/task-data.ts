@@ -1,6 +1,9 @@
+import { MomentInput } from "moment";
+
+import { ITask } from "./task";
 
 export interface ITaskData {
-  checkIns: Array<{ patient: string, time: string }>,
-  length: number,
-  tasks: Array<{ patient: string, tasks: number }>
+  checkIns?: Array<ITask>;
+  next_checkin?: MomentInput;
+  tasks?: Array<ITask>;
 }

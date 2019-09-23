@@ -8,6 +8,12 @@
   width: 100%;
   min-width: rem-calc(1024);
 
+  &.sticky {
+    position: sticky;
+    top: 0px; /* When the element reaches top: 10px, it becomes fixed. */
+    z-index: 100;
+  }
+
   &__top {
     display: flex;
     align-items: center;

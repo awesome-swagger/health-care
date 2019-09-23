@@ -71,12 +71,14 @@ export interface ICarePlanAverage {
   average_engagement?: number;
   average_outcome?: number;
   risk_level?: number;
+  /** Set for UI display */
+  riskLevelText?: string;
   total_care_plans?: number;
   total_facilities?: number;
   total_patients?: number;
 }
 
-export interface IPatientProfile extends IHaveId {
+export interface IEmployeeProfile extends IHaveId {
   billing_view?: boolean;
   created?: MomentInput;
   facilities?: Array<IFacility>;

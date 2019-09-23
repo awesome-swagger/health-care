@@ -17,6 +17,8 @@ import { IFacility } from '../../../models/facility';
 import { IOrganization } from '../../../models/organization';
 import { IPatientEnrollmentResponse } from '../../../models/patient-enrollment-modal-response';
 import { IServiceArea } from '../../../models/service-area';
+import { Subscription } from 'rxjs';
+import { StringIndexable } from '../../../models/types';
 
 @Component({
   selector: 'app-active',
@@ -24,35 +26,31 @@ import { IServiceArea } from '../../../models/service-area';
   styleUrls: ['./active.component.scss'],
 })
 export class ActivePatientsComponent implements OnDestroy, OnInit {
-  public accordionsOpen: { [key: string]: boolean } = {};
-  public activeServiceAreas = {};
-  public activeUsers = {};
-  public authSub = null;
+  private authSub: Subscription = null;
+  private orgSub: Subscription = null;
+  private routeSub: Subscription = null;
+
   public average: models.ICarePlanAverage = null;
-  public averageaverage;
-  public carePlanSearch = '';
-  public carePlanTemplateChecked = {};
+  public carePlanSearch: string = '';
+  public carePlanTemplateChecked: StringIndexable<boolean> = {};
   public carePlanTemplates: Array<models.IPlanTemplate> = [];
   public employee: IEmployee = null;
-  public employeeChecked = {};
-  public employees: Array<models.IPatientProfile> = [];
+  public employeeChecked: StringIndexable<boolean> = {};
+  public employeeProfiles: Array<models.IEmployeeProfile> = [];
   public facilities: Array<models.IFacilityWithCarePlans> = [];
-  public facilityOpen = {};
-  public facilityPage = {};
-  public facilityPageCount = {};
-  public facilityTotal = {};
-  public multi2Open;
-  public multi3Open;
-  public multi4Open;
-  public openAlsoTip = {};
-  public organizationSub = null;
-  public routeSub;
-  public serviceAreaChecked = {};
+  public facilityOpen: StringIndexable<boolean> = {};
+  public facilityPage: StringIndexable<number> = {};
+  public facilityPageCount: StringIndexable<number> = {};
+  public facilityTotal: StringIndexable<number> = {};
+  public multi2Open: boolean = null;
+  public multi3Open: boolean = null;
+  public multi4Open: boolean = null;
+  public openAlsoTip: StringIndexable<boolean> = {};
+  public serviceAreaChecked: StringIndexable<boolean> = {};
   public serviceAreas: Array<IServiceArea> = [];
-  public serviceAreaSearch = '';
-  public toolAP1Open;
-  public tooltip2Open: { [key: string]: boolean } = {};
-  public users = null;
+  public serviceAreaSearch: string = '';
+  public toolAP1Open: boolean = null;
+  public tooltip2Open: StringIndexable<boolean> = {};
 
   constructor(
     public auth: AuthService,
@@ -75,10 +73,10 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
 
       this.employee = user;
       if ((user.facilities || []).length === 1) {
-        this.accordionsOpen[user.facilities[0].id] = true;
+        this.facilityOpen[user.facilities[0].id] = true;
       }
 
-      this.organizationSub = this.auth.organization$.subscribe((organization: IOrganization) => {
+      this.orgSub = this.auth.organization$.subscribe((organization: IOrganization) => {
         if (Utils.isNullOrUndefined(organization)) {
           return;
         }
@@ -90,28 +88,28 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
             this.facilities = this.facilities.filter(f => user.facilities.find(fa => fa.id === f.id));
 
             this.facilities.forEach((facility) => {
-              this.accordionsOpen[facility.id] = false;
+              this.facilityOpen[facility.id] = false;
               this.facilityPage[facility.id] = 1;
               this.loadFacilityCarePlans(facility);
             });
+          });
 
-            Utils.convertObservableToPromise<Array<models.IPatientProfile>>(this.store.EmployeeProfile.readListPaged())
-              .then((patientProfiles) => {
-                this.employees = patientProfiles;
-                patientProfiles.forEach((user) => this.employeeChecked[user.id] = true);
-                this.routeSub = this.route.params.subscribe((params) => {
-                  if (!params) {
-                    return;
-                  }
+        Utils.convertObservableToPromise<Array<models.IEmployeeProfile>>(this.store.EmployeeProfile.readListPaged())
+          .then((employeeProfiles) => {
+            this.employeeProfiles = employeeProfiles;
+            employeeProfiles.forEach((user) => this.employeeChecked[user.id] = true);
+            this.routeSub = this.route.params.subscribe((params) => {
+              if (!params) {
+                return;
+              }
 
-                  if (params.userId) {
-                    const ids = params.userId.split(',');
-                    patientProfiles.forEach(user => this.employeeChecked[user.id] = false);
-                    ids.forEach(id => this.employeeChecked[id] = true);
-                    this.employeeChecked[params.userId] = true;
-                  }
-                });
-              });
+              if (params.userId) {
+                const ids = params.userId.split(',');
+                employeeProfiles.forEach(user => this.employeeChecked[user.id] = false);
+                ids.forEach(id => this.employeeChecked[id] = true);
+                this.employeeChecked[params.userId] = true;
+              }
+            });
           });
       });
     });
@@ -139,40 +137,25 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
   }
 
   public ngOnDestroy(): void {
-    if (this.authSub) {
-      this.authSub.unsubscribe();
-    }
+    const unsubscribe = (sub: Subscription) => (sub || { unsubscribe: () => null }).unsubscribe();
 
-    if (this.organizationSub) {
-      this.organizationSub.unsubscribe();
-    }
-
-    if (this.routeSub) {
-      this.routeSub.unsubscribe();
-    }
+    unsubscribe(this.authSub);
+    unsubscribe(this.orgSub);
+    unsubscribe(this.routeSub);
   }
 
   public loadCarePlanAverage(organizationId: string): void {
     const params = { patient__facility__organization: organizationId };
     Utils
       .convertObservableToPromise<models.ICarePlanAverage>(this.store.CarePlan.detailRoute('GET', null, 'average', {}, params))
-      .then((average) => this.average = average);
-  }
-
-  public getPatientsOverview(organizationId: string): Promise<any> {
-    const promise = new Promise<any>((resolve, reject) => {
-      const params = {
-        'facility__organization__id': organizationId
-      };
-
-      const patientsSub = this.store.PatientProfile.listRoute('GET', 'overview', {}, params).subscribe(
-        patients => resolve(patients),
-        err => reject(err),
-        () => patientsSub.unsubscribe()
-      );
-    });
-
-    return promise;
+      .then((average: models.ICarePlanAverage) => {
+        average = average || {};
+        average.average_engagement = average.average_engagement || 0;
+        average.average_outcome = average.average_outcome || 0;
+        average.risk_level = average.risk_level || 0;
+        average.riskLevelText = this.utilsService.getRiskLevelText(average.risk_level);
+        this.average = average;
+      });
   }
 
   public getFacilityCarePlans(facilityId: string): Promise<IApiResultsContainer<Array<models.IActivePatientCarePlans>>> {
@@ -180,16 +163,6 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
     return Utils
       .convertObservableToPromise<IApiResultsContainer<Array<models.IActivePatientCarePlans>>>(this.store.Facility.detailRoute('get', facilityId, 'care_plans', {}, params))
       .then((carePlans) => carePlans);
-  }
-
-  public getPatients(): Promise<any> {
-    return new Promise<any>((resolve, reject) => {
-      const patientsSub = this.store.PatientProfile.readListPaged({ page: 1 }).subscribe(
-        patients => resolve(patients),
-        err => reject(err),
-        () => patientsSub.unsubscribe()
-      );
-    });
   }
 
   public progressInWeeks(plan: { created: moment.MomentInput, plan_template: { duration_weeks: number } }): number {
@@ -207,7 +180,7 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
 
   public get userFilterListText(): string {
     const checkedList = [];
-    this.employees.forEach(e => {
+    this.employeeProfiles.forEach(e => {
       if (this.employeeChecked[e.id]) {
         checkedList.push(e);
       }
@@ -217,7 +190,7 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
       return 'None';
     }
 
-    if (checkedList.length === this.employees.length) {
+    if (checkedList.length === this.employeeProfiles.length) {
       return 'All';
     }
 
@@ -286,15 +259,15 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
     return `${h}:${m.length === 1 ? '0' : ''}${minutes % 60}`;
   }
 
-  public toggleAllServiceAreas(status: boolean | string): void {
+  public toggleAllServiceAreas(status: boolean): void {
     Object.keys(this.serviceAreaChecked).forEach((area) => this.serviceAreaChecked[area] = status);
   }
 
-  public toggleAllCarePlans(status: boolean | string): void {
+  public toggleAllCarePlans(status: boolean): void {
     Object.keys(this.carePlanTemplateChecked).forEach((area) => this.carePlanTemplateChecked[area] = status);
   }
 
-  public toggleAllUsers(status: {}): void {
+  public toggleAllUsers(status: boolean): void {
     Object.keys(this.employeeChecked).forEach((user) => this.employeeChecked[user] = status);
   }
 
@@ -374,21 +347,15 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
     return Math.floor(avg);
   }
 
-  public hasCheckedCareTeamMember(plan: { id: string, care_team_employee_ids: Array<string>, patient: { full_name: string } }): boolean {
-    if (!this.employees) {
+  public hasCheckedCareTeamMember(plan: { id?: string, care_team_employee_ids?: Array<string>, patient?: { full_name?: string } }): boolean {
+    if (Utils.isNullOrEmptyCollection(this.employeeProfiles) || Utils.isNullOrEmptyCollection(plan.care_team_employee_ids)) {
       return true;
     }
 
-    let result = false;
-    if (plan.care_team_employee_ids) {
-      plan.care_team_employee_ids.forEach((employeeId) => {
-        if (this.employeeChecked[employeeId] === true) {
-          result = true;
-        }
-      })
-    }
-
-    return result;
+    const employeeIds = plan.care_team_employee_ids;
+    return employeeIds
+      .map(employeeId => this.employeeChecked[employeeId])
+      .some(checked => checked === true);
   }
 
   public saSearchMatch(sa: { name: string }): boolean {
@@ -408,7 +375,7 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
     return !Utils.isNullOrUndefined(userFacility);
   }
 
-  public navigatePages(facilityId: string, to: any): void {
+  public navigatePages(facilityId: string, to: number): void {
     this.facilityPage[facilityId] = to;
     this.getFacilityCarePlans(facilityId).then((carePlans: any) => {
       const facility = this.facilities.find(f => f.id === facilityId);

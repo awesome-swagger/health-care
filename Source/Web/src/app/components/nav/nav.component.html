@@ -1,4 +1,4 @@
-<div class="nav" *ngIf="nav.visible">
+<div class="nav sticky" *ngIf="nav.visible">
   <div class="ssContainer">
     <div class="nav__top">
 
@@ -37,25 +37,25 @@
         </div> <!--/.drop (for search)-->
 
         <div class="drop">
-          <div class="badge" *ngIf="tasksData?.length">{{taskCount}}</div>
+          <div class="badge" *ngIf="taskCount > 0">{{taskCount}}</div>
           <button class="button button--icon button--icon--nav" (click)="taskDropOpen = !taskDropOpen">
             <i class="ss-standard ss-list"></i>
           </button>
           <app-popover [visible]="taskDropOpen" (visibleChange)="taskDropOpen = $event;" [options]="taskDropOptions">
             <ul class="drop__dropdown isOpen">
               <li class="drop__label">My Check-Ins Today</li>
-              <li class="drop__option" *ngFor="let checkIn of tasksData?.checkIns">
+              <li class="drop__option" *ngFor="let checkIn of taskData?.checkIns">
                 <a class="drop__link">
                   <div class="picName">
-                    <img class="picName__img" src="../../../assets/img/profile.svg" />{{checkIn.patient}} ({{checkIn.time}})
+                    <img class="picName__img" src="../../../assets/img/profile.svg" />{{checkIn.patientName}} ({{checkIn.time}})
                   </div>
                 </a>
               </li>
               <li class="drop__label">My Tasks Due Today</li>
-              <li class="drop__option" *ngFor="let task of tasksData?.tasks">
+              <li class="drop__option" *ngFor="let task of taskData?.tasks">
                 <a class="drop__link">
                   <div class="picName">
-                    <img class="picName__img" src="../../../assets/img/profile.svg" />{{task.patient}} ({{task.tasks}})
+                    <img class="picName__img" src="../../../assets/img/profile.svg" />{{task.patientName}}
                   </div>
                 </a>
               </li>
@@ -64,13 +64,13 @@
         </div> <!--/.drop (for tasks list)-->
 
         <div class="drop">
-          <div *ngIf="notifications?.length" class="badge">{{notifications?.length}}</div>
+          <div *ngIf="notificationsCount > 0" class="badge">{{notificationsCount}}</div>
           <button class="button button--icon button--icon--nav" (click)="notificationsDropOpen = !notificationsDropOpen">
             <i class="ss-notifications"></i>
           </button>
           <app-popover [visible]="notificationsDropOpen" (visibleChange)="notificationsDropOpen = $event;" [options]="notificationsDropOptions">
             <ul class="drop__dropdown drop__dropdown--notifications isOpen">
-              <ng-container *ngFor="let category of notificationData">
+              <ng-container *ngFor="let category of notifications">
                 <li class="drop__label">{{category.category}}</li>
                 <li class="drop__option" *ngFor="let notification of category.notifications">
                   <a class="drop__link drop__link--complex">
@@ -201,6 +201,7 @@
       </div>
     </div> <!--/.ssContainer-->
   </div> <!--/.nav__bottom-->
+
   <div class="nav__bottom" *ngIf="planDetailState">
     <div class="ssContainer nav__container">
       <div class="nav__links">
@@ -216,6 +217,7 @@
       </div>
     </div> <!--/.ssContainer-->
   </div> <!--/.nav__bottom-->
+
   <div class="nav__bottom" *ngIf="patientDetailState">
     <div class="ssContainer nav__container">
       <div class="nav__links">
