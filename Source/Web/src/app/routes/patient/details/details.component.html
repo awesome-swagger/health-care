@@ -1012,7 +1012,7 @@
     <!--/.accordion (for vitals)-->
     <div class="accordion" [ngClass]="{ 'isOpen' : messagesOpen }">
       <div class="accordion__head" (click)="messagesOpen=!messagesOpen">
-        <span class="accordion__title">Messages - {{tableHeaderDate()}} (1)</span>
+        <span class="accordion__title">Messages - {{tableHeaderDate()}} ({{messageQueue?.length || 0}})</span>
         <div class="accordion__right">
           <div class="accordion__arrow">
             <i class="ss-standard ss-navigateright"></i>
@@ -1024,7 +1024,9 @@
       <div class="accordion__body">
         <div class="accordion__contents">
           <ng-container *ngFor="let messageQueue of messageQueues; let i = index">
+            <!-- let messageQueue of messageQueues -->
             <ng-container *ngFor="let message of messageQueue.messages; let j = index">
+              <!-- let message of messageQueue -->
               <table class="fullWidth">
                 <thead>
                   <tr>
@@ -1081,6 +1083,9 @@
               </p>
               <div *ngIf="i !== messageQueues.length - 1 || j !== messageQueue.messages.length - 1" class="divider"></div>
             </ng-container>
+          </ng-container>
+          <ng-container *ngIf="!messageQueue">
+            <h2>No messages</h2>
           </ng-container>
         </div>
         <!--/.accordion__contents-->

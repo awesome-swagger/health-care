@@ -103,10 +103,10 @@
 			<div class="tool">
 				<label class="noMargin">Appear Time</label>
 				<div class="tool__anchor">
-					<button class="button button--icon button--icon--small" (click)="appearTimeHelpOpen=!appearTimeHelpOpen">
+					<button class="button button--icon button--icon--small" (click)="appearTimeHelpOpen=!appearTimeHelpOpen" type="button">
 						<i class="ss-help"></i>
 					</button>
-					<app-popover [visible]="appearTimeHelpOpen" (visibleChange)="appearTimeHelpOpen = $event;">
+					<app-popover [visible]="appearTimeHelpOpen" (visibleChange)="appearTimeHelpOpen = $event;" type="button">
 						<div class="tool__tip tool__tip--bottom tool__tip--left isOpen">
 							<div class="tool__text">
 								Appear time is when a task becomes available for the patient to complete.
@@ -122,7 +122,7 @@
 			<div class="tool">
 				<label class="noMargin">Due Time</label>
 				<div class="tool__anchor">
-					<button class="button button--icon button--icon--small" (click)="dueTimeHelpOpen=!dueTimeHelpOpen">
+					<button class="button button--icon button--icon--small" (click)="dueTimeHelpOpen=!dueTimeHelpOpen" type="button">
 						<i class="ss-help"></i>
 					</button>
 					<app-popover [visible]="dueTimeHelpOpen" (visibleChange)="dueTimeHelpOpen = $event;">
@@ -166,7 +166,7 @@
 		<div class="tool">
 			<label class="noMargin">Category</label>
 			<div class="tool__anchor">
-				<button class="button button--icon button--icon--small" (click)="categoryHelpOpen=!categoryHelpOpen">
+				<button class="button button--icon button--icon--small" (click)="categoryHelpOpen=!categoryHelpOpen" type="button">
 					<i class="ss-help"></i>
 				</button>
 				<div class="tool__tip tool__tip--left" [ngClass]="{ 'isOpen' : categoryHelpOpen }">
@@ -186,7 +186,7 @@
 			<div class="tool">
 				<label class="noMargin">Roles</label>
 				<div class="tool__anchor">
-					<button class="button button--icon button--icon--small" (click)="roleHelpOpen=!roleHelpOpen">
+					<button class="button button--icon button--icon--small" (click)="roleHelpOpen=!roleHelpOpen" type="button">
 						<i class="ss-help"></i>
 					</button>
 					<div class="tool__tip tool__tip--left" [ngClass]="{ 'isOpen' : roleHelpOpen }">
