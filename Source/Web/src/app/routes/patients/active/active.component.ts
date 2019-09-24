@@ -87,11 +87,20 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
             this.facilities = facilities.results.filter(f => !f.is_affiliate);
             this.facilities = this.facilities.filter(f => user.facilities.find(fa => fa.id === f.id));
 
+            const promises: Array<Promise<void>> = [];
             this.facilities.forEach((facility) => {
               this.facilityOpen[facility.id] = false;
               this.facilityPage[facility.id] = 1;
-              this.loadFacilityCarePlans(facility);
+              promises.push(this.loadFacilityCarePlans(facility));
             });
+
+            Promise.all(promises)
+              .then(() => {
+                const facilitiesWithCarePlans = this.facilities.filter(x => !Utils.isNullOrEmptyCollection(x.carePlans));
+                if (facilitiesWithCarePlans.length === 1) {
+                  this.facilityOpen[facilitiesWithCarePlans[0].id] = true;
+                }
+              });
           });
 
         Utils.convertObservableToPromise<Array<models.IEmployeeProfile>>(this.store.EmployeeProfile.readListPaged())
@@ -127,8 +136,8 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
       });
   }
 
-  private loadFacilityCarePlans(facility: models.IFacilityWithCarePlans): void {
-    this.getFacilityCarePlans(facility.id)
+  private loadFacilityCarePlans(facility: models.IFacilityWithCarePlans): Promise<void> {
+    return this.getFacilityCarePlans(facility.id)
       .then((carePlans: IApiResultsContainer<Array<models.IActivePatientCarePlans>>) => {
         facility.carePlans = carePlans.results;
         this.facilityTotal[facility.id] = carePlans.count;
