@@ -420,8 +420,14 @@ export class PatientCreationModalService {
     Promise.resolve()
       .then(() => Utils.convertObservableToPromise(this.store.ProviderRole.readListPaged()))
       .then((roles: Array<IRole>) => {
-        this.careManagerRole = roles.filter(x => x.name === 'Care Manager' || x.name === 'Care Team Manager')[0];
-        this.billingPractitionerRole = roles.filter(x => x.name === 'Billing Practitioner')[0];
+        const toLower = (val: string) => (val || '').toLowerCase();
+        const filter = (opt1: string, opt2: string) => roles.find(x => {
+          const name = toLower(x.name);
+          return name === toLower(opt1) || name === toLower(opt2);
+        });
+
+        this.careManagerRole = filter('care manager', 'care team manager');
+        this.billingPractitionerRole = filter('qualified practitioner', 'billing practitioner');
       });
   }
 

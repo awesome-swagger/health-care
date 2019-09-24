@@ -26,10 +26,13 @@ export class PatientCreationService {
     this.loadRoles();
   }
 
-  private filterAndConvertToSearchableEmployee(roleId: string, employees: Array<IEmployee>): Array<ISearchableEmployee> {
-    return employees
-      .filter(e => e.roles.filter(r => r.id === roleId).length > 0)
-      .map<ISearchableEmployee>(e => ({ searchableName: `${e.user.first_name} ${e.user.last_name}`.toLowerCase(), ...e }));
+  private filterAndConvertToSearchableEmployee(employees: Array<IEmployee>, searchForBillingManager: boolean): Array<ISearchableEmployee> {
+    employees = employees || [];
+    const filtered = searchForBillingManager
+      ? employees.filter(x => Utils.isNullOrTrueValue(x.qualified_practitioner))
+      : employees.filter(x => (x.roles || []).filter(r => r.id === (this.careManagerRole || {}).id).length > 0);
+
+    return filtered.map<ISearchableEmployee>(e => ({ searchableName: `${(e.user || {}).first_name} ${(e.user || {}).last_name}`.trim().toLowerCase(), ...e }));
   }
 
   public getPatientDiagnoses(facilityId: string, diagnosesIds: Array<string>): Promise<Array<IDiagnoses>> {
@@ -108,13 +111,14 @@ export class PatientCreationService {
   /**
    * Returns a value indicating whether forms current state is valid for enrolling/saving a patient in the system
    * @param newPatientDetails - Details from the form regarding the patient enrollment
+   * @param validateOnlyPatientDetails A value indicating that only the patient details should be validated at this time. (False by default)
    */
-  public isValidForEnrollment(newPatientDetails: INewPatientDetails): boolean {
+  public isValidForEnrollment(newPatientDetails: INewPatientDetails, validateOnlyPatientDetails: boolean = false): boolean {
     if (!newPatientDetails.checked.enroll || Utils.isNullOrUndefined(newPatientDetails.careManager)) {
       return false;
     }
 
-    if (newPatientDetails.checked.reimburses) {
+    if (!validateOnlyPatientDetails && newPatientDetails.checked.reimburses) {
       if (
         Utils.isNullOrUndefined(newPatientDetails.insurance)
         || Utils.isNullOrUndefined(newPatientDetails.planType)
@@ -183,14 +187,20 @@ export class PatientCreationService {
   }
 
   private setEmployees(employees: Array<IEmployee>): void {
-    this.careManagers = this.filterAndConvertToSearchableEmployee(this.careManagerRole.id, employees);
-    this.billingPractitioners = this.filterAndConvertToSearchableEmployee(this.billingPractitionerRole.id, employees);
+    this.careManagers = this.filterAndConvertToSearchableEmployee(employees, false);
+    this.billingPractitioners = this.filterAndConvertToSearchableEmployee(employees, true);
     this.employeesLoaded = true;
   }
 
   private setRoles(roles: Array<IRole>): void {
-    this.careManagerRole = roles.find(x => x.name === 'Care Manager' || x.name === 'Care Team Manager');
-    this.billingPractitionerRole = roles.find(x => x.name === 'Billing Practitioner');
+    const toLower = (val: string) => (val || '').toLowerCase();
+    const filter = (opt1: string, opt2: string) => roles.find(x => {
+      const name = toLower(x.name);
+      return name === toLower(opt1) || name === toLower(opt2);
+    });
+
+    this.careManagerRole = filter('care manager', 'care team manager');
+    this.billingPractitionerRole = filter('qualified practitioner', 'billing practitioner');
   }
 }
 

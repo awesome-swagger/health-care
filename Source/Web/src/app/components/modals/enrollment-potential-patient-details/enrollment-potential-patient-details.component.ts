@@ -136,7 +136,7 @@ export class EnrollmentPotentialPatientDetailsComponent implements OnInit {
   }
 
   public get isValidForSaveOrNext(): boolean {
-    return this.patientCreationService.isValidForEnrollment(this.newPatientDetails);
+    return this.patientCreationService.isValidForEnrollment(this.newPatientDetails, true);
   }
 
   private loadCarePlansAndServiceAreas(preloadedCarePlan: ICarePlan = null): void {
