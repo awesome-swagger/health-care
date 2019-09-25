@@ -32,7 +32,10 @@ export class PatientCreationService {
       ? employees.filter(x => Utils.isNullOrTrueValue(x.qualified_practitioner))
       : employees.filter(x => (x.roles || []).filter(r => r.id === (this.careManagerRole || {}).id).length > 0);
 
-    return filtered.map<ISearchableEmployee>(e => ({ searchableName: `${(e.user || {}).first_name} ${(e.user || {}).last_name}`.trim().toLowerCase(), ...e }));
+    const results = filtered.map<ISearchableEmployee>(e => ({ searchableName: `${(e.user || {}).first_name} ${(e.user || {}).last_name}`.trim().toLowerCase(), ...e }));
+    Utils.logDebug(searchForBillingManager ? 'Billing' : 'Care', results);
+
+    return results;
   }
 
   public getPatientDiagnoses(facilityId: string, diagnosesIds: Array<string>): Promise<Array<IDiagnoses>> {
@@ -114,28 +117,40 @@ export class PatientCreationService {
    * @param validateOnlyPatientDetails A value indicating that only the patient details should be validated at this time. (False by default)
    */
   public isValidForEnrollment(newPatientDetails: INewPatientDetails, validateOnlyPatientDetails: boolean = false): boolean {
-    if (!newPatientDetails.checked.enroll || Utils.isNullOrUndefined(newPatientDetails.careManager)) {
+    const isValidPatientDetails = this.isValidPotentialPatientDetails(newPatientDetails);
+    if (validateOnlyPatientDetails) {
+      return isValidPatientDetails;
+    }
+
+    const enrollCheckedWithCareManager = Utils
+      .isTrueValue(newPatientDetails.checked.enroll)
+      && !Utils.isNullOrUndefined(newPatientDetails.careManager);
+
+    if (!(isValidPatientDetails && enrollCheckedWithCareManager)) {
       return false;
     }
 
-    if (!validateOnlyPatientDetails && newPatientDetails.checked.reimburses) {
-      if (
-        Utils.isNullOrUndefined(newPatientDetails.insurance)
-        || Utils.isNullOrUndefined(newPatientDetails.planType)
-        || Utils.isNullOrUndefined(newPatientDetails.billingPractioner)
-      ) {
-        return false;
-      }
-
-      if (
-        (newPatientDetails.planType.acronym === 'CCM' || newPatientDetails.planType.acronym === 'CCCM')
-        && (newPatientDetails.diagnoses || []).filter(d => d.is_chronic).length < 2
-      ) {
-        return false;
-      }
+    if (!newPatientDetails.checked.reimburses) {
+      return true;
     }
 
-    return this.isValidPotentialPatientDetails(newPatientDetails);
+    if (
+      Utils.isNullOrUndefined(newPatientDetails.insurance)
+      || Utils.isNullOrUndefined(newPatientDetails.planType)
+      || Utils.isNullOrUndefined(newPatientDetails.billingPractioner)
+    ) {
+      return false;
+    }
+
+    const acronym = ((newPatientDetails.planType || {}).acronym || '').trim().toUpperCase();
+    if (
+      (acronym === 'CCM' || acronym === 'CCCM')
+      && (newPatientDetails.diagnoses || []).filter(d => d.is_chronic).length < 2
+    ) {
+      return false;
+    }
+
+    return true;
   }
 
   /**
@@ -166,7 +181,7 @@ export class PatientCreationService {
    * @param searchText - Search text to match against
    */
   public searchBillingPractitioners(searchText: string): Array<IEmployee> {
-    return this.searchEmployeeCollection(this.careManagers, searchText);
+    return this.searchEmployeeCollection(this.billingPractitioners, searchText);
   }
 
   /**

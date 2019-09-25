@@ -217,8 +217,7 @@ export class Utils {
    * @param data Any object that should be logged
    */
   private static logMessage<T = any>(level: LogLevel, message: string, data: { error?: Error | string, data?: T }): void {
-    if (Utils.minimumLoggingLevel < level) {
-      console.log('Skipping log', { min: Utils.minimumLoggingLevel, level, message, data });
+    if (Utils.minimumLoggingLevel > level) {
       return;
     }
 
@@ -232,11 +231,12 @@ export class Utils {
       case LogLevel.fatal:
         console.error(message, data);
         break;
-      default:
       case LogLevel.trace:
       case LogLevel.debug:
       case LogLevel.info:
         console.log(message, data);
+        break;
+      default:
         break;
     }
   }

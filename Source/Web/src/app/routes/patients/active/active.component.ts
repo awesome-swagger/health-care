@@ -62,7 +62,6 @@ export class ActivePatientsComponent implements OnDestroy, OnInit {
     public utilsService: UtilsService
   ) {
     // Nothing yet
-    Utils.minimumLoggingLevel = LogLevel.debug;
   }
 
   public ngOnInit(): void {

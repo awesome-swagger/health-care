@@ -42,7 +42,7 @@ export class EnrollmentPatientEnrolledComponent implements OnInit {
       : this.data.enrollmentConsentDetails.planStartDate;
 
     let momentDate = moment(date);
-    this.startDate = momentDate.format('m/d/yyyy');
+    this.startDate = momentDate.format('M/D/YYYY');
   }
 
   public close(): void {

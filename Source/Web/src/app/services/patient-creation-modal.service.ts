@@ -35,8 +35,7 @@ export class PatientCreationModalService {
       .then(() => Utils.logDebug(`starting_${message}`))
       .then(() => action())
       .then((response) => logResponse && Utils.logDebug(`response_${message}`, response))
-      .then(() => Utils.logDebug(`complete_${message}`))
-      .catch(() => null);
+      .then(() => Utils.logDebug(`complete_${message}`));
   };
 
   constructor(
@@ -45,7 +44,6 @@ export class PatientCreationModalService {
     private toast: ToastService
   ) {
     this.loadRoles();
-    Utils.minimumLoggingLevel = LogLevel.debug;
   }
 
   private catchError<T>(message: string, error: Error | string, returnValue: T, reject: boolean = false): Promise<T> {
@@ -84,8 +82,7 @@ export class PatientCreationModalService {
       .then(() => this.logAction('createDiagnosesIfNeeded', () => this.createDiagnosesIfNeeded(newPatientDetails)))
       .then(() => this.logAction('deletePotentialPatientIfNeeded', () => this.deletePotentialPatientIfNeeded(newPatientDetails, potentialPatientId)))
       .then(() => data.message = 'Creating care team')
-      .then(() => this.logAction('createOtherCareTeamRolesIfNeeded', () => this.createOtherCareTeamRolesIfNeeded(newPatientDetails)))
-      .catch(error => this.catchError('Failed to enroll patient', error, null, true));
+      .then(() => this.logAction('createOtherCareTeamRolesIfNeeded', () => this.createOtherCareTeamRolesIfNeeded(newPatientDetails)));
     data.action = action;
 
     return this
@@ -118,8 +115,7 @@ export class PatientCreationModalService {
         .convertObservableToPromise<ICarePlan>(this.store.CarePlan.create(postData))
         .then((carePlan: ICarePlan) => newPatientDetails.carePlan = carePlan)
       ))
-      .then(() => newPatientDetails)
-      .catch(error => this.catchError('Failed to create care plan', error, null, true));
+      .then(() => newPatientDetails);
   }
 
   private createCareTeamMemberIfNeeded(role: IRole, newPatientDetails: INewPatientDetails): Promise<INewPatientDetails> {
@@ -151,8 +147,7 @@ export class PatientCreationModalService {
             }
           });
       }))
-      .then(() => newPatientDetails)
-      .catch(error => this.catchError('Failed to create team member', error, null, true));
+      .then(() => newPatientDetails);
   }
 
   private createDiagnosesIfNeeded(newPatientDetails: INewPatientDetails): Promise<INewPatientDetails> {
@@ -183,12 +178,9 @@ export class PatientCreationModalService {
           ? this.store.PatientDiagnosis.update(diagnoses.id, diagnoses)
           : this.store.PatientDiagnosis.create(diagnoses);
 
-        const p = this
-          .logAction(message, () => Utils
-            .convertObservableToPromise<IDiagnoses>(action)
-            .then(newOrUpdatedDiagnoses => Object.assign(diagnoses, newOrUpdatedDiagnoses))
-            .catch(error => this.catchError(fail, error, null))
-          );
+        const p = Utils
+          .convertObservableToPromise<IDiagnoses>(action)
+          .then(newOrUpdatedDiagnoses => Object.assign(diagnoses, newOrUpdatedDiagnoses));
 
         promises.push(p);
       });
@@ -199,15 +191,12 @@ export class PatientCreationModalService {
         .then((diagnosis: Array<string>) => this
           .logAction(
             'updatingPatientProfile',
-            () => Utils
-              .convertObservableToPromise(this.store.PatientProfile.update(newPatientDetails.patient.patient.id, { diagnosis }))
-              .catch(error => this.catchError('Failed to create diagnoses', error, null, true)),
+            () => Utils.convertObservableToPromise(this.store.PatientProfile.update(newPatientDetails.patient.patient.id, { diagnosis })),
             true
           )
         )
         .then(() => Utils.logDebug(`complete_this.store.PatientDiagnosis.update/create => (${totalDiagnoses} of ${totalDiagnoses})`))
-        .then(() => resolve(newPatientDetails))
-        .catch(error => this.catchError('Failed to create diagnoses', error, null, true));
+        .then(() => resolve(newPatientDetails));
     });
 
     return promise;
@@ -237,8 +226,7 @@ export class PatientCreationModalService {
       .then(potentialPatient => {
         (Utils.logDebug('complete_this.store.PotentialPatient.create/Update', potentialPatient));
         return potentialPatient;
-      })
-      .catch(error => this.catchError('Failed to create/update potential patient', error, null, true));
+      });
   }
 
   private createOtherCareTeamRolesIfNeeded(newPatientDetails: INewPatientDetails): Promise<INewPatientDetails> {
@@ -262,7 +250,7 @@ export class PatientCreationModalService {
         p = Promise.resolve()
           .then(() => Utils.logDebug(`starting_this.createCareTeamMemberIfNeeded => (${++counter} of ${totalRoles})`))
           .then(() => action())
-          .then(() => Utils.logDebug(`complete_this.createCareTeamMemberIfNeeded => (${counter} of ${totalRoles})`))
+          .then(() => Utils.logDebug(`complete_this.createCareTeamMemberIfNeeded => (${counter} of ${totalRoles})`));
 
         promises.push(p);
       }
@@ -270,8 +258,7 @@ export class PatientCreationModalService {
       Promise.all(promises)
         .then(() => Utils.logDebug(`complete_this.createCareTeamMemberIfNeeded => (${totalRoles} of ${totalRoles})`))
         .then(() => resolve(newPatientDetails))
-        .then(() => newPatientDetails)
-        .catch(error => this.catchError('Failed to create other care team members', error, null, true));
+        .then(() => newPatientDetails);
     });
 
     return promise;
@@ -301,8 +288,7 @@ export class PatientCreationModalService {
       .then(patient => newPatientDetails.patient.patient = patient)
       .then(() => Utils.logDebug('createPatientIfNeeded.afterResponse', newPatientDetails))
       .then(() => Utils.logDebug('complete_this.getOrCreateUserId'))
-      .then(() => newPatientDetails)
-      .catch(error => this.catchError('Failed to create patient', error, null, true));
+      .then(() => newPatientDetails);
   }
 
   private createPlanConsentForm(newPatientDetails: INewPatientDetails): Promise<INewPatientDetails> {
@@ -320,8 +306,7 @@ export class PatientCreationModalService {
       .then(() => Utils.logDebug('starting_this.store.PlanConsentForm.create'))
       .then(() => Utils.convertObservableToPromise<postData.IPlanConsentPostData>(this.store.PlanConsentForm.create(consentForm)))
       .then(() => Utils.logDebug('complete_this.store.PlanConsentForm.create'))
-      .then(() => newPatientDetails)
-      .catch(error => this.catchError('Failed to create plan consent form', error, null, true));
+      .then(() => newPatientDetails);
   }
 
   private deletePotentialPatientIfNeeded(newPatientDetails: INewPatientDetails, potentialPatientId: string): Promise<INewPatientDetails> {
@@ -334,8 +319,7 @@ export class PatientCreationModalService {
       .then(() => Utils.logDebug('starting_this.store.PotentialPatient.destroy'))
       .then(() => Utils.convertObservableToPromise(this.store.PotentialPatient.destroy(potentialPatientId)))
       .then(() => Utils.logDebug('complete_this.store.PotentialPatient.destroy'))
-      .then(() => newPatientDetails)
-      .catch(error => this.catchError(`Failed to delete potential patient with id: '${potentialPatientId}'`, error, newPatientDetails));
+      .then(() => newPatientDetails);
   }
 
   private getOrCreateUserId(newPatientDetails: INewPatientDetails): Promise<string> {
@@ -363,8 +347,7 @@ export class PatientCreationModalService {
           .then(() => Utils.convertObservableToPromise<{ pk: string }>(this.store.AddUser.createAlt(createUserPostData)))
           .then((user: { pk: string }) => userId = user.pk)
           .then(() => Utils.logDebug('complete_this.store.AddUser.createAlt'))
-          .then(() => userId)
-          .catch(error => this.catchError('Failed to create user', error, null, true));
+          .then(() => userId);
       });
   }
 
@@ -412,8 +395,7 @@ export class PatientCreationModalService {
         }
       })
       .then(() => Utils.logDebug('complete_this.store.PatientProfile.readListPaged'))
-      .then(() => result)
-      .catch(error => this.catchError('Failed to match user', error, null));
+      .then(() => result);
   }
 
   private loadRoles(): void {
@@ -674,8 +656,7 @@ export class PatientCreationModalService {
         (Utils.logDebug('complete_createOrUpdatePotentialPatient', potentialPatient));
 
         return this.openEnrollment_PotentialPatientAddedModal(modalResponse.newPatientDetails, potentialPatientId);
-      })
-      .catch(error => this.catchError('Failed to save potential patient', error, null));
+      });
   }
 
   private updatePhoneIfNeeded(newPatientDetails: INewPatientDetails): Promise<INewPatientDetails> {
@@ -703,7 +684,6 @@ export class PatientCreationModalService {
         }
       })
       .then(() => Utils.logDebug('complete_this.store.User.update_phone'))
-      .then(() => newPatientDetails)
-      .catch(error => this.catchError('Failed to update phone number', error, null));
+      .then(() => newPatientDetails);
   }
 }
